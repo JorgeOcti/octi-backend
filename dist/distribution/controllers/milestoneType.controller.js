@@ -72,7 +72,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         return [4 /*yield*/, new milestoneType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("milestone-type-list-".concat(team._id)).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -82,7 +82,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("MilestoneTypeController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -105,7 +105,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         return [4 /*yield*/, milestoneType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, body) }, { "new": true })];
                     case 2:
                         milestoneType = _a.sent();
-                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("milestone-type-list-".concat(team._id)).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(milestoneType);
@@ -115,7 +115,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("MilestoneTypeController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_2);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -137,7 +137,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         return [4 /*yield*/, milestoneType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
                         milestoneType = _a.sent();
-                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("milestone-type-list-".concat(team._id)).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(milestoneType);
@@ -147,7 +147,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("MilestoneTypeController.apiDelete: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_3);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -203,7 +203,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("MilestoneTypeController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

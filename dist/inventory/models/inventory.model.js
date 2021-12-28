@@ -126,7 +126,7 @@ inventorySchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/inventories/setting/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
+            return "/inventories/setting/".concat(attachment.team, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
         }
     }),
     fields: {

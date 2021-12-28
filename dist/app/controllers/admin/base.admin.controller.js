@@ -97,7 +97,7 @@ var BaseAdminController = /** @class */ (function () {
                         existInstance = _a.sent();
                         if (!existInstance.length) return [3 /*break*/, 3];
                         res.status(400).json({
-                            message: req.context.name + " ya existe.",
+                            message: "".concat(req.context.name, " ya existe."),
                             status: 400
                         });
                         return [3 /*break*/, 5];
@@ -107,7 +107,7 @@ var BaseAdminController = /** @class */ (function () {
                     case 4:
                         _a.sent();
                         res.status(201).json({
-                            message: req.context.name + " creado/a satisfactoriamente.",
+                            message: "".concat(req.context.name, " creado/a satisfactoriamente."),
                             result: result
                         });
                         _a.label = 5;
@@ -146,14 +146,14 @@ var BaseAdminController = /** @class */ (function () {
                         result = _a.sent();
                         if (result) {
                             res.status(200).json({
-                                message: req.context.name + " editado/a satisfactoriamente.",
+                                message: "".concat(req.context.name, " editado/a satisfactoriamente."),
                                 result: result
                             });
                         }
                         else {
                             res.status(400).json({
                                 id: id,
-                                message: req.context.name + " no encontrado/a."
+                                message: "".concat(req.context.name, " no encontrado/a.")
                             });
                         }
                         return [3 /*break*/, 4];
@@ -188,7 +188,7 @@ var BaseAdminController = /** @class */ (function () {
                         existInstance = _a.sent();
                         if (!!existInstance) return [3 /*break*/, 3];
                         res.status(400).json({
-                            message: req.context.name + " no encontrado/a.",
+                            message: "".concat(req.context.name, " no encontrado/a."),
                             status: 400
                         });
                         return [3 /*break*/, 5];
@@ -197,7 +197,7 @@ var BaseAdminController = /** @class */ (function () {
                         _a.sent();
                         res.status(200).json({
                             id: id,
-                            message: req.context.name + " eliminado/a satisfactoriamente."
+                            message: "".concat(req.context.name, " eliminado/a satisfactoriamente.")
                         });
                         _a.label = 5;
                     case 5: return [3 /*break*/, 7];

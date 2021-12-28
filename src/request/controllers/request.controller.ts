@@ -576,12 +576,17 @@ class RequestController {
         }, {
           $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
         }, {
+          $lookup: { from: 'transmittals', localField: 'transmittal', foreignField: '_id', as: 'transmittal' }
+        }, {
+          $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: false }
+        }, {
           $addFields: { requestNumber: { $toString: '$request.number' } }
         }, {
           $project: {
             '_id': 1,
             'request._id': 1,
             'request.number': 1,
+            'transmittal.number': 1,
             'request.createdBy.firstName': 1,
             'request.createdBy.lastName': 1,
             'priority': 1,
@@ -684,6 +689,9 @@ class RequestController {
           }, {
             path: 'reason',
             select: ['name']
+          }, {
+            path: 'transmittal',
+            select: ['number']
           }, {
             path: 'origin',
             select: ['name']

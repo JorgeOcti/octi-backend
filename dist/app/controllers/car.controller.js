@@ -372,10 +372,10 @@ var CarController = /** @class */ (function () {
                         inventory = req.body.inventory;
                         team = req.user.team._id;
                         logger_service_1["default"].info("checkVIN");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         if (vin) {
                             vin = vin.replace(/[\W_]+/g, '');
-                            logger_service_1["default"].info("VIN fixed: " + vin);
+                            logger_service_1["default"].info("VIN fixed: ".concat(vin));
                         }
                         if (!inventory) return [3 /*break*/, 10];
                         _c.label = 1;
@@ -388,7 +388,7 @@ var CarController = /** @class */ (function () {
                         inventoryStatus = _c.sent();
                         if (!(inventoryStatus && inventoryStatus.status !== inventory_model_1.ChoicesStatusInventory.inProcess)) return [3 /*break*/, 3];
                         logger_service_1["default"].error("checkVIN: Este inventario ya no se encuentra disponible.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(404).json({
                             message: 'Este inventario ya no se encuentra disponible.',
                             status: 404
@@ -476,7 +476,7 @@ var CarController = /** @class */ (function () {
                             }
                             else {
                                 logger_service_1["default"].error("checkVIN: VIN no v\u00E1lido 1.");
-                                logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                                logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                                 res.status(400).json({
                                     message: 'VIN no válido.',
                                     status: 400
@@ -485,7 +485,7 @@ var CarController = /** @class */ (function () {
                         }
                         else {
                             logger_service_1["default"].error("checkVIN: Este inventario ya no se encuentra disponible.");
-                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                             res.status(404).json({
                                 message: 'Este inventario ya no se encuentra disponible.',
                                 status: 404
@@ -494,7 +494,7 @@ var CarController = /** @class */ (function () {
                         return [3 /*break*/, 7];
                     case 6:
                         logger_service_1["default"].error("checkVIN: VIN no v\u00E1lido 2.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'VIN no válido.',
                             status: 400
@@ -508,7 +508,7 @@ var CarController = /** @class */ (function () {
                             /* istanbul ignore next */
                             logger_service_1["default"].error("checkVIN: Async Error.");
                             /* istanbul ignore next */
-                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                             /* istanbul ignore next */
                             logger_service_1["default"].error(e_4);
                             res.status(500).json(e_4);
@@ -551,7 +551,7 @@ var CarController = /** @class */ (function () {
                         }
                         else {
                             logger_service_1["default"].error("checkVIN: VIN no encontrado.");
-                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                             res.status(400).json({
                                 message: 'VIN no encontrado.',
                                 status: 400
@@ -565,7 +565,7 @@ var CarController = /** @class */ (function () {
                             /* istanbul ignore next */
                             logger_service_1["default"].error("checkVIN: Async Error.");
                             /* istanbul ignore next */
-                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                             /* istanbul ignore next */
                             logger_service_1["default"].error(e_5);
                             res.status(500).send(e_5);
@@ -925,12 +925,12 @@ var CarController = /** @class */ (function () {
                             max = i + proyectionInterval;
                             if (i === 0) {
                                 proyection.push({
-                                    $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, i + "-" + max, '']
+                                    $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, "".concat(i, "-").concat(max), '']
                                 });
                             }
                             else {
                                 proyection.push({
-                                    $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, i + "-" + max, '']
+                                    $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, "".concat(i, "-").concat(max), '']
                                 });
                             }
                         }
@@ -1020,12 +1020,12 @@ var CarController = /** @class */ (function () {
                 var question = _c[_b];
                 if (['scale', 'accessory'].includes(question.kind)) {
                     columns.push({
-                        header: form.name + " - " + question.question, key: question._id.toString(), width: 30
+                        header: "".concat(form.name, " - ").concat(question.question), key: question._id.toString(), width: 30
                     });
                 }
                 else if (question.kind === 'damage') {
                     columns.push({
-                        header: form.name + " - " + question.question, key: question._id.toString(), width: 30, style: {
+                        header: "".concat(form.name, " - ").concat(question.question), key: question._id.toString(), width: 30, style: {
                             numFmt: '0'
                         }
                     });
@@ -1034,12 +1034,12 @@ var CarController = /** @class */ (function () {
         }
         if (form.shippingVenue) {
             columns.push({
-                header: form.name + " - " + form.shippingVenueText, key: form._id.toString() + "-shipping", width: 30
+                header: "".concat(form.name, " - ").concat(form.shippingVenueText), key: "".concat(form._id.toString(), "-shipping"), width: 30
             });
         }
         if (form.receptionVenue) {
             columns.push({
-                header: form.name + " - " + form.receptionVenueText, key: form._id.toString() + "-reception", width: 30
+                header: "".concat(form.name, " - ").concat(form.receptionVenueText), key: "".concat(form._id.toString(), "-reception"), width: 30
             });
         }
         return columns;
@@ -1066,9 +1066,9 @@ var CarController = /** @class */ (function () {
         var datum = {
             number: participant.number,
             created_at: moment(participant.createdAt).toDate(),
-            model: participant.car ? participant.car.brand + " - " + (participant.car.denomination ? participant.car.denomination : '') + " - " + participant.car.color : '',
+            model: participant.car ? "".concat(participant.car.brand, " - ").concat(participant.car.denomination ? participant.car.denomination : '', " - ").concat(participant.car.color) : '',
             team: participant.team.name,
-            user: participant.user ? participant.user.firstName + " " + participant.user.lastName : '',
+            user: participant.user ? "".concat(participant.user.firstName, " ").concat(participant.user.lastName) : '',
             company: participant.company.name,
             venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
             vin: participant.car ? participant.car.vin : '',
@@ -1090,10 +1090,10 @@ var CarController = /** @class */ (function () {
             }
         }
         if (participant.shippingVenue) {
-            sectionAnswers = __assign(__assign({}, sectionAnswers), (_a = {}, _a[participant.form.toString() + "-shipping"] = participant.sendTo.name, _a));
+            sectionAnswers = __assign(__assign({}, sectionAnswers), (_a = {}, _a["".concat(participant.form.toString(), "-shipping")] = participant.sendTo.name, _a));
         }
         if (participant.receptionVenue) {
-            sectionAnswers = __assign(__assign({}, sectionAnswers), (_b = {}, _b[participant.form.toString() + "-reception"] = participant.receiveFrom.name, _b));
+            sectionAnswers = __assign(__assign({}, sectionAnswers), (_b = {}, _b["".concat(participant.form.toString(), "-reception")] = participant.receiveFrom.name, _b));
         }
         return __assign(__assign({}, datum), sectionAnswers);
     };
@@ -1122,7 +1122,7 @@ var CarController = /** @class */ (function () {
                             };
                         }
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-" + moment().format('YYYY-MM-DD') + ".xlsx");
+                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
                         return [4 /*yield*/, participant_model_1["default"].find(queryFilter).distinct('form')];
                     case 1:
                         forms = _b.sent();
@@ -1750,12 +1750,12 @@ var CarController = /** @class */ (function () {
                     // tslint:disable-next-line: forin
                     for (d in damages) {
                         idx = parseInt(d, 10) + 1;
-                        row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: participant.user.firstName + " " + participant.user.lastName, damages: "" + damages.length, has_damages: damages.length > 0 ? 'Sí' : 'No', damage: idx, position: damages[d].position ? damages[d].position.name : '-', kind: damages[d].kind.name, part: damages[d].part.name }, extraRow);
+                        row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: "".concat(participant.user.firstName, " ").concat(participant.user.lastName), damages: "".concat(damages.length), has_damages: damages.length > 0 ? 'Sí' : 'No', damage: idx, position: damages[d].position ? damages[d].position.name : '-', kind: damages[d].kind.name, part: damages[d].part.name }, extraRow);
                         rows.push(row);
                     }
                 }
                 else {
-                    row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: participant.user.firstName + " " + participant.user.lastName, damages: "" + damages.length, has_damages: damages.length > 0 ? 'Sí' : 'No', damage: '-', position: '-', kind: '-', part: '-' }, extraRow);
+                    row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: "".concat(participant.user.firstName, " ").concat(participant.user.lastName), damages: "".concat(damages.length), has_damages: damages.length > 0 ? 'Sí' : 'No', damage: '-', position: '-', kind: '-', part: '-' }, extraRow);
                     rows.push(row);
                 }
                 resolve(rows);
@@ -1872,7 +1872,7 @@ var CarController = /** @class */ (function () {
                         team = req.user.team._id;
                         changeperiods = req.query.changeperiods;
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=da\u00F1os-" + moment().format('YYYY-MM-DD') + ".xlsx");
+                        res.setHeader('Content-Disposition', "attachment; filename=da\u00F1os-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
                         workbook = new excel.stream.xlsx.WorkbookWriter({
                             stream: res,
                             useStyles: true,

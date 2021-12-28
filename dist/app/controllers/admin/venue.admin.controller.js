@@ -178,7 +178,7 @@ var AdminVenueController = /** @class */ (function () {
                     case 2:
                         _c.sent();
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=acceso-sucursales-" + moment().format('YYYY-MM-DD') + ".xlsx");
+                        res.setHeader('Content-Disposition', "attachment; filename=acceso-sucursales-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
                         return [2 /*return*/, res.sendFile(tempFilePath)];
                 }
             });
@@ -365,7 +365,7 @@ var AdminVenueController = /** @class */ (function () {
                         return [4 /*yield*/, venue_model_1["default"].update({ _id: { $nin: sendTo }, team: team, receiveFrom: id }, { $pull: { receiveFrom: id } }, { multi: true })];
                     case 8:
                         _e.sent();
-                        server_1.io.to("venue-list-" + team).emit('REFRESH', {
+                        server_1.io.to("venue-list-".concat(team)).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });
@@ -499,7 +499,7 @@ var AdminVenueController = /** @class */ (function () {
                             message: 'Sucursal editada satisfactoriamente.',
                             venue: venue
                         };
-                        server_1.io.to("venue-list-" + team).emit('REFRESH', {
+                        server_1.io.to("venue-list-".concat(team)).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });
@@ -559,7 +559,7 @@ var AdminVenueController = /** @class */ (function () {
                         if (!(inventories && inventories.length)) return [3 /*break*/, 3];
                         textInventories = inventories.map(function (inventory) { return (inventory.name); }).join('\n- ');
                         res.status(400).json({
-                            message: "La sucursal no ha podido ser eliminada porque est\u00E1 utilizada en los siguientes inventarios : \n- " + textInventories
+                            message: "La sucursal no ha podido ser eliminada porque est\u00E1 utilizada en los siguientes inventarios : \n- ".concat(textInventories)
                         });
                         return [3 /*break*/, 12];
                     case 3: return [4 /*yield*/, venue_model_1["default"].findOne({
@@ -601,7 +601,7 @@ var AdminVenueController = /** @class */ (function () {
                             message: 'Sucursal eliminada satisfactoriamente.',
                             id: venue._id
                         };
-                        server_1.io.to("venue-list-" + team).emit('REFRESH', {
+                        server_1.io.to("venue-list-".concat(team)).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });

@@ -76,11 +76,11 @@ var NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
 var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) + NODE_APP_INSTANCE, function () {
     /* istanbul ignore if */
     if (app_1["default"].get('env') !== 'testing') {
-        console.log(logger_service_1["default"].colors.magenta + "------------------------" + logger_service_1["default"].colors.reset);
-        console.log(logger_service_1["default"].colors.brighCyan + "OSA-ANDES " + logger_service_1["default"].colors.white + "v2.1.3 " + logger_service_1["default"].colors.red + "RELEASE " + logger_service_1["default"].colors.brighGreen + "NODE " + logger_service_1["default"].colors.white + process.version + logger_service_1["default"].colors.reset);
-        console.log(logger_service_1["default"].colors.magenta + "------------------------" + logger_service_1["default"].colors.reset);
+        console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
+        console.log("".concat(logger_service_1["default"].colors.brighCyan, "OSA-ANDES ").concat(logger_service_1["default"].colors.white, "v2.1.3 ").concat(logger_service_1["default"].colors.red, "RELEASE ").concat(logger_service_1["default"].colors.brighGreen, "NODE ").concat(logger_service_1["default"].colors.white).concat(process.version).concat(logger_service_1["default"].colors.reset));
+        console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
         console.log('is running at http://localhost:%s in %s mode', app_1["default"].get('port'), app_1["default"].get('env'));
-        console.log(logger_service_1["default"].colors.brightBlack + "Press CTRL-C to stop" + logger_service_1["default"].colors.reset);
+        console.log("".concat(logger_service_1["default"].colors.brightBlack, "Press CTRL-C to stop").concat(logger_service_1["default"].colors.reset));
     }
 });
 exports.io = socketIO(server);

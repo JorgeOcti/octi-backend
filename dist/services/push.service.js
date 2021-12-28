@@ -20,10 +20,10 @@ var PushService = /** @class */ (function () {
     };
     PushService.prototype.send = function (title, subtitle, body, interests) {
         logger_service_1["default"].info('-----------------------PUSH---------------------------');
-        logger_service_1["default"].info("title, " + title);
-        logger_service_1["default"].info("subtitle, " + subtitle);
-        logger_service_1["default"].info("body, " + body);
-        logger_service_1["default"].info("interests, " + interests);
+        logger_service_1["default"].info("title, ".concat(title));
+        logger_service_1["default"].info("subtitle, ".concat(subtitle));
+        logger_service_1["default"].info("body, ".concat(body));
+        logger_service_1["default"].info("interests, ".concat(interests));
         this.pushNotifications.publishToUsers(interests, {
             apns: {
                 aps: {
@@ -44,9 +44,9 @@ var PushService = /** @class */ (function () {
                 }
             }
         }).then(function (publishResponse) {
-            logger_service_1["default"].info("PUSH Just published:, " + publishResponse.publishId);
+            logger_service_1["default"].info("PUSH Just published:, ".concat(publishResponse.publishId));
         })["catch"](function (error) {
-            logger_service_1["default"].info("PUSH Error:, " + error);
+            logger_service_1["default"].info("PUSH Error:, ".concat(error));
         });
     };
     PushService.prototype.massiveSend = function (title, subtitle, body, interests) {

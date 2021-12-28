@@ -55,7 +55,7 @@ exports.requestFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/request/files/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
+            return "/request/files/".concat(attachment.team, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
         }
     }),
     fields: {

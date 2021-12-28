@@ -320,7 +320,7 @@ var FormController = /** @class */ (function () {
                                 else {
                                     // set header
                                     res.setHeader('Content-Type', 'application/pdf');
-                                    res.setHeader('Content-disposition', "inline; filename=" + participant_1._id.toString() + ".pdf");
+                                    res.setHeader('Content-disposition', "inline; filename=".concat(participant_1._id.toString(), ".pdf"));
                                     // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
                                     // send a status code of 200 OK
                                     res.statusCode = 200;
@@ -353,7 +353,7 @@ var FormController = /** @class */ (function () {
                     case 0:
                         team = req.user.team._id;
                         logger_service_1["default"].info("list forms");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -409,7 +409,7 @@ var FormController = /** @class */ (function () {
                         id = req.params.id;
                         team = req.user.team._id;
                         logger_service_1["default"].info("detail forms");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, {form: " + id + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, {form: ").concat(id, "}}"));
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -679,7 +679,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detail form: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_3);
                         /* istanbul ignore next */
@@ -707,7 +707,7 @@ var FormController = /** @class */ (function () {
                         _b = req.body, vin = _b.vin, answers = _b.answers, transmittalItem = _b.transmittalItem, transmittal = _b.transmittal;
                         _c = req.user, company = _c.company, venue = _c.venue, team = _c.team;
                         logger_service_1["default"].info("complete");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         // validate answers in body
                         if (!answers) {
                             return [2 /*return*/, res.status(400).json({
@@ -1005,11 +1005,11 @@ var FormController = /** @class */ (function () {
                     case 21:
                         requestItem = _l.sent();
                         if (requestItem) {
-                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
-                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
@@ -1017,7 +1017,7 @@ var FormController = /** @class */ (function () {
                         _l.label = 22;
                     case 22:
                         // end update request when check item
-                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
+                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
                         });
                         _l.label = 23;
@@ -1054,11 +1054,11 @@ var FormController = /** @class */ (function () {
                         requestItems = _l.sent();
                         for (_g = 0, requestItems_1 = requestItems; _g < requestItems_1.length; _g++) {
                             requestItem = requestItems_1[_g];
-                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
-                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
@@ -1066,7 +1066,7 @@ var FormController = /** @class */ (function () {
                         _l.label = 28;
                     case 28:
                         // end update request when finish transmittal
-                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         _l.label = 29;
@@ -1089,16 +1089,16 @@ var FormController = /** @class */ (function () {
                     case 32:
                         _l.sent();
                         // send refresh with websocket to dashboard list
-                        server_1.io.to("dashboard-vin-view-" + team._id).emit('REFRESH', {
+                        server_1.io.to("dashboard-vin-view-".concat(team._id)).emit('REFRESH', {
                             update: true,
                             car: newParticipant._id,
                             notification: {
                                 title: 'Vehículo revisado',
-                                text: req.user.firstName + " " + req.user.lastName + " revis\u00F3 " + car_1.brand + " (" + car_1.denomination + ") en " + updatedUser.venue.name + "."
+                                text: "".concat(req.user.firstName, " ").concat(req.user.lastName, " revis\u00F3 ").concat(car_1.brand, " (").concat(car_1.denomination, ") en ").concat(updatedUser.venue.name, ".")
                             }
                         });
                         // send refresh with websocket to dashboard detail
-                        _j = (_h = server_1.io.to("dashboard-vin-detail-" + team._id + "-" + car_1._id)).emit;
+                        _j = (_h = server_1.io.to("dashboard-vin-detail-".concat(team._id, "-").concat(car_1._id))).emit;
                         _k = ["ADD_PARTICIPANT"];
                         return [4 /*yield*/, participant_model_1["default"]
                                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
@@ -1160,21 +1160,21 @@ var FormController = /** @class */ (function () {
                         if (alerts.length && car_1) {
                             alerts.forEach(function (alert) {
                                 alert.users.forEach(function (user) {
-                                    var userName = user.firstName + " " + user.lastName;
+                                    var userName = "".concat(user.firstName, " ").concat(user.lastName);
                                     if (user.venuesPermissions(true).includes(venue._id) && user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: "Alert qualification",
-                                            to: "\"\"<" + user.email + ">",
-                                            subject: "ALERTA: " + alert.name,
-                                            text: "Hola " + userName + "\n                        Se ha evaluado un VIN con calificaci\u00F3n " + formQualification_1.toFixed(0) + "%\n\n                        Datos del Vehiculo\n                        VIN: " + (car_1 ? car_1.vin : '') + "\n                        MARCA: " + (car_1 && car_1.brand ? car_1.brand : '') + "\n\n                        Para ver el detalle has click aqu\u00ED\n                        " + process.env.SITE_URL + "cars/" + car_1._id + "\n\n                        \u00A9 2021 OSA SpA. Todos los derechos reservados.",
+                                            to: "\"\"<".concat(user.email, ">"),
+                                            subject: "ALERTA: ".concat(alert.name),
+                                            text: "Hola ".concat(userName, "\n                        Se ha evaluado un VIN con calificaci\u00F3n ").concat(formQualification_1.toFixed(0), "%\n\n                        Datos del Vehiculo\n                        VIN: ").concat(car_1 ? car_1.vin : '', "\n                        MARCA: ").concat(car_1 && car_1.brand ? car_1.brand : '', "\n\n                        Para ver el detalle has click aqu\u00ED\n                        ").concat(process.env.SITE_URL, "cars/").concat(car_1._id, "\n\n                        \u00A9 2021 OSA SpA. Todos los derechos reservados."),
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName: userName,
                                                 brand: car_1 && car_1.brand ? car_1.brand : '',
                                                 vin: car_1 && car_1.vin ? car_1.vin : '',
                                                 qualification: formQualification_1.toFixed(0),
-                                                url: process.env.SITE_URL + "cars/" + car_1._id
+                                                url: "".concat(process.env.SITE_URL, "cars/").concat(car_1._id)
                                             }
                                         }).priority('high').attempts(5).save();
                                     }
@@ -1240,7 +1240,7 @@ var FormController = /** @class */ (function () {
                         company = req.user.company;
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         logger_service_1["default"].info("uploadFile");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, {form: " + id + ", file: " + JSON.stringify(file) + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, {form: ").concat(id, ", file: ").concat(JSON.stringify(file), "}}"));
                         if (!file) return [3 /*break*/, 6];
                         _a.label = 1;
                     case 1:
@@ -1315,7 +1315,7 @@ var FormController = /** @class */ (function () {
                         form = req.body.form;
                         team = req.user.team._id;
                         logger_service_1["default"].info("changePreferred");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 9, , 10]);
@@ -1338,7 +1338,7 @@ var FormController = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         logger_service_1["default"].error("changePreferred: Formulario no encontrado");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'Formulario no encontrado',
                             status: 400
@@ -1347,7 +1347,7 @@ var FormController = /** @class */ (function () {
                     case 6: return [3 /*break*/, 8];
                     case 7:
                         logger_service_1["default"].error("changePreferred: Usuario no encontrado");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'Usuario no encontrado',
                             status: 400
@@ -1360,7 +1360,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("changePreferred: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_7);
                         res.status(400).json({
@@ -1464,7 +1464,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard damages: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_8);
                         res.status(400).json({
@@ -1583,7 +1583,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard damages: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_9);
                         res.status(400).json({
@@ -1715,7 +1715,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing derco: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_10);
                         res.status(400).json({
@@ -2006,7 +2006,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_11);
                         res.status(400).json({
@@ -2191,7 +2191,7 @@ var FormController = /** @class */ (function () {
                                     case 2:
                                         _b.sent();
                                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-" + moment().format('YYYY-MM-DD') + ".xlsx");
+                                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
                                         return [2 /*return*/, { value: res.sendFile(tempFilePath) }];
                                 }
                             });
@@ -2216,7 +2216,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard revisiones: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_12);
                         res.status(400).json({
@@ -2322,7 +2322,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_13);
                         res.status(400).json({
@@ -2374,8 +2374,8 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.getForm = function (filter) {
         var _this = this;
-        var keyCache = "form-" + filter._id;
-        logger_service_1["default"].debug("keyCache " + keyCache);
+        var keyCache = "form-".concat(filter._id);
+        logger_service_1["default"].debug("keyCache ".concat(keyCache));
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -2520,7 +2520,7 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.getScales = function (filter) {
         var _this = this;
-        var keyCache = "scales-" + JSON.stringify(filter);
+        var keyCache = "scales-".concat(JSON.stringify(filter));
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -2590,7 +2590,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("position create. Error");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_14);
                         res.status(400).json({

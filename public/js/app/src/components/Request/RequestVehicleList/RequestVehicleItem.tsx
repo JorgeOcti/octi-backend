@@ -101,6 +101,14 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
             <strong className="text-underline">#{item.request?.number}</strong>
         </td>
+        <td
+          className='middle pointer'
+          // onClick={() => this.goToDetail(item.request._id)}
+        >
+          <ShowIf condition={!!item.transmittal?.number} alternative={'-'}>
+            <strong className='text-underline'>#{item.transmittal?.number}</strong>
+          </ShowIf>
+        </td>
         <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
         <td className="middle" style={{fontSize: '80%'}}>{item.destination?.name ?? '-'}</td>
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}

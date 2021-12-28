@@ -178,7 +178,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiDetail: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_1);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
@@ -258,7 +258,7 @@ var TransmittalController = /** @class */ (function () {
                         _c.sent();
                         _c.label = 11;
                     case 11:
-                        server_1.io.to("transmittal-list-" + team._id).emit('CREATE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-".concat(team._id)).emit('CREATE_TRANSMITTAL', {
                             transmittal: transmittal
                         });
                         res.json({
@@ -270,7 +270,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_2);
                         return [3 /*break*/, 13];
                     case 13: return [2 /*return*/];
@@ -293,7 +293,7 @@ var TransmittalController = /** @class */ (function () {
                     /* istanbul ignore next */
                     logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
                     /* istanbul ignore next */
-                    logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                    logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                     res.status(500).json(e);
                 }
                 return [2 /*return*/];
@@ -344,7 +344,7 @@ var TransmittalController = /** @class */ (function () {
                         newTransmittal = _a.sent();
                         _a.label = 8;
                     case 8:
-                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         res.json({
@@ -357,7 +357,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_3);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
@@ -384,7 +384,7 @@ var TransmittalController = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("TransmittalController.apiList");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, orderBy = _a.orderBy, orderType = _a.orderType;
                         options = {
@@ -455,7 +455,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -471,7 +471,7 @@ var TransmittalController = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("TransmittalController.apiOnlyMe");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, orderBy = _a.orderBy, orderType = _a.orderType;
                         options = {
@@ -572,7 +572,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_5.toString());
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_5);
                         return [3 /*break*/, 11];
                     case 11: return [2 /*return*/];
@@ -582,8 +582,8 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.getForm = function (filter) {
         var _this = this;
-        var keyCache = "form-" + filter._id;
-        logger_service_1["default"].debug("keyCache " + keyCache);
+        var keyCache = "form-".concat(filter._id);
+        logger_service_1["default"].debug("keyCache ".concat(keyCache));
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -898,7 +898,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.getScales = function (filter) {
         var _this = this;
-        var keyCache = "scales-" + JSON.stringify(filter);
+        var keyCache = "scales-".concat(JSON.stringify(filter));
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -942,7 +942,7 @@ var TransmittalController = /** @class */ (function () {
                         user = req.user;
                         _a = req.body, files = _a.files, transmittal = _a.transmittal;
                         logger_service_1["default"].info("TransmittalController.attachEvidence");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 4, , 5]);
@@ -973,7 +973,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
@@ -992,7 +992,7 @@ var TransmittalController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         logger_service_1["default"].info("TransmittalController.xlsExport");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         team = req.user.team._id;
                         _a.label = 1;
                     case 1:
@@ -1021,7 +1021,7 @@ var TransmittalController = /** @class */ (function () {
                                 }
                             }];
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=distribution-" + moment().format('YYYY-MM-DD') + ".xlsx");
+                        res.setHeader('Content-Disposition', "attachment; filename=distribution-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
                         options = {
                             stream: res,
                             useStyles: true,
@@ -1067,7 +1067,7 @@ var TransmittalController = /** @class */ (function () {
                                     worksheet_1.addRow({
                                         transmittalNumber: transmittal.number,
                                         requestNumber: item.request.number,
-                                        driver: ((_c = (_b = transmittal.transporter) === null || _b === void 0 ? void 0 : _b.driver) === null || _c === void 0 ? void 0 : _c.firstName) + " " + ((_e = (_d = transmittal.transporter) === null || _d === void 0 ? void 0 : _d.driver) === null || _e === void 0 ? void 0 : _e.lastName),
+                                        driver: "".concat((_c = (_b = transmittal.transporter) === null || _b === void 0 ? void 0 : _b.driver) === null || _c === void 0 ? void 0 : _c.firstName, " ").concat((_e = (_d = transmittal.transporter) === null || _d === void 0 ? void 0 : _d.driver) === null || _e === void 0 ? void 0 : _e.lastName),
                                         carrier: (_g = (_f = transmittal.transporter) === null || _f === void 0 ? void 0 : _f.carrier) === null || _g === void 0 ? void 0 : _g.name,
                                         vin: (_h = item.car) === null || _h === void 0 ? void 0 : _h.vin,
                                         brand: (_j = item.car) === null || _j === void 0 ? void 0 : _j.brand,
@@ -1111,7 +1111,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.xlsExport: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_8);
                         /* istanbul ignore next */
@@ -1141,7 +1141,7 @@ var TransmittalController = /** @class */ (function () {
                         user = req.user;
                         _a = req.body, transmittal = _a.transmittal, milestone = _a.milestone;
                         logger_service_1["default"].info("TransmittalController.uploadFile");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         if (!file) return [3 /*break*/, 17];
                         _b.label = 1;
@@ -1211,7 +1211,7 @@ var TransmittalController = /** @class */ (function () {
                                 .populate(this.populate)];
                     case 13:
                         newTransmittal = _b.sent();
-                        server_1.io.to("transmittal-list-" + user.team._id).emit('UPDATE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-".concat(user.team._id)).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         _b.label = 14;
@@ -1229,7 +1229,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
@@ -1238,7 +1238,7 @@ var TransmittalController = /** @class */ (function () {
                     case 16: return [3 /*break*/, 18];
                     case 17:
                         logger_service_1["default"].error("TransmittalController.uploadFile: The file are required.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'La imagen es obligatoria.',
@@ -1281,15 +1281,15 @@ var TransmittalController = /** @class */ (function () {
                                 error: err.message
                             });
                         });
-                        filename_1 = "transmittal-" + transmittal.number + ".zip";
+                        filename_1 = "transmittal-".concat(transmittal.number, ".zip");
                         archive_1.on('end', function () {
-                            console.log(filename_1 + ": Archive wrote " + (archive_1.pointer() / (1024 * 1024)).toFixed(2) + "MB");
+                            console.log("".concat(filename_1, ": Archive wrote ").concat((archive_1.pointer() / (1024 * 1024)).toFixed(2), "MB"));
                         });
                         res.attachment(filename_1);
                         filesToDownload = [];
                         filesToCompress = [];
                         _loop_1 = function (file) {
-                            var destDirectory = "/tmp/" + file._id + "_" + file.file.name;
+                            var destDirectory = "/tmp/".concat(file._id, "_").concat(file.file.name);
                             filesToDownload.push(function () { return _this.downloadFile(decodeURI(file.file.url), destDirectory); });
                             filesToCompress.push({
                                 destDirectory: destDirectory,
@@ -1323,7 +1323,7 @@ var TransmittalController = /** @class */ (function () {
                             });
                             setTimeout(function () {
                                 if (fs.existsSync(file.destDirectory)) {
-                                    console.log("clear " + file.destDirectory);
+                                    console.log("clear ".concat(file.destDirectory));
                                     fs.unlink(file.destDirectory, function (err) {
                                         if (err) {
                                             console.log(err);
@@ -1348,7 +1348,7 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_12);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];

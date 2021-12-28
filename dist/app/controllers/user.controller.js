@@ -57,7 +57,7 @@ var UserController = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         logger_service_1["default"].info("UserController.apiListDrivers");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         options = {
@@ -113,7 +113,7 @@ var UserController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("UserController.apiListDrivers: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -184,7 +184,7 @@ var UserController = /** @class */ (function () {
                     case 0:
                         team = req.user.team._id;
                         logger_service_1["default"].info("apiListVenues");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         _d.label = 1;
                     case 1:
                         _d.trys.push([1, 6, , 7]);
@@ -241,7 +241,7 @@ var UserController = /** @class */ (function () {
                         team = req.user.team._id;
                         venue = req.body.venue;
                         logger_service_1["default"].info("apiChangeVenue");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 7, , 8]);

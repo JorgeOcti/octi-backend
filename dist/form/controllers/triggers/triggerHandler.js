@@ -77,7 +77,7 @@ var TriggerHandler = /** @class */ (function () {
                         if (!(_i < _a.length)) return [3 /*break*/, 5];
                         trigger = _a[_i];
                         if (!trigger.enabled) {
-                            logger_service_1["default"].info("Trigger: " + trigger.name + " deactivated");
+                            logger_service_1["default"].info("Trigger: ".concat(trigger.name, " deactivated"));
                             return [3 /*break*/, 4];
                         }
                         triggerDelegate = this.getTrigger(trigger);

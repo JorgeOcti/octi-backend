@@ -98,7 +98,7 @@ var Middlewares = /** @class */ (function () {
                     switch (_a.label) {
                         case 0:
                             if (!err) return [3 /*break*/, 1];
-                            logger_service_1["default"].error("isJWTAuthenticated error: " + err.message + " " + JSON.stringify(headers));
+                            logger_service_1["default"].error("isJWTAuthenticated error: ".concat(err.message, " ").concat(JSON.stringify(headers)));
                             res.status(401).json({
                                 error: err.message,
                                 status: 401
@@ -115,7 +115,7 @@ var Middlewares = /** @class */ (function () {
             }); });
         }
         else {
-            logger_service_1["default"].error("isJWTAuthenticated error: Debes estar autenticado para este recurso. " + JSON.stringify(headers));
+            logger_service_1["default"].error("isJWTAuthenticated error: Debes estar autenticado para este recurso. ".concat(JSON.stringify(headers)));
             /* istanbul ignore next */
             res.status(401).json({
                 error: 'Debes estar autenticado para este recurso.',

@@ -441,6 +441,14 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
+                       <th
+                        className='middle pointer'
+                        style={{ width: '80px' }}
+                        // onClick={() => this.changeOrder('request.number')}
+                      >
+                        OT
+                        {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                      </th>
                       <th
                         className='middle pointer'
                         style={{ width: '80px' }}

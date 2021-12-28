@@ -85,7 +85,7 @@ var BillingController = /** @class */ (function () {
                                     else {
                                         // set header
                                         res.setHeader('Content-Type', 'application/pdf');
-                                        res.setHeader('Content-disposition', "inline; filename=" + invoice_1._id.toString() + ".pdf");
+                                        res.setHeader('Content-disposition', "inline; filename=".concat(invoice_1._id.toString(), ".pdf"));
                                         // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
                                         // send a status code of 200 OK
                                         res.statusCode = 200;

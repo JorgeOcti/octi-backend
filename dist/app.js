@@ -97,7 +97,7 @@ Raven.config(process.env.SENTRY_DNS, {
         };
         return {
             email: username.email,
-            name: username.firstName + " " + username.lastName,
+            name: "".concat(username.firstName, " ").concat(username.lastName),
             id: username._id
         };
     },
@@ -186,7 +186,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, function (username
             return done(err);
         }
         if (!user) {
-            return done(undefined, false, { message: "username " + username + " not found." });
+            return done(undefined, false, { message: "username ".concat(username, " not found.") });
         }
         user.comparePassword(password, function (err, isMatch) {
             if (err) {
@@ -327,7 +327,7 @@ var billingQueue = new Bull('billing', {
                 return [4 /*yield*/, billingQueue.removeRepeatableByKey(job.key)];
             case 3:
                 _a.sent();
-                console.log(jobs[0].key + " Removida");
+                console.log("".concat(jobs[0].key, " Removida"));
                 _a.label = 4;
             case 4:
                 _i++;

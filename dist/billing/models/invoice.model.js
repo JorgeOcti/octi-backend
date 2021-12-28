@@ -104,7 +104,7 @@ invoiceSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/invoices/" + attachment.team + "/" + attachment.createdAt + "/" + attachment.company + "/" + uuid.v1() + "-" + attachment.originalname;
+            return "/invoices/".concat(attachment.team, "/").concat(attachment.createdAt, "/").concat(attachment.company, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
             // console.log('invoice-attachment', attachment);
             // return `/invoices/${uuid.v1()}-${attachment.originalname}`;
         }

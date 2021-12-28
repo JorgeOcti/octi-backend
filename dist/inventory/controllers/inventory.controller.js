@@ -255,7 +255,7 @@ var InventoryController = /** @class */ (function () {
                         if (!(_i < carsByVenue_1.length)) return [3 /*break*/, 12];
                         venue = carsByVenue_1[_i];
                         if (!(venue.name && venue.name.trim().length)) return [3 /*break*/, 11];
-                        venueRegExp = new RegExp("^" + venue.name.trim() + "$", 'i');
+                        venueRegExp = new RegExp("^".concat(venue.name.trim(), "$"), 'i');
                         return [4 /*yield*/, venue_model_1["default"].findOne({
                                 team: team,
                                 name: venueRegExp
@@ -325,7 +325,7 @@ var InventoryController = /** @class */ (function () {
                             });
                             app_1.queue
                                 .create('updateCar', {
-                                title: "updateCar " + car.vin,
+                                title: "updateCar ".concat(car.vin),
                                 currentCar: currentCar._id,
                                 car: car
                             })
@@ -402,13 +402,13 @@ var InventoryController = /** @class */ (function () {
                             })];
                     case 20:
                         usersIDs = _f.sent();
-                        push_service_1["default"].massiveSend('Nuevo inventario', "Se ha iniciado el inventario \"" + inventory_1.name + "\"", 'Ya puedes empezar a escanear', usersIDs.map(function (user) { return user._id.toString(); }));
+                        push_service_1["default"].massiveSend('Nuevo inventario', "Se ha iniciado el inventario \"".concat(inventory_1.name, "\""), 'Ya puedes empezar a escanear', usersIDs.map(function (user) { return user._id.toString(); }));
                         _f.label = 21;
                     case 21:
-                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team)).emit('REFRESH', {
                             update: true
                         });
-                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                        server_1.io.to("stock-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         return [4 /*yield*/, team_model_1["default"].findById(req.user.team._id)];
@@ -419,8 +419,8 @@ var InventoryController = /** @class */ (function () {
                             from: '',
                             title: "Inventory Notification",
                             to: "\"soporte\"<soporte@osacontrol.com>",
-                            subject: req.user.firstName + " ha creado un inventario en " + currentTeam.name,
-                            text: "Hola Soporte\n\n          Se ha creado un nuevo inventario.\n\n          Team: " + team.name + "\n          Usuario: " + req.user.firstName + " " + req.user.lastName + "\n          ENV: " + process.env.ENV + "\n\n          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.",
+                            subject: "".concat(req.user.firstName, " ha creado un inventario en ").concat(currentTeam.name),
+                            text: "Hola Soporte\n\n          Se ha creado un nuevo inventario.\n\n          Team: ".concat(team.name, "\n          Usuario: ").concat(req.user.firstName, " ").concat(req.user.lastName, "\n          ENV: ").concat(process.env.ENV, "\n\n          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA."),
                             view: 'alerts/inventoryNotification',
                             context: {
                                 team: currentTeam,
@@ -442,7 +442,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("create: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_5);
                         /* istanbul ignore next */
@@ -628,10 +628,10 @@ var InventoryController = /** @class */ (function () {
                                 file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
                                 backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
                                 createdBy: inventory.createdBy.length ? {
-                                    fullName: inventory.createdBy[0].firstName + " " + inventory.createdBy[0].lastName
+                                    fullName: "".concat(inventory.createdBy[0].firstName, " ").concat(inventory.createdBy[0].lastName)
                                 } : {},
                                 finalizedBy: inventory.finalizedBy.length ? {
-                                    fullName: inventory.finalizedBy[0].firstName + " " + inventory.finalizedBy[0].lastName
+                                    fullName: "".concat(inventory.finalizedBy[0].firstName, " ").concat(inventory.finalizedBy[0].lastName)
                                 } : {},
                                 results: inventory.results.reduce(function (acc, cur) {
                                     acc[cur.status] = cur.total;
@@ -661,7 +661,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("list: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
@@ -684,7 +684,7 @@ var InventoryController = /** @class */ (function () {
                         team = req.user.team._id;
                         id = req.params.id;
                         logger_service_1["default"].info("apiDetail");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, inventory: " + id + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, inventory: ").concat(id, "}"));
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -740,7 +740,7 @@ var InventoryController = /** @class */ (function () {
                         }
                         else {
                             logger_service_1["default"].error("apiDetail: No se ha encontrado el inventario solicitado.");
-                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                             res.status(404).json({
                                 message: 'No se ha encontrado el inventario solicitado.',
                                 status: 404
@@ -753,7 +753,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiDetail: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
@@ -818,7 +818,7 @@ var InventoryController = /** @class */ (function () {
                         _a = req.user, company = _a.company, venue = _a.venue, team = _a.team;
                         inventoryCardId = req.body.inventoryCardId;
                         logger_service_1["default"].info("uploadFile");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, inventory: " + id + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, inventory: ").concat(id, "}"));
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         if (!file) return [3 /*break*/, 15];
                         _b.label = 1;
@@ -880,7 +880,7 @@ var InventoryController = /** @class */ (function () {
                             })];
                     case 10:
                         _b.sent();
-                        server_1.io.to("inventory-detail-" + inventoryCar.inventory).emit('REFRESH', {
+                        server_1.io.to("inventory-detail-".concat(inventoryCar.inventory)).emit('REFRESH', {
                             update: true,
                             venue: inventoryCar.venue
                         });
@@ -902,7 +902,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("uploadFile: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_8);
                         /* istanbul ignore next */
@@ -911,7 +911,7 @@ var InventoryController = /** @class */ (function () {
                     case 14: return [3 /*break*/, 16];
                     case 15:
                         logger_service_1["default"].error("uploadFile: La imagen es obligatoria.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'La imagen es obligatoria.',
@@ -935,7 +935,7 @@ var InventoryController = /** @class */ (function () {
                     case 1:
                         inventoryFile = _a.sent();
                         if (inventoryFile) {
-                            server_1.io.to("inventory-detail-" + inventoryFile.inventory).emit('REFRESH', {
+                            server_1.io.to("inventory-detail-".concat(inventoryFile.inventory)).emit('REFRESH', {
                                 update: true,
                                 venue: req.user.venue._id
                             });
@@ -945,7 +945,7 @@ var InventoryController = /** @class */ (function () {
                     case 2:
                         e_9 = _a.sent();
                         logger_service_1["default"].error("removeInventoryCarFile: La imagen es obligatoria.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'La imagen es obligatoria.',
@@ -967,7 +967,7 @@ var InventoryController = /** @class */ (function () {
                         id = req.params.id;
                         _a = req.body, vin = _a.vin, images = _a.images;
                         logger_service_1["default"].info("apiFoundCar");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 16, , 17]);
@@ -1013,7 +1013,7 @@ var InventoryController = /** @class */ (function () {
                         inventoriedCar = _b.sent();
                         if (!inventoriedCar) return [3 /*break*/, 7];
                         logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo ya ha sido inventariado");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(200).json({
                             message: 'Este vehículo ya ha sido inventariado',
                             status: 200
@@ -1029,9 +1029,9 @@ var InventoryController = /** @class */ (function () {
                         inventoryCar.venueFound = venueId;
                         if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
                             inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.leftover;
-                            server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                            server_1.io.to("inventory-detail-".concat(inventory._id)).emit('REFRESH', {
                                 title: 'Vehículo encontrado',
-                                text: req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".",
+                                text: "".concat(req.user.firstName, " ").concat(req.user.lastName, " encontr\u00F3 ").concat(car.brand, " (").concat(car.denomination, ") en ").concat(updatedUser.venue.name, "."),
                                 status: inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
                                 venue: venueId,
                                 update: true
@@ -1039,9 +1039,9 @@ var InventoryController = /** @class */ (function () {
                         }
                         else {
                             inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
-                            server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                            server_1.io.to("inventory-detail-".concat(inventory._id)).emit('REFRESH', {
                                 title: 'Vehículo encontrado',
-                                text: req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".",
+                                text: "".concat(req.user.firstName, " ").concat(req.user.lastName, " encontr\u00F3 ").concat(car.brand, " (").concat(car.denomination, ") en ").concat(updatedUser.venue.name, "."),
                                 status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
                                 venue: venueId,
                                 update: true
@@ -1052,7 +1052,7 @@ var InventoryController = /** @class */ (function () {
                         return [4 /*yield*/, inventoryCar.save()];
                     case 9:
                         _b.sent();
-                        server_1.io.to("inventory-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team._id)).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json({
@@ -1062,7 +1062,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 11];
                     case 10:
                         logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo no se encuentra en el inventario.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'Este vehículo no se encuentra en el inventario.',
                             status: 400
@@ -1072,7 +1072,7 @@ var InventoryController = /** @class */ (function () {
                     case 12:
                         // if car no exist
                         logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo no se encuentra en el inventario.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'Este vehículo no se encuentra en el inventario.',
                             status: 400
@@ -1082,7 +1082,7 @@ var InventoryController = /** @class */ (function () {
                     case 14:
                         // if inventory no exist
                         logger_service_1["default"].error("apiFoundCar: Este inventario no existe o ya no se encuentra activo.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(404).json({
                             message: 'Este inventario no existe o ya no se encuentra activo.',
                             status: 404
@@ -1094,7 +1094,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiFoundCar: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, error: " + e_10 + "}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, error: ").concat(e_10, "}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_10);
                         /* istanbul ignore next */
@@ -1135,10 +1135,10 @@ var InventoryController = /** @class */ (function () {
                             })];
                     case 3:
                         _a.sent();
-                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team)).emit('REFRESH', {
                             update: true
                         });
-                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                        server_1.io.to("stock-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -1148,7 +1148,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 4:
                         logger_service_1["default"].error("finishInventory: No se ha encontrado el inventario");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'No se ha encontrado el inventario',
                             status: 400
@@ -1160,7 +1160,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("finishInventory: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
@@ -1203,10 +1203,10 @@ var InventoryController = /** @class */ (function () {
                         return [4 /*yield*/, inventory.remove()];
                     case 4:
                         _a.sent();
-                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team)).emit('REFRESH', {
                             update: true
                         });
-                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                        server_1.io.to("stock-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -1216,7 +1216,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         logger_service_1["default"].error("deleteInventory: No se ha encontrado el inventario");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(400).json({
                             message: 'No se ha encontrado el inventario',
                             status: 400
@@ -1228,7 +1228,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("deleteInventory: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_12);
                         /* istanbul ignore next */
@@ -1269,10 +1269,10 @@ var InventoryController = /** @class */ (function () {
                             })];
                     case 2:
                         _b.sent();
-                        server_1.io.to("inventory-detail-" + inventory).emit('REFRESH', {
+                        server_1.io.to("inventory-detail-".concat(inventory)).emit('REFRESH', {
                             update: true
                         });
-                        server_1.io.to("inventory-comment-" + _id).emit('NEW_COMMENT', {
+                        server_1.io.to("inventory-comment-".concat(_id)).emit('NEW_COMMENT', {
                             _id: new bson_1.ObjectID(),
                             user: {
                                 _id: req.user._id,
@@ -1291,7 +1291,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("addComment: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_13);
                         /* istanbul ignore next */
@@ -1407,9 +1407,9 @@ var InventoryController = /** @class */ (function () {
                                 error: err.message
                             });
                         });
-                        filename_1 = inventory.name + ".zip";
+                        filename_1 = "".concat(inventory.name, ".zip");
                         archive_1.on('end', function () {
-                            console.log(filename_1 + ": Archive wrote " + (archive_1.pointer() / (1024 * 1024)).toFixed(2) + "MB");
+                            console.log("".concat(filename_1, ": Archive wrote ").concat((archive_1.pointer() / (1024 * 1024)).toFixed(2), "MB"));
                         });
                         res.attachment(filename_1);
                         imagesToDownload = [];
@@ -1417,11 +1417,11 @@ var InventoryController = /** @class */ (function () {
                         for (_i = 0, inventoriesCars_1 = inventoriesCars; _i < inventoriesCars_1.length; _i++) {
                             car = inventoriesCars_1[_i];
                             _loop_1 = function (image) {
-                                var destDirectory = "/tmp/" + car._id + image._id + "." + image.file.name.split('.')[image.file.name.split('.').length - 1];
+                                var destDirectory = "/tmp/".concat(car._id).concat(image._id, ".").concat(image.file.name.split('.')[image.file.name.split('.').length - 1]);
                                 imagesToDownload.push(function () { return _this.downloadFile(image.file.url, destDirectory); });
                                 imagesToCompress.push({
                                     destDirectory: destDirectory,
-                                    name: car.car.vin + "/IMAGE" + image._id.toString().substr(image._id.length - 10, 10).toUpperCase() + "." + image.file.name.split('.')[image.file.name.split('.').length - 1]
+                                    name: "".concat(car.car.vin, "/IMAGE").concat(image._id.toString().substr(image._id.length - 10, 10).toUpperCase(), ".").concat(image.file.name.split('.')[image.file.name.split('.').length - 1])
                                 });
                             };
                             for (_a = 0, _b = car.images; _a < _b.length; _a++) {
@@ -1452,7 +1452,7 @@ var InventoryController = /** @class */ (function () {
                             });
                             setTimeout(function () {
                                 if (fs.existsSync(image.destDirectory)) {
-                                    console.log("clear " + image.destDirectory);
+                                    console.log("clear ".concat(image.destDirectory));
                                     fs.unlink(image.destDirectory, function (err) {
                                         if (err) {
                                             console.log(err);
@@ -1467,7 +1467,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 8];
                     case 7:
                         logger_service_1["default"].error("downloadImages: 'No se ha encontrado el inventario.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(404).json({
                             message: 'No se ha encontrado el inventario.',
                             status: 404
@@ -1479,7 +1479,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("downloadImages: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_14);
                         /* istanbul ignore next */
@@ -1503,7 +1503,7 @@ var InventoryController = /** @class */ (function () {
                         id = req.params.id;
                         _b = req.body, vin = _b.vin, patent = _b.patent, denomination = _b.denomination, brand = _b.brand, color = _b.color, images = _b.images;
                         logger_service_1["default"].info("reportCar");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 8, , 9]);
@@ -1561,15 +1561,15 @@ var InventoryController = /** @class */ (function () {
                         return [4 /*yield*/, inventoryCar.save()];
                     case 5:
                         _c.sent();
-                        textNotification = req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".";
-                        server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                        textNotification = "".concat(req.user.firstName, " ").concat(req.user.lastName, " encontr\u00F3 ").concat(car.brand, " (").concat(car.denomination, ") en ").concat(updatedUser.venue.name, ".");
+                        server_1.io.to("inventory-detail-".concat(inventory._id)).emit('REFRESH', {
                             title: 'Vehículo reportado',
                             text: textNotification,
                             status: inventoryCar_model_1.ChoicesStatusCarInventory.reported,
                             venue: venueId,
                             update: true
                         });
-                        server_1.io.to("inventory-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team._id)).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -1580,7 +1580,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 7];
                     case 6:
                         logger_service_1["default"].error("reportCar: Este inventario ya no se encuentra disponible.");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(404).json({
                             message: 'Este inventario ya no se encuentra disponible.',
                             status: 404
@@ -1592,7 +1592,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("reportCar: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
@@ -1616,7 +1616,7 @@ var InventoryController = /** @class */ (function () {
                         id = req.params.id;
                         _a = req.body, car = _a.car, label = _a.label, custom = _a.custom, carID = _a.carID;
                         logger_service_1["default"].info("setLabel");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params) + "}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params), "}"));
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 12, , 13]);
@@ -1636,11 +1636,11 @@ var InventoryController = /** @class */ (function () {
                             })];
                     case 3:
                         _b.sent();
-                        server_1.io.to("inventory-detail-" + id).emit('REFRESH', {
+                        server_1.io.to("inventory-detail-".concat(id)).emit('REFRESH', {
                             update: true,
                             venue: inventoryCar.venue
                         });
-                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         _b.label = 4;
@@ -1685,11 +1685,11 @@ var InventoryController = /** @class */ (function () {
                         _b.sent();
                         _b.label = 10;
                     case 10:
-                        server_1.io.to("inventory-detail-" + id).emit('REFRESH', {
+                        server_1.io.to("inventory-detail-".concat(id)).emit('REFRESH', {
                             update: true,
                             venue: inventoryCar.venue
                         });
-                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                        server_1.io.to("inventory-list-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -1703,7 +1703,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("setLabel: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_16);
                         /* istanbul ignore next */
@@ -1726,7 +1726,7 @@ var InventoryController = /** @class */ (function () {
                         _a.trys.push([0, 5, , 6]);
                         team = req.user.team._id;
                         logger_service_1["default"].info("apiList");
-                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         return [4 /*yield*/, user_model_1["default"].findById(req.user._id)];
                     case 1:
                         updatedUser = _a.sent();
@@ -1751,7 +1751,7 @@ var InventoryController = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         logger_service_1["default"].error("apiList: Usuario no encontrado");
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'Usuario no encontrado',
@@ -1764,7 +1764,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_17);
                         /* istanbul ignore next */
@@ -2087,7 +2087,7 @@ var InventoryController = /** @class */ (function () {
                         response = {
                             _id: currentInventory._id,
                             name: currentInventory.name,
-                            createdBy: currentInventory.userInfo ? __assign(__assign({}, currentInventory.userInfo), { fullName: currentInventory.userInfo.firstName + " " + currentInventory.userInfo.lastName }) : {},
+                            createdBy: currentInventory.userInfo ? __assign(__assign({}, currentInventory.userInfo), { fullName: "".concat(currentInventory.userInfo.firstName, " ").concat(currentInventory.userInfo.lastName) }) : {},
                             results: currentInventory.results.reduce(function (acc, cur) {
                                 acc[cur.status] = cur.total;
                                 return acc;
@@ -2204,7 +2204,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detaill: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_18);
                         /* istanbul ignore next */
@@ -2306,7 +2306,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("inventory dashboard: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_19);
                         Raven.captureException(e_19, { req: req });
@@ -2496,7 +2496,7 @@ var InventoryController = /** @class */ (function () {
                     case 2:
                         if (!(_i < carsByVenue_2.length)) return [3 /*break*/, 12];
                         venue = carsByVenue_2[_i];
-                        venueRegExp = new RegExp("^" + venue.name.trim() + "$", 'i');
+                        venueRegExp = new RegExp("^".concat(venue.name.trim(), "$"), 'i');
                         return [4 /*yield*/, venue_model_1["default"].findOne({
                                 team: team,
                                 name: venueRegExp
@@ -2552,7 +2552,7 @@ var InventoryController = /** @class */ (function () {
                             });
                             app_1.queue
                                 .create('updateCar', {
-                                title: "updateCar " + car.vin,
+                                title: "updateCar ".concat(car.vin),
                                 currentCar: currentCar._id,
                                 car: car
                             })
@@ -2584,7 +2584,7 @@ var InventoryController = /** @class */ (function () {
                         return [4 /*yield*/, stockCar_model_1["default"].insertMany(stockCars)];
                     case 14:
                         _c.sent();
-                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                        server_1.io.to("stock-".concat(team)).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -2597,7 +2597,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("loadStock: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_21);
                         /* istanbul ignore next */
@@ -2785,7 +2785,7 @@ var InventoryController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("inventory currentStock: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_22);
                         Raven.captureException(e_22, { req: req });

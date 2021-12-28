@@ -145,7 +145,7 @@ var LabelController = /** @class */ (function () {
                             message: 'Etiqueta creada satisfactoriamente.',
                             label: inventoryLabel
                         };
-                        server_1.io.to("label-list-" + team).emit('REFRESH', {
+                        server_1.io.to("label-list-".concat(team)).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });
@@ -198,7 +198,7 @@ var LabelController = /** @class */ (function () {
                                 message: 'Etiqueta editada satisfactoriamente.',
                                 label: inventoryLabel
                             };
-                            server_1.io.to("label-list-" + team).emit('REFRESH', {
+                            server_1.io.to("label-list-".concat(team)).emit('REFRESH', {
                                 update: true,
                                 updatedBy: req.user._id
                             });
@@ -246,7 +246,7 @@ var LabelController = /** @class */ (function () {
                                 message: 'Etiqueta eliminada satisfactoriamente.',
                                 id: inventoryLabel._id
                             };
-                            server_1.io.to("label-list-" + team).emit('REFRESH', {
+                            server_1.io.to("label-list-".concat(team)).emit('REFRESH', {
                                 update: true,
                                 updatedBy: req.user._id
                             });

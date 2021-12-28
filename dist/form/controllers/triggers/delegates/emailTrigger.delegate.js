@@ -39,23 +39,23 @@ var EmailTriggerDelegate = /** @class */ (function (_super) {
         return re.test(email.toLowerCase());
     };
     EmailTriggerDelegate.prototype.trigger = function (trigger, answers, payload) {
-        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
+        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
         var context = this.processTrigerConfig(trigger, __assign(__assign({}, answers), payload.user));
-        logger_service_1["default"].info("Kind Trigger: context =>" + JSON.stringify(context));
+        logger_service_1["default"].info("Kind Trigger: context =>".concat(JSON.stringify(context)));
         if (!this.validateEmail(context.email)) {
             return payload;
         }
         app_1.queue.create('email', {
             from: '',
-            title: "\"" + context.subject + " | " + context.fullname,
-            to: "\"" + context.fullname + "\"<" + context.email + ">",
-            subject: "" + trigger.config.subject,
+            title: "\"".concat(context.subject, " | ").concat(context.fullname),
+            to: "\"".concat(context.fullname, "\"<").concat(context.email, ">"),
+            subject: "".concat(trigger.config.subject),
             text: "",
             attachments: payload.files || [],
             view: trigger.config.template,
             context: __assign(__assign(__assign({}, payload), context), answers)
         }).priority('high').attempts(5).save();
-        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " executed");
+        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " executed"));
         return payload;
     };
     return EmailTriggerDelegate;
