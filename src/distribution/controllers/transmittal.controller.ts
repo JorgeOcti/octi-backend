@@ -974,12 +974,16 @@ private getForm(filter: any): Promise<IFormModel> {
         transmittaltFile.user = user._id;
         transmittaltFile.team = user.team._id;
 
-        if (transmittal?.length && milestone?.length){
+        if (transmittal?.length){
           transmittal = transmittal.replace(/["']/g, "");
+
+          transmittaltFile.transmittal = transmittal;
+        }
+
+        if (milestone?.length){
           milestone = milestone.replace(/["']/g, "");
 
           transmittaltFile.milestone = milestone;
-          transmittaltFile.transmittal = transmittal;
         }
 
         // fix exif

@@ -1166,11 +1166,13 @@ var TransmittalController = /** @class */ (function () {
                         file.team = user.team._id;
                         transmittaltFile.user = user._id;
                         transmittaltFile.team = user.team._id;
-                        if ((transmittal === null || transmittal === void 0 ? void 0 : transmittal.length) && (milestone === null || milestone === void 0 ? void 0 : milestone.length)) {
+                        if (transmittal === null || transmittal === void 0 ? void 0 : transmittal.length) {
                             transmittal = transmittal.replace(/["']/g, "");
+                            transmittaltFile.transmittal = transmittal;
+                        }
+                        if (milestone === null || milestone === void 0 ? void 0 : milestone.length) {
                             milestone = milestone.replace(/["']/g, "");
                             transmittaltFile.milestone = milestone;
-                            transmittaltFile.transmittal = transmittal;
                         }
                         if (!new RegExp('\\bimage\\b').test(file.mimetype)) return [3 /*break*/, 5];
                         _b.label = 2;
