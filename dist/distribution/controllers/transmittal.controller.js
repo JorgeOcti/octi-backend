@@ -378,7 +378,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, transmittals, e_4;
+            var team, _a, page, pageSize, search, orderBy, orderType, number, options, filter, transmittals, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -386,7 +386,7 @@ var TransmittalController = /** @class */ (function () {
                         logger_service_1["default"].info("TransmittalController.apiList");
                         logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         team = req.user.team._id;
-                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, orderBy = _a.orderBy, orderType = _a.orderType;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, orderBy = _a.orderBy, orderType = _a.orderType, number = _a.number;
                         options = {
                             sort: (_b = {},
                                 _b[orderBy || '_id'] = orderType === 'ascending' ? 1 : -1,
@@ -425,6 +425,9 @@ var TransmittalController = /** @class */ (function () {
                         };
                         if (search) {
                             // add here conditions to search
+                        }
+                        if (number) {
+                            filter.number = number;
                         }
                         _c.label = 1;
                     case 1:

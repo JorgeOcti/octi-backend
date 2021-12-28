@@ -731,11 +731,14 @@ export default class ApiService {
                            page,
                            pageSize,
                            orderBy,
-                           orderType
-                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
-    return this.instance.get(
-      `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
-    );
+                           orderType,
+    number
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string }): AxiosPromise {
+    let url = `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'}`;
+    if(number){
+      url = `${url}&number=${number}`;
+    }
+    return this.instance.get(url);
   }
 
   public createTransmittals(data: any) {
