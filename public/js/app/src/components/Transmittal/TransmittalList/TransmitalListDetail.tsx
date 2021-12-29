@@ -256,7 +256,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               evidenceMilestones.map((milestone: IMilestone, index: number) => {
                 let tmp = transmittal.evidenceFullLoad.filter(e => {
                   if(e.milestone != undefined){
-                    return e.milestone == milestone._id || index == 0
+                    let is_in : Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0
+                    return is_in ?  e.milestone == milestone._id :  index == 0
                   } else
                     return index == 0
                 })
