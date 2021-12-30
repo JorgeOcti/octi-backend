@@ -436,10 +436,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
       </tr>
     );
   }
+
   private openOT(number: string) {
     window.open(`/transmittals/?number=${number}`, '_blank');
   }
-
 
   private goToDetail(id: string): void {
     this.props.history.push(`/requests/vehicles/${id}/`);
