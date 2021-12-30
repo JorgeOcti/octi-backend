@@ -418,7 +418,6 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
 
   }
   private handleSelectResponsible(all: boolean, value: string | boolean) {
-    debugger;
     if (this.props.changeTempVenueAction && this.props.venues) {
       const {tempVenue, users} = this.props.venues;
       if (all) {

@@ -246,6 +246,9 @@ var AdminVenueController = /** @class */ (function () {
                                     path: 'users',
                                     select: ['_id']
                                 }, {
+                                    path: 'responsible',
+                                    select: ['_id', 'firstName', 'lastName']
+                                }, {
                                     path: 'region',
                                     select: ['name']
                                 }, {
@@ -300,7 +303,7 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiCreateVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region, sendTo, team, existVenue, newVenue, id, _b, _c, e_2;
+            var _a, name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region, responsible, sendTo, team, existVenue, newVenue, id, _b, _c, e_2;
             var _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
@@ -310,7 +313,7 @@ var AdminVenueController = /** @class */ (function () {
                                     message: 'No tienes permisos para esta operación'
                                 })];
                         }
-                        _a = req.body, name = _a.name, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, shippingMaxDays = _a.shippingMaxDays, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region;
+                        _a = req.body, name = _a.name, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, shippingMaxDays = _a.shippingMaxDays, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region, responsible = _a.responsible;
                         sendTo = sendToDays.map(function (venueDay) { return venueDay.venue._id; });
                         team = req.user.team._id;
                         if (!name || !name.trim().length) {
@@ -348,6 +351,7 @@ var AdminVenueController = /** @class */ (function () {
                             receiveFrom: receiveFrom,
                             receptionCarriers: receptionCarriers,
                             shippingCarriers: shippingCarriers,
+                            responsible: responsible,
                             type: type
                         }).save()];
                     case 4:
@@ -391,6 +395,9 @@ var AdminVenueController = /** @class */ (function () {
                                 }, {
                                     path: 'shippingCarriers',
                                     select: ['_id', 'name']
+                                }, {
+                                    path: 'responsible',
+                                    select: ['_id', 'firstName', 'lastName']
                                 }])];
                     case 9:
                         _c.apply(_b, [(_d.venue = _e.sent(),
@@ -411,7 +418,7 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiUpdateVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, sendTo, venue, response, response, e_3;
+            var id, team, _a, name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, responsible, sendTo, venue, response, response, e_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -423,7 +430,7 @@ var AdminVenueController = /** @class */ (function () {
                         }
                         id = req.params.id;
                         team = req.user.team._id;
-                        _a = req.body, name = _a.name, code = _a.code, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region, shippingMaxDays = _a.shippingMaxDays;
+                        _a = req.body, name = _a.name, code = _a.code, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region, shippingMaxDays = _a.shippingMaxDays, responsible = _a.responsible;
                         sendTo = sendToDays.map(function (venueDay) { return venueDay.venue._id; });
                         if (!name || !name.length) {
                             res.status(400).json({
@@ -451,6 +458,7 @@ var AdminVenueController = /** @class */ (function () {
                                 receiveFrom: receiveFrom,
                                 shippingCarriers: shippingCarriers,
                                 receptionCarriers: receptionCarriers,
+                                responsible: responsible,
                                 type: type
                             }, {
                                 "new": true
@@ -472,6 +480,9 @@ var AdminVenueController = /** @class */ (function () {
                                 }, {
                                     path: 'shippingCarriers',
                                     select: ['_id', 'name']
+                                }, {
+                                    path: 'responsible',
+                                    select: ['_id', 'firstName', 'lastName']
                                 }])];
                     case 2:
                         venue = _b.sent();

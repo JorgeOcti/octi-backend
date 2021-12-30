@@ -84,6 +84,10 @@ var venueSchema = new mongoose.Schema({
             }],
         "default": []
     },
+    responsible: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
     deleted: {
         type: Boolean,
         "default": false

@@ -263,7 +263,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiUsers = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, search, team, options, users, e_2;
+            var _a, page, pageSize, search, venue, minified, team, options, users, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -272,7 +272,7 @@ var AdminUsersController = /** @class */ (function () {
                                     message: 'No tienes permisos para esta operación'
                                 })];
                         }
-                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, venue = _a.venue, minified = _a.minified;
                         team = req.user.team._id;
                         options = {
                             select: {
@@ -284,7 +284,15 @@ var AdminUsersController = /** @class */ (function () {
                                 isDriver: true,
                                 updatedAt: true
                             },
-                            populate: [{
+                            sort: {
+                                firstName: 1,
+                                lastName: 1
+                            },
+                            page: parseInt(page ? page : '1', 10),
+                            limit: parseInt(pageSize ? pageSize : '20', 10)
+                        };
+                        if (minified == 0) {
+                            options.populate = [{
                                     path: 'venue',
                                     select: ['name', 'active']
                                 }, {
@@ -308,20 +316,14 @@ var AdminUsersController = /** @class */ (function () {
                                             path: 'company',
                                             select: ['name']
                                         }]
-                                }],
-                            sort: {
-                                firstName: 1,
-                                lastName: 1
-                            },
-                            page: parseInt(page ? page : '1', 10),
-                            limit: parseInt(pageSize ? pageSize : '20', 10)
-                        };
+                                }];
+                        }
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, this.getUsers({
                                 team: team,
-                                venue: {
+                                venue: venue ? venue : {
                                     $in: req.user.venuesPermissions()
                                 }
                             }, options, search)];
