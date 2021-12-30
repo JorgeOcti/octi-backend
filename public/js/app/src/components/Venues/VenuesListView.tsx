@@ -441,6 +441,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       sendToDays: [],
       receiveFrom: [],
       shippingCarriers: [],
+      responsible: [],
       shippingMaxDays: 5,
       receptionCarriers: []
     });
@@ -480,6 +481,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       sendToDays: venue.sendToDays ? venue.sendToDays : [],
       shippingMaxDays : venue.shippingMaxDays,
       receiveFrom: venue.receiveFrom ? venue.receiveFrom : [],
+      responsible: venue.responsible ? venue.responsible : [],
       shippingCarriers: venue.shippingCarriers ? venue.shippingCarriers : [],
       receptionCarriers: venue.receptionCarriers ? venue.receptionCarriers : []
     });

@@ -20,9 +20,7 @@ import {
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
-import {
-  IBaseVenue
-} from '../../../../../src/app/interfaces/venue.interface';
+import {IBaseVenue} from '../../../../../src/app/interfaces/venue.interface';
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
@@ -74,9 +72,9 @@ export default class ApiService {
       });
   }
 
-  public getUsers(page: number, search?: string): AxiosPromise {
+  public getUsers(page: number, search?: string, venue?: IBaseVenue, minified: boolean = false, limit: number=20): AxiosPromise {
     return this.instance.get(
-      `/api/admin/users/?page=${page}${search ? `&search=${search}` : ''}`
+      `/api/admin/users/?page=${page}${search ? `&search=${search}` : ''}${venue? `&venue=${venue._id}` : ''}&minified=${minified ? 1 : 0}&pageSize=${limit}`
       , {
         cancelToken: this.source.token
       });

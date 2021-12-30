@@ -216,7 +216,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
+    const { page, pageSize, search, venue, minified } = req.query as { page: string, pageSize: string, search: string, venue?: string, minified?: number };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -229,7 +229,15 @@ class AdminUsersController {
         isDriver: true,
         updatedAt: true
       },
-      populate: [{
+      sort: {
+        firstName: 1,
+        lastName: 1
+      },
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    if (minified == 0){
+      options.populate = [{
         path: 'venue',
         select: ['name', 'active']
       }, {
@@ -253,18 +261,12 @@ class AdminUsersController {
           path: 'company',
           select: ['name']
         }]
-      }],
-      sort: {
-        firstName: 1,
-        lastName: 1
-      },
-      page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
-    };
+      }]
+    }
     try {
       const users = await this.getUsers({
         team,
-        venue: {
+        venue: venue ? venue : {
           $in: req.user.venuesPermissions()
         }
       }, options, search);

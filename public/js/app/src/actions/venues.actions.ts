@@ -7,6 +7,7 @@ import { IRegion } from '../../../../../src/app/interfaces/region.interface';
 import { IBaseVenue, IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
+import {IUser} from "../../../../../src/app/interfaces";
 
 export interface IVenuesState {
   venues: IVenue[];
@@ -14,6 +15,7 @@ export interface IVenuesState {
   companies: ICompany[];
   regions: IRegion[];
   carriers: ICarrier[];
+  users: IUser[];
   loading: boolean;
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
@@ -330,6 +332,22 @@ export function processDeleteVenueAction(id: string): IDeleteVenue {
   };
 }
 
+interface ILoadUsers {
+  type: '/VENUES/LOAD_USERS';
+  payload: {
+    users: IUser[];
+  };
+}
+
+export function loadUsers(users: IUser[]) : ILoadUsers {
+  return {
+    type: '/VENUES/LOAD_USERS',
+    payload: {
+      users
+    }
+  };
+}
+
 export function deleteVenueAction(id: string) {
   return (dispatch: Dispatch<VenueReduxAction>) => {
     const api: ApiService = new ApiService();
@@ -352,6 +370,21 @@ export function deleteVenueAction(id: string) {
   };
 }
 
+export function getVenueUsersAction(page: number, venue: IVenue){
+  return (dispatch: Dispatch<VenueReduxAction>) => {
+    const api : ApiService = new ApiService();
+    api.getSource();
+    api.getUsers(page, "", venue, true, 100)
+      .then((response: AxiosResponse) : void => {
+        dispatch(loadUsers(response.data.results));
+      })
+      .catch((err: any) => {
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      })
+  };
+}
+
 export type VenueReduxAction =
   ICancelRequest |
   IIsLoading |
@@ -364,4 +397,5 @@ export type VenueReduxAction =
   ILoadCompaniesVenue |
   ILoadAllVenue |
   ILoadCarriers |
-  ILoadRegions;
+  ILoadRegions |
+  ILoadUsers;

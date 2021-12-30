@@ -10,6 +10,7 @@ const initialState: IVenuesState = {
   searchText: '',
   loading: true,
   source: null,
+  users: [],
   tempVenue: {
     _id: '',
     lat: 0,
@@ -18,6 +19,7 @@ const initialState: IVenuesState = {
     code: '',
     abbreviation: '',
     type: 'receiver',
+    responsible: [],
     sendToDays: [],
     sendTo: [],
     shippingMaxDays: 5,
@@ -118,6 +120,11 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           pages: action.payload.pages,
           count: action.payload.count
         }
+      };
+    case "/VENUES/LOAD_USERS":
+      return {
+        ...state,
+        users: action.payload.users
       };
     default:
       return state;

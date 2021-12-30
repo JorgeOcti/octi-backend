@@ -3,7 +3,7 @@ import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {IBaseVenue, IVenue} from '../../../../../../src/app/interfaces/venue.interface';
-import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
+import {changeTempVenueAction, getVenueUsersAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
@@ -13,6 +13,7 @@ interface IPropsType {
   venues?: IVenuesState;
   update?: boolean;
   changeTempVenueAction?: (venue: IBaseVenue, noDelay?: boolean) => VenueReduxAction;
+  getVenueUsersAction? : (page:number, venue: IVenue) => VenueReduxAction;
 }
 
 interface IStateType {
@@ -25,6 +26,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.changeTypeAction = this.changeTypeAction.bind(this);
     this.handleSelectVenues = this.handleSelectVenues.bind(this);
+    this.handleSelectResponsible = this.handleSelectResponsible.bind(this);
   }
 
   public componentDidMount(): void {
@@ -34,8 +36,12 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     updateTooltip();
   }
 
-  public componentDidUpdate(): void {
+  public componentDidUpdate(prevProps:Readonly<IPropsType>, prevState:Readonly<IStateType>, snapshot?:any): void {
     updateTooltip();
+    // console.log( this.props.venues?.tempVenue);
+    // if (this.props.update && this.props.venues?.users.length === 0)
+    if (prevProps.venues?.tempVenue._id != this.props.venues?.tempVenue._id)
+        this.props.getVenueUsersAction?.(1, this.props.venues?.tempVenue as IVenue)
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -48,11 +54,12 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
-      const {tempVenue, companies, carriers, regions} = this.props.venues;
+      const {tempVenue, companies, carriers, regions, users} = this.props.venues;
       let {allVenues} = this.props.venues;
       if (update) {
         allVenues = allVenues.filter((venue) => venue._id !== tempVenue._id);
       }
+      console.log(users);
       return (
         <React.Fragment>
           <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
@@ -180,6 +187,27 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                       </div> : null
                   }
                 </div>
+                {update? <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="venues" className="control-label">
+                      Encargados de local
+                    </label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      displayItems={2}
+                      search={true}
+                      selectedText="Usuarios seleccionados."
+                      selected={tempVenue.responsible.map((user) => user._id)}
+                      allOption={true}
+                      selectAll={(value: boolean) => this.handleSelectResponsible(true, value)}
+                      options={users.map((user: any) => ({
+                        value: user._id,
+                        text: `${user.firstName} ${user.lastName}`
+                      }))}
+                      onClick={(value: string) => this.handleSelectResponsible(false, value)}
+                    />
+                  </div>
+                </div> : null }
                 <div className="col-md-12">
                   <div className="form-group">
                     <label htmlFor="id-company">Región</label>
@@ -389,6 +417,25 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     }
 
   }
+  private handleSelectResponsible(all: boolean, value: string | boolean) {
+    debugger;
+    if (this.props.changeTempVenueAction && this.props.venues) {
+      const {tempVenue, users} = this.props.venues;
+      if (all) {
+        this.props.changeTempVenueAction({
+          ...tempVenue,
+          responsible: value ? users : []
+        }, true);
+      } else {
+        let new_user = users.find(u => u._id === value)
+        if (new_user)
+          this.props.changeTempVenueAction({
+            ...tempVenue,
+            responsible: tempVenue.responsible.concat([new_user])
+          }, true);
+      }
+    }
+  }
 
   private handleSelectVenues(where: 'receiveFrom' | 'sendTo', all: boolean, value: string | boolean) {
     if (this.props.changeTempVenueAction && this.props.venues) {
@@ -454,7 +501,8 @@ const mapStateToProps = (state: { venues: IVenuesState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    changeTempVenueAction: (venue: IBaseVenue, noDelay?: boolean) => dispatch(changeTempVenueAction(venue, noDelay))
+    changeTempVenueAction: (venue: IBaseVenue, noDelay?: boolean) => dispatch(changeTempVenueAction(venue, noDelay)),
+    getVenueUsersAction: (page: number, venue: IVenue) => dispatch(getVenueUsersAction(page, venue))
   };
 };
 
