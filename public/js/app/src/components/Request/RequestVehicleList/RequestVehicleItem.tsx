@@ -102,8 +102,8 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <strong className="text-underline">#{item.request?.number}</strong>
         </td>
         <td
-          className='middle pointer'
-          // onClick={() => this.goToDetail(item.request._id)}
+          className={`middle ${item.transmittal?.number ? 'pointer' : ''}`}
+          onClick={item.transmittal?.number?() => this.openOT(item.transmittal.number.toString()):undefined}
         >
           <ShowIf condition={!!item.transmittal?.number} alternative={'-'}>
             <strong className='text-underline'>#{item.transmittal?.number}</strong>
@@ -436,6 +436,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
       </tr>
     );
   }
+  private openOT(number: string) {
+    window.open(`/transmittals/?number=${number}`, '_blank');
+  }
+
 
   private goToDetail(id: string): void {
     this.props.history.push(`/requests/vehicles/${id}/`);

@@ -20,9 +20,11 @@ import ApiService from '../../../utils/axios';
 import * as moment from 'moment';
 import Axios from 'axios';
 import * as swal from 'sweetalert';
+import { debounce } from 'throttle-debounce';
 import {IMilestone} from "../../../../../../../src/distribution/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  router: any;
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   transmittalActions: TransmittalActions;
@@ -31,6 +33,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   exporing: boolean;
+  number: string | undefined;
 }
 
 declare let window: IWindow;
@@ -40,7 +43,8 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   readonly state = {
     error: null,
-    exporing: false
+    exporing: false,
+    number: undefined
   };
 
   private socket: SocketIOClient.Socket;
@@ -52,15 +56,19 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     this.changeOrder = this.changeOrder.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.changeNumber = this.changeNumber.bind(this);
+    this.callChangeNumber = debounce(1000, this.callChangeNumber.bind(this));
   }
 
   public componentWillMount(): void {
     const { orderBy, orderType } = this.props.transmittal.options;
     const { page } = this.props.transmittal.pagination;
+    const {location: {query}} = this.props.router;
     const { transmittalActions } = this.props;
     window.scrollTo(0, 0);
-    transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
-
+    const { number } = query;
+    this.setState({ number });
+    transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, number});
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
@@ -129,14 +137,14 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         transmittalActions.deleteTransmittalAction(data.transmittal);
         const { orderBy, orderType } = this.props.transmittal.options;
         const { page } = this.props.transmittal.pagination;
-        transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
+        transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true });
       }, 300);
     });
 
     this.socket.on('CREATE_TRANSMITTAL', (): void => {
       const { page } = this.props.transmittal.pagination;
       const { orderBy, orderType } = this.props.transmittal.options;
-      transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
+      transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true });
     });
 
   }
@@ -180,7 +188,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         longestMilestones = tmp.sort((a,b) => a.order - b.order);
     }
 
-    const { exporing } = this.state;
+    const { exporing, number } = this.state;
     return (
       <AppContainer title='' cMenu='3' cSubMenu='3.4'>
         <section className='content'>
@@ -211,6 +219,28 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className={`box-body transmittal-list`}>
+              <div className="row">
+                <div className="col-md-9">
+                </div>
+                <div className="col-md-3">
+                  <div
+                    className='input-group input-group-sm'
+                    style={{ padding: '10px' }}
+                  >
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={(e) => {
+                        this.changeNumber(e.target.value)
+                      }}
+                      defaultValue={number}
+                      placeholder="Buscar OT ej: 452"/>
+                    <div className="input-group-btn">
+                      <button className="btn btn-default"><i className="fa fa-search"/></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className='table-responsive'>
                 <ShowIf condition={data.length > 0}>
                 <div className='row transmittal bg-primary'>
@@ -311,6 +341,16 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+  private changeNumber(number: string){
+    this.callChangeNumber(number);
+  }
+
+  private callChangeNumber(number: string){
+    const { options: { orderBy, orderType } } = this.props.transmittal;
+    this.setState({ number });
+    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: 1, orderBy, orderType, number});
+  }
+
   private changeOrder(key: string) {
     const {
       options: { orderBy, orderType },
@@ -323,7 +363,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.props.transmittalActions.getTransmittalsThunkAction(page, newOrderBy, newOrderType);
+    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy:newOrderBy, orderType:newOrderType});
   }
 
   private create(): void {
@@ -332,7 +372,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     const { options: { orderBy, orderType } } = this.props.transmittal;
-    this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
+    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType});
   }
 
   public exportExcel(): void {
@@ -390,9 +430,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
 }
 
-const mapStateToProps = (state: { transmittal: ITransmittalState }) => {
+const mapStateToProps = (state: { transmittal: ITransmittalState, router: any }) => {
   return {
-    transmittal: state.transmittal
+    transmittal: state.transmittal,
+    router: state.router
   };
 };
 

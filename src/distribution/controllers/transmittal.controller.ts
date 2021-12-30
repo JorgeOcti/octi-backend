@@ -260,8 +260,9 @@ class TransmittalController {
       pageSize,
       search,
       orderBy,
-      orderType
-    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+      orderType,
+      number
+    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string; number: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -301,6 +302,9 @@ class TransmittalController {
     };
     if (search) {
       // add here conditions to search
+    }
+    if (number) {
+      filter.number = number;
     }
     try {
       const transmittals = await this.getTransmittals(filter, options);
