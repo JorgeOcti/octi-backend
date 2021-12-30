@@ -132,7 +132,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                       <FormFileTriggerRender item={item} />
                     </ShowIf>
                     <ShowIf condition={KindTrigger.email === value.kind}>
-                      <FormEmailTriggerRender item={item} />
+                      <FormEmailTriggerRender item={item} value={value} />
                     </ShowIf>
                     <ShowIf condition={KindTrigger.request === value.kind}>
                       <FormRequestTriggerRender item={item} forms={forms} />

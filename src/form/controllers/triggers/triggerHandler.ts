@@ -34,6 +34,7 @@ export default class TriggerHandler {
       payload = await triggerDelegate.trigger(trigger, this.answers, {
         ...payload,
         participant: this.participant,
+        responsible: this.participant?.venue.responsible,
         user: this.participant!.user
       });
     }
@@ -95,7 +96,11 @@ export default class TriggerHandler {
         select: 'name'
       }, {
         path: 'venue',
-        select: 'name'
+        select: ['name', 'responsible'],
+        populate: [{
+          path: 'responsible',
+          select: ['firstName', 'lastName', 'email']
+        }]
       }, {
         path: 'sendTo',
         select: 'name'

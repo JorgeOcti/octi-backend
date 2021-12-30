@@ -65,6 +65,8 @@ export interface ITriggerConfig {
   email: any;
   subject: string;
 
+  responsible: boolean;
+
   signature: any;
   filename: string;
 

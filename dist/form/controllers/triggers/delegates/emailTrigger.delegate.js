@@ -42,13 +42,18 @@ var EmailTriggerDelegate = /** @class */ (function (_super) {
         logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
         var context = this.processTrigerConfig(trigger, __assign(__assign({}, answers), payload.user));
         logger_service_1["default"].info("Kind Trigger: context =>".concat(JSON.stringify(context)));
-        if (!this.validateEmail(context.email)) {
+        if (!trigger.config.responsible && !this.validateEmail(context.email)) {
             return payload;
         }
+        var recipients;
+        if (trigger.config.responsible)
+            recipients = payload.responsible.map(function (obj) { return "\"".concat(obj.firstName, " ").concat(obj.lastName, "\"<").concat(obj.email, ">"); });
+        else
+            recipients = "\"".concat(context.fullname, "\"<").concat(context.email, ">");
         app_1.queue.create('email', {
             from: '',
             title: "\"".concat(context.subject, " | ").concat(context.fullname),
-            to: "\"".concat(context.fullname, "\"<").concat(context.email, ">"),
+            to: recipients,
             subject: "".concat(trigger.config.subject),
             text: "",
             attachments: payload.files || [],

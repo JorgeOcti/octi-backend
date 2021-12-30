@@ -63,28 +63,29 @@ var TriggerHandler = /** @class */ (function () {
         this.answers = answers ? answers : this.getAnswers();
     }
     TriggerHandler.prototype.execute = function (payload) {
+        var _a;
         if (payload === void 0) { payload = {}; }
         return __awaiter(this, void 0, void 0, function () {
-            var _i, _a, trigger, triggerDelegate;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _i, _b, trigger, triggerDelegate;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4 /*yield*/, this.getParticipantFullData()];
                     case 1:
-                        _b.sent();
-                        _i = 0, _a = this.form.triggers;
-                        _b.label = 2;
+                        _c.sent();
+                        _i = 0, _b = this.form.triggers;
+                        _c.label = 2;
                     case 2:
-                        if (!(_i < _a.length)) return [3 /*break*/, 5];
-                        trigger = _a[_i];
+                        if (!(_i < _b.length)) return [3 /*break*/, 5];
+                        trigger = _b[_i];
                         if (!trigger.enabled) {
                             logger_service_1["default"].info("Trigger: ".concat(trigger.name, " deactivated"));
                             return [3 /*break*/, 4];
                         }
                         triggerDelegate = this.getTrigger(trigger);
-                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, user: this.participant.user }))];
+                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, responsible: (_a = this.participant) === null || _a === void 0 ? void 0 : _a.venue.responsible, user: this.participant.user }))];
                     case 3:
-                        payload = _b.sent();
-                        _b.label = 4;
+                        payload = _c.sent();
+                        _c.label = 4;
                     case 4:
                         _i++;
                         return [3 /*break*/, 2];
@@ -155,7 +156,11 @@ var TriggerHandler = /** @class */ (function () {
                                     select: 'name'
                                 }, {
                                     path: 'venue',
-                                    select: 'name'
+                                    select: ['name', 'responsible'],
+                                    populate: [{
+                                            path: 'responsible',
+                                            select: ['firstName', 'lastName', 'email']
+                                        }]
                                 }, {
                                     path: 'sendTo',
                                     select: 'name'

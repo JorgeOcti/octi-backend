@@ -42,6 +42,10 @@ export const triggerConfigSchema = new mongoose.Schema({
   subject: {
     type: String
   },
+  responsible: {
+    type: Boolean,
+    default: false
+  },
   filename: {
     type: String
   },
