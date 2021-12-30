@@ -21,6 +21,7 @@ export interface IBaseVenue {
   receiveFrom: IVenue[];
   receptionCarriers: ICarrier[];
   shippingCarriers: ICarrier[];
+  responsible: IUser[];
   type: string;
 }
 

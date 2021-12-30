@@ -188,6 +188,9 @@ class AdminVenueController {
         path: 'users',
         select: ['_id']
       }, {
+        path: 'responsible',
+        select: ['_id', 'firstName', 'lastName']
+      }, {
         path: 'region',
         select: ['name']
       }, {
@@ -244,7 +247,7 @@ class AdminVenueController {
     }
     const {
       name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
-      shippingMaxDays, receptionCarriers, shippingCarriers, region
+      shippingMaxDays, receptionCarriers, shippingCarriers, region, responsible
     } = req.body;
     const sendTo = sendToDays.map((venueDay: IVenueDay) => venueDay.venue._id);
     const team = req.user.team._id;
@@ -279,6 +282,7 @@ class AdminVenueController {
           receiveFrom,
           receptionCarriers,
           shippingCarriers,
+          responsible,
           type
         }).save();
         // reverse assing send to and reveive from
@@ -311,6 +315,9 @@ class AdminVenueController {
           }, {
             path: 'shippingCarriers',
             select: ['_id', 'name']
+          }, {
+            path: 'responsible',
+            select: ['_id', 'firstName', 'lastName']
           }])
         });
       }
@@ -333,7 +340,7 @@ class AdminVenueController {
     const team = req.user.team._id;
     const {
       name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
-      receptionCarriers, shippingCarriers, region, shippingMaxDays
+      receptionCarriers, shippingCarriers, region, shippingMaxDays, responsible
     } = req.body;
     const sendTo = sendToDays.map((venueDay: IVenueDay) => venueDay.venue._id);
     if (!name || !name.length) {
@@ -360,6 +367,7 @@ class AdminVenueController {
         receiveFrom,
         shippingCarriers,
         receptionCarriers,
+        responsible,
         type
       }, {
         new: true
@@ -381,6 +389,9 @@ class AdminVenueController {
       }, {
         path: 'shippingCarriers',
         select: ['_id', 'name']
+      }, {
+        path: 'responsible',
+        select: ['_id', 'firstName', 'lastName']
       }]);
       if (venue) {
         // fix the "company" to users in this venue
