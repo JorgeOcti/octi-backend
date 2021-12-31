@@ -15,6 +15,7 @@ import User, {
   IUserModel
 } from '../../models/user.model';
 import Venue from '../../models/venue.model';
+import {IBaseVenue} from "../../interfaces";
 
 class AdminUsersController {
 
@@ -263,13 +264,14 @@ class AdminUsersController {
         }]
       }]
     }
+
+    let filter : any ={team};
+    filter = venue ?
+      {...filter,  $or: [{venue}, {venuesAccess: venue}]} :
+      {...filter, venue: {$in: req.user.venuesPermissions()}};
+
     try {
-      const users = await this.getUsers({
-        team,
-        venue: venue ? venue : {
-          $in: req.user.venuesPermissions()
-        }
-      }, options, search);
+      const users = await this.getUsers(filter, options, search);
       // validate exist page
       /* istanbul ignore if  */
       if (options.page && users.pages && users.pages < options.page) {
@@ -462,6 +464,10 @@ class AdminUsersController {
             delete user.password;
           }
 
+          // Delete user from responsible where has not access
+          let user_venues = user?.venuesAccess.map((v : IBaseVenue) => v._id).concat([user.venue._id]);
+          await Venue.update({responsible: user?._id, _id: {$nin: user_venues}}, { $pull: { 'responsible': user?._id }});
+
           const response = {
             message: 'Usuario editado satisfactoriamente.',
             user
@@ -499,6 +505,10 @@ class AdminUsersController {
     try {
       const user = await User.findOneAndRemove({_id: id, team});
       if (user) {
+
+        // Delete user from venue responsible where has not access
+        await Venue.update({responsible: user?._id}, { $pull: { 'responsible': user?._id }});
+
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',
           id: user._id

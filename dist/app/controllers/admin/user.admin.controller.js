@@ -263,7 +263,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiUsers = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, search, venue, minified, team, options, users, e_2;
+            var _a, page, pageSize, search, venue, minified, team, options, filter, users, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -318,15 +318,12 @@ var AdminUsersController = /** @class */ (function () {
                                         }]
                                 }];
                         }
+                        filter = { team: team };
+                        filter = venue ? __assign(__assign({}, filter), { $or: [{ venue: venue }, { venuesAccess: venue }] }) : __assign(__assign({}, filter), { venue: { $in: req.user.venuesPermissions() } });
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.getUsers({
-                                team: team,
-                                venue: venue ? venue : {
-                                    $in: req.user.venuesPermissions()
-                                }
-                            }, options, search)];
+                        return [4 /*yield*/, this.getUsers(filter, options, search)];
                     case 2:
                         users = _b.sent();
                         // validate exist page
@@ -451,7 +448,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiUpdateUser = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, countUser, updateItems, user, response, response, e_4;
+            var id, team, _a, firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, countUser, updateItems, user, user_venues, response, response, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -473,7 +470,7 @@ var AdminUsersController = /** @class */ (function () {
                         }
                         _b.label = 1;
                     case 1:
-                        _b.trys.push([1, 6, , 7]);
+                        _b.trys.push([1, 8, , 9]);
                         return [4 /*yield*/, user_model_1["default"].count({ email: email, _id: { $ne: id } })];
                     case 2:
                         countUser = _b.sent();
@@ -482,7 +479,7 @@ var AdminUsersController = /** @class */ (function () {
                             message: 'Usuario ya existe con este email.',
                             status: 400
                         });
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 7];
                     case 3:
                         updateItems = {
                             firstName: firstName,
@@ -532,39 +529,42 @@ var AdminUsersController = /** @class */ (function () {
                                 }])];
                     case 4:
                         user = _b.sent();
-                        if (user) {
-                            // prevent return password
-                            user = user.toObject();
-                            if (user && user.password) {
-                                delete user.password;
-                            }
-                            response = {
-                                message: 'Usuario editado satisfactoriamente.',
-                                user: user
-                            };
-                            server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
-                                update: true,
-                                updatedBy: req.user._id
-                            });
-                            res.status(200).json(response);
+                        if (!user) return [3 /*break*/, 6];
+                        // prevent return password
+                        user = user.toObject();
+                        if (user && user.password) {
+                            delete user.password;
                         }
-                        else {
-                            response = {
-                                id: id,
-                                message: 'Usuario no encontrado'
-                            };
-                            res.status(200).json(response);
-                        }
-                        _b.label = 5;
-                    case 5: return [3 /*break*/, 7];
+                        user_venues = user === null || user === void 0 ? void 0 : user.venuesAccess.map(function (v) { return v._id; }).concat([user.venue._id]);
+                        return [4 /*yield*/, venue_model_1["default"].update({ responsible: user === null || user === void 0 ? void 0 : user._id, _id: { $nin: user_venues } }, { $pull: { 'responsible': user === null || user === void 0 ? void 0 : user._id } })];
+                    case 5:
+                        _b.sent();
+                        response = {
+                            message: 'Usuario editado satisfactoriamente.',
+                            user: user
+                        };
+                        server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
+                            update: true,
+                            updatedBy: req.user._id
+                        });
+                        res.status(200).json(response);
+                        return [3 /*break*/, 7];
                     case 6:
+                        response = {
+                            id: id,
+                            message: 'Usuario no encontrado'
+                        };
+                        res.status(200).json(response);
+                        _b.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
                         e_4 = _b.sent();
                         /* istanbul ignore next  */
                         console.log(e_4);
                         /* istanbul ignore next  */
                         res.status(500).json(e_4);
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 9];
+                    case 9: return [2 /*return*/];
                 }
             });
         });
@@ -584,35 +584,40 @@ var AdminUsersController = /** @class */ (function () {
                         id = req.params.id;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, user_model_1["default"].findOneAndRemove({ _id: id, team: team })];
                     case 2:
                         user = _a.sent();
-                        if (user) {
-                            response = {
-                                message: 'Usuario eliminado satisfactoriamente.',
-                                id: user._id
-                            };
-                            server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
-                                update: true,
-                                updatedBy: req.user._id
-                            });
-                            res.status(200).json(response);
-                        }
-                        else {
-                            response = {
-                                id: id,
-                                message: 'Este usuario ya fue eliminado.'
-                            };
-                            res.status(200).json(response);
-                        }
-                        return [3 /*break*/, 4];
+                        if (!user) return [3 /*break*/, 4];
+                        // Delete user from venue responsible where has not access
+                        return [4 /*yield*/, venue_model_1["default"].update({ responsible: user === null || user === void 0 ? void 0 : user._id }, { $pull: { 'responsible': user === null || user === void 0 ? void 0 : user._id } })];
                     case 3:
+                        // Delete user from venue responsible where has not access
+                        _a.sent();
+                        response = {
+                            message: 'Usuario eliminado satisfactoriamente.',
+                            id: user._id
+                        };
+                        server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
+                            update: true,
+                            updatedBy: req.user._id
+                        });
+                        res.status(200).json(response);
+                        return [3 /*break*/, 5];
+                    case 4:
+                        response = {
+                            id: id,
+                            message: 'Este usuario ya fue eliminado.'
+                        };
+                        res.status(200).json(response);
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
                         e_5 = _a.sent();
                         /* istanbul ignore next  */
                         res.status(500).json(e_5);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
