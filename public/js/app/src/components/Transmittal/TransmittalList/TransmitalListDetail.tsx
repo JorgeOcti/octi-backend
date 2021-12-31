@@ -69,7 +69,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     return (
       <React.Fragment>
         <div id={`transmittal-${transmittal._id}`} className='row transmittal bg-transmittal-title background-transition'>
-          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center head-sorted'>
             <strong className='text-underline'>#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
