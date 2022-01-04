@@ -38,8 +38,6 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
 
   public componentDidUpdate(prevProps:Readonly<IPropsType>, prevState:Readonly<IStateType>, snapshot?:any): void {
     updateTooltip();
-    // console.log( this.props.venues?.tempVenue);
-    // if (this.props.update && this.props.venues?.users.length === 0)
     if (prevProps.venues?.tempVenue._id != this.props.venues?.tempVenue._id)
         this.props.getVenueUsersAction?.(1, this.props.venues?.tempVenue as IVenue)
   }
@@ -59,7 +57,6 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
       if (update) {
         allVenues = allVenues.filter((venue) => venue._id !== tempVenue._id);
       }
-      console.log(users);
       return (
         <React.Fragment>
           <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
