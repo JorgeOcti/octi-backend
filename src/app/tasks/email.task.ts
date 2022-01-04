@@ -41,7 +41,7 @@ class EmailQueue {
         html: this.generateHTML(job.data.view, job.data.context),
         attachments: job.data.attachments || [],
         headers: {
-          'Content-Type:': 'text/html; charset="UTF-8"',
+          // 'Content-Type:': 'text/html; charset="UTF-8"',
           'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
           'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
           'List-ID': 'mail.osacontrol.com',
