@@ -53,7 +53,6 @@ var app_1 = require("../../../app");
 var server_1 = require("../../../server");
 var user_model_1 = require("../../models/user.model");
 var venue_model_1 = require("../../models/venue.model");
-var he = require("he");
 var AdminUsersController = /** @class */ (function () {
     function AdminUsersController() {
         this.index = this.index.bind(this);
@@ -419,7 +418,7 @@ var AdminUsersController = /** @class */ (function () {
                             text: "".concat(fullname, " bienvenido(a) a OSA Andes\n          {Empresa} te da la bienvenida a usar OSA Andes.\n\n          Tus Datos para acceder a la aplicaci\u00F3n son:\n          Usuario: ").concat(newUser.email, "\n          Contrase\u00F1a ").concat(password, "\n          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.\n\n          \u00A9 2021 OSA SpA. All rights reserved."),
                             view: 'account/welcome',
                             context: {
-                                fullname: he.encode(fullname),
+                                fullname: fullname,
                                 username: newUser.email,
                                 password: password
                             }

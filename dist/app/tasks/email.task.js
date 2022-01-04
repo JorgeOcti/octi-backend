@@ -28,7 +28,7 @@ var EmailQueue = /** @class */ (function () {
                 // to: job.data.to,
                 to: job.data.to,
                 bcc: job.data.bcc,
-                subject: he.encode(job.data.subject),
+                subject: job.data.subject,
                 text: he.encode(job.data.text),
                 html: this.generateHTML(job.data.view, job.data.context),
                 attachments: job.data.attachments || [],
