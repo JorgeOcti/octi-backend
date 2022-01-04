@@ -3,6 +3,7 @@ exports.__esModule = true;
 var path = require("path");
 var pug = require("pug");
 var aws_ses_service_1 = require("../../services/aws-ses.service");
+var he = require("he");
 var EmailQueue = /** @class */ (function () {
     function EmailQueue(queue) {
         this.queue = queue;
@@ -27,8 +28,8 @@ var EmailQueue = /** @class */ (function () {
                 // to: job.data.to,
                 to: job.data.to,
                 bcc: job.data.bcc,
-                subject: job.data.subject,
-                text: job.data.text,
+                subject: he.encode(job.data.subject),
+                text: he.encode(job.data.text),
                 html: this.generateHTML(job.data.view, job.data.context),
                 attachments: job.data.attachments || [],
                 headers: {

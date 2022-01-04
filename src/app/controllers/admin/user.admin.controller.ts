@@ -16,6 +16,7 @@ import User, {
 } from '../../models/user.model';
 import Venue from '../../models/venue.model';
 import {IBaseVenue} from "../../interfaces";
+import * as he from 'he';
 
 class AdminUsersController {
 
@@ -362,7 +363,7 @@ class AdminUsersController {
           © 2021 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
           context: {
-            fullname,
+            fullname: he.encode(fullname),
             username: newUser.email,
             password
           }

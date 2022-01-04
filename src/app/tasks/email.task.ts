@@ -5,6 +5,7 @@ import * as pug from 'pug';
 // import logger from '../../services/logger.service';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
+import * as he from 'he';
 
 class EmailQueue {
   private queue: Queue;
@@ -35,8 +36,8 @@ class EmailQueue {
         // to: job.data.to,
         to: job.data.to,
         bcc: job.data.bcc,
-        subject: job.data.subject,
-        text: job.data.text,
+        subject: he.encode(job.data.subject),
+        text: he.encode(job.data.text),
         html: this.generateHTML(job.data.view, job.data.context),
         attachments: job.data.attachments || [],
         headers: {
