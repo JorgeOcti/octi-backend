@@ -1,8 +1,14 @@
 import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IWindow} from '../interfaces/window';
+import * as queryString from 'query-string';
 
 declare let window: IWindow;
 
+export function parseReplicableURL(url: string): string{
+  const query = queryString.parse(window.location.search);
+  /* process here actions by parameters in query param */
+  return `${url}?${queryString.stringify(query)}`;
+}
 export function getExtension(name: string): string {
   const descomposition = name.split('.');
   if (descomposition.length) {

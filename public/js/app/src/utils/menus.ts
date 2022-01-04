@@ -1,5 +1,5 @@
 import {IWindow} from '../interfaces/window';
-import {hasPermission} from './common';
+import {hasPermission, parseReplicableURL} from './common';
 
 declare let window: IWindow;
 
@@ -90,13 +90,13 @@ if (hasPermission(window.user, 'viewRequest')) {
     id: '3.1',
     icon: 'fa-circle-o',
     text: 'Solicitudes',
-    url: '/requests/'
+    url: parseReplicableURL('/requests/')
   });
   distributionItems.push({
     id: '3.2',
     icon: 'fa-circle-o',
     text: 'Vehículos',
-    url: '/requests/vehicles/'
+    url: parseReplicableURL('/requests/vehicles/')
   });
 }
 
@@ -105,7 +105,7 @@ if (hasPermission(window.user, 'viewTransmittal')) {
     id: '3.4',
     icon: 'fa-circle-o',
     text: 'Transporte',
-    url: '/transmittals/'
+    url: parseReplicableURL('/transmittals/')
   });
 }
 
@@ -114,7 +114,7 @@ if (hasPermission(window.user, 'adminRequest')) {
     id: '3.3',
     icon: 'fa-circle-o',
     text: 'Ajustes',
-    url: '/requests/settings/reasons/'
+    url: parseReplicableURL('/requests/settings/reasons/')
   });
 }
 

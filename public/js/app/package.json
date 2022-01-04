@@ -25,6 +25,7 @@
     "moment-timezone": "^0.5.31",
     "node-pre-gyp": "^0.15.0",
     "pusher-js": "^6.0.3",
+    "query-string": "^7.0.1",
     "raven-for-redux": "~1.4.0",
     "raven-js": "~3.27.0",
     "react": "^16.13.1",

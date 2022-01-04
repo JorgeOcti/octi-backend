@@ -6,7 +6,7 @@ import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
@@ -367,7 +367,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private create(): void {
-    this.props.history.push('/transmittals/create/');
+    this.props.history.push(parseReplicableURL('/transmittals/create/'));
   }
 
   private changePage(page: number): void {

@@ -10,7 +10,7 @@ import { IRequestItemStatus } from '../../../../../../../src/request/interfaces/
 import { tabStatusAction, updateRequestItemInListThunkAction } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import DateRangePicker from '../../Utils/DateRangePicker';
 
 declare let window: IWindow;
@@ -327,7 +327,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   private goToDetail(id: string): void {
-    this.props.history.push(`/requests/${id}/`);
+    this.props.history.push(parseReplicableURL(`/requests/${id}/`));
   }
 }
 

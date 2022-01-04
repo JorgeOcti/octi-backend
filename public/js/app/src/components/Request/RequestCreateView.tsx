@@ -17,6 +17,7 @@ import ShowIf from '../Utils/ShowIf';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
+import { parseReplicableURL } from '../../utils/common';
 
 
 interface IPropsType extends RouteComponentProps<{}> {
@@ -775,7 +776,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private createRequest() {
-    const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
+    const vehiclesView = this.props.location.pathname === parseReplicableURL('/requests/vehicles/create/');
     const { cars, channel, venue, sellerText, operationType } = this.state;
     if (!cars.length) {
       swal!('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
@@ -794,7 +795,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
         })
         .then(() => {
           swal!('Solicitud', 'Se ha creado satisfactoriamente.', 'success').then(() => {
-            this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
+            this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
           });
         })
         .catch((err: AxiosError): void => {
@@ -805,7 +806,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   private cancel(): void {
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
-    this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
+    this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
   }
 }
 

@@ -12,6 +12,7 @@ import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import { parseReplicableURL } from '../../utils/common';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -180,7 +181,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-footer text-right">
               <button
                 className="btn btn-sm btn-default"
-                onClick={() => this.props.history.push('/requests/vehicles/')}
+                onClick={() => this.props.history.push(parseReplicableURL('/requests/vehicles/'))}
               >
                 Cancelar
               </button>
@@ -352,7 +353,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
       })
       .then((response: any) => {
         const { message } = response.data;
-        history.push('/requests/vehicles/');
+        history.push(parseReplicableURL('/requests/vehicles/'));
         setTimeout(() => {
           swal('Actualización masiva', message, 'success');
         }, 200);

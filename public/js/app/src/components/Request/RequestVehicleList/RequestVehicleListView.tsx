@@ -20,7 +20,7 @@ import { IRequestItemsFilters, IRequestItemsState, RequestItemsReduxActions } fr
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import BootstrapSelect from '../../Utils/BootstrapSelect';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
@@ -633,15 +633,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private create(): void {
-    this.props.history.push('/requests/vehicles/create/');
+    this.props.history.push(parseReplicableURL('/requests/vehicles/create/'));
   }
 
   private update() {
-    this.props.history.push('/requests/update/');
+    this.props.history.push(parseReplicableURL('/requests/update/'));
   }
 
   private import() {
-    this.props.history.push('/requests/import/');
+    this.props.history.push(parseReplicableURL('/requests/import/'));
   }
 
   private changeFilterDebounced(key: keyof IRequestItemsFilters, value: any | any[]): void {

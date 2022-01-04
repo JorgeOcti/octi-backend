@@ -4,13 +4,17 @@ import BreadcrumbApp from './BreadcrumbApp';
 import FooterApp from './FooterApp';
 import HeaderApp from './HeadeApp';
 import MenuApp from './MenuApp';
+import { IInventoryState } from '../actions/inventory.actions';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import moment = require('moment');
 // import {Dispatch} from 'react-redux';
 // import {RouteComponentProps} from "react-router";
 
 // interface IPropsType extends RouteComponentProps<{ ticket: number }> {
-interface IPropsType {
+interface IPropsType extends RouteComponentProps<{}> {
   children: JSX.Element;
-  // dispatch: Dispatch<any>;
+  router: any;
   title: string;
   cMenu: string;
   cSubMenu: string;
@@ -30,16 +34,36 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
     cAction: PropTypes.string
   };
 
+  componentDidMount() {
+    const { location: { query } } = this.props.router;
+    if (query?.integration === 'webview') {
+      const $body = $('body');
+      $body
+        .removeClass('skin-purple')
+        .css({ 'background-color': '#ecf0f5' });
+      $body.append( `<div class="text-muted text-center" style="position: absolute; bottom: 0px; height: 30px; width: 100%;">Copyright (c) ${moment().format('YYYY')} <a href="http://www.osacontrol.com" target="_blank">OSA SPA</a>. All rights reserved.</div>` );
+
+    }
+  }
+
   public render() {
-    const {title, cMenu, cSubMenu, cAction} = this.props;
+    const { title, cMenu, cSubMenu, cAction } = this.props;
+    const { location: { query } } = this.props.router;
+    if (query?.integration === 'webview') {
+      return (
+        <React.Fragment>
+          {this.props.children}
+        </React.Fragment>
+      );
+    }
     return (
       <React.Fragment>
         <HeaderApp />
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
-        <div className="content-wrapper" style={{minHeight: `${window.innerHeight - 51}px`}}>
-          <section className="content-header">
+        <div className='content-wrapper' style={{ minHeight: `${window.innerHeight - 51}px` }}>
+          <section className='content-header'>
             <h1>{title ? title : '\u00A0'}</h1>
-            <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction}/>
+            <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction} />
           </section>
           {this.props.children}
         </div>
@@ -49,20 +73,17 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
   }
 }
 
-// const mapStateToProps = (state: { ticket: ITicketState }) => {
-//   return {
-//     ticket: state.ticket
-//   };
-// };
-//
-// const mapDispatchToProps = (dispatch: Dispatch<any, ITicketState>) => {
-//   return {
-//     dispatch,
-//     getTeamsDataAction: () => dispatch(getTeamsDataAction()),
-//     createTicketAction: (ticket: any) => dispatch(createTicketAction(ticket))
-//   };
-// };
-//
-// export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(TicketCreateView);
+const mapStateToProps = (state: { router: any }) => {
+  return {
+    router: state.router
+  };
+};
 
-export default AppContainer;
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    dispatch
+  };
+};
+
+
+export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(AppContainer);

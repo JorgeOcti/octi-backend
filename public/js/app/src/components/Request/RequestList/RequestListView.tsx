@@ -21,7 +21,7 @@ import {IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
@@ -302,7 +302,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private create(): void {
-    this.props.history.push('/requests/create/');
+    this.props.history.push(parseReplicableURL('/requests/create/'));
   }
 
   private changePage(page: number): void {
