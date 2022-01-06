@@ -486,7 +486,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
-    const value = e.target.value.trim();
+    const value = e.target.value;
     this.props.changeSearchDashboardAction(value);
     this.debounceOnChangeSearch();
   }
