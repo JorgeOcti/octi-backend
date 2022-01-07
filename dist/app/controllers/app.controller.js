@@ -74,18 +74,21 @@ var AppController = /** @class */ (function () {
         res.send("User-Agent: *\nDisallow: /");
     };
     AppController.prototype.login = function (req, res) {
+        var next = req.query.next;
         if (req.user) {
-            return res.redirect('/');
+            return res.redirect(next !== null && next !== void 0 ? next : '/');
         }
         else {
-            return res.render('app/login', { csrfToken: req.csrfToken() });
+            return res.render('app/login', { csrfToken: req.csrfToken(), next: next });
         }
     };
     AppController.prototype.processLogin = function (req, res, next) {
         var _this = this;
         /* istanbul ignore if */
+        var nextPage = req.query.next;
+        console.log('nextPage', nextPage);
         if (req.user) {
-            return res.redirect('/');
+            return res.redirect(nextPage !== null && nextPage !== void 0 ? nextPage : '/');
         }
         else {
             var username_1 = req.body.username;
@@ -124,7 +127,7 @@ var AppController = /** @class */ (function () {
                                             })];
                                     case 2:
                                         user = _a.sent();
-                                        return [2 /*return*/, res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/')];
+                                        return [2 /*return*/, res.redirect(nextPage ? nextPage : user.hasPermission('viewInventory') ? '/inventory/' : '/')];
                                     case 3:
                                         e_1 = _a.sent();
                                         console.log(err); // handle errors!

@@ -48,17 +48,20 @@ class AppController {
   }
 
   public login(req: Request, res: Response): void {
+    const {next} = req.query as {next: string};
     if (req.user) {
-      return res.redirect('/');
+      return res.redirect(next ?? '/');
     } else {
-      return res.render('app/login', {csrfToken: req.csrfToken()});
+      return res.render('app/login', {csrfToken: req.csrfToken(), next});
     }
   }
 
   public processLogin(req: Request, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
+    const {next: nextPage} = req.query as {next: string};
+    console.log('nextPage', nextPage);
     if (req.user) {
-      return res.redirect('/');
+      return res.redirect(nextPage ?? '/');
     } else {
       const {username} = req.body;
       passport.authenticate('local', (err, user) => {
@@ -88,7 +91,7 @@ class AppController {
                     path: 'userPermissions',
                     select: ['codeName']
                   });
-                  return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
+                  return res.redirect(nextPage ? nextPage : user.hasPermission('viewInventory') ? '/inventory/' : '/');
                 } catch (e) {
                   console.log(err); // handle errors!
                 }

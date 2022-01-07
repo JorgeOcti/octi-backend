@@ -32,7 +32,7 @@ html
               img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
             if error
               p.text-center.text-red=error
-            form(role='form', action='/account/login/', method="post")
+            form(role='form', action=`/account/login/?next=${encodeURIComponent(next)}`, method="post")
               input(type='hidden', name='_csrf', value=csrfToken)
               .form-group
                 .input-group

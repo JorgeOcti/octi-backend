@@ -1,4 +1,4 @@
-import {NextFunction, Response} from 'express';
+import {NextFunction, Response, Request} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
 import logger from '../services/logger.service';
@@ -12,7 +12,7 @@ class Middlewares {
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
   }
 
-  public async isLoggedIn(req: IRequest, res: Response, next: NextFunction) {
+  public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     if (req.isAuthenticated()) {
@@ -25,7 +25,7 @@ class Middlewares {
       return next();
     } else {
       // if they aren't redirect them to the login page
-      res.redirect('/account/login/');
+      res.redirect(`/account/login/?next=${encodeURIComponent(req.originalUrl)}`);
     }
   }
 

@@ -63,7 +63,7 @@ var Middlewares = /** @class */ (function () {
                     case 3: return [2 /*return*/, next()];
                     case 4:
                         // if they aren't redirect them to the login page
-                        res.redirect('/account/login/');
+                        res.redirect("/account/login/?next=".concat(encodeURIComponent(req.originalUrl)));
                         _b.label = 5;
                     case 5: return [2 /*return*/];
                 }
