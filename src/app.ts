@@ -11,6 +11,7 @@ import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
+import * as moment from 'moment-timezone';
 import * as passport from 'passport';
 import * as passportLocal from 'passport-local';
 import * as path from 'path';
@@ -137,6 +138,7 @@ const staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
 //
 app.locals.getVersionedPath = staticify.getVersionedPath;
+app.locals.moment = moment;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 
 app.use(cookieParser());

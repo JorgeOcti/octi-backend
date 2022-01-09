@@ -1,10 +1,11 @@
 import * as React from 'react';
+import * as moment from 'moment-timezone';
 
 const FooterApp: React.StatelessComponent<{}> = () => {
   return (
     <footer className="main-footer">
       <div className="pull-right hidden-xs"><b>Version</b> 2.1.3 stable</div>
-      <strong>Copyright (c) 2021 <a href="https://www.osa-app.cl" target={'_blank'}>OSA SPA.</a></strong> All rights
+      <strong>Copyright (c) {moment().format('YYYY')} <a href="https://www.osa-app.cl" target={'_blank'}>OSA SPA.</a></strong> All rights
       reserved.
     </footer>
   );

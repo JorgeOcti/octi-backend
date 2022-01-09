@@ -374,6 +374,7 @@ var RequestController = /** @class */ (function () {
                             team: team,
                             company: company,
                             vin: car.vin.trim(),
+                            vin2: car.vin.trim().substr(car.vin.length - 6),
                             engineNumber: car.engineNumber,
                             brand: car.brand,
                             color: car.color,

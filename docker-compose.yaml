@@ -48,7 +48,7 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: npm run dev
+    command: npm run dev:inspect
 #    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
 #    deploy:
 #      resources:

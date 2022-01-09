@@ -49,6 +49,7 @@ var fileStreamRotator = require("file-stream-rotator");
 var kue = require("kue");
 var morgan = require("morgan");
 var multer = require("multer");
+var moment = require("moment-timezone");
 var passport = require("passport");
 var passportLocal = require("passport-local");
 var path = require("path");
@@ -159,6 +160,7 @@ var staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
 //
 app.locals.getVersionedPath = staticify.getVersionedPath;
+app.locals.moment = moment;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 app.use(cookieParser());
 app.use(session({
