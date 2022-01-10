@@ -753,7 +753,7 @@ var RequestController = /** @class */ (function () {
                             }, {
                                 $lookup: { from: 'transmittals', localField: 'transmittal', foreignField: '_id', as: 'transmittal' }
                             }, {
-                                $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: false }
+                                $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
                             }, {
                                 $addFields: { requestNumber: { $toString: '$request.number' } }
                             }, {
