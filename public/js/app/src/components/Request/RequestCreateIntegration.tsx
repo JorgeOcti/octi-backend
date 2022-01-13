@@ -42,8 +42,15 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
       .removeClass('skin-purple')
       .css({ 'background-color':'#ecf0f5' });
   }
+
   public render(): React.ReactElement<IPropsType> {
-    const {location: {query}, formValues} = this.props.router;
+    let { location: { query } } = this.props.router;
+    query = Object.fromEntries(
+      Object.entries<string>(query).map(([key, value]) =>
+        // Modify key here
+        [`${key}`, decodeURIComponent(value)]
+      )
+    );
     const {created} = this.state;
     return (
       <RequestForm
