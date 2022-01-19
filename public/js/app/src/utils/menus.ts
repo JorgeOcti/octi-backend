@@ -303,6 +303,15 @@ if (hasPermission(window.user, 'viewBilling')) {
   });
 }
 
+if (hasPermission(window.user, 'viewColor')) {
+  settingItems.push({
+    id: '10.10',
+    icon: 'fa-circle-o',
+    text: 'Colores',
+    url: '/settings/colors/'
+  });
+}
+
 if (settingItems.length) {
   menus.push({
     id: '10',

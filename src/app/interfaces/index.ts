@@ -14,3 +14,4 @@ export * from './permission.interface';
 export * from './recoverFile.interface';
 export * from './teamSetting.interface';
 export * from './version.interface';
+export * from './color.interface';

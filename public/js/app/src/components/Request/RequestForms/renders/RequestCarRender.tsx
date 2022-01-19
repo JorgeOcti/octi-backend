@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Field, getFormSyncErrors, getFormValues, getFormMeta, WrappedFieldArrayProps } from 'redux-form';
+import { Field, getFormMeta, getFormSyncErrors, WrappedFieldArrayProps } from 'redux-form';
 import { connect } from 'react-redux';
 import InputField from '../../../Utils/forms/InputField';
 import { inputStringRequired } from '../../../Utils/forms/validations';
@@ -7,8 +7,6 @@ import ShowIf from '../../../Utils/ShowIf';
 import MultiUploadFiles, { imageStatus } from '../../../Utils/MultiUploadFiles';
 import { IReason } from '../../../../../../../../src/request/interfaces/reason.interface';
 import BootstrapSelectField from '../../../Utils/forms/BootstrapSelectField';
-import * as swal from 'sweetalert';
-import ImageLazyLoad from '../../../Utils/ImageLazyLoad';
 import InputHiddenField from '../../../Utils/forms/InputHiddenField';
 
 
@@ -17,6 +15,7 @@ export interface IRenderItemProps {
 
 interface IPropsType extends WrappedFieldArrayProps<{}>, IRenderItemProps {
   reasons: any[],
+  colors: any[];
   syncErrors: any;
   formValues: any;
   updateFileCache: any;
@@ -50,7 +49,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
 
 
   public render(): React.ReactElement<IPropsType> {
-    const { fields, submitFailed, valid, reasons, syncErrors, query, formValues, loading, filesCache } = this.props;
+    const { fields, submitFailed, valid, reasons, colors, syncErrors, query, formValues, loading, filesCache } = this.props;
     const { openTabs, reasonSelectedState } = this.state;
     return (
       <React.Fragment>
@@ -132,16 +131,46 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                             />
                           </td>
                           <td className={`middle form-group-no-margin`}>
-                            <Field
-                              name={`${item}.color`}
-                              label='Color *'
-                              type='text'
-                              // input={{
-                              //   disabled: true
-                              // }}
-                              component={InputField}
-                              validate={[inputStringRequired]}
-                            />
+                            {
+                              colors.length ?
+                                <Field
+                                  name={`${item}.color`}
+                                  label='Color *'
+                                  // labelOff={true}
+                                  component={BootstrapSelectField}
+                                  validate={[inputStringRequired]}
+                                  props={{
+                                    noneSelectedText: 'Seleccione...',
+                                    displayItems: 2,
+                                    selectedText: 'sucursal seleccionadas.',
+                                    autoClouse: true,
+                                    sm: true,
+                                    allOption: false,
+                                    search: true,
+                                    options: [
+                                      ...colors.map((color) => ({
+                                        value: color.name,
+                                        text: color.name
+                                      }))
+                                    ],
+                                    onClick: (value: string) => {
+                                      this.props.autofill(`${item}.color`, value);
+                                    }
+                                  }}
+                                >
+                                </Field>
+                                :
+                                <Field
+                                  name={`${item}.color`}
+                                  label='Color *'
+                                  type='text'
+                                  // input={{
+                                  //   disabled: true
+                                  // }}
+                                  component={InputField}
+                                  validate={[inputStringRequired]}
+                                />
+                            }
                           </td>
                           <td className={`middle form-group-no-margin`}>
                             <Field

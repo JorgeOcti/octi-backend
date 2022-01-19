@@ -48,6 +48,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var Raven = require("raven");
+var server_1 = require("../../../server");
 var BaseAdminController = /** @class */ (function () {
     function BaseAdminController(instanceModel) {
         this.instanceModel = instanceModel;
@@ -79,22 +80,23 @@ var BaseAdminController = /** @class */ (function () {
         });
     };
     BaseAdminController.prototype.apiCreate = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var existInstance, result, e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
                             return [2 /*return*/, res.status(403).json({
                                     message: 'No tienes permisos para esta operación'
                                 })];
                         }
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 6, , 7]);
+                        _b.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, this.instanceModel.find(req.context.filter)];
                     case 2:
-                        existInstance = _a.sent();
+                        existInstance = _b.sent();
                         if (!existInstance.length) return [3 /*break*/, 3];
                         res.status(400).json({
                             message: "".concat(req.context.name, " ya existe."),
@@ -105,15 +107,21 @@ var BaseAdminController = /** @class */ (function () {
                         result = new this.instanceModel(req.context.data);
                         return [4 /*yield*/, result.save()];
                     case 4:
-                        _a.sent();
+                        _b.sent();
+                        if ((_a = req.context) === null || _a === void 0 ? void 0 : _a.socketName) {
+                            server_1.io.to(req.context.socketName).emit('REFRESH', {
+                                update: true,
+                                updatedBy: req.user._id
+                            });
+                        }
                         res.status(201).json({
                             message: "".concat(req.context.name, " creado/a satisfactoriamente."),
                             result: result
                         });
-                        _a.label = 5;
+                        _b.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_1 = _a.sent();
+                        e_1 = _b.sent();
                         /* istanbul ignore next  */
                         Raven.captureException(e_1);
                         res.status(500).json(e_1);
@@ -124,10 +132,11 @@ var BaseAdminController = /** @class */ (function () {
         });
     };
     BaseAdminController.prototype.apiUpdate = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var id, result, e_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
                             return [2 /*return*/, res.status(403).json({
@@ -135,16 +144,22 @@ var BaseAdminController = /** @class */ (function () {
                                 })];
                         }
                         id = req.params.id;
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _b.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, this.instanceModel
                                 .findOneAndUpdate(req.context.filter, req.context.data, {
                                 "new": true
                             })];
                     case 2:
-                        result = _a.sent();
+                        result = _b.sent();
                         if (result) {
+                            if ((_a = req.context) === null || _a === void 0 ? void 0 : _a.socketName) {
+                                server_1.io.to(req.context.socketName).emit('REFRESH', {
+                                    update: true,
+                                    updatedBy: req.user._id
+                                });
+                            }
                             res.status(200).json({
                                 message: "".concat(req.context.name, " editado/a satisfactoriamente."),
                                 result: result
@@ -158,7 +173,7 @@ var BaseAdminController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_2 = _a.sent();
+                        e_2 = _b.sent();
                         /* istanbul ignore next  */
                         Raven.captureException(e_2);
                         res.status(500).json(e_2);
@@ -169,10 +184,11 @@ var BaseAdminController = /** @class */ (function () {
         });
     };
     BaseAdminController.prototype.apiDelete = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var id, existInstance, e_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
                             return [2 /*return*/, res.status(403).json({
@@ -180,12 +196,12 @@ var BaseAdminController = /** @class */ (function () {
                                 })];
                         }
                         id = req.params.id;
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 6, , 7]);
+                        _b.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, this.instanceModel.findOne(req.context.filter)];
                     case 2:
-                        existInstance = _a.sent();
+                        existInstance = _b.sent();
                         if (!!existInstance) return [3 /*break*/, 3];
                         res.status(400).json({
                             message: "".concat(req.context.name, " no encontrado/a."),
@@ -194,15 +210,21 @@ var BaseAdminController = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 3: return [4 /*yield*/, existInstance.remove()];
                     case 4:
-                        _a.sent();
+                        _b.sent();
+                        if ((_a = req.context) === null || _a === void 0 ? void 0 : _a.socketName) {
+                            server_1.io.to(req.context.socketName).emit('REFRESH', {
+                                update: true,
+                                updatedBy: req.user._id
+                            });
+                        }
                         res.status(200).json({
                             id: id,
                             message: "".concat(req.context.name, " eliminado/a satisfactoriamente.")
                         });
-                        _a.label = 5;
+                        _b.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_3 = _a.sent();
+                        e_3 = _b.sent();
                         /* istanbul ignore next  */
                         Raven.captureException(e_3);
                         res.status(500).json(e_3);
@@ -225,7 +247,7 @@ var BaseAdminController = /** @class */ (function () {
                         }
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         // paginate options
-                        this.paginateOptions = __assign(__assign({}, this.paginateOptions), { page: parseInt(page ? page : "1", 10), limit: parseInt(pageSize ? pageSize : "20", 10) });
+                        this.paginateOptions = __assign(__assign({}, this.paginateOptions), { page: parseInt(page ? page : '1', 10), limit: parseInt(pageSize ? pageSize : '20', 10) });
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);

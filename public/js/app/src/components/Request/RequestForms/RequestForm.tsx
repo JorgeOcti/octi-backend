@@ -6,6 +6,7 @@ import { arrayPush, Field, FieldArray, FormErrors, getFormValues, InjectedFormPr
 import { AxiosError, default as Axios } from 'axios';
 import * as moment from 'moment';
 import { IReason } from '../../../../../../../src/request/interfaces/reason.interface';
+import { IColor } from '../../../../../../../src/app/interfaces/color.interface';
 import { ISalesChannel } from '../../../../../../../src/request/interfaces/salesChannel.interface';
 import { IOperationType } from '../../../../../../../src/request/interfaces/operationType.interface';
 import ApiService from '../../../utils/axios';
@@ -36,6 +37,7 @@ interface IStateType {
   error: Error | null;
   venues: any[];
   reasons: IReason[];
+  colors: IColor[];
   channels: ISalesChannel[];
   operationTypes: IOperationType[];
   requestSettings: IRequestSetting;
@@ -51,6 +53,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     error: null,
     venues: [],
     reasons: [],
+    colors: [],
     channels: [],
     operationTypes: [],
     requestSettings: {
@@ -94,7 +97,7 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
-    const { venues, channels, reasons, loading, exist, filesCache } = this.state;
+    const { venues, channels, reasons, colors, loading, exist, filesCache } = this.state;
     // console.log('formValues', formValues);
     const uploadingFiles = !!Object.values(filesCache).filter((files: any) => {
       return !!files.filter((file:any)=>file.status !== imageStatus.complete).length;
@@ -307,6 +310,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             component={RequestCarRender}
                             props={{
                               reasons,
+                              colors,
                               updateFileCache: this.updateFileCache,
                               filesCache,
                               loading,
@@ -476,12 +480,13 @@ class Form extends React.Component<IPropsType, IStateType> {
       .all([
         this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
         this.api.getReasons({ page: 1, pageSize: 200 }),
+        this.api.getColors({ page: 1, pageSize: 200 }),
         this.api.getSalesChannel({ page: 1, pageSize: 200 }),
         this.api.getTeamSettings(),
         this.api.getOperationTypes({ page: 1, pageSize: 200 }),
         this.api.validateContectaID(conectaID)
       ])
-      .then(Axios.spread((venues, reasons, channels, teamSettings, operationTypes, validateContecta) => {
+      .then(Axios.spread((venues, reasons, colors, channels, teamSettings, operationTypes, validateContecta) => {
         if(validateContecta.data?.error){
           this.setState({ exist: true });
           swal!('Solicitud ya creada para esta cotización', `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${validateContecta.data.number}.`, 'warning', {
@@ -492,6 +497,7 @@ class Form extends React.Component<IPropsType, IStateType> {
         }
         this.setState({
           venues: venues.data.results,
+          colors: colors.data.results,
           reasons: reasons.data.results,
           channels: channels.data.results,
           requestSettings: teamSettings.data.request,

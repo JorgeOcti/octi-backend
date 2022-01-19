@@ -1,0 +1,1 @@
+{"version":3,"file":"color.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/color.interface.ts"],"names":[],"mappings":"","sourcesContent":["import { ITeam } from './team.interface';\n\nexport interface IColor {\n  _id: any;\n  name: string,\n  team: ITeam;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

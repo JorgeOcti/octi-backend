@@ -5,6 +5,7 @@ import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
 import AdminRegionsController from './controllers/admin/region.admin.controller';
+import AdminColorsController from './controllers/admin/color.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
 import AdminRegionController from './controllers/admin/region.admin.controller';
@@ -115,6 +116,14 @@ appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionControll
 appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiCreate);
 appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiUpdate);
 appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiDelete);
+
+
+// regions
+appRouter.get('/settings/colors/', Middlewares.isLoggedIn, AdminColorsController.index);
+appRouter.get('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiList);
+appRouter.post('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiCreate);
+appRouter.patch('/api/admin/colors/:id', Middlewares.isLoggedIn, AdminColorsController.apiUpdate);
+appRouter.delete('/api/admin/colors/:id', Middlewares.isLoggedIn, AdminColorsController.apiDelete);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

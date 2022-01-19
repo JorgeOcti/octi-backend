@@ -52,6 +52,7 @@ import MilestoneListView from './components/RequestSettings/MilestoneListView';
 import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeListView';
 import FormsSettingsListView from './components/FormsSettings/FormListView';
 import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
+import ColorListView from './components/Colors/ColorsListView';
 
 
 declare let window: IWindow;
@@ -93,6 +94,7 @@ const App = () => (
         <Route exact path='/settings/labels/' component={LabelsListView} />
         <Route exact path='/settings/venues/' component={VenuesListView} />
         <Route exact path='/settings/regions/' component={RegionsListView} />
+        <Route exact path='/settings/colors/' component={ColorListView} />
         <Route exact path='/settings/carriers/' component={CarriersListView} />
         <Route exact path='/settings/companies/' component={CompaniesListView} />
         <Route exact path='/settings/alerts/' component={AlertsViews} />

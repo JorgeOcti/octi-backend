@@ -844,6 +844,30 @@ export default class ApiService {
     );
   }
 
+  public getColors({ page, pageSize }: { page: number, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/colors/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createColor(color: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/colors/`, color
+    );
+  }
+
+  public updateColor(color: any): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/colors/${color._id}/`, color
+    );
+  }
+
+  public deleteColor(color: any): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/colors/${color._id}/`
+    );
+  }
+
   public getForms(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`

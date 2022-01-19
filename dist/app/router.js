@@ -8,6 +8,7 @@ var alert_admin_controller_1 = require("./controllers/admin/alert.admin.controll
 var car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
 var carrier_admin_controller_1 = require("./controllers/admin/carrier.admin.controller");
 var region_admin_controller_1 = require("./controllers/admin/region.admin.controller");
+var color_admin_controller_1 = require("./controllers/admin/color.admin.controller");
 var company_admin_controller_1 = require("./controllers/admin/company.admin.controller");
 var permission_admin_controller_1 = require("./controllers/admin/permission.admin.controller");
 var region_admin_controller_2 = require("./controllers/admin/region.admin.controller");
@@ -99,6 +100,12 @@ appRouter.get('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region
 appRouter.post('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiCreate);
 appRouter.patch('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiUpdate);
 appRouter["delete"]('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiDelete);
+// regions
+appRouter.get('/settings/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].index);
+appRouter.get('/api/admin/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiList);
+appRouter.post('/api/admin/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiCreate);
+appRouter.patch('/api/admin/colors/:id', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiUpdate);
+appRouter["delete"]('/api/admin/colors/:id', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiDelete);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1["default"].isLoggedIn, alert_admin_controller_1["default"].index);
 // api alerts

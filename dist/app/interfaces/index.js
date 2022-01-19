@@ -26,4 +26,5 @@ __exportStar(require("./permission.interface"), exports);
 __exportStar(require("./recoverFile.interface"), exports);
 __exportStar(require("./teamSetting.interface"), exports);
 __exportStar(require("./version.interface"), exports);
+__exportStar(require("./color.interface"), exports);
 //# sourceMappingURL=index.js.map
