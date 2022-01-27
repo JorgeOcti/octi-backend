@@ -146,6 +146,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
+  name: 'appAndes',
   cookie: {
     secure: true,
     sameSite: 'none',
