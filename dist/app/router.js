@@ -129,8 +129,8 @@ appRouter.post('/api/v1/cars/', middlewares_1["default"].isJWTAuthenticated, car
 // Get User Pusher Token
 appRouter.get('/api/v1/pusher/auth/', middlewares_1["default"].isJWTAuthenticated, user_controller_1["default"].getPusherToken);
 // web login
-appRouter.get('/account/login/', app_controller_1["default"].login);
-appRouter.post('/account/login/', app_controller_1["default"].processLogin);
+appRouter.get('/account/login/', csrfProtection, app_controller_1["default"].login);
+appRouter.post('/account/login/', csrfProtection, app_controller_1["default"].processLogin);
 appRouter.get('/account/forgot-password/', csrfProtection, app_controller_1["default"].forgotPassword);
 appRouter.post('/account/forgot-password/', csrfProtection, app_controller_1["default"].processForgotPassword);
 appRouter.get('/account/recovery/:token', csrfProtection, app_controller_1["default"].recovery);

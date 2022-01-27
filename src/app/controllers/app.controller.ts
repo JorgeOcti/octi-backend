@@ -52,7 +52,7 @@ class AppController {
     if (req.user) {
       return res.redirect(next ?? '/');
     } else {
-      return res.render('app/login');
+      return res.render('app/login', {csrfToken: req.csrfToken(), next});
     }
   }
 
@@ -72,7 +72,7 @@ class AppController {
         /* istanbul ignore if */
         if (!user) {
           return res.render('app/login', {
-            username, error: 'Usuario o contraseña incorrecta.'
+            username, error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()
           });
         }
         req.login(user, (loginErr) => {

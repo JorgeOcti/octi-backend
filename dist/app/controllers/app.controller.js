@@ -79,7 +79,7 @@ var AppController = /** @class */ (function () {
             return res.redirect(next !== null && next !== void 0 ? next : '/');
         }
         else {
-            return res.render('app/login');
+            return res.render('app/login', { csrfToken: req.csrfToken(), next: next });
         }
     };
     AppController.prototype.processLogin = function (req, res, next) {
@@ -101,7 +101,7 @@ var AppController = /** @class */ (function () {
                 if (!user) {
                     return res.render('app/login', {
                         username: username_1,
-                        error: 'Usuario o contraseña incorrecta.'
+                        error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()
                     });
                 }
                 req.login(user, function (loginErr) {
