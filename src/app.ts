@@ -140,7 +140,10 @@ app.use(staticify.middleware);
 app.locals.getVersionedPath = staticify.getVersionedPath;
 app.locals.moment = moment;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
-app.set('trust proxy', 1); // trust first proxy
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // trust first proxy
+}
 app.use(cookieParser());
 app.use(session({
   resave: false,
@@ -148,12 +151,14 @@ app.use(session({
   secret: (process.env.SECRET_KEY as string),
   name: 'appAndes',
   cookie: {
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.ENV === 'production',
+    sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
     maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
   store: new redisStore({client: redisClient as any})
 }));
+
+
 
 // passport
 app.use(passport.initialize());

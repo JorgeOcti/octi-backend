@@ -33,7 +33,7 @@ html
             if error
               p.text-center.text-red=error
             form(role='form', action=`/account/login/${next ? `?next=${encodeURIComponent(next)}` : ''}`, method="post")
-              input(type='hidden', name='_csrf', value=csrfToken)
+              //input(type='hidden', name='_csrf', value=csrfToken)
               .form-group
                 .input-group
                   .input-group-addon

@@ -79,7 +79,7 @@ var AppController = /** @class */ (function () {
             return res.redirect(next !== null && next !== void 0 ? next : '/');
         }
         else {
-            return res.render('app/login');
+            return res.render('app/login', { next: next });
         }
     };
     AppController.prototype.processLogin = function (req, res, next) {

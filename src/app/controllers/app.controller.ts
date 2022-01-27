@@ -52,7 +52,7 @@ class AppController {
     if (req.user) {
       return res.redirect(next ?? '/');
     } else {
-      return res.render('app/login');
+      return res.render('app/login', { next });
     }
   }
 
