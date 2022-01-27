@@ -60,6 +60,16 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
         initialValues={{
           conectaID: query['6154722a94bba10012230aae'] || query['conectaID'],
           sellerText: query.sellerText,
+          customerInformation:{
+            rut: query.hasOwnProperty('5bf2de35caf8ef7096105c22')?query['5bf2de35caf8ef7096105c22']:'',
+            name: query.hasOwnProperty('5bf2de35caf8ef7096105c21')?query['5bf2de35caf8ef7096105c21']:'',
+            email: query.hasOwnProperty('60b9232164adc90013a79b45')?query['60b9232164adc90013a79b45']:'',
+          },
+          advancePaymentInformation: {
+            method: '',
+            number: '',
+            files: []
+          },
           cars: []
         }}
       />
@@ -74,6 +84,8 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
         operationType: values.operationType,
         venue: values.venue,
         sellerText: values.sellerText,
+        advancePaymentInformation: values.advancePaymentInformation,
+        customerInformation: values.customerInformation,
         deliveryVenue: values.deliveryVenue,
         deliveryAddress: values.deliveryAddress,
         deliveryDate: values.deliveryDate,

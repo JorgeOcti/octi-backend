@@ -2,7 +2,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
-import { arrayPush, Field, FieldArray, FormErrors, getFormValues, InjectedFormProps, reduxForm, submit, getFormError, getFormSyncErrors } from 'redux-form';
+import { arrayPush, Field, FieldArray, FormErrors, getFormSyncErrors, getFormValues, InjectedFormProps, reduxForm, submit } from 'redux-form';
 import { AxiosError, default as Axios } from 'axios';
 import * as moment from 'moment';
 import { IReason } from '../../../../../../../src/request/interfaces/reason.interface';
@@ -22,7 +22,7 @@ import InputHiddenField from '../../Utils/forms/InputHiddenField';
 import ShowIf from '../../Utils/ShowIf';
 import { IRequestSetting } from '../../../../../../../src/app/interfaces';
 import * as  swal from 'sweetalert';
-import { imageStatus } from '../../Utils/MultiUploadFiles';
+import MultiUploadFiles, { imageStatus } from '../../Utils/MultiUploadFiles';
 
 interface IPropsType extends InjectedFormProps {
   formValues: any;
@@ -100,7 +100,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     const { venues, channels, reasons, colors, loading, exist, filesCache } = this.state;
     // console.log('formValues', formValues);
     const uploadingFiles = !!Object.values(filesCache).filter((files: any) => {
-      return !!files.filter((file:any)=>file.status !== imageStatus.complete).length;
+      return !!files.filter((file: any) => file.status !== imageStatus.complete).length;
     }).length;
     return (
       <React.Fragment>
@@ -203,7 +203,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                   <Field
                                     name='conectaID'
                                     // labelOff={true}
-                                    label='ID Conecta *'
+                                    label='ID Cotización Conecta *'
                                     type='text'
                                     props={{
                                       readOnly: true
@@ -214,6 +214,154 @@ class Form extends React.Component<IPropsType, IStateType> {
                                 </td>
                               </tr>
                               </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='col-md-12'>
+                    <div className='box'>
+                      <div className='box-header with-border'>
+                        <h3 className='box-title'>Información del cliente</h3>
+                      </div>
+                      <div className='box-body create-request' style={{ paddingBottom: '0' }}>
+                        <table className='table-xs' style={{ width: '100%' }}>
+                          <tbody>
+                          <tr>
+                            <td className={'middle'} style={{ width: '200px' }}>
+                              <Field
+                                name='customerInformation.rut'
+                                label='RUT *'
+                                type='text'
+                                props={{
+                                  readOnly: query.hasOwnProperty('5bf2de35caf8ef7096105c22')
+                                }}
+                                component={InputField}
+                                validate={[inputStringRequired]}
+                              />
+                            </td>
+                            <td className={'middle'}>
+                              <Field
+                                name='customerInformation.name'
+                                label='Nombre Completo *'
+                                type='text'
+                                props={{
+                                  readOnly: query.hasOwnProperty('5bf2de35caf8ef7096105c21')
+                                }}
+                                component={InputField}
+                                validate={[inputStringRequired]}
+                              />
+                            </td>
+                            <td className={'middle'} style={{ width: '30%' }}>
+                              <Field
+                                name='customerInformation.email'
+                                label='Correo Electrónico *'
+                                type='text'
+                                props={{
+                                  readOnly: query.hasOwnProperty('60b9232164adc90013a79b45')
+                                }}
+                                component={InputField}
+                                validate={[inputStringRequired]}
+                              />
+                            </td>
+                          </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='col-md-12'>
+                    <div className='box'>
+                      <div className='box-header with-border'>
+                        <h3 className='box-title'>Datos del anticipo o la orden de compra</h3>
+                      </div>
+                      <div className='box-body create-request' style={{ paddingBottom: '0' }}>
+                        <div className='row'>
+                          <div className='col-md-12'>
+                            <table className='table-xs' style={{ width: '100%' }}>
+                          <tbody>
+                          <tr>
+                            <td className={'middle form-group-no-margin'} style={{ width: '35%' }}>
+                              <Field
+                                name='advancePaymentInformation.method'
+                                label='Método de Pago *'
+                                type='text'
+                                component={InputField}
+                                validate={[inputStringRequired]}
+                              />
+                            </td>
+                            <td className={'middle form-group-no-margin'} style={{ width: '35%' }}>
+                              <Field
+                                name='advancePaymentInformation.number'
+                                label='Nº de Ticket u Orden de Compra *'
+                                type='text'
+                                component={InputField}
+                                validate={[inputStringRequired]}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className={'middle form-group-no-margin'}>
+                              <div
+                                className={`form-group ${submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length ? 'has-error' : ''}`}>
+                                <label className='control-label text-ellipsis'>Comprobante del ticket *</label>
+                                <Field
+                                  name={`advancePaymentInformation.files`}
+                                  type='hidden'
+                                  labelOff={true}
+                                  component={InputHiddenField}
+                                  validate={[inputStringRequired]}
+                                />
+                                <MultiUploadFiles
+                                  url={'/api/v1/requests/upload-file/'}
+                                  className={submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length ? 'multi-upload-errors' : ''}
+                                  onChange={(files) => {
+                                    const lastFile = files.length ? [files[files.length - 1]] : [];
+                                    this.updateFileCache({
+                                      ...filesCache,
+                                      ['payment']: lastFile
+                                    });
+                                    this.props.autofill('advancePaymentInformation.files', lastFile);
+                                  }}
+                                  files={filesCache.hasOwnProperty('payment') ? filesCache['payment'] : []}
+                                />
+                                <ShowIf condition={submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length}>
+                                  <span className='help-block text-red'>Este campo es requerido</span>
+                                </ShowIf>
+                              </div>
+                            </td>
+                            <td className={'middle form-group-no-margin'}>
+                              <div
+                                className={`form-group ${submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length ? 'has-error' : ''}`}>
+                                <label className='control-label text-ellipsis'>Subir Carta de Reserva* *</label>
+                                <Field
+                                  name={`advancePaymentInformation.letters`}
+                                  type='hidden'
+                                  labelOff={true}
+                                  component={InputHiddenField}
+                                  validate={[inputStringRequired]}
+                                />
+                                <MultiUploadFiles
+                                  url={'/api/v1/requests/upload-file/'}
+                                  className={submitFailed && !valid && !formValues?.advancePaymentInformation?.letters?.length ? 'multi-upload-errors' : ''}
+                                  onChange={(files) => {
+                                    const lastFile = files.length ? [files[files.length - 1]] : [];
+                                    this.updateFileCache({
+                                      ...filesCache,
+                                      ['letter']: lastFile
+                                    });
+                                    this.props.autofill('advancePaymentInformation.letters', lastFile);
+                                  }}
+                                  files={filesCache.hasOwnProperty('letter') ? filesCache['letter'] : []}
+                                />
+                                <ShowIf condition={submitFailed && !valid && !formValues?.advancePaymentInformation?.letters?.length}>
+                                  <span className='help-block text-red'>Este campo es requerido</span>
+                                </ShowIf>
+                              </div>
+                            </td>
+                          </tr>
+                          </tbody>
                             </table>
                           </div>
                         </div>

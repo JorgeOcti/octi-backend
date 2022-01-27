@@ -10,6 +10,7 @@ const requestRouter = express.Router();
 
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/salfa/', Middlewares.isLoggedIn, RequestController.salfa);
 requestRouter.get('/requests/settings/reasons/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/channels/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestController.index);
@@ -21,8 +22,8 @@ requestRouter.post('/requests/vehicles/validate-conecta/', Middlewares.isLoggedI
 requestRouter.get('/requests/vehicles/create/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
-requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isJWTAuthenticated, RequestController.searhCar);

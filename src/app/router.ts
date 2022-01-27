@@ -156,8 +156,8 @@ appRouter.post('/api/v1/cars/', Middlewares.isJWTAuthenticated, CarController.cr
 appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserController.getPusherToken);
 
 // web login
-appRouter.get('/account/login/', csrfProtection, AppController.login);
-appRouter.post('/account/login/', csrfProtection, AppController.processLogin);
+appRouter.get('/account/login/', AppController.login);
+appRouter.post('/account/login/', AppController.processLogin);
 
 appRouter.get('/account/forgot-password/', csrfProtection, AppController.forgotPassword);
 appRouter.post('/account/forgot-password/', csrfProtection, AppController.processForgotPassword);

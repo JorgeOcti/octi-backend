@@ -63,6 +63,8 @@ var fs = require("fs");
 var https = require("https");
 var GraphicsMagick = require("gm");
 var moment = require("moment");
+var axios_1 = require("axios");
+var xml2js = require("xml2js");
 var bson_1 = require("bson");
 var car_model_1 = require("../../app/models/car.model");
 var team_model_1 = require("../../app/models/team.model");
@@ -519,14 +521,14 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
                         _a = req.user, company = _a.company, team = _a.team;
-                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID;
+                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 11, , 12]);
@@ -549,6 +551,8 @@ var RequestController = /** @class */ (function () {
                                 sellerText: sellerText,
                                 number: updateTeam.requestNumber,
                                 origin: venue,
+                                advancePaymentInformation: advancePaymentInformation,
+                                customerInformation: customerInformation,
                                 destination: venue,
                                 deliveryVenue: deliveryVenue,
                                 deliveryAddress: deliveryAddress,
@@ -1838,6 +1842,50 @@ var RequestController = /** @class */ (function () {
                             return [2 /*return*/];
                         });
                     }); })];
+            });
+        });
+    };
+    RequestController.prototype.salfa = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var config, instance;
+            var _this = this;
+            return __generator(this, function (_a) {
+                config = {
+                    headers: {
+                        'Content-Type': 'text/xml',
+                        'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+                        'Content-Length': '340'
+                    },
+                    auth: {
+                        username: 'USR_SOA_PI',
+                        password: 'Inicio.2130'
+                    }
+                };
+                instance = axios_1["default"].create(config);
+                instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>141981</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>')
+                    .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        xml2js.parseString(response.data, function (error, result) {
+                            var data = [];
+                            for (var _i = 0, _a = result['SOAP:Envelope']['SOAP:Body']; _i < _a.length; _i++) {
+                                var equipment = _a[_i];
+                                for (var _b = 0, _c = equipment['ns0:ZPM_GET_EQUIPMENTS.Response']; _b < _c.length; _b++) {
+                                    var detail = _c[_b];
+                                    data.push.apply(data, detail['EQUIPMENTS_INFO'][0]['item']);
+                                }
+                            }
+                            res.json({
+                                data: data,
+                                config: config
+                            });
+                        });
+                        return [2 /*return*/];
+                    });
+                }); })["catch"](function (error) {
+                    console.log(error);
+                    res.send(error);
+                });
+                return [2 /*return*/];
             });
         });
     };

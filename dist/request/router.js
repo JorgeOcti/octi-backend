@@ -12,6 +12,7 @@ var requestRouter = express.Router();
 exports.requestRouter = requestRouter;
 // web pages
 requestRouter.get('/requests/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/salfa/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].salfa);
 requestRouter.get('/requests/settings/reasons/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/channels/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/status/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
@@ -23,8 +24,8 @@ requestRouter.post('/requests/vehicles/validate-conecta/', middlewares_1["defaul
 requestRouter.get('/requests/vehicles/create/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/vehicles/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/vehicles/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
-requestRouter.get('/requests/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/create/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 // apis
 requestRouter.get('/api/v1/requests/search-car/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].searhCar);
 requestRouter.post('/api/v1/requests/upload-file/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].uploadFile);

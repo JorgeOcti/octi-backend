@@ -1,9 +1,46 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
-import {IRequest} from '../interfaces/request.interface';
+import { PaginateModel } from 'mongoose';
+import { IRequest } from '../interfaces/request.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongooseCrate from 'mongoose-crate';
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
 
-export interface IRequestModel extends IRequest, mongoose.Document {}
+export interface IRequestModel extends IRequest, mongoose.Document {
+}
+
+const customerInformationSchema = new mongoose.Schema({
+  name: {
+    type: String
+  },
+  rut: {
+    type: String
+  },
+  email: {
+    type: String
+  },
+  phone: {
+    type: String
+  }
+});
+
+const paymentInformationSchema = new mongoose.Schema({
+  method: {
+    type: String
+  },
+  number: {
+    type: String
+  },
+  files: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RequestFile'
+  }],
+  letters: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RequestFile'
+  }]
+});
 
 const requestSchema = new mongoose.Schema({
   team: {
@@ -12,6 +49,17 @@ const requestSchema = new mongoose.Schema({
   },
   number: {
     type: Number
+  },
+  customerInformation: {
+    type: customerInformationSchema,
+    default: {}
+  },
+  advancePaymentInformation: {
+    type: paymentInformationSchema,
+    default: {}
+  },
+  conectaID: {
+    type: String
   },
   origin: {
     type: mongoose.Schema.Types.ObjectId,
@@ -42,10 +90,6 @@ const requestSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // status: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'RequestStatus'
-  // },
   deliveryVenue: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
@@ -55,9 +99,6 @@ const requestSchema = new mongoose.Schema({
   },
   deliveryDate: {
     type: Date
-  },
-  conectaID: {
-    type: String
   },
 
   createdBy: {
@@ -80,6 +121,37 @@ requestSchema.set('toObject', { virtuals: true });
 requestSchema.set('toJSON', { virtuals: true });
 
 requestSchema.plugin(mongoosePaginate);
+
+requestSchema.plugin(mongooseCrate, {
+  storage: new MongooseCrateS3({
+    key: process.env.S3_KEY || s3Config.accessKeyId,
+    secret: process.env.S3_SECRET || s3Config.secretAccessKey,
+    bucket: process.env.S3_BUCKET || s3Config.bucket,
+    acl: 'public-read', // defaults to public-read
+    region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
+    // where the file is stored in the bucket - defaults to this function
+    path: (attachment: any) => {
+      /* attachment params:
+      estination:"/tmp/"
+      encoding:"7bit"s
+      fieldname:"file"
+      filename:"158df9426e29a5a057526c2cbf74397d"
+      mimetype:"image/svg+xml"
+      name:"158df9426e29a5a057526c2cbf74397d"
+      originalname:"aws-codedeploy.svg"
+      path:"/tmp/158df9426e29a5a057526c2cbf74397d"
+      size:966
+      type:"image/svg"
+      * */
+      return `/request/files/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
+    }
+  }),
+  fields: {
+    paymentInformationSchema: {
+      advancePaymentFile: {}
+    }
+  }
+});
 
 export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel>;
 

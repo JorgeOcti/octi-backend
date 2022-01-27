@@ -6,6 +6,8 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
+import axios from 'axios';
+import * as xml2js from 'xml2js';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
@@ -371,7 +373,9 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID } = req.body;
+    const {
+      cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation
+     } = req.body;
 
     try {
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
@@ -389,6 +393,8 @@ class RequestController {
         sellerText,
         number: updateTeam!.requestNumber,
         origin: venue,
+        advancePaymentInformation,
+        customerInformation,
         destination: venue,
         deliveryVenue,
         deliveryAddress,
@@ -1476,6 +1482,42 @@ class RequestController {
         }
       }
     });
+  }
+
+  public async salfa(req: IRequest, res: Response) {
+    const config = {
+       headers: {
+        'Content-Type': 'text/xml',
+        'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+        'Content-Length': '340'
+      },
+      auth: {
+        username: 'USR_SOA_PI',
+        password: 'Inicio.2130',
+      }
+    };
+    const instance = axios.create(config);
+    instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
+      '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>141981</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>'
+      )
+      .then(async (response) => {
+        xml2js.parseString(response.data, (error, result) => {
+          const data = [];
+          for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
+            for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
+              data.push(...detail['EQUIPMENTS_INFO'][0]['item']);
+            }
+          }
+          res.json({
+            data,
+            config
+          });
+        });
+      })
+      .catch(function(error) {
+        console.log(error);
+        res.send(error);
+      });
   }
 
   public async uploadFile(req: IRequest, res: Response) {
