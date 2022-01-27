@@ -168,8 +168,7 @@ app.use(session({
     saveUninitialized: false,
     secret: process.env.SECRET_KEY,
     cookie: {
-        secure: true,
-        sameSite: 'none',
+        SameSite: 'none',
         maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
     },
     store: new redisStore({ client: redis_service_1["default"] })
