@@ -188,10 +188,12 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                   <React.Fragment>
                     <div className="row summary bg-blue">
                       <div className="col-md-2">
-                        <i className="fa fa-fw fa-user" /> {request.createdBy?.firstName} {request.createdBy?.lastName}
+                        Creada por<br />
+                        <strong><i className="fa fa-fw fa-user" /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
                       </div>
                       <div className="col-md-2">
-                        <i className="fa fa-fw fa-handshake-o" /> {request.sellerText?.length ? request.sellerText : '-'}
+                        Creada por<br />
+                        <strong><i className="fa fa-fw fa-handshake-o" /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
                       </div>
                       <div className="col-md-2">
                         <i className="fa fa-fw fa-building" /> {request.destination?.name}
