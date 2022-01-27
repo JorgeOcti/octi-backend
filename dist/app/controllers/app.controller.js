@@ -101,7 +101,7 @@ var AppController = /** @class */ (function () {
                 if (!user) {
                     return res.render('app/login', {
                         username: username_1,
-                        error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()
+                        error: 'Usuario o contraseña incorrecta.'
                     });
                 }
                 req.login(user, function (loginErr) {

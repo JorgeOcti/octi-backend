@@ -72,7 +72,7 @@ class AppController {
         /* istanbul ignore if */
         if (!user) {
           return res.render('app/login', {
-            username, error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()
+            username, error: 'Usuario o contraseña incorrecta.'
           });
         }
         req.login(user, (loginErr) => {
