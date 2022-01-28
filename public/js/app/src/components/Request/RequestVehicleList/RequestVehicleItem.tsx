@@ -9,7 +9,7 @@ import {deleteRequestItemsThunkAction, updateRequestItemsThunkAction} from '../.
 import {IRequestItemsState} from '../../../actions/requestItems.types';
 import {IWindow} from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import {hasPermission} from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
@@ -442,7 +442,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private goToDetail(id: string): void {
-    this.props.history.push(`/requests/vehicles/${id}/`);
+    this.props.history.push(parseReplicableURL(`/requests/vehicles/${id}/`));
   }
 
   private downloadFiles(item: IRequestItem) {

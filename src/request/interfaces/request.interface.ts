@@ -52,6 +52,8 @@ export interface IRequest {
   status: IRequestStatus | IRequestStatusModel;
   customerInformation: IRequestCustomer;
   advancePaymentInformation: IRequestAdvancePayment;
+  conectaID: string;
+  deliveryAddress: string;
   updatedAt: Date;
   createdAt: Date;
 }

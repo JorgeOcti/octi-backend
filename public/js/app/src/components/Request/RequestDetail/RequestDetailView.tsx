@@ -21,7 +21,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
@@ -186,23 +186,71 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 Object.keys(request).length ?
                   <React.Fragment>
-                    <div className="row summary bg-blue">
-                      <div className="col-md-2">
-                        Creada por<br />
-                        <strong><i className="fa fa-fw fa-user" /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
-                      </div>
-                      <div className="col-md-2">
-                        Creada por<br />
-                        <strong><i className="fa fa-fw fa-handshake-o" /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
-                      </div>
-                      <div className="col-md-2">
-                        <i className="fa fa-fw fa-building" /> {request.destination?.name}
-                      </div>
-                      <div className="col-md-2 col-md-offset-4 text-right">
-                        <i className="fa fa-fw fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}
-                      </div>
+                    <div className={'bg-blue'} style={{padding: '5px', minWidth: '900px' }}>
+                      <table className='table table-xs bg-blue' style={{ minWidth: '900px'}}>
+                      <tbody>
+                      <tr>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}>Creada por</span><br />
+                          <strong><i className='fa fa-fw fa-user' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />
+                          <strong><i className='fa fa-fw fa-handshake' /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          Canal<br />
+                          <strong>{request.channel?.name}</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          ID Cotización<br />
+                          <strong>{request.conectaID}</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}> Sucursal</span><br />
+                          <strong><i className='fa fa-fw fa-building' /> {request.origin?.name}</strong>
+                        </td>
+                        <td style={{ width: '30%', borderTop: '0' }}>
+                          Dirección<br />
+                          <strong>{request?.deliveryAddress}</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}> Creada</span><br />
+                          <strong><i className='fa fa-fw fa-calendar' /> 10-10-20</strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
+                          <strong><i className='fa fa-fw fa-calendar-check-o' /> 10-10-20</strong>
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
                     </div>
-                    <table className="table table-xs table-hover">
+                    <div style={{ padding: '5px', backgroundColor: '#f9f9f9', minWidth: '900px' }}>
+                    <table className='table table-xs text-black' style={{ minWidth: '900px', backgroundColor: '#f9f9f9' }}>
+                      <tbody>
+                      <tr>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}>Cliente</span><br />
+                          <strong><i className='fa fa-fw fa-address-book' /> {request.customerInformation?.name} </strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          Rut Cliente<br />
+                          <strong>{request.customerInformation?.rut} </strong>
+                        </td>
+                        <td style={{borderTop: '0'}}>
+                          <span style={{ paddingLeft: '17px' }}>Correo Cliente</span><br />
+                          <strong><i className='fa fa-fw fa-envelope' /> {
+                            request.customerInformation?.email ?
+                              <a href={request.customerInformation.email}>{request.customerInformation.email}</a> : '-'
+                          } </strong>
+                        </td>
+                        <td style={{width: '40%', borderTop: '0'}} />
+                      </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                    <table className="table table-xs table-hover" style={{minWidth: '900px'}}>
                       <thead>
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
@@ -245,9 +293,9 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     </table>
                     {
                       canChangeRequest ?
-                        <div className="row" style={{marginBottom: '20px'}}>
-                          <div className="col-md-9 col-md-offset-3">
-                            <div className="container-table-add-car" style={{padding: '30px 30px', marginTop: '40px', marginBottom: '30px'}}>
+                        <div className="row" style={{minWidth: '900px'}}>
+                          <div className="col-md-10 col-md-offset-2" style={{paddingRight: '5px'}}>
+                            <div className="container-table-add-car" style={{padding: '5px', marginTop: '20px', marginBottom: '20px'}}>
                               <table className="table table-xs">
                                 <thead>
                                   <tr>
@@ -255,8 +303,8 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                     <th>Modelo</th>
                                     <th>Material</th>
                                     <th>Color</th>
-                                    <th>Motivo</th>
-                                    <th style={{width: '150px'}} />
+                                    <th style={{width: '100px'}} >Motivo</th>
+                                    <th style={{width: '100px'}} />
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -429,6 +477,11 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                   </React.Fragment>
                   : null
               }
+            </div>
+            <div className='box-footer text-right'>
+              <button className='btn btn-sm btn-default' onClick={()=>{
+                this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
+              }}><i className='fa fa-fw fa-rotate-left' /> Volver a vehículos</button>
             </div>
             {
               loading &&

@@ -141,18 +141,20 @@ app.locals.getVersionedPath = staticify.getVersionedPath;
 app.locals.moment = moment;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1); // trust first proxy
-}
+// if (process.env.NODE_ENV === 'production') {
+//
+// }
+app.set('trust proxy', 1); // trust first proxy
 app.use(cookieParser());
 app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
-  name: 'appAndes',
   cookie: {
-    secure: process.env.ENV === 'production',
-    sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
+    // secure: process.env.ENV === 'production',
+    // sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
+    secure: true,
+    sameSite: 'none',
     maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
   store: new redisStore({client: redisClient as any})
