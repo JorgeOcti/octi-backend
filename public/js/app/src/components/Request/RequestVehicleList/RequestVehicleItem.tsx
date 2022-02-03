@@ -348,7 +348,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                     <option key={req._id} value={req._id}>{req.name}</option>
                   ))
                 }
-
               </select>
             </td>
             : <td className="middle">{item.status?.name}</td>
@@ -407,8 +406,8 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               : <td className="middle">{item.reason?.name}</td>
           }
         </ShowIf>
-        <ShowIf condition={requestSettings.conectaID}>
-          <td className="middle">{item.request.conectaID}</td>
+        <ShowIf condition={requestSettings.ticket}>
+          <td className="middle">{item.request.advancePaymentInformation?.number}</td>
         </ShowIf>
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}

@@ -263,7 +263,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
-                  <ShowIf condition={requestSettings.conectaID}>
+                  <ShowIf condition={requestSettings.ticket}>
                     <div className='col-md-3'>
                       <div className='form-group'>
                         <label className='control-label'>
@@ -272,10 +272,10 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <input
                           type='text'
                           className='form-control input-sm'
-                          placeholder='Nº de partida: S14795'
-                          defaultValue={filters.conectaID}
+                          placeholder='Nº de ticket: 14795'
+                          defaultValue={filters.ticket}
                           onChange={(e) => {
-                            this.changeFilterDebounced('conectaID', e.target.value);
+                            this.changeFilterDebounced('ticket', e.target.value);
                           }}
                         />
                       </div>
@@ -559,7 +559,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                             className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
                       </ShowIf>
-                      <ShowIf condition={requestSettings.conectaID}>
+                      <ShowIf condition={requestSettings.ticket}>
                         <th className='middle pointer'>
                           Ticket
                         </th>

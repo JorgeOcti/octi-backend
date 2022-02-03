@@ -42,6 +42,7 @@ export interface IRequestSetting {
   entry: boolean;
   reason: boolean;
   conectaID: boolean;
+  ticket: boolean;
   priority: boolean;
   internalNumber: boolean;
   internalNumberRequired: boolean;

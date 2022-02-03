@@ -26,6 +26,7 @@ async function migrateSalfa() {
           denominationReadOnly: isSalfa,
           colorReadOnly: isSalfa,
           materialReadOnly: isSalfa,
+          ticket: isSalfa,
           conectaID: isSalfa,
           reason: !isSalfa,
           priority: !isSalfa,

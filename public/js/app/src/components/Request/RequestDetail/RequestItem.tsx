@@ -63,7 +63,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { item, index } = this.props;
+    const { item, index, request } = this.props;
     const { requestItemStatus, reasons, requestSettings } = this.props.requests;
     const { recommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
@@ -303,7 +303,17 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">{item.status?.name}</td>
         }
         <ShowIf condition={requestSettings.conectaID}>
-          <td className="middle">{item.request?.conectaID}</td>
+          <td className='middle-center'>
+            {
+              //request.advancePaymentInformation.files[0].file.url
+              request.advancePaymentInformation?.files?.length ?
+                <i
+                  className='fa fa-check-circle text-green pointer'
+                  onClick={() => this.openBlank(request.advancePaymentInformation.files[0].file.url)}
+                /> : ''
+            }
+          </td>
+          <td className='middle'>{request.advancePaymentInformation?.number}</td>
         </ShowIf>
         <ShowIf condition={requestSettings.internalNumber}>
           {
@@ -540,8 +550,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
 
   private downloadFiles(item: IRequestItem) {
     if (item.files && item.files.length) {
-      window.open(`/requests-item/${item._id}/download-files/`, '_blank');
+      this.openBlank(`/requests-item/${item._id}/download-files/`);
     }
+  }
+
+  private openBlank(url: string) {
+      window.open(url, '_blank');
   }
 
   private search(text: string): void {

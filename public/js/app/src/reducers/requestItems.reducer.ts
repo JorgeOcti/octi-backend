@@ -31,7 +31,7 @@ const initialState: IRequestItemsState = {
   requestSettings,
   filters: {
     request: '',
-    conectaID: '',
+    ticket: '',
     entry: '',
     text: '',
     venues: [],

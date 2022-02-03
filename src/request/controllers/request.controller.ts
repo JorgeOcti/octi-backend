@@ -65,6 +65,8 @@ class RequestController {
     path: 'createdBy',
     select: ['firstName', 'lastName']
   }, {
+    path: 'advancePaymentInformation.files'
+  }, {
     path: 'items',
     options: {
       sort: {
@@ -531,12 +533,12 @@ class RequestController {
         'car.property': { $in: filters.properties.map((s: any) => s) }
       });
     }
-    if (filters.conectaID && filters.conectaID.length) {
+    if (filters.ticket && filters.ticket.length) {
       if (!extraMatch.hasOwnProperty('$or')) {
         extraMatch.$or = [];
       }
       extraMatch.$or.push({
-        'request.conectaID': filters.conectaID
+        'request.advancePaymentInformation.number': filters.ticket
       });
     }
     try {
@@ -605,6 +607,7 @@ class RequestController {
             'request.createdBy.firstName': 1,
             'request.createdBy.lastName': 1,
             'request.conectaID': 1,
+            'request.advancePaymentInformation': 1,
             'priority': 1,
             'observation': 1,
             'equipment': 1,
@@ -694,10 +697,12 @@ class RequestController {
             select: ['_id']
           }, {
             path: 'request',
-            select: ['number', 'createdAt', 'conectaID',],
+            select: ['number', 'createdAt', 'conectaID', 'advancePaymentInformation'],
             populate: [{
               path: 'createdBy',
               select: ['firstName', 'lastName']
+            },{
+              path: 'advancePaymentInformation.files',
             }]
           }, {
             path: 'car',

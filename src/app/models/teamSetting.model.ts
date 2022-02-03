@@ -170,6 +170,10 @@ const requestSettingSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  ticket: {
+    type: Boolean,
+    default: true
+  },
   priority: {
     type: Boolean,
     default: true

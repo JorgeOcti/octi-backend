@@ -117,6 +117,8 @@ var RequestController = /** @class */ (function () {
                 path: 'createdBy',
                 select: ['firstName', 'lastName']
             }, {
+                path: 'advancePaymentInformation.files'
+            }, {
                 path: 'items',
                 options: {
                     sort: {
@@ -706,12 +708,12 @@ var RequestController = /** @class */ (function () {
                                 'car.property': { $in: filters.properties.map(function (s) { return s; }) }
                             });
                         }
-                        if (filters.conectaID && filters.conectaID.length) {
+                        if (filters.ticket && filters.ticket.length) {
                             if (!extraMatch.hasOwnProperty('$or')) {
                                 extraMatch.$or = [];
                             }
                             extraMatch.$or.push({
-                                'request.conectaID': filters.conectaID
+                                'request.advancePaymentInformation.number': filters.ticket
                             });
                         }
                         _d.label = 1;
@@ -777,6 +779,7 @@ var RequestController = /** @class */ (function () {
                                     'request.createdBy.firstName': 1,
                                     'request.createdBy.lastName': 1,
                                     'request.conectaID': 1,
+                                    'request.advancePaymentInformation': 1,
                                     'priority': 1,
                                     'observation': 1,
                                     'equipment': 1,
@@ -866,10 +869,12 @@ var RequestController = /** @class */ (function () {
                                     select: ['_id']
                                 }, {
                                     path: 'request',
-                                    select: ['number', 'createdAt', 'conectaID',],
+                                    select: ['number', 'createdAt', 'conectaID', 'advancePaymentInformation'],
                                     populate: [{
                                             path: 'createdBy',
                                             select: ['firstName', 'lastName']
+                                        }, {
+                                            path: 'advancePaymentInformation.files'
                                         }]
                                 }, {
                                     path: 'car',
