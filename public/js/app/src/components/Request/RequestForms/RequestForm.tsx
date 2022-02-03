@@ -23,6 +23,7 @@ import ShowIf from '../../Utils/ShowIf';
 import { IRequestSetting } from '../../../../../../../src/app/interfaces';
 import * as  swal from 'sweetalert';
 import MultiUploadFiles, { imageStatus } from '../../Utils/MultiUploadFiles';
+import { requestSettings } from '../defaults';
 
 interface IPropsType extends InjectedFormProps {
   formValues: any;
@@ -56,17 +57,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     colors: [],
     channels: [],
     operationTypes: [],
-    requestSettings: {
-      color: false,
-      colorRequired: false,
-      denomination: false,
-      denominationRequired: false,
-      internalNumber: false,
-      internalNumberRequired: false,
-      internalNumberText: 'Número interno',
-      material: false,
-      materialRequired: false
-    },
+    requestSettings,
     loading: false,
     exist: false,
   };

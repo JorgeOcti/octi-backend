@@ -1,0 +1,20 @@
+export const requestSettings = {
+  brand: false,
+  brandReadOnly: false,
+  color: false,
+  colorReadOnly: false,
+  colorRequired: false,
+  denomination: false,
+  denominationReadOnly: false,
+  denominationRequired: false,
+  internalNumber: false,
+  internalNumberRequired: false,
+  internalNumberText: 'Número interno',
+  material: false,
+  materialRequired: false,
+  materialReadOnly: false,
+  reason: false,
+  entry: false,
+  priority: false,
+  conectaID: false
+};

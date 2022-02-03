@@ -4,9 +4,11 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequest } from '../../../../../src/request/interfaces/request.interface';
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
+import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export const REQUEST_CANCEL_REQUEST = '/REQUESTS/CANCEL_REQUEST';
 export const REQUEST_IS_LOADING = '/REQUESTS/IS_LOADING';
+export const REQUEST_LOAD_SETTINGS = '/REQUESTS/REQUEST_LOAD_SETTINGS';
 export const REQUEST_LOAD_REASONS = '/REQUESTS/LOAD_REASONS';
 export const REQUEST_LOAD_REQUEST_ITEM_STATUS = '/REQUESTS/LOAD_REQUEST_ITEM_STATUS';
 export const REQUEST_LOAD_CARRIERS = '/REQUESTS/LOAD_CARRIERS';
@@ -34,6 +36,7 @@ export interface IRequestsState {
   request: Partial<IRequest> | IRequest;
   loading: boolean;
   source: CancelTokenSource | null;
+  requestSettings: IRequestSetting;
   options: {
     orderBy: string;
     orderType: string;
@@ -72,6 +75,13 @@ export interface ILoadRequestItemStatus {
     requestItemStatus: IRequestItemStatus[];
     min: number;
     max: number;
+  };
+}
+
+export interface ILoadSettingsRequest {
+  type: typeof REQUEST_LOAD_SETTINGS;
+  payload: {
+    requestSettings: IRequestSetting;
   };
 }
 
@@ -174,6 +184,7 @@ export type RequestsReduxActions =
   IUpdateRequestItemInList |
   IDeleteRequestItemInList |
   IDeleteRequestInList |
+  ILoadSettingsRequest |
   ICreateRequestItemInDetail |
   IUpdateRequestItemInDetail |
   IDeleteRequestItemInDetail |

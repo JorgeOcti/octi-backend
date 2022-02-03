@@ -15,6 +15,7 @@ import {
   REQUEST_ITEMS_LOAD_VENUES,
   REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS
 } from '../actions/requestItems.types';
+import { requestSettings } from '../components/Request/defaults';
 
 const initialState: IRequestItemsState = {
   requestItems: [],
@@ -27,19 +28,10 @@ const initialState: IRequestItemsState = {
   requestItemStatusMax: 100,
   loading: true,
   source: null,
-  requestSettings: {
-    color: false,
-    colorRequired: false,
-    denomination: false,
-    denominationRequired: false,
-    internalNumber: false,
-    internalNumberRequired: false,
-    internalNumberText: "Número interno",
-    material: false,
-    materialRequired: false
-  },
+  requestSettings,
   filters: {
     request: '',
+    conectaID: '',
     entry: '',
     text: '',
     venues: [],

@@ -531,6 +531,14 @@ class RequestController {
         'car.property': { $in: filters.properties.map((s: any) => s) }
       });
     }
+    if (filters.conectaID && filters.conectaID.length) {
+      if (!extraMatch.hasOwnProperty('$or')) {
+        extraMatch.$or = [];
+      }
+      extraMatch.$or.push({
+        'request.conectaID': filters.conectaID
+      });
+    }
     try {
       if (orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
         if (filters && filters.transmitttalModule) {
@@ -596,6 +604,7 @@ class RequestController {
             'transmittal.number': 1,
             'request.createdBy.firstName': 1,
             'request.createdBy.lastName': 1,
+            'request.conectaID': 1,
             'priority': 1,
             'observation': 1,
             'equipment': 1,
@@ -685,7 +694,7 @@ class RequestController {
             select: ['_id']
           }, {
             path: 'request',
-            select: ['number', 'createdAt'],
+            select: ['number', 'createdAt', 'conectaID',],
             populate: [{
               path: 'createdBy',
               select: ['firstName', 'lastName']
@@ -1498,7 +1507,7 @@ class RequestController {
     };
     const instance = axios.create(config);
     instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
-      '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>141981</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>'
+      '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>161120</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>'
       )
       .then(async (response) => {
         xml2js.parseString(response.data, (error, result) => {

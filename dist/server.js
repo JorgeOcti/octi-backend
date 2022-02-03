@@ -79,6 +79,7 @@ var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) 
         console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
         console.log("".concat(logger_service_1["default"].colors.brighCyan, "OSA-ANDES ").concat(logger_service_1["default"].colors.white, "v2.1.3 ").concat(logger_service_1["default"].colors.red, "RELEASE ").concat(logger_service_1["default"].colors.brighGreen, "NODE ").concat(logger_service_1["default"].colors.white).concat(process.version).concat(logger_service_1["default"].colors.reset));
         console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
+        console.log("process.env.ENV ".concat(process.env.ENV));
         console.log('is running at http://localhost:%s in %s mode', app_1["default"].get('port'), app_1["default"].get('env'));
         console.log("".concat(logger_service_1["default"].colors.brightBlack, "Press CTRL-C to stop").concat(logger_service_1["default"].colors.reset));
     }

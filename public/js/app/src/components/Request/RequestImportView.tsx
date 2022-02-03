@@ -21,6 +21,7 @@ import { IReason } from '../../../../../../src/request/interfaces/reason.interfa
 import { IVenue } from '../../../../../../src/app/interfaces/venue.interface';
 import RequestImportForm from './RequestImportForm/RequestImportForm';
 import { submit } from 'redux-form';
+import { requestSettings } from './defaults';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -57,17 +58,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
     reasons: [],
     channels: [],
     operationTypes: [],
-    requestSettings: {
-      color: false,
-      colorRequired: false,
-      denomination: false,
-      denominationRequired: false,
-      internalNumber: false,
-      internalNumberRequired: false,
-      internalNumberText: 'Número interno',
-      material: false,
-      materialRequired: false
-    }
+    requestSettings
   };
 
   constructor(props: IPropsType) {

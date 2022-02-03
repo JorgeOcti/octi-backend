@@ -25,6 +25,7 @@ import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
+import ShowIf from '../../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -159,7 +160,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { request, loading, reasons} = this.props.requests;
+    const { request, loading, reasons, requestSettings} = this.props.requests;
     const { recommends, car } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
@@ -254,16 +255,33 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       <thead>
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
-                          <th className="middle" style={{ width: '28px' }} />
+                          <ShowIf condition={requestSettings.priority}>
+                            <th className="middle" style={{ width: '28px' }} />
+                          </ShowIf>
                           <th className="middle" style={{ width: '10px' }}>Propiedad</th>
-                          <th className="middle" style={{ minWidth: '100px' }}>Marca</th>
-                          <th className="middle" style={{ minWidth: '160px' }}>Modelo</th>
-                          <th className="middle" style={{ width: '100px' }}>Material</th>
-                          <th className="middle" style={{ width: '100px' }}>Color</th>
-                          <th className="middle" style={{ minWidth: '120px' }}>Estado</th>
+                          <ShowIf condition={requestSettings.brand}>
+                            <th className="middle" style={{ minWidth: '100px' }}>Marca</th>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.denomination}>
+                            <th className="middle" style={{ minWidth: '160px' }}>Modelo</th>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.material}>
+                            <th className="middle" style={{ width: '100px' }}>Material</th>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.color}>
+                            <th className="middle" style={{ width: '100px' }}>Color</th>
+                          </ShowIf>
                           <th className="middle" style={{ width: '125px' }}>VIN</th>
-                          <th className="middle" style={{ width: '80px' }}>CDO</th>
-                          <th className="middle" style={{ minWidth: '100px' }}>Motivo</th>
+                          <th className="middle" style={{ minWidth: '120px' }}>Estado</th>
+                          <ShowIf condition={requestSettings.conectaID}>
+                            <th className="middle" style={{ width: '100px' }}>Nº Ticket</th>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.internalNumber}>
+                            <th className="middle" style={{ width: '80px' }}>CDO</th>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.reason}>
+                            <th className="middle" style={{ minWidth: '100px' }}>Motivo</th>
+                          </ShowIf>
                           {/* <th className="middle">Carrocería</th>
                           <th className="middle">Pre-Entrega</th> */}
                           <th className="middle" style={{ width: '40px' }}>Adj</th>
@@ -299,81 +317,99 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                               <table className="table table-xs">
                                 <thead>
                                   <tr>
-                                    <th>Marca</th>
-                                    <th>Modelo</th>
-                                    <th>Material</th>
-                                    <th>Color</th>
-                                    <th style={{width: '100px'}} >Motivo</th>
+                                    <ShowIf condition={requestSettings.brand}>
+                                      <th>Marca</th>
+                                    </ShowIf>
+                                    <ShowIf condition={requestSettings.denomination}>
+                                      <th>Modelo</th>
+                                    </ShowIf>
+                                    <ShowIf condition={requestSettings.material}>
+                                      <th>Material</th>
+                                    </ShowIf>
+                                    <ShowIf condition={requestSettings.color}>
+                                      <th>Color</th>
+                                    </ShowIf>
+                                    <ShowIf condition={requestSettings.reason}>
+                                      <th style={{width: '100px'}} >Motivo</th>
+                                    </ShowIf>º
                                     <th style={{width: '100px'}} />
                                   </tr>
                                 </thead>
                                 <tbody>
                                   <tr>
                                     <td>
-                                      <AutocompleteInput
-                                        value={car.brand}
-                                        inputClass={'input-sm'}
-                                        items={recommends}
-                                        renderItem={(car, index) => (
-                                          <div key={index} className="item">
-                                            {car.denomination} <br />
-                                            <strong>{car.brand}</strong>
-                                          </div>
-                                        )}
-                                        onChange={(e) => {
-                                          const { value } = e.target;
-                                          this.setState({
-                                            car: {
-                                              ...this.state.car,
-                                              brand: value
-                                            }
-                                          });
-                                          this.search(value);
-                                        }}
-                                        onSelect={(car: any) => {
-                                          this.setState({
-                                            car: {
-                                              ...this.state.car,
-                                              brand: car.brand,
-                                              denomination: car.denomination,
-                                              material: car.material ?? ''
-                                            }
-                                          });
-                                        }}
-                                      />
+                                      <ShowIf condition={requestSettings.brand}>
+                                        <ShowIf condition={!requestSettings.brandReadOnly} alternative={car.brand}>
+                                          <AutocompleteInput
+                                            value={car.brand}
+                                            inputClass={'input-sm'}
+                                            items={recommends}
+                                            renderItem={(car, index) => (
+                                              <div key={index} className='item'>
+                                                {car.denomination} <br />
+                                                <strong>{car.brand}</strong>
+                                              </div>
+                                            )}
+                                            onChange={(e) => {
+                                              const { value } = e.target;
+                                              this.setState({
+                                                car: {
+                                                  ...this.state.car,
+                                                  brand: value
+                                                }
+                                              });
+                                              this.search(value);
+                                            }}
+                                            onSelect={(car: any) => {
+                                              this.setState({
+                                                car: {
+                                                  ...this.state.car,
+                                                  brand: car.brand,
+                                                  denomination: car.denomination,
+                                                  material: car.material ?? ''
+                                                }
+                                              });
+                                            }}
+                                          />
+                                        </ShowIf>
+                                      </ShowIf>
                                     </td>
                                     <td>
-                                      <AutocompleteInput
-                                        value={car.denomination}
-                                        inputClass={'input-sm'}
-                                        items={recommends}
-                                        renderItem={(car, index) => (
-                                          <div key={index} className="item">
-                                            {car.denomination} <br />
-                                            <strong>{car.denomination}</strong>
-                                          </div>
-                                        )}
-                                        onChange={(e) => {
-                                          const { value } = e.target;
-                                          this.setState({
-                                            car: {
-                                              ...this.state.car,
-                                              denomination: value
-                                            }
-                                          });
-                                          this.search(value);
-                                        }}
-                                        onSelect={(car: any) => {
-                                          this.setState({
-                                            car: {
-                                              ...this.state.car,
-                                              brand: car.brand,
-                                              denomination: car.denomination,
-                                              material: car.material ?? ''
-                                            }
-                                          });
-                                        }}
-                                      />
+                                      <ShowIf condition={requestSettings.denomination}>
+                                        <ShowIf condition={!requestSettings.denominationReadOnly} alternative={car.denomination}>
+                                          <AutocompleteInput
+                                            value={car.denomination}
+                                            inputClass={'input-sm'}
+                                            items={recommends}
+                                            renderItem={(car, index) => (
+                                              <div key={index} className='item'>
+                                                {car.denomination} <br />
+                                                <strong>{car.denomination}</strong>
+                                              </div>
+                                            )}
+                                            onChange={(e) => {
+                                              const { value } = e.target;
+                                              this.setState({
+                                                car: {
+                                                  ...this.state.car,
+                                                  denomination: value
+                                                }
+                                              });
+                                              this.search(value);
+                                            }}
+                                            onSelect={(car: any) => {
+                                              this.setState({
+                                                car: {
+                                                  ...this.state.car,
+                                                  brand: car.brand,
+                                                  denomination: car.denomination,
+                                                  material: car.material ?? ''
+                                                }
+                                              });
+                                            }}
+                                          />
+                                        </ShowIf>
+                                      </ShowIf>
                                     </td>
                                     <td>
                                       <AutocompleteInput

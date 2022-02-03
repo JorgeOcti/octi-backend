@@ -17,6 +17,7 @@ import {
   IDeleteRequestItemInList,
   IIsLoadingRequest,
   ILoadCarriersRequest,
+  ILoadSettingsRequest,
   ILoadReasonsRequest,
   ILoadRequest,
   ILoadRequestItemStatus,
@@ -41,8 +42,11 @@ import {
   REQUEST_LOAD_REQUEST_ITEM_STATUS,
   REQUEST_TAB_STATUS,
   REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
-  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
+  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
+  REQUEST_LOAD_SETTINGS
 } from './requests.types';
+import { IRequestSetting } from '../../../../../src/app/interfaces';
+
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   return {
@@ -87,6 +91,15 @@ export function loadRequestItemsStatusRequestAction(requestItemStatus: IRequestI
       requestItemStatus,
       min,
       max
+    }
+  };
+}
+
+export function loadRequestItemsSettingsAction(requestSettings: IRequestSetting): ILoadSettingsRequest {
+  return {
+    type: REQUEST_LOAD_SETTINGS,
+    payload: {
+      requestSettings
     }
   };
 }
@@ -236,14 +249,16 @@ export function getRequestThunkAction(id: string) {
       .all([
         api.getRequest(id),
         api.getReasons({ page: 1, pageSize: 200 }),
-        api.getRequestItemsStatus({ page: 1, pageSize: 200 })
+        api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
+        api.getTeamSettings()
         // api.getCarriers(1, 200)
       ])
-      .then(Axios.spread((request, reasons, requestItemStatus /*, carriers*/) => {
+      .then(Axios.spread((request, reasons, requestItemStatus, teamsettings /*, carriers*/) => {
         const { data } = request;
         dispatch(loadRequestAction(data));
         dispatch(loadReasonsRequestAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
+        dispatch(loadRequestItemsSettingsAction(teamsettings.data.request));
         // dispatch(loadCarriersRequestAction(carriers.data.results));
         dispatch(isLoadingRequestAction(false));
       }))

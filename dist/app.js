@@ -172,9 +172,9 @@ app.use(session({
     saveUninitialized: false,
     secret: process.env.SECRET_KEY,
     cookie: {
-        // secure: process.env.ENV === 'production',
+        secure: process.env.ENV === 'production',
         // sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
-        secure: true,
+        // secure: true,
         sameSite: 'none',
         maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
     },

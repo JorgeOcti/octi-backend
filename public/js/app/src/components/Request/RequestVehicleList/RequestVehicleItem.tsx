@@ -81,22 +81,24 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
+        <ShowIf condition={requestSettings.priority}>
+          <td
+            className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
+            onClick={canChangeRequest ? () => {
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  priority: !item.priority
+                },
+                debounce: false
+              });
+            } : undefined}
+          >
+            {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-gray' />}
+          </td>
+        </ShowIf>
         <td
-          className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
-          onClick={canChangeRequest ? () => {
-            this.props.updateRequestItemsThunkAction({
-              item: {
-                ...item,
-                priority: !item.priority
-              },
-              debounce: false
-            });
-          } : undefined}
-        >
-          {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-gray" />}
-        </td>
-        <td
-          className="middle pointer"
+          className="middle-center pointer"
           onClick={() => this.goToDetail(item.request._id)}
         >
             <strong className="text-underline">#{item.request?.number}</strong>
@@ -113,7 +115,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td className="middle" style={{fontSize: '80%'}}>{item.destination?.name ?? '-'}</td>
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         {
-          canChangeRequest ?
+          canChangeRequest && !requestSettings.brandReadOnly ?
             <td className="middle">
               <AutocompleteInput
                 value={item.car.brand}
@@ -180,32 +182,34 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             </td>
             : <td className="middle">{item.car.vin}</td>
         }
-        {
-          canChangeRequest ?
-            <td className="middle">
-              <input
-                type="text"
-                className="form-control input-sm"
-                defaultValue={item.car.entry}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        entry: e.target.value
-                      }
-                    },
-                    debounce: true
-                  });
-                }}
-              />
-            </td>
-            : <td className="middle">{item.car.entry}</td>
-        }
-        <ShowIf condition={requestSettings.denomination}>
+        <ShowIf condition={requestSettings.entry}>
           {
             canChangeRequest ?
+              <td className="middle">
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  defaultValue={item.car.entry}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    this.props.updateRequestItemsThunkAction({
+                      item: {
+                        ...item,
+                        car: {
+                          ...item.car,
+                          entry: e.target.value
+                        }
+                      },
+                      debounce: true
+                    });
+                  }}
+                />
+              </td>
+              : <td className="middle">{item.car.entry}</td>
+          }
+        </ShowIf>
+        <ShowIf condition={requestSettings.denomination}>
+          {
+            canChangeRequest && !requestSettings.denominationReadOnly ?
               <td className="middle">
                 <AutocompleteInput
                   value={item.car.denomination}
@@ -252,7 +256,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         <ShowIf condition={requestSettings.material}>
           {
-            canChangeRequest ?
+            canChangeRequest && !requestSettings.materialReadOnly ?
               <td className="middle">
                 <AutocompleteInput
                   value={item.car.material}
@@ -299,7 +303,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         <ShowIf condition={requestSettings.color}>
           {
-            canChangeRequest ?
+            canChangeRequest && !requestSettings.colorReadOnly  ?
               <td className="middle">
                 <input type="text"
                   className="form-control input-sm"
@@ -373,34 +377,39 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               : <td className="middle">{item.car.internalNumber}</td>
           }
         </ShowIf>
-        {
-          canChangeRequest ?
-            <td className="middle">
-              <select
-                className="form-control select-sm font-12" value={item.reason?._id ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      reason: {
-                        ...item.reason,
-                        _id: e.target.value
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              >
-                <option value="" disabled={true}>-</option>
-                {
-                  reasons.map((reason) => (
-                    <option key={reason._id} value={reason._id}>{reason.name}</option>
-                  ))
-                }
-              </select>
-            </td>
-            : <td className="middle">{item.reason?.name}</td>
-        }
+        <ShowIf condition={requestSettings.reason}>
+          {
+            canChangeRequest ?
+              <td className="middle">
+                <select
+                  className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    this.props.updateRequestItemsThunkAction({
+                      item: {
+                        ...item,
+                        reason: {
+                          ...item.reason,
+                          _id: e.target.value
+                        }
+                      },
+                      debounce: false
+                    });
+                  }}
+                >
+                  <option value="" disabled={true}>-</option>
+                  {
+                    reasons.map((reason) => (
+                      <option key={reason._id} value={reason._id}>{reason.name}</option>
+                    ))
+                  }
+                </select>
+              </td>
+              : <td className="middle">{item.reason?.name}</td>
+          }
+        </ShowIf>
+        <ShowIf condition={requestSettings.conectaID}>
+          <td className="middle">{item.request.conectaID}</td>
+        </ShowIf>
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
           style={{ fontSize: '80%' }}
@@ -464,42 +473,22 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteRequestItem(item: IRequestItem) {
-    const { requestItems } = this.props;
-    // if (request.items.length > 1) {
-      swal({
-        title: '¿Estás seguro?',
-        text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
-        icon: 'warning',
-        dangerMode: true,
-        buttons: {
-          cancel: 'Cancelar' as any,
-          confirm: {
-            text: 'Sí'
-          }
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
         }
-      }).then((willDelete) => {
-        if (willDelete) {
-          this.props.deleteRequestItemsThunkAction(item._id);
-        }
-      });
-    // } else {
-    //   swal({
-    //     title: '¿Estás seguro?',
-    //     text: `Si eliminas este último vehículo, vas a eliminar esta solicitud.`,
-    //     icon: 'warning',
-    //     dangerMode: true,
-    //     buttons: {
-    //       cancel: 'Cancelar' as any,
-    //       confirm: {
-    //         text: 'Sí'
-    //       }
-    //     }
-    //   }).then((willDelete) => {
-    //     if (willDelete) {
-    //       this.props.deleteRequestThunkAction(request._id);
-    //     }
-    //   });
-    // }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteRequestItemsThunkAction(item._id);
+      }
+    });
   }
 }
 

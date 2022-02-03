@@ -18,6 +18,7 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
 import { parseReplicableURL } from '../../utils/common';
+import { requestSettings } from './defaults';
 
 
 interface IPropsType extends RouteComponentProps<{}> {
@@ -89,17 +90,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     venues: [],
     reasons: [],
     channels: [],
-    requestSettings: {
-      color: false,
-      colorRequired: false,
-      denomination: false,
-      denominationRequired: false,
-      internalNumber: false,
-      internalNumberRequired: false,
-      internalNumberText: 'Número interno',
-      material: false,
-      materialRequired: false
-    },
+    requestSettings,
     operationTypes: [],
     operationType: '',
     loading: false,

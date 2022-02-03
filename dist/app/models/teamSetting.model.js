@@ -111,7 +111,19 @@ var inventorySettingSchema = new mongoose.Schema({
     }
 });
 var requestSettingSchema = new mongoose.Schema({
+    brand: {
+        type: Boolean,
+        "default": true
+    },
+    brandReadOnly: {
+        type: Boolean,
+        "default": true
+    },
     denomination: {
+        type: Boolean,
+        "default": true
+    },
+    denominationReadOnly: {
         type: Boolean,
         "default": true
     },
@@ -123,6 +135,10 @@ var requestSettingSchema = new mongoose.Schema({
         type: Boolean,
         "default": true
     },
+    materialReadOnly: {
+        type: Boolean,
+        "default": true
+    },
     materialRequired: {
         type: Boolean,
         "default": true
@@ -131,7 +147,19 @@ var requestSettingSchema = new mongoose.Schema({
         type: Boolean,
         "default": true
     },
+    colorReadOnly: {
+        type: Boolean,
+        "default": true
+    },
     colorRequired: {
+        type: Boolean,
+        "default": true
+    },
+    entry: {
+        type: Boolean,
+        "default": true
+    },
+    priority: {
         type: Boolean,
         "default": true
     },
@@ -146,6 +174,14 @@ var requestSettingSchema = new mongoose.Schema({
     internalNumberText: {
         type: String,
         "default": 'Número interno'
+    },
+    conectaID: {
+        type: Boolean,
+        "default": true
+    },
+    reason: {
+        type: Boolean,
+        "default": true
     }
 });
 var teamSettingSchema = new mongoose.Schema({

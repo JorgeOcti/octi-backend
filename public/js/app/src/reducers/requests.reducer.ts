@@ -1,7 +1,6 @@
 import * as moment from 'moment-timezone';
 import {
   IRequestsState,
-  RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
   REQUEST_CHANGE_ORDER,
   REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL,
@@ -13,12 +12,15 @@ import {
   REQUEST_LOAD_CARRIERS,
   REQUEST_LOAD_REASONS,
   REQUEST_LOAD_REQUEST,
-  REQUEST_LOAD_REQUESTS,
   REQUEST_LOAD_REQUEST_ITEM_STATUS,
+  REQUEST_LOAD_REQUESTS,
+  REQUEST_LOAD_SETTINGS,
   REQUEST_TAB_STATUS,
   REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
-  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
+  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
+  RequestsReduxActions
 } from '../actions/requests.types';
+import { requestSettings } from '../components/Request/defaults';
 
 const initialState: IRequestsState = {
   requests: [],
@@ -32,6 +34,7 @@ const initialState: IRequestsState = {
   request: {},
   loading: true,
   source: null,
+  requestSettings,
   options:{
     orderBy: '_id',
     orderType: 'descending'
@@ -64,6 +67,11 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
       return {
         ...state,
         carriers: action.payload.carriers
+      };
+    case REQUEST_LOAD_SETTINGS:
+      return {
+        ...state,
+        requestSettings: action.payload.requestSettings
       };
     case REQUEST_TAB_STATUS:
       return {

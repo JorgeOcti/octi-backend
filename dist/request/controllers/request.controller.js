@@ -706,6 +706,14 @@ var RequestController = /** @class */ (function () {
                                 'car.property': { $in: filters.properties.map(function (s) { return s; }) }
                             });
                         }
+                        if (filters.conectaID && filters.conectaID.length) {
+                            if (!extraMatch.hasOwnProperty('$or')) {
+                                extraMatch.$or = [];
+                            }
+                            extraMatch.$or.push({
+                                'request.conectaID': filters.conectaID
+                            });
+                        }
                         _d.label = 1;
                     case 1:
                         _d.trys.push([1, 6, , 7]);
@@ -768,6 +776,7 @@ var RequestController = /** @class */ (function () {
                                     'transmittal.number': 1,
                                     'request.createdBy.firstName': 1,
                                     'request.createdBy.lastName': 1,
+                                    'request.conectaID': 1,
                                     'priority': 1,
                                     'observation': 1,
                                     'equipment': 1,
@@ -857,7 +866,7 @@ var RequestController = /** @class */ (function () {
                                     select: ['_id']
                                 }, {
                                     path: 'request',
-                                    select: ['number', 'createdAt'],
+                                    select: ['number', 'createdAt', 'conectaID',],
                                     populate: [{
                                             path: 'createdBy',
                                             select: ['firstName', 'lastName']
@@ -1862,7 +1871,7 @@ var RequestController = /** @class */ (function () {
                     }
                 };
                 instance = axios_1["default"].create(config);
-                instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>141981</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>')
+                instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>161120</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>')
                     .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
                     return __generator(this, function (_a) {
                         xml2js.parseString(response.data, function (error, result) {

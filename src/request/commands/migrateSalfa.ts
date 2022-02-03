@@ -5,6 +5,7 @@ import * as path from 'path';
 import Team from '../../app/models/team.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Request from '../../request/models/request.model';
+import TeamSetting from '../../app/models/teamSetting.model';
 
 async function migrateSalfa() {
   dotenv.config({
@@ -15,6 +16,27 @@ async function migrateSalfa() {
   await mongoose.connect(MONGODB_URI,{ useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
+    const teams = await Team.find({});
+    for (const team of teams) {
+      const isSalfa = team._id.toString() === '5bf2de35caf8ef7096105cdd';
+      await TeamSetting.findOneAndUpdate({ team }, {
+        request: {
+          brand: true,
+          brandReadOnly: isSalfa,
+          denominationReadOnly: isSalfa,
+          colorReadOnly: isSalfa,
+          materialReadOnly: isSalfa,
+          conectaID: isSalfa,
+          reason: !isSalfa,
+          priority: !isSalfa,
+          internalNumber: !isSalfa,
+          entry: !isSalfa,
+        },
+      });
+    }
+    await process.exit(1);
+
+
     const team = await Team.findById('5bf2de35caf8ef7096105cdd');
     const requestItems = await RequestItem.find({team});
     for (const requestItem of requestItems) {
@@ -48,7 +70,7 @@ async function migrateSalfa() {
     console.log('Ha ocurrido un error en migrateSalfa');
     console.log('error:', e);
   }
-  process.exit(1);
+  await process.exit(1);
 }
 
 migrateSalfa();

@@ -245,22 +245,42 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3'>
-                    <div className='form-group'>
-                      <label className='control-label'>
-                        Partida
-                      </label>
-                      <input
-                        type='text'
-                        className='form-control input-sm'
-                        placeholder='Nº de partida: S14795'
-                        defaultValue={filters.entry}
-                        onChange={(e) => {
-                          this.changeFilterDebounced('entry', e.target.value);
-                        }}
-                      />
+                  <ShowIf condition={requestSettings.entry}>
+                    <div className='col-md-3'>
+                      <div className='form-group'>
+                        <label className='control-label'>
+                          Partida
+                        </label>
+                        <input
+                          type='text'
+                          className='form-control input-sm'
+                          placeholder='Nº de partida: S14795'
+                          defaultValue={filters.entry}
+                          onChange={(e) => {
+                            this.changeFilterDebounced('entry', e.target.value);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </ShowIf>
+                  <ShowIf condition={requestSettings.conectaID}>
+                    <div className='col-md-3'>
+                      <div className='form-group'>
+                        <label className='control-label'>
+                          Nº Ticket Anticipo
+                        </label>
+                        <input
+                          type='text'
+                          className='form-control input-sm'
+                          placeholder='Nº de partida: S14795'
+                          defaultValue={filters.conectaID}
+                          onChange={(e) => {
+                            this.changeFilterDebounced('conectaID', e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </ShowIf>
                   <div className='col-md-3'>
                     <div className='form-group'>
                       <label className='control-label'>
@@ -431,10 +451,12 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
                     <tr className='bg-primary' style={{ height: '45px' }}>
-                      <th className='middle' style={{ width: '28px' }} />
+                      <ShowIf condition={requestSettings.priority}>
+                        <th className='middle' style={{ width: '28px' }} />
+                      </ShowIf>
                       <th
-                        className='middle pointer'
-                        style={{ width: '80px' }}
+                        className='middle-center pointer'
+                        style={{ minWidth: '60px' }}
                         onClick={() => this.changeOrder('request.number')}
                       >
                         Solic.
@@ -443,7 +465,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </th>
                        <th
                         className='middle pointer'
-                        style={{ width: '80px' }}
+                        style={{ minWidth: '40px' }}
                         // onClick={() => this.changeOrder('request.number')}
                       >
                         OT
@@ -486,7 +508,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
                       <th className='middle' style={{ minWidth: '135px', width: '135px' }}>VIN</th>
-                      <th className='middle' style={{ width: '80px' }}>Partida</th>
+                      <ShowIf condition={requestSettings.entry}>
+                        <th className='middle' style={{ width: '80px' }}>Partida</th>
+                      </ShowIf>
                       <ShowIf condition={requestSettings.denomination}>
                         <th
                           className='middle pointer'
@@ -501,7 +525,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <ShowIf condition={requestSettings.material}>
                         <th
                           className='middle pointer'
-                          style={{ width: '70px' }}
+                          style={{ width: '80px' }}
                           onClick={() => this.changeOrder('car.material')}
                         >
                           Material
@@ -524,15 +548,22 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <ShowIf condition={requestSettings.internalNumber}>
                         <th className='middle' style={{ width: '60px' }}>CDO</th>
                       </ShowIf>
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '100px' }}
-                        onClick={() => this.changeOrder('reason.name')}
-                      >
-                        Motivo
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
+                      <ShowIf condition={requestSettings.reason}>
+                        <th
+                          className='middle pointer'
+                          style={{ minWidth: '100px' }}
+                          onClick={() => this.changeOrder('reason.name')}
+                        >
+                          Motivo
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                      </ShowIf>
+                      <ShowIf condition={requestSettings.conectaID}>
+                        <th className='middle pointer'>
+                          Ticket
+                        </th>
+                      </ShowIf>
                       {/* <th className="middle">Carrocería</th>
                         <th className="middle">Pre-Entrega</th> */}
                       <th className='middle-center' style={{ width: '40px' }}>Adj</th>

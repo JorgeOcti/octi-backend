@@ -28,12 +28,21 @@ export interface IInventorySetting {
 }
 
 export interface IRequestSetting {
+  brand: boolean;
+  brandReadOnly: boolean;
   denomination: boolean;
+  denominationReadOnly: boolean;
   denominationRequired: boolean;
   material: boolean;
+  materialReadOnly: boolean;
   materialRequired: boolean;
   color: boolean;
+  colorReadOnly: boolean;
   colorRequired: boolean;
+  entry: boolean;
+  reason: boolean;
+  conectaID: boolean;
+  priority: boolean;
   internalNumber: boolean;
   internalNumberRequired: boolean;
   internalNumberText: string;
