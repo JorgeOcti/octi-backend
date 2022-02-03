@@ -222,14 +222,16 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
       .all([
         api.getRequests({page, orderBy, orderType}),
         api.getReasons({ page: 1, pageSize: 200 }),
-        api.getRequestItemsStatus({ page: 1, pageSize: 200 })
+        api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
+        api.getTeamSettings()
         // api.getCarriers(1, 200)
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus /*, carriers*/) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus, teamsettings /*, carriers*/) => {
         const {data} = requests;
         dispatch(loadRequestsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
+        dispatch(loadRequestItemsSettingsAction(teamsettings.data.request));
         // dispatch(loadCarriersRequestAction(carriers.data.results));
         dispatch(isLoadingRequestAction(false));
       }))

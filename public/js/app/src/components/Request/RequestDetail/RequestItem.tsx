@@ -302,7 +302,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             </td> :
             <td className="middle">{item.status?.name}</td>
         }
-        <ShowIf condition={requestSettings.conectaID}>
+        <ShowIf condition={requestSettings.ticket}>
           <td className='middle-center'>
             {
               //request.advancePaymentInformation.files[0].file.url
@@ -555,7 +555,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   private openBlank(url: string) {
-      window.open(url, '_blank');
+    window.open(url, '_blank');
   }
 
   private search(text: string): void {

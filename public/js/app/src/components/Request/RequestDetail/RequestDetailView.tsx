@@ -217,11 +217,11 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         </td>
                         <td style={{borderTop: '0'}}>
                           <span style={{ paddingLeft: '17px' }}> Creada</span><br />
-                          <strong><i className='fa fa-fw fa-calendar' /> 10-10-20</strong>
+                          <strong><i className='fa fa-fw fa-calendar' /> {moment(request.createdAt).format('DD-MM-YYYY')}</strong>
                         </td>
                         <td style={{borderTop: '0'}}>
                           <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
-                          <strong><i className='fa fa-fw fa-calendar-check-o' /> 10-10-20</strong>
+                          <strong><i className='fa fa-fw fa-calendar-check-o' /> -</strong>
                         </td>
                       </tr>
                       </tbody>

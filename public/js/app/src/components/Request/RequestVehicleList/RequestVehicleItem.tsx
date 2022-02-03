@@ -407,7 +407,17 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           }
         </ShowIf>
         <ShowIf condition={requestSettings.ticket}>
-          <td className="middle">{item.request.advancePaymentInformation?.number}</td>
+          <td className='middle-center'>
+            {
+              //request.advancePaymentInformation.files[0].file.url
+              item.request.advancePaymentInformation?.files?.length ?
+                <i
+                  className='fa fa-check-circle text-green pointer'
+                  onClick={() => this.openBlank(item.request.advancePaymentInformation.files[0].file.url)}
+                /> : ''
+            }
+          </td>
+          <td className='middle'>{item.request.advancePaymentInformation?.number}</td>
         </ShowIf>
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
@@ -488,6 +498,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         this.props.deleteRequestItemsThunkAction(item._id);
       }
     });
+  }
+
+  private openBlank(url: string) {
+    window.open(url, '_blank');
   }
 }
 

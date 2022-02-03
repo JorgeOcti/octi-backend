@@ -12,6 +12,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import DateRangePicker from '../../Utils/DateRangePicker';
+import ShowIf from '../../Utils/ShowIf';
 
 declare let window: IWindow;
 
@@ -54,7 +55,8 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {requests, request, reasons, requestItemStatus, carriers} = this.props;
+    const {requests, request, reasons, requestItemStatus} = this.props;
+    const {requestSettings} = requests;
     const open = this.props.requests.requestOpen.includes(request._id);
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
@@ -104,18 +106,31 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className="middle" style={{ width: '28px' }} />
                 <th className="middle" style={{ width: '100px' }} >Progreso</th>
-                <th className="middle" style={{ width: '160px' }}>Estado</th>
-                <th className="middle" style={{ width: '250px' }}>Modelo</th>
-                <th className="middle" style={{ width: '250px' }}>Color</th>
-                <th className="middle-center">VIN</th>
-                <th className="middle-center">Partida</th>
+                <th className="middle" style={{ width: '120px' }}>Estado</th>
+                <th className="middle" style={{ width: '200px' }}>Modelo</th>
+                <th className="middle" style={{ width: '100px' }}>Color</th>
+                <th className="middle-center" style={{ width: '100px' }}>VIN</th>
+                <ShowIf condition={requestSettings.ticket}>
+                  <th className='middle-center pointer' style={{ width: '60px' }}>
+                    Ticket
+                  </th>
+                  <th className='middle pointer' style={{ width: '80px' }}>
+                    Nº Ticket
+                  </th>
+                </ShowIf>
+                <ShowIf condition={requestSettings.entry}>
+                  <th className="middle-center">Partida</th>
+                </ShowIf>
                 <th className="middle-center" style={{ width: '20px' }}>Adj</th>
                 <th className="middle">Obs</th>
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
-                <th className="middle"  style={{ width: '150px' }}>Motivo</th>
+                <ShowIf condition={requestSettings.reason}>
+                  <th className="middle"  style={{ width: '150px' }}>Motivo</th>
+                </ShowIf>
                 {/* <th className="middle" >Transporte</th>
                 <th  className="middle" style={{ width: '70px' }}>Fecha carga</th>
                 <th className="middle"  style={{ width: '70px' }}>Fecha llegada</th> */}
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -164,15 +179,38 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       {item.car.color}
                     </td>
                     <td className='middle-center'>
-                      {
-                        item.car.vin && item.car.vin.length ? item.car.vin : null
-                      }
+                      <ShowIf condition={item.car.vin?.length }>
+                        <a
+                          href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
+                          target="_blank"
+                          style={{
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          {item.car.vin} <i className='fa fa-fw fa-share-alt-square' />
+                        </a>
+                      </ShowIf>
                     </td>
-                    <td className='middle-center'>
-                      {
-                        item.car.entry && item.car.entry.length ? item.car.entry : null
-                      }
-                    </td>
+                    <ShowIf condition={requestSettings.ticket}>
+                      <td className='middle-center'>
+                        {
+                          //request.advancePaymentInformation.files[0].file.url
+                          request.advancePaymentInformation?.files?.length ?
+                            <i
+                              className='fa fa-check-circle text-green pointer'
+                              onClick={() => this.openBlank(request.advancePaymentInformation.files[0].file.url)}
+                            /> : ''
+                        }
+                      </td>
+                      <td className='middle'>{request.advancePaymentInformation?.number}</td>
+                    </ShowIf>
+                    <ShowIf condition={requestSettings.entry}>
+                      <td className='middle-center'>
+                        {
+                          item.car.entry && item.car.entry.length ? item.car.entry : null
+                        }
+                      </td>
+                    </ShowIf>
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
                       onClick={item.files?.length ? () => this.downloadFiles(item) : undefined}
@@ -234,28 +272,30 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         </div>
                       </div>
                     </td> */}
-                    {
-                      canChangeRequest ?
-                        <td className="middle">
-                          <select
-                            className="form-control select-sm font-12" value={item.reason?._id ?? ''}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                              this.props.updateRequestItemInListReduxAction!(request._id, {
-                                ...item,
-                                reason: e.target.value
-                              });
-                            }}
-                          >
-                            <option value="" disabled={true}>-</option>
-                            {
-                              reasons.map((reason) => (
-                                <option key={reason._id} value={reason._id}>{reason.name}</option>
-                              ))
-                            }
-                          </select>
-                        </td> :
-                        <td className="middle">{item.reason?.name}</td>
-                    }
+                    <ShowIf condition={requestSettings.reason}>
+                      {
+                        canChangeRequest ?
+                          <td className='middle'>
+                            <select
+                              className='form-control select-sm font-12' value={item.reason?._id ?? ''}
+                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                this.props.updateRequestItemInListReduxAction!(request._id, {
+                                  ...item,
+                                  reason: e.target.value
+                                });
+                              }}
+                            >
+                              <option value='' disabled={true}>-</option>
+                              {
+                                reasons.map((reason) => (
+                                  <option key={reason._id} value={reason._id}>{reason.name}</option>
+                                ))
+                              }
+                            </select>
+                          </td> :
+                          <td className='middle'>{item.reason?.name}</td>
+                      }
+                    </ShowIf>
                     { /*
                       canChangeRequest ?
                         <td className="middle">
@@ -312,6 +352,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
                         */
                     }
+                    <td></td>
                   </tr>
                 ))
               }
@@ -324,6 +365,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
   private downloadFiles(item: IRequestItem) {
     window.open(`/requests-item/${item._id}/download-files/`, '_blank');
+  }
+
+  private openBlank(url: string) {
+    window.open(url, '_blank');
   }
 
   private goToDetail(id: string): void {

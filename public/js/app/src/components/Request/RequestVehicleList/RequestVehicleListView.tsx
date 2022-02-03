@@ -555,13 +555,20 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={() => this.changeOrder('reason.name')}
                         >
                           Motivo
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span
+                            style={{ float: 'right' }}
+                          >
+                            <i
+                              className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                          </span>
                         </th>
                       </ShowIf>
                       <ShowIf condition={requestSettings.ticket}>
                         <th className='middle pointer'>
                           Ticket
+                        </th>
+                        <th className='middle pointer'>
+                          Nº Ticket
                         </th>
                       </ShowIf>
                       {/* <th className="middle">Carrocería</th>
