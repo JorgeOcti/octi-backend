@@ -321,31 +321,65 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                                 {question.name} {question.required ? '*' : ''}
                               </label>
                               <div className='col-sm-9'>
-                                <input
-                                  type='text'
-                                  className='input-sm form-control'
-                                  value={currentAnswer ? currentAnswer.answer : ''}
-                                  onChange={(e) => {
-                                    this.changeNewCar('answers', (() => {
-                                      if (e.target.value) {
-                                        if (currentAnswer) {
-                                          return [...newCar.answers].map((answer: any) => {
-                                            if (question._id === answer.questionId) {
-                                              answer.answer = e.target.value;
+                                {
+                                  question._id === '5bf2de35caf8ef7096105c23' ?
+                                    <select
+                                      className='form-control select-sm font-12'
+                                      value={currentAnswer ? currentAnswer.answer : ''}
+                                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                        this.changeNewCar('answers', (() => {
+                                          if (e.target.value) {
+                                            if (currentAnswer) {
+                                              return [...newCar.answers].map((answer: any) => {
+                                                if (question._id === answer.questionId) {
+                                                  answer.answer = e.target.value;
+                                                }
+                                                return answer;
+                                              });
                                             }
-                                            return answer;
-                                          });
-                                        }
-                                        return [...newCar.answers, {
-                                          questionId: question._id,
-                                          question: question.name,
-                                          answer: e.target.value
-                                        }];
-                                      }
-                                      return [...newCar.answers].filter((answer: any) => (question._id !== answer.questionId));
-                                    })());
-                                  }}
-                                />
+                                            return [...newCar.answers, {
+                                              questionId: question._id,
+                                              question: question.name,
+                                              answer: e.target.value
+                                            }];
+                                          }
+                                          return [...newCar.answers].filter((answer: any) => (question._id !== answer.questionId));
+                                        })());
+                                      }}
+                                    >
+                                      <option value="" disabled={true}>Seleccione</option>
+                                      <option value="VPP+CREDITO">VPP+CREDITO</option>
+                                      <option value="VPP">VPP</option>
+                                      <option value="CREDITO">CREDITO</option>
+                                      <option value="CONTADO">CONTADO</option>
+                                      <option value="LEASING">LEASING</option>
+                                    </select> :
+                                    <input
+                                      type='text'
+                                      className='input-sm form-control'
+                                      value={currentAnswer ? currentAnswer.answer : ''}
+                                      onChange={(e) => {
+                                        this.changeNewCar('answers', (() => {
+                                          if (e.target.value) {
+                                            if (currentAnswer) {
+                                              return [...newCar.answers].map((answer: any) => {
+                                                if (question._id === answer.questionId) {
+                                                  answer.answer = e.target.value;
+                                                }
+                                                return answer;
+                                              });
+                                            }
+                                            return [...newCar.answers, {
+                                              questionId: question._id,
+                                              question: question.name,
+                                              answer: e.target.value
+                                            }];
+                                          }
+                                          return [...newCar.answers].filter((answer: any) => (question._id !== answer.questionId));
+                                        })());
+                                      }}
+                                    />
+                                }
                               </div>
                             </div>
                           );
