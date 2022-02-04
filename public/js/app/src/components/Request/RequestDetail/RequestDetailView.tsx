@@ -165,156 +165,151 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
     return (
-      <AppContainer title="" cMenu="3" cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Detalle solicitud #{request?.number}</h3>
+      <AppContainer title='' cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Detalle solicitud #{request?.number}</h3>
               {
                 hasPermission(window.user, 'deleteRequest') ?
-                  <div className="pull-right box-tools">
+                  <div className='pull-right box-tools'>
                     <button
-                      className="btn btn-sm btn-danger"
+                      className='btn btn-sm btn-danger'
                       onClick={this.deleteRequest}
                     >
-                      <i className="fa fa-fw fa-trash" /> Eliminar solicitud
-                </button>
+                      <i className='fa fa-fw fa-trash' /> Eliminar solicitud
+                    </button>
                   </div>
                   : null
               }
             </div>
-            <div className="box-body request-detail no-padding table-responsive">
+            <div className='box-body request-detail no-padding table-responsive'>
               {
                 Object.keys(request).length ?
                   <React.Fragment>
-                    <div className={'bg-blue'} style={{padding: '5px', minWidth: '900px' }}>
-                      <table className='table table-xs bg-blue' style={{ minWidth: '900px'}}>
-                      <tbody>
-                      <tr>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}>Creada por</span><br />
-                          <strong><i className='fa fa-fw fa-user' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />
-                          <strong><i className='fa fa-fw fa-handshake' /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          Canal<br />
-                          <strong>{request.channel?.name}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          ID Cotización<br />
-                          <strong>{request.conectaID}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}> Sucursal</span><br />
-                          <strong><i className='fa fa-fw fa-building' /> {request.origin?.name}</strong>
-                        </td>
-                        <td style={{ width: '30%', borderTop: '0' }}>
-                          Dirección<br />
-                          <strong>{request?.deliveryAddress}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}> Creada</span><br />
-                          <strong><i className='fa fa-fw fa-calendar' /> {moment(request.createdAt).format('DD-MM-YYYY')}</strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
-                          <strong><i className='fa fa-fw fa-calendar-check-o' /> -</strong>
-                        </td>
-                      </tr>
-                      </tbody>
-                    </table>
+                    <div className={'bg-blue'} style={{ padding: '5px', minWidth: '900px' }}>
+                      <table className='table table-xs bg-blue' style={{ minWidth: '900px' }}>
+                        <tbody>
+                        <tr>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}>Creada por</span><br />
+                            <strong><i className='fa fa-fw fa-user' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />
+                            <strong><i className='fa fa-fw fa-handshake' /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            Canal<br />
+                            <strong>{request.channel?.name}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            ID Cotización<br />
+                            <strong>{request.conectaID}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}> Sucursal</span><br />
+                            <strong><i className='fa fa-fw fa-building' /> {request.origin?.name}</strong>
+                          </td>
+                          <td style={{ width: '30%', borderTop: '0' }}>
+                            Dirección<br />
+                            <strong>{request?.deliveryAddress}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}> Creada</span><br />
+                            <strong><i className='fa fa-fw fa-calendar' /> {moment(request.createdAt).format('DD-MM-YYYY')}</strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
+                            <strong><i className='fa fa-fw fa-calendar-check-o' /> -</strong>
+                          </td>
+                        </tr>
+                        </tbody>
+                      </table>
                     </div>
                     <div style={{ padding: '5px', backgroundColor: '#f9f9f9', minWidth: '900px' }}>
-                    <table className='table table-xs text-black' style={{ minWidth: '900px', backgroundColor: '#f9f9f9' }}>
-                      <tbody>
-                      <tr>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}>Cliente</span><br />
-                          <strong><i className='fa fa-fw fa-address-book' /> {request.customerInformation?.name} </strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          Rut Cliente<br />
-                          <strong>{request.customerInformation?.rut} </strong>
-                        </td>
-                        <td style={{borderTop: '0'}}>
-                          <span style={{ paddingLeft: '17px' }}>Correo Cliente</span><br />
-                          <strong><i className='fa fa-fw fa-envelope' /> {
-                            request.customerInformation?.email ?
-                              <a href={request.customerInformation.email}>{request.customerInformation.email}</a> : '-'
-                          } </strong>
-                        </td>
-                        <td style={{width: '40%', borderTop: '0'}} />
-                      </tr>
-                      </tbody>
-                    </table>
-                    </div>
-                    <table className="table table-xs table-hover" style={{minWidth: '900px'}}>
-                      <thead>
+                      <table className='table table-xs text-black' style={{ minWidth: '900px', backgroundColor: '#f9f9f9' }}>
+                        <tbody>
                         <tr>
-                          <th className="middle-center" style={{ width: '25px' }}>#</th>
-                          <ShowIf condition={requestSettings.priority}>
-                            <th className="middle" style={{ width: '28px' }} />
-                          </ShowIf>
-                          <th className="middle" style={{ width: '10px' }}>Propiedad</th>
-                          <ShowIf condition={requestSettings.brand}>
-                            <th className="middle" style={{ minWidth: '100px' }}>Marca</th>
-                          </ShowIf>
-                          <ShowIf condition={requestSettings.denomination}>
-                            <th className="middle" style={{ minWidth: '160px' }}>Modelo</th>
-                          </ShowIf>
-                          <ShowIf condition={requestSettings.material}>
-                            <th className="middle" style={{ width: '100px' }}>Material</th>
-                          </ShowIf>
-                          <ShowIf condition={requestSettings.color}>
-                            <th className="middle" style={{ width: '100px' }}>Color</th>
-                          </ShowIf>
-                          <th className="middle" style={{ width: '125px' }}>VIN</th>
-                          <th className="middle" style={{ minWidth: '120px' }}>Estado</th>
-                          <ShowIf condition={requestSettings.conectaID}>
-                            <th className="middle-center">Ticket</th>
-                            <th className="middle" style={{ width: '100px' }}>Nº Ticket</th>
-                          </ShowIf>
-                          <ShowIf condition={requestSettings.internalNumber}>
-                            <th className="middle" style={{ width: '80px' }}>CDO</th>
-                          </ShowIf>
-                          <ShowIf condition={requestSettings.reason}>
-                            <th className="middle" style={{ minWidth: '100px' }}>Motivo</th>
-                          </ShowIf>
-                          {/* <th className="middle">Carrocería</th>
-                          <th className="middle">Pre-Entrega</th> */}
-                          <th className="middle-center" style={{ width: '40px' }}>Adj</th>
-                          <th className="middle" style={{ width: '20px' }}>Obs</th>
-                          {/* <th className="middle">Transporte</th>
-                          <th style={{ width: '70px' }}>Fecha carga</th>
-                          <th style={{ width: '70px' }}>LLegada llegada</th> */}
-                          {
-                            hasPermission(window.user, 'deleteRequest') ?
-                              <th className="middle" style={{ width: '30px' }} />
-                              : null
-                          }
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}>Cliente</span><br />
+                            <strong><i className='fa fa-fw fa-address-book' /> {request.customerInformation?.name} </strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            Rut Cliente<br />
+                            <strong>{request.customerInformation?.rut} </strong>
+                          </td>
+                          <td style={{ borderTop: '0' }}>
+                            <span style={{ paddingLeft: '17px' }}>Correo Cliente</span><br />
+                            <strong><i className='fa fa-fw fa-envelope' /> {
+                              request.customerInformation?.email ?
+                                <a href={request.customerInformation.email}>{request.customerInformation.email}</a> : '-'
+                            } </strong>
+                          </td>
+                          <td style={{ width: '40%', borderTop: '0' }} />
                         </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <table className='table table-xs table-hover' style={{ minWidth: '900px' }}>
+                      <thead>
+                      <tr>
+                        <th className='middle-center' style={{ width: '25px' }}>#</th>
+                        <ShowIf condition={requestSettings.priority}>
+                          <th className='middle' style={{ width: '28px' }} />
+                        </ShowIf>
+                        <th className='middle' style={{ width: '10px' }}>Propiedad</th>
+                        <ShowIf condition={requestSettings.brand}>
+                          <th className='middle' style={{ minWidth: '100px' }}>Marca</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th className='middle' style={{ minWidth: '160px' }}>Modelo</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.material}>
+                          <th className='middle' style={{ width: '100px' }}>Material</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.color}>
+                          <th className='middle' style={{ width: '100px' }}>Color</th>
+                        </ShowIf>
+                        <th className='middle' style={{ width: '125px' }}>VIN</th>
+                        <th className='middle' style={{ minWidth: '120px' }}>Estado</th>
+                        <ShowIf condition={requestSettings.conectaID}>
+                          <th className='middle-center'>Ticket</th>
+                          <th className='middle' style={{ width: '100px' }}>Nº Ticket</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.internalNumber}>
+                          <th className='middle' style={{ width: '80px' }}>CDO</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.reason}>
+                          <th className='middle' style={{ minWidth: '100px' }}>Motivo</th>
+                        </ShowIf>
+                        <th className='middle-center' style={{ width: '40px' }}>Adj</th>
+                        <th className='middle' style={{ width: '20px' }}>Obs</th>
+                        {
+                          hasPermission(window.user, 'deleteRequest') ?
+                            <th className='middle' style={{ width: '30px' }} />
+                            : null
+                        }
+                      </tr>
                       </thead>
                       <tbody>
-                        {
-                          request!.items!.map((item, index) => (
-                            <RequestItem
-                              key={item._id}
-                              index={index}
-                              request={request}
-                              item={item}
-                            />
-                          ))
-                        }
+                      {
+                        request!.items!.map((item, index) => (
+                          <RequestItem
+                            key={item._id}
+                            index={index}
+                            request={request}
+                            item={item}
+                          />
+                        ))
+                      }
                       </tbody>
                     </table>
                     {
                       canChangeRequest ?
-                        <div className="row" style={{minWidth: '900px'}}>
-                          <div className="col-md-10 col-md-offset-2" style={{paddingRight: '5px'}}>
-                            <div className="container-table-add-car" style={{padding: '5px', marginTop: '20px', marginBottom: '20px'}}>
+                        <div className='row' style={{ minWidth: '900px' }}>
+                          <div className='col-md-10 col-md-offset-2' style={{ paddingRight: '5px' }}>
+                            <div className='container-table-add-car' style={{ padding: '5px', marginTop: '20px', marginBottom: '20px' }}>
                               <table className='table table-xs'>
                                 <thead>
                                 <tr>
@@ -445,18 +440,19 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   </ShowIf>
                                   <ShowIf condition={requestSettings.color}>
                                     <td>
-                                      <input type='text'
-                                             className='form-control input-sm'
-                                             value={this.state.car.color}
-                                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                               const { value } = e.target;
-                                               this.setState({
-                                                 car: {
-                                                   ...this.state.car,
-                                                   color: value
-                                                 }
-                                               });
-                                             }}
+                                      <input
+                                        type='text'
+                                        className='form-control input-sm'
+                                        value={this.state.car.color}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              color: value
+                                            }
+                                          });
+                                        }}
                                       />
                                     </td>
                                   </ShowIf>
@@ -500,32 +496,20 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                         : null
                     }
-                    {/* <div className="row">
-                      <div className="col-md-12">
-                        <div className="activity-comments">
-                          <h4>Actividad y comentarios</h4>
-                          <div className="comment">
-                            <textarea className="form-control" placeholder="Comentar" />
-                          </div>
-                          <div className="comments">
-                            <p className="text-center text-muted">No hay comentarios en esta solicitud</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div> */}
                   </React.Fragment>
                   : null
               }
             </div>
             <div className='box-footer text-right'>
-              <button className='btn btn-sm btn-default' onClick={()=>{
+              <button className='btn btn-sm btn-default' onClick={() => {
                 this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
-              }}><i className='fa fa-fw fa-rotate-left' /> Volver a vehículos</button>
+              }}><i className='fa fa-fw fa-rotate-left' /> Volver a vehículos
+              </button>
             </div>
             {
               loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple" />
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
               </div>
             }
           </div>

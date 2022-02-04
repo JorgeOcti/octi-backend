@@ -12,7 +12,6 @@ var requestRouter = express.Router();
 exports.requestRouter = requestRouter;
 // web pages
 requestRouter.get('/requests/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
-requestRouter.get('/requests/salfa/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].salfa);
 requestRouter.get('/requests/settings/reasons/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/channels/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/status/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
@@ -28,6 +27,7 @@ requestRouter.get('/requests/create/', middlewares_1["default"].isLoggedIn, requ
 requestRouter.get('/requests/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 // apis
 requestRouter.get('/api/v1/requests/search-car/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].searhCar);
+requestRouter.get('/api/v1/requests/search-vin', middlewares_1["default"].isLoggedIn, request_controller_1["default"].searchVin);
 requestRouter.post('/api/v1/requests/upload-file/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].uploadFile);
 requestRouter.post('/api/v1/requests/update-massive/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiUpdateMassive);
 requestRouter.get('/api/v1/requests/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiList);

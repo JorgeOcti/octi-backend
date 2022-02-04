@@ -159,6 +159,8 @@ var RequestController = /** @class */ (function () {
         this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
         this.apiImport = this.apiImport.bind(this);
         this.createRequest = this.createRequest.bind(this);
+        this.searchVin = this.searchVin.bind(this);
+        this.searchVinContecta = this.searchVinContecta.bind(this);
     }
     RequestController.prototype.integration = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1859,47 +1861,80 @@ var RequestController = /** @class */ (function () {
             });
         });
     };
-    RequestController.prototype.salfa = function (req, res) {
+    RequestController.prototype.searchVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var config, instance;
+            var team, vin, data;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team;
+                        vin = req.query.vin;
+                        if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 3];
+                        data = [];
+                        if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.searchVinContecta(vin)];
+                    case 1:
+                        data = _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        res.json({ data: data });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        //defaul other teams
+                        res.json({ data: [], a: 2 });
+                        _a.label = 4;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    RequestController.prototype.searchVinContecta = function (vin) {
+        return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                config = {
-                    headers: {
-                        'Content-Type': 'text/xml',
-                        'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-                        'Content-Length': '340'
-                    },
-                    auth: {
-                        username: 'USR_SOA_PI',
-                        password: 'Inicio.2130'
-                    }
-                };
-                instance = axios_1["default"].create(config);
-                instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>161120</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>')
-                    .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        xml2js.parseString(response.data, function (error, result) {
-                            var data = [];
-                            for (var _i = 0, _a = result['SOAP:Envelope']['SOAP:Body']; _i < _a.length; _i++) {
-                                var equipment = _a[_i];
-                                for (var _b = 0, _c = equipment['ns0:ZPM_GET_EQUIPMENTS.Response']; _b < _c.length; _b++) {
-                                    var detail = _c[_b];
-                                    data.push.apply(data, detail['EQUIPMENTS_INFO'][0]['item']);
-                                }
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var config = {
+                            headers: {
+                                'Content-Type': 'text/xml',
+                                'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+                                'Content-Length': '340'
+                            },
+                            auth: {
+                                username: 'USR_SOA_PI',
+                                password: 'Inicio.2130'
                             }
-                            res.json({
-                                data: data,
-                                config: config
+                        };
+                        var instance = axios_1["default"].create(config);
+                        instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>"))
+                            .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                xml2js.parseString(response.data, function (error, result) {
+                                    var data = [];
+                                    for (var _i = 0, _a = result['SOAP:Envelope']['SOAP:Body']; _i < _a.length; _i++) {
+                                        var equipment = _a[_i];
+                                        for (var _b = 0, _c = equipment['ns0:ZPM_GET_EQUIPMENTS.Response']; _b < _c.length; _b++) {
+                                            var detail = _c[_b];
+                                            var items = detail['EQUIPMENTS_INFO'][0]['item'];
+                                            for (var _d = 0, items_1 = items; _d < items_1.length; _d++) {
+                                                var item = items_1[_d];
+                                                data.push({
+                                                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                                                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                                                    denomination: item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '',
+                                                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                                                });
+                                            }
+                                        }
+                                    }
+                                    resolve(data);
+                                });
+                                return [2 /*return*/];
                             });
+                        }); })["catch"](function (error) {
+                            console.log(error);
+                            resolve([]);
                         });
-                        return [2 /*return*/];
-                    });
-                }); })["catch"](function (error) {
-                    console.log(error);
-                    res.send(error);
-                });
-                return [2 /*return*/];
+                    })];
             });
         });
     };

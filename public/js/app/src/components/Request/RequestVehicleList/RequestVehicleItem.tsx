@@ -1,13 +1,13 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router-dom';
-import {ICar} from '../../../../../../../src/app/interfaces/car.interface';
-import {IRequestItem} from '../../../../../../../src/request/interfaces/requestItem.interface';
-import {deleteRequestItemsThunkAction, updateRequestItemsThunkAction} from '../../../actions/requestItems.actions';
-import {IRequestItemsState} from '../../../actions/requestItems.types';
-import {IWindow} from '../../../interfaces/window';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router-dom';
+import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
+import { deleteRequestItemsThunkAction, updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
+import { IRequestItemsState } from '../../../actions/requestItems.types';
+import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
@@ -27,6 +27,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   recommends: ICar[];
+  VINRecommends: any[];
 }
 
 declare let window: IWindow;
@@ -34,10 +35,12 @@ declare let window: IWindow;
 class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
   readonly $subjectRecommends = new Rx.Subject<any>();
+  readonly $subjectVINRecommends = new Rx.Subject<any>();
 
   readonly state = {
     error: null,
-    recommends: []
+    recommends: [],
+    VINRecommends: []
   };
 
   constructor(props: IPropsType) {
@@ -61,6 +64,22 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         recommends: response.response.cars
       });
     });
+    this.$subjectVINRecommends.pipe(
+      debounceTime(300),
+      switchMap((vin: string) => {
+        return ajax({
+          url: `/api/v1/requests/search-vin/?vin=${vin}`,
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+          method: 'GET'
+        });
+      })
+    ).subscribe((response) => {
+      this.setState({
+        VINRecommends: response.response.data
+      });
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -77,7 +96,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { item } = this.props;
     const { requestItemStatus, reasons, requestSettings } = this.props.requestItems;
-    const { recommends } = this.state;
+    const { recommends, VINRecommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
@@ -162,20 +181,41 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         {
           canChangeRequest ?
             <td className="middle">
-              <input
-                type="text"
-                className="form-control input-sm"
-                defaultValue={item.car.vin}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              <AutocompleteInput
+                value={item.car.vin}
+                inputClass={'input-sm'}
+                items={VINRecommends}
+                renderItem={(car, index) => (
+                  <div key={index} className="item">
+                    {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
+                    <strong>{car.brand}</strong>
+                  </div>
+                )}
+                onChange={(e) => {
+                  const { value } = e.target;
                   this.props.updateRequestItemsThunkAction({
                     item: {
                       ...item,
                       car: {
                         ...item.car,
-                        vin: e.target.value
+                        vin: value
                       }
                     },
                     debounce: true
+                  });
+                  this.searchVin(value);
+                }}
+                onSelect={(car: any) => {
+                  console.log(car)
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        vin: car.vin,
+                      }
+                    },
+                    debounce: false
                   });
                 }}
               />
@@ -469,16 +509,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
 
   private search(text: string): void {
     this.$subjectRecommends.next(text)
-    // this.api
-    //   .searchCar(text)
-    //   .then((response: AxiosResponse): void => {
-    //     this.setState({
-    //       recommends: response.data.cars
-    //     });
-    //   })
-    //   .catch((err: AxiosError): void => {
-    //     this.api.errorHandler(err);
-    //   });
+  }
+
+  private searchVin(vin: string): void {
+    this.$subjectVINRecommends.next(vin)
   }
 
   private deleteRequestItem(item: IRequestItem) {

@@ -110,6 +110,8 @@ class RequestController {
     this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
     this.apiImport = this.apiImport.bind(this);
     this.createRequest = this.createRequest.bind(this);
+    this.searchVin = this.searchVin.bind(this);
+    this.searchVinContecta = this.searchVinContecta.bind(this);
   }
 
   public async integration(req: IRequest, res: Response) {
@@ -1498,40 +1500,63 @@ class RequestController {
     });
   }
 
-  public async salfa(req: IRequest, res: Response) {
-    const config = {
-       headers: {
-        'Content-Type': 'text/xml',
-        'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-        'Content-Length': '340'
-      },
-      auth: {
-        username: 'USR_SOA_PI',
-        password: 'Inicio.2130',
+  public async searchVin(req: IRequest, res: Response) {
+    const { team } = req.user;
+    const { vin } = req.query as { vin: string };
+    if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+      // const data = await this.searchVinContecta('014688');
+      let data: any [] = [];
+      if (vin?.length >= 6) {
+        data = await this.searchVinContecta(vin);
       }
-    };
-    const instance = axios.create(config);
-    instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
-      '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>161120</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>'
+      res.json({ data });
+    } else {
+      //defaul other teams
+      res.json({ data: [], a: 2 });
+    }
+  }
+
+  private async searchVinContecta(vin: string): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const config = {
+        headers: {
+          'Content-Type': 'text/xml',
+          'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+          'Content-Length': '340'
+        },
+        auth: {
+          username: 'USR_SOA_PI',
+          password: 'Inicio.2130'
+        }
+      };
+      const instance = axios.create(config);
+      instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
+        `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>`
       )
-      .then(async (response) => {
-        xml2js.parseString(response.data, (error, result) => {
-          const data = [];
-          for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
-            for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
-              data.push(...detail['EQUIPMENTS_INFO'][0]['item']);
+        .then(async (response) => {
+          xml2js.parseString(response.data, (error, result) => {
+            const data = [];
+            for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
+              for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
+                const items = detail['EQUIPMENTS_INFO'][0]['item'];
+                for (const item of items) {
+                  data.push({
+                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                    denomination: item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '',
+                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                  });
+                }
+              }
             }
-          }
-          res.json({
-            data,
-            config
+            resolve(data);
           });
+        })
+        .catch(function(error) {
+          console.log(error);
+          resolve([])
         });
-      })
-      .catch(function(error) {
-        console.log(error);
-        res.send(error);
-      });
+    });
   }
 
   public async uploadFile(req: IRequest, res: Response) {
