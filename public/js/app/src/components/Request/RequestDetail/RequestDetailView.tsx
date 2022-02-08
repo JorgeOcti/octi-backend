@@ -271,7 +271,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <ShowIf condition={requestSettings.color}>
                           <th className='middle' style={{ width: '100px' }}>Color</th>
                         </ShowIf>
-                        <th className='middle' style={{ width: '125px' }}>VIN</th>
+                        <th className='middle' style={{ width: '150px' }}>VIN</th>
                         <th className='middle' style={{ minWidth: '120px' }}>Estado</th>
                         <ShowIf condition={requestSettings.conectaID}>
                           <th className='middle-center'>Ticket</th>

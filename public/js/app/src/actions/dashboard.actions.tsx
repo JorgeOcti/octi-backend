@@ -12,6 +12,7 @@ import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
 import {IForm} from "../../../../../src/form/interfaces/form.interface";
+import { loadDashboardCleaningAction } from './dashboardDerco.actions';
 
 export interface IDashboardState {
   forms: IForm[];
@@ -19,6 +20,7 @@ export interface IDashboardState {
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  requests: any[];
   companies: any[];
   car: ICar | null;
   carEvents: any;
@@ -102,11 +104,27 @@ interface ILoadParticipantInCar {
   };
 }
 
+interface ILoadRequestsInCar {
+  type: '/DASHBOARD/LOAD_REQUESTS_IN_CAR';
+  payload: {
+    requests: any;
+  };
+}
+
 export function loadParticipantInCarAction(participant: IParticipant): ILoadParticipantInCar {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR',
     payload: {
       participant
+    }
+  };
+}
+
+export function loadRequestsInCarAction(requests: any): ILoadRequestsInCar {
+  return {
+    type: '/DASHBOARD/LOAD_REQUESTS_IN_CAR',
+    payload: {
+      requests
     }
   };
 }
@@ -748,12 +766,16 @@ export function getCarAction(id: string) {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getCar(id)
-      .then((response: AxiosResponse) => {
-        document.title = `OSA Andes | Detalle VIN ${response.data.data.vin}`;
-        dispatch(loadCarAction(response.data.data));
-        dispatch(isLoadingAction(false));
-      })
+    Axios.all([
+      api.getCar(id),
+      api.getRequestsByCar(id)
+    ]).then(Axios.spread((car, requests) => {
+      // dispatch(loadDashboardCleaningAction(dashboard.data));
+      document.title = `OSA Andes | Detalle VIN ${car.data.data.vin}`;
+      dispatch(loadCarAction(car.data.data));
+      dispatch(loadRequestsInCarAction(requests.data));
+      dispatch(isLoadingAction(false));
+    }))
       .catch((err: AxiosError) => {
         // if the request is canceled
         if (Axios.isCancel(err)) {
@@ -850,6 +872,7 @@ export type DashboardReduxAction =
   ILoadingParticipant |
   IChangePage |
   ILoadParticipantInCar |
+  ILoadRequestsInCar |
   ILoadingVenuesStats |
   ILoadingRevisionsStats |
   ILoadingForms |

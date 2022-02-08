@@ -109,7 +109,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '120px' }}>Estado</th>
                 <th className="middle" style={{ width: '200px' }}>Modelo</th>
                 <th className="middle" style={{ width: '100px' }}>Color</th>
-                <th className="middle-center" style={{ width: '100px' }}>VIN</th>
+                <th className="middle" style={{ width: '140px' }}>VIN</th>
                 <ShowIf condition={requestSettings.ticket}>
                   <th className='middle-center pointer' style={{ width: '60px' }}>
                     Ticket

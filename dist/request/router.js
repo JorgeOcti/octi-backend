@@ -33,6 +33,7 @@ requestRouter.post('/api/v1/requests/update-massive/', middlewares_1["default"].
 requestRouter.get('/api/v1/requests/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiList);
 requestRouter.post('/api/v1/requests/import/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiImport);
 requestRouter.post('/api/v1/requests/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiCreate);
+requestRouter.get('/api/v1/requests/by-car/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiByVin);
 requestRouter.get('/api/v1/requests/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiDetail);
 requestRouter["delete"]('/api/v1/requests/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiDeleteRequest);
 requestRouter.post('/api/v1/requests-item/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiListItems);

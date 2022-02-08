@@ -32,7 +32,13 @@ class RequestController {
   public itemPopulate: QueryPopulateOptions[] = [{
     path: 'car'
   }, {
-    path: 'request'
+    path: 'request',
+    populate: [{
+      path: 'createdBy',
+      select: ['firstName', 'lastName']
+    }, {
+      path: 'advancePaymentInformation.files'
+    }]
   }, {
     path: 'files'
   }, {
@@ -96,6 +102,7 @@ class RequestController {
     this.apiListItems = this.apiListItems.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
+    this.apiByVin = this.apiByVin.bind(this);
     this.getRequets = this.getRequets.bind(this);
     this.apiPatchItem = this.apiPatchItem.bind(this);
     this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
@@ -1068,6 +1075,32 @@ class RequestController {
           message: `No se ha encontrado la solicitud ${id}`,
           status: 404
         });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiDetail: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+  public async apiByVin(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiDetail`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const team = req.user.team._id;
+    const { id } = req.params;
+    try {
+      const requestItems = await RequestItem
+        .find({
+          car: id,
+          team
+        })
+        .populate(this.itemPopulate);
+      if (requestItems) {
+        res.json(requestItems);
+      } else {
+        res.json([]);
       }
     } catch (e) {
       /* istanbul ignore next */

@@ -4,6 +4,7 @@ const initialState: IDashboardState = {
   loading: true,
   source: null,
   participants: [],
+  requests: [],
   companies:[],
   car: null,
   carEvents: {} ,
@@ -80,6 +81,11 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
       return {
         ...state,
         car: action.payload.car,
+      };
+    case '/DASHBOARD/LOAD_REQUESTS_IN_CAR':
+      return {
+        ...state,
+        requests: action.payload.requests
       };
     case '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR':
       if (state.car && state.car.participants) {

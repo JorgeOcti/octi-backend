@@ -20,6 +20,7 @@ import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
+import { parseReplicableURL } from '../../utils/common';
 
 declare let window: IWindow;
 
@@ -51,6 +52,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props : IPropsType) {
     super(props);
     this.title = 'Detalle VIN';
+    this.openBlank = this.openBlank.bind(this);
   }
 
   readonly state = {
@@ -128,7 +130,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, car, loadingParticipant} = this.props.dashboard;
+    const {loading, car, loadingParticipant, requests} = this.props.dashboard;
     const {highlight, carLoading} = this.state;
     const {getParticipant} = this.props;
     return (
@@ -245,6 +247,59 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                 }
                 </tbody>
               </table>
+              <h4>Solicitudes</h4>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th className="middle">Nº</th>
+                    <th className="middle">Estado</th>
+                    <th className="middle">Solicitante</th>
+                    <th className="middle">Vendedor</th>
+                    <th className="middle">Cliente</th>
+                    <th className="middle">RUT Cliente</th>
+                    <th className="middle">Correo</th>
+                    <th className="middle-center">Ticket</th>
+                    <th className="middle">Nº Ticket</th>
+                    <th className="middle">Sucursal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {
+                  requests.map((request) => {
+                    return (
+                      <tr key={request._id}>
+                        <td>
+                          <a
+                            href={parseReplicableURL(`/requests/vehicles/${request.request._id}/`)}
+                            target='_blank'
+                            style={{
+                              textDecoration: 'underline'
+                            }}
+                          >#{request.request.number} <i className='fa fa-fw fa-share-alt-square' /></a>
+                        </td>
+                        <td>{request.status?.name}</td>
+                        <td>{request.request.createdBy ? `${request.request.createdBy.firstName} ${request.request.createdBy.lastName}` : ''}</td>
+                        <td>{request.request.sellerText}</td>
+                        <td>{request.request?.customerInformation?.name}</td>
+                        <td>{request.request?.customerInformation?.rut}</td>
+                        <td>{request.request?.customerInformation?.email}</td>
+                        <td className='middle-center'>
+                          {
+                            request.request?.advancePaymentInformation?.files?.length ?
+                              <i
+                                className='fa fa-check-circle text-green pointer'
+                                onClick={() => this.openBlank(request.request.advancePaymentInformation.files[0].file.url)}
+                              /> : ''
+                          }
+                        </td>
+                        <td className='middle'>{request.request?.advancePaymentInformation?.number}</td>
+                        <td>{request.destination?.name}</td>
+                      </tr>
+                    )
+                  })
+                }
+                </tbody>
+              </table>
             </div>
             {
               loading &&
@@ -257,6 +312,10 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private openBlank(url: string) {
+    window.open(url, '_blank');
   }
 }
 

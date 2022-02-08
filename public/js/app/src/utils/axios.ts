@@ -353,6 +353,8 @@ export default class ApiService {
     );
   }
 
+
+
   public sendImportCars(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/import-cars/`, data, {
@@ -582,6 +584,13 @@ export default class ApiService {
       `/api/v1/requests/${id}`
     );
   }
+
+  public getRequestsByCar(id: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/by-car/${id}`
+    );
+  }
+
 
   public getRequests({ page, pageSize, orderBy, orderType }: { page: number, orderBy: string, orderType: string, pageSize?: number }): AxiosPromise {
     let params = `?page=${page}`;

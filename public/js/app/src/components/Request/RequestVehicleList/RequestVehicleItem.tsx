@@ -180,7 +180,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         }
         {
           canChangeRequest ?
-            <td className="middle">
+            <td
+              className='middle flex'
+              style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
               <AutocompleteInput
                 value={item.car.vin}
                 inputClass={'input-sm'}
@@ -206,7 +208,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   this.searchVin(value);
                 }}
                 onSelect={(car: any) => {
-                  console.log(car)
                   this.props.updateRequestItemsThunkAction({
                     item: {
                       ...item,
@@ -219,6 +220,19 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   });
                 }}
               />
+              <ShowIf condition={!!item.car.vin?.length}>
+                <a
+                  href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
+                  target='_blank'
+                  style={{
+                    textDecoration: 'underline'
+                  }}
+                ><i
+                  className='fa fa-fw fa-share-alt-square'
+                  style={{paddingTop:'5px', fontSize: '1.8em'}}
+                />
+                </a>
+              </ShowIf>
             </td>
             : <td className="middle">{item.car.vin}</td>
         }
@@ -450,14 +464,14 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           <td className='middle-center'>
             {
               //request.advancePaymentInformation.files[0].file.url
-              item.request.advancePaymentInformation?.files?.length ?
+              item.request?.advancePaymentInformation?.files?.length ?
                 <i
                   className='fa fa-check-circle text-green pointer'
                   onClick={() => this.openBlank(item.request.advancePaymentInformation.files[0].file.url)}
                 /> : ''
             }
           </td>
-          <td className='middle'>{item.request.advancePaymentInformation?.number}</td>
+          <td className='middle'>{item.request?.advancePaymentInformation?.number}</td>
         </ShowIf>
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}

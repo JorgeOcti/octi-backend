@@ -507,7 +507,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
-                      <th className='middle' style={{ minWidth: '135px', width: '135px' }}>VIN</th>
+                      <th className='middle' style={{ minWidth: '160px', width: '160px' }}>VIN</th>
                       <ShowIf condition={requestSettings.entry}>
                         <th className='middle' style={{ width: '80px' }}>Partida</th>
                       </ShowIf>

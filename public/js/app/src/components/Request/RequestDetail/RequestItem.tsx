@@ -18,10 +18,13 @@ import {
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
+import { debounceTime, switchMap } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
+import * as Rx from 'rxjs';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -36,16 +39,20 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   recommends: ICar[];
+  VINRecommends: any[];
 }
 
 declare let window: IWindow;
 
 class RequestItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
+  readonly $subjectRecommends = new Rx.Subject<any>();
+  readonly $subjectVINRecommends = new Rx.Subject<any>();
 
   readonly state = {
     error: null,
-    recommends: []
+    recommends: [],
+    VINRecommends: []
   };
 
   constructor(props: IPropsType) {
@@ -53,6 +60,38 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     this.search = debounce(500, this.search.bind(this));
     this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
+    this.$subjectRecommends.pipe(
+      debounceTime(300),
+      switchMap((text: string) => {
+        return ajax({
+          url: `/api/v1/requests/search-car/?search=${text}`,
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+          method: 'GET'
+        });
+      })
+    ).subscribe((response) => {
+      this.setState({
+        recommends: response.response.cars
+      });
+    });
+    this.$subjectVINRecommends.pipe(
+      debounceTime(300),
+      switchMap((vin: string) => {
+        return ajax({
+          url: `/api/v1/requests/search-vin/?vin=${vin}`,
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+          method: 'GET'
+        });
+      })
+    ).subscribe((response) => {
+      this.setState({
+        VINRecommends: response.response.data
+      });
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -65,7 +104,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { item, index, request } = this.props;
     const { requestItemStatus, reasons, requestSettings } = this.props.requests;
-    const { recommends } = this.state;
+    const { recommends, VINRecommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
@@ -253,24 +292,59 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         {
           canChangeRequest ?
-            <td className="middle">
-              <input
-                type="text"
-                className="form-control input-sm"
-                defaultValue={item.car.vin}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+           <td
+              className='middle flex'
+              style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
+              <AutocompleteInput
+                value={item.car.vin}
+                inputClass={'input-sm'}
+                items={VINRecommends}
+                renderItem={(car, index) => (
+                  <div key={index} className="item">
+                    {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
+                    <strong>{car.brand}</strong>
+                  </div>
+                )}
+                onChange={(e) => {
+                  const { value } = e.target;
                   this.props.updateRequestItemInDetailThunkAction({
                     item: {
                       ...item,
                       car: {
                         ...item.car,
-                        vin: e.target.value
+                        vin: value
+                      }
+                    },
+                    debounce: true
+                  });
+                  this.searchVin(value);
+                }}
+                onSelect={(car: any) => {
+                  this.props.updateRequestItemInDetailThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        vin: car.vin,
                       }
                     },
                     debounce: false
                   });
                 }}
               />
+              <ShowIf condition={!!item.car.vin?.length}>
+                <a
+                  href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
+                  target='_blank'
+                  style={{
+                    textDecoration: 'underline'
+                  }}
+                ><i
+                  className='fa fa-fw fa-share-alt-square'
+                  style={{paddingTop:'5px', fontSize: '1.8em'}}
+                />
+                </a>
+              </ShowIf>
             </td> :
             <td className="middle">{item.car.vin}</td>
         }
@@ -559,16 +633,11 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   private search(text: string): void {
-    this.api
-      .searchCar(text)
-      .then((response: AxiosResponse): void => {
-        this.setState({
-          recommends: response.data.cars
-        });
-      })
-      .catch((err: AxiosError): void => {
-        this.api.errorHandler(err);
-      });
+    this.$subjectRecommends.next(text)
+  }
+
+  private searchVin(vin: string): void {
+    this.$subjectVINRecommends.next(vin)
   }
 
   private deleteRequestItem(item: IRequestItem) {

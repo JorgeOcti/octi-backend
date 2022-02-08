@@ -34,6 +34,7 @@ requestRouter.post('/api/v1/requests/update-massive/', Middlewares.isJWTAuthenti
 requestRouter.get('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiList);
 requestRouter.post('/api/v1/requests/import/', Middlewares.isJWTAuthenticated, RequestController.apiImport);
 requestRouter.post('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiCreate);
+requestRouter.get('/api/v1/requests/by-car/:id/', Middlewares.isJWTAuthenticated, RequestController.apiByVin);
 requestRouter.get('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDetail);
 requestRouter.delete('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDeleteRequest);
 
