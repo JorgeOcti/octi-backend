@@ -4,6 +4,7 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export const REQUEST_ITEMS_CANCEL_REQUEST = '/REQUESTS_ITEMS/CANCEL_REQUEST';
@@ -11,6 +12,7 @@ export const REQUEST_ITEMS_IS_LOADING = '/REQUESTS_ITEMS/IS_LOADING';
 export const REQUEST_ITEMS_LOAD_REASONS = '/REQUESTS_ITEMS/LOAD_REASONS';
 export const REQUEST_ITEMS_LOAD_CARRIERS = '/REQUESTS_ITEMS/LOAD_CARRIERS';
 export const REQUEST_ITEMS_LOAD_VENUES = '/REQUESTS_ITEMS/LOAD_VENUES';
+export const REQUEST_ITEMS_LOAD_USERS = '/REQUESTS_ITEMS/LOAD_USERS';
 export const REQUEST_ITEMS_LOAD_PROPERTIES = '/REQUESTS_ITEMS/LOAD_PROPERTIES';
 export const REQUEST_ITEMS_LOAD_REQUESTS_ITEMS = '/REQUESTS_ITEMS/LOAD_REQUESTS_ITEMS';
 export const REQUEST_ITEMS_LOAD_ITEM_STATUS = '/REQUESTS_ITEMS/LOAD_ITEM_STATUS';
@@ -27,6 +29,7 @@ export interface IRequestItemsFilters {
   request: string;
   entry: string;
   venues: any[];
+  users: any[];
   properties: any[];
   status: any[];
   from: any;
@@ -39,6 +42,7 @@ export interface IRequestItemsState {
   carriers: ICarrier[];
   properties: ICarrier[];
   venues: IVenue[];
+  users: IUser[];
   requestItemStatus: IRequestItemStatus[];
   requestSettings: IRequestSetting;
   requestItemStatusMin: number;
@@ -82,6 +86,13 @@ export interface ILoadCarriersRequestItems {
   type: typeof REQUEST_ITEMS_LOAD_CARRIERS;
   payload: {
     carriers: ICarrier[];
+  };
+}
+
+export interface ILoadUsersRequestItems {
+  type: typeof REQUEST_ITEMS_LOAD_USERS;
+  payload: {
+    users: IUser[];
   };
 }
 
@@ -168,6 +179,7 @@ export type RequestItemsReduxActions =
   ILoadRequestItemStatus |
   ILoadRequestItems |
   ILoadCarriersRequestItems |
+  ILoadUsersRequestItems |
   ILoadVenuesRequestItems |
   ILoadPropertiesRequestItems |
   IChangeOrderRequestItems |

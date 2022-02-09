@@ -663,6 +663,14 @@ var RequestController = /** @class */ (function () {
                         else {
                             venuesIds = req.user.venuesPermissions();
                         }
+                        if (filters.users && filters.users.length) {
+                            if (!extraMatch.hasOwnProperty('$or')) {
+                                extraMatch.$or = [];
+                            }
+                            extraMatch.$or.push({
+                                'request.createdBy._id': { $in: filters.users.map(function (userId) { return new bson_1.ObjectID(userId); }) }
+                            });
+                        }
                         if (filters.status && filters.status.length) {
                             extraQuery.status = { $in: filters.status.map(function (status) { return new bson_1.ObjectID(status); }) };
                         }
@@ -785,6 +793,7 @@ var RequestController = /** @class */ (function () {
                                     'request._id': 1,
                                     'request.number': 1,
                                     'transmittal.number': 1,
+                                    'request.createdBy._id': 1,
                                     'request.createdBy.firstName': 1,
                                     'request.createdBy.lastName': 1,
                                     'request.conectaID': 1,

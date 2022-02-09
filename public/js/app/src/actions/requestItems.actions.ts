@@ -38,12 +38,14 @@ import {
   REQUEST_ITEMS_LOAD_PROPERTIES,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
-  REQUEST_ITEMS_LOAD_SETTINGS,
+  REQUEST_ITEMS_LOAD_SETTINGS, REQUEST_ITEMS_LOAD_USERS,
   REQUEST_ITEMS_LOAD_VENUES,
   REQUEST_ITEMS_UPDATE_ITEM,
-  RequestItemsReduxActions
+  RequestItemsReduxActions,
+  ILoadUsersRequestItems
 } from './requestItems.types';
 import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
+import { IUser } from '../../../../../src/app/interfaces';
 
 export function cancelRequestItemsAction(source: CancelTokenSource): ICancelRequestItems {
   return {
@@ -77,6 +79,15 @@ export function loadCarriersRequestItemsAction(carriers: ICarrier[]): ILoadCarri
     type: REQUEST_ITEMS_LOAD_CARRIERS,
     payload: {
       carriers
+    }
+  };
+}
+
+export function loadUsersRequestItemsAction(users: IUser[]): ILoadUsersRequestItems {
+  return {
+    type: REQUEST_ITEMS_LOAD_USERS,
+    payload: {
+      users
     }
   };
 }
@@ -193,15 +204,18 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         // api.getCarriers(1, 200),
         api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+        api.getUsers(page, "", undefined, true, 200),
         api.getProperties(),
         api.getTeamSettings()
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, properties, teamsettings) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, users, properties, teamsettings) => {
+        console.log('users', users);
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
         // dispatch(loadCarriersRequestItemsAction(carriers.data.results));
+        dispatch(loadUsersRequestItemsAction(users.data.results));
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(loadPropertiesRequestItemsAction(properties.data));
         dispatch(isLoadingRequestItemsAction(false));

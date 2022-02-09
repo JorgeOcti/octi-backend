@@ -173,7 +173,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings
+      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings, users
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -229,7 +229,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-body no-padding'>
               <div style={{ padding: '10px 0' }}>
                 <div className='row' style={{ margin: 0 }}>
-                  <div className='col-md-6'>
+                  <div className='col-md-3'>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vehículo
@@ -293,6 +293,42 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         defaultValue={filters.request}
                         onChange={(e) => {
                           this.changeFilterDebounced('request', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className='col-md-3'>
+                    <div className='form-group'>
+                      <label className='control-label'>
+                        Creador por
+                      </label>
+                      <BootstrapSelect
+                        noneSelectedText='Todas'
+                        search={true}
+                        displayItems={2}
+                        selectedText='sucursales seleccionadas.'
+                        selected={filters.users}
+                        sm={true}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('users', users.map((user) => user._id));
+                            } else {
+                              this.changeFilter('users', []);
+                            }
+                          }
+                        }
+                        options={users.map((user) => ({
+                          value: user._id,
+                          text: `${user.firstName} ${user.lastName}`
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.users.includes(selected)) {
+                            this.changeFilter('users', [...filters.users.filter((venue) => venue !== selected)]);
+                          } else {
+                            this.changeFilter('users', [...filters.users, selected]);
+                          }
                         }}
                       />
                     </div>

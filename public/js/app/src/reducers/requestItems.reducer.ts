@@ -13,7 +13,7 @@ import {
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_VENUES,
-  REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS
+  REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS, REQUEST_ITEMS_LOAD_USERS
 } from '../actions/requestItems.types';
 import { requestSettings } from '../components/Request/defaults';
 
@@ -22,6 +22,7 @@ const initialState: IRequestItemsState = {
   reasons: [],
   carriers: [],
   venues: [],
+  users: [],
   properties: [],
   requestItemStatus: [],
   requestItemStatusMin: 0,
@@ -35,6 +36,7 @@ const initialState: IRequestItemsState = {
     entry: '',
     text: '',
     venues: [],
+    users: [],
     properties: [],
     status: [],
     from: null,
@@ -77,6 +79,11 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
       return {
         ...state,
         venues: action.payload.venues
+      };
+    case REQUEST_ITEMS_LOAD_USERS:
+      return {
+        ...state,
+        users: action.payload.users
       };
     case REQUEST_ITEMS_LOAD_PROPERTIES:
         return {
