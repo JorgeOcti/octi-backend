@@ -10,6 +10,7 @@ import CarriersListView from './components/Carriers/CarriersListView';
 import CarDetailView from './components/Cars/CarDetailView';
 import CarsListView from './components/Cars/CarListView';
 import RequestChannelListView from './components/RequestSettings/RequestChannelListView';
+import PaymentMethodListView from './components/RequestSettings/PaymentMethodlListView';
 import RequestStatusListView from './components/RequestSettings/RequestStatusListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
 import DashboardDamagesView from './components/DashboardGeneral/DashboardDamagesView';
@@ -106,6 +107,7 @@ const App = () => (
         <Route exact path='/requests/' component={RequestListView} />
         <Route exact path='/requests/settings/reasons/' component={RequestReasonListView} />
         <Route exact path='/requests/settings/channels/' component={RequestChannelListView} />
+        <Route exact path='/requests/settings/payment-methods/' component={PaymentMethodListView} />
         <Route exact path='/requests/settings/status/' component={RequestStatusListView} />
         <Route exact path='/requests/settings/operations-type/' component={OperationTypeListView} />
         <Route exact path='/transmittals/settings/milestone/' component={MilestoneListView} />

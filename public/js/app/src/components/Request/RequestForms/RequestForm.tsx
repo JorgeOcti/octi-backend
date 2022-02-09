@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { IReason } from '../../../../../../../src/request/interfaces/reason.interface';
 import { IColor } from '../../../../../../../src/app/interfaces/color.interface';
 import { ISalesChannel } from '../../../../../../../src/request/interfaces/salesChannel.interface';
+import { IPaymentMethod } from '../../../../../../../src/request/interfaces/paymentMethod.interface';
 import { IOperationType } from '../../../../../../../src/request/interfaces/operationType.interface';
 import ApiService from '../../../utils/axios';
 import BootstrapSelectField from '../../Utils/forms/BootstrapSelectField';
@@ -40,6 +41,7 @@ interface IStateType {
   reasons: IReason[];
   colors: IColor[];
   channels: ISalesChannel[];
+  paymentMethods: IPaymentMethod[];
   operationTypes: IOperationType[];
   requestSettings: IRequestSetting;
   loading: boolean;
@@ -56,6 +58,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     reasons: [],
     colors: [],
     channels: [],
+    paymentMethods: [],
     operationTypes: [],
     requestSettings,
     loading: false,
@@ -88,8 +91,7 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
-    const { venues, channels, reasons, colors, loading, exist, filesCache } = this.state;
-    // console.log('formValues', formValues);
+    const { venues, channels, reasons, colors, loading, exist, filesCache, paymentMethods } = this.state;
     const uploadingFiles = !!Object.values(filesCache).filter((files: any) => {
       return !!files.filter((file: any) => file.status !== imageStatus.complete).length;
     }).length;
@@ -277,10 +279,32 @@ class Form extends React.Component<IPropsType, IStateType> {
                               <Field
                                 name='advancePaymentInformation.method'
                                 label='Método de Pago *'
-                                type='text'
-                                component={InputField}
+                                component={BootstrapSelectField}
                                 validate={[inputStringRequired]}
-                              />
+                                props={{
+                                  noneSelectedText: 'Seleccione...',
+                                  displayItems: 2,
+                                  selectedText: 'sucursal seleccionadas.',
+                                  autoClouse: true,
+                                  sm: true,
+                                  allOption: false,
+                                  search: true,
+                                  options: [
+                                    ...paymentMethods.map((paymentMethod) => ({
+                                      value: paymentMethod._id,
+                                      text: paymentMethod.name
+                                    }))
+                                  ],
+                                  onClick: (value: string) => {
+                                    if (formValues.advancePaymentInformation.method === value) {
+                                      this.props.autofill('advancePaymentInformation.method', '');
+                                    } else {
+                                      this.props.autofill('advancePaymentInformation.method', value);
+                                    }
+                                  }
+                                }}
+                              >
+                              </Field>
                             </td>
                             <td className={'middle form-group-no-margin'} style={{ width: '35%' }}>
                               <Field
@@ -623,9 +647,10 @@ class Form extends React.Component<IPropsType, IStateType> {
         this.api.getSalesChannel({ page: 1, pageSize: 200 }),
         this.api.getTeamSettings(),
         this.api.getOperationTypes({ page: 1, pageSize: 200 }),
+        this.api.getPaymentMethods({ page: 1, pageSize: 200 }),
         this.api.validateContectaID(conectaID)
       ])
-      .then(Axios.spread((venues, reasons, colors, channels, teamSettings, operationTypes, validateContecta) => {
+      .then(Axios.spread((venues, reasons, colors, channels, teamSettings, operationTypes, paymentMethods, validateContecta) => {
         if(validateContecta.data?.error){
           this.setState({ exist: true });
           swal!('Solicitud ya creada para esta cotización', `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${validateContecta.data.number}.`, 'warning', {
@@ -639,6 +664,7 @@ class Form extends React.Component<IPropsType, IStateType> {
           colors: colors.data.results,
           reasons: reasons.data.results,
           channels: channels.data.results,
+          paymentMethods: paymentMethods.data.results,
           requestSettings: teamSettings.data.request,
           operationTypes: operationTypes.data.results,
           loading: false

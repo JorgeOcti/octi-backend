@@ -435,7 +435,8 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             canChangeRequest ?
               <td className="middle">
                 <select
-                  className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                  className="form-control select-sm font-12"
+                  value={item.reason?._id ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     this.props.updateRequestItemsThunkAction({
                       item: {

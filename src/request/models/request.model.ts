@@ -1,7 +1,8 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import { IRequest } from '../interfaces/request.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as s3Config from '../../../s3-config.json';
@@ -121,6 +122,7 @@ requestSchema.set('toObject', { virtuals: true });
 requestSchema.set('toJSON', { virtuals: true });
 
 requestSchema.plugin(mongoosePaginate);
+requestSchema.plugin(mongooseAggregatePaginate);
 
 requestSchema.plugin(mongooseCrate, {
   storage: new MongooseCrateS3({
@@ -153,7 +155,7 @@ requestSchema.plugin(mongooseCrate, {
   }
 });
 
-export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel>;
+export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel>  & AggregatePaginateModel<IRequestModel>;
 
 const Request = mongoose.model<IRequestModel, RequestSchema>('Request', requestSchema);
 

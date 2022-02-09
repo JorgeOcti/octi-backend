@@ -38,7 +38,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             />
           </div>
           {
-            submitFailed && !valid &&
+            submitFailed && valid === false &&
             <div className="col-md-12">
               <div
                 className="alert alert-danger"
@@ -70,4 +70,4 @@ const mapDispatchToProps = (dispatch: any) => {
   };
 };
 
-export default connect<{ requestChannel: ISalesChannelState }, { dispatch: any }, IPropsType | {}>(mapStateToProps, mapDispatchToProps)(ChannelForm);
+export default connect<{  requestChannel: ISalesChannelState }, { dispatch: any }, IPropsType | {}>(mapStateToProps, mapDispatchToProps)(ChannelForm);

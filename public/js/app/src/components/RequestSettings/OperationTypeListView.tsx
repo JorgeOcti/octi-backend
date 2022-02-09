@@ -135,6 +135,9 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to='/requests/settings/operations-type/' className='list-group-item active'>
                   Tipos de operación
                 </Link>
+                <Link to="/requests/settings/payment-methods/" className="list-group-item">
+                  Métodos de pago
+                </Link>
                 <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone-type/' className='list-group-item'>
                     Tipos de hitos

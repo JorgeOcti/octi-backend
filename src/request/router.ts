@@ -2,6 +2,7 @@ import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import ReasonController from './controllers/reason.controller';
 import SalesChannelController from './controllers/salesChannel.controller';
+import PaymentMethodController from './controllers/paymentMethod.controller';
 import RequestController from './controllers/request.controller';
 import RequestItemStatusController from './controllers/requestItemStatus.controller';
 import OperationTypeController from './controllers/operationType.controller';
@@ -11,6 +12,7 @@ const requestRouter = express.Router();
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/reasons/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/settings/payment-methods/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/channels/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn, RequestController.index);
@@ -57,6 +59,11 @@ requestRouter.delete('/api/v1/sales-channel/:id/', Middlewares.isJWTAuthenticate
 
 requestRouter.get('/api/v1/sales-channel/create-default/', Middlewares.isJWTAuthenticated, SalesChannelController.createDefault);
 requestRouter.get('/api/v1/sales-channel/update-fleet/', Middlewares.isJWTAuthenticated, SalesChannelController.updateFleet);
+
+requestRouter.get('/api/v1/payment-method/', Middlewares.isJWTAuthenticated, PaymentMethodController.apiList);
+requestRouter.post('/api/v1/payment-method/', Middlewares.isJWTAuthenticated, PaymentMethodController.apiCreate);
+requestRouter.patch('/api/v1/payment-method/:id/', Middlewares.isJWTAuthenticated, PaymentMethodController.apiUpdate);
+requestRouter.delete('/api/v1/payment-method/:id/', Middlewares.isJWTAuthenticated, PaymentMethodController.apiDelete);
 
 requestRouter.get('/api/v1/request-item-status/', Middlewares.isJWTAuthenticated, RequestItemStatusController.apiList);
 requestRouter.post('/api/v1/request-item-status/', Middlewares.isJWTAuthenticated, RequestItemStatusController.apiCreate);

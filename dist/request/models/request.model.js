@@ -2,6 +2,7 @@
 exports.__esModule = true;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
+var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var mongooseCrate = require("mongoose-crate");
 var MongooseCrateS3 = require("mongoose-crate-s3");
 var s3Config = require("../../../s3-config.json");
@@ -111,6 +112,7 @@ requestSchema.virtual('items', {
 requestSchema.set('toObject', { virtuals: true });
 requestSchema.set('toJSON', { virtuals: true });
 requestSchema.plugin(mongoosePaginate);
+requestSchema.plugin(mongooseAggregatePaginate);
 requestSchema.plugin(mongooseCrate, {
     storage: new MongooseCrateS3({
         key: process.env.S3_KEY || s3Config.accessKeyId,

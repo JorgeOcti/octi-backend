@@ -7,32 +7,32 @@ import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
-import { IRequestStatus } from '../../../../../../src/request/interfaces/requestStatus.interface';
+import { IPaymentMethod } from '../../../../../../src/request/interfaces/paymentMethod.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
+import { IPaymentMethodState, PaymentMethodReduxActions } from '../../actions/paymentMethod.types';
 import {
-  createRequestStatusThunkAction,
-  deleteRequestStatusItemThunkAction,
-  getRequestStatusThunkAction,
-  updateRequestStatusThunkAction
-} from '../../actions/requestStatus.actions';
-import { IRequestStatusState, RequestStatusReduxActions } from '../../actions/requestStatus.types';
+  createPaymentMethodThunkAction,
+  deletePaymentMethodItemThunkAction,
+  getPaymentMethodThunkAction,
+  updatePaymentMethodThunkAction
+} from '../../actions/paymentMethod.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import { hasPermission, showModal, statusFooterButttonsModal } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-import StatusForm from './StatusForm';
+import ChannelForm from './ChannelForm';
 import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-  dispatch: Dispatch<RequestStatusReduxActions | FormAction>;
-  requestStatus: IRequestStatusState;
+  dispatch: Dispatch<PaymentMethodReduxActions | FormAction>;
+  paymentMethod: IPaymentMethodState;
 
-  getRequestStatusThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): RequestStatusReduxActions;
-  createRequestStatusThunkAction(requestStatus: IRequestStatus): RequestStatusReduxActions;
-  updateRequestStatusThunkAction(requestStatus: IRequestStatus): RequestStatusReduxActions;
-  deleteRequestStatusThunkAction(requestStatus: IRequestStatus): RequestStatusReduxActions;
+  getPaymentMethodThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): PaymentMethodReduxActions;
+  createPaymentMethodThunkAction(paymentMethod: IPaymentMethod): PaymentMethodReduxActions;
+  updatePaymentMethodThunkAction(paymentMethod: IPaymentMethod): PaymentMethodReduxActions;
+  deletePaymentMethodThunkAction(paymentMethod: IPaymentMethod): PaymentMethodReduxActions;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
@@ -43,7 +43,7 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
+class PaymentMethodListView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
   private socket: SocketIOClient.Socket;
@@ -54,19 +54,19 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Listado de Status';
+    this.title = 'Listado de Canales';
     this.changePage = this.changePage.bind(this);
-    this.createRequestStatus = this.createRequestStatus.bind(this);
-    this.processCreateRequestStatus = this.processCreateRequestStatus.bind(this);
+    this.createPaymentMethod = this.createPaymentMethod.bind(this);
+    this.processCreatePaymentMethod = this.processCreatePaymentMethod.bind(this);
     this.updateReaon = this.updateReaon.bind(this);
-    this.processUpdateRequestStatus = this.processUpdateRequestStatus.bind(this);
-    this.deleteRequestStatus = this.deleteRequestStatus.bind(this);
+    this.processUpdatePaymentMethod = this.processUpdatePaymentMethod.bind(this);
+    this.deletePaymentMethod = this.deletePaymentMethod.bind(this);
   }
 
   public componentWillMount(): void {
-    const { pagination } = this.props.requestStatus;
-    const { orderBy, orderType } = this.props.requestStatus.options;
-    this.props.getRequestStatusThunkAction(pagination.page, orderBy, orderType);
+    const { pagination } = this.props.paymentMethod;
+    const { orderBy, orderType } = this.props.paymentMethod.options;
+    this.props.getPaymentMethodThunkAction(pagination.page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -76,20 +76,20 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
       query: { token: (window.user as any).token }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `request-status-list-${window.user.team._id}` });
+      this.socket.emit('join', { room: `payment-method-list-${window.user.team._id}` });
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
-        const { pagination } = this.props.requestStatus;
-        const { orderBy, orderType } = this.props.requestStatus.options;
-        this.props.getRequestStatusThunkAction(pagination.page, orderBy, orderType, true);
+        const { pagination } = this.props.paymentMethod;
+        const { orderBy, orderType } = this.props.paymentMethod.options;
+        this.props.getPaymentMethodThunkAction(pagination.page, orderBy, orderType, true);
       }
     });
   }
 
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if (this.props.requestStatus.pagination !== prevProps.requestStatus.pagination) {
+    if (this.props.paymentMethod.pagination !== prevProps.paymentMethod.pagination) {
       window.scrollTo(0, 0);
     }
   }
@@ -103,18 +103,25 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
-    if (this.props.requestStatus.source) {
-      this.props.requestStatus.source.cancel('Operation canceled by the user.');
+    if (this.props.paymentMethod.source) {
+      this.props.paymentMethod.source.cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, status, pagination } = this.props.requestStatus;
+    const { loading, paymentMethods, pagination } = this.props.paymentMethod;
     const canEdit = hasPermission(window.user, 'adminRequest');
     const canDelete = hasPermission(window.user, 'adminRequest');
+    let cols = 1;
+    if(canDelete){
+      cols++;
+    }
+    if(canEdit){
+      cols++;
+    }
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.3" cAction="Estados">
+      <AppContainer title="" cMenu="3" cSubMenu="3.3" cAction="Métodos de pago">
         <section className="content">
           <div className="row">
             <div className="col-md-3">
@@ -125,13 +132,13 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to="/requests/settings/channels/" className="list-group-item">
                   Canales
                 </Link>
-                <Link to="/requests/settings/status/" className="list-group-item active">
+                <Link to="/requests/settings/status/" className="list-group-item ">
                   Estados
                 </Link>
                 <Link to="/requests/settings/operations-type/" className="list-group-item ">
                   Tipos de operación
                 </Link>
-                <Link to="/requests/settings/payment-methods/" className="list-group-item">
+                <Link to="/requests/settings/payment-methods/" className="list-group-item active">
                   Métodos de pago
                 </Link>
                 <ShowIf condition={window.user.isAdmin}>
@@ -149,12 +156,12 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="col-md-9">
               <div className="box">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Estados <small>{pagination.count}</small></h3>
+                  <h3 className="box-title">Métodos de pago <small>{pagination.count}</small></h3>
                   <div className="box-tools pull-right">
                     {
                       hasPermission(window.user, 'addVenue') ?
                         <button className="btn btn-sm btn-success"
-                        onClick={this.createRequestStatus}
+                          onClick={this.createPaymentMethod}
                         ><i className="fa fa-plus" />  Agregar</button>
                         : null
                     }
@@ -164,9 +171,7 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                   <table className="table table-andes table-striped">
                     <thead>
                       <tr>
-                        <th style={{ width: '70%' }} className="middle">Nombre</th>
-                        <th style={{ width: '10%' }} className="middle">Peso</th>
-                        <th style={{ width: '18%' }} className="middle text-center">Default</th>
+                        <th style={{ width: '98%' }} className="middle">Nombre</th>
                         {
                           canEdit ?
                             <th style={{ width: '1%' }} className="width-10" /> : null
@@ -178,21 +183,16 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                       </tr>
                     </thead>
                     <tbody>
+                      <ShowIf condition={!paymentMethods.length}>
+                        <tr>
+                          <td colSpan={cols}>No se han creado métodos de pago.</td>
+                        </tr>
+                      </ShowIf>
                       {
-                        status.map((item) => {
+                        paymentMethods.map((item) => {
                           return (
                             <tr key={item._id}>
                               <td className="middle">{item.name}</td>
-                              <td className="middle">{item.weigth}</td>
-                              <td className="middle text-center">
-                                <i
-                                  className={
-                                    item.default ?
-                                      'fa fa-check-circle text-green':
-                                      'fa fa-times-circle text-red'
-                                  }
-                                />
-                              </td>
                               {
                                 canEdit ?
                                   <td
@@ -203,15 +203,14 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                                   </td> : null
                               }
                               {
-                                !item.default && canDelete ?
+                                canDelete ?
                                   <td
                                     className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
                                     // className={'middle text-red pointer'}
-                                    onClick={canDelete ? () => this.deleteRequestStatus(item) : undefined}
+                                    onClick={canDelete ? () => this.deletePaymentMethod(item) : undefined}
                                   >
-                                    <i className="fa fa-minus-circle"/>
-                                  </td> : canDelete ?
-                                    <td/> : null
+                                    <i className="fa fa-minus-circle" />
+                                  </td> : null
                               }
                             </tr>
                           );
@@ -241,53 +240,53 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
-  private createRequestStatus(): void {
+  private createPaymentMethod(): void {
     this.props.loadDataAction(
-      'Agregar Estado',
-      <StatusForm
+      'Agregar método de pago',
+      <ChannelForm
         initialValues={{ update: false }}
-        onSubmit={this.processCreateRequestStatus}
+        onSubmit={this.processCreatePaymentMethod}
       />,
       <React.Fragment>
         <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={() => this.props.dispatch(submit('statusForm'))}>Grabar</button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={() => this.props.dispatch(submit('channelForm'))}>Grabar</button>
       </React.Fragment>
     );
   }
 
-  private processCreateRequestStatus(requestStatus: any): void {
+  private processCreatePaymentMethod(paymentMethod: any): void {
     statusFooterButttonsModal(true);
-    this.props.createRequestStatusThunkAction(requestStatus);
+    this.props.createPaymentMethodThunkAction(paymentMethod);
     statusFooterButttonsModal(false);
     showModal(false);
   }
 
   private updateReaon(reason: any): void {
     this.props.loadDataAction(
-      'Editar Estado',
-      <StatusForm
+      'Editar método de pago',
+      <ChannelForm
         initialValues={{ update: false, ...reason }}
-        onSubmit={this.processUpdateRequestStatus}
+        onSubmit={this.processUpdatePaymentMethod}
       />,
       <React.Fragment>
         <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={() => this.props.dispatch(submit('statusForm'))}>Editar</button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={() => this.props.dispatch(submit('channelForm'))}>Editar</button>
       </React.Fragment>
     );
   }
 
-  private processUpdateRequestStatus(requestStatus: any): void {
+  private processUpdatePaymentMethod(paymentMethod: any): void {
     statusFooterButttonsModal(true);
-    this.props.updateRequestStatusThunkAction(requestStatus);
+    this.props.updatePaymentMethodThunkAction(paymentMethod);
     statusFooterButttonsModal(false);
     showModal(false);
   }
 
-  private deleteRequestStatus(requestStatus: IRequestStatus): void {
+  private deletePaymentMethod(paymentMethod: IPaymentMethod): void {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el estado: ${requestStatus.name} `,
+      text: `Vas a eliminar el canal: ${paymentMethod.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -298,33 +297,33 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        this.props.deleteRequestStatusThunkAction(requestStatus);
+        this.props.deletePaymentMethodThunkAction(paymentMethod);
       }
     });
   }
 
   private changePage(page: number): void {
     // change the page
-    const { orderBy, orderType } = this.props.requestStatus.options;
-    this.props.getRequestStatusThunkAction(page, orderBy, orderType);
+    const { orderBy, orderType } = this.props.paymentMethod.options;
+    this.props.getPaymentMethodThunkAction(page, orderBy, orderType);
   }
 }
 
-const mapStateToProps = (state: { requestStatus: IRequestStatusState }) => {
+const mapStateToProps = (state: { paymentMethod: IPaymentMethodState }) => {
   return {
-    requestStatus: state.requestStatus
+    paymentMethod: state.paymentMethod
   };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRequestStatusThunkAction: (nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getRequestStatusThunkAction(nextPage, orderBy, orderType, hideLoading)),
-    createRequestStatusThunkAction: (requestStatus: IRequestStatus) => dispatch(createRequestStatusThunkAction(requestStatus)),
-    updateRequestStatusThunkAction: (requestStatus: IRequestStatus) => dispatch(updateRequestStatusThunkAction(requestStatus)),
-    deleteRequestStatusThunkAction: (requestStatus: IRequestStatus) => dispatch(deleteRequestStatusItemThunkAction(requestStatus)),
+    getPaymentMethodThunkAction: (nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getPaymentMethodThunkAction(nextPage, orderBy, orderType, hideLoading)),
+    createPaymentMethodThunkAction: (paymentMethod: IPaymentMethod) => dispatch(createPaymentMethodThunkAction(paymentMethod)),
+    updatePaymentMethodThunkAction: (paymentMethod: IPaymentMethod) => dispatch(updatePaymentMethodThunkAction(paymentMethod)),
+    deletePaymentMethodThunkAction: (paymentMethod: IPaymentMethod) => dispatch(deletePaymentMethodItemThunkAction(paymentMethod)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 
-export default connect<{ requestStatus: IRequestStatusState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestStatusListView);
+export default connect<{ paymentMethod: IPaymentMethodState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(PaymentMethodListView);

@@ -23,6 +23,7 @@ import { stockReducer } from './stock.reducer';
 import { usersReducer } from './users.reducer';
 import { requestStatusReducer } from './requestStatus.reducer';
 import { requestChannelReducer } from './requestChannel.reducer';
+import { paymentMethodReducer } from './paymentMethod.reducer';
 import { venuesReducer } from './venues.reducer';
 import { versionsReducer } from './versions.reducer';
 import transmittalReducer from "./transmittal.reducer";
@@ -51,6 +52,7 @@ export default (history: any) => combineReducers({
   reasons: reasonsReducers,
   versions: versionsReducer,
   requestStatus: requestStatusReducer,
+  paymentMethod: paymentMethodReducer,
   requestChannel: requestChannelReducer,
   venues: venuesReducer,
   companies: companiesReducer,

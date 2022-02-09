@@ -20,6 +20,7 @@ import {
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
+import { IPaymentMethod } from '../../../../../src/request/interfaces/paymentMethod.interface';
 import {IBaseVenue} from '../../../../../src/app/interfaces/venue.interface';
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
@@ -237,13 +238,42 @@ export default class ApiService {
   }
 
   public getSalesChannel({
-                           page,
-                           pageSize,
-                           orderBy,
-                           orderType
-                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+     page,
+     pageSize,
+     orderBy,
+     orderType
+   }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createPaymentMethod(paymentMethod: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/payment-method/`, paymentMethod
+    );
+  }
+
+  public updatePaymentMethod(paymentMethod: IPaymentMethod): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/payment-method/${paymentMethod._id}/`, paymentMethod
+    );
+  }
+
+  public deletePaymentMethod(paymentMethod: IPaymentMethod): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/payment-method/${paymentMethod._id}/`
+    );
+  }
+
+  public getPaymentMethods({
+   page,
+   pageSize,
+   orderBy,
+   orderType
+ }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/payment-method/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 
