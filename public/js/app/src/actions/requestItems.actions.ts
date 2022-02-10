@@ -203,7 +203,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getReasons({ page: 1, pageSize: 200 }),
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
-        api.getUsers(page, "", undefined, true, 200),
+        api.getUsers(1, "", undefined, true, 200),
         api.getProperties(),
         api.getTeamSettings()
       ])
