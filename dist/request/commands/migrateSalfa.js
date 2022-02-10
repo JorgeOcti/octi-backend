@@ -54,12 +54,12 @@ var path = require("path");
 var team_model_1 = require("../../app/models/team.model");
 var requestItem_model_1 = require("../../request/models/requestItem.model");
 var request_model_1 = require("../../request/models/request.model");
-var teamSetting_model_1 = require("../../app/models/teamSetting.model");
+var paymentMethod_model_1 = require("../models/paymentMethod.model");
 function migrateSalfa() {
     return __awaiter(this, void 0, void 0, function () {
-        var MONGODB_URI, teams, _i, teams_1, team_1, isSalfa, team, requestItems, _a, requestItems_1, requestItem, answerByKey, e_1, e_2;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var MONGODB_URI, team, requestItems, paymentMethods, paymentMethodByKey, _i, requestItems_1, requestItem, answerByKey, paymentMethodText, e_1, e_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     dotenv.config({
                         path: path.join(__dirname, '../../../.env')
@@ -68,62 +68,40 @@ function migrateSalfa() {
                     mongoose.Promise = bluebird;
                     return [4 /*yield*/, mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })];
                 case 1:
-                    _b.sent();
+                    _a.sent();
                     mongoose.set('debug', true);
-                    _b.label = 2;
+                    _a.label = 2;
                 case 2:
-                    _b.trys.push([2, 17, , 18]);
-                    return [4 /*yield*/, team_model_1["default"].find({})];
-                case 3:
-                    teams = _b.sent();
-                    _i = 0, teams_1 = teams;
-                    _b.label = 4;
-                case 4:
-                    if (!(_i < teams_1.length)) return [3 /*break*/, 7];
-                    team_1 = teams_1[_i];
-                    isSalfa = team_1._id.toString() === '5bf2de35caf8ef7096105cdd';
-                    return [4 /*yield*/, teamSetting_model_1["default"].findOneAndUpdate({ team: team_1 }, {
-                            request: {
-                                brand: true,
-                                brandReadOnly: isSalfa,
-                                denominationReadOnly: isSalfa,
-                                colorReadOnly: isSalfa,
-                                materialReadOnly: isSalfa,
-                                ticket: isSalfa,
-                                conectaID: isSalfa,
-                                reason: !isSalfa,
-                                priority: !isSalfa,
-                                internalNumber: !isSalfa,
-                                entry: !isSalfa
-                            }
-                        })];
-                case 5:
-                    _b.sent();
-                    _b.label = 6;
-                case 6:
-                    _i++;
-                    return [3 /*break*/, 4];
-                case 7: return [4 /*yield*/, process.exit(1)];
-                case 8:
-                    _b.sent();
+                    _a.trys.push([2, 12, , 13]);
                     return [4 /*yield*/, team_model_1["default"].findById('5bf2de35caf8ef7096105cdd')];
-                case 9:
-                    team = _b.sent();
+                case 3:
+                    team = _a.sent();
                     return [4 /*yield*/, requestItem_model_1["default"].find({ team: team })];
-                case 10:
-                    requestItems = _b.sent();
-                    _a = 0, requestItems_1 = requestItems;
-                    _b.label = 11;
-                case 11:
-                    if (!(_a < requestItems_1.length)) return [3 /*break*/, 16];
-                    requestItem = requestItems_1[_a];
-                    _b.label = 12;
-                case 12:
-                    _b.trys.push([12, 14, , 15]);
+                case 4:
+                    requestItems = _a.sent();
+                    return [4 /*yield*/, paymentMethod_model_1["default"].find({ team: team })];
+                case 5:
+                    paymentMethods = _a.sent();
+                    paymentMethodByKey = paymentMethods.reduce(function (acc, cur) {
+                        var _a;
+                        return __assign(__assign({}, acc), (_a = {}, _a[cur.name] = cur._id, _a));
+                    }, {});
+                    _i = 0, requestItems_1 = requestItems;
+                    _a.label = 6;
+                case 6:
+                    if (!(_i < requestItems_1.length)) return [3 /*break*/, 11];
+                    requestItem = requestItems_1[_i];
+                    _a.label = 7;
+                case 7:
+                    _a.trys.push([7, 9, , 10]);
                     answerByKey = requestItem.answers.reduce(function (acc, cur) {
                         var _a;
-                        return __assign(__assign({}, acc), (_a = {}, _a[cur.questionId.toString()] = cur, _a));
+                        if (cur === null || cur === void 0 ? void 0 : cur.questionId) {
+                            return __assign(__assign({}, acc), (_a = {}, _a[cur.questionId.toString()] = cur, _a));
+                        }
+                        return __assign({}, acc);
                     }, {});
+                    paymentMethodText = answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer.trim() : '';
                     return [4 /*yield*/, request_model_1["default"].findByIdAndUpdate(requestItem.request, {
                             customerInformation: {
                                 name: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c21') ? answerByKey['5bf2de35caf8ef7096105c21'].answer : '',
@@ -132,32 +110,33 @@ function migrateSalfa() {
                                 phone: ''
                             },
                             advancePaymentInformation: {
-                                method: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer : '',
+                                method: paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodByKey[paymentMethodText] : null,
+                                otherMethod: !paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodText : '',
                                 number: '',
                                 files: []
                             }
                         })];
-                case 13:
-                    _b.sent();
-                    return [3 /*break*/, 15];
-                case 14:
-                    e_1 = _b.sent();
+                case 8:
+                    _a.sent();
+                    return [3 /*break*/, 10];
+                case 9:
+                    e_1 = _a.sent();
                     console.log(JSON.stringify(requestItem));
                     console.log('Ha ocurrido un error en migrateSalfa');
                     console.log('error:', e_1);
-                    return [3 /*break*/, 15];
-                case 15:
-                    _a++;
-                    return [3 /*break*/, 11];
-                case 16: return [3 /*break*/, 18];
-                case 17:
-                    e_2 = _b.sent();
+                    return [3 /*break*/, 10];
+                case 10:
+                    _i++;
+                    return [3 /*break*/, 6];
+                case 11: return [3 /*break*/, 13];
+                case 12:
+                    e_2 = _a.sent();
                     console.log('Ha ocurrido un error en migrateSalfa');
                     console.log('error:', e_2);
-                    return [3 /*break*/, 18];
-                case 18: return [4 /*yield*/, process.exit(1)];
-                case 19:
-                    _b.sent();
+                    return [3 /*break*/, 13];
+                case 13: return [4 /*yield*/, process.exit(1)];
+                case 14:
+                    _a.sent();
                     return [2 /*return*/];
             }
         });

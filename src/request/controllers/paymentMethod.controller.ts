@@ -3,7 +3,7 @@ import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
-import PaymentMethod, { IPaymentMethodModel } from '../models/paymentMethod';
+import PaymentMethodModel, { IPaymentMethodModel } from '../models/paymentMethod.model';
 
 class PaymentMethodController {
 
@@ -19,7 +19,7 @@ class PaymentMethodController {
     const { team } = req.user;
     const object = req.body;
     try {
-      const reason = await new PaymentMethod({ ...object, team }).save();
+      const reason = await new PaymentMethodModel({ ...object, team }).save();
       io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
@@ -40,7 +40,7 @@ class PaymentMethodController {
     const { id } = req.params;
     const update = req.body;
     try {
-      const reason = await PaymentMethod.findOneAndUpdate({ _id: id }, { $set: { ...update } });
+      const reason = await PaymentMethodModel.findOneAndUpdate({ _id: id }, { $set: { ...update } });
       io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
@@ -60,7 +60,7 @@ class PaymentMethodController {
     const { team } = req.user;
     const { id } = req.params;
     try {
-      const reason = await PaymentMethod.findOneAndDelete({ _id: id, team });
+      const reason = await PaymentMethodModel.findOneAndDelete({ _id: id, team });
       io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
@@ -123,7 +123,7 @@ class PaymentMethodController {
 
   private getPaymentMethods(filter: any, options: PaginateOptions): Promise<PaginateResult<IPaymentMethodModel>> {
     return new Promise((resolve, reject) => {
-      PaymentMethod.paginate(filter, options, (err, result) => {
+      PaymentMethodModel.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

@@ -28,6 +28,7 @@ export interface IRequestCustomer {
 
 export interface IRequestAdvancePayment {
   method: string;
+  otherMethod: string;
   number: string;
   files: IRequestFile[];
 }

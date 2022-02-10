@@ -5,7 +5,7 @@ import * as path from 'path';
 import Team from '../../app/models/team.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Request from '../../request/models/request.model';
-import TeamSetting from '../../app/models/teamSetting.model';
+import PaymentMethods from '../models/paymentMethod.model';
 
 async function migrateSalfa() {
   dotenv.config({
@@ -13,41 +13,54 @@ async function migrateSalfa() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI,{ useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
-    const teams = await Team.find({});
-    for (const team of teams) {
-      const isSalfa = team._id.toString() === '5bf2de35caf8ef7096105cdd';
-      await TeamSetting.findOneAndUpdate({ team }, {
-        request: {
-          brand: true,
-          brandReadOnly: isSalfa,
-          denominationReadOnly: isSalfa,
-          colorReadOnly: isSalfa,
-          materialReadOnly: isSalfa,
-          ticket: isSalfa,
-          conectaID: isSalfa,
-          reason: !isSalfa,
-          priority: !isSalfa,
-          internalNumber: !isSalfa,
-          entry: !isSalfa,
-        },
-      });
-    }
-    await process.exit(1);
+    // const teams = await Team.find({});
+    // for (const team of teams) {
+    //   const isSalfa = team._id.toString() === '5bf2de35caf8ef7096105cdd';
+    //   await TeamSetting.findOneAndUpdate({ team }, {
+    //     request: {
+    //       brand: true,
+    //       brandReadOnly: isSalfa,
+    //       denominationReadOnly: isSalfa,
+    //       colorReadOnly: isSalfa,
+    //       materialReadOnly: isSalfa,
+    //       ticket: isSalfa,
+    //       conectaID: isSalfa,
+    //       reason: !isSalfa,
+    //       priority: !isSalfa,
+    //       internalNumber: !isSalfa,
+    //       entry: !isSalfa,
+    //     },
+    //   });
+    // }
+    // await process.exit(1);
 
 
     const team = await Team.findById('5bf2de35caf8ef7096105cdd');
-    const requestItems = await RequestItem.find({team});
+    const requestItems = await RequestItem.find({ team });
+    const paymentMethods = await PaymentMethods.find({ team });
+    const paymentMethodByKey = paymentMethods.reduce((acc: any, cur: any) => {
+      return {
+        ...acc,
+        [cur.name]: cur._id
+      };
+    }, {});
     for (const requestItem of requestItems) {
       try {
         const answerByKey = requestItem.answers.reduce((acc: any, cur: any) => {
+          if (cur?.questionId) {
+            return {
+              ...acc,
+              [cur.questionId.toString()]: cur
+            };
+          }
           return {
-            ...acc,
-            [cur.questionId.toString()]: cur
+            ...acc
           };
         }, {});
+        const paymentMethodText = answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer.trim() : '';
         await Request.findByIdAndUpdate(requestItem.request, {
           customerInformation: {
             name: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c21') ? answerByKey['5bf2de35caf8ef7096105c21'].answer : '',
@@ -56,7 +69,8 @@ async function migrateSalfa() {
             phone: ''
           },
           advancePaymentInformation: {
-            method: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer : '',
+            method: paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodByKey[paymentMethodText] : null,
+            otherMethod: !paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodText : '',
             number: '',
             files: []
           }

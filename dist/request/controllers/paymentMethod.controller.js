@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var server_1 = require("../../server");
 var logger_service_1 = require("../../services/logger.service");
-var paymentMethod_1 = require("../models/paymentMethod");
+var paymentMethod_model_1 = require("../models/paymentMethod.model");
 var PaymentMethodController = /** @class */ (function () {
     function PaymentMethodController() {
         this.apiList = this.apiList.bind(this);
@@ -69,7 +69,7 @@ var PaymentMethodController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, new paymentMethod_1["default"](__assign(__assign({}, object), { team: team })).save()];
+                        return [4 /*yield*/, new paymentMethod_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
                         server_1.io.to("payment-method-list-".concat(team._id)).emit('REFRESH', {
@@ -102,7 +102,7 @@ var PaymentMethodController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, paymentMethod_1["default"].findOneAndUpdate({ _id: id }, { $set: __assign({}, update) })];
+                        return [4 /*yield*/, paymentMethod_model_1["default"].findOneAndUpdate({ _id: id }, { $set: __assign({}, update) })];
                     case 2:
                         reason = _a.sent();
                         server_1.io.to("payment-method-list-".concat(team._id)).emit('REFRESH', {
@@ -134,7 +134,7 @@ var PaymentMethodController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, paymentMethod_1["default"].findOneAndDelete({ _id: id, team: team })];
+                        return [4 /*yield*/, paymentMethod_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
                         reason = _a.sent();
                         server_1.io.to("payment-method-list-".concat(team._id)).emit('REFRESH', {
@@ -216,7 +216,7 @@ var PaymentMethodController = /** @class */ (function () {
     };
     PaymentMethodController.prototype.getPaymentMethods = function (filter, options) {
         return new Promise(function (resolve, reject) {
-            paymentMethod_1["default"].paginate(filter, options, function (err, result) {
+            paymentMethod_model_1["default"].paginate(filter, options, function (err, result) {
                 if (err) {
                     return reject(err);
                 }

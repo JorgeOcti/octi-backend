@@ -28,6 +28,10 @@ const customerInformationSchema = new mongoose.Schema({
 
 const paymentInformationSchema = new mongoose.Schema({
   method: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'PaymentMethod'
+  },
+  otherMethod: {
     type: String
   },
   number: {

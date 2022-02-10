@@ -21,7 +21,7 @@ export type PaymentMethodSchema = mongoose.Model<IPaymentMethodModel> & Paginate
   findOneOrCreate(condition: any, create: any): Promise<ICarModel>
 };
 
-const PaymentMethod = mongoose.model<IPaymentMethodModel, PaymentMethodSchema>('PaymentMethod', paymentMethodSchema);
+const PaymentMethodModel = mongoose.model<IPaymentMethodModel, PaymentMethodSchema>('PaymentMethod', paymentMethodSchema);
 
-export default PaymentMethod;
+export default PaymentMethodModel;
 

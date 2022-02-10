@@ -74,14 +74,14 @@ export function loadReasonsRequestItemsAction(reasons: IReason[]): ILoadReasonsR
   };
 }
 
-export function loadCarriersRequestItemsAction(carriers: ICarrier[]): ILoadCarriersRequestItems {
-  return {
-    type: REQUEST_ITEMS_LOAD_CARRIERS,
-    payload: {
-      carriers
-    }
-  };
-}
+// export function loadCarriersRequestItemsAction(carriers: ICarrier[]): ILoadCarriersRequestItems {
+//   return {
+//     type: REQUEST_ITEMS_LOAD_CARRIERS,
+//     payload: {
+//       carriers
+//     }
+//   };
+// }
 
 export function loadUsersRequestItemsAction(users: IUser[]): ILoadUsersRequestItems {
   return {
@@ -193,7 +193,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingRequestItemsAction(hideLoading ? false : true));
+    dispatch(isLoadingRequestItemsAction(!hideLoading));
     const page = nextPage ? nextPage : state.requestItems.pagination.page;
     dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestItemsAction(api.getSource()));
@@ -202,19 +202,16 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getRequestItems({ page, orderBy, orderType, pageSize: 20, filters: state.requestItems.filters }),
         api.getReasons({ page: 1, pageSize: 200 }),
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
-        // api.getCarriers(1, 200),
         api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
         api.getUsers(page, "", undefined, true, 200),
         api.getProperties(),
         api.getTeamSettings()
       ])
       .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, users, properties, teamsettings) => {
-        console.log('users', users);
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        // dispatch(loadCarriersRequestItemsAction(carriers.data.results));
         dispatch(loadUsersRequestItemsAction(users.data.results));
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(loadPropertiesRequestItemsAction(properties.data));
@@ -228,15 +225,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
   };
 }
 
-
-/*const debounceUpdateRequestItem = debounce(800, (item) => {
-  const api: ApiService = new ApiService();
-  api.updateRequestItem(item._id, item)
-    // tslint:disable-next-line: no-empty
-    .then((response: AxiosResponse) => { });
-});*/
 const $updateRequestItem = new Rx.Subject<any>();
-
 
 $updateRequestItem.pipe(
   debounceTime(2000),
@@ -262,9 +251,7 @@ export function updateRequestItemsThunkAction({ item, debounce }: { item: IReque
       $updateRequestItem.next(null);
       api.updateRequestItem(item._id, item)
         // tslint:disable-next-line: no-empty
-        .then((response: AxiosResponse) => {
-
-        });
+        .then((response: AxiosResponse) => {});
     }
   };
 }
@@ -273,6 +260,7 @@ export function deleteRequestItemsThunkAction(id: string) {
   return (dispatch: Dispatch<RequestItemsReduxActions>) => {
     const api: ApiService = new ApiService();
     api.deleteRequestItem(id)
+      // tslint:disable-next-line: no-empty
       .then((response: AxiosResponse) => {});
   };
 }
