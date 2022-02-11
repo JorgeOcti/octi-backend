@@ -39,7 +39,9 @@ async function migrateSalfa() {
 
 
     const team = await Team.findById('5bf2de35caf8ef7096105cdd');
-    const requestItems = await RequestItem.find({ team });
+    const requestItems = await RequestItem.find({ team }).populate([{
+      path: 'request'
+    }]);
     const paymentMethods = await PaymentMethods.find({ team });
     const paymentMethodByKey = paymentMethods.reduce((acc: any, cur: any) => {
       return {
@@ -71,8 +73,8 @@ async function migrateSalfa() {
           advancePaymentInformation: {
             method: paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodByKey[paymentMethodText] : null,
             otherMethod: !paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodText : '',
-            number: '',
-            files: []
+            number: requestItem.request?.advancePaymentInformation?.number ?? '',
+            files: requestItem.request?.advancePaymentInformation?.files ?? []
           }
         });
       } catch (e) {

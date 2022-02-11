@@ -15,6 +15,12 @@ var jwt = require("jsonwebtoken");
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
 var passportLocalMongoose = require("passport-local-mongoose");
+var userSettingsSchema = new mongoose.Schema({
+    defaultChannel: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SalesChannel'
+    }
+});
 var userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -74,6 +80,10 @@ var userSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         "default": false
+    },
+    settings: {
+        type: userSettingsSchema,
+        "default": {}
     },
     password: String,
     hash_password: String,

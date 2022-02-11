@@ -60,6 +60,7 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
         initialValues={{
           conectaID: query['6154722a94bba10012230aae'] || query['conectaID'],
           sellerText: query.sellerText,
+          // channel:
           customerInformation:{
             rut: query.hasOwnProperty('5bf2de35caf8ef7096105c22')?query['5bf2de35caf8ef7096105c22']:'',
             name: query.hasOwnProperty('5bf2de35caf8ef7096105c21')?query['5bf2de35caf8ef7096105c21']:'',

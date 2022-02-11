@@ -12,6 +12,7 @@ const initialState: IUsersState = {
   searchText: '',
   permissions: [],
   forms: [],
+  channels: [],
   loading: true,
   tempUser: {
     _id: '',
@@ -21,6 +22,7 @@ const initialState: IUsersState = {
     company: null,
     lastName: '',
     email: '',
+    settings: {},
     userPermissions: [],
     userForms: [],
     venuesAccess: []
@@ -59,6 +61,11 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
       return {
         ...state,
         forms: action.payload.forms
+      };
+    case '/USERS/LOAD_CHANNELS':
+      return {
+        ...state,
+        channels: action.payload.channels
       };
     case '/USERS/LOAD_COMPANIES':
       return {

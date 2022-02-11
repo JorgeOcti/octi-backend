@@ -4,6 +4,7 @@ import {IRequest} from '../../../interfaces/global.interface';
 import Team, {ITeamModel} from '../../models/team.model';
 import TeamSetting from "../../models/teamSetting.model";
 import logger from "../../../services/logger.service";
+import User from '../../models/user.model';
 
 class AdminsTeamController {
 
@@ -57,6 +58,7 @@ class AdminsTeamController {
   public async teamSetting(req: IRequest, res: Response) {
     const {team} = req.user;
     try {
+      const user = await User.findById(req.user._id);
       const teamSetting = await TeamSetting.findOneOrCreate({
         team: team._id
       }, {
@@ -91,7 +93,10 @@ class AdminsTeamController {
           materialRequired: true
         }
       });
-      res.status(200).json(teamSetting);
+      res.status(200).json({
+        ...teamSetting.toObject(),
+        user: user?.settings ?? {}
+      });
     } catch (e) {
       /* istanbul ignore next */
       console.log(e);

@@ -17,6 +17,13 @@ export interface IUserModel extends IUser, mongoose.Document {
   venuesPermissions: (inString?: boolean) => string[];
 }
 
+const userSettingsSchema = new mongoose.Schema({
+  defaultChannel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SalesChannel'
+  }
+});
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -77,8 +84,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  settings: {
+    type: userSettingsSchema,
+    default: {}
+  },
   password: String,
-  hash_password:  String,
+  hash_password: String,
 
   passwordResetToken: String,
   passwordResetExpires: Date,
@@ -115,7 +126,7 @@ userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(mongoosePaginate);
 
 userSchema.methods.fullName = function(): string {
-  return (this.firstName.trim() + ' '  + this.lastName.trim());
+  return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
 
 // validate user has permissions
@@ -160,7 +171,7 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
       return arr.indexOf(elem) === pos;
     });
   if (inString) {
-      return venuesPermissions;
+    return venuesPermissions;
   } else {
     return venuesPermissions.map((id) => new ObjectID(id));
   }
@@ -169,11 +180,15 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function (this: IUserModel, next: HookNextFunction) {
+userSchema.pre('save', function(this: IUserModel, next: HookNextFunction) {
   const user = this;
-  if (!user.isModified('password')) { return next(); }
+  if (!user.isModified('password')) {
+    return next();
+  }
   bcrypt.genSalt!(10, (err, salt) => {
-    if (err) { return next(err); }
+    if (err) {
+      return next(err);
+    }
     bcrypt.hash!(user.password, salt, (err: mongoose.Error, hash) => {
       if (err) {
         return next(err);

@@ -8,11 +8,13 @@ import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
+import { ISalesChannel } from '../../../../../src/request/interfaces';
 
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
   forms: IForm[];
+  channels: ISalesChannel[];
   companies: ICompany[];
   permissions: IPermission[];
   loading: boolean;
@@ -82,6 +84,7 @@ export interface ITempUser {
   venue?: string | null;
   venuesAccess: IVenue[];
   userForms: IForm[];
+  settings: Dictionary<any>;
   isAdmin: boolean;
   isDriver: boolean;
   preferred?: string | null;
@@ -283,6 +286,22 @@ export function loadCompaniesUserAction(companies: ICompany[]): ILoadCompaniesUs
   };
 }
 
+interface ILoadChannelsUser {
+  type: '/USERS/LOAD_CHANNELS';
+  payload: {
+    channels: ISalesChannel[];
+  };
+}
+
+export function loadChannelsUserAction(channels: ISalesChannel[]): ILoadChannelsUser {
+  return {
+    type: '/USERS/LOAD_CHANNELS',
+    payload: {
+      channels
+    }
+  };
+}
+
 export function getUsersAction(nextPage: number, search?: string) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
@@ -303,12 +322,14 @@ export function getUsersAction(nextPage: number, search?: string) {
       api.getUsers(page, state.users.searchText),
       api.getCompanies(1, 200),
       api.getVenues({ page: 1, pageSize: 200, noPopulate: false }),
+      api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
       api.getForms(1, 200)
     ])
-      .then(Axios.spread((users, companies, venues, permissions, forms) => {
+      .then(Axios.spread((users, companies, venues, channeles, permissions, forms) => {
         dispatch(loadUserAction(users.data.results, users.data.count, users.data.pages));
         dispatch(loadCompaniesUserAction(companies.data.results));
+        dispatch(loadChannelsUserAction(channeles.data.results));
         dispatch(loadVenuesUserAction(venues.data.results));
         dispatch(loadPermissionsUserAction(permissions.data.results));
         dispatch(loadFormsUserAction(forms.data.results));
@@ -383,6 +404,7 @@ export type UserReduxAction =
   IChangeSearchUser |
   ICancelRequest |
   IChangeTempUser |
+  ILoadChannelsUser |
   IChangeUser |
   ILoadVenuesUser |
   ILoadPermissionsUser |

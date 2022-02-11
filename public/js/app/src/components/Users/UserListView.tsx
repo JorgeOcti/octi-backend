@@ -62,11 +62,6 @@ declare let window: IWindow;
 class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
-  // static propTypes = {
-  //   users: PropTypes.object.isRequired,
-  //   dispatch: PropTypes.func.isRequired,
-  //   getUsersAction: PropTypes.func.isRequired
-  // };
   readonly state = {
     error: null,
     searchText: '',
@@ -187,7 +182,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           exporing: false
         });
         if (!Axios.isCancel(err)) {
-          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+          swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
         }
       });
   }
@@ -405,7 +400,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       venue: '',
       userPermissions: [],
       venuesAccess: [],
-      userForms: []
+      userForms: [],
+      settings: {}
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -430,13 +426,13 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   private processCreateUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El nombres es requerido', 'error');
+      swal!('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El apellidos es requerido', 'error');
+      swal!('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El email es requerido', 'error');
+      swal!('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El sucursal es requerido', 'error');
+      swal!('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.createUserAction();
@@ -455,7 +451,13 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
         `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
         <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user}/>,
         <React.Fragment>
-          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal"
+          >
+            Cancelar
+          </button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processChangePassword}>Cambiar</button>
         </React.Fragment>
       );
@@ -471,7 +473,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
         .then((response) => {
           statusFooterButttonsModal(false);
           showModal(false);
-          swal(response.data.message, {
+          swal!(response.data.message, {
             icon: 'success'
           });
         })
@@ -480,7 +482,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           api.errorHandler(err);
         });
     } else {
-      swal('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+      swal!('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
       statusFooterButttonsModal(false);
     }
   }
@@ -494,8 +496,16 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         `Editando a ${user.firstName} ${user.lastName}`,
-        <UserFormView create={false} changeTempUser={changeTempUser} companies={companies} venues={venues}
-                      users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <UserFormView
+          create={false}
+          changeTempUser={changeTempUser}
+          companies={companies}
+          venues={venues}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+          user={user}
+        />,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateUser}>Editar</button>
@@ -507,20 +517,20 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   private processUpdateUser() {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El nombres es requerido', 'error');
+      swal!('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El apellidos es requerido', 'error');
+      swal!('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El email es requerido', 'error');
+      swal!('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El sucursal es requerido', 'error');
+      swal!('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.updateUserAction();
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin, isDriver}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin, isDriver, settings}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
@@ -528,6 +538,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
       isDriver: typeof isDriver === 'boolean' ? isDriver : this.props.users.tempUser.isDriver,
       password: password ? password : '',
+      settings: settings ?? {  },
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,

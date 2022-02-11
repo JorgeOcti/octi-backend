@@ -217,7 +217,13 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const { page, pageSize, search, venue, minified } = req.query as { page: string, pageSize: string, search: string, venue?: string, minified?: number };
+    const {
+      page,
+      pageSize,
+      search,
+      venue,
+      minified
+    } = req.query as { page: string, pageSize: string, search: string, venue?: string, minified?: string };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -226,6 +232,7 @@ class AdminUsersController {
         lastName: true,
         preferred: true,
         email: true,
+        settings: true,
         isAdmin: true,
         isDriver: true,
         updatedAt: true
@@ -237,7 +244,7 @@ class AdminUsersController {
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
-    if (minified == 0){
+    if (minified === '0'){
       options.populate = [{
         path: 'venue',
         select: ['name', 'active']
@@ -395,7 +402,7 @@ class AdminUsersController {
     }
     const {id} = req.params;
     const team = req.user.team._id;
-    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver} = req.body;
+    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, settings} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -417,6 +424,7 @@ class AdminUsersController {
           lastName,
           company,
           preferred,
+          settings,
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           venue,
           venuesAccess,

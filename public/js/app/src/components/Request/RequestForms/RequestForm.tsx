@@ -164,10 +164,10 @@ class Form extends React.Component<IPropsType, IStateType> {
                                   <Field
                                     name='channel'
                                     label='Canal'
-                                    // labelOff={true}
                                     component={BootstrapSelectField}
                                     validate={[inputStringRequired]}
                                     props={{
+                                      disabled: true,
                                       noneSelectedText: 'Seleccione...',
                                       displayItems: 2,
                                       selectedText: 'canales seleccionadas.',
@@ -659,6 +659,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             closeOnEsc: false
           });
         }
+        this.props.autofill('channel', teamSettings.data?.user?.defaultChannel);
         this.setState({
           venues: venues.data.results,
           colors: colors.data.results,

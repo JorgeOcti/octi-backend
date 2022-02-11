@@ -280,6 +280,7 @@ var AdminUsersController = /** @class */ (function () {
                                 lastName: true,
                                 preferred: true,
                                 email: true,
+                                settings: true,
                                 isAdmin: true,
                                 isDriver: true,
                                 updatedAt: true
@@ -291,7 +292,7 @@ var AdminUsersController = /** @class */ (function () {
                             page: parseInt(page ? page : '1', 10),
                             limit: parseInt(pageSize ? pageSize : '20', 10)
                         };
-                        if (minified == 0) {
+                        if (minified === '0') {
                             options.populate = [{
                                     path: 'venue',
                                     select: ['name', 'active']
@@ -448,7 +449,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiUpdateUser = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, countUser, updateItems, user, user_venues, response, response, e_4;
+            var id, team, _a, firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, settings, countUser, updateItems, user, user_venues, response, response, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -460,7 +461,7 @@ var AdminUsersController = /** @class */ (function () {
                         }
                         id = req.params.id;
                         team = req.user.team._id;
-                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, venuesAccess = _a.venuesAccess, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, isAdmin = _a.isAdmin, isDriver = _a.isDriver;
+                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, venuesAccess = _a.venuesAccess, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, isAdmin = _a.isAdmin, isDriver = _a.isDriver, settings = _a.settings;
                         // validate fields required
                         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
                             res.status(400).json({
@@ -486,6 +487,7 @@ var AdminUsersController = /** @class */ (function () {
                             lastName: lastName,
                             company: company,
                             preferred: preferred,
+                            settings: settings,
                             userForms: userForms && userForms.length ? userForms.map(function (userForm) { return userForm._id; }) : [],
                             venue: venue,
                             venuesAccess: venuesAccess,
