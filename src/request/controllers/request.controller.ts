@@ -23,8 +23,8 @@ import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
-import { Column } from 'exceljs';
-import Reason from '../models/reason.model';
+// import { Column } from 'exceljs';
+// import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 
 class RequestController {
@@ -828,6 +828,10 @@ class RequestController {
       }, {
         $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'paymentmethods', localField: 'request.advancePaymentInformation.method', foreignField: '_id', as: 'request.advancePaymentInformation.method' }
+      }, {
+        $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
+      }, {
         $project: {
           '_id': 1,
           'request': 1,
@@ -860,7 +864,7 @@ class RequestController {
         }
       }, {
         $sort: { _id: 1 }
-      }]).cursor({ batchSize: 100 }).exec();
+      }]).allowDiskUse(true).cursor({ batchSize: 100 }).exec();
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
       const options = {
@@ -878,16 +882,6 @@ class RequestController {
       });
 
       /* headers */
-      const questionColumns: Partial<Column>[] = [];
-
-      for (const reason of await Reason.find({ team })) {
-        for (const question of reason.questions) {
-          questionColumns.push({
-            header: question.name, key: question._id, width: 10
-          });
-        }
-      }
-
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
@@ -937,6 +931,16 @@ class RequestController {
       }, {
         header: 'TRANSPORTISTA', key: 'carrier', width: 20
       }, {
+        header: 'NOMBRE CLIENTE', key: 'customerName', width: 20
+      }, {
+        header: 'RUT CLIENTE', key: 'customerRut', width: 20
+      }, {
+        header: 'EMAIL CLIENTE', key: 'customerEmail', width: 20
+      }, {
+        header: 'METHODO DE PAGO', key: 'paymentMethod', width: 20
+      }, {
+        header: 'TICKET', key: 'paymentNumber', width: 20
+      }, {
         header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
@@ -944,16 +948,10 @@ class RequestController {
         header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
-      }, ...questionColumns];
+      }];
 
-      // for (const item of requestItems) {
       cursor.on('data', async (item: any) => {
-        const extraAnswers: any = {};
-        for (const answer of item.answers ? item.answers : []) {
-          extraAnswers[answer.questionId] = answer.answer;
-        }
         worksheet.addRow({
-          ...extraAnswers,
           request: item.request.number,
           created: item.createdAt,
           updated: item.updatedAt,
@@ -963,7 +961,7 @@ class RequestController {
           createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           seller: item.request.sellerText,
           channel: item.request.channel ? item.request.channel.name : '',
-          reason: item.reason.name,
+          reason: item.reason?.name,
           group: '',
           property: item.car.property,
           brand: item.car.brand,
@@ -972,7 +970,7 @@ class RequestController {
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
-          destination: item.destination.name,
+          destination: item.destination?.name,
           origin: item.origin.name,
           status: item.status.name,
           equipment: item.equipment ? 'Si' : 'No',
@@ -980,8 +978,13 @@ class RequestController {
           washed: item.washed ? 'Si' : 'No',
           review: item.review ? 'Si' : 'No',
           carrier: item.carrier ? item.carrier.name : '',
+          customerName: item.request?.customerInformation?.name ?? '',
+          customerRut: item.request?.customerInformation?.rut ?? '',
+          customerEmail: item.request?.customerInformation?.email ?? '',
+          paymentMethod: item.request?.advancePaymentInformation?.method?.name ?? '',
+          paymentNumber: item.request?.advancePaymentInformation?.number ?? '',
           uploadDate: item.uploadDate,
-          estimatedArrival: item.estimatedArrival
+          estimatedArrival: item.estimatedArrival,
         });
       });
       cursor.on('end', async () => {

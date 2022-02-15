@@ -78,7 +78,8 @@ var requestFile_model_1 = require("../models/requestFile.model");
 var requestItem_model_1 = require("../models/requestItem.model");
 var requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 var activityHistory_model_1 = require("../../billing/models/activityHistory.model");
-var reason_model_1 = require("../models/reason.model");
+// import { Column } from 'exceljs';
+// import Reason from '../models/reason.model';
 var inputsSchema_1 = require("../inputsSchema");
 var RequestController = /** @class */ (function () {
     function RequestController() {
@@ -962,241 +963,258 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.exportExcel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, cursor_1, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, e_8;
+            var team, cursor_1, options, workbook_1, worksheet_1;
             var _this = this;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        team = req.user.team._id;
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 6, , 7]);
-                        cursor_1 = requestItem_model_1["default"].aggregate([{
-                                $match: {
-                                    team: team,
-                                    'destination': {
-                                        $in: req.user.venuesPermissions()
-                                    }
+            return __generator(this, function (_a) {
+                team = req.user.team._id;
+                try {
+                    cursor_1 = requestItem_model_1["default"].aggregate([{
+                            $match: {
+                                team: team,
+                                'destination': {
+                                    $in: req.user.venuesPermissions()
                                 }
-                            }, {
-                                $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-                            }, {
-                                $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
-                            }, {
-                                $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-                            }, {
-                                $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-                            }, {
-                                $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-                            }, {
-                                $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-                            }, {
-                                $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-                            }, {
-                                $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-                            }, {
-                                $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-                            }, {
-                                $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
-                            }, {
-                                $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $project: {
-                                    '_id': 1,
-                                    'request': 1,
-                                    'priority': 1,
-                                    'observation': 1,
-                                    'equipment': 1,
-                                    'washed': 1,
-                                    'answers': 1,
-                                    'review': 1,
-                                    'body': 1,
-                                    'status._id': 1,
-                                    'status.name': 1,
-                                    'carrier._id': 1,
-                                    'carrier.name': 1,
-                                    'status.weigth': 1,
-                                    'createdBy._id': 1,
-                                    'createdBy.firstName': 1,
-                                    'createdBy.lastName': 1,
-                                    'car': 1,
-                                    'origin._id': 1,
-                                    'origin.name': 1,
-                                    'destination._id': 1,
-                                    'destination.name': 1,
-                                    'reason._id': 1,
-                                    'reason.name': 1,
-                                    'uploadDate': 1,
-                                    'estimatedArrival': 1,
-                                    'createdAt': 1,
-                                    'updatedAt': 1
-                                }
-                            }, {
-                                $sort: { _id: 1 }
-                            }]).cursor({ batchSize: 100 }).exec();
-                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
-                        options = {
-                            stream: res,
-                            useStyles: true,
-                            useSharedStrings: true
-                        };
-                        workbook_1 = new excel.stream.xlsx.WorkbookWriter(options);
-                        worksheet_1 = workbook_1.addWorksheet('Usuarios', {
-                            properties: {
-                                defaultRowHeight: 30
-                            }, pageSetup: {
-                                fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                            }
+                        }, {
+                            $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+                        }, {
+                            $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+                        }, {
+                            $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+                        }, {
+                            $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+                        }, {
+                            $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+                        }, {
+                            $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+                        }, {
+                            $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+                        }, {
+                            $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+                        }, {
+                            $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+                        }, {
+                            $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+                        }, {
+                            $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $lookup: { from: 'paymentmethods', localField: 'request.advancePaymentInformation.method', foreignField: '_id', as: 'request.advancePaymentInformation.method' }
+                        }, {
+                            $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
+                        }, {
+                            $project: {
+                                '_id': 1,
+                                'request': 1,
+                                'priority': 1,
+                                'observation': 1,
+                                'equipment': 1,
+                                'washed': 1,
+                                'answers': 1,
+                                'review': 1,
+                                'body': 1,
+                                'status._id': 1,
+                                'status.name': 1,
+                                'carrier._id': 1,
+                                'carrier.name': 1,
+                                'status.weigth': 1,
+                                'createdBy._id': 1,
+                                'createdBy.firstName': 1,
+                                'createdBy.lastName': 1,
+                                'car': 1,
+                                'origin._id': 1,
+                                'origin.name': 1,
+                                'destination._id': 1,
+                                'destination.name': 1,
+                                'reason._id': 1,
+                                'reason.name': 1,
+                                'uploadDate': 1,
+                                'estimatedArrival': 1,
+                                'createdAt': 1,
+                                'updatedAt': 1
+                            }
+                        }, {
+                            $sort: { _id: 1 }
+                        }]).allowDiskUse(true).cursor({ batchSize: 100 }).exec();
+                    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+                    options = {
+                        stream: res,
+                        useStyles: true,
+                        useSharedStrings: true
+                    };
+                    workbook_1 = new excel.stream.xlsx.WorkbookWriter(options);
+                    worksheet_1 = workbook_1.addWorksheet('Usuarios', {
+                        properties: {
+                            defaultRowHeight: 30
+                        }, pageSetup: {
+                            fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                        }
+                    });
+                    /* headers */
+                    worksheet_1.columns = [{
+                            header: 'Nª SOLICITUD', key: 'request', width: 10
+                        }, {
+                            header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                        }, {
+                            header: 'CANAL', key: 'channel', width: 20
+                        }, {
+                            header: 'PRIORIDAD', key: 'priority', width: 20
+                        }, {
+                            header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
+                        }, {
+                            header: 'SOLICITANTE', key: 'createdBy', width: 20
+                        }, {
+                            header: 'VENDEDOR', key: 'seller', width: 20
+                        }, {
+                            header: 'MOTIVO', key: 'reason', width: 20
+                        }, {
+                            header: 'GRUPO', key: 'group', width: 20
+                        }, {
+                            header: 'PROPIEDAD', key: 'property', width: 20
+                        }, {
+                            header: 'MARCA', key: 'brand', width: 20
+                        }, {
+                            header: 'MODELO', key: 'denomination', width: 20
+                        }, {
+                            header: 'MATERIAL', key: 'material', width: 20
+                        }, {
+                            header: 'COLOR', key: 'color', width: 20
+                        }, {
+                            header: 'ESTADO', key: 'status', width: 20
+                        }, {
+                            header: 'VIN/ID', key: 'vin', width: 20
+                        }, {
+                            header: 'CDO', key: 'cdo', width: 20
+                        }, {
+                            header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
+                        }, {
+                            header: 'PRE-LAVADO', key: 'washed', width: 10
+                        }, {
+                            header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
+                        }, {
+                            header: 'CARROCERO', key: 'body', width: 10
+                        }, {
+                            header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
+                        }, {
+                            header: 'DESTINO', key: 'destination', width: 20
+                        }, {
+                            header: 'TRANSPORTISTA', key: 'carrier', width: 20
+                        }, {
+                            header: 'NOMBRE CLIENTE', key: 'customerName', width: 20
+                        }, {
+                            header: 'RUT CLIENTE', key: 'customerRut', width: 20
+                        }, {
+                            header: 'EMAIL CLIENTE', key: 'customerEmail', width: 20
+                        }, {
+                            header: 'METHODO DE PAGO', key: 'paymentMethod', width: 20
+                        }, {
+                            header: 'TICKET', key: 'paymentNumber', width: 20
+                        }, {
+                            header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                        }, {
+                            header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                        }, {
+                            header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                        }, {
+                            header: 'OBSERVACIÓN', key: 'observation', width: 21
+                        }];
+                    cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
+                        return __generator(this, function (_u) {
+                            worksheet_1.addRow({
+                                request: item.request.number,
+                                created: item.createdAt,
+                                updated: item.updatedAt,
+                                observation: item.observation,
+                                fleet: item.request.fleet ? 'Si' : 'No',
+                                priority: item.priority ? 'Si' : 'No',
+                                createdBy: item.createdBy ? "".concat(item.createdBy.firstName, " ").concat(item.createdBy.lastName) : '-',
+                                seller: item.request.sellerText,
+                                channel: item.request.channel ? item.request.channel.name : '',
+                                reason: (_a = item.reason) === null || _a === void 0 ? void 0 : _a.name,
+                                group: '',
+                                property: item.car.property,
+                                brand: item.car.brand,
+                                denomination: item.car.denomination,
+                                material: item.car.material,
+                                vin: item.car.vin,
+                                cdo: item.car.internalNumber,
+                                color: item.car.color,
+                                destination: (_b = item.destination) === null || _b === void 0 ? void 0 : _b.name,
+                                origin: item.origin.name,
+                                status: item.status.name,
+                                equipment: item.equipment ? 'Si' : 'No',
+                                body: item.body ? 'Si' : 'No',
+                                washed: item.washed ? 'Si' : 'No',
+                                review: item.review ? 'Si' : 'No',
+                                carrier: item.carrier ? item.carrier.name : '',
+                                customerName: (_e = (_d = (_c = item.request) === null || _c === void 0 ? void 0 : _c.customerInformation) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '',
+                                customerRut: (_h = (_g = (_f = item.request) === null || _f === void 0 ? void 0 : _f.customerInformation) === null || _g === void 0 ? void 0 : _g.rut) !== null && _h !== void 0 ? _h : '',
+                                customerEmail: (_l = (_k = (_j = item.request) === null || _j === void 0 ? void 0 : _j.customerInformation) === null || _k === void 0 ? void 0 : _k.email) !== null && _l !== void 0 ? _l : '',
+                                paymentMethod: (_q = (_p = (_o = (_m = item.request) === null || _m === void 0 ? void 0 : _m.advancePaymentInformation) === null || _o === void 0 ? void 0 : _o.method) === null || _p === void 0 ? void 0 : _p.name) !== null && _q !== void 0 ? _q : '',
+                                paymentNumber: (_t = (_s = (_r = item.request) === null || _r === void 0 ? void 0 : _r.advancePaymentInformation) === null || _s === void 0 ? void 0 : _s.number) !== null && _t !== void 0 ? _t : '',
+                                uploadDate: item.uploadDate,
+                                estimatedArrival: item.estimatedArrival
+                            });
+                            return [2 /*return*/];
+                        });
+                    }); });
+                    cursor_1.on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, workbook_1.commit()];
+                                case 1:
+                                    _a.sent();
+                                    res.status(200);
+                                    return [2 /*return*/];
                             }
                         });
-                        questionColumns = [];
-                        _i = 0;
-                        return [4 /*yield*/, reason_model_1["default"].find({ team: team })];
-                    case 2:
-                        _a = _d.sent();
-                        _d.label = 3;
-                    case 3:
-                        if (!(_i < _a.length)) return [3 /*break*/, 5];
-                        reason = _a[_i];
-                        for (_b = 0, _c = reason.questions; _b < _c.length; _b++) {
-                            question = _c[_b];
-                            questionColumns.push({
-                                header: question.name, key: question._id, width: 10
-                            });
-                        }
-                        _d.label = 4;
-                    case 4:
-                        _i++;
-                        return [3 /*break*/, 3];
-                    case 5:
-                        worksheet_1.columns = __spreadArray([{
-                                header: 'Nª SOLICITUD', key: 'request', width: 10
-                            }, {
-                                header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-                            }, {
-                                header: 'CANAL', key: 'channel', width: 20
-                            }, {
-                                header: 'PRIORIDAD', key: 'priority', width: 20
-                            }, {
-                                header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
-                            }, {
-                                header: 'SOLICITANTE', key: 'createdBy', width: 20
-                            }, {
-                                header: 'VENDEDOR', key: 'seller', width: 20
-                            }, {
-                                header: 'MOTIVO', key: 'reason', width: 20
-                            }, {
-                                header: 'GRUPO', key: 'group', width: 20
-                            }, {
-                                header: 'PROPIEDAD', key: 'property', width: 20
-                            }, {
-                                header: 'MARCA', key: 'brand', width: 20
-                            }, {
-                                header: 'MODELO', key: 'denomination', width: 20
-                            }, {
-                                header: 'MATERIAL', key: 'material', width: 20
-                            }, {
-                                header: 'COLOR', key: 'color', width: 20
-                            }, {
-                                header: 'ESTADO', key: 'status', width: 20
-                            }, {
-                                header: 'VIN/ID', key: 'vin', width: 20
-                            }, {
-                                header: 'CDO', key: 'cdo', width: 20
-                            }, {
-                                header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
-                            }, {
-                                header: 'PRE-LAVADO', key: 'washed', width: 10
-                            }, {
-                                header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
-                            }, {
-                                header: 'CARROCERO', key: 'body', width: 10
-                            }, {
-                                header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
-                            }, {
-                                header: 'DESTINO', key: 'destination', width: 20
-                            }, {
-                                header: 'TRANSPORTISTA', key: 'carrier', width: 20
-                            }, {
-                                header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-                            }, {
-                                header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-                            }, {
-                                header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-                            }, {
-                                header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns, true);
-                        // for (const item of requestItems) {
-                        cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
-                            var extraAnswers, _i, _a, answer;
-                            return __generator(this, function (_b) {
-                                extraAnswers = {};
-                                for (_i = 0, _a = item.answers ? item.answers : []; _i < _a.length; _i++) {
-                                    answer = _a[_i];
-                                    extraAnswers[answer.questionId] = answer.answer;
-                                }
-                                worksheet_1.addRow(__assign(__assign({}, extraAnswers), { request: item.request.number, created: item.createdAt, updated: item.updatedAt, observation: item.observation, fleet: item.request.fleet ? 'Si' : 'No', priority: item.priority ? 'Si' : 'No', createdBy: item.createdBy ? "".concat(item.createdBy.firstName, " ").concat(item.createdBy.lastName) : '-', seller: item.request.sellerText, channel: item.request.channel ? item.request.channel.name : '', reason: item.reason.name, group: '', property: item.car.property, brand: item.car.brand, denomination: item.car.denomination, material: item.car.material, vin: item.car.vin, cdo: item.car.internalNumber, color: item.car.color, destination: item.destination.name, origin: item.origin.name, status: item.status.name, equipment: item.equipment ? 'Si' : 'No', body: item.body ? 'Si' : 'No', washed: item.washed ? 'Si' : 'No', review: item.review ? 'Si' : 'No', carrier: item.carrier ? item.carrier.name : '', uploadDate: item.uploadDate, estimatedArrival: item.estimatedArrival }));
-                                return [2 /*return*/];
-                            });
-                        }); });
-                        cursor_1.on('end', function () { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, workbook_1.commit()];
-                                    case 1:
-                                        _a.sent();
-                                        res.status(200);
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); });
-                        cursor_1.on('error', function (error) { return logger_service_1["default"].error(error.message); });
-                        // code to handle connection abort or finish of data send
-                        req.connection.on('close', function () { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, cursor_1.close()];
-                                    case 1:
-                                        _a.sent();
-                                        res.status(200);
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); });
-                        return [3 /*break*/, 7];
-                    case 6:
-                        e_8 = _d.sent();
-                        /* istanbul ignore next */
-                        logger_service_1["default"].error(e_8);
-                        /* istanbul ignore next */
-                        logger_service_1["default"].error("RequestController.exportExcel: Async Error.");
-                        /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
-                        logger_service_1["default"].error(e_8);
-                        res.status(500).json(e_8);
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                    }); });
+                    cursor_1.on('error', function (error) { return logger_service_1["default"].error(error.message); });
+                    // code to handle connection abort or finish of data send
+                    req.connection.on('close', function () { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, cursor_1.close()];
+                                case 1:
+                                    _a.sent();
+                                    res.status(200);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
                 }
+                catch (e) {
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error(e);
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("RequestController.exportExcel: Async Error.");
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                    logger_service_1["default"].error(e);
+                    res.status(500).json(e);
+                }
+                return [2 /*return*/];
             });
         });
     };
     RequestController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_9;
+            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_8;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1248,12 +1266,12 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_9 = _c.sent();
+                        e_8 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        res.status(500).json(e_9);
+                        res.status(500).json(e_8);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1262,7 +1280,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_10;
+            var team, id, request, e_9;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1292,13 +1310,13 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_10 = _a.sent();
+                        e_9 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
-                        logger_service_1["default"].error(e_10);
-                        res.status(500).json(e_10);
+                        logger_service_1["default"].error(e_9);
+                        res.status(500).json(e_9);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1307,7 +1325,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiByVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, requestItems, e_11;
+            var team, id, requestItems, e_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1334,13 +1352,13 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_11 = _a.sent();
+                        e_10 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
-                        logger_service_1["default"].error(e_11);
-                        res.status(500).json(e_11);
+                        logger_service_1["default"].error(e_10);
+                        res.status(500).json(e_10);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1349,7 +1367,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequest = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_12;
+            var team, id, request, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1392,13 +1410,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_12 = _a.sent();
+                        e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequest: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
-                        logger_service_1["default"].error(e_12);
-                        res.status(500).json(e_12);
+                        logger_service_1["default"].error(e_11);
+                        res.status(500).json(e_11);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -1407,7 +1425,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequestItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, item, e_13;
+            var team, id, item, e_12;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1453,13 +1471,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_13 = _a.sent();
+                        e_12 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequestItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
-                        logger_service_1["default"].error(e_13);
-                        res.status(500).json(e_13);
+                        logger_service_1["default"].error(e_12);
+                        res.status(500).json(e_12);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -1468,7 +1486,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.searhCar = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, search, cars, e_14;
+            var team, search, cars, e_13;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1533,13 +1551,13 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_14 = _a.sent();
+                        e_13 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.searhCar: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        logger_service_1["default"].error(e_14);
-                        res.status(500).json(e_14);
+                        logger_service_1["default"].error(e_13);
+                        res.status(500).json(e_13);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1548,7 +1566,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreateItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_15;
+            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_14;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1616,13 +1634,13 @@ var RequestController = /** @class */ (function () {
                         _b.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_15 = _b.sent();
+                        e_14 = _b.sent();
                         /* istanbul ignore next */
-                        console.log(e_15);
+                        console.log(e_14);
                         logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        res.status(500).json(e_15);
+                        res.status(500).json(e_14);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
                 }
@@ -1632,7 +1650,7 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.apiPatchItem = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_16;
+            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_15;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -1748,14 +1766,14 @@ var RequestController = /** @class */ (function () {
                         res.status(200).json(__assign({}, item));
                         return [3 /*break*/, 25];
                     case 24:
-                        e_16 = _d.sent();
+                        e_15 = _d.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_16);
+                        logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        res.status(500).json(e_16);
+                        res.status(500).json(e_15);
                         return [3 /*break*/, 25];
                     case 25: return [2 /*return*/];
                 }
@@ -1774,7 +1792,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.downloadItemFiles = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_17;
+            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_16;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1861,14 +1879,14 @@ var RequestController = /** @class */ (function () {
                         _c.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
-                        e_17 = _c.sent();
+                        e_16 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_17);
+                        logger_service_1["default"].error(e_16);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        res.status(500).json(e_17);
+                        res.status(500).json(e_16);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
                 }
@@ -1998,7 +2016,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, file, requestFile, e_18, e_19, e_20;
+            var company, team, file, requestFile, e_17, e_18, e_19;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -2039,7 +2057,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_18 = _a.sent();
+                        e_17 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, requestFile.attach('file', file)];
@@ -2057,7 +2075,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_19 = _a.sent();
+                        e_18 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, requestFile.save()];
@@ -2072,15 +2090,15 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_20 = _a.sent();
+                        e_19 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_20);
+                        logger_service_1["default"].error(e_19);
                         /* istanbul ignore next */
-                        res.status(400).json(e_20);
+                        res.status(400).json(e_19);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

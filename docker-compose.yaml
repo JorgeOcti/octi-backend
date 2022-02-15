@@ -3,7 +3,7 @@ version: '3.2'
 services:
   mongo:
     image: mongo:4.2.17
-    command: --wiredTigerCacheSizeGB 20
+    command: --wiredTigerCacheSizeGB 30
     restart: unless-stopped
 #    deploy:
 #      resources:
