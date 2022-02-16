@@ -182,7 +182,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           canChangeRequest ?
             <td
               className='middle'
-              style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}
+              style={{ paddingRight: !item.car.vin?.length ? '22px' : undefined }}
             >
               <div className='flex'>
                 <AutocompleteInput
