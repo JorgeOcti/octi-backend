@@ -20,16 +20,17 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
     });
     logger.info(`Kind Trigger: context =>${JSON.stringify(context)}`);
 
-    if (!trigger.config.responsible && !this.validateEmail(context.email)) {
+    if ((trigger.config.responsible && !payload.responsible?.length) || (!trigger.config.responsible && !this.validateEmail(context.email))) {
       return payload;
     }
 
-    let recipients : string | string[];
+    let recipients: string | string[];
 
-    if (trigger.config.responsible)
-      recipients = payload.responsible.map((obj : any) => `"${obj.firstName} ${obj.lastName}"<${obj.email}>`)
-    else
-      recipients = `"${context.fullname}"<${context.email}>`
+    if (trigger.config.responsible) {
+      recipients = payload.responsible.map((obj: any) => `"${obj.firstName} ${obj.lastName}"<${obj.email}>`);
+    } else {
+      recipients = `"${context.fullname}"<${context.email}>`;
+    }
 
     queue.create('email', {
       from: '',

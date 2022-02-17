@@ -35,7 +35,10 @@ export default class TriggerHandler {
         ...payload,
         participant: this.participant,
         responsible: this.participant?.venue.responsible,
-        user: this.participant!.user
+        user: {
+          ...this.participant!.user,
+          fullName: `${this.participant!.user.firstName} ${this.participant!.user.lastName}`
+        }
       });
     }
   }

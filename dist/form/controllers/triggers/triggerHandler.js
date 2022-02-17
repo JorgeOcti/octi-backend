@@ -82,7 +82,7 @@ var TriggerHandler = /** @class */ (function () {
                             return [3 /*break*/, 4];
                         }
                         triggerDelegate = this.getTrigger(trigger);
-                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, responsible: (_a = this.participant) === null || _a === void 0 ? void 0 : _a.venue.responsible, user: this.participant.user }))];
+                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, responsible: (_a = this.participant) === null || _a === void 0 ? void 0 : _a.venue.responsible, user: __assign(__assign({}, this.participant.user), { fullName: "".concat(this.participant.user.firstName, " ").concat(this.participant.user.lastName) }) }))];
                     case 3:
                         payload = _c.sent();
                         _c.label = 4;
