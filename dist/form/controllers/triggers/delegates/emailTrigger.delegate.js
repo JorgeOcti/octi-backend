@@ -39,17 +39,20 @@ var EmailTriggerDelegate = /** @class */ (function (_super) {
         return re.test(email.toLowerCase());
     };
     EmailTriggerDelegate.prototype.trigger = function (trigger, answers, payload) {
+        var _a;
         logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
         var context = this.processTrigerConfig(trigger, __assign(__assign({}, answers), payload.user));
         logger_service_1["default"].info("Kind Trigger: context =>".concat(JSON.stringify(context)));
-        if (!trigger.config.responsible && !this.validateEmail(context.email)) {
+        if ((trigger.config.responsible && !((_a = payload.responsible) === null || _a === void 0 ? void 0 : _a.length)) || (!trigger.config.responsible && !this.validateEmail(context.email))) {
             return payload;
         }
         var recipients;
-        if (trigger.config.responsible)
+        if (trigger.config.responsible) {
             recipients = payload.responsible.map(function (obj) { return "\"".concat(obj.firstName, " ").concat(obj.lastName, "\"<").concat(obj.email, ">"); });
-        else
+        }
+        else {
             recipients = "\"".concat(context.fullname, "\"<").concat(context.email, ">");
+        }
         app_1.queue.create('email', {
             from: '',
             title: "\"".concat(context.subject, " | ").concat(context.fullname),
