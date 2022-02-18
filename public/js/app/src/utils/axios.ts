@@ -674,6 +674,14 @@ export default class ApiService {
       });
   }
 
+  public uppdateRequestItemVin(item: any, vin: string) {
+    return this.instance.patch(
+      `/api/v1/requests-item/${item._id}/change-vin/`, {
+        item,
+        vin
+      });
+  }
+
   public createRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
     return this.instance.post(
       `/api/v1/request-item-status/`, requestStatus

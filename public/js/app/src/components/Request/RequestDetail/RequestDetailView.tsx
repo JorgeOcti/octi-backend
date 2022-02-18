@@ -22,7 +22,7 @@ import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
-import AutocompleteInput from '../../Utils/AutocompleteInput';
+import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import RequestItem from './RequestItem';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
 import ShowIf from '../../Utils/ShowIf';
@@ -335,7 +335,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                 <tr>
                                   <ShowIf condition={requestSettings.brand}>
                                     <td>
-                                      <AutocompleteInput
+                                      <AutoCompleteInput
                                         value={car.brand}
                                         inputClass={'input-sm'}
                                         items={recommends}
@@ -370,7 +370,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   </ShowIf>
                                   <ShowIf condition={requestSettings.denomination}>
                                     <td>
-                                      <AutocompleteInput
+                                      <AutoCompleteInput
                                         value={car.denomination}
                                         inputClass={'input-sm'}
                                         items={recommends}
@@ -405,7 +405,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   </ShowIf>
                                   <ShowIf condition={requestSettings.material}>
                                     <td>
-                                      <AutocompleteInput
+                                      <AutoCompleteInput
                                         value={car.material}
                                         inputClass={'input-sm'}
                                         items={recommends}

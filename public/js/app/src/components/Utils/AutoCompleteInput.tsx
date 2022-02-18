@@ -17,7 +17,7 @@ interface IStateType {
   open: boolean;
 }
 
-class AutocompleteInput extends React.Component<IPropsType, IStateType>{
+class AutoCompleteInput extends React.Component<IPropsType, IStateType>{
 
   readonly state = {
     error: null,
@@ -117,4 +117,4 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
   }
 }
 
-export default AutocompleteInput;
+export default AutoCompleteInput;

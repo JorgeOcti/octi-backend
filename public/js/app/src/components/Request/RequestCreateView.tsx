@@ -10,7 +10,7 @@ import { ISalesChannel } from '../../../../../../src/request/interfaces/salesCha
 import { IInventoryState } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import AutocompleteInput from '../Utils/AutocompleteInput';
+import AutoCompleteInput from '../Utils/AutoCompleteInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
@@ -156,7 +156,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     <div className='form-group'>
                       <label htmlFor='marca' className='col-sm-3 control-label label-left'>Marca *</label>
                       <div className='col-sm-9'>
-                        <AutocompleteInput
+                        <AutoCompleteInput
                           value={newCar.brand}
                           inputClass={'input-sm'}
                           items={newCar.brands}
@@ -192,7 +192,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         requestSettings.materialRequired ? '*' : ''
                       }</label>
                       <div className='col-sm-9'>
-                        <AutocompleteInput
+                        <AutoCompleteInput
                           value={newCar.denomination}
                           inputClass={'input-sm'}
                           items={newCar.denominations}
@@ -229,7 +229,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           requestSettings.materialRequired ? '*' : ''
                         }</label>
                         <div className='col-sm-9'>
-                          <AutocompleteInput
+                          <AutoCompleteInput
                             value={newCar.material}
                             inputClass={'input-sm'}
                             items={newCar.materials}

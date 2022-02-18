@@ -35,6 +35,7 @@ const initialState: IRequestItemsState = {
     ticket: '',
     entry: '',
     text: '',
+    sellerText: '',
     venues: [],
     users: [],
     properties: [],

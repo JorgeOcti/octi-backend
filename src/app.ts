@@ -31,7 +31,7 @@ import Middlewares from './middlewares/middlewares';
 import { planningRouter } from './planning/router';
 import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
-import {distributionRouter} from "./distribution/router";
+import { distributionRouter } from './distribution/router';
 
 // Create Express server
 const app = express();

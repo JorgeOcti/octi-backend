@@ -227,9 +227,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className='box-body no-padding'>
-              <div style={{ padding: '10px 0' }}>
+              <div style={{ padding: '10px 5px' }}>
                 <div className='row' style={{ margin: 0 }}>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vehículo
@@ -246,7 +246,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                   <ShowIf condition={requestSettings.entry}>
-                    <div className='col-md-3'>
+                    <div className='col-md-3' style={{padding: '0 5px'}}>
                       <div className='form-group'>
                         <label className='control-label'>
                           Partida
@@ -264,7 +264,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </ShowIf>
                   <ShowIf condition={requestSettings.ticket}>
-                    <div className='col-md-3'>
+                    <div className='col-md-3' style={{padding: '0 5px'}}>
                       <div className='form-group'>
                         <label className='control-label'>
                           Nº Ticket Anticipo
@@ -281,7 +281,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Nº Solicitudes
@@ -297,7 +297,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Creador por
@@ -333,7 +333,23 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                    <div className='form-group'>
+                      <label className='control-label'>
+                        Vendedor
+                      </label>
+                      <input
+                        type='text'
+                        className='form-control input-sm'
+                        placeholder='Jhon Doe'
+                        defaultValue={filters.sellerText}
+                        onChange={(e) => {
+                          this.changeFilterDebounced('sellerText', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Propiedad</label>
                       <BootstrapSelect
@@ -367,7 +383,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
                       <BootstrapSelect
@@ -401,7 +417,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3'>
+                  <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Estados</label>
                       <BootstrapSelect
@@ -454,7 +470,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   }
                   <div className='col-md-3'>
                     <div className='row'>
-                      <div className='col-md-6'>
+                      <div className='col-md-6' style={{padding: '0 5px'}}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Desde</label>
                           <DateRangePicker
@@ -466,7 +482,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           />
                         </div>
                       </div>
-                      <div className='col-md-6'>
+                      <div className='col-md-6' style={{padding: '0 5px'}}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Hasta</label>
                           <DateRangePicker
@@ -543,7 +559,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
-                      <th className='middle' style={{ minWidth: '160px', width: '160px' }}>VIN</th>
+                      <th className='middle' style={{ minWidth: '180px', width: '180px' }}>VIN</th>
                       <ShowIf condition={requestSettings.entry}>
                         <th className='middle' style={{ width: '80px' }}>Partida</th>
                       </ShowIf>

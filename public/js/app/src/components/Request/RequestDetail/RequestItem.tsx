@@ -19,7 +19,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
-import AutocompleteInput from '../../Utils/AutocompleteInput';
+import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
@@ -130,7 +130,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           {
             canChangeRequest && !requestSettings.brandReadOnly ?
               <td className="middle">
-                <AutocompleteInput
+                <AutoCompleteInput
                   value={item.car.brand}
                   inputClass={'input-sm'}
                   items={recommends}
@@ -177,7 +177,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           {
             canChangeRequest && !requestSettings.denominationReadOnly ?
               <td className="middle">
-                <AutocompleteInput
+                <AutoCompleteInput
                   value={item.car.denomination}
                   inputClass={'input-sm'}
                   items={recommends}
@@ -223,7 +223,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           {
             canChangeRequest && !requestSettings.materialReadOnly ?
               <td className="middle">
-                <AutocompleteInput
+                <AutoCompleteInput
                   value={item.car.material}
                   inputClass={'input-sm'}
                   items={recommends}
@@ -295,7 +295,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
            <td
               className='middle flex'
               style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
-              <AutocompleteInput
+              <AutoCompleteInput
                 value={item.car.vin}
                 inputClass={'input-sm'}
                 items={VINRecommends}

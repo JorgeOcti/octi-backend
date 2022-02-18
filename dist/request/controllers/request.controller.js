@@ -68,8 +68,6 @@ var xml2js = require("xml2js");
 var bson_1 = require("bson");
 var car_model_1 = require("../../app/models/car.model");
 var team_model_1 = require("../../app/models/team.model");
-var participant_model_1 = require("../../form/models/participant.model");
-var inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
 var server_1 = require("../../server");
 var logger_service_1 = require("../../services/logger.service");
 var general_utils_1 = require("../../utils/general.utils");
@@ -155,6 +153,7 @@ var RequestController = /** @class */ (function () {
         this.apiByVin = this.apiByVin.bind(this);
         this.getRequets = this.getRequets.bind(this);
         this.apiPatchItem = this.apiPatchItem.bind(this);
+        this.apiPatchItemVin = this.apiPatchItemVin.bind(this);
         this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
         this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
         this.apiCreateItem = this.apiCreateItem.bind(this);
@@ -718,6 +717,14 @@ var RequestController = /** @class */ (function () {
                                 'requestNumber': { '$regex': filters.text, '$options': 'i' }
                             });
                         }
+                        if (filters.sellerText && filters.sellerText.length) {
+                            if (!extraMatch.hasOwnProperty('$or')) {
+                                extraMatch.$or = [];
+                            }
+                            extraMatch.$or.push({
+                                'request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
+                            });
+                        }
                         if (filters.properties && filters.properties.length) {
                             if (!extraMatch.hasOwnProperty('$or')) {
                                 extraMatch.$or = [];
@@ -798,6 +805,7 @@ var RequestController = /** @class */ (function () {
                                     'request.createdBy.firstName': 1,
                                     'request.createdBy.lastName': 1,
                                     'request.conectaID': 1,
+                                    'request.sellerText': 1,
                                     'request.advancePaymentInformation': 1,
                                     'priority': 1,
                                     'observation': 1,
@@ -1647,110 +1655,49 @@ var RequestController = /** @class */ (function () {
             });
         });
     };
-    RequestController.prototype.apiPatchItem = function (req, res) {
-        var _a;
+    RequestController.prototype.apiPatchItemVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_15;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var team, id, vin, existCar, item, cancelRequest_1, e_15;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        logger_service_1["default"].info("RequestController.apiPatchItem");
-                        _b = req.user, team = _b.team, company = _b.company;
-                        updateObject = req.body;
+                        team = req.user.team;
                         id = req.params.id;
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(updateObject), " }"));
-                        _d.label = 1;
+                        vin = req.body.vin;
+                        _a.label = 1;
                     case 1:
-                        _d.trys.push([1, 24, , 25]);
+                        _a.trys.push([1, 10, , 11]);
+                        return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
+                    case 2:
+                        existCar = _a.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"]
+                                .findOne({ _id: id, team: team })
+                                .populate(this.itemPopulate)];
+                    case 3:
+                        item = _a.sent();
+                        if (!item) return [3 /*break*/, 8];
+                        if (existCar && existCar.id !== item.car.id) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: 'VIN ya asignado a otro vehículo.'
+                                })];
+                        }
+                        return [4 /*yield*/, car_model_1["default"].updateOne({ _id: item.car._id, team: team }, { vin: vin })];
+                    case 4:
+                        _a.sent();
                         cancelRequest_1 = false;
                         req.on('close', function () {
                             cancelRequest_1 = true;
                         });
-                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
-                                _id: id,
-                                team: team
-                            }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
-                    case 2:
-                        requestItem = _d.sent();
-                        if (!Object.keys(updateObject.car).length) return [3 /*break*/, 21];
-                        // add vin2 to car
-                        updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
-                        if (!(((_a = updateObject.car.vin) === null || _a === void 0 ? void 0 : _a.length) >= 16)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, car_model_1["default"].findOne({ team: team, vin: updateObject.car.vin })];
-                    case 3:
-                        _c = _d.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        _c = false;
-                        _d.label = 5;
+                        return [4 /*yield*/, requestItem_model_1["default"]
+                                .findOne({ _id: id, team: team })
+                                .populate(this.itemPopulate)
+                                .lean()];
                     case 5:
-                        existCar = _c;
-                        if (!(requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length)))) return [3 /*break*/, 8];
-                        return [4 /*yield*/, activityHistory_model_1["default"].findOne({ team: team, 'request.item': requestItem._id })];
-                    case 6:
-                        existActivity = _d.sent();
-                        if (!!existActivity) return [3 /*break*/, 8];
-                        return [4 /*yield*/, new activityHistory_model_1["default"]({
-                                team: team,
-                                company: company,
-                                user: req.user._id,
-                                type: activityHistory_model_1.ChoicesTypeActivity.request,
-                                request: {
-                                    _id: requestItem.request._id,
-                                    item: requestItem._id,
-                                    number: requestItem.request.number
-                                }
-                            }).save()];
-                    case 7:
-                        _d.sent();
-                        _d.label = 8;
-                    case 8:
-                        if (!(existCar && requestItem && existCar.vin !== requestItem.car.vin)) return [3 /*break*/, 10];
-                        // validate exist car and change vin
-                        return [4 /*yield*/, requestItem_model_1["default"].update({ _id: id, team: team }, { $set: { car: existCar } })];
-                    case 9:
-                        // validate exist car and change vin
-                        _d.sent();
-                        return [3 /*break*/, 21];
-                    case 10:
-                        if (!(requestItem && requestItem.car.vin !== updateObject.car.vin)) return [3 /*break*/, 19];
-                        return [4 /*yield*/, inventoryCar_model_1["default"].find({ car: requestItem.car }).count()];
-                    case 11:
-                        inventories = _d.sent();
-                        return [4 /*yield*/, participant_model_1["default"].find({ team: team, car: requestItem.car }).count()];
-                    case 12:
-                        participants = _d.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: requestItem.car, _id: { $ne: requestItem._id } }).count()];
-                    case 13:
-                        requests = _d.sent();
-                        if (!(inventories || participants || requests)) return [3 /*break*/, 16];
-                        // validate car has actions in the system
-                        delete updateObject.car._id;
-                        return [4 /*yield*/, new car_model_1["default"](updateObject.car).save()];
-                    case 14:
-                        newCar = _d.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"].update({ _id: id, team: team }, { $set: { car: newCar } })];
-                    case 15:
-                        _d.sent();
-                        return [3 /*break*/, 18];
-                    case 16: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
-                    case 17:
-                        _d.sent();
-                        _d.label = 18;
-                    case 18: return [3 /*break*/, 21];
-                    case 19: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
-                    case 20:
-                        _d.sent();
-                        _d.label = 21;
-                    case 21: return [4 /*yield*/, requestItem_model_1["default"]
-                            .findOne({ _id: id, team: team })
-                            .populate(this.itemPopulate)
-                            .lean()];
-                    case 22:
-                        item = _d.sent();
+                        item = _a.sent();
+                        if (!item) return [3 /*break*/, 7];
                         return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
-                    case 23:
-                        _d.sent();
+                    case 6:
+                        _a.sent();
                         if (!cancelRequest_1) {
                             server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: item.request._id,
@@ -1764,9 +1711,14 @@ var RequestController = /** @class */ (function () {
                             });
                         }
                         res.status(200).json(__assign({}, item));
-                        return [3 /*break*/, 25];
-                    case 24:
-                        e_15 = _d.sent();
+                        _a.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
+                        res.status(404).json({ message: 'Item no encontrado' });
+                        _a.label = 9;
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
+                        e_15 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
@@ -1774,8 +1726,94 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_15);
-                        return [3 /*break*/, 25];
-                    case 25: return [2 /*return*/];
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    RequestController.prototype.apiPatchItem = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, team, company, updateObject, id, cancelRequest_2, requestItem, existActivity, item, e_16;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        logger_service_1["default"].info("RequestController.apiPatchItem");
+                        _a = req.user, team = _a.team, company = _a.company;
+                        updateObject = req.body;
+                        id = req.params.id;
+                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(updateObject), " }"));
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 10, , 11]);
+                        cancelRequest_2 = false;
+                        req.on('close', function () {
+                            cancelRequest_2 = true;
+                        });
+                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
+                                _id: id,
+                                team: team
+                            }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
+                    case 2:
+                        requestItem = _b.sent();
+                        if (!Object.keys(updateObject.car).length) return [3 /*break*/, 7];
+                        if (!requestItem) return [3 /*break*/, 5];
+                        return [4 /*yield*/, activityHistory_model_1["default"].findOne({ team: team, 'request.item': requestItem._id })];
+                    case 3:
+                        existActivity = _b.sent();
+                        if (!!existActivity) return [3 /*break*/, 5];
+                        return [4 /*yield*/, new activityHistory_model_1["default"]({
+                                team: team,
+                                company: company,
+                                user: req.user._id,
+                                type: activityHistory_model_1.ChoicesTypeActivity.request,
+                                request: {
+                                    _id: requestItem.request._id,
+                                    item: requestItem._id,
+                                    number: requestItem.request.number
+                                }
+                            }).save()];
+                    case 4:
+                        _b.sent();
+                        _b.label = 5;
+                    case 5: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
+                    case 6:
+                        _b.sent();
+                        _b.label = 7;
+                    case 7: return [4 /*yield*/, requestItem_model_1["default"]
+                            .findOne({ _id: id, team: team })
+                            .populate(this.itemPopulate)
+                            .lean()];
+                    case 8:
+                        item = _b.sent();
+                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
+                    case 9:
+                        _b.sent();
+                        if (!cancelRequest_2) {
+                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                                idRequest: item.request._id,
+                                item: item
+                            });
+                        }
+                        if (!cancelRequest_2) {
+                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                                idRequest: item.request._id,
+                                item: item
+                            });
+                        }
+                        res.status(200).json(__assign({}, item));
+                        return [3 /*break*/, 11];
+                    case 10:
+                        e_16 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_16);
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        res.status(500).json(e_16);
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
@@ -1792,7 +1830,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.downloadItemFiles = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_16;
+            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_17;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1879,14 +1917,14 @@ var RequestController = /** @class */ (function () {
                         _c.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
-                        e_16 = _c.sent();
+                        e_17 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_16);
+                        logger_service_1["default"].error(e_17);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
-                        res.status(500).json(e_16);
+                        res.status(500).json(e_17);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
                 }
@@ -2016,7 +2054,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, file, requestFile, e_17, e_18, e_19;
+            var company, team, file, requestFile, e_18, e_19, e_20;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -2057,7 +2095,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_17 = _a.sent();
+                        e_18 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, requestFile.attach('file', file)];
@@ -2075,7 +2113,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_18 = _a.sent();
+                        e_19 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, requestFile.save()];
@@ -2090,15 +2128,15 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_19 = _a.sent();
+                        e_20 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_19);
+                        logger_service_1["default"].error(e_20);
                         /* istanbul ignore next */
-                        res.status(400).json(e_19);
+                        res.status(400).json(e_20);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

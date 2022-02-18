@@ -8,7 +8,8 @@ import RequestForm from './RequestForms/RequestForm';
 import { AxiosError } from 'axios';
 import * as swal from 'sweetalert';
 import { getFormValues } from 'redux-form';
-
+import { IWindow } from '../../interfaces/window';
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{}> {
   router: any;
@@ -61,10 +62,11 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
           conectaID: query['6154722a94bba10012230aae'] || query['conectaID'],
           sellerText: query.sellerText,
           // channel:
-          customerInformation:{
-            rut: query.hasOwnProperty('5bf2de35caf8ef7096105c22')?query['5bf2de35caf8ef7096105c22']:'',
-            name: query.hasOwnProperty('5bf2de35caf8ef7096105c21')?query['5bf2de35caf8ef7096105c21']:'',
-            email: query.hasOwnProperty('60b9232164adc90013a79b45')?query['60b9232164adc90013a79b45']:'',
+          venue: window.user.venue._id,
+          customerInformation: {
+            rut: query.hasOwnProperty('5bf2de35caf8ef7096105c22') ? query['5bf2de35caf8ef7096105c22'] : '',
+            name: query.hasOwnProperty('5bf2de35caf8ef7096105c21') ? query['5bf2de35caf8ef7096105c21'] : '',
+            email: query.hasOwnProperty('60b9232164adc90013a79b45') ? query['60b9232164adc90013a79b45'] : ''
           },
           advancePaymentInformation: {
             method: '',

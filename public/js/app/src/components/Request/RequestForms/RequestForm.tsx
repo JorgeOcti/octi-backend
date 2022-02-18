@@ -136,6 +136,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                     component={BootstrapSelectField}
                                     validate={[inputStringRequired]}
                                     props={{
+                                      disabled: true,
                                       noneSelectedText: 'Seleccione...',
                                       displayItems: 2,
                                       selectedText: 'sucursal seleccionadas.',

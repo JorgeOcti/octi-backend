@@ -12,9 +12,7 @@ import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } f
 import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
-import Participant from '../../form/models/participant.model';
 import { IRequest } from '../../interfaces/global.interface';
-import InventoryCar from '../../inventory/models/inventoryCar.model';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import GeneralUtils from '../../utils/general.utils';
@@ -105,6 +103,7 @@ class RequestController {
     this.apiByVin = this.apiByVin.bind(this);
     this.getRequets = this.getRequets.bind(this);
     this.apiPatchItem = this.apiPatchItem.bind(this);
+    this.apiPatchItemVin = this.apiPatchItemVin.bind(this);
     this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
     this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
     this.apiCreateItem = this.apiCreateItem.bind(this);
@@ -542,6 +541,14 @@ class RequestController {
         'requestNumber': { '$regex': filters.text, '$options': 'i' }
       });
     }
+    if (filters.sellerText && filters.sellerText.length) {
+      if (!extraMatch.hasOwnProperty('$or')) {
+        extraMatch.$or = [];
+      }
+      extraMatch.$or.push({
+        'request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
+      });
+    }
     if (filters.properties && filters.properties.length) {
       if (!extraMatch.hasOwnProperty('$or')) {
         extraMatch.$or = [];
@@ -625,6 +632,7 @@ class RequestController {
             'request.createdBy.firstName': 1,
             'request.createdBy.lastName': 1,
             'request.conectaID': 1,
+            'request.sellerText': 1,
             'request.advancePaymentInformation': 1,
             'priority': 1,
             'observation': 1,
@@ -1333,6 +1341,63 @@ class RequestController {
     }
   }
 
+
+  public async apiPatchItemVin(req: IRequest, res: Response): Promise<any> {
+    const { team } = req.user;
+    const { id } = req.params;
+    const { vin } = req.body;
+    try {
+      const existCar = await Car.findOne({vin, team});
+      let item = await RequestItem
+        .findOne({ _id: id, team })
+        .populate(this.itemPopulate);
+      if(item){
+        if(existCar && existCar.id !== (item.car as any).id ){
+          return res.status(400).json({
+            message: 'VIN ya asignado a otro vehículo.'
+          })
+        }
+        await Car.updateOne({ _id: item.car._id, team }, { vin });
+        let cancelRequest = false;
+        req.on('close', function() {
+          cancelRequest = true;
+        });
+        item = await RequestItem
+          .findOne({ _id: id, team })
+          .populate(this.itemPopulate)
+          .lean();
+        if(item) {
+          await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
+          if (!cancelRequest) {
+            io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+              idRequest: item.request._id,
+              item
+            });
+          }
+          if (!cancelRequest) {
+            io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+              idRequest: item.request._id,
+              item
+            });
+          }
+          res.status(200).json({
+            ...item
+          });
+        }
+      } else{
+        res.status(404).json({message:'Item no encontrado'})
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiPatchItem: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
     const { team, company } = req.user;
@@ -1349,10 +1414,7 @@ class RequestController {
         team
       }, { $set: { ...updateObject } }).populate([{ path: 'car' }, { path: 'request' }]);
       if (Object.keys(updateObject.car).length) {
-        // add vin2 to car
-        updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
-        const existCar = updateObject.car.vin?.length >= 16 ? await Car.findOne({ team, vin: updateObject.car.vin }) : false;
-        if (requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length))) {
+        if (requestItem) {
           const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
           if (!existActivity) {
             await new ActivityHistory({
@@ -1368,25 +1430,7 @@ class RequestController {
             }).save();
           }
         }
-        if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
-          // validate exist car and change vin
-          await RequestItem.update({ _id: id, team }, { $set: { car: existCar } });
-        } else if (requestItem && requestItem.car.vin !== updateObject.car.vin) {
-          // validate chamge vin
-          const inventories = await InventoryCar.find({ car: requestItem.car }).count();
-          const participants = await Participant.find({ team, car: requestItem.car }).count();
-          const requests = await RequestItem.find({ team, car: requestItem.car, _id: { $ne: requestItem._id } }).count();
-          if (inventories || participants || requests) {
-            // validate car has actions in the system
-            delete updateObject.car._id;
-            const newCar = await new Car(updateObject.car).save();
-            await RequestItem.update({ _id: id, team }, { $set: { car: newCar } });
-          } else {
-            await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
-          }
-        } else {
-          await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
-        }
+        await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
       }
       const item = await RequestItem
         .findOne({ _id: id, team })

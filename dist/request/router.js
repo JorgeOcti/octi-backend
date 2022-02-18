@@ -41,6 +41,7 @@ requestRouter["delete"]('/api/v1/requests/:id/', middlewares_1["default"].isJWTA
 requestRouter.post('/api/v1/requests-item/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiListItems);
 requestRouter.post('/api/v1/add-requests-item/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiPatchItem);
+requestRouter.patch('/api/v1/requests-item/:id/change-vin/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiPatchItemVin);
 requestRouter["delete"]('/api/v1/requests-item/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiDeleteRequestItem);
 requestRouter.get('/requests-item/:id/download-files/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].downloadItemFiles);
 requestRouter.get('/api/v1/reasons/', middlewares_1["default"].isJWTAuthenticated, reason_controller_1["default"].apiList);

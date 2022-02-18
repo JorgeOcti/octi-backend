@@ -25,6 +25,7 @@ export const REQUEST_ITEMS_LOAD_SETTINGS = '/REQUESTS_ITEMS/LOAD_SETTINGS';
 
 export interface IRequestItemsFilters {
   text: string;
+  sellerText: string;
   ticket: string;
   request: string;
   entry: string;

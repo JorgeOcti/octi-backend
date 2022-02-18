@@ -166,22 +166,24 @@ class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
           <Row>
             <div className="col-md-12">
               <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">Dashboard de daños</h3>
-                  {false && hasPermission(window.user, 'exportDamages') ?
-                    <div className="box-tools pull-right">
+                <div className='box-header with-border'>
+                  <h3 className='box-title'>Dashboard de daños</h3>
+                  {
+                    false && hasPermission(window.user, 'exportDamages') ?
+                    <div className='box-tools pull-right'>
                       <button
-                        className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                        className='btn btn-sm btn-primary hidden-xs hidden-sm'
                         onClick={this.exportDamages}
                         disabled={exporting}
                       >
                         {
                           exporting ?
                             <React.Fragment>
-                              <i className="fa fa-fw fa-spinner fa-spin"></i> Exportando reporte
+                              <i className='fa fa-fw fa-spinner fa-spin'></i> Exportando reporte
                             </React.Fragment>
                             :
                             <React.Fragment>
-                              <i className="fa fa-fw fa-download"></i> Exportar reporte
+                              <i className='fa fa-fw fa-download'></i> Exportar reporte
                             </React.Fragment>
                         }
                       </button>

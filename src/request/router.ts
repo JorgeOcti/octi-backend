@@ -43,6 +43,7 @@ requestRouter.delete('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, Re
 requestRouter.post('/api/v1/requests-item/', Middlewares.isJWTAuthenticated, RequestController.apiListItems);
 requestRouter.post('/api/v1/add-requests-item/', Middlewares.isJWTAuthenticated, RequestController.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isJWTAuthenticated, RequestController.apiPatchItem);
+requestRouter.patch('/api/v1/requests-item/:id/change-vin/', Middlewares.isJWTAuthenticated, RequestController.apiPatchItemVin);
 requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDeleteRequestItem);
 
 requestRouter.get('/requests-item/:id/download-files/', Middlewares.isJWTAuthenticated, RequestController.downloadItemFiles);
