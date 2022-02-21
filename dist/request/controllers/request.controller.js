@@ -2007,11 +2007,12 @@ var RequestController = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>");
                         var config = {
                             headers: {
                                 'Content-Type': 'text/xml',
                                 'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-                                'Content-Length': '340'
+                                'Content-Length': "".concat(data.length)
                             },
                             auth: {
                                 username: 'USR_SOA_PI',
@@ -2019,7 +2020,7 @@ var RequestController = /** @class */ (function () {
                             }
                         };
                         var instance = axios_1["default"].create(config);
-                        instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>"))
+                        instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', data)
                             .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 xml2js.parseString(response.data, function (error, result) {

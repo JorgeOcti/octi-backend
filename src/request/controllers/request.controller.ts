@@ -1607,11 +1607,12 @@ class RequestController {
 
   private async searchVinContecta(vin: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
+      const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
       const config = {
         headers: {
           'Content-Type': 'text/xml',
           'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-          'Content-Length': '340'
+          'Content-Length': `${data.length}`
         },
         auth: {
           username: 'USR_SOA_PI',
@@ -1620,7 +1621,7 @@ class RequestController {
       };
       const instance = axios.create(config);
       instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
-        `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions">\r\n   <soapenv:Header/>\r\n   <soapenv:Body>\r\n      <urn:ZPM_GET_EQUIPMENTS>\r\n         <LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO>\r\n      </urn:ZPM_GET_EQUIPMENTS>\r\n   </soapenv:Body>\r\n</soapenv:Envelope>`
+        data
       )
         .then(async (response) => {
           xml2js.parseString(response.data, (error, result) => {
