@@ -2011,8 +2011,7 @@ var RequestController = /** @class */ (function () {
                         var config = {
                             headers: {
                                 'Content-Type': 'text/xml',
-                                'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-                                'Content-Length': "".concat(data.length)
+                                'SOAPAction': 'http://sap.com/xi/WebService/soap1.1'
                             },
                             auth: {
                                 username: 'USR_SOA_PI',
