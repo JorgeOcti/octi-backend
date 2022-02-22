@@ -300,7 +300,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label className='control-label'>
-                        Creador por
+                        Creado por
                       </label>
                       <BootstrapSelect
                         noneSelectedText='Todas'
