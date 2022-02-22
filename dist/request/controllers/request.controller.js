@@ -532,7 +532,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -542,7 +542,15 @@ var RequestController = /** @class */ (function () {
                         _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 11, , 12]);
+                        _c.trys.push([1, 12, , 13]);
+                        return [4 /*yield*/, request_model_1["default"].find({ team: team, conectaID: conectaID })];
+                    case 2:
+                        existConectId = _c.sent();
+                        if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud.")
+                                })];
+                        }
                         return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
                                 team: team,
                                 "default": true
@@ -552,10 +560,10 @@ var RequestController = /** @class */ (function () {
                                 team: team,
                                 weigth: 10
                             })];
-                    case 2:
+                    case 3:
                         defaultItemStatus = _c.sent();
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { "new": true })];
-                    case 3:
+                    case 4:
                         updateTeam = _c.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
@@ -574,12 +582,12 @@ var RequestController = /** @class */ (function () {
                                 channel: channel,
                                 createdBy: req.user
                             }).save()];
-                    case 4:
+                    case 5:
                         request = _c.sent();
                         _i = 0, cars_2 = cars;
-                        _c.label = 5;
-                    case 5:
-                        if (!(_i < cars_2.length)) return [3 /*break*/, 9];
+                        _c.label = 6;
+                    case 6:
+                        if (!(_i < cars_2.length)) return [3 /*break*/, 10];
                         car = cars_2[_i];
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
@@ -591,7 +599,7 @@ var RequestController = /** @class */ (function () {
                                 status: car_model_1.ChoicesStatusCar.pending,
                                 createdBy: req.user
                             }).save()];
-                    case 6:
+                    case 7:
                         newCar = _c.sent();
                         return [4 /*yield*/, new requestItem_model_1["default"]({
                                 team: team,
@@ -609,14 +617,14 @@ var RequestController = /** @class */ (function () {
                                 status: defaultItemStatus,
                                 createdBy: req.user
                             }).save()];
-                    case 7:
-                        _c.sent();
-                        _c.label = 8;
                     case 8:
+                        _c.sent();
+                        _c.label = 9;
+                    case 9:
                         _i++;
-                        return [3 /*break*/, 5];
-                    case 9: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
-                    case 10:
+                        return [3 /*break*/, 6];
+                    case 10: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
+                    case 11:
                         newRequest = _c.sent();
                         server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
                             request: newRequest
@@ -628,8 +636,8 @@ var RequestController = /** @class */ (function () {
                             data: newRequest,
                             status: 200
                         });
-                        return [3 /*break*/, 12];
-                    case 11:
+                        return [3 /*break*/, 13];
+                    case 12:
                         e_6 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
@@ -637,8 +645,8 @@ var RequestController = /** @class */ (function () {
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body)));
                         logger_service_1["default"].error(e_6);
                         res.status(500).json(e_6);
-                        return [3 /*break*/, 12];
-                    case 12: return [2 /*return*/];
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
             });
         });

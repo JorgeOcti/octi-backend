@@ -379,7 +379,7 @@ class RequestController {
     }
   }
 
-  public async apiCreate(req: IRequest, res: Response) {
+  public async apiCreate(req: IRequest, res: Response): Promise<any> {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
@@ -388,6 +388,12 @@ class RequestController {
      } = req.body;
 
     try {
+      const existConectId = await Request.find({team, conectaID});
+      if(conectaID?.length && existConectId){
+        return res.status(400).json({
+          message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud.`
+        })
+      }
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
         team,
         default: true
