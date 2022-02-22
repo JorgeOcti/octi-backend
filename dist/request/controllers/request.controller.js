@@ -543,12 +543,13 @@ var RequestController = /** @class */ (function () {
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 12, , 13]);
-                        return [4 /*yield*/, request_model_1["default"].find({ team: team, conectaID: conectaID })];
+                        return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 2:
                         existConectId = _c.sent();
+                        console.log('existConectId', existConectId);
                         if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
                             return [2 /*return*/, res.status(400).json({
-                                    message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud.")
+                                    message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud ").concat(existConectId.number, ".")
                                 })];
                         }
                         return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({

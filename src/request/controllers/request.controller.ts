@@ -388,10 +388,11 @@ class RequestController {
      } = req.body;
 
     try {
-      const existConectId = await Request.find({team, conectaID});
+      const existConectId = await Request.findOne({team, conectaID});
+      console.log('existConectId', existConectId);
       if(conectaID?.length && existConectId){
         return res.status(400).json({
-          message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud.`
+          message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${existConectId.number}.`
         })
       }
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
