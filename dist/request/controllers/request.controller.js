@@ -546,7 +546,6 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 2:
                         existConectId = _c.sent();
-                        console.log('existConectId', existConectId);
                         if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
                             return [2 /*return*/, res.status(400).json({
                                     message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud ").concat(existConectId.number, ".")
@@ -2015,7 +2014,7 @@ var RequestController = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
+                return [2 /*return*/, new Promise(function (resolve) {
                         var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>");
                         var config = {
                             headers: {

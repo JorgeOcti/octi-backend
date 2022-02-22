@@ -389,7 +389,6 @@ class RequestController {
 
     try {
       const existConectId = await Request.findOne({team, conectaID});
-      console.log('existConectId', existConectId);
       if(conectaID?.length && existConectId){
         return res.status(400).json({
           message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${existConectId.number}.`
@@ -1613,7 +1612,7 @@ class RequestController {
   }
 
   private async searchVinContecta(vin: string): Promise<any[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
       const config = {
         headers: {
