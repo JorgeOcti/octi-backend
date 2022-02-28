@@ -60,7 +60,8 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
         created={created}
         initialValues={{
           conectaID: query['6154722a94bba10012230aae'] || query['conectaID'],
-          sellerText: query.sellerText,
+          // sellerText: query.sellerText,
+          sellerText: `${window.user.firstName} ${window.user.lastName}`,
           // channel:
           venue: window.user.venue._id,
           customerInformation: {

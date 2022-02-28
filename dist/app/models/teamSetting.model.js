@@ -159,6 +159,10 @@ var requestSettingSchema = new mongoose.Schema({
         type: Boolean,
         "default": true
     },
+    sellerText: {
+        type: Boolean,
+        "default": true
+    },
     ticket: {
         type: Boolean,
         "default": true

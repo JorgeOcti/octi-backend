@@ -55,12 +55,13 @@ var team_model_1 = require("../../app/models/team.model");
 var requestItem_model_1 = require("../../request/models/requestItem.model");
 var request_model_1 = require("../../request/models/request.model");
 var paymentMethod_model_1 = require("../models/paymentMethod.model");
+var teamSetting_model_1 = require("../../app/models/teamSetting.model");
 function migrateSalfa() {
     var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function () {
-        var MONGODB_URI, team, requestItems, paymentMethods, paymentMethodByKey, _i, requestItems_1, requestItem, answerByKey, paymentMethodText, e_1, e_2;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        var MONGODB_URI, teams, _i, teams_1, team_1, isSalfa, team, requestItems, paymentMethods, paymentMethodByKey, _g, requestItems_1, requestItem, answerByKey, paymentMethodText, e_1, e_2;
+        return __generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
                     dotenv.config({
                         path: path.join(__dirname, '../../../.env')
@@ -69,34 +70,65 @@ function migrateSalfa() {
                     mongoose.Promise = bluebird;
                     return [4 /*yield*/, mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })];
                 case 1:
-                    _g.sent();
+                    _h.sent();
                     mongoose.set('debug', true);
-                    _g.label = 2;
+                    _h.label = 2;
                 case 2:
-                    _g.trys.push([2, 12, , 13]);
-                    return [4 /*yield*/, team_model_1["default"].findById('5bf2de35caf8ef7096105cdd')];
+                    _h.trys.push([2, 17, , 18]);
+                    return [4 /*yield*/, team_model_1["default"].find({})];
                 case 3:
-                    team = _g.sent();
+                    teams = _h.sent();
+                    _i = 0, teams_1 = teams;
+                    _h.label = 4;
+                case 4:
+                    if (!(_i < teams_1.length)) return [3 /*break*/, 7];
+                    team_1 = teams_1[_i];
+                    isSalfa = team_1._id.toString() === '5bf2de35caf8ef7096105cdd';
+                    return [4 /*yield*/, teamSetting_model_1["default"].findOneAndUpdate({ team: team_1 }, {
+                            request: {
+                                brand: true,
+                                brandReadOnly: isSalfa,
+                                denominationReadOnly: isSalfa,
+                                colorReadOnly: isSalfa,
+                                materialReadOnly: isSalfa,
+                                ticket: isSalfa,
+                                conectaID: isSalfa,
+                                reason: !isSalfa,
+                                priority: !isSalfa,
+                                internalNumber: !isSalfa,
+                                entry: !isSalfa,
+                                sellerText: isSalfa
+                            }
+                        })];
+                case 5:
+                    _h.sent();
+                    _h.label = 6;
+                case 6:
+                    _i++;
+                    return [3 /*break*/, 4];
+                case 7: return [4 /*yield*/, team_model_1["default"].findById('5bf2de35caf8ef7096105cdd')];
+                case 8:
+                    team = _h.sent();
                     return [4 /*yield*/, requestItem_model_1["default"].find({ team: team }).populate([{
                                 path: 'request'
                             }])];
-                case 4:
-                    requestItems = _g.sent();
+                case 9:
+                    requestItems = _h.sent();
                     return [4 /*yield*/, paymentMethod_model_1["default"].find({ team: team })];
-                case 5:
-                    paymentMethods = _g.sent();
+                case 10:
+                    paymentMethods = _h.sent();
                     paymentMethodByKey = paymentMethods.reduce(function (acc, cur) {
                         var _a;
                         return __assign(__assign({}, acc), (_a = {}, _a[cur.name] = cur._id, _a));
                     }, {});
-                    _i = 0, requestItems_1 = requestItems;
-                    _g.label = 6;
-                case 6:
-                    if (!(_i < requestItems_1.length)) return [3 /*break*/, 11];
-                    requestItem = requestItems_1[_i];
-                    _g.label = 7;
-                case 7:
-                    _g.trys.push([7, 9, , 10]);
+                    _g = 0, requestItems_1 = requestItems;
+                    _h.label = 11;
+                case 11:
+                    if (!(_g < requestItems_1.length)) return [3 /*break*/, 16];
+                    requestItem = requestItems_1[_g];
+                    _h.label = 12;
+                case 12:
+                    _h.trys.push([12, 14, , 15]);
                     answerByKey = requestItem.answers.reduce(function (acc, cur) {
                         var _a;
                         if (cur === null || cur === void 0 ? void 0 : cur.questionId) {
@@ -119,27 +151,27 @@ function migrateSalfa() {
                                 files: (_f = (_e = (_d = requestItem.request) === null || _d === void 0 ? void 0 : _d.advancePaymentInformation) === null || _e === void 0 ? void 0 : _e.files) !== null && _f !== void 0 ? _f : []
                             }
                         })];
-                case 8:
-                    _g.sent();
-                    return [3 /*break*/, 10];
-                case 9:
-                    e_1 = _g.sent();
+                case 13:
+                    _h.sent();
+                    return [3 /*break*/, 15];
+                case 14:
+                    e_1 = _h.sent();
                     console.log(JSON.stringify(requestItem));
                     console.log('Ha ocurrido un error en migrateSalfa');
                     console.log('error:', e_1);
-                    return [3 /*break*/, 10];
-                case 10:
-                    _i++;
-                    return [3 /*break*/, 6];
-                case 11: return [3 /*break*/, 13];
-                case 12:
-                    e_2 = _g.sent();
+                    return [3 /*break*/, 15];
+                case 15:
+                    _g++;
+                    return [3 /*break*/, 11];
+                case 16: return [3 /*break*/, 18];
+                case 17:
+                    e_2 = _h.sent();
                     console.log('Ha ocurrido un error en migrateSalfa');
                     console.log('error:', e_2);
-                    return [3 /*break*/, 13];
-                case 13: return [4 /*yield*/, process.exit(1)];
-                case 14:
-                    _g.sent();
+                    return [3 /*break*/, 18];
+                case 18: return [4 /*yield*/, process.exit(1)];
+                case 19:
+                    _h.sent();
                     return [2 /*return*/];
             }
         });

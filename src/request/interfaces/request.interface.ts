@@ -54,7 +54,9 @@ export interface IRequest {
   customerInformation: IRequestCustomer;
   advancePaymentInformation: IRequestAdvancePayment;
   conectaID: string;
+  deliveryVenue: IVenue | IVenueModel;
   deliveryAddress: string;
+  deliveryDate: Date;
   updatedAt: Date;
   createdAt: Date;
 }

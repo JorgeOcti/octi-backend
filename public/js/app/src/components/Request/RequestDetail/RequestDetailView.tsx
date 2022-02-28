@@ -192,13 +192,13 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tbody>
                         <tr>
                           <td style={{ borderTop: '0' }}>
-                            <span style={{ paddingLeft: '17px' }}>Creada por</span><br />
+                            <span style={{ paddingLeft: '17px' }}>Vendedor</span><br />
                             <strong><i className='fa fa-fw fa-user' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
                           </td>
-                          <td style={{ borderTop: '0' }}>
-                            <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />
-                            <strong><i className='fa fa-fw fa-handshake' /> {request.sellerText?.length ? request.sellerText : '-'}</strong>
-                          </td>
+                          {/*<td style={{ borderTop: '0' }}>*/}
+                          {/*  <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />*/}
+                          {/*  <strong><i className='fa fa-fw fa-handshake' /> {request.sellerText?.length ? request.sellerText : '-'}</strong>*/}
+                          {/*</td>*/}
                           <td style={{ borderTop: '0' }}>
                             Canal<br />
                             <strong>{request.channel?.name}</strong>
@@ -221,7 +221,9 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           </td>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
-                            <strong><i className='fa fa-fw fa-calendar-check-o' /> -</strong>
+                            <strong><i
+                              className='fa fa-fw fa-calendar-check-o' /> {request.deliveryDate ? moment(request.deliveryDate).format('DD-MM-YYYY') : '-'}
+                            </strong>
                           </td>
                         </tr>
                         </tbody>
@@ -271,8 +273,8 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <ShowIf condition={requestSettings.color}>
                           <th className='middle' style={{ width: '100px' }}>Color</th>
                         </ShowIf>
-                        <th className='middle' style={{ width: '150px' }}>VIN</th>
-                        <th className='middle' style={{ minWidth: '120px' }}>Estado</th>
+                        <th className='middle' style={{ width: '180px' }}>VIN</th>
+                        <th className='middle' style={{ minWidth: '100px' }}>Estado</th>
                         <ShowIf condition={requestSettings.conectaID}>
                           <th className='middle-center'>Ticket</th>
                           <th className='middle' style={{ width: '100px' }}>Nº Ticket</th>

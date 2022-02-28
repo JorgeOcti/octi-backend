@@ -40,6 +40,7 @@ export interface IRequestSetting {
   colorReadOnly: boolean;
   colorRequired: boolean;
   entry: boolean;
+  sellerText: boolean;
   reason: boolean;
   conectaID: boolean;
   ticket: boolean;

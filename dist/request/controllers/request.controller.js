@@ -567,7 +567,7 @@ var RequestController = /** @class */ (function () {
                         updateTeam = _c.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
-                                sellerText: sellerText,
+                                sellerText: sellerText !== null && sellerText !== void 0 ? sellerText : req.user.fullName(),
                                 number: updateTeam.requestNumber,
                                 origin: venue,
                                 advancePaymentInformation: advancePaymentInformation,
@@ -1985,41 +1985,42 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.searchVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, vin, data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var team, _a, vin, material, data;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         team = req.user.team;
-                        vin = req.query.vin;
+                        _a = req.query, vin = _a.vin, material = _a.material;
                         if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 3];
                         data = [];
                         if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.searchVinContecta(vin)];
+                        return [4 /*yield*/, this.searchVinContecta(vin, material)];
                     case 1:
-                        data = _a.sent();
-                        _a.label = 2;
+                        data = _b.sent();
+                        _b.label = 2;
                     case 2:
                         res.json({ data: data });
                         return [3 /*break*/, 4];
                     case 3:
                         //defaul other teams
                         res.json({ data: [], a: 2 });
-                        _a.label = 4;
+                        _b.label = 4;
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
-    RequestController.prototype.searchVinContecta = function (vin) {
+    RequestController.prototype.searchVinContecta = function (vin, materialSearch) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Promise(function (resolve) {
-                        var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>");
+                        var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>");
                         var config = {
                             headers: {
                                 'Content-Type': 'text/xml',
-                                'SOAPAction': 'http://sap.com/xi/WebService/soap1.1'
+                                'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+                                'Content-Length': "".concat(Buffer.byteLength(data))
                             },
                             auth: {
                                 username: 'USR_SOA_PI',
@@ -2039,12 +2040,19 @@ var RequestController = /** @class */ (function () {
                                             var items = detail['EQUIPMENTS_INFO'][0]['item'];
                                             for (var _d = 0, items_1 = items; _d < items_1.length; _d++) {
                                                 var item = items_1[_d];
-                                                data.push({
-                                                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                                                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                                                    denomination: item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '',
-                                                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                                                });
+                                                var denomination = item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '';
+                                                var version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
+                                                var material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
+                                                material = material.substr(material.length > 6 ? material.length - 6 : 0);
+                                                if (materialSearch === material) {
+                                                    data.push({
+                                                        vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                                                        brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                                                        denomination: "".concat(denomination).concat(version ? " ".concat(version) : ''),
+                                                        material: material,
+                                                        color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                                                    });
+                                                }
                                             }
                                         }
                                     }

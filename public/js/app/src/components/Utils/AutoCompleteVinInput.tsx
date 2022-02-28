@@ -52,9 +52,9 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
     };
     this.$subjectVINRecommends.pipe(
       debounceTime(300),
-      switchMap((vin: string) => {
+      switchMap(({ vin, material }: { vin: string, material: string }) => {
         return ajax({
-          url: `/api/v1/requests/search-vin/?vin=${vin}`,
+          url: `/api/v1/requests/search-vin/?vin=${vin}&material=${material}`,
           headers: {
             'Content-Type': 'application/json;charset=UTF-8'
           },
@@ -103,11 +103,11 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
               : <span
                 className='input-group-addon pointer bg-red'
                 style={{ padding: '5px' }}
-                onClick={()=>{
+                onClick={() => {
                   this.setState({
-                    value: defaultValue,
-                    canEdit:false
-                  })
+                    value: defaultValue || '',
+                    canEdit: false
+                  });
                 }}
               >
                 <i className='fa fa-fw fa-close' />
@@ -125,7 +125,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
                 open: true,
                 value
               });
-              this.searchVin(value)
+              this.searchVin(value, item.car.material)
             }}
             style={{padding: '5px'}}
             disabled={!canEdit}
@@ -210,8 +210,8 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
   }
 
 
-  private searchVin(vin: string): void {
-    this.$subjectVINRecommends.next(vin)
+  private searchVin(vin: string, material: string): void {
+    this.$subjectVINRecommends.next({ vin, material })
   }
 
   private outsideClick(e: any): void{

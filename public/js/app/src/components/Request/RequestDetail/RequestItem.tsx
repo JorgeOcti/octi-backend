@@ -20,6 +20,7 @@ import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
+import AutoCompleteVinInput from '../../Utils/AutoCompleteVinInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
@@ -293,58 +294,21 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         {
           canChangeRequest ?
            <td
-              className='middle flex'
+              className='middle'
               style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
-              <AutoCompleteInput
-                value={item.car.vin}
-                inputClass={'input-sm'}
-                items={VINRecommends}
-                renderItem={(car, index) => (
-                  <div key={index} className="item">
-                    {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
-                    <strong>{car.brand}</strong>
-                  </div>
-                )}
-                onChange={(e) => {
-                  const { value } = e.target;
-                  this.props.updateRequestItemInDetailThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        vin: value
-                      }
-                    },
-                    debounce: true
-                  });
-                  this.searchVin(value);
-                }}
-                onSelect={(car: any) => {
-                  this.props.updateRequestItemInDetailThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        vin: car.vin,
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-              <ShowIf condition={!!item.car.vin?.length}>
-                <a
-                  href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
-                  target='_blank'
-                  style={{
-                    textDecoration: 'underline'
-                  }}
-                ><i
-                  className='fa fa-fw fa-share-alt-square'
-                  style={{paddingTop:'5px', fontSize: '1.8em'}}
+             <div className='flex'>
+              <AutoCompleteVinInput
+                  defaultValue={item.car.vin}
+                  item={item}
+                  inputClass={'input-sm'}
+                  renderItem={(car, index) => (
+                    <div key={index} className='item'>
+                      {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
+                      <strong>{car.brand}</strong>
+                    </div>
+                  )}
                 />
-                </a>
-              </ShowIf>
+               </div>
             </td> :
             <td className="middle">{item.car.vin}</td>
         }

@@ -15,6 +15,7 @@ export const requestSettings = {
   materialReadOnly: false,
   reason: false,
   entry: false,
+  sellerText: false,
   ticket: false,
   priority: false,
   conectaID: false

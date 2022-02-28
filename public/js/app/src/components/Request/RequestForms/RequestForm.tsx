@@ -607,13 +607,14 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   private addCarToForm() {
     const { query } = this.props;
+    const { material } = query;
     const { reasons } = this.state;
     let data: any = {
       key: uuid.v4(),
       reason: '5fe0930aa9683b0f8a6e0e42',
       brand: query.brand,
       denomination: query.denomination,
-      material: query.material,
+      material: material.substr(material.length > 6 ? material.length - 6 : 0),
       answersbkp: [],
       answers: [],
       files: []

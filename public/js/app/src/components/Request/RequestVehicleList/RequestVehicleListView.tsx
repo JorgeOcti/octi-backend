@@ -300,7 +300,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label className='control-label'>
-                        Creado por
+                        Vendedor
                       </label>
                       <BootstrapSelect
                         noneSelectedText='Todas'
@@ -333,22 +333,24 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
-                    <div className='form-group'>
-                      <label className='control-label'>
-                        Vendedor
-                      </label>
-                      <input
-                        type='text'
-                        className='form-control input-sm'
-                        placeholder='Jhon Doe'
-                        defaultValue={filters.sellerText}
-                        onChange={(e) => {
-                          this.changeFilterDebounced('sellerText', e.target.value);
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {/*<ShowIf condition={requestSettings.sellerText}>*/}
+                  {/*<div className='col-md-3' style={{padding: '0 5px'}}>*/}
+                  {/*  <div className='form-group'>*/}
+                  {/*    <label className='control-label'>*/}
+                  {/*      Vendedor*/}
+                  {/*    </label>*/}
+                  {/*    <input*/}
+                  {/*      type='text'*/}
+                  {/*      className='form-control input-sm'*/}
+                  {/*      placeholder='Jhon Doe'*/}
+                  {/*      defaultValue={filters.sellerText}*/}
+                  {/*      onChange={(e) => {*/}
+                  {/*        this.changeFilterDebounced('sellerText', e.target.value);*/}
+                  {/*      }}*/}
+                  {/*    />*/}
+                  {/*  </div>*/}
+                  {/*</div>*/}
+                  {/*</ShowIf>*/}
                   <div className='col-md-3' style={{padding: '0 5px'}}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Propiedad</label>

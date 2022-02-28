@@ -12,7 +12,7 @@ import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } f
 import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
-import { IRequest } from '../../interfaces/global.interface';
+import { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import GeneralUtils from '../../utils/general.utils';
@@ -404,9 +404,10 @@ class RequestController {
         weigth: 10
       });
       const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
+
       const request = await new Request({
         team,
-        sellerText,
+        sellerText: sellerText ?? req.user.fullName(),
         number: updateTeam!.requestNumber,
         origin: venue,
         advancePaymentInformation,
@@ -1597,12 +1598,12 @@ class RequestController {
 
   public async searchVin(req: IRequest, res: Response) {
     const { team } = req.user;
-    const { vin } = req.query as { vin: string };
+    const { vin, material } = req.query as IStringKeyObject<string>;
     if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
       // const data = await this.searchVinContecta('014688');
       let data: any [] = [];
       if (vin?.length >= 6) {
-        data = await this.searchVinContecta(vin);
+        data = await this.searchVinContecta(vin, material);
       }
       res.json({ data });
     } else {
@@ -1611,13 +1612,14 @@ class RequestController {
     }
   }
 
-  private async searchVinContecta(vin: string): Promise<any[]> {
+  private async searchVinContecta(vin: string, materialSearch: string): Promise<any[]> {
     return new Promise((resolve) => {
-      const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS>     <LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
+      const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
       const config = {
         headers: {
           'Content-Type': 'text/xml',
-          'SOAPAction': 'http://sap.com/xi/WebService/soap1.1'
+          'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+          'Content-Length': `${Buffer.byteLength(data)}`
         },
         auth: {
           username: 'USR_SOA_PI',
@@ -1635,12 +1637,19 @@ class RequestController {
               for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
                 const items = detail['EQUIPMENTS_INFO'][0]['item'];
                 for (const item of items) {
-                  data.push({
-                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                    denomination: item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '',
-                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                  });
+                  const denomination = item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '';
+                  const version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
+                  let material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
+                  material = material.substr(material.length > 6 ? material.length - 6 : 0);
+                  if (materialSearch === material) {
+                    data.push({
+                      vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                      brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                      denomination: `${denomination}${version ? ` ${version}` : ''}`,
+                      material,
+                      color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                    });
+                  }
                 }
               }
             }
