@@ -1018,7 +1018,7 @@ var CarController = /** @class */ (function () {
             var section = _a[_i];
             for (var _b = 0, _c = section.questions; _b < _c.length; _b++) {
                 var question = _c[_b];
-                if (['scale', 'accessory'].includes(question.kind)) {
+                if (['scale', 'accessory', 'numeric-scale'].includes(question.kind)) {
                     columns.push({
                         header: "".concat(form.name, " - ").concat(question.question), key: question._id.toString(), width: 30
                     });
@@ -1045,28 +1045,40 @@ var CarController = /** @class */ (function () {
         return columns;
     };
     CarController.prototype.processAnswer = function (answer) {
-        var _a, _b;
+        var _a, _b, _c;
         var datum = {};
         if (answer.kind === 'scale' || answer.kind === 'accessory') {
             if (!answer.answer) {
                 return {};
             }
-            var selectedChoice = answer.scale.choices.find(function (choice) { return choice._id.toString() === answer.answer.toString(); });
+            var selectedChoice = answer.scale.choices.find(function (choice) {
+                return choice._id.toString() === answer.answer.toString();
+            });
             if (selectedChoice) {
-                datum = (_a = {}, _a[answer._id.toString()] = selectedChoice.choice, _a);
+                datum = (_a = {},
+                    _a[answer._id.toString()] = selectedChoice.choice,
+                    _a);
             }
         }
+        else if (answer.kind === 'numeric-scale') {
+            datum = (_b = {},
+                _b[answer._id.toString()] = answer.score,
+                _b);
+        }
         else if (answer.kind === 'damage') {
-            datum = (_b = {}, _b[answer._id.toString()] = answer.damagesSelected.length, _b);
+            datum = (_c = {}, _c[answer._id.toString()] = answer.damagesSelected.length, _c);
         }
         return datum;
     };
     CarController.prototype.processParticipant = function (participant) {
         var _a, _b;
+        var _c, _d, _e, _f, _g, _h;
         var datum = {
             number: participant.number,
             created_at: moment(participant.createdAt).toDate(),
-            model: participant.car ? "".concat(participant.car.brand, " - ").concat(participant.car.denomination ? participant.car.denomination : '', " - ").concat(participant.car.color) : '',
+            brand: (_d = (_c = participant.car) === null || _c === void 0 ? void 0 : _c.brand) !== null && _d !== void 0 ? _d : '',
+            denomination: (_f = (_e = participant.car) === null || _e === void 0 ? void 0 : _e.denomination) !== null && _f !== void 0 ? _f : '',
+            color: (_h = (_g = participant.car) === null || _g === void 0 ? void 0 : _g.color) !== null && _h !== void 0 ? _h : '',
             team: participant.team.name,
             user: participant.user ? "".concat(participant.user.firstName, " ").concat(participant.user.lastName) : '',
             company: participant.company.name,
@@ -1082,10 +1094,10 @@ var CarController = /** @class */ (function () {
             isShipping: participant.shippingText.length > 0 ? 'SI' : 'NO'
         };
         var sectionAnswers = {};
-        for (var _i = 0, _c = participant.sections; _i < _c.length; _i++) {
-            var section = _c[_i];
-            for (var _d = 0, _e = section.answers; _d < _e.length; _d++) {
-                var answer = _e[_d];
+        for (var _i = 0, _j = participant.sections; _i < _j.length; _i++) {
+            var section = _j[_i];
+            for (var _k = 0, _l = section.answers; _k < _l.length; _k++) {
+                var answer = _l[_k];
                 sectionAnswers = __assign(__assign({}, sectionAnswers), this.processAnswer(answer));
             }
         }
@@ -1136,7 +1148,11 @@ var CarController = /** @class */ (function () {
                                     numFmt: 'dd/mm/yyyy hh:mm'
                                 }
                             }, {
-                                header: 'Modelo', key: 'model', width: 30
+                                header: 'Marca', key: 'brand', width: 30
+                            }, {
+                                header: 'Denominación', key: 'denomination', width: 30
+                            }, {
+                                header: 'Color', key: 'color', width: 30
                             }, {
                                 header: 'Team', key: 'team', width: 30
                             }, {

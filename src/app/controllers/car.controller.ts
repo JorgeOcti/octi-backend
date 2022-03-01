@@ -809,7 +809,7 @@ class CarController {
     const columns = [];
     for (const section of form.sections) {
       for (const question of section.questions) {
-        if (['scale', 'accessory'].includes(question.kind)) {
+        if (['scale', 'accessory', 'numeric-scale'].includes(question.kind)) {
           columns.push({
             header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
           });
@@ -838,16 +838,24 @@ class CarController {
   public processAnswer(answer: IParticipantAnswerModel) {
     let datum = {};
 
-    if (answer.kind === 'scale' || answer.kind === 'accessory'){
+    if (answer.kind === 'scale' || answer.kind === 'accessory') {
       if (!answer.answer) {
         return {};
       }
-      const selectedChoice = answer.scale.choices.find(choice => choice._id.toString() === answer.answer.toString());
+      const selectedChoice = answer.scale.choices.find((choice) => {
+        return choice._id.toString() === answer.answer.toString();
+      });
       if (selectedChoice) {
-        datum = {[answer._id.toString()]: selectedChoice.choice};
+        datum = {
+          [answer._id.toString()]: selectedChoice.choice
+        };
       }
-    } else if (answer.kind === 'damage'){
-      datum = {[answer._id.toString()]: answer.damagesSelected.length};
+    } else if (answer.kind === 'numeric-scale') {
+      datum = {
+        [answer._id.toString()]: answer.score
+      };
+    } else if (answer.kind === 'damage') {
+      datum = { [answer._id.toString()]: answer.damagesSelected.length };
     }
     return datum;
   }
@@ -856,7 +864,9 @@ class CarController {
     const datum = {
       number: participant.number,
       created_at: moment(participant.createdAt).toDate(),
-      model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ''} - ${participant.car.color}` : '',
+      brand: participant.car?.brand ?? '',
+      denomination: participant.car?.denomination ?? '',
+      color: participant.car?.color ?? '',
       team: participant.team.name,
       user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
       company: participant.company.name,
@@ -928,7 +938,11 @@ class CarController {
           numFmt: 'dd/mm/yyyy hh:mm'
         }
       }, {
-        header: 'Modelo', key: 'model', width: 30
+        header: 'Marca', key: 'brand', width: 30
+      }, {
+        header: 'Denominación', key: 'denomination', width: 30
+      }, {
+        header: 'Color', key: 'color', width: 30
       }, {
         header: 'Team', key: 'team', width: 30
       }, {
