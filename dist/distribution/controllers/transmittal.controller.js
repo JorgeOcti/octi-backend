@@ -1058,20 +1058,20 @@ var TransmittalController = /** @class */ (function () {
                         cursor_1 = _a.sent();
                         cursor_1.on('data', function (transmittal) { return __awaiter(_this, void 0, void 0, function () {
                             var _i, _a, item;
-                            var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-                            return __generator(this, function (_m) {
+                            var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+                            return __generator(this, function (_o) {
                                 // const row = await this.processParticipant(participant);
                                 for (_i = 0, _a = transmittal.items; _i < _a.length; _i++) {
                                     item = _a[_i];
                                     worksheet_1.addRow({
                                         transmittalNumber: transmittal.number,
-                                        requestNumber: item.request.number,
-                                        driver: "".concat((_c = (_b = transmittal.transporter) === null || _b === void 0 ? void 0 : _b.driver) === null || _c === void 0 ? void 0 : _c.firstName, " ").concat((_e = (_d = transmittal.transporter) === null || _d === void 0 ? void 0 : _d.driver) === null || _e === void 0 ? void 0 : _e.lastName),
-                                        carrier: (_g = (_f = transmittal.transporter) === null || _f === void 0 ? void 0 : _f.carrier) === null || _g === void 0 ? void 0 : _g.name,
-                                        vin: (_h = item.car) === null || _h === void 0 ? void 0 : _h.vin,
-                                        brand: (_j = item.car) === null || _j === void 0 ? void 0 : _j.brand,
-                                        denomination: (_k = item.car) === null || _k === void 0 ? void 0 : _k.denomination,
-                                        color: (_l = item.car) === null || _l === void 0 ? void 0 : _l.color,
+                                        requestNumber: (_b = item.request) === null || _b === void 0 ? void 0 : _b.number,
+                                        driver: "".concat((_d = (_c = transmittal.transporter) === null || _c === void 0 ? void 0 : _c.driver) === null || _d === void 0 ? void 0 : _d.firstName, " ").concat((_f = (_e = transmittal.transporter) === null || _e === void 0 ? void 0 : _e.driver) === null || _f === void 0 ? void 0 : _f.lastName),
+                                        carrier: (_h = (_g = transmittal.transporter) === null || _g === void 0 ? void 0 : _g.carrier) === null || _h === void 0 ? void 0 : _h.name,
+                                        vin: (_j = item.car) === null || _j === void 0 ? void 0 : _j.vin,
+                                        brand: (_k = item.car) === null || _k === void 0 ? void 0 : _k.brand,
+                                        denomination: (_l = item.car) === null || _l === void 0 ? void 0 : _l.denomination,
+                                        color: (_m = item.car) === null || _m === void 0 ? void 0 : _m.color,
                                         observation: item.observation,
                                         createdAt: item.createdAt
                                     }).commit();
