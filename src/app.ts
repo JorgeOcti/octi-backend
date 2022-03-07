@@ -12,14 +12,13 @@ import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
 import * as moment from 'moment-timezone';
-import * as passport from 'passport';
-import * as passportLocal from 'passport-local';
+import { passport } from './passport.conf';
+// const passportSaml = require('passport-saml');
 import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
 import AppController from './app/controllers/app.controller';
-import User from './app/models/user.model';
 import { appRouter, jwtRouter } from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import { billingRouter } from './billing/router';
@@ -32,6 +31,7 @@ import { planningRouter } from './planning/router';
 import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { distributionRouter } from './distribution/router';
+import { CookieOptions } from 'express-session';
 
 // Create Express server
 const app = express();
@@ -41,7 +41,6 @@ const app = express();
 
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
-const LocalStrategy = passportLocal.Strategy;
 // const gitCommit = git.long();
 const redisStore = connectRedis(session);
 
@@ -111,6 +110,8 @@ app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
 
+app.use(cookieParser());
+
 // For parsing application/json
 app.use(bodyParser.json({limit: '50mb'}));
 
@@ -145,90 +146,28 @@ app.locals.moment = moment;
 //
 // }
 app.set('trust proxy', 1); // trust first proxy
-app.use(cookieParser());
+let cookieSetting: CookieOptions = {
+  secure: process.env.ENV === 'production',
+  maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
+};
+if (process.env.ENV === 'production') {
+  cookieSetting.sameSite = 'none';
+}
+
 app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
   cookie: {
-    secure: process.env.ENV === 'production',
-    // sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
-    // secure: true,
-    sameSite: 'none',
-    maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
+    ...cookieSetting
   },
-  store: new redisStore({client: redisClient as any})
+  store: new redisStore({ client: redisClient as any })
 }));
 
-
-
-// passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// passport.use(new LocalStrategy((User as any).authenticate()));
-
-/**
- * Sign in using Email and Password.
- */
-
-passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({
-    username: username.toLowerCase(),
-    active: true
-  }, (err: any, user: any) => {
-    if (err) { return done(err); }
-    if (!user) {
-      return done(undefined, false, { message: `username ${username} not found.` });
-    }
-    user.comparePassword(password, (err: Error, isMatch: boolean) => {
-      if (err) { return done(err); }
-      if (isMatch) {
-        return done(undefined, user);
-      }
-      return done(undefined, false, { message: 'Invalid email or password.' });
-    });
-  });
-}));
-
-passport.serializeUser((User as any).serializeUser());
-// passport.deserializeUser((User as any).deserializeUser());
-passport.deserializeUser(async (email: string, done) => {
-  try {
-    const user = await User.findOne({email}, {
-      _id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      preferred: true,
-      isAdmin: true,
-      venuesAccess: true
-    }).populate([{
-      path: 'userPermissions',
-      select: ['codeName']
-    }, {
-      path: 'userForms',
-      select: ['name']
-    }, {
-      path: 'venue',
-      select: ['name']
-    }, {
-      path: 'company',
-      select: ['name', "iFrameURL", "iFrameURLInventory"]
-    }, {
-      path: 'team',
-      select: ['name']
-    }]);
-    if (user) {
-      done(null, user);
-    } else {
-      done(new Error('User not found'));
-    }
-  } catch (e) {
-    /* istanbul ignore next */
-    done(e);
-  }
-});
+// app.use(passport.authenticate('session'));
 
 /*
 passport.serializeUser<any, any>((user, done) => {
@@ -368,4 +307,4 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   next();
 });
 
-export default app;
+export { app as default };

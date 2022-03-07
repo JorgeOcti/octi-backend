@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {RefObject} from 'react';
+import { RefObject } from 'react';
 import * as Rx from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
@@ -25,7 +25,7 @@ interface IStateType {
   VINRecommends: any[];
 }
 
-class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
+class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
   readonly $subjectVINRecommends = new Rx.Subject<any>();
   readonly api: ApiService;
   readonly autocompleteElement: RefObject<HTMLInputElement>;
@@ -69,10 +69,10 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
   }
 
   public componentWillReceiveProps(nextProps: Readonly<IPropsType>, nextContext: any) {
-    if(nextProps.defaultValue !== this.props.defaultValue){
+    if (nextProps.defaultValue !== this.props.defaultValue) {
       this.setState({
         value: nextProps.defaultValue
-      })
+      });
     }
   }
 
@@ -85,7 +85,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
     const { defaultValue, inputClass, item } = this.props;
     const { VINRecommends, canEdit, value } = this.state;
     return (
-      <div className="autocomplete" ref={this.autocompleteElement} >
+      <div className='autocomplete' ref={this.autocompleteElement}>
         <div
           className='input-group input-group-sm'
         >
@@ -125,9 +125,9 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
                 open: true,
                 value
               });
-              this.searchVin(value, item.car.material)
+              this.searchVin(value, item.car.material);
             }}
-            style={{padding: '5px'}}
+            style={{ padding: '5px' }}
             disabled={!canEdit}
             value={value}
             onClick={this.changeOpen}
@@ -137,7 +137,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
             className={`input-group-addon pointer ${canEdit ? 'bg-green' : ''}`}
             onClick={() => {
               if (canEdit) {
-                this.updateVin(value)
+                this.updateVin(value);
               } else {
                 this.setState({
                   canEdit: true
@@ -150,7 +150,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
         </div>
         {
           this.state.open ?
-            <div className="items" ref={this.items}>
+            <div className='items' ref={this.items}>
               {
                 VINRecommends.map((item, index) => (
                   this.renderItem(item, index)
@@ -189,8 +189,8 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
     }
   }
 
-  private updateVin(vin:string){
-    const {item} = this.props;
+  private updateVin(vin: string) {
+    const { item } = this.props;
     this.api.uppdateRequestItemVin(item, vin)
       .then((response: AxiosResponse) => {
         console.log('responde', response);
@@ -204,18 +204,18 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
       });
   }
 
-  openVehicle(){
-    const {item} = this.props;
+  openVehicle() {
+    const { item } = this.props;
     window.open(parseReplicableURL(`/settings/cars/${item.car._id}/`), '_blank');
   }
 
 
   private searchVin(vin: string, material: string): void {
-    this.$subjectVINRecommends.next({ vin, material })
+    this.$subjectVINRecommends.next({ vin, material });
   }
 
-  private outsideClick(e: any): void{
-    if(!this.autocompleteElement.current!.contains(e.target)){
+  private outsideClick(e: any): void {
+    if (!this.autocompleteElement.current!.contains(e.target)) {
       this.setState({
         open: false
       });
@@ -223,7 +223,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType>{
   }
 
   private changeOpen(): void {
-    const {open} = this.state;
+    const { open } = this.state;
     this.setState({
       open: !open
     });

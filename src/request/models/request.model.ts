@@ -11,6 +11,10 @@ import * as uuid from 'uuid';
 export interface IRequestModel extends IRequest, mongoose.Document {
 }
 
+const metaSchema = new mongoose.Schema({
+
+});
+
 const customerInformationSchema = new mongoose.Schema({
   name: {
     type: String
@@ -51,6 +55,10 @@ const requestSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
+  },
+  meta: {
+    type: metaSchema,
+    default: {}
   },
   number: {
     type: Number
@@ -137,18 +145,6 @@ requestSchema.plugin(mongooseCrate, {
     region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
     path: (attachment: any) => {
-      /* attachment params:
-      estination:"/tmp/"
-      encoding:"7bit"s
-      fieldname:"file"
-      filename:"158df9426e29a5a057526c2cbf74397d"
-      mimetype:"image/svg+xml"
-      name:"158df9426e29a5a057526c2cbf74397d"
-      originalname:"aws-codedeploy.svg"
-      path:"/tmp/158df9426e29a5a057526c2cbf74397d"
-      size:966
-      type:"image/svg"
-      * */
       return `/request/files/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
     }
   }),
@@ -157,6 +153,21 @@ requestSchema.plugin(mongooseCrate, {
       advancePaymentFile: {}
     }
   }
+});
+// requestSchema.pre('save', function(next) {
+//   const doc = this;
+//   console.log('****************** REQUET save *********************');
+//   console.log(doc);
+//   next();
+// });
+requestSchema.post<IRequestModel>("update", async (doc) => {
+  console.log('******************* REQUET update ********************');
+  // console.log(doc);
+});
+
+requestSchema.post<IRequestModel>("findOneAndUpdate", function(doc) {
+  console.log('******************** REQUET findOneAndUpdate *******************');
+  // console.log(doc);
 });
 
 export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel>  & AggregatePaginateModel<IRequestModel>;

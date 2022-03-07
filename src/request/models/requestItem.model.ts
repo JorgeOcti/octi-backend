@@ -1,17 +1,20 @@
 import * as mongoose from 'mongoose';
-import {AggregatePaginateModel, PaginateModel} from 'mongoose';
-import {IRequestItem} from '../interfaces/requestItem.interface';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
+import { IRequestItem } from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import requestItemsHooks from './requestItem.hooks';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
 }
 
+const metaSchema = new mongoose.Schema({});
+
 const requestItemAnswerSchema = new mongoose.Schema({
   questionId: {
-    type:  mongoose.Schema.Types.ObjectId
+    type: mongoose.Schema.Types.ObjectId
   },
   question: {
     type: String
@@ -25,6 +28,10 @@ const requestItemSchema = new mongoose.Schema({
   request: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Request'
+  },
+  meta: {
+    type: metaSchema,
+    default: {}
   },
   transmittal: {
     type: mongoose.Schema.Types.ObjectId,
@@ -120,6 +127,23 @@ const requestItemSchema = new mongoose.Schema({
 
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
+
+requestItemSchema.pre<IRequestItemModel>('save', function(next) {
+  const doc = this;
+  console.log('****************** REQUET ITEM save *********************');
+  console.log(doc);
+  next();
+});
+
+requestItemSchema.post<IRequestItemModel>('update', async (doc) => {
+  console.log('******************* REQUET ITEM update ********************');
+  await requestItemsHooks.postUpdateHandler(doc);
+});
+
+requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', function(doc) {
+  console.log('******************** REQUET ITEM findOneAndUpdate *******************');
+  console.log(doc);
+});
 
 export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel> & AggregatePaginateModel<IRequestItemModel>;
 

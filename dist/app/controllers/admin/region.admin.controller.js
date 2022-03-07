@@ -51,6 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports["default"] = void 0;
 var region_model_1 = require("../../models/region.model");
 var base_admin_controller_1 = require("./base.admin.controller");
 var AdminRegionController = /** @class */ (function (_super) {
@@ -132,5 +133,6 @@ var AdminRegionController = /** @class */ (function (_super) {
     };
     return AdminRegionController;
 }(base_admin_controller_1["default"]));
-exports["default"] = new AdminRegionController();
+var adminRegionController = new AdminRegionController();
+exports["default"] = adminRegionController;
 //# sourceMappingURL=region.admin.controller.js.map

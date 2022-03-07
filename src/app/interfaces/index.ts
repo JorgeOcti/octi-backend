@@ -15,3 +15,4 @@ export * from './recoverFile.interface';
 export * from './teamSetting.interface';
 export * from './version.interface';
 export * from './color.interface';
+export * from './samlConfig.interface';

@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.queue = exports.accessLogStream = void 0;
+exports["default"] = exports.queue = exports.accessLogStream = void 0;
 var bodyParser = require("body-parser");
 var Bull = require("bull");
 var compression = require("compression");
@@ -50,14 +61,13 @@ var kue = require("kue");
 var morgan = require("morgan");
 var multer = require("multer");
 var moment = require("moment-timezone");
-var passport = require("passport");
-var passportLocal = require("passport-local");
+var passport_conf_1 = require("./passport.conf");
+// const passportSaml = require('passport-saml');
 var path = require("path");
 var Raven = require("raven");
 var responseTime = require("response-time");
 var Staticify = require("staticify");
 var app_controller_1 = require("./app/controllers/app.controller");
-var user_model_1 = require("./app/models/user.model");
 var router_1 = require("./app/router");
 var email_task_1 = require("./app/tasks/email.task");
 var router_2 = require("./billing/router");
@@ -72,11 +82,11 @@ var redis_service_1 = require("./services/redis.service");
 var router_7 = require("./distribution/router");
 // Create Express server
 var app = express();
+exports["default"] = app;
 // Configure sentry
 // Load environment variables from .env file, where API keys and passwords are configured
 global.__rootdir__ = __dirname || process.cwd();
 var root = global.__rootdir__;
-var LocalStrategy = passportLocal.Strategy;
 // const gitCommit = git.long();
 var redisStore = connectRedis(session);
 dotenv.config({
@@ -136,6 +146,7 @@ app.locals.MAPBOX = process.env.MAPBOX;
 app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
+app.use(cookieParser());
 // For parsing application/json
 app.use(bodyParser.json({ limit: '50mb' }));
 // for parsing application/xwww-
@@ -166,99 +177,23 @@ app.locals.moment = moment;
 //
 // }
 app.set('trust proxy', 1); // trust first proxy
-app.use(cookieParser());
+var cookieSetting = {
+    secure: process.env.ENV === 'production',
+    maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
+};
+if (process.env.ENV === 'production') {
+    cookieSetting.sameSite = 'none';
+}
 app.use(session({
     resave: false,
     saveUninitialized: false,
     secret: process.env.SECRET_KEY,
-    cookie: {
-        secure: process.env.ENV === 'production',
-        // sameSite: process.env.ENV === 'production' ? 'none' : 'strict',
-        // secure: true,
-        sameSite: 'none',
-        maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
-    },
+    cookie: __assign({}, cookieSetting),
     store: new redisStore({ client: redis_service_1["default"] })
 }));
-// passport
-app.use(passport.initialize());
-app.use(passport.session());
-// passport.use(new LocalStrategy((User as any).authenticate()));
-/**
- * Sign in using Email and Password.
- */
-passport.use(new LocalStrategy({ usernameField: 'username' }, function (username, password, done) {
-    user_model_1["default"].findOne({
-        username: username.toLowerCase(),
-        active: true
-    }, function (err, user) {
-        if (err) {
-            return done(err);
-        }
-        if (!user) {
-            return done(undefined, false, { message: "username ".concat(username, " not found.") });
-        }
-        user.comparePassword(password, function (err, isMatch) {
-            if (err) {
-                return done(err);
-            }
-            if (isMatch) {
-                return done(undefined, user);
-            }
-            return done(undefined, false, { message: 'Invalid email or password.' });
-        });
-    });
-}));
-passport.serializeUser(user_model_1["default"].serializeUser());
-// passport.deserializeUser((User as any).deserializeUser());
-passport.deserializeUser(function (email, done) { return __awaiter(void 0, void 0, void 0, function () {
-    var user, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, user_model_1["default"].findOne({ email: email }, {
-                        _id: true,
-                        firstName: true,
-                        lastName: true,
-                        email: true,
-                        preferred: true,
-                        isAdmin: true,
-                        venuesAccess: true
-                    }).populate([{
-                            path: 'userPermissions',
-                            select: ['codeName']
-                        }, {
-                            path: 'userForms',
-                            select: ['name']
-                        }, {
-                            path: 'venue',
-                            select: ['name']
-                        }, {
-                            path: 'company',
-                            select: ['name', "iFrameURL", "iFrameURLInventory"]
-                        }, {
-                            path: 'team',
-                            select: ['name']
-                        }])];
-            case 1:
-                user = _a.sent();
-                if (user) {
-                    done(null, user);
-                }
-                else {
-                    done(new Error('User not found'));
-                }
-                return [3 /*break*/, 3];
-            case 2:
-                e_1 = _a.sent();
-                /* istanbul ignore next */
-                done(e_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
+app.use(passport_conf_1.passport.initialize());
+app.use(passport_conf_1.passport.session());
+// app.use(passport.authenticate('session'));
 /*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);
@@ -404,5 +339,4 @@ app.use(function (err, req, res, next) {
     // });
     next();
 });
-exports["default"] = app;
 //# sourceMappingURL=app.js.map

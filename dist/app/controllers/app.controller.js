@@ -39,10 +39,10 @@ exports.__esModule = true;
 var GraphicsMagick = require("gm");
 var isuuid = require("is-uuid");
 var moment = require("moment");
-var passport = require("passport");
 var Raven = require("raven");
 var uuid = require("uuid");
 var app_1 = require("../../app");
+var passport_conf_1 = require("../../passport.conf");
 var logger_service_1 = require("../../services/logger.service");
 var redis_service_1 = require("../../services/redis.service");
 var general_utils_1 = require("../../utils/general.utils");
@@ -55,6 +55,7 @@ var AppController = /** @class */ (function () {
         this.robots = this.robots.bind(this);
         this.login = this.login.bind(this);
         this.processLogin = this.processLogin.bind(this);
+        this.processLoginSoo = this.processLoginSoo.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
         this.processForgotPassword = this.processForgotPassword.bind(this);
         this.recovery = this.recovery.bind(this);
@@ -74,25 +75,69 @@ var AppController = /** @class */ (function () {
         res.send("User-Agent: *\nDisallow: /");
     };
     AppController.prototype.login = function (req, res) {
-        var next = req.query.next;
         if (req.user) {
-            return res.redirect(next !== null && next !== void 0 ? next : '/');
+            return res.redirect('/');
         }
         else {
-            return res.render('app/login', { next: next });
+            return res.render('app/login');
         }
+    };
+    AppController.prototype.processLoginSoo = function (req, res, next) {
+        var _this = this;
+        passport_conf_1.passport.authenticate('multy-saml', function (err, user) {
+            /* istanbul ignore if */
+            if (err) {
+                console.log(err);
+                return next(err); // will generate a 500 error
+            }
+            req.logIn(user, function (loginErr) {
+                var redirectTo = req.session.redirectTo;
+                /* istanbul ignore if */
+                if (loginErr) {
+                    return next(loginErr);
+                }
+                else {
+                    user.lastLogin = new Date();
+                    user.save(function (err) { return __awaiter(_this, void 0, void 0, function () {
+                        var e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (!err) return [3 /*break*/, 1];
+                                    console.log(err); // handle errors!
+                                    return [3 /*break*/, 4];
+                                case 1:
+                                    _a.trys.push([1, 3, , 4]);
+                                    return [4 /*yield*/, user_model_1["default"].findById(user._id).populate({
+                                            path: 'userPermissions',
+                                            select: ['codeName']
+                                        })];
+                                case 2:
+                                    user = _a.sent();
+                                    return [2 /*return*/, res.redirect(redirectTo !== null && redirectTo !== void 0 ? redirectTo : '/')];
+                                case 3:
+                                    e_1 = _a.sent();
+                                    console.log(err); // handle errors!
+                                    return [3 /*break*/, 4];
+                                case 4: return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }
+            });
+        })(req, res, next);
     };
     AppController.prototype.processLogin = function (req, res, next) {
         var _this = this;
         /* istanbul ignore if */
-        var nextPage = req.query.next;
-        console.log('nextPage', nextPage);
+        // const {next: nextPage} = req.query as {next: string};
+        var redirectTo = req.session.redirectTo;
         if (req.user) {
-            return res.redirect(nextPage !== null && nextPage !== void 0 ? nextPage : '/');
+            return res.redirect(redirectTo);
         }
         else {
             var username_1 = req.body.username;
-            passport.authenticate('local', function (err, user) {
+            passport_conf_1.passport.authenticate('local', function (err, user) {
                 /* istanbul ignore if */
                 if (err) {
                     return next(err); // will generate a 500 error
@@ -101,8 +146,7 @@ var AppController = /** @class */ (function () {
                 if (!user) {
                     return res.render('app/login', {
                         username: username_1,
-                        error: 'Usuario o contraseña incorrecta.',
-                        next: nextPage
+                        error: 'Usuario o contraseña incorrecta.'
                     });
                 }
                 req.login(user, function (loginErr) {
@@ -113,7 +157,7 @@ var AppController = /** @class */ (function () {
                     else {
                         user.lastLogin = new Date();
                         user.save(function (err) { return __awaiter(_this, void 0, void 0, function () {
-                            var e_1;
+                            var e_2;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -128,9 +172,13 @@ var AppController = /** @class */ (function () {
                                             })];
                                     case 2:
                                         user = _a.sent();
-                                        return [2 /*return*/, res.redirect(nextPage ? nextPage : user.hasPermission('viewInventory') ? '/inventory/' : '/')];
+                                        if (redirectTo) {
+                                            delete req.session.redirectTo;
+                                            return [2 /*return*/, res.redirect(redirectTo)];
+                                        }
+                                        return [2 /*return*/, res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/')];
                                     case 3:
-                                        e_1 = _a.sent();
+                                        e_2 = _a.sent();
                                         console.log(err); // handle errors!
                                         return [3 /*break*/, 4];
                                     case 4: return [2 /*return*/];
@@ -153,7 +201,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.processForgotPassword = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, username, _csrf, csrfUsed, user, token, fullname, e_2;
+            var _a, username, _csrf, csrfUsed, user, token, fullname, e_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -197,9 +245,9 @@ var AppController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 5];
                     case 4:
-                        e_2 = _b.sent();
+                        e_3 = _b.sent();
                         /* istanbul ignore next */
-                        console.log(e_2);
+                        console.log(e_3);
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/, res.render('app/forgotPassword', {
                             csrfToken: req.csrfToken(),
@@ -211,7 +259,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.recovery = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var token, user, e_3;
+            var token, user, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -236,9 +284,9 @@ var AppController = /** @class */ (function () {
                                 user: user
                             })];
                     case 3:
-                        e_3 = _a.sent();
+                        e_4 = _a.sent();
                         /* istanbul ignore next */
-                        console.log(e_3);
+                        console.log(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -247,7 +295,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.processRecovery = function (req, res, next) {
         return __awaiter(this, void 0, void 0, function () {
-            var token, _a, password, password2, user_1, e_4;
+            var token, _a, password, password2, user_1, e_5;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -297,9 +345,9 @@ var AppController = /** @class */ (function () {
                     case 4: return [2 /*return*/, res.redirect("/account/recovery/".concat(token))];
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_4 = _b.sent();
+                        e_5 = _b.sent();
                         /* istanbul ignore next */
-                        console.log(e_4);
+                        console.log(e_5);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -312,7 +360,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.recoverFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, file, recoverFile_1, e_5;
+            var _a, company, team, file, recoverFile_1, e_6;
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -363,15 +411,15 @@ var AppController = /** @class */ (function () {
                         }); });
                         return [3 /*break*/, 5];
                     case 4:
-                        e_5 = _b.sent();
-                        Raven.captureException(e_5, { req: req });
+                        e_6 = _b.sent();
+                        Raven.captureException(e_6, { req: req });
                         /* istanbul ignore next */
-                        console.log(e_5);
+                        console.log(e_6);
                         logger_service_1["default"].error("recover file error:");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_5);
+                        logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
-                        res.status(400).json(e_5);
+                        res.status(400).json(e_6);
                         return [3 /*break*/, 5];
                     case 5: return [3 /*break*/, 7];
                     case 6:
@@ -408,5 +456,6 @@ var AppController = /** @class */ (function () {
     };
     return AppController;
 }());
-exports["default"] = new AppController();
+var appController = new AppController();
+exports["default"] = appController;
 //# sourceMappingURL=app.controller.js.map

@@ -4,20 +4,21 @@ import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
-import AdminRegionsController from './controllers/admin/region.admin.controller';
 import AdminColorsController from './controllers/admin/color.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
-import AdminRegionController from './controllers/admin/region.admin.controller';
+import adminRegionController from './controllers/admin/region.admin.controller';
+import adminSamlCongigController from './controllers/admin/samlConfig.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AdminVersionsController from './controllers/admin/version.admin.controller';
-import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
 import router from '../form/router';
+import {passport} from '../passport.conf'
+import appController from './controllers/app.controller';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -111,14 +112,20 @@ appRouter.patch('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierC
 appRouter.delete('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiDelete);
 
 // regions
-appRouter.get('/settings/regions/', Middlewares.isLoggedIn, AdminRegionsController.index);
-appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiList);
-appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiCreate);
-appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiUpdate);
-appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiDelete);
+appRouter.get('/settings/regions/', Middlewares.isLoggedIn, adminRegionController.index);
+appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, adminRegionController.apiList);
+appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, adminRegionController.apiCreate);
+appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, adminRegionController.apiUpdate);
+appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, adminRegionController.apiDelete);
 
+// samlConfig
+appRouter.get('/settings/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.index);
+appRouter.get('/api/admin/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiList);
+appRouter.post('/api/admin/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiCreate);
+appRouter.patch('/api/admin/saml-config/:id', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiUpdate);
+appRouter.delete('/api/admin/saml-config/:id', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiDelete);
 
-// regions
+// colors
 appRouter.get('/settings/colors/', Middlewares.isLoggedIn, AdminColorsController.index);
 appRouter.get('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiList);
 appRouter.post('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiCreate);
@@ -156,19 +163,24 @@ appRouter.post('/api/v1/cars/', Middlewares.isJWTAuthenticated, CarController.cr
 appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserController.getPusherToken);
 
 // web login
-appRouter.get('/account/login/', AppController.login);
-appRouter.post('/account/login/', AppController.processLogin);
+appRouter.get('/account/login/', appController.login);
 
-appRouter.get('/account/forgot-password/', csrfProtection, AppController.forgotPassword);
-appRouter.post('/account/forgot-password/', csrfProtection, AppController.processForgotPassword);
+appRouter.get('/account/login/soo/:id', passport.authenticate('multy-saml'));
 
-appRouter.get('/account/recovery/:token', csrfProtection, AppController.recovery);
-appRouter.post('/account/recovery/:token', csrfProtection, AppController.processRecovery);
+appRouter.post('/account/login/soo/callback/', appController.processLoginSoo);
 
-appRouter.get('/account/logout/', AppController.logout);
+appRouter.post('/account/login/', appController.processLogin);
+
+appRouter.get('/account/forgot-password/', csrfProtection, appController.forgotPassword);
+appRouter.post('/account/forgot-password/', csrfProtection, appController.processForgotPassword);
+
+appRouter.get('/account/recovery/:token', csrfProtection, appController.recovery);
+appRouter.post('/account/recovery/:token', csrfProtection, appController.processRecovery);
+
+appRouter.get('/account/logout/', appController.logout);
 
 // recover files
-router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, AppController.recoverFile);
+router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, appController.recoverFile);
 
 // JWT authentication API
 const jwtRouter = express.Router();

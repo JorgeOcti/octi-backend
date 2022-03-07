@@ -62,4 +62,5 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
   }
 }
 
-export default new AdminRegionController();
+const adminRegionController = new AdminRegionController();
+export { adminRegionController as default};

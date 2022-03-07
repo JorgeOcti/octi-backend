@@ -490,7 +490,8 @@ class RequestController {
     const extraQuery: any = {};
     const extraMatch: any = {};
     if (filters.venues && filters.venues.length) {
-      venuesIds = req.user.venuesPermissions().filter(venue => (filters.venues.includes(venue.toString())));
+      venuesIds = req.user.venuesPermissions()
+        .filter(venue => (filters.venues.includes(venue.toString())));
     } else {
       venuesIds = req.user.venuesPermissions();
     }
@@ -1354,6 +1355,11 @@ class RequestController {
     const { id } = req.params;
     const { vin } = req.body;
     try {
+      if (!vin?.length) {
+        return res.status(400).json({
+          message: 'No has ingresado ningún VIN.'
+        });
+      }
       const existCar = await Car.findOne({vin, team});
       let item = await RequestItem
         .findOne({ _id: id, team })

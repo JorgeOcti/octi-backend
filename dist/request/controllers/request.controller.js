@@ -666,7 +666,8 @@ var RequestController = /** @class */ (function () {
                         extraQuery = {};
                         extraMatch = {};
                         if (filters.venues && filters.venues.length) {
-                            venuesIds = req.user.venuesPermissions().filter(function (venue) { return (filters.venues.includes(venue.toString())); });
+                            venuesIds = req.user.venuesPermissions()
+                                .filter(function (venue) { return (filters.venues.includes(venue.toString())); });
                         }
                         else {
                             venuesIds = req.user.venuesPermissions();
@@ -1675,6 +1676,11 @@ var RequestController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 10, , 11]);
+                        if (!(vin === null || vin === void 0 ? void 0 : vin.length)) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: 'No has ingresado ningún VIN.'
+                                })];
+                        }
                         return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
                     case 2:
                         existCar = _a.sent();

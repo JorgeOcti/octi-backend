@@ -25,7 +25,8 @@ class Middlewares {
       return next();
     } else {
       // if they aren't redirect them to the login page
-      res.redirect(`/account/login/?next=${encodeURIComponent(req.originalUrl)}`);
+      (req.session as any).redirectTo = req.url;
+      res.redirect(`/account/login/`);
     }
   }
 
@@ -35,8 +36,8 @@ class Middlewares {
   }
 
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
-    const {headers, app} = req;
-    let {user} = req;
+    const { headers, app } = req;
+    let { user } = req;
     if (req.isAuthenticated()) {
       /* istanbul ignore else */
       if (user) {

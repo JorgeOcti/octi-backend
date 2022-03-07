@@ -7,20 +7,21 @@ var middlewares_1 = require("../middlewares/middlewares");
 var alert_admin_controller_1 = require("./controllers/admin/alert.admin.controller");
 var car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
 var carrier_admin_controller_1 = require("./controllers/admin/carrier.admin.controller");
-var region_admin_controller_1 = require("./controllers/admin/region.admin.controller");
 var color_admin_controller_1 = require("./controllers/admin/color.admin.controller");
 var company_admin_controller_1 = require("./controllers/admin/company.admin.controller");
 var permission_admin_controller_1 = require("./controllers/admin/permission.admin.controller");
-var region_admin_controller_2 = require("./controllers/admin/region.admin.controller");
+var region_admin_controller_1 = require("./controllers/admin/region.admin.controller");
+var samlConfig_controller_1 = require("./controllers/admin/samlConfig.controller");
 var team_admin_controller_1 = require("./controllers/admin/team.admin.controller");
 var user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
 var venue_admin_controller_1 = require("./controllers/admin/venue.admin.controller");
 var version_admin_controller_1 = require("./controllers/admin/version.admin.controller");
-var app_controller_1 = require("./controllers/app.controller");
 var car_controller_1 = require("./controllers/car.controller");
 var jwt_controller_1 = require("./controllers/jwt.controller");
 var user_controller_1 = require("./controllers/user.controller");
 var router_1 = require("../form/router");
+var passport_conf_1 = require("../passport.conf");
+var app_controller_1 = require("./controllers/app.controller");
 // setup route middlewares
 var appRouter = express.Router();
 exports.appRouter = appRouter;
@@ -96,11 +97,17 @@ appRouter.patch('/api/admin/carriers/:id', middlewares_1["default"].isLoggedIn, 
 appRouter["delete"]('/api/admin/carriers/:id', middlewares_1["default"].isLoggedIn, carrier_admin_controller_1["default"].apiDelete);
 // regions
 appRouter.get('/settings/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_1["default"].index);
-appRouter.get('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiList);
-appRouter.post('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiCreate);
-appRouter.patch('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiUpdate);
-appRouter["delete"]('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_2["default"].apiDelete);
-// regions
+appRouter.get('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_1["default"].apiList);
+appRouter.post('/api/admin/regions/', middlewares_1["default"].isLoggedIn, region_admin_controller_1["default"].apiCreate);
+appRouter.patch('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_1["default"].apiUpdate);
+appRouter["delete"]('/api/admin/regions/:id', middlewares_1["default"].isLoggedIn, region_admin_controller_1["default"].apiDelete);
+// samlConfig
+appRouter.get('/settings/saml-config/', middlewares_1["default"].isJWTAuthenticated, samlConfig_controller_1["default"].index);
+appRouter.get('/api/admin/saml-config/', middlewares_1["default"].isJWTAuthenticated, samlConfig_controller_1["default"].apiList);
+appRouter.post('/api/admin/saml-config/', middlewares_1["default"].isJWTAuthenticated, samlConfig_controller_1["default"].apiCreate);
+appRouter.patch('/api/admin/saml-config/:id', middlewares_1["default"].isJWTAuthenticated, samlConfig_controller_1["default"].apiUpdate);
+appRouter["delete"]('/api/admin/saml-config/:id', middlewares_1["default"].isJWTAuthenticated, samlConfig_controller_1["default"].apiDelete);
+// colors
 appRouter.get('/settings/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].index);
 appRouter.get('/api/admin/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiList);
 appRouter.post('/api/admin/colors/', middlewares_1["default"].isLoggedIn, color_admin_controller_1["default"].apiCreate);
@@ -130,6 +137,8 @@ appRouter.post('/api/v1/cars/', middlewares_1["default"].isJWTAuthenticated, car
 appRouter.get('/api/v1/pusher/auth/', middlewares_1["default"].isJWTAuthenticated, user_controller_1["default"].getPusherToken);
 // web login
 appRouter.get('/account/login/', app_controller_1["default"].login);
+appRouter.get('/account/login/soo/:id', passport_conf_1.passport.authenticate('multy-saml'));
+appRouter.post('/account/login/soo/callback/', app_controller_1["default"].processLoginSoo);
 appRouter.post('/account/login/', app_controller_1["default"].processLogin);
 appRouter.get('/account/forgot-password/', csrfProtection, app_controller_1["default"].forgotPassword);
 appRouter.post('/account/forgot-password/', csrfProtection, app_controller_1["default"].processForgotPassword);
