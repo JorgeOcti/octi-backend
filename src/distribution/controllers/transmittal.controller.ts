@@ -899,7 +899,7 @@ private getForm(filter: any): Promise<IFormModel> {
         for (const item of transmittal.items) {
           worksheet.addRow({
             transmittalNumber: transmittal.number,
-            requestNumber: item.request.number,
+            requestNumber: item.request?.number,
             driver: `${transmittal.transporter?.driver?.firstName} ${transmittal.transporter?.driver?.lastName}`,
             carrier: transmittal.transporter?.carrier?.name,
             vin: item.car?.vin,
