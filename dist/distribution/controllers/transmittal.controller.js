@@ -92,12 +92,7 @@ var TransmittalController = /** @class */ (function () {
                 select: ['name']
             }, {
                 path: 'revisions',
-                select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
-                options: {
-                    sort: {
-                        _id: -1
-                    }
-                }
+                select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt']
             }];
         this.populate = [{
                 path: 'transporter.carrier',
@@ -1056,6 +1051,7 @@ var TransmittalController = /** @class */ (function () {
                                     path: 'createdBy',
                                     select: ['firstName', 'lastName']
                                 }])
+                                // .allowDiskUse(true)
                                 .batchSize(100)
                                 .cursor()];
                     case 2:

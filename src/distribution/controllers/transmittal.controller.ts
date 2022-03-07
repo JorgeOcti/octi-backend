@@ -41,11 +41,11 @@ class TransmittalController {
   }, {
     path: 'revisions',
     select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
-    options: {
-      sort: {
-        _id: -1
-      }
-    }
+    // options: {
+    //   sort: {
+    //     _id: -1
+    //   }
+    // }
   }];
 
   public populate = [{
@@ -890,6 +890,7 @@ private getForm(filter: any): Promise<IFormModel> {
           path: 'createdBy',
           select: ['firstName', 'lastName']
         }])
+        // .allowDiskUse(true)
         .batchSize(100)
         .cursor();
 
