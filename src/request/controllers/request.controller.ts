@@ -822,7 +822,10 @@ class RequestController {
         }
       }, {
         $sort: { _id: 1 }
-      }]).cursor({ batchSize: 100 }).exec();
+      }])
+        .allowDiskUse(true)
+        .cursor({ batchSize: 100 })
+        .exec();
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
       const options = {
