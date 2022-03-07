@@ -128,19 +128,19 @@ const requestItemSchema = new mongoose.Schema({
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
 
-requestItemSchema.pre<IRequestItemModel>('save', function(next) {
-  const doc = this;
+requestItemSchema.pre<IRequestItemModel>('save', function(next: any) {
+  // const doc = this;
   console.log('****************** REQUET ITEM save *********************');
-  console.log(doc);
+  // console.log(doc);
   next();
 });
 
-requestItemSchema.post<IRequestItemModel>('update', async (doc) => {
+requestItemSchema.post<IRequestItemModel>('update', async (doc: any) => {
   console.log('******************* REQUET ITEM update ********************');
   await requestItemsHooks.postUpdateHandler(doc);
 });
 
-requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', function(doc) {
+requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', function(doc: any) {
   console.log('******************** REQUET ITEM findOneAndUpdate *******************');
   console.log(doc);
 });

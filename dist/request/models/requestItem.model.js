@@ -155,9 +155,9 @@ var requestItemSchema = new mongoose.Schema({
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
 requestItemSchema.pre('save', function (next) {
-    var doc = this;
+    // const doc = this;
     console.log('****************** REQUET ITEM save *********************');
-    console.log(doc);
+    // console.log(doc);
     next();
 });
 requestItemSchema.post('update', function (doc) { return __awaiter(void 0, void 0, void 0, function () {

@@ -321,7 +321,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <td className={'middle form-group-no-margin'}>
                               <div
                                 className={`form-group ${submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length ? 'has-error' : ''}`}>
-                                <label className='control-label text-ellipsis'>Comprobante del ticket *</label>
+                                <label className='control-label text-ellipsis'>Comprobante de Ticket u OC *</label>
                                 <Field
                                   name={`advancePaymentInformation.files`}
                                   type='hidden'
