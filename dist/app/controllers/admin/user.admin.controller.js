@@ -267,11 +267,6 @@ var AdminUsersController = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        if (!req.user.hasPermission('viewUser')) {
-                            return [2 /*return*/, res.status(403).json({
-                                    message: 'No tienes permisos para esta operación'
-                                })];
-                        }
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, venue = _a.venue, minified = _a.minified;
                         team = req.user.team._id;
                         options = {

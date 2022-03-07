@@ -212,11 +212,11 @@ class AdminUsersController {
   }
 
   public async apiUsers(req: IRequest, res: Response): Promise<any> {
-    if (!req.user.hasPermission('viewUser')) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta operación'
-      });
-    }
+    // if (!req.user.hasPermission('viewUser')) {
+    //   return res.status(403).json({
+    //     message: 'No tienes permisos para esta operación'
+    //   });
+    // }
     const {
       page,
       pageSize,
