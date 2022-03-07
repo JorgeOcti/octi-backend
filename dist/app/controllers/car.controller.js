@@ -525,7 +525,7 @@ var CarController = /** @class */ (function () {
                         }
                         if (vin2) {
                             if (vin2[0] === '0') {
-                                vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
+                                vinRegex = new RegExp("".concat(vin2.substr(vin2.length - 5), "$"), 'i');
                                 inventoryQuery.vin2 = { $regex: vinRegex };
                             }
                             else {

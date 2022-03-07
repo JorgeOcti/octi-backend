@@ -359,7 +359,7 @@ class CarController {
         }
         if (vin2) {
           if (vin2[0] === '0') {
-            const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
+            const vinRegex = new RegExp(`${vin2.substr(vin2.length - 5)}$`, 'i');
             inventoryQuery.vin2 = {$regex: vinRegex};
           } else {
             const patentRegex = new RegExp(vin2, 'i');
