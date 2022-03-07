@@ -1065,7 +1065,10 @@ var RequestController = /** @class */ (function () {
                             }
                         }, {
                             $sort: { _id: 1 }
-                        }]).allowDiskUse(true).cursor({ batchSize: 100 }).exec();
+                        }])
+                        .allowDiskUse(true)
+                        .cursor({ batchSize: 100 })
+                        .exec();
                     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                     res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
                     options = {
@@ -1150,8 +1153,8 @@ var RequestController = /** @class */ (function () {
                             header: 'OBSERVACIÓN', key: 'observation', width: 21
                         }];
                     cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
-                        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-                        return __generator(this, function (_u) {
+                        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+                        return __generator(this, function (_0) {
                             worksheet_1.addRow({
                                 request: item.request.number,
                                 created: item.createdAt,
@@ -1162,7 +1165,7 @@ var RequestController = /** @class */ (function () {
                                 createdBy: item.createdBy ? "".concat(item.createdBy.firstName, " ").concat(item.createdBy.lastName) : '-',
                                 seller: item.request.sellerText,
                                 channel: item.request.channel ? item.request.channel.name : '',
-                                reason: (_a = item.reason) === null || _a === void 0 ? void 0 : _a.name,
+                                reason: (_b = (_a = item.reason) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '',
                                 group: '',
                                 property: item.car.property,
                                 brand: item.car.brand,
@@ -1171,19 +1174,19 @@ var RequestController = /** @class */ (function () {
                                 vin: item.car.vin,
                                 cdo: item.car.internalNumber,
                                 color: item.car.color,
-                                destination: (_b = item.destination) === null || _b === void 0 ? void 0 : _b.name,
-                                origin: item.origin.name,
-                                status: item.status.name,
+                                destination: (_d = (_c = item.destination) === null || _c === void 0 ? void 0 : _c.name) !== null && _d !== void 0 ? _d : '',
+                                origin: (_f = (_e = item.origin) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : '',
+                                status: (_h = (_g = item.status) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : '',
                                 equipment: item.equipment ? 'Si' : 'No',
                                 body: item.body ? 'Si' : 'No',
                                 washed: item.washed ? 'Si' : 'No',
                                 review: item.review ? 'Si' : 'No',
                                 carrier: item.carrier ? item.carrier.name : '',
-                                customerName: (_e = (_d = (_c = item.request) === null || _c === void 0 ? void 0 : _c.customerInformation) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '',
-                                customerRut: (_h = (_g = (_f = item.request) === null || _f === void 0 ? void 0 : _f.customerInformation) === null || _g === void 0 ? void 0 : _g.rut) !== null && _h !== void 0 ? _h : '',
-                                customerEmail: (_l = (_k = (_j = item.request) === null || _j === void 0 ? void 0 : _j.customerInformation) === null || _k === void 0 ? void 0 : _k.email) !== null && _l !== void 0 ? _l : '',
-                                paymentMethod: (_q = (_p = (_o = (_m = item.request) === null || _m === void 0 ? void 0 : _m.advancePaymentInformation) === null || _o === void 0 ? void 0 : _o.method) === null || _p === void 0 ? void 0 : _p.name) !== null && _q !== void 0 ? _q : '',
-                                paymentNumber: (_t = (_s = (_r = item.request) === null || _r === void 0 ? void 0 : _r.advancePaymentInformation) === null || _s === void 0 ? void 0 : _s.number) !== null && _t !== void 0 ? _t : '',
+                                customerName: (_l = (_k = (_j = item.request) === null || _j === void 0 ? void 0 : _j.customerInformation) === null || _k === void 0 ? void 0 : _k.name) !== null && _l !== void 0 ? _l : '',
+                                customerRut: (_p = (_o = (_m = item.request) === null || _m === void 0 ? void 0 : _m.customerInformation) === null || _o === void 0 ? void 0 : _o.rut) !== null && _p !== void 0 ? _p : '',
+                                customerEmail: (_s = (_r = (_q = item.request) === null || _q === void 0 ? void 0 : _q.customerInformation) === null || _r === void 0 ? void 0 : _r.email) !== null && _s !== void 0 ? _s : '',
+                                paymentMethod: (_w = (_v = (_u = (_t = item.request) === null || _t === void 0 ? void 0 : _t.advancePaymentInformation) === null || _u === void 0 ? void 0 : _u.method) === null || _v === void 0 ? void 0 : _v.name) !== null && _w !== void 0 ? _w : '',
+                                paymentNumber: (_z = (_y = (_x = item.request) === null || _x === void 0 ? void 0 : _x.advancePaymentInformation) === null || _y === void 0 ? void 0 : _y.number) !== null && _z !== void 0 ? _z : '',
                                 uploadDate: item.uploadDate,
                                 estimatedArrival: item.estimatedArrival
                             });

@@ -880,7 +880,10 @@ class RequestController {
         }
       }, {
         $sort: { _id: 1 }
-      }]).allowDiskUse(true).cursor({ batchSize: 100 }).exec();
+      }])
+        .allowDiskUse(true)
+        .cursor({ batchSize: 100 })
+        .exec();
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
       const options = {
@@ -977,7 +980,7 @@ class RequestController {
           createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           seller: item.request.sellerText,
           channel: item.request.channel ? item.request.channel.name : '',
-          reason: item.reason?.name,
+          reason: item.reason?.name ?? '',
           group: '',
           property: item.car.property,
           brand: item.car.brand,
@@ -986,9 +989,9 @@ class RequestController {
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
-          destination: item.destination?.name,
-          origin: item.origin.name,
-          status: item.status.name,
+          destination: item.destination?.name ?? '',
+          origin: item.origin?.name ?? '',
+          status: item.status?.name ?? '',
           equipment: item.equipment ? 'Si' : 'No',
           body: item.body ? 'Si' : 'No',
           washed: item.washed ? 'Si' : 'No',
