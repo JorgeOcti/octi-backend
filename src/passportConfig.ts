@@ -11,7 +11,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser((user: any, done: any) => {
   try {
-    User.findOne({ email: user.email }, {
+    User.findOne({ email: user.email ?? user }, {
       _id: true,
       firstName: true,
       lastName: true,
@@ -70,6 +70,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
     });
   });
 }));
+
 passport.use('local-without-password', new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
   console.log('passportLocal.verify()');
   User.findOne({

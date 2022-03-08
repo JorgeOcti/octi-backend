@@ -10,9 +10,8 @@ var LocalStrategy = passportLocal.Strategy;
 passport.serializeUser(function (user, done) {
     done(null, user);
 });
-// passport.deserializeUser((User as any).deserializeUser());
 passport.deserializeUser(function (user, done) {
-    console.log('deserializeUser', user);
+    console.log(user);
     try {
         user_model_1["default"].findOne({ email: user.email }, {
             _id: true,
@@ -77,12 +76,28 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, function (username
         });
     });
 }));
+passport.use('local-without-password', new LocalStrategy({ usernameField: 'username' }, function (username, password, done) {
+    console.log('passportLocal.verify()');
+    user_model_1["default"].findOne({
+        username: username.toLowerCase(),
+        active: true
+    }, function (err, user) {
+        if (err) {
+            return done(err);
+        }
+        if (!user) {
+            return done(undefined, false, { message: "username ".concat(username, " not found.") });
+        }
+        return done(undefined, user);
+    });
+}));
 /**
  * Sign in using SAML
  */
 var fetchSamlConfig = function (request, done) {
     console.log('fetchSamlConfig');
-    // const orgId = request.params.id;
+    var orgId = request.params.id;
+    console.log('orgId', orgId);
     // cassandraClient.instance.TenantSSOConfig.findOne({ orgId }, (err, org) => {
     //   if (err) {
     //     return done(err);
@@ -119,9 +134,9 @@ var fetchSamlConfig = function (request, done) {
             '-----END CERTIFICATE-----\n'
     });
 };
-passport.use('saml', new passport_saml_1.MultiSamlStrategy({
+passport.use('multy-saml', new passport_saml_1.MultiSamlStrategy({
     passReqToCallback: true,
-    // forceAuthn: true,
+    forceAuthn: true,
     getSamlOptions: function (request, done) {
         console.log('getSamlOptions');
         fetchSamlConfig(request, done);

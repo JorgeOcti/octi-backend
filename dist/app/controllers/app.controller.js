@@ -42,7 +42,7 @@ var moment = require("moment");
 var Raven = require("raven");
 var uuid = require("uuid");
 var app_1 = require("../../app");
-var passport_conf_1 = require("../../passport.conf");
+var passportConfig_1 = require("../../passportConfig");
 var logger_service_1 = require("../../services/logger.service");
 var redis_service_1 = require("../../services/redis.service");
 var general_utils_1 = require("../../utils/general.utils");
@@ -84,7 +84,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.processLoginSoo = function (req, res, next) {
         var _this = this;
-        passport_conf_1.passport.authenticate('multy-saml', function (err, user) {
+        passportConfig_1.passport.authenticate('multy-saml', function (err, user) {
             /* istanbul ignore if */
             if (err) {
                 console.log(err);
@@ -137,7 +137,7 @@ var AppController = /** @class */ (function () {
         }
         else {
             var username_1 = req.body.username;
-            passport_conf_1.passport.authenticate('local', function (err, user) {
+            passportConfig_1.passport.authenticate('local', function (err, user) {
                 /* istanbul ignore if */
                 if (err) {
                     return next(err); // will generate a 500 error

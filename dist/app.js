@@ -61,7 +61,7 @@ var kue = require("kue");
 var morgan = require("morgan");
 var multer = require("multer");
 var moment = require("moment-timezone");
-var passport_conf_1 = require("./passport.conf");
+var passportConfig_1 = require("./passportConfig");
 // const passportSaml = require('passport-saml');
 var path = require("path");
 var Raven = require("raven");
@@ -191,8 +191,8 @@ app.use(session({
     cookie: __assign({}, cookieSetting),
     store: new redisStore({ client: redis_service_1["default"] })
 }));
-app.use(passport_conf_1.passport.initialize());
-app.use(passport_conf_1.passport.session());
+app.use(passportConfig_1.passport.initialize());
+app.use(passportConfig_1.passport.session());
 // app.use(passport.authenticate('session'));
 /*
 passport.serializeUser<any, any>((user, done) => {

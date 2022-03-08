@@ -20,7 +20,7 @@ var car_controller_1 = require("./controllers/car.controller");
 var jwt_controller_1 = require("./controllers/jwt.controller");
 var user_controller_1 = require("./controllers/user.controller");
 var router_1 = require("../form/router");
-var passport_conf_1 = require("../passport.conf");
+var passportConfig_1 = require("../passportConfig");
 var app_controller_1 = require("./controllers/app.controller");
 // setup route middlewares
 var appRouter = express.Router();
@@ -137,7 +137,7 @@ appRouter.post('/api/v1/cars/', middlewares_1["default"].isJWTAuthenticated, car
 appRouter.get('/api/v1/pusher/auth/', middlewares_1["default"].isJWTAuthenticated, user_controller_1["default"].getPusherToken);
 // web login
 appRouter.get('/account/login/', app_controller_1["default"].login);
-appRouter.get('/account/login/soo/:id', passport_conf_1.passport.authenticate('multy-saml'));
+appRouter.get('/account/login/soo/:id', passportConfig_1.passport.authenticate('multy-saml'));
 appRouter.post('/account/login/soo/callback/', app_controller_1["default"].processLoginSoo);
 appRouter.post('/account/login/', app_controller_1["default"].processLogin);
 appRouter.get('/account/forgot-password/', csrfProtection, app_controller_1["default"].forgotPassword);

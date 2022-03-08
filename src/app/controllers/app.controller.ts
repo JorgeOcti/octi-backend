@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import * as Raven from 'raven';
 import * as uuid from 'uuid';
 import { queue } from '../../app';
-import { passport } from '../../passport.conf';
+import { passport } from '../../passportConfig';
 
 import { IRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';

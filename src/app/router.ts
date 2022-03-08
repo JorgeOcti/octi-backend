@@ -17,7 +17,7 @@ import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
 import router from '../form/router';
-import {passport} from '../passport.conf'
+import {passport} from '../passportConfig'
 import appController from './controllers/app.controller';
 
 // setup route middlewares

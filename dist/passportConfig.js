@@ -11,8 +11,9 @@ passport.serializeUser(function (user, done) {
     done(null, user);
 });
 passport.deserializeUser(function (user, done) {
+    var _a;
     try {
-        user_model_1["default"].findOne({ email: user.email }, {
+        user_model_1["default"].findOne({ email: (_a = user.email) !== null && _a !== void 0 ? _a : user }, {
             _id: true,
             firstName: true,
             lastName: true,
@@ -153,4 +154,4 @@ passport.use('multy-saml', new passport_saml_1.MultiSamlStrategy({
         return done(null, user);
     });
 }));
-//# sourceMappingURL=passport-conf.js.map
+//# sourceMappingURL=passportConfig.js.map

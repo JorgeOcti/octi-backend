@@ -12,7 +12,7 @@ import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
 import * as moment from 'moment-timezone';
-import { passport } from './passport.conf';
+import { passport } from './passportConfig';
 // const passportSaml = require('passport-saml');
 import * as path from 'path';
 import * as Raven from 'raven';
