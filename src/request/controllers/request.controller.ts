@@ -1116,6 +1116,7 @@ class RequestController {
       res.status(500).json(e);
     }
   }
+
   public async apiByVin(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDetail`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
@@ -1352,16 +1353,31 @@ class RequestController {
     }
   }
 
-
   public async apiPatchItemVin(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
-    const { vin } = req.body;
+    const { vin, item: requestItem } = req.body as IStringKeyObject<any>;
     try {
       if (!vin?.length) {
         return res.status(400).json({
           message: 'No has ingresado ningún VIN.'
         });
+      }
+      if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+        let data: any [] = [];
+        if (vin?.length >= 6) {
+          data = await this.searchVinContecta(vin);
+          data = data.filter((car) => car.material === requestItem!.car.material);
+          if (!data.length) {
+            return res.status(400).json({
+              message: 'VIN no encontrado en SAP.'
+            });
+          }
+        } else {
+          return res.status(400).json({
+            message: 'VIN no encontrado en SAP.'
+          });
+        }
       }
       const existCar = await Car.findOne({vin, team});
       let item = await RequestItem
@@ -1612,7 +1628,8 @@ class RequestController {
       // const data = await this.searchVinContecta('014688');
       let data: any [] = [];
       if (vin?.length >= 6) {
-        data = await this.searchVinContecta(vin, material);
+        data = await this.searchVinContecta(vin);
+        data = data.filter((car) => car.material === material);
       }
       res.json({ data });
     } else {
@@ -1621,7 +1638,7 @@ class RequestController {
     }
   }
 
-  private async searchVinContecta(vin: string, materialSearch: string): Promise<any[]> {
+  private async searchVinContecta(vin: string): Promise<any[]> {
     return new Promise((resolve) => {
       const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
       const config = {
@@ -1636,7 +1653,7 @@ class RequestController {
         }
       };
       const instance = axios.create(config);
-      instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos',
+      instance.post(`${process.env.SALFA_SOAP}/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos`,
         data
       )
         .then(async (response) => {
@@ -1650,15 +1667,15 @@ class RequestController {
                   const version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
                   let material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
                   material = material.substr(material.length > 6 ? material.length - 6 : 0);
-                  if (materialSearch === material) {
-                    data.push({
-                      vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                      brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                      denomination: `${denomination}${version ? ` ${version}` : ''}`,
-                      material,
-                      color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                    });
-                  }
+                  // if (materialSearch === material) {
+                  data.push({
+                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                    denomination: `${denomination}${version ? ` ${version}` : ''}`,
+                    material,
+                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                  });
+                  // }
                 }
               }
             }

@@ -96,14 +96,14 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
         conectaID: values.conectaID,
       })
       .then((response) => {
-        const {data} = response.data;
+        const { data } = response.data;
         this.setState({
           created: true
         });
         swal!('Orden creada!', `La orden ha sido creada satisfactoriamente con el Nº${data.number}!`, 'success', {
           button: false,
           closeOnClickOutside: false,
-          closeOnEsc: false,
+          closeOnEsc: false
         });
         window.scrollTo(0, 0);
       })

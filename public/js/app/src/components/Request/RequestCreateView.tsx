@@ -132,7 +132,8 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     }).on('change', () => {
       this.changeNumberNewCar('amount', parseInt($amount.val(), 10));
     });
-    $('.bootstrap-touchspin').addClass('input-group-sm');
+    $('.bootstrap-touchspin')
+      .addClass('input-group-sm');
   }
 
   public render(): React.ReactElement<IPropsType> {

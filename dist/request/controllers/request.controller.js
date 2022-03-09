@@ -1669,38 +1669,54 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiPatchItemVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, vin, existCar, item, cancelRequest_1, e_15;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var team, id, _a, vin, requestItem, data, existCar, item, cancelRequest_1, e_15;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         team = req.user.team;
                         id = req.params.id;
-                        vin = req.body.vin;
-                        _a.label = 1;
+                        _a = req.body, vin = _a.vin, requestItem = _a.item;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 10, , 11]);
+                        _b.trys.push([1, 13, , 14]);
                         if (!(vin === null || vin === void 0 ? void 0 : vin.length)) {
                             return [2 /*return*/, res.status(400).json({
                                     message: 'No has ingresado ningún VIN.'
                                 })];
                         }
-                        return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
+                        if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 4];
+                        data = [];
+                        if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.searchVinContecta(vin)];
                     case 2:
-                        existCar = _a.sent();
+                        data = _b.sent();
+                        data = data.filter(function (car) { return car.material === requestItem.car.material; });
+                        if (!data.length) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: 'VIN no encontrado en SAP.'
+                                })];
+                        }
+                        return [3 /*break*/, 4];
+                    case 3: return [2 /*return*/, res.status(400).json({
+                            message: 'VIN no encontrado en SAP.'
+                        })];
+                    case 4: return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
+                    case 5:
+                        existCar = _b.sent();
                         return [4 /*yield*/, requestItem_model_1["default"]
                                 .findOne({ _id: id, team: team })
                                 .populate(this.itemPopulate)];
-                    case 3:
-                        item = _a.sent();
-                        if (!item) return [3 /*break*/, 8];
+                    case 6:
+                        item = _b.sent();
+                        if (!item) return [3 /*break*/, 11];
                         if (existCar && existCar.id !== item.car.id) {
                             return [2 /*return*/, res.status(400).json({
                                     message: 'VIN ya asignado a otro vehículo.'
                                 })];
                         }
                         return [4 /*yield*/, car_model_1["default"].updateOne({ _id: item.car._id, team: team }, { vin: vin })];
-                    case 4:
-                        _a.sent();
+                    case 7:
+                        _b.sent();
                         cancelRequest_1 = false;
                         req.on('close', function () {
                             cancelRequest_1 = true;
@@ -1709,12 +1725,12 @@ var RequestController = /** @class */ (function () {
                                 .findOne({ _id: id, team: team })
                                 .populate(this.itemPopulate)
                                 .lean()];
-                    case 5:
-                        item = _a.sent();
-                        if (!item) return [3 /*break*/, 7];
+                    case 8:
+                        item = _b.sent();
+                        if (!item) return [3 /*break*/, 10];
                         return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
-                    case 6:
-                        _a.sent();
+                    case 9:
+                        _b.sent();
                         if (!cancelRequest_1) {
                             server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: item.request._id,
@@ -1728,14 +1744,14 @@ var RequestController = /** @class */ (function () {
                             });
                         }
                         res.status(200).json(__assign({}, item));
-                        _a.label = 7;
-                    case 7: return [3 /*break*/, 9];
-                    case 8:
+                        _b.label = 10;
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
                         res.status(404).json({ message: 'Item no encontrado' });
-                        _a.label = 9;
-                    case 9: return [3 /*break*/, 11];
-                    case 10:
-                        e_15 = _a.sent();
+                        _b.label = 12;
+                    case 12: return [3 /*break*/, 14];
+                    case 13:
+                        e_15 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
@@ -1743,8 +1759,8 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_15);
-                        return [3 /*break*/, 11];
-                    case 11: return [2 /*return*/];
+                        return [3 /*break*/, 14];
+                    case 14: return [2 /*return*/];
                 }
             });
         });
@@ -2003,9 +2019,10 @@ var RequestController = /** @class */ (function () {
                         if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 3];
                         data = [];
                         if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.searchVinContecta(vin, material)];
+                        return [4 /*yield*/, this.searchVinContecta(vin)];
                     case 1:
                         data = _b.sent();
+                        data = data.filter(function (car) { return car.material === material; });
                         _b.label = 2;
                     case 2:
                         res.json({ data: data });
@@ -2019,7 +2036,7 @@ var RequestController = /** @class */ (function () {
             });
         });
     };
-    RequestController.prototype.searchVinContecta = function (vin, materialSearch) {
+    RequestController.prototype.searchVinContecta = function (vin) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
@@ -2037,7 +2054,7 @@ var RequestController = /** @class */ (function () {
                             }
                         };
                         var instance = axios_1["default"].create(config);
-                        instance.post('http://wdq.salfa.cl:8440/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos', data)
+                        instance.post("".concat(process.env.SALFA_SOAP, "/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos"), data)
                             .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 xml2js.parseString(response.data, function (error, result) {
@@ -2053,15 +2070,15 @@ var RequestController = /** @class */ (function () {
                                                 var version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
                                                 var material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
                                                 material = material.substr(material.length > 6 ? material.length - 6 : 0);
-                                                if (materialSearch === material) {
-                                                    data.push({
-                                                        vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                                                        brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                                                        denomination: "".concat(denomination).concat(version ? " ".concat(version) : ''),
-                                                        material: material,
-                                                        color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                                                    });
-                                                }
+                                                // if (materialSearch === material) {
+                                                data.push({
+                                                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                                                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                                                    denomination: "".concat(denomination).concat(version ? " ".concat(version) : ''),
+                                                    material: material,
+                                                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                                                });
+                                                // }
                                             }
                                         }
                                     }

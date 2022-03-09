@@ -59,6 +59,7 @@ services:
     env_file:
       - .env
     environment:
+      SALFA_SOAP: http://wdp.salfa.cl:8440
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
