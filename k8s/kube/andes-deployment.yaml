@@ -60,6 +60,11 @@ spec:
               secretKeyRef:
                 name: env
                 key: MAPBOX
+          - name: SALFA_SOAP
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: SALFA_SOAP
           - name: PORT
             valueFrom:
               secretKeyRef:
