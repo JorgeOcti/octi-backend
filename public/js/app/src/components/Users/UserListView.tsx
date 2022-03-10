@@ -538,7 +538,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
       isDriver: typeof isDriver === 'boolean' ? isDriver : this.props.users.tempUser.isDriver,
       password: password ? password : '',
-      settings: settings ?? {  },
+      settings: settings ?? this.props.users.tempUser.settings,
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,

@@ -95,7 +95,7 @@ if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
     id: '3.2',
     icon: 'fa-circle-o',
-    text: 'Vehículos',
+    text: 'Unidades',
     url: parseReplicableURL('/requests/vehicles/')
   });
 }

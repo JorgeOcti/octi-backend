@@ -210,7 +210,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                     <strong>Destino</strong>
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-                    <strong>Nº Vehículos</strong>
+                    <strong>Nº Unidades</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
                     <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />

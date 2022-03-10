@@ -121,7 +121,7 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
                                    href={`#${slugify(carByDate.key, {remove: /[*+~.()'"!:@]/g})}`}
                                    aria-expanded="false"
                                    className="collapsed">
-                                  {`${moment(carByDate.key, 'YYYYMMDD').format('dddd, DD MMMM YYYY')} (${carByDate.cars.length} Vehículos)`}
+                                  {`${moment(carByDate.key, 'YYYYMMDD').format('dddd, DD MMMM YYYY')} (${carByDate.cars.length} unidades)`}
                                   </a>
                                 </h4>
                               </div>
@@ -162,7 +162,7 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col col-md-6">
-                      <strong>Total de vehículos:</strong> {carsByDate.reduce((total, x: any) => (total + x.cars.length), 0)}
+                      <strong>Total de unidades:</strong> {carsByDate.reduce((total, x: any) => (total + x.cars.length), 0)}
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>

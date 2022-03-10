@@ -60,7 +60,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                 className='text-center text-muted'
                 style={{ padding: '20px 0' }}
               >
-                No se han agregado vehículos aún.
+                No se han agregado unidades aún.
               </p>
             </div> :
             <div className='col-md-12'>
@@ -449,7 +449,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
             </div>
         }
         <div className='col-md-12' style={{ marginTop: '10px' }}>
-          <h4>Agregar Vehículos</h4>
+          <h4>Agregar Unidades</h4>
         </div>
         <div className='col-md-12'>
           <AddItemsToTransmittal fields={fields} onClickRequest={this.pushItem} onClickCar={this.pushItemCar} />

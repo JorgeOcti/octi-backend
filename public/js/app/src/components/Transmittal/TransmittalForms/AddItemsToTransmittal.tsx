@@ -55,7 +55,7 @@ class AddItemsToTransmittal extends React.Component<IPropsType, IStateType> {
                 className={tab === 'cars' ? 'background-transition' : ''}
                 style={{ borderTop: '0', marginBottom: '0' }}
                 onClick={() => this.changeTab('cars')}
-              >Vehículos</a>
+              >Unidades</a>
             </li>
           </ul>
         </ShowIf>

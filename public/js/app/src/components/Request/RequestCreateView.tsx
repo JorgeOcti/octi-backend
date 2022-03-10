@@ -152,7 +152,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-body create-request'>
               <div className='row'>
                 <div className='col-md-6 col-lg-6'>
-                  <h3>Agregar Vehículos</h3>
+                  <h3>Agregar Unidades</h3>
                   <div className='form-horizontal'>
                     <div className='form-group'>
                       <label htmlFor='marca' className='col-sm-3 control-label label-left'>Marca *</label>
@@ -621,7 +621,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         </table>
                       </div>
                       <div className='text-right text-muted' style={{ padding: '2px' }}>
-                        {cars.length} vehículos
+                        {cars.length} unidades
                       </div>
                     </div>
                   </div>
@@ -805,7 +805,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     const vehiclesView = this.props.location.pathname === parseReplicableURL('/requests/vehicles/create/');
     const { cars, channel, venue, sellerText, operationType } = this.state;
     if (!cars.length) {
-      swal!('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
+      swal!('Solicitud', 'No se han agregado unidades para crear la solicitud.', 'error');
     } else if (!venue.length) {
       swal!('Solicitud', 'No se ha seleccionado destino para crear la solicitud.', 'error');
     } else if (!channel.length) {

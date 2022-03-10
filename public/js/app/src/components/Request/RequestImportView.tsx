@@ -440,7 +440,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
         } else {
           swal!(
             'Importador de configuración',
-            `"${file.name}" no cumple con los requisitos mínimos o no tiene vehículos.`,
+            `"${file.name}" no cumple con los requisitos mínimos o no tiene unidades.`,
             'error'
           );
           this.setState({

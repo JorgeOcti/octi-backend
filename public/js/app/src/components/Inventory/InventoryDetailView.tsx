@@ -962,7 +962,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                   <Row style={{margin: '5px 0'}}>
                     <div className="col-md-12">
                       <div className="form-group">
-                        <label htmlFor="cars" className="control-label">Vehículos</label>
+                        <label htmlFor="cars" className="control-label">Unidades</label>
                         <input
                           type="text"
                           className="form-control"
@@ -1269,7 +1269,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       if (all) {
         swal!('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
       } else {
-        swal!('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+        swal!('Descargar imágenes', 'No has seleccionado unidades que contengan imágenes.', 'error');
       }
     }
   }

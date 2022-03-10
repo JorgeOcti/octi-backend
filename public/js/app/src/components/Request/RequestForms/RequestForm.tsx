@@ -465,7 +465,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                   <div className='col-md-12'>
                     <div className='box'>
                       <div className='box-header with-border'>
-                        <h3 className={submitFailed && !valid && !formValues.cars.length ? 'text-red box-title' : 'box-title'}>Vehículos</h3>
+                        <h3 className={submitFailed && !valid && !formValues.cars.length ? 'text-red box-title' : 'box-title'}>Unidades</h3>
                       </div>
                       <div className='box-body create-request no-padding'>
                         <div className='row'>

@@ -179,7 +179,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-6">
                       <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de vehículos:</strong> {carsInSettings}</p>
+                      <p><strong>Total de unidades:</strong> {carsInSettings}</p>
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>

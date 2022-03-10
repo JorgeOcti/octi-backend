@@ -505,7 +505,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-footer text-right'>
               <button className='btn btn-sm btn-default' onClick={() => {
                 this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
-              }}><i className='fa fa-fw fa-rotate-left' /> Volver a vehículos
+              }}><i className='fa fa-fw fa-rotate-left' /> Volver a unidades
               </button>
             </div>
             {

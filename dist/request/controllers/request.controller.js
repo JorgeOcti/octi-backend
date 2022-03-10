@@ -1669,54 +1669,114 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiPatchItemVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, _a, vin, requestItem, data, existCar, item, cancelRequest_1, e_15;
+            var _a, team, company, id, vin, requestItem_1, data, newCar, car, existOtherRequestWithCar, newCar, cancelRequest_1, e_15;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        team = req.user.team;
+                        _a = req.user, team = _a.team, company = _a.company;
                         id = req.params.id;
-                        _a = req.body, vin = _a.vin, requestItem = _a.item;
+                        vin = req.body.vin;
                         _b.label = 1;
                     case 1:
-                        _b.trys.push([1, 13, , 14]);
-                        if (!(vin === null || vin === void 0 ? void 0 : vin.length)) {
-                            return [2 /*return*/, res.status(400).json({
-                                    message: 'No has ingresado ningún VIN.'
-                                })];
-                        }
-                        if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 4];
-                        data = [];
-                        if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.searchVinContecta(vin)];
+                        _b.trys.push([1, 23, , 24]);
+                        return [4 /*yield*/, requestItem_model_1["default"]
+                                .findOne({ _id: id, team: team })
+                                .populate(this.itemPopulate)];
                     case 2:
+                        requestItem_1 = _b.sent();
+                        if (!requestItem_1) return [3 /*break*/, 21];
+                        if (!(team._id.toString() === '5bf2de35caf8ef7096105cdd')) return [3 /*break*/, 5];
+                        data = [];
+                        if (!((vin === null || vin === void 0 ? void 0 : vin.length) >= 6)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.searchVinContecta(vin)];
+                    case 3:
                         data = _b.sent();
-                        data = data.filter(function (car) { return car.material === requestItem.car.material; });
+                        data = data.filter(function (car) { return car.material === requestItem_1.car.material; });
+                        console.log('data', data);
                         if (!data.length) {
                             return [2 /*return*/, res.status(400).json({
                                     message: 'VIN no encontrado en SAP.'
                                 })];
                         }
-                        return [3 /*break*/, 4];
-                    case 3: return [2 /*return*/, res.status(400).json({
-                            message: 'VIN no encontrado en SAP.'
-                        })];
-                    case 4: return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
+                        return [3 /*break*/, 5];
+                    case 4:
+                        if ((vin === null || vin === void 0 ? void 0 : vin.length) > 0) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: 'VIN no encontrado en SAP.'
+                                })];
+                        }
+                        _b.label = 5;
                     case 5:
-                        existCar = _b.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"]
-                                .findOne({ _id: id, team: team })
-                                .populate(this.itemPopulate)];
+                        if (!(requestItem_1.car.vin.length === 0)) return [3 /*break*/, 7];
+                        console.log('1 Vehíulo no tenía VIN');
+                        return [4 /*yield*/, car_model_1["default"].updateOne({ _id: requestItem_1.car._id, team: team }, { vin: vin })];
                     case 6:
-                        item = _b.sent();
-                        if (!item) return [3 /*break*/, 11];
-                        if (existCar && existCar.id !== item.car.id) {
+                        _b.sent();
+                        return [3 /*break*/, 17];
+                    case 7:
+                        if (!(requestItem_1.car.vin.length > 0 && vin.length === 0)) return [3 /*break*/, 10];
+                        console.log('2 Vehíulo tenía VIN y ahora se le elimina');
+                        console.log(requestItem_1.car);
+                        return [4 /*yield*/, new car_model_1["default"]({
+                                team: team,
+                                vin: '',
+                                vin2: '',
+                                company: company,
+                                brand: requestItem_1.car.brand,
+                                denomination: requestItem_1.car.denomination,
+                                material: requestItem_1.car.material,
+                                color: requestItem_1.car.color,
+                                status: car_model_1.ChoicesStatusCar.pending,
+                                createdBy: req.user
+                            }).save()];
+                    case 8:
+                        newCar = _b.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: newCar._id })];
+                    case 9:
+                        _b.sent();
+                        return [3 /*break*/, 17];
+                    case 10:
+                        if (!(requestItem_1.car.vin.length > 0 && vin.length > 0)) return [3 /*break*/, 17];
+                        console.log('3 Cambio de VIN');
+                        return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
+                    case 11:
+                        car = _b.sent();
+                        if (!car) return [3 /*break*/, 14];
+                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: car, _id: { $ne: requestItem_1._id } })];
+                    case 12:
+                        existOtherRequestWithCar = _b.sent();
+                        if (existOtherRequestWithCar.length) {
                             return [2 /*return*/, res.status(400).json({
                                     message: 'VIN ya asignado a otro vehículo.'
                                 })];
                         }
-                        return [4 /*yield*/, car_model_1["default"].updateOne({ _id: item.car._id, team: team }, { vin: vin })];
-                    case 7:
+                        console.log('3 asigna vehículo existente');
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: car })];
+                    case 13:
                         _b.sent();
+                        return [3 /*break*/, 17];
+                    case 14:
+                        if (!(requestItem_1.car.vin !== vin)) return [3 /*break*/, 17];
+                        return [4 /*yield*/, new car_model_1["default"]({
+                                team: team,
+                                company: company,
+                                vin: vin,
+                                vin2: vin.trim().substr(vin.length - 6),
+                                brand: requestItem_1.car.brand,
+                                denomination: requestItem_1.car.denomination,
+                                material: requestItem_1.car.material,
+                                color: requestItem_1.car.color,
+                                status: car_model_1.ChoicesStatusCar.pending,
+                                createdBy: req.user
+                            }).save()];
+                    case 15:
+                        newCar = _b.sent();
+                        console.log('3 crea vehiculo');
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: newCar })];
+                    case 16:
+                        _b.sent();
+                        _b.label = 17;
+                    case 17:
                         cancelRequest_1 = false;
                         req.on('close', function () {
                             cancelRequest_1 = true;
@@ -1725,33 +1785,34 @@ var RequestController = /** @class */ (function () {
                                 .findOne({ _id: id, team: team })
                                 .populate(this.itemPopulate)
                                 .lean()];
-                    case 8:
-                        item = _b.sent();
-                        if (!item) return [3 /*break*/, 10];
-                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
-                    case 9:
+                    case 18:
+                        requestItem_1 = _b.sent();
+                        if (!requestItem_1) return [3 /*break*/, 20];
+                        return [4 /*yield*/, request_model_1["default"].update({ _id: requestItem_1.request._id }, { $set: { updatedAt: moment() } })];
+                    case 19:
                         _b.sent();
                         if (!cancelRequest_1) {
                             server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
-                                idRequest: item.request._id,
-                                item: item
+                                idRequest: requestItem_1.request._id,
+                                item: requestItem_1
                             });
                         }
                         if (!cancelRequest_1) {
                             server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
-                                idRequest: item.request._id,
-                                item: item
+                                idRequest: requestItem_1.request._id,
+                                item: requestItem_1
                             });
                         }
-                        res.status(200).json(__assign({}, item));
-                        _b.label = 10;
-                    case 10: return [3 /*break*/, 12];
-                    case 11:
+                        res.status(200).json(__assign({}, requestItem_1));
+                        _b.label = 20;
+                    case 20: return [3 /*break*/, 22];
+                    case 21:
                         res.status(404).json({ message: 'Item no encontrado' });
-                        _b.label = 12;
-                    case 12: return [3 /*break*/, 14];
-                    case 13:
+                        _b.label = 22;
+                    case 22: return [3 /*break*/, 24];
+                    case 23:
                         e_15 = _b.sent();
+                        console.error(e_15);
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
@@ -1759,8 +1820,8 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_15);
-                        return [3 /*break*/, 14];
-                    case 14: return [2 /*return*/];
+                        return [3 /*break*/, 24];
+                    case 24: return [2 /*return*/];
                 }
             });
         });

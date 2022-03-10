@@ -46,7 +46,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
                href={`#${slugify(venue.name.toLowerCase(), {remove: /[*+~.()'"!:@]/g})}`}
                aria-expanded="false"
                className="collapsed">
-              {index + 1} {venue.name} ({venue.cars.length} Vehículos)
+              {index + 1} {venue.name} ({venue.cars.length} Unidades)
             </a>
             <i className="fa fa-minus-circle text-red pull-right pointer" onClick={() => this.props.deleteVenue(venue.name)} />
             {

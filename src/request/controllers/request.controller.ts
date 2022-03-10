@@ -1354,72 +1354,116 @@ class RequestController {
   }
 
   public async apiPatchItemVin(req: IRequest, res: Response): Promise<any> {
-    const { team } = req.user;
+    const { team, company } = req.user;
     const { id } = req.params;
-    const { vin, item: requestItem } = req.body as IStringKeyObject<any>;
+    const { vin } = req.body as IStringKeyObject<any>;
     try {
-      if (!vin?.length) {
-        return res.status(400).json({
-          message: 'No has ingresado ningún VIN.'
-        });
-      }
-      if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        let data: any [] = [];
-        if (vin?.length >= 6) {
-          data = await this.searchVinContecta(vin);
-          data = data.filter((car) => car.material === requestItem!.car.material);
-          if (!data.length) {
+      let requestItem = await RequestItem
+        .findOne({ _id: id, team })
+        .populate(this.itemPopulate);
+      if(requestItem){
+        if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+          let data: any [] = [];
+          if (vin?.length >= 6) {
+            data = await this.searchVinContecta(vin);
+            data = data.filter((car) => car.material === requestItem!.car.material);
+            console.log('data', data);
+            if (!data.length) {
+              return res.status(400).json({
+                message: 'VIN no encontrado en SAP.'
+              });
+            }
+          } else if (vin?.length > 0) {
             return res.status(400).json({
               message: 'VIN no encontrado en SAP.'
             });
           }
-        } else {
-          return res.status(400).json({
-            message: 'VIN no encontrado en SAP.'
-          });
         }
-      }
-      const existCar = await Car.findOne({vin, team});
-      let item = await RequestItem
-        .findOne({ _id: id, team })
-        .populate(this.itemPopulate);
-      if(item){
-        if(existCar && existCar.id !== (item.car as any).id ){
-          return res.status(400).json({
-            message: 'VIN ya asignado a otro vehículo.'
-          })
+        // si la solicitud no tenía vin
+        if (requestItem.car.vin.length === 0){
+          console.log('1 Vehíulo no tenía VIN');
+          await Car.updateOne({ _id: requestItem.car._id, team }, { vin });
         }
-        await Car.updateOne({ _id: item.car._id, team }, { vin });
+        // si el vehículo tenia vin y ahora se le elimina
+        else if (requestItem.car.vin.length > 0 && vin.length === 0) {
+          console.log('2 Vehíulo tenía VIN y ahora se le elimina');
+          console.log(requestItem.car);
+          const newCar = await new Car({
+            team,
+            vin: '',
+            vin2: '',
+            company,
+            brand: requestItem.car.brand,
+            denomination: requestItem.car.denomination,
+            material: requestItem.car.material,
+            color: requestItem.car.color,
+            status: ChoicesStatusCar.pending,
+            createdBy: req.user
+          }).save();
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+        }
+        // si le cambias el VIN al vehículo
+        else if (requestItem.car.vin.length > 0 && vin.length > 0) {
+          console.log('3 Cambio de VIN');
+          const car = await Car.findOne({ vin, team });
+          if (car) {
+            const existOtherRequestWithCar = await RequestItem.find({ team, car, _id: { $ne: requestItem._id } });
+            if (existOtherRequestWithCar.length) {
+              return res.status(400).json({
+                message: 'VIN ya asignado a otro vehículo.'
+              });
+            }
+            console.log('3 asigna vehículo existente');
+            await RequestItem.updateOne({ _id: requestItem._id }, { car });
+          } else if (requestItem.car.vin !== vin) {
+            const newCar = await new Car({
+              team,
+              company,
+              vin,
+              vin2: vin.trim().substr(vin.length - 6),
+              brand: requestItem.car.brand,
+              denomination: requestItem.car.denomination,
+              material: requestItem.car.material,
+              color: requestItem.car.color,
+              status: ChoicesStatusCar.pending,
+              createdBy: req.user
+            }).save();
+            console.log('3 crea vehiculo');
+            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar });
+          }
+        }
+
         let cancelRequest = false;
         req.on('close', function() {
           cancelRequest = true;
         });
-        item = await RequestItem
+        requestItem = await RequestItem
           .findOne({ _id: id, team })
           .populate(this.itemPopulate)
           .lean();
-        if(item) {
-          await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
+        if (requestItem) {
+          await Request.update({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
           if (!cancelRequest) {
             io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-              idRequest: item.request._id,
-              item
+              idRequest: requestItem.request._id,
+              item: requestItem
             });
           }
           if (!cancelRequest) {
             io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-              idRequest: item.request._id,
-              item
+              idRequest: requestItem.request._id,
+              item: requestItem
             });
           }
           res.status(200).json({
-            ...item
+            ...requestItem
           });
         }
-      } else{
-        res.status(404).json({message:'Item no encontrado'})
+      } else {
+        res.status(404).json({ message: 'Item no encontrado' });
       }
     } catch (e) {
+      console.error(e);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */

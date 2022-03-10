@@ -61,7 +61,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                   className={submitFailed && !valid && !formValues.cars.length ? 'text-red text-center' : ' text-muted text-center'}
                   style={{ padding: '60px 0px  30px 0px', margin: '0' }}
                 >
-                  {submitFailed && !valid && !formValues.cars.length ? 'Debes agregar al menos un vehículo.' : 'No se han agregado vehículos aún.'}
+                  {submitFailed && !valid && !formValues.cars.length ? 'Debes agregar al menos un unidad.' : 'No se han agregado unidades aún.'}
                 </p>
               </div>
             </ShowIf> :

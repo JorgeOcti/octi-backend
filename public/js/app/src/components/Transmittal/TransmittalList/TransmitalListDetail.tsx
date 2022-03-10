@@ -186,7 +186,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {transmittal.items.length} vehículos.
+            {transmittal.items.length} unidades.
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
             {
