@@ -1711,7 +1711,7 @@ var RequestController = /** @class */ (function () {
                     case 5: return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
                     case 6:
                         car = _b.sent();
-                        if (!car) return [3 /*break*/, 9];
+                        if (!(car && (vin === null || vin === void 0 ? void 0 : vin.length))) return [3 /*break*/, 9];
                         return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: car, _id: { $ne: requestItem_1._id } })];
                     case 7:
                         existOtherRequestWithCar = _b.sent();

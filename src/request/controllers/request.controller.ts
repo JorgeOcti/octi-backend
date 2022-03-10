@@ -1383,7 +1383,7 @@ class RequestController {
         }
         const car = await Car.findOne({ vin, team });
         // si el vehículo ya existe
-        if (car) {
+        if (car && vin?.length) {
           const existOtherRequestWithCar = await RequestItem.find({ team, car, _id: { $ne: requestItem._id } });
           if (existOtherRequestWithCar.length) {
             return res.status(400).json({
