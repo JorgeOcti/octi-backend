@@ -1379,8 +1379,20 @@ class RequestController {
             });
           }
         }
+        const car = await Car.findOne({ vin, team });
+        // si el vehículo ya existe
+        if (car) {
+          const existOtherRequestWithCar = await RequestItem.find({ team, car, _id: { $ne: requestItem._id } });
+          if (existOtherRequestWithCar.length) {
+            return res.status(400).json({
+              message: 'VIN ya asignado a otro vehículo.'
+            });
+          }
+          //await Car.updateOne({ _id: car._id, team }, { vin });
+          await RequestItem.updateOne({ _id: requestItem._id }, { car });
+        }
         // si la solicitud no tenía vin
-        if (requestItem.car.vin.length === 0){
+        else if (requestItem.car.vin.length === 0) {
           console.log('1 Vehíulo no tenía VIN');
           await Car.updateOne({ _id: requestItem.car._id, team }, { vin });
         }
@@ -1405,17 +1417,7 @@ class RequestController {
         // si le cambias el VIN al vehículo
         else if (requestItem.car.vin.length > 0 && vin.length > 0) {
           console.log('3 Cambio de VIN');
-          const car = await Car.findOne({ vin, team });
-          if (car) {
-            const existOtherRequestWithCar = await RequestItem.find({ team, car, _id: { $ne: requestItem._id } });
-            if (existOtherRequestWithCar.length) {
-              return res.status(400).json({
-                message: 'VIN ya asignado a otro vehículo.'
-              });
-            }
-            console.log('3 asigna vehículo existente');
-            await RequestItem.updateOne({ _id: requestItem._id }, { car });
-          } else if (requestItem.car.vin !== vin) {
+          if (requestItem.car.vin !== vin) {
             const newCar = await new Car({
               team,
               company,

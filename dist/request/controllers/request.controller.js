@@ -1669,7 +1669,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiPatchItemVin = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, team, company, id, vin, requestItem_1, data, newCar, car, existOtherRequestWithCar, newCar, cancelRequest_1, e_15;
+            var _a, team, company, id, vin, requestItem_1, data, car, existOtherRequestWithCar, newCar, newCar, cancelRequest_1, e_15;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1706,15 +1706,33 @@ var RequestController = /** @class */ (function () {
                                 })];
                         }
                         _b.label = 5;
-                    case 5:
-                        if (!(requestItem_1.car.vin.length === 0)) return [3 /*break*/, 7];
-                        console.log('1 Vehíulo no tenía VIN');
-                        return [4 /*yield*/, car_model_1["default"].updateOne({ _id: requestItem_1.car._id, team: team }, { vin: vin })];
+                    case 5: return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
                     case 6:
+                        car = _b.sent();
+                        if (!car) return [3 /*break*/, 9];
+                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: car, _id: { $ne: requestItem_1._id } })];
+                    case 7:
+                        existOtherRequestWithCar = _b.sent();
+                        if (existOtherRequestWithCar.length) {
+                            return [2 /*return*/, res.status(400).json({
+                                    message: 'VIN ya asignado a otro vehículo.'
+                                })];
+                        }
+                        //await Car.updateOne({ _id: car._id, team }, { vin });
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: car })];
+                    case 8:
+                        //await Car.updateOne({ _id: car._id, team }, { vin });
                         _b.sent();
                         return [3 /*break*/, 17];
-                    case 7:
-                        if (!(requestItem_1.car.vin.length > 0 && vin.length === 0)) return [3 /*break*/, 10];
+                    case 9:
+                        if (!(requestItem_1.car.vin.length === 0)) return [3 /*break*/, 11];
+                        console.log('1 Vehíulo no tenía VIN');
+                        return [4 /*yield*/, car_model_1["default"].updateOne({ _id: requestItem_1.car._id, team: team }, { vin: vin })];
+                    case 10:
+                        _b.sent();
+                        return [3 /*break*/, 17];
+                    case 11:
+                        if (!(requestItem_1.car.vin.length > 0 && vin.length === 0)) return [3 /*break*/, 14];
                         console.log('2 Vehíulo tenía VIN y ahora se le elimina');
                         console.log(requestItem_1.car);
                         return [4 /*yield*/, new car_model_1["default"]({
@@ -1729,33 +1747,15 @@ var RequestController = /** @class */ (function () {
                                 status: car_model_1.ChoicesStatusCar.pending,
                                 createdBy: req.user
                             }).save()];
-                    case 8:
+                    case 12:
                         newCar = _b.sent();
                         return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: newCar._id })];
-                    case 9:
-                        _b.sent();
-                        return [3 /*break*/, 17];
-                    case 10:
-                        if (!(requestItem_1.car.vin.length > 0 && vin.length > 0)) return [3 /*break*/, 17];
-                        console.log('3 Cambio de VIN');
-                        return [4 /*yield*/, car_model_1["default"].findOne({ vin: vin, team: team })];
-                    case 11:
-                        car = _b.sent();
-                        if (!car) return [3 /*break*/, 14];
-                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: car, _id: { $ne: requestItem_1._id } })];
-                    case 12:
-                        existOtherRequestWithCar = _b.sent();
-                        if (existOtherRequestWithCar.length) {
-                            return [2 /*return*/, res.status(400).json({
-                                    message: 'VIN ya asignado a otro vehículo.'
-                                })];
-                        }
-                        console.log('3 asigna vehículo existente');
-                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: requestItem_1._id }, { car: car })];
                     case 13:
                         _b.sent();
                         return [3 /*break*/, 17];
                     case 14:
+                        if (!(requestItem_1.car.vin.length > 0 && vin.length > 0)) return [3 /*break*/, 17];
+                        console.log('3 Cambio de VIN');
                         if (!(requestItem_1.car.vin !== vin)) return [3 /*break*/, 17];
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
