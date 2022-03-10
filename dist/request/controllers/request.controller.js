@@ -592,6 +592,8 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
                                 company: company,
+                                vin: '',
+                                vin2: '',
                                 brand: car.brand,
                                 denomination: car.denomination,
                                 material: car.material,

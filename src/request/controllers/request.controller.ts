@@ -426,6 +426,8 @@ class RequestController {
         const newCar = await new Car({
           team,
           company,
+          vin: '',
+          vin2: '',
           brand: car.brand,
           denomination: car.denomination,
           material: car.material,
