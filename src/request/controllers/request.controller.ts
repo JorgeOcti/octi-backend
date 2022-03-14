@@ -21,8 +21,8 @@ import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
-// import { Column } from 'exceljs';
-// import Reason from '../models/reason.model';
+import { Column } from 'exceljs';
+import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 
 class RequestController {
@@ -903,6 +903,15 @@ class RequestController {
       });
 
       /* headers */
+      const questionColumns: Partial<Column>[] = [];
+
+      for (const reason of await Reason.find({ team })) {
+        for (const question of reason.questions) {
+          questionColumns.push({
+            header: question.name, key: question._id, width: 10
+          });
+        }
+      }
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
@@ -969,10 +978,15 @@ class RequestController {
         header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
-      }];
+      }, ...questionColumns];
 
       cursor.on('data', async (item: any) => {
+        const extraAnswers: any = {};
+        for (const answer of item.answers ? item.answers : []) {
+          extraAnswers[answer.questionId] = answer.answer;
+        }
         worksheet.addRow({
+          ...extraAnswers,
           request: item.request.number,
           created: item.createdAt,
           updated: item.updatedAt,
