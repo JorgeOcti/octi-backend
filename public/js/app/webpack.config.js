@@ -73,6 +73,7 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
           loader: 'ts-loader',
           options: {
             compilerOptions: {
+              tsBuildInfoFile: "./buildcache/buildcache",
               target: 'es5',
               incremental: true  // this could also be in tsconfig.json directly
             },

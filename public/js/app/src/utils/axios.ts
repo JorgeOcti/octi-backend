@@ -194,6 +194,11 @@ export default class ApiService {
       `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
+  public getCompanyVenues(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/company-venues/`
+    );
+  }
 
   public createReason(reason: any): AxiosPromise {
     return this.instance.post(

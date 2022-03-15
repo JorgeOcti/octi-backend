@@ -75,6 +75,7 @@ appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVe
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
+appRouter.get('/api/admin/company-venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListCompanyVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
 appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);

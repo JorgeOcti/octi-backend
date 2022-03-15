@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     command: ['tsc', '-w', '--project', 'tsconfig.json']
     volumes:
-      - ./buildcache/:/srv/buildcache/
+      - ./buildcache:/srv/buildcache
       - ./dist:/srv/dist
       - ./src:/srv/src
       - ./tsconfig.json:/srv/tsconfig.json
@@ -63,7 +63,7 @@ services:
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
-#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority
+#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:

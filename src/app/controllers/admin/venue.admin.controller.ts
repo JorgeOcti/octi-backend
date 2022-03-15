@@ -17,6 +17,7 @@ class AdminVenueController {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
     this.apiListVenues = this.apiListVenues.bind(this);
+    this.apiListCompanyVenues = this.apiListCompanyVenues.bind(this);
     this.apiCreateVenue = this.apiCreateVenue.bind(this);
     this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
     this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
@@ -231,6 +232,24 @@ class AdminVenueController {
           status: 200
         });
       }
+    } catch (e) {
+      /* istanbul ignore next  */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
+  public async apiListCompanyVenues(req: IRequest, res: Response): Promise<any> {
+    const { team, company } = req.user;
+    try {
+      const venues = await Venue
+        .find({ team, company }, { name: true })
+        .sort({ 'name': 1 });
+      res.json({
+        results: venues,
+        status: 200
+      });
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {

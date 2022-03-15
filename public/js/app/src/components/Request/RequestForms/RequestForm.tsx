@@ -643,7 +643,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     this.setState({ loading: true });
     Axios
       .all([
-        this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+        this.api.getCompanyVenues(),
         this.api.getReasons({ page: 1, pageSize: 200 }),
         this.api.getColors({ page: 1, pageSize: 200 }),
         this.api.getSalesChannel({ page: 1, pageSize: 200 }),

@@ -59,6 +59,7 @@ var AdminVenueController = /** @class */ (function () {
         this.index = this.index.bind(this);
         this.getVenues = this.getVenues.bind(this);
         this.apiListVenues = this.apiListVenues.bind(this);
+        this.apiListCompanyVenues = this.apiListCompanyVenues.bind(this);
         this.apiCreateVenue = this.apiCreateVenue.bind(this);
         this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
         this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
@@ -301,9 +302,41 @@ var AdminVenueController = /** @class */ (function () {
             });
         });
     };
+    AdminVenueController.prototype.apiListCompanyVenues = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, team, company, venues, e_2;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = req.user, team = _a.team, company = _a.company;
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, venue_model_1["default"]
+                                .find({ team: team, company: company }, { name: true })
+                                .sort({ 'name': 1 })];
+                    case 2:
+                        venues = _b.sent();
+                        res.json({
+                            results: venues,
+                            status: 200
+                        });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_2 = _b.sent();
+                        /* istanbul ignore next  */
+                        if (e_2) {
+                            res.status(500).json(e_2);
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
     AdminVenueController.prototype.apiCreateVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region, responsible, sendTo, team, existVenue, newVenue, id, _b, _c, e_2;
+            var _a, name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region, responsible, sendTo, team, existVenue, newVenue, id, _b, _c, e_3;
             var _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
@@ -405,11 +438,11 @@ var AdminVenueController = /** @class */ (function () {
                         _e.label = 10;
                     case 10: return [3 /*break*/, 12];
                     case 11:
-                        e_2 = _e.sent();
+                        e_3 = _e.sent();
                         /* istanbul ignore next  */
-                        console.log(e_2);
+                        console.log(e_3);
                         /* istanbul ignore next  */
-                        res.status(500).json(e_2);
+                        res.status(500).json(e_3);
                         return [3 /*break*/, 12];
                     case 12: return [2 /*return*/];
                 }
@@ -418,7 +451,7 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiUpdateVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, responsible, sendTo, venue, response, response, e_3;
+            var id, team, _a, name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, responsible, sendTo, venue, response, response, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -525,11 +558,11 @@ var AdminVenueController = /** @class */ (function () {
                         _b.label = 9;
                     case 9: return [3 /*break*/, 11];
                     case 10:
-                        e_3 = _b.sent();
+                        e_4 = _b.sent();
                         /* istanbul ignore next  */
-                        console.log(e_3);
+                        console.log(e_4);
                         /* istanbul ignore next  */
-                        res.status(500).json(e_3);
+                        res.status(500).json(e_4);
                         return [3 /*break*/, 11];
                     case 11: return [2 /*return*/];
                 }
@@ -538,7 +571,7 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiDeleteVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, company, team, inventories, textInventories, venue, response, response, e_4;
+            var id, company, team, inventories, textInventories, venue, response, response, e_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -628,9 +661,9 @@ var AdminVenueController = /** @class */ (function () {
                         _a.label = 12;
                     case 12: return [3 /*break*/, 14];
                     case 13:
-                        e_4 = _a.sent();
+                        e_5 = _a.sent();
                         /* istanbul ignore next  */
-                        res.status(500).json(e_4);
+                        res.status(500).json(e_5);
                         return [3 /*break*/, 14];
                     case 14: return [2 /*return*/];
                 }
