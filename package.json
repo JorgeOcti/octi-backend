@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "pm2 start pm2-development.json --no-daemon",
     "dev:tsnode": "ts-node-dev --watch src/server.ts",
+    "dev:tsnodebuild": "tsc -w --project tsconfig.json",
     "dev:tsnodefast": "ts-node-dev --watch --transpile-only src/server.ts",
     "dev:inspect": "nodemon --inspect=0.0.0.0:9229 dist/server.js --max-old-space-size=4096",
     "dev:debug": "nodemon --config nodemon-ts-node.json src/server.ts",

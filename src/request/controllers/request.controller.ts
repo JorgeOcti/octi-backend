@@ -449,6 +449,11 @@ class RequestController {
           origin: req.user.venue,
           destination: venue,
           status: defaultItemStatus,
+          meta: {
+            request,
+            car: newCar,
+            user: req.user
+          },
           createdBy: req.user
         }).save();
       }

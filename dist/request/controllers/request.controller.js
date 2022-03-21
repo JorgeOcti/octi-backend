@@ -616,6 +616,11 @@ var RequestController = /** @class */ (function () {
                                 origin: req.user.venue,
                                 destination: venue,
                                 status: defaultItemStatus,
+                                meta: {
+                                    request: request,
+                                    car: newCar,
+                                    user: req.user
+                                },
                                 createdBy: req.user
                             }).save()];
                     case 8:
