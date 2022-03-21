@@ -488,9 +488,14 @@ class RequestController {
       orderBy: string; orderType: string; filters: any;
     };
 
+    const requestNumbers = filters.request
+      .replace(/[^0-9,]/g, '')
+      .split(',')
+      .filter((requestNumber: string) => (requestNumber.length));
+
     let venuesIds: any[];
     const extraQuery: any = {};
-    const extraMatch: any = {};
+    // const extraMatch: any = {};
     if (filters.venues && filters.venues.length) {
       venuesIds = req.user.venuesPermissions()
         .filter(venue => (filters.venues.includes(venue.toString())));
@@ -498,11 +503,11 @@ class RequestController {
       venuesIds = req.user.venuesPermissions();
     }
     if (filters.users && filters.users.length) {
-      if (!extraMatch.hasOwnProperty('$or')) {
-        extraMatch.$or = [];
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
       }
-      extraMatch.$or.push({
-        'request.createdBy._id': {$in: filters.users.map((userId: any) => new ObjectID(userId))}
+      extraQuery.$or.push({
+        'meta.user._id': { $in: filters.users.map((userId: any) => new ObjectID(userId)) }
       });
     }
     if (filters.status && filters.status.length) {
@@ -520,249 +525,61 @@ class RequestController {
       }
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
     }
-    const requestNumbers = filters.request
-      .replace(/[^0-9,]/g, '')
-      .split(',')
-      .filter((requestNumber: string) => (requestNumber.length));
-
     if (requestNumbers.length) {
-      extraMatch.requestNumber = { $in: requestNumbers };
+      extraQuery['meta.request.number'] = { $in: requestNumbers.map((requestNumber: any) => +requestNumber) };
     }
-    if(filters.entry?.length){
-      extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' }
-    } else if (filters.text) {
-      extraMatch.$or = [];
-      extraMatch.$or.push({
-        'car.vin': { '$regex': filters.text, '$options': 'i' }
+    if (filters.entry?.length) {
+      extraQuery['meta.car.entry'] = { '$regex': filters.entry, '$options': 'i' };
+    }
+    if (filters.text) {
+      extraQuery.$or = [];
+      extraQuery.$or.push({
+        'meta.car.vin': { '$regex': filters.text, '$options': 'i' }
       });
-      extraMatch.$or.push({
-        'car.brand': { '$regex': filters.text, '$options': 'i' }
+      extraQuery.$or.push({
+        'meta.car.brand': { '$regex': filters.text, '$options': 'i' }
       });
-      extraMatch.$or.push({
-        'car.color': { '$regex': filters.text, '$options': 'i' }
+      extraQuery.$or.push({
+        'meta.car.color': { '$regex': filters.text, '$options': 'i' }
       });
-      extraMatch.$or.push({
-        'car.denomination': { '$regex': filters.text, '$options': 'i' }
+      extraQuery.$or.push({
+        'meta.car.denomination': { '$regex': filters.text, '$options': 'i' }
       });
-      extraMatch.$or.push({
-        'car.material': { '$regex': filters.text, '$options': 'i' }
-      });
-      extraMatch.$or.push({
-        'requestNumber': { '$regex': filters.text, '$options': 'i' }
+      extraQuery.$or.push({
+        'meta.car.material': { '$regex': filters.text, '$options': 'i' }
       });
     }
     if (filters.sellerText && filters.sellerText.length) {
-      if (!extraMatch.hasOwnProperty('$or')) {
-        extraMatch.$or = [];
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
       }
-      extraMatch.$or.push({
-        'request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
+      extraQuery.$or.push({
+        'meta.request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
       });
     }
     if (filters.properties && filters.properties.length) {
-      if (!extraMatch.hasOwnProperty('$or')) {
-        extraMatch.$or = [];
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
       }
-      extraMatch.$or.push({
-        'car.property': { $in: filters.properties.map((s: any) => s) }
+      extraQuery.$or.push({
+        'meta.car.property': { $in: filters.properties.map((s: any) => s) }
       });
     }
     if (filters.ticket && filters.ticket.length) {
-      if (!extraMatch.hasOwnProperty('$or')) {
-        extraMatch.$or = [];
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
       }
-      extraMatch.$or.push({
-        'request.advancePaymentInformation.number': filters.ticket
+      extraQuery.$or.push({
+        'meta.request.advancePaymentInformation.number': filters.ticket
       });
     }
-    try {
-      if (orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
-        if (filters && filters.transmitttalModule) {
-          extraQuery.assigned = { $in: [null, false] };
-        }
-        const baseAggregate: any[] = [{
-          $match: {
-            team,
-            $or: [{
-              destination: {
-                $in: venuesIds
-              }
-            }, {
-              origin: {
-                $in: venuesIds
-              }
-            }],
-            ...extraQuery
-          }
-        }];
+    if (filters && filters.transmitttalModule) {
+      extraQuery.assigned = { $in: [null, false] };
+    }
 
-        const aggregatePopulate = [{
-          $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-        }, {
-          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-        }, {
-          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-        }, {
-          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-        }, {
-          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-        }, {
-          $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
-        }, {
-          $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
-        }, {
-          $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-        }, {
-          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
-        }, {
-          $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-        }, {
-          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'transmittals', localField: 'transmittal', foreignField: '_id', as: 'transmittal' }
-        }, {
-          $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
-        }, {
-          $addFields: { requestNumber: { $toString: '$request.number' } }
-        }, {
-          $project: {
-            '_id': 1,
-            'request._id': 1,
-            'request.number': 1,
-            'transmittal.number': 1,
-            'request.createdBy._id': 1,
-            'request.createdBy.firstName': 1,
-            'request.createdBy.lastName': 1,
-            'request.conectaID': 1,
-            'request.sellerText': 1,
-            'request.advancePaymentInformation': 1,
-            'priority': 1,
-            'observation': 1,
-            'equipment': 1,
-            'washed': 1,
-            'review': 1,
-            'body': 1,
-            'files._id': 1,
-            'requestNumber': 1,
-            'status._id': 1,
-            'status.name': 1,
-            'status.weigth': 1,
-            'car._id': 1,
-            'car.vin': 1,
-            'car.brand': 1,
-            'car.color': 1,
-            'car.material': 1,
-            'car.entry': 1,
-            'car.invoice': 1,
-            'car.patent': 1,
-            'car.property': 1,
-            'car.type': 1,
-            'car.client': 1,
-            'car.bl': 1,
-            'car.denomination': 1,
-            'car.internalNumber': 1,
-            'origin._id': 1,
-            'origin.name': 1,
-            'destination._id': 1,
-            'destination.name': 1,
-            'reason._id': 1,
-            'reason.name': 1,
-            'uploadDate': 1,
-            'estimatedArrival': 1,
-            'createdAt': 1,
-            'updatedAt': 1
-          }
-        }, {
-          $match: {
-            $or: [{
-              'destination._id': {
-                $in: venuesIds
-              }
-            }, {
-              'origin._id': {
-                $in: venuesIds
-              }
-            }],
-            ...extraMatch
-          }
-        }];
-        const aggregate = [
-          ...baseAggregate,
-          ...aggregatePopulate,
-          {
-            $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
-          }];
-        const requestsAggregate = RequestItem.aggregate(aggregate);
-        const options: PaginateOptions = {
-          page: parseInt(page ? page : '1', 10),
-          limit: parseInt(pageSize ? pageSize : '10', 10),
-          customLabels: this.aggregateCustomLabels
-        };
-        const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
-        if (options.page && requests.pages && requests.pages < options.page) {
-          res.status(400).json({
-            message: 'La página solicitada no existe.',
-            status: 400
-          });
-        } else {
-          res.json({
-            count: requests.total,
-            pages: requests.pages,
-            hasPrevious: requests.hasPrevious,
-            hasNext: requests.hasNext,
-            results: requests.docs,
-            status: 200
-          });
-        }
-      } else {
-        const options: PaginateOptions = {
-          sort: {
-            _id: -1
-          },
-          select: ['priority', 'observation', 'createdAt', 'updatedAt'],
-          populate: [{
-            path: 'files',
-            select: ['_id']
-          }, {
-            path: 'request',
-            select: ['number', 'createdAt', 'conectaID', 'advancePaymentInformation'],
-            populate: [{
-              path: 'createdBy',
-              select: ['firstName', 'lastName']
-            },{
-              path: 'advancePaymentInformation.files',
-            }]
-          }, {
-            path: 'car',
-            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
-          }, {
-            path: 'reason',
-            select: ['name']
-          }, {
-            path: 'transmittal',
-            select: ['number']
-          }, {
-            path: 'origin',
-            select: ['name']
-          }, {
-            path: 'destination',
-            select: ['name']
-          }, {
-            path: 'status',
-            select: ['name', 'weigth']
-          }],
-          page: parseInt(page ? page : '1', 10),
-          limit: parseInt(pageSize ? pageSize : '200', 10)
-        };
-        const query: any = {
+    try {
+      const baseAggregate: any[] = [{
+        $match: {
           team,
           $or: [{
             destination: {
@@ -773,19 +590,126 @@ class RequestController {
               $in: venuesIds
             }
           }]
-        };
-        if (filters && filters.transmitttalModule) {
-          query.assigned = { $in: [null, false] };
         }
-        const request = await RequestItem.paginate(query, options);
+      }, {
+        $match: {
+          team,
+          ...extraQuery
+        }
+      }, {
+        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+      }];
+      const aggregatePopulate = [{
+        $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+      }, {
+        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+      }, {
+        $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+      }, {
+        $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+      }, {
+        $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+      }, {
+        $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
+      }, {
+        $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
+      }, {
+        $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+      }, {
+        $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
+      }, {
+        $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+      }, {
+        $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'transmittals', localField: 'transmittal', foreignField: '_id', as: 'transmittal' }
+      }, {
+        $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
+      }, {
+        $addFields: { requestNumber: { $toString: '$request.number' } }
+      }, {
+        $project: {
+          '_id': 1,
+          'request._id': 1,
+          'request.number': 1,
+          'transmittal.number': 1,
+          'request.conectaID': 1,
+          'request.sellerText': 1,
+          'request.advancePaymentInformation': 1,
+          'priority': 1,
+          'observation': 1,
+          'equipment': 1,
+          'washed': 1,
+          'review': 1,
+          'body': 1,
+          'files._id': 1,
+          'requestNumber': 1,
+          'status._id': 1,
+          'status.name': 1,
+          'status.weigth': 1,
+          'car._id': 1,
+          'car.vin': 1,
+          'car.brand': 1,
+          'car.color': 1,
+          'car.material': 1,
+          'car.entry': 1,
+          'car.invoice': 1,
+          'car.patent': 1,
+          'car.property': 1,
+          'car.type': 1,
+          'car.client': 1,
+          'car.bl': 1,
+          'car.denomination': 1,
+          'car.internalNumber': 1,
+          'origin._id': 1,
+          'origin.name': 1,
+          'destination._id': 1,
+          'destination.name': 1,
+          'reason._id': 1,
+          'reason.name': 1,
+          'uploadDate': 1,
+          'estimatedArrival': 1,
+          'createdAt': 1,
+          'updatedAt': 1
+        }
+      }];
+      const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
+      const countRequestsAggregate = RequestItem.aggregate(baseAggregate);
+      const options: PaginateOptions = {
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10),
+        customLabels: this.aggregateCustomLabels,
+        countQuery: countRequestsAggregate
+      };
+      const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
+      if (options.page && requests.pages && requests.pages < options.page) {
+        res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
         res.json({
-          extraMatch,
-          extraQuery,
-          count: request.total,
-          pages: request.pages,
-          hasPrevious: options.page && options.page > 1 && request.pages && request.pages >= options.page,
-          hasNext: options.page && request.pages && request.pages > options.page,
-          results: request.docs,
+          count: requests.total,
+          pages: requests.pages,
+          hasPrevious: requests.hasPrevious,
+          hasNext: requests.hasNext,
+          results: await RequestItem.aggregate([{
+            $match: {
+              _id: { $in: requests.docs.map((d) => d._id) }
+            }
+          },
+            ...aggregatePopulate,
+            {
+              $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+            }]),
           status: 200
         });
       }

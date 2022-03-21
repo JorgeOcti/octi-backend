@@ -1,8 +1,8 @@
 import * as bluebird from 'bluebird';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
-import * as socketIO from 'socket.io';
-import * as socketRedis from 'socket.io-redis';
+import { Server} from 'socket.io';
+import { createAdapter } from "@socket.io/redis-adapter";
 import app from './app';
 import logger from './services/logger.service';
 import redisClient, {createRedisClient} from './services/redis.service';
@@ -41,16 +41,13 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   }
 });
 
-export const io = socketIO(server);
-io.adapter(socketRedis({
-  pubClient: createRedisClient(),
-  subClient: createRedisClient()
-}));
+export const io = new Server(server);
+io.adapter(createAdapter(createRedisClient(), createRedisClient()));
 
 /* istanbul ignore next */
 io.use( async (socket, next) => {
   // validate token to use socket
-  const token = socket.handshake.query.token;
+  const token = socket.handshake.query.token as string;
   const msgErrorAuthentication: string = 'authentication error';
   if (token) {
     try {

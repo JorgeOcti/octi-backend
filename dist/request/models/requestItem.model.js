@@ -40,7 +40,19 @@ var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
 var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var requestItem_hooks_1 = require("./requestItem.hooks");
-var metaSchema = new mongoose.Schema({});
+var models_1 = require("../../app/models");
+var request_model_1 = require("./request.model");
+var metaSchema = new mongoose.Schema({
+    car: {
+        type: models_1.carSchema
+    },
+    request: {
+        type: request_model_1.requestSchema
+    },
+    user: {
+        type: models_1.userSchema
+    }
+});
 var requestItemAnswerSchema = new mongoose.Schema({
     questionId: {
         type: mongoose.Schema.Types.ObjectId
@@ -154,28 +166,29 @@ var requestItemSchema = new mongoose.Schema({
 });
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
-requestItemSchema.pre('save', function (next) {
-    // const doc = this;
-    console.log('****************** REQUET ITEM save *********************');
-    // console.log(doc);
-    next();
-});
-requestItemSchema.post('update', function (doc) { return __awaiter(void 0, void 0, void 0, function () {
+// requestItemSchema.pre<IRequestItemModel>('save', function(next: any) {
+//   // const doc = this;
+//   console.log('****************** REQUET ITEM save *********************');
+//   // console.log(doc);
+//   next();
+// });
+// requestItemSchema.post<IRequestItemModel>('update', async (doc: any) => {
+//   console.log('******************* REQUET ITEM update ********************');
+//   await requestItemsHooks.postUpdateHandler(doc);
+// });
+requestItemSchema.post('findOneAndUpdate', function (doc) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                console.log('******************* REQUET ITEM update ********************');
-                return [4 /*yield*/, requestItem_hooks_1["default"].postUpdateHandler(doc)];
+                console.log('******************** REQUET ITEM findOneAndUpdate *******************');
+                console.log(doc);
+                return [4 /*yield*/, requestItem_hooks_1["default"].postFindOneAndUpdateHandler(doc)];
             case 1:
                 _a.sent();
                 return [2 /*return*/];
         }
     });
 }); });
-requestItemSchema.post('findOneAndUpdate', function (doc) {
-    console.log('******************** REQUET ITEM findOneAndUpdate *******************');
-    console.log(doc);
-});
 var RequestItem = mongoose.model('RequestItem', requestItemSchema);
 exports["default"] = RequestItem;
 //# sourceMappingURL=requestItem.model.js.map

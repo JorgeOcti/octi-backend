@@ -44,7 +44,7 @@ const initialState: IRequestItemsState = {
     to: null
   },
   options: {
-    orderBy: 'request.number',
+    orderBy: 'meta.request.number',
     orderType: 'descending'
   },
   pagination: {

@@ -119,7 +119,7 @@ var AdminAlertController = /** @class */ (function () {
     };
     AdminAlertController.prototype.apiCreateAlert = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name, gte, lte, users, company, team, alert_1, _b, _c, e_2;
+            var _a, name, gte, lte, users, company, team, alert, _b, _c, e_2;
             var _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
@@ -140,14 +140,14 @@ var AdminAlertController = /** @class */ (function () {
                                 team: team
                             }).save()];
                     case 2:
-                        alert_1 = _e.sent();
+                        alert = _e.sent();
                         _c = (_b = res.status(201)).json;
                         _d = {
                             message: 'Alerta agregada satisfactoriamente'
                         };
                         return [4 /*yield*/, alert_model_1["default"]
                                 .findOne({
-                                _id: alert_1._id,
+                                _id: alert._id,
                                 team: team
                             }, {
                                 name: 1,
@@ -185,7 +185,7 @@ var AdminAlertController = /** @class */ (function () {
     };
     AdminAlertController.prototype.apiDeleteAlert = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, alert_2, response, response, e_3;
+            var id, team, alert, response, response, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -196,11 +196,11 @@ var AdminAlertController = /** @class */ (function () {
                         _a.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, alert_model_1["default"].findOneAndRemove({ _id: id, team: team })];
                     case 2:
-                        alert_2 = _a.sent();
-                        if (alert_2) {
+                        alert = _a.sent();
+                        if (alert) {
                             response = {
                                 message: 'Alerta eliminada satisfactoriamente.',
-                                id: alert_2._id
+                                id: alert._id
                             };
                             res.status(200).json(response);
                         }

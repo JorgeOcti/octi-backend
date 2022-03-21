@@ -2116,9 +2116,9 @@ var FormController = /** @class */ (function () {
                                                         p1 = participants[0];
                                                 }
                                                 else {
-                                                    var length_1 = participants.length;
+                                                    var length = participants.length;
                                                     p0 = participants[0];
-                                                    p1 = participants[length_1 - 1];
+                                                    p1 = participants[length - 1];
                                                 }
                                                 var choice0Gas = null;
                                                 var choice1Gas = null;

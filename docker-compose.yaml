@@ -29,18 +29,18 @@ services:
     volumes:
       - redis:/data
 
-  build:
-    build:
-      dockerfile: Dockerfile.development
-      context: .
-    image: andes:latest
-    restart: unless-stopped
-    command: ['tsc', '-w', '--project', 'tsconfig.json']
-    volumes:
-      - ./buildcache:/srv/buildcache
-      - ./dist:/srv/dist
-      - ./src:/srv/src
-      - ./tsconfig.json:/srv/tsconfig.json
+#  build:
+#    build:
+#      dockerfile: Dockerfile.development
+#      context: .
+#    image: andes:latest
+#    restart: unless-stopped
+#    command: ['tsc', '-w', '--project', 'tsconfig.json']
+#    volumes:
+#      - ./buildcache:/srv/buildcache
+#      - ./dist:/srv/dist
+#      - ./src:/srv/src
+#      - ./tsconfig.json:/srv/tsconfig.json
 
   backend:
     build:
@@ -48,7 +48,8 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: npm run dev:inspect
+    command: npm run dev:tsnode
+#    command: pm2 start pm2.development.json --no-daemon
 #    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
 #    deploy:
 #      resources:
@@ -72,9 +73,11 @@ services:
       - 3070:3070
     volumes:
       - ./dist:/srv/dist
+      - ./src:/srv/src
       - ./public:/srv/public
       - ./views:/srv/views
       - ./nodemon.json:/srv/nodemon.json
+      - ./tsconfig.json:/srv/tsconfig.json
     depends_on:
       - redis
       - mongo

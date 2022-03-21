@@ -19,7 +19,7 @@ export const choicesStatusCar = [
 export interface ICarModel extends ICar, mongoose.Document {
 }
 
-const carSchema = new mongoose.Schema({
+export const carSchema = new mongoose.Schema({
   vin: {
     type: String,
     trim: true

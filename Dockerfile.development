@@ -48,5 +48,8 @@ RUN npm --build-from-source install bcrypt && \
     echo "{}" >> /srv/ses-config.json
 
 
+COPY ./public /srv/public
+COPY ./views /srv/views
+
 EXPOSE 3000
 

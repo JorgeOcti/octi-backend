@@ -184,19 +184,19 @@ var TransmittalController = /** @class */ (function () {
     TransmittalController.prototype.apiCreate = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _b, name_1, items, files, transporter, observation, type, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
+            var _b, name, items, files, transporter, observation, type, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 12, , 13]);
                         logger_service_1["default"].info("TransmittalController.apiCreate");
-                        _b = req.body, name_1 = _b.name, items = _b.items, files = _b.files, transporter = _b.transporter, observation = _b.observation, type = _b.type;
+                        _b = req.body, name = _b.name, items = _b.items, files = _b.files, transporter = _b.transporter, observation = _b.observation, type = _b.type;
                         user = req.user;
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { "new": true })];
                     case 1:
                         team = _c.sent();
                         return [4 /*yield*/, new transmittal_model_1["default"]({
-                                name: name_1,
+                                name: name,
                                 type: type,
                                 team: user.team,
                                 number: team.transmittalNumber,

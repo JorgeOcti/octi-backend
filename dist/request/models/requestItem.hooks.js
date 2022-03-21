@@ -38,13 +38,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var request_model_1 = require("./request.model");
 var requestItem_model_1 = require("./requestItem.model");
+var car_model_1 = require("../../app/models/car.model");
+var user_model_1 = require("../../app/models/user.model");
 var RequestItemHooks = /** @class */ (function () {
     function RequestItemHooks() {
-        this.postUpdateHandler = this.postUpdateHandler.bind(this);
+        this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
     }
-    RequestItemHooks.prototype.postUpdateHandler = function (doc) {
+    RequestItemHooks.prototype.postFindOneAndUpdateHandler = function (doc) {
         return __awaiter(this, void 0, void 0, function () {
-            var request;
+            var request, car, user;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -52,16 +54,16 @@ var RequestItemHooks = /** @class */ (function () {
                         return [4 /*yield*/, request_model_1["default"].findById(doc.request)];
                     case 1:
                         request = _a.sent();
-                        if (!request) return [3 /*break*/, 3];
-                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, { meta: { request: request } })];
+                        return [4 /*yield*/, car_model_1["default"].findById(doc.car)];
                     case 2:
-                        _a.sent();
-                        return [3 /*break*/, 4];
+                        car = _a.sent();
+                        return [4 /*yield*/, user_model_1["default"].findById(doc.createdBy)];
                     case 3:
-                        console.error("Item no tiene request");
-                        console.error(doc);
-                        _a.label = 4;
-                    case 4: return [2 /*return*/];
+                        user = _a.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"].update({ request: request }, { meta: { request: request, car: car, user: user } })];
+                    case 4:
+                        _a.sent();
+                        return [2 /*return*/];
                 }
             });
         });

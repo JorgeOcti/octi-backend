@@ -46,7 +46,7 @@ var part_model_1 = require("../models/part.model");
 var position_model_1 = require("../models/position.model");
 function createDamage() {
     return __awaiter(this, void 0, void 0, function () {
-        var MONGODB_URI, team, parts, _i, parts_1, name_1, kinds, _a, kinds_1, name_2, positions, _b, positions_1, name_3, damages, _c;
+        var MONGODB_URI, team, parts, _i, parts_1, name, kinds, _a, kinds_1, name, positions, _b, positions_1, name, damages, _c;
         var _d;
         return __generator(this, function (_e) {
             switch (_e.label) {
@@ -67,14 +67,14 @@ function createDamage() {
                     _e.label = 2;
                 case 2:
                     if (!(_i < parts_1.length)) return [3 /*break*/, 6];
-                    name_1 = parts_1[_i];
-                    return [4 /*yield*/, part_model_1["default"].findOne({ team: team, name: name_1 })];
+                    name = parts_1[_i];
+                    return [4 /*yield*/, part_model_1["default"].findOne({ team: team, name: name })];
                 case 3:
                     if (!!(_e.sent())) return [3 /*break*/, 5];
                     console.log("created.");
                     return [4 /*yield*/, new part_model_1["default"]({
                             team: team,
-                            name: name_1
+                            name: name
                         }).save()];
                 case 4:
                     _e.sent();
@@ -89,14 +89,14 @@ function createDamage() {
                     _e.label = 7;
                 case 7:
                     if (!(_a < kinds_1.length)) return [3 /*break*/, 11];
-                    name_2 = kinds_1[_a];
-                    return [4 /*yield*/, kind_model_1["default"].findOne({ team: team, name: name_2 })];
+                    name = kinds_1[_a];
+                    return [4 /*yield*/, kind_model_1["default"].findOne({ team: team, name: name })];
                 case 8:
                     if (!!(_e.sent())) return [3 /*break*/, 10];
                     console.log("created.");
                     return [4 /*yield*/, new kind_model_1["default"]({
                             team: team,
-                            name: name_2
+                            name: name
                         }).save()];
                 case 9:
                     _e.sent();
@@ -111,14 +111,14 @@ function createDamage() {
                     _e.label = 12;
                 case 12:
                     if (!(_b < positions_1.length)) return [3 /*break*/, 16];
-                    name_3 = positions_1[_b];
-                    return [4 /*yield*/, position_model_1["default"].findOne({ team: team, name: name_3 })];
+                    name = positions_1[_b];
+                    return [4 /*yield*/, position_model_1["default"].findOne({ team: team, name: name })];
                 case 13:
                     if (!!(_e.sent())) return [3 /*break*/, 15];
                     console.log("created.");
                     return [4 /*yield*/, new position_model_1["default"]({
                             team: team,
-                            name: name_3
+                            name: name
                         }).save()];
                 case 14:
                     _e.sent();

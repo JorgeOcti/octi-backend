@@ -4,13 +4,25 @@ import { IRequestItem } from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import requestItemsHooks from './requestItem.hooks';
+import { carSchema, userSchema } from '../../app/models';
+import { requestSchema } from './request.model';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
 }
 
-const metaSchema = new mongoose.Schema({});
+const metaSchema = new mongoose.Schema({
+  car: {
+    type: carSchema
+  },
+  request: {
+    type: requestSchema
+  },
+  user: {
+    type: userSchema
+  }
+});
 
 const requestItemAnswerSchema = new mongoose.Schema({
   questionId: {
@@ -128,21 +140,22 @@ const requestItemSchema = new mongoose.Schema({
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
 
-requestItemSchema.pre<IRequestItemModel>('save', function(next: any) {
-  // const doc = this;
-  console.log('****************** REQUET ITEM save *********************');
-  // console.log(doc);
-  next();
-});
+// requestItemSchema.pre<IRequestItemModel>('save', function(next: any) {
+//   // const doc = this;
+//   console.log('****************** REQUET ITEM save *********************');
+//   // console.log(doc);
+//   next();
+// });
 
-requestItemSchema.post<IRequestItemModel>('update', async (doc: any) => {
-  console.log('******************* REQUET ITEM update ********************');
-  await requestItemsHooks.postUpdateHandler(doc);
-});
+// requestItemSchema.post<IRequestItemModel>('update', async (doc: any) => {
+//   console.log('******************* REQUET ITEM update ********************');
+//   await requestItemsHooks.postUpdateHandler(doc);
+// });
 
-requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', function(doc: any) {
+requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', async (doc: any) => {
   console.log('******************** REQUET ITEM findOneAndUpdate *******************');
   console.log(doc);
+  await requestItemsHooks.postFindOneAndUpdateHandler(doc);
 });
 
 export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel> & AggregatePaginateModel<IRequestItemModel>;

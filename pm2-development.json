@@ -1,6 +1,6 @@
 {
   "name": "osa-andes-server",
-  "script": "dist/server.js",
+  "script": "src/server.ts",
   "instances": "1",
   "exec_mode": "cluster",
   "ignore_watch" : ["node_modules", "logs"],

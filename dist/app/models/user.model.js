@@ -9,6 +9,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
+exports.userSchema = void 0;
 var bcrypt = require("bcrypt");
 var bson_1 = require("bson");
 var jwt = require("jsonwebtoken");
@@ -21,7 +22,7 @@ var userSettingsSchema = new mongoose.Schema({
         ref: 'SalesChannel'
     }
 });
-var userSchema = new mongoose.Schema({
+exports.userSchema = new mongoose.Schema({
     username: {
         type: String,
         unique: true
@@ -113,21 +114,21 @@ var userSchema = new mongoose.Schema({
     },
     timestamps: true
 });
-userSchema.plugin(passportLocalMongoose);
+exports.userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
-userSchema.plugin(mongoosePaginate);
-userSchema.methods.fullName = function () {
+exports.userSchema.plugin(mongoosePaginate);
+exports.userSchema.methods.fullName = function () {
     return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
 // validate user has permissions
-userSchema.methods.hasPermission = function (permission) {
+exports.userSchema.methods.hasPermission = function (permission) {
     if (permission && permission.length && this.userPermissions && this.userPermissions.length) {
         return this.userPermissions.some(function (p) { return p.codeName === permission; });
     }
     return false;
 };
 // used by sockets
-userSchema.methods.generateToken = function () {
+exports.userSchema.methods.generateToken = function () {
     var userInfo = {
         _id: this._id,
         firstName: this.firstName,
@@ -139,7 +140,7 @@ userSchema.methods.generateToken = function () {
         expiresIn: '7 days'
     });
 };
-userSchema.methods.venuesPermissions = function (inString) {
+exports.userSchema.methods.venuesPermissions = function (inString) {
     var venuesPermissions = [];
     var currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
     if (currentVenue) {
@@ -163,7 +164,7 @@ userSchema.methods.venuesPermissions = function (inString) {
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function (next) {
+exports.userSchema.pre('save', function (next) {
     var user = this;
     if (!user.isModified('password')) {
         return next();
@@ -181,14 +182,14 @@ userSchema.pre('save', function (next) {
         });
     });
 });
-userSchema.methods.comparePassword = function (candidatePassword, cb) {
+exports.userSchema.methods.comparePassword = function (candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
         cb(err, isMatch);
     });
 };
-userSchema.methods.comparePasswordSync = function (candidatePassword) {
+exports.userSchema.methods.comparePasswordSync = function (candidatePassword) {
     return bcrypt.compareSync(candidatePassword, this.password);
 };
-var User = mongoose.model('User', userSchema);
+var User = mongoose.model('User', exports.userSchema);
 exports["default"] = User;
 //# sourceMappingURL=user.model.js.map

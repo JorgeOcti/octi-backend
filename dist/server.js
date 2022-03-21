@@ -51,8 +51,8 @@ exports.io = void 0;
 var bluebird = require("bluebird");
 var jwt = require("jsonwebtoken");
 var mongoose = require("mongoose");
-var socketIO = require("socket.io");
-var socketRedis = require("socket.io-redis");
+var socket_io_1 = require("socket.io");
+var redis_adapter_1 = require("@socket.io/redis-adapter");
 var app_1 = require("./app");
 var logger_service_1 = require("./services/logger.service");
 var redis_service_1 = require("./services/redis.service");
@@ -84,11 +84,8 @@ var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) 
         console.log("".concat(logger_service_1["default"].colors.brightBlack, "Press CTRL-C to stop").concat(logger_service_1["default"].colors.reset));
     }
 });
-exports.io = socketIO(server);
-exports.io.adapter(socketRedis({
-    pubClient: (0, redis_service_1.createRedisClient)(),
-    subClient: (0, redis_service_1.createRedisClient)()
-}));
+exports.io = new socket_io_1.Server(server);
+exports.io.adapter((0, redis_adapter_1.createAdapter)((0, redis_service_1.createRedisClient)(), (0, redis_service_1.createRedisClient)()));
 /* istanbul ignore next */
 exports.io.use(function (socket, next) { return __awaiter(void 0, void 0, void 0, function () {
     var token, msgErrorAuthentication, user, e_1;

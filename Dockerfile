@@ -1,4 +1,4 @@
-FROM node:12.22.6-stretch-slim
+FROM node:16.14.2-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \

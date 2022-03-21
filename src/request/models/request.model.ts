@@ -51,7 +51,7 @@ const paymentInformationSchema = new mongoose.Schema({
   }]
 });
 
-const requestSchema = new mongoose.Schema({
+export const requestSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
@@ -154,12 +154,7 @@ requestSchema.plugin(mongooseCrate, {
     }
   }
 });
-// requestSchema.pre('save', function(next) {
-//   const doc = this;
-//   console.log('****************** REQUET save *********************');
-//   console.log(doc);
-//   next();
-// });
+
 requestSchema.post<IRequestModel>("update", async (doc) => {
   console.log('******************* REQUET update ********************');
   // console.log(doc);

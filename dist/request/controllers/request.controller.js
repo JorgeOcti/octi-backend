@@ -655,17 +655,21 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.apiListItems = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var team, _b, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_7;
-            var _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var team, _b, page, pageSize, orderBy, orderType, filters, requestNumbers, venuesIds, extraQuery, baseAggregate, aggregatePopulate, requestsAggregate, countRequestsAggregate, options, requests, _c, _d, e_7;
+            var _e, _f, _g;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiListItems");
                         logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
                         team = req.user.team._id;
                         _b = req.body, page = _b.page, pageSize = _b.pageSize, orderBy = _b.orderBy, orderType = _b.orderType, filters = _b.filters;
+                        requestNumbers = filters.request
+                            .replace(/[^0-9,]/g, '')
+                            .split(',')
+                            .filter(function (requestNumber) { return (requestNumber.length); });
                         extraQuery = {};
-                        extraMatch = {};
+                        // const extraMatch: any = {};
                         if (filters.venues && filters.venues.length) {
                             venuesIds = req.user.venuesPermissions()
                                 .filter(function (venue) { return (filters.venues.includes(venue.toString())); });
@@ -674,11 +678,11 @@ var RequestController = /** @class */ (function () {
                             venuesIds = req.user.venuesPermissions();
                         }
                         if (filters.users && filters.users.length) {
-                            if (!extraMatch.hasOwnProperty('$or')) {
-                                extraMatch.$or = [];
+                            if (!extraQuery.hasOwnProperty('$or')) {
+                                extraQuery.$or = [];
                             }
-                            extraMatch.$or.push({
-                                'request.createdBy._id': { $in: filters.users.map(function (userId) { return new bson_1.ObjectID(userId); }) }
+                            extraQuery.$or.push({
+                                'meta.user._id': { $in: filters.users.map(function (userId) { return new bson_1.ObjectID(userId); }) }
                             });
                         }
                         if (filters.status && filters.status.length) {
@@ -696,70 +700,64 @@ var RequestController = /** @class */ (function () {
                             }
                             extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
                         }
-                        requestNumbers = filters.request
-                            .replace(/[^0-9,]/g, '')
-                            .split(',')
-                            .filter(function (requestNumber) { return (requestNumber.length); });
                         if (requestNumbers.length) {
-                            extraMatch.requestNumber = { $in: requestNumbers };
+                            extraQuery['meta.request.number'] = { $in: requestNumbers.map(function (requestNumber) { return +requestNumber; }) };
                         }
                         if ((_a = filters.entry) === null || _a === void 0 ? void 0 : _a.length) {
-                            extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' };
+                            extraQuery['meta.car.entry'] = { '$regex': filters.entry, '$options': 'i' };
                         }
-                        else if (filters.text) {
-                            extraMatch.$or = [];
-                            extraMatch.$or.push({
-                                'car.vin': { '$regex': filters.text, '$options': 'i' }
+                        if (filters.text) {
+                            extraQuery.$or = [];
+                            extraQuery.$or.push({
+                                'meta.car.vin': { '$regex': filters.text, '$options': 'i' }
                             });
-                            extraMatch.$or.push({
-                                'car.brand': { '$regex': filters.text, '$options': 'i' }
+                            extraQuery.$or.push({
+                                'meta.car.brand': { '$regex': filters.text, '$options': 'i' }
                             });
-                            extraMatch.$or.push({
-                                'car.color': { '$regex': filters.text, '$options': 'i' }
+                            extraQuery.$or.push({
+                                'meta.car.color': { '$regex': filters.text, '$options': 'i' }
                             });
-                            extraMatch.$or.push({
-                                'car.denomination': { '$regex': filters.text, '$options': 'i' }
+                            extraQuery.$or.push({
+                                'meta.car.denomination': { '$regex': filters.text, '$options': 'i' }
                             });
-                            extraMatch.$or.push({
-                                'car.material': { '$regex': filters.text, '$options': 'i' }
-                            });
-                            extraMatch.$or.push({
-                                'requestNumber': { '$regex': filters.text, '$options': 'i' }
+                            extraQuery.$or.push({
+                                'meta.car.material': { '$regex': filters.text, '$options': 'i' }
                             });
                         }
                         if (filters.sellerText && filters.sellerText.length) {
-                            if (!extraMatch.hasOwnProperty('$or')) {
-                                extraMatch.$or = [];
+                            if (!extraQuery.hasOwnProperty('$or')) {
+                                extraQuery.$or = [];
                             }
-                            extraMatch.$or.push({
-                                'request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
+                            extraQuery.$or.push({
+                                'meta.request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
                             });
                         }
                         if (filters.properties && filters.properties.length) {
-                            if (!extraMatch.hasOwnProperty('$or')) {
-                                extraMatch.$or = [];
+                            if (!extraQuery.hasOwnProperty('$or')) {
+                                extraQuery.$or = [];
                             }
-                            extraMatch.$or.push({
-                                'car.property': { $in: filters.properties.map(function (s) { return s; }) }
+                            extraQuery.$or.push({
+                                'meta.car.property': { $in: filters.properties.map(function (s) { return s; }) }
                             });
                         }
                         if (filters.ticket && filters.ticket.length) {
-                            if (!extraMatch.hasOwnProperty('$or')) {
-                                extraMatch.$or = [];
+                            if (!extraQuery.hasOwnProperty('$or')) {
+                                extraQuery.$or = [];
                             }
-                            extraMatch.$or.push({
-                                'request.advancePaymentInformation.number': filters.ticket
+                            extraQuery.$or.push({
+                                'meta.request.advancePaymentInformation.number': filters.ticket
                             });
                         }
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 6, , 7]);
-                        if (!(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length)) return [3 /*break*/, 3];
                         if (filters && filters.transmitttalModule) {
                             extraQuery.assigned = { $in: [null, false] };
                         }
+                        _h.label = 1;
+                    case 1:
+                        _h.trys.push([1, 6, , 7]);
                         baseAggregate = [{
-                                $match: __assign({ team: team, $or: [{
+                                $match: {
+                                    team: team,
+                                    $or: [{
                                             destination: {
                                                 $in: venuesIds
                                             }
@@ -767,7 +765,12 @@ var RequestController = /** @class */ (function () {
                                             origin: {
                                                 $in: venuesIds
                                             }
-                                        }] }, extraQuery)
+                                        }]
+                                }
+                            }, {
+                                $match: __assign({ team: team }, extraQuery)
+                            }, {
+                                $sort: (_e = {}, _e[orderBy] = orderType === 'ascending' ? 1 : -1, _e)
                             }];
                         aggregatePopulate = [{
                                 $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
@@ -811,9 +814,6 @@ var RequestController = /** @class */ (function () {
                                     'request._id': 1,
                                     'request.number': 1,
                                     'transmittal.number': 1,
-                                    'request.createdBy._id': 1,
-                                    'request.createdBy.firstName': 1,
-                                    'request.createdBy.lastName': 1,
                                     'request.conectaID': 1,
                                     'request.sellerText': 1,
                                     'request.advancePaymentInformation': 1,
@@ -853,120 +853,47 @@ var RequestController = /** @class */ (function () {
                                     'createdAt': 1,
                                     'updatedAt': 1
                                 }
-                            }, {
-                                $match: __assign({ $or: [{
-                                            'destination._id': {
-                                                $in: venuesIds
-                                            }
-                                        }, {
-                                            'origin._id': {
-                                                $in: venuesIds
-                                            }
-                                        }] }, extraMatch)
                             }];
-                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
-                            {
-                                $sort: (_c = {}, _c[orderBy] = orderType === 'ascending' ? 1 : -1, _c)
-                            }
-                        ], false);
-                        requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
+                        requestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate).allowDiskUse(true);
+                        countRequestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
                             limit: parseInt(pageSize ? pageSize : '10', 10),
-                            customLabels: this.aggregateCustomLabels
+                            customLabels: this.aggregateCustomLabels,
+                            countQuery: countRequestsAggregate
                         };
                         return [4 /*yield*/, requestItem_model_1["default"].aggregatePaginate(requestsAggregate, options)];
                     case 2:
-                        requests = _d.sent();
-                        if (options.page && requests.pages && requests.pages < options.page) {
-                            res.status(400).json({
-                                message: 'La página solicitada no existe.',
-                                status: 400
-                            });
-                        }
-                        else {
-                            res.json({
-                                count: requests.total,
-                                pages: requests.pages,
-                                hasPrevious: requests.hasPrevious,
-                                hasNext: requests.hasNext,
-                                results: requests.docs,
-                                status: 200
-                            });
-                        }
+                        requests = _h.sent();
+                        if (!(options.page && requests.pages && requests.pages < options.page)) return [3 /*break*/, 3];
+                        res.status(400).json({
+                            message: 'La página solicitada no existe.',
+                            status: 400
+                        });
                         return [3 /*break*/, 5];
                     case 3:
-                        options = {
-                            sort: {
-                                _id: -1
-                            },
-                            select: ['priority', 'observation', 'createdAt', 'updatedAt'],
-                            populate: [{
-                                    path: 'files',
-                                    select: ['_id']
-                                }, {
-                                    path: 'request',
-                                    select: ['number', 'createdAt', 'conectaID', 'advancePaymentInformation'],
-                                    populate: [{
-                                            path: 'createdBy',
-                                            select: ['firstName', 'lastName']
-                                        }, {
-                                            path: 'advancePaymentInformation.files'
-                                        }]
-                                }, {
-                                    path: 'car',
-                                    select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
-                                }, {
-                                    path: 'reason',
-                                    select: ['name']
-                                }, {
-                                    path: 'transmittal',
-                                    select: ['number']
-                                }, {
-                                    path: 'origin',
-                                    select: ['name']
-                                }, {
-                                    path: 'destination',
-                                    select: ['name']
-                                }, {
-                                    path: 'status',
-                                    select: ['name', 'weigth']
-                                }],
-                            page: parseInt(page ? page : '1', 10),
-                            limit: parseInt(pageSize ? pageSize : '200', 10)
+                        _d = (_c = res).json;
+                        _f = {
+                            count: requests.total,
+                            pages: requests.pages,
+                            hasPrevious: requests.hasPrevious,
+                            hasNext: requests.hasNext
                         };
-                        query = {
-                            team: team,
-                            $or: [{
-                                    destination: {
-                                        $in: venuesIds
+                        return [4 /*yield*/, requestItem_model_1["default"].aggregate(__spreadArray(__spreadArray([{
+                                    $match: {
+                                        _id: { $in: requests.docs.map(function (d) { return d._id; }) }
                                     }
-                                }, {
-                                    origin: {
-                                        $in: venuesIds
-                                    }
-                                }]
-                        };
-                        if (filters && filters.transmitttalModule) {
-                            query.assigned = { $in: [null, false] };
-                        }
-                        return [4 /*yield*/, requestItem_model_1["default"].paginate(query, options)];
+                                }], aggregatePopulate, true), [{
+                                    $sort: (_g = {}, _g[orderBy] = orderType === 'ascending' ? 1 : -1, _g)
+                                }], false))];
                     case 4:
-                        request = _d.sent();
-                        res.json({
-                            extraMatch: extraMatch,
-                            extraQuery: extraQuery,
-                            count: request.total,
-                            pages: request.pages,
-                            hasPrevious: options.page && options.page > 1 && request.pages && request.pages >= options.page,
-                            hasNext: options.page && request.pages && request.pages > options.page,
-                            results: request.docs,
-                            status: 200
-                        });
-                        _d.label = 5;
+                        _d.apply(_c, [(_f.results = _h.sent(),
+                                _f.status = 200,
+                                _f)]);
+                        _h.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_7 = _d.sent();
+                        e_7 = _h.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiListItems: Async Error.");
                         /* istanbul ignore next */

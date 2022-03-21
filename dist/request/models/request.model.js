@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.requestSchema = void 0;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
 var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
@@ -78,7 +79,7 @@ var paymentInformationSchema = new mongoose.Schema({
             ref: 'RequestFile'
         }]
 });
-var requestSchema = new mongoose.Schema({
+exports.requestSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -148,17 +149,17 @@ var requestSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-requestSchema.virtual('items', {
+exports.requestSchema.virtual('items', {
     ref: 'RequestItem',
     localField: '_id',
     foreignField: 'request',
     justOne: false
 });
-requestSchema.set('toObject', { virtuals: true });
-requestSchema.set('toJSON', { virtuals: true });
-requestSchema.plugin(mongoosePaginate);
-requestSchema.plugin(mongooseAggregatePaginate);
-requestSchema.plugin(mongooseCrate, {
+exports.requestSchema.set('toObject', { virtuals: true });
+exports.requestSchema.set('toJSON', { virtuals: true });
+exports.requestSchema.plugin(mongoosePaginate);
+exports.requestSchema.plugin(mongooseAggregatePaginate);
+exports.requestSchema.plugin(mongooseCrate, {
     storage: new MongooseCrateS3({
         key: process.env.S3_KEY || s3Config.accessKeyId,
         secret: process.env.S3_SECRET || s3Config.secretAccessKey,
@@ -176,22 +177,16 @@ requestSchema.plugin(mongooseCrate, {
         }
     }
 });
-// requestSchema.pre('save', function(next) {
-//   const doc = this;
-//   console.log('****************** REQUET save *********************');
-//   console.log(doc);
-//   next();
-// });
-requestSchema.post("update", function (doc) { return __awaiter(void 0, void 0, void 0, function () {
+exports.requestSchema.post("update", function (doc) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         console.log('******************* REQUET update ********************');
         return [2 /*return*/];
     });
 }); });
-requestSchema.post("findOneAndUpdate", function (doc) {
+exports.requestSchema.post("findOneAndUpdate", function (doc) {
     console.log('******************** REQUET findOneAndUpdate *******************');
     // console.log(doc);
 });
-var Request = mongoose.model('Request', requestSchema);
+var Request = mongoose.model('Request', exports.requestSchema);
 exports["default"] = Request;
 //# sourceMappingURL=request.model.js.map
