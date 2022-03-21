@@ -655,6 +655,7 @@ class RequestController {
           'equipment': 1,
           'washed': 1,
           'review': 1,
+          'meta': 1,
           'body': 1,
           'files._id': 1,
           'requestNumber': 1,
@@ -686,6 +687,8 @@ class RequestController {
           'createdAt': 1,
           'updatedAt': 1
         }
+      }, {
+        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }];
       const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const countRequestsAggregate = RequestItem.aggregate(baseAggregate);
@@ -711,11 +714,7 @@ class RequestController {
             $match: {
               _id: { $in: requests.docs.map((d) => d._id) }
             }
-          },
-            ...aggregatePopulate,
-            {
-              $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
-            }]),
+          }, ...aggregatePopulate]),
           status: 200
         });
       }

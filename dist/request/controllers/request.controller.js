@@ -833,6 +833,7 @@ var RequestController = /** @class */ (function () {
                                     'equipment': 1,
                                     'washed': 1,
                                     'review': 1,
+                                    'meta': 1,
                                     'body': 1,
                                     'files._id': 1,
                                     'requestNumber': 1,
@@ -864,6 +865,8 @@ var RequestController = /** @class */ (function () {
                                     'createdAt': 1,
                                     'updatedAt': 1
                                 }
+                            }, {
+                                $sort: (_f = {}, _f[orderBy] = orderType === 'ascending' ? 1 : -1, _f)
                             }];
                         requestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate).allowDiskUse(true);
                         countRequestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate);
@@ -884,23 +887,21 @@ var RequestController = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 3:
                         _d = (_c = res).json;
-                        _f = {
+                        _g = {
                             count: requests.total,
                             pages: requests.pages,
                             hasPrevious: requests.hasPrevious,
                             hasNext: requests.hasNext
                         };
-                        return [4 /*yield*/, requestItem_model_1["default"].aggregate(__spreadArray(__spreadArray([{
+                        return [4 /*yield*/, requestItem_model_1["default"].aggregate(__spreadArray([{
                                     $match: {
                                         _id: { $in: requests.docs.map(function (d) { return d._id; }) }
                                     }
-                                }], aggregatePopulate, true), [{
-                                    $sort: (_g = {}, _g[orderBy] = orderType === 'ascending' ? 1 : -1, _g)
-                                }], false))];
+                                }], aggregatePopulate, true))];
                     case 4:
-                        _d.apply(_c, [(_f.results = _h.sent(),
-                                _f.status = 200,
-                                _f)]);
+                        _d.apply(_c, [(_g.results = _h.sent(),
+                                _g.status = 200,
+                                _g)]);
                         _h.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
