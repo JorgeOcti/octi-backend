@@ -6,7 +6,9 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 import {IParticipant} from '../../../../../../src/form/interfaces/participant.interface';
 import {
   DashboardReduxAction,
@@ -62,7 +64,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
   };
   protected printIframe: any;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   componentWillMount() {
     // set the title of the page
@@ -70,7 +72,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getCarAction(id);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

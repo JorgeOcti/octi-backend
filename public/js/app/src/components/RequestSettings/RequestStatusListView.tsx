@@ -24,6 +24,8 @@ import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import StatusForm from './StatusForm';
 import ShowIf from '../Utils/ShowIf';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<RequestStatusReduxActions | FormAction>;
@@ -46,7 +48,7 @@ declare let window: IWindow;
 class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
   readonly state = {
     error: null,
     exporing: false
@@ -69,7 +71,7 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getRequestStatusThunkAction(pagination.page, orderBy, orderType);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

@@ -3,7 +3,8 @@ import * as React from 'react';
 import { Dispatch, ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import TrackingBasePage from '../Utils/TrackingBasePage';
@@ -38,7 +39,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     loading: false
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   private readonly api: ApiService;
 
@@ -51,7 +52,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

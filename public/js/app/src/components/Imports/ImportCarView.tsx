@@ -65,7 +65,7 @@ class ImportCarsView extends TrackingBasePage<IPropsType, IStateType> {
   };
 
   readonly inputFile: RefObject<HTMLInputElement>;
-  // private socket: SocketIOClient.Socket;
+  // private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);

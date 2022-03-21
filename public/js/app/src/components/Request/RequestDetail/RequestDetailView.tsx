@@ -5,7 +5,8 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
@@ -60,7 +61,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     }
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -81,7 +82,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
     this.props.getRequestAction(id);
 
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

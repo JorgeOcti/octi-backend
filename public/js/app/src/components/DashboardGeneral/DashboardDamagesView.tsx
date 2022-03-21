@@ -2,21 +2,22 @@
 import * as Raven from 'raven-js';
 import * as moment from 'moment';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {DashboardReduxAction} from '../../actions/dashboard.actions';
-import {getDashboardDamagesPerVenue, IDashboardDamagesState} from '../../actions/dashboardDamages.actions';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { DashboardReduxAction } from '../../actions/dashboard.actions';
+import { getDashboardDamagesPerVenue, IDashboardDamagesState } from '../../actions/dashboardDamages.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
-import * as io from "socket.io-client";
-import {IWindow} from "../../interfaces/window";
-import * as swal from "sweetalert";
-import {default as Axios} from "axios";
-import ApiService from "../../utils/axios";
-import {hasPermission} from "../../utils/common";
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import { IWindow } from '../../interfaces/window';
+import * as swal from 'sweetalert';
+import { default as Axios } from 'axios';
+import ApiService from '../../utils/axios';
+import { hasPermission } from '../../utils/common';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 declare let window: IWindow;
 
@@ -44,7 +45,7 @@ class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
     exporting: false,
   };
   protected damagesPerVenueChart: echarts.ECharts;
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -63,7 +64,7 @@ class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
     window.addEventListener('resize', this.resizeCharts, false);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

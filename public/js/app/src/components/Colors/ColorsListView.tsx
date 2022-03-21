@@ -18,6 +18,8 @@ import ColorForm from './ColorsFormView';
 import ModalView from '../Modal/ModalView';
 import * as moment from 'moment';
 import * as swal from 'sweetalert';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ColorReduxActions | FormAction>;
@@ -40,9 +42,9 @@ interface IStateType {
 declare let window: IWindow;
 
 class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
-  public title: string;
+  private socket: Socket;
 
-  private socket: SocketIOClient.Socket;
+  public title: string;
   readonly state = {
     error: null,
     colorType: '',
@@ -67,7 +69,7 @@ class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getColorThunkAction(colorType, pagination.page, orderBy, orderType);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

@@ -5,7 +5,8 @@ import * as React from 'react';
 import { Dispatch, ErrorInfo, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import {
   IRequestItem
@@ -53,7 +54,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     exporing: false
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -72,7 +73,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getRequestsThunkAction(page, orderBy, orderType);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

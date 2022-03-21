@@ -1,17 +1,16 @@
-import {AxiosError, default as Axios} from 'axios';
+import { default as Axios } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
 import * as mapboxgl from 'mapbox-gl';
-import ApiService from '../../utils/axios'
-// var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-import {IBaseVenue, IVenue} from '../../../../../../src/app/interfaces/venue.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import ApiService from '../../utils/axios';
+import { IBaseVenue, IVenue } from '../../../../../../src/app/interfaces/venue.interface';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import {
   changeSearchAction,
   changeTempVenueAction,
@@ -23,13 +22,18 @@ import {
   VenueReduxAction
 } from '../../actions/venues.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import {hasPermission} from '../../utils/common';
+import { IWindow } from '../../interfaces/window';
+import { hasPermission } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import VenueFormView from './VenueFormView';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 import { debounce } from 'throttle-debounce';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
+// var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<VenueReduxAction>;
@@ -54,7 +58,7 @@ declare let window: IWindow;
 class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
   private map: any;
   readonly state = {
     error: null,
@@ -81,7 +85,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getVenuesAction(pagination.page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

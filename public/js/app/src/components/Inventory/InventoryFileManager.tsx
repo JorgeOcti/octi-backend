@@ -6,11 +6,12 @@ import Row from '../Utils/Row';
 import ShowIf from '../Utils/ShowIf';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ApiService from '../../utils/axios';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType {
   inventoryCardId: string;
   inventories: IInventoryState;
-  socket: SocketIOClient.Socket;
+  socket: Socket;
 }
 
 interface IStateType {

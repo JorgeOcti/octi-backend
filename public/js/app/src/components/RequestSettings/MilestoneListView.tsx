@@ -20,6 +20,8 @@ import ShowIf from '../Utils/ShowIf';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import { IRequestItemStatus } from '../../../../../../src/request/interfaces/requestItemStatus.interface';
 import Checkbox from '../Utils/CheckBox';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<MilestoneReduxActions | FormAction>;
@@ -43,7 +45,7 @@ declare let window: IWindow;
 class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
   readonly state = {
     error: null,
     milestoneType: '',
@@ -68,7 +70,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getMilestoneThunkAction(milestoneType, pagination.page, orderBy, orderType);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

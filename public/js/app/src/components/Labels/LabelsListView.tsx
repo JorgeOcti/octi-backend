@@ -1,11 +1,11 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {
   changeLabelAction,
   changeTempLabelAction,
@@ -15,16 +15,18 @@ import {
   ILabelsState,
   LabelsReduxAction
 } from '../../actions/labels.actions';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import {statusFooterButttonsModal} from '../../utils/common';
+import { IWindow } from '../../interfaces/window';
+import { statusFooterButttonsModal } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import Paginator from '../Utils/Paginator';
 import LabelFormView from './LabelFormView';
-import {CarStatusType} from "../Inventory/InventoryDetailView";
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import { CarStatusType } from '../Inventory/InventoryDetailView';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<LabelsReduxAction>;
@@ -47,7 +49,7 @@ declare let window: IWindow;
 class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -65,7 +67,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getLabelsAction(pagination.page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

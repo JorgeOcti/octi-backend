@@ -5,10 +5,12 @@ import {IInventoryComment} from '../../../../../../src/inventory/interfaces/inve
 import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
 import {IWindow} from '../../interfaces/window';
 import Row from '../Utils/Row';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 
 interface IPropsType {
   inventories: IInventoryState;
-  socket: SocketIOClient.Socket;
+  socket: Socket;
   addCommentAction(inventoryComment: IInventoryComment): void;
   sendCommentAction(carId: string, comment: string): void;
 }

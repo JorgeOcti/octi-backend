@@ -12,7 +12,8 @@ import Paginator from '../../Utils/Paginator';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import { debounce } from 'throttle-debounce';
 import { IUser } from '../../../../../../../src/app/interfaces/user.interface';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import { IWindow } from '../../../interfaces/window';
 import ShowIf from '../../Utils/ShowIf';
 
@@ -42,7 +43,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
     error: null
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -54,7 +55,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
     this.props.transmittalActions.getRequestItemThunkAction(1);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

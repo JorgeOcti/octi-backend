@@ -13,7 +13,8 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {RouterState} from 'react-router-redux';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import {IInventoryCar} from '../../../../../../src/inventory/interfaces/inventory.interface';
@@ -162,7 +163,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   private readonly columns: any[] = [];
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -348,7 +349,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

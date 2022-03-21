@@ -2,7 +2,8 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import * as moment from 'moment-timezone';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -68,7 +69,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     }
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   readonly columns: any[] = [];
 
@@ -139,7 +140,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     this.props.getStockAction();
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,

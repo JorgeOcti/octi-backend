@@ -25,7 +25,10 @@ import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import FormSettingsForm from './FormForm';
 import ShowIf from '../Utils/ShowIf';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
+
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<FormReduxActions | FormAction>;
@@ -54,7 +57,7 @@ declare let window: IWindow;
 class FormListView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
   readonly state = {
     error: null,
     exporing: false
@@ -77,7 +80,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getFormThunkAction(pagination.page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
