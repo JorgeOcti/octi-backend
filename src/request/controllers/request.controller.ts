@@ -17,6 +17,7 @@ import { io } from '../../server';
 import logger from '../../services/logger.service';
 import GeneralUtils from '../../utils/general.utils';
 import Request, { IRequestModel } from '../models/request.model';
+import User from '../../app/models/user.model';
 import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
@@ -452,7 +453,7 @@ class RequestController {
           meta: {
             request,
             car: newCar,
-            user: req.user
+            user: await User.findOne({_id: req.user._id})
           },
           createdBy: req.user
         }).save();

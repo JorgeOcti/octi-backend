@@ -72,6 +72,7 @@ var server_1 = require("../../server");
 var logger_service_1 = require("../../services/logger.service");
 var general_utils_1 = require("../../utils/general.utils");
 var request_model_1 = require("../models/request.model");
+var user_model_1 = require("../../app/models/user.model");
 var requestFile_model_1 = require("../models/requestFile.model");
 var requestItem_model_1 = require("../models/requestItem.model");
 var requestItemStatus_model_1 = require("../models/requestItemStatus.model");
@@ -531,20 +532,21 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, _c, newRequest, e_6;
+            var _d, _e;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
                         _a = req.user, company = _a.company, team = _a.team;
                         _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
-                        _c.label = 1;
+                        _f.label = 1;
                     case 1:
-                        _c.trys.push([1, 12, , 13]);
+                        _f.trys.push([1, 13, , 14]);
                         return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 2:
-                        existConectId = _c.sent();
+                        existConectId = _f.sent();
                         if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
                             return [2 /*return*/, res.status(400).json({
                                     message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud ").concat(existConectId.number, ".")
@@ -560,10 +562,10 @@ var RequestController = /** @class */ (function () {
                                 weigth: 10
                             })];
                     case 3:
-                        defaultItemStatus = _c.sent();
+                        defaultItemStatus = _f.sent();
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { "new": true })];
                     case 4:
-                        updateTeam = _c.sent();
+                        updateTeam = _f.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
                                 sellerText: sellerText !== null && sellerText !== void 0 ? sellerText : req.user.fullName(),
@@ -582,11 +584,11 @@ var RequestController = /** @class */ (function () {
                                 createdBy: req.user
                             }).save()];
                     case 5:
-                        request = _c.sent();
+                        request = _f.sent();
                         _i = 0, cars_2 = cars;
-                        _c.label = 6;
+                        _f.label = 6;
                     case 6:
-                        if (!(_i < cars_2.length)) return [3 /*break*/, 10];
+                        if (!(_i < cars_2.length)) return [3 /*break*/, 11];
                         car = cars_2[_i];
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
@@ -601,37 +603,41 @@ var RequestController = /** @class */ (function () {
                                 createdBy: req.user
                             }).save()];
                     case 7:
-                        newCar = _c.sent();
-                        return [4 /*yield*/, new requestItem_model_1["default"]({
-                                team: team,
-                                request: request,
-                                car: newCar,
-                                reason: car.reason,
-                                files: car.files,
-                                washed: car.washed,
-                                answers: car.answers,
-                                equipment: car.equipment,
-                                observation: car.observation,
-                                priority: car.priority,
-                                origin: req.user.venue,
-                                destination: venue,
-                                status: defaultItemStatus,
-                                meta: {
-                                    request: request,
-                                    car: newCar,
-                                    user: req.user
-                                },
-                                createdBy: req.user
-                            }).save()];
-                    case 8:
-                        _c.sent();
-                        _c.label = 9;
+                        newCar = _f.sent();
+                        _c = requestItem_model_1["default"].bind;
+                        _d = {
+                            team: team,
+                            request: request,
+                            car: newCar,
+                            reason: car.reason,
+                            files: car.files,
+                            washed: car.washed,
+                            answers: car.answers,
+                            equipment: car.equipment,
+                            observation: car.observation,
+                            priority: car.priority,
+                            origin: req.user.venue,
+                            destination: venue,
+                            status: defaultItemStatus
+                        };
+                        _e = {
+                            request: request,
+                            car: newCar
+                        };
+                        return [4 /*yield*/, user_model_1["default"].findOne({ _id: req.user._id })];
+                    case 8: return [4 /*yield*/, new (_c.apply(requestItem_model_1["default"], [void 0, (_d.meta = (_e.user = _f.sent(),
+                                _e),
+                                _d.createdBy = req.user,
+                                _d)]))().save()];
                     case 9:
+                        _f.sent();
+                        _f.label = 10;
+                    case 10:
                         _i++;
                         return [3 /*break*/, 6];
-                    case 10: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
-                    case 11:
-                        newRequest = _c.sent();
+                    case 11: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
+                    case 12:
+                        newRequest = _f.sent();
                         server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
                             request: newRequest
                         });
@@ -642,17 +648,17 @@ var RequestController = /** @class */ (function () {
                             data: newRequest,
                             status: 200
                         });
-                        return [3 /*break*/, 13];
-                    case 12:
-                        e_6 = _c.sent();
+                        return [3 /*break*/, 14];
+                    case 13:
+                        e_6 = _f.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body)));
                         logger_service_1["default"].error(e_6);
                         res.status(500).json(e_6);
-                        return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                        return [3 /*break*/, 14];
+                    case 14: return [2 /*return*/];
                 }
             });
         });
