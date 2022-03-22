@@ -25,6 +25,7 @@ import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activ
 import { Column } from 'exceljs';
 import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
+import Venue from '../../app/models/venue.model';
 
 class RequestController {
 
@@ -436,6 +437,9 @@ class RequestController {
           status: ChoicesStatusCar.pending,
           createdBy: req.user
         }).save();
+        const origin = await Venue.findById(req.user.venue);
+        const destination = await Venue.findById(venue);
+        const status = defaultItemStatus;
         await new RequestItem({
           team,
           request,
@@ -453,7 +457,10 @@ class RequestController {
           meta: {
             request,
             car: newCar,
-            user: await User.findOne({_id: req.user._id})
+            user: await User.findOne({_id: req.user._id}),
+            origin,
+            destination,
+            status
           },
           createdBy: req.user
         }).save();
@@ -590,21 +597,19 @@ class RequestController {
           $or: [{
             destination: {
               $in: venuesIds
-            },
-             ...extraQuery
+            }
           }, {
             origin: {
               $in: venuesIds
-            },
-             ...extraQuery
+            }
           }]
         }
-      }/*, {
+      }, {
         $match: {
           team,
           ...extraQuery
         }
-      }*/];
+      }];
 
       const aggregatePopulate = [{
         $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }

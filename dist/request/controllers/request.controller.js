@@ -79,6 +79,7 @@ var requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 var activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 var reason_model_1 = require("../models/reason.model");
 var inputsSchema_1 = require("../inputsSchema");
+var venue_model_1 = require("../../app/models/venue.model");
 var RequestController = /** @class */ (function () {
     function RequestController() {
         this.itemPopulate = [{
@@ -532,7 +533,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, _c, newRequest, e_6;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, origin, destination, status, _c, newRequest, e_6;
             var _d, _e;
             return __generator(this, function (_f) {
                 switch (_f.label) {
@@ -543,7 +544,7 @@ var RequestController = /** @class */ (function () {
                         _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
                         _f.label = 1;
                     case 1:
-                        _f.trys.push([1, 13, , 14]);
+                        _f.trys.push([1, 15, , 16]);
                         return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 2:
                         existConectId = _f.sent();
@@ -588,7 +589,7 @@ var RequestController = /** @class */ (function () {
                         _i = 0, cars_2 = cars;
                         _f.label = 6;
                     case 6:
-                        if (!(_i < cars_2.length)) return [3 /*break*/, 11];
+                        if (!(_i < cars_2.length)) return [3 /*break*/, 13];
                         car = cars_2[_i];
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
@@ -604,6 +605,13 @@ var RequestController = /** @class */ (function () {
                             }).save()];
                     case 7:
                         newCar = _f.sent();
+                        return [4 /*yield*/, venue_model_1["default"].findById(req.user.venue)];
+                    case 8:
+                        origin = _f.sent();
+                        return [4 /*yield*/, venue_model_1["default"].findById(venue)];
+                    case 9:
+                        destination = _f.sent();
+                        status = defaultItemStatus;
                         _c = requestItem_model_1["default"].bind;
                         _d = {
                             team: team,
@@ -625,18 +633,21 @@ var RequestController = /** @class */ (function () {
                             car: newCar
                         };
                         return [4 /*yield*/, user_model_1["default"].findOne({ _id: req.user._id })];
-                    case 8: return [4 /*yield*/, new (_c.apply(requestItem_model_1["default"], [void 0, (_d.meta = (_e.user = _f.sent(),
+                    case 10: return [4 /*yield*/, new (_c.apply(requestItem_model_1["default"], [void 0, (_d.meta = (_e.user = _f.sent(),
+                                _e.origin = origin,
+                                _e.destination = destination,
+                                _e.status = status,
                                 _e),
                                 _d.createdBy = req.user,
                                 _d)]))().save()];
-                    case 9:
+                    case 11:
                         _f.sent();
-                        _f.label = 10;
-                    case 10:
+                        _f.label = 12;
+                    case 12:
                         _i++;
                         return [3 /*break*/, 6];
-                    case 11: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
-                    case 12:
+                    case 13: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
+                    case 14:
                         newRequest = _f.sent();
                         server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
                             request: newRequest
@@ -648,8 +659,8 @@ var RequestController = /** @class */ (function () {
                             data: newRequest,
                             status: 200
                         });
-                        return [3 /*break*/, 14];
-                    case 13:
+                        return [3 /*break*/, 16];
+                    case 15:
                         e_6 = _f.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
@@ -657,8 +668,8 @@ var RequestController = /** @class */ (function () {
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body)));
                         logger_service_1["default"].error(e_6);
                         res.status(500).json(e_6);
-                        return [3 /*break*/, 14];
-                    case 14: return [2 /*return*/];
+                        return [3 /*break*/, 16];
+                    case 16: return [2 /*return*/];
                 }
             });
         });
@@ -767,19 +778,19 @@ var RequestController = /** @class */ (function () {
                         baseAggregate = [{
                                 $match: {
                                     team: team,
-                                    $or: [__assign({ destination: {
+                                    $or: [{
+                                            destination: {
                                                 $in: venuesIds
-                                            } }, extraQuery), __assign({ origin: {
+                                            }
+                                        }, {
+                                            origin: {
                                                 $in: venuesIds
-                                            } }, extraQuery)]
+                                            }
+                                        }]
                                 }
-                            } /*, {
-                              $match: {
-                                team,
-                                ...extraQuery
-                              }
-                            }*/
-                        ];
+                            }, {
+                                $match: __assign({ team: team }, extraQuery)
+                            }];
                         aggregatePopulate = [{
                                 $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
                             }, {
