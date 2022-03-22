@@ -16,6 +16,7 @@ import {
   REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS, REQUEST_ITEMS_LOAD_USERS
 } from '../actions/requestItems.types';
 import { requestSettings } from '../components/Request/defaults';
+import * as moment from 'moment';
 
 const initialState: IRequestItemsState = {
   requestItems: [],
@@ -40,7 +41,7 @@ const initialState: IRequestItemsState = {
     users: [],
     properties: [],
     status: [],
-    from: null,
+    from: moment().subtract(6, 'months'),
     to: null
   },
   options: {

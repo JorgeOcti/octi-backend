@@ -1191,7 +1191,7 @@ var RequestController = /** @class */ (function () {
                                 _b[orderBy] = orderType === 'ascending' ? 1 : -1,
                                 _b),
                             populate: this.requestPopulate,
-                            // select: {_id: true},
+                            select: { meta: false },
                             page: parseInt(page ? page : '1', 10),
                             limit: parseInt(pageSize ? pageSize : '20', 10)
                         };
