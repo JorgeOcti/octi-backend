@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 import RequestItem from '../../request/models/requestItem.model';
+import requestItemsHooks from '../models/requestItem.hooks';
 
 async function metaRequests() {
   dotenv.config({
@@ -13,11 +14,10 @@ async function metaRequests() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
-    const requestItems = await RequestItem.find({ });
+    const requestItems = await RequestItem.find({team: '5bf2de35caf8ef7096105cdd', 'meta.request': {$exists: false} });
     for (const requestItem of requestItems) {
       try {
-        const newRequestItem = await RequestItem.findOneAndUpdate({_id: requestItem._id},{})
-        console.log(newRequestItem);
+        await requestItemsHooks.postFindOneAndUpdateHandler(requestItem);
       } catch (e) {
         console.log('error:', e);
       }

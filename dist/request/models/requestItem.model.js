@@ -164,6 +164,7 @@ var requestItemSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+requestItemSchema.index({ 'meta.request.number': 1 });
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
 // requestItemSchema.pre<IRequestItemModel>('save', function(next: any) {

@@ -666,7 +666,7 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.apiListItems = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var team, _b, page, pageSize, orderBy, orderType, filters, requestNumbers, venuesIds, extraQuery, baseAggregate, aggregatePopulate, requestsAggregate, countRequestsAggregate, options, requests, _c, _d, e_7;
+            var team, _b, page, pageSize, orderBy, orderType, filters, requestNumbers, venuesIds, extraQuery, baseAggregate, aggregatePopulate, requestsAggregate, options, requests, _c, _d, e_7;
             var _e, _f, _g;
             return __generator(this, function (_h) {
                 switch (_h.label) {
@@ -680,7 +680,6 @@ var RequestController = /** @class */ (function () {
                             .split(',')
                             .filter(function (requestNumber) { return (requestNumber.length); });
                         extraQuery = {};
-                        // const extraMatch: any = {};
                         if (filters.venues && filters.venues.length) {
                             venuesIds = req.user.venuesPermissions()
                                 .filter(function (venue) { return (filters.venues.includes(venue.toString())); });
@@ -780,8 +779,6 @@ var RequestController = /** @class */ (function () {
                                 }
                             }, {
                                 $match: __assign({ team: team }, extraQuery)
-                            }, {
-                                $sort: (_e = {}, _e[orderBy] = orderType === 'ascending' ? 1 : -1, _e)
                             }];
                         aggregatePopulate = [{
                                 $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
@@ -802,7 +799,7 @@ var RequestController = /** @class */ (function () {
                             }, {
                                 $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
                             }, {
-                                $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
+                                $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: true }
                             }, {
                                 $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
                             }, {
@@ -866,15 +863,14 @@ var RequestController = /** @class */ (function () {
                                     'updatedAt': 1
                                 }
                             }, {
-                                $sort: (_f = {}, _f[orderBy] = orderType === 'ascending' ? 1 : -1, _f)
+                                $sort: (_e = {}, _e[orderBy] = orderType === 'ascending' ? 1 : -1, _e)
                             }];
                         requestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate).allowDiskUse(true);
-                        countRequestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
                             limit: parseInt(pageSize ? pageSize : '10', 10),
                             customLabels: this.aggregateCustomLabels,
-                            countQuery: countRequestsAggregate
+                            sort: (_f = {}, _f[orderBy] = orderType === 'ascending' ? 1 : -1, _f)
                         };
                         return [4 /*yield*/, requestItem_model_1["default"].aggregatePaginate(requestsAggregate, options)];
                     case 2:

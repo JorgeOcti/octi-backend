@@ -14,7 +14,7 @@ class RequestItemHooks {
     const request = await Request.findById(doc.request);
     const car = await Car.findById(doc.car);
     const user = await User.findById(doc.createdBy);
-    await RequestItem.update({ request: request }, { meta: { request, car, user } });
+    await RequestItem.updateMany({ request: request }, { meta: { request, car, user } });
   }
 }
 

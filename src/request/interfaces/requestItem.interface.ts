@@ -32,6 +32,11 @@ export interface IRequestItem {
   transmittal: ITransmittal | ITransmittalModel;
   transmittalItem: ITransmittalItem | ITransmittalItemModel;
   assigned: boolean;
+  meta: {
+    user: IUser;
+    request: IRequest;
+    car: ICar;
+  };
   team: ITeam | ITeamModel;
   origin: IVenue | IVenueModel;
   position: IVenue | IVenueModel;

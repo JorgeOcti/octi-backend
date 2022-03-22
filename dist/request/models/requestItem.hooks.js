@@ -60,7 +60,7 @@ var RequestItemHooks = /** @class */ (function () {
                         return [4 /*yield*/, user_model_1["default"].findById(doc.createdBy)];
                     case 3:
                         user = _a.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"].update({ request: request }, { meta: { request: request, car: car, user: user } })];
+                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, { meta: { request: request, car: car, user: user } })];
                     case 4:
                         _a.sent();
                         return [2 /*return*/];

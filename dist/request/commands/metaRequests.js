@@ -41,9 +41,10 @@ var dotenv = require("dotenv");
 var mongoose = require("mongoose");
 var path = require("path");
 var requestItem_model_1 = require("../../request/models/requestItem.model");
+var requestItem_hooks_1 = require("../models/requestItem.hooks");
 function metaRequests() {
     return __awaiter(this, void 0, void 0, function () {
-        var MONGODB_URI, requestItems, _i, requestItems_1, requestItem, newRequestItem, e_1, e_2;
+        var MONGODB_URI, requestItems, _i, requestItems_1, requestItem, e_1, e_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -59,7 +60,7 @@ function metaRequests() {
                     _a.label = 2;
                 case 2:
                     _a.trys.push([2, 10, , 11]);
-                    return [4 /*yield*/, requestItem_model_1["default"].find({})];
+                    return [4 /*yield*/, requestItem_model_1["default"].find({ team: '5bf2de35caf8ef7096105cdd', 'meta.request': { $exists: false } })];
                 case 3:
                     requestItems = _a.sent();
                     _i = 0, requestItems_1 = requestItems;
@@ -70,10 +71,9 @@ function metaRequests() {
                     _a.label = 5;
                 case 5:
                     _a.trys.push([5, 7, , 8]);
-                    return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({ _id: requestItem._id }, {})];
+                    return [4 /*yield*/, requestItem_hooks_1["default"].postFindOneAndUpdateHandler(requestItem)];
                 case 6:
-                    newRequestItem = _a.sent();
-                    console.log(newRequestItem);
+                    _a.sent();
                     return [3 /*break*/, 8];
                 case 7:
                     e_1 = _a.sent();

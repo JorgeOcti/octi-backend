@@ -501,7 +501,7 @@ class RequestController {
 
     let venuesIds: any[];
     const extraQuery: any = {};
-    // const extraMatch: any = {};
+
     if (filters.venues && filters.venues.length) {
       venuesIds = req.user.venuesPermissions()
         .filter(venue => (filters.venues.includes(venue.toString())));
@@ -602,9 +602,8 @@ class RequestController {
           team,
           ...extraQuery
         }
-      }, {
-        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }];
+
       const aggregatePopulate = [{
         $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
       }, {
@@ -624,7 +623,7 @@ class RequestController {
       }, {
         $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
       }, {
-        $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
+        $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: true }
       }, {
         $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
       }, {
@@ -691,12 +690,11 @@ class RequestController {
         $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }];
       const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
-      const countRequestsAggregate = RequestItem.aggregate(baseAggregate);
       const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10),
         customLabels: this.aggregateCustomLabels,
-        countQuery: countRequestsAggregate
+        sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       };
       const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
       if (options.page && requests.pages && requests.pages < options.page) {
