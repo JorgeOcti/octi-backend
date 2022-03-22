@@ -590,19 +590,21 @@ class RequestController {
           $or: [{
             destination: {
               $in: venuesIds
-            }
+            },
+             ...extraQuery
           }, {
             origin: {
               $in: venuesIds
-            }
+            },
+             ...extraQuery
           }]
         }
-      }, {
+      }/*, {
         $match: {
           team,
           ...extraQuery
         }
-      }];
+      }*/];
 
       const aggregatePopulate = [{
         $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
