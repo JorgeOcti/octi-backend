@@ -1,6 +1,7 @@
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
+import { Column } from 'exceljs';
 import { Response } from 'express';
 import * as fs from 'fs';
 import * as https from 'https';
@@ -22,7 +23,6 @@ import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
-import { Column } from 'exceljs';
 import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
@@ -74,6 +74,9 @@ class RequestController {
     path: 'advancePaymentInformation.files'
   }, {
     path: 'items',
+    select: [
+      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy'
+    ],
     options: {
       sort: {
         _id: 1
@@ -998,7 +1001,7 @@ class RequestController {
         [orderBy]: orderType === 'ascending' ? 1 : -1
       },
       populate: this.requestPopulate,
-      select: {meta: false},
+      // select: {_id: true},
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
