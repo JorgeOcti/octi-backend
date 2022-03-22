@@ -817,6 +817,8 @@ var RequestController = /** @class */ (function () {
                             }, {
                                 $addFields: { requestNumber: { $toString: '$request.number' } }
                             }, {
+                                $sort: (_e = {}, _e[orderBy] = orderType === 'ascending' ? 1 : -1, _e)
+                            }, {
                                 $project: {
                                     '_id': 1,
                                     'request._id': 1,
@@ -830,7 +832,6 @@ var RequestController = /** @class */ (function () {
                                     'equipment': 1,
                                     'washed': 1,
                                     'review': 1,
-                                    'meta': 1,
                                     'body': 1,
                                     'files._id': 1,
                                     'requestNumber': 1,
@@ -862,8 +863,6 @@ var RequestController = /** @class */ (function () {
                                     'createdAt': 1,
                                     'updatedAt': 1
                                 }
-                            }, {
-                                $sort: (_e = {}, _e[orderBy] = orderType === 'ascending' ? 1 : -1, _e)
                             }];
                         requestsAggregate = requestItem_model_1["default"].aggregate(baseAggregate).allowDiskUse(true);
                         options = {

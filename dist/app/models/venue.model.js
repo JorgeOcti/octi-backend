@@ -1,6 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.choicesStatusCarInventory = exports.ChoicesTypeVenue = void 0;
+exports.venueSchema = exports.choicesStatusCarInventory = exports.ChoicesTypeVenue = void 0;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
 var venueDay_model_1 = require("./venueDay.model");
@@ -13,7 +13,7 @@ exports.choicesStatusCarInventory = [
     ChoicesTypeVenue.distributor,
     ChoicesTypeVenue.receiver
 ];
-var venueSchema = new mongoose.Schema({
+exports.venueSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -100,18 +100,18 @@ var venueSchema = new mongoose.Schema({
     timestamps: true
 });
 mongoose.plugin(mongoosePaginate);
-venueSchema.virtual('users', {
+exports.venueSchema.virtual('users', {
     ref: 'User',
     localField: '_id',
     foreignField: 'venue',
     justOne: false
 });
-venueSchema.virtual('participants', {
+exports.venueSchema.virtual('participants', {
     ref: 'Participant',
     localField: '_id',
     foreignField: 'venue',
     justOne: false
 });
-var Venue = mongoose.model('Venue', venueSchema);
+var Venue = mongoose.model('Venue', exports.venueSchema);
 exports["default"] = Venue;
 //# sourceMappingURL=venue.model.js.map

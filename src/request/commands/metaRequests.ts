@@ -14,7 +14,7 @@ async function metaRequests() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
-    const requestItems = await RequestItem.find({team: '5bf2de35caf8ef7096105cdd', 'meta.request': {$exists: false} });
+    const requestItems = await RequestItem.find({ team: '5bf2de35caf8ef7096105cdd' });
     for (const requestItem of requestItems) {
       try {
         await requestItemsHooks.postFindOneAndUpdateHandler(requestItem);

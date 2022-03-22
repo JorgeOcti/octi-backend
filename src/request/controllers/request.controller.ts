@@ -641,6 +641,8 @@ class RequestController {
       }, {
         $addFields: { requestNumber: { $toString: '$request.number' } }
       }, {
+        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+      }, {
         $project: {
           '_id': 1,
           'request._id': 1,
@@ -654,7 +656,6 @@ class RequestController {
           'equipment': 1,
           'washed': 1,
           'review': 1,
-          'meta': 1,
           'body': 1,
           'files._id': 1,
           'requestNumber': 1,
@@ -686,8 +687,6 @@ class RequestController {
           'createdAt': 1,
           'updatedAt': 1
         }
-      }, {
-        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }];
       const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const options: PaginateOptions = {

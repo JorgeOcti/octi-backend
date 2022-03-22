@@ -16,7 +16,7 @@ export const choicesStatusCarInventory = [
   ChoicesTypeVenue.receiver
 ];
 
-const venueSchema = new mongoose.Schema({
+export const venueSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true

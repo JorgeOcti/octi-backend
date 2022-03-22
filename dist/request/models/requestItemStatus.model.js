@@ -1,8 +1,9 @@
 "use strict";
 exports.__esModule = true;
+exports.requestItemStatusSchema = void 0;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
-var requestItemStatusSchema = new mongoose.Schema({
+exports.requestItemStatusSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -21,7 +22,7 @@ var requestItemStatusSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-requestItemStatusSchema.statics.findOneOrCreate = function (condition, create) {
+exports.requestItemStatusSchema.statics.findOneOrCreate = function (condition, create) {
     var model = this;
     return new Promise(function (resolve, reject) {
         model.findOne(condition, function (err, result) {
@@ -40,7 +41,7 @@ requestItemStatusSchema.statics.findOneOrCreate = function (condition, create) {
         });
     });
 };
-requestItemStatusSchema.plugin(mongoosePaginate);
-var RequestItemStatus = mongoose.model('RequestItemStatus', requestItemStatusSchema);
+exports.requestItemStatusSchema.plugin(mongoosePaginate);
+var RequestItemStatus = mongoose.model('RequestItemStatus', exports.requestItemStatusSchema);
 exports["default"] = RequestItemStatus;
 //# sourceMappingURL=requestItemStatus.model.js.map

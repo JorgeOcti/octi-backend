@@ -5,7 +5,7 @@ import * as mongoosePaginate from 'mongoose-paginate';
 
 export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document {}
 
-const requestItemStatusSchema = new mongoose.Schema({
+export const requestItemStatusSchema = new mongoose.Schema({
   name: {
     type: String
   },

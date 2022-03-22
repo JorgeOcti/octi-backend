@@ -42,6 +42,7 @@ var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var requestItem_hooks_1 = require("./requestItem.hooks");
 var models_1 = require("../../app/models");
 var request_model_1 = require("./request.model");
+var requestItemStatus_model_1 = require("./requestItemStatus.model");
 var metaSchema = new mongoose.Schema({
     car: {
         type: models_1.carSchema
@@ -51,6 +52,15 @@ var metaSchema = new mongoose.Schema({
     },
     user: {
         type: models_1.userSchema
+    },
+    origin: {
+        type: models_1.venueSchema
+    },
+    destination: {
+        type: models_1.venueSchema
+    },
+    status: {
+        type: requestItemStatus_model_1.requestItemStatusSchema
     }
 });
 var requestItemAnswerSchema = new mongoose.Schema({

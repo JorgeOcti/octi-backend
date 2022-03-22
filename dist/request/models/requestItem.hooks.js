@@ -40,13 +40,15 @@ var request_model_1 = require("./request.model");
 var requestItem_model_1 = require("./requestItem.model");
 var car_model_1 = require("../../app/models/car.model");
 var user_model_1 = require("../../app/models/user.model");
+var venue_model_1 = require("../../app/models/venue.model");
+var requestItemStatus_model_1 = require("./requestItemStatus.model");
 var RequestItemHooks = /** @class */ (function () {
     function RequestItemHooks() {
         this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
     }
     RequestItemHooks.prototype.postFindOneAndUpdateHandler = function (doc) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, car, user;
+            var request, car, user, origin, destination, status;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -54,16 +56,36 @@ var RequestItemHooks = /** @class */ (function () {
                         return [4 /*yield*/, request_model_1["default"].findById(doc.request)];
                     case 1:
                         request = _a.sent();
+                        if (!request) return [3 /*break*/, 8];
                         return [4 /*yield*/, car_model_1["default"].findById(doc.car)];
                     case 2:
                         car = _a.sent();
                         return [4 /*yield*/, user_model_1["default"].findById(doc.createdBy)];
                     case 3:
                         user = _a.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, { meta: { request: request, car: car, user: user } })];
+                        return [4 /*yield*/, venue_model_1["default"].findById(doc.origin)];
                     case 4:
+                        origin = _a.sent();
+                        return [4 /*yield*/, venue_model_1["default"].findById(doc.destination)];
+                    case 5:
+                        destination = _a.sent();
+                        return [4 /*yield*/, requestItemStatus_model_1["default"].findById(doc.status)];
+                    case 6:
+                        status = _a.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, {
+                                meta: {
+                                    request: request,
+                                    car: car,
+                                    user: user,
+                                    origin: origin,
+                                    destination: destination,
+                                    status: status
+                                }
+                            })];
+                    case 7:
                         _a.sent();
-                        return [2 /*return*/];
+                        _a.label = 8;
+                    case 8: return [2 /*return*/];
                 }
             });
         });

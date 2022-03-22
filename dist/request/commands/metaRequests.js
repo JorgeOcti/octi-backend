@@ -60,7 +60,7 @@ function metaRequests() {
                     _a.label = 2;
                 case 2:
                     _a.trys.push([2, 10, , 11]);
-                    return [4 /*yield*/, requestItem_model_1["default"].find({ team: '5bf2de35caf8ef7096105cdd', 'meta.request': { $exists: false } })];
+                    return [4 /*yield*/, requestItem_model_1["default"].find({ team: '5bf2de35caf8ef7096105cdd' })];
                 case 3:
                     requestItems = _a.sent();
                     _i = 0, requestItems_1 = requestItems;
