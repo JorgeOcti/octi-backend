@@ -148,6 +148,8 @@ const requestItemSchema = new mongoose.Schema({
 });
 
 requestItemSchema.index({'meta.request.number': 1});
+requestItemSchema.index({'destination': 1, 'origin': 1,  'team': 1});
+requestItemSchema.index({'destination': 1, 'origin': 1,  'createdAt': 1});
 
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);

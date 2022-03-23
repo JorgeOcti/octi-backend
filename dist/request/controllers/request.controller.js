@@ -795,19 +795,19 @@ var RequestController = /** @class */ (function () {
                         baseAggregate = [{
                                 $match: {
                                     team: team,
-                                    $or: [__assign({ destination: {
+                                    $or: [{
+                                            destination: {
                                                 $in: venuesIds
-                                            } }, extraQuery), __assign({ origin: {
+                                            }
+                                        }, {
+                                            origin: {
                                                 $in: venuesIds
-                                            } }, extraQuery)]
+                                            }
+                                        }]
                                 }
-                            } /*, {
-                              $match: {
-                                team,
-                                ...extraQuery
-                              }
-                            }*/
-                        ];
+                            }, {
+                                $match: extraQuery
+                            }];
                         aggregatePopulate = [{
                                 $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
                             }, {
