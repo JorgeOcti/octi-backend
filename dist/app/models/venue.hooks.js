@@ -36,62 +36,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.requestItemStatusSchema = void 0;
-var mongoose = require("mongoose");
-var mongoosePaginate = require("mongoose-paginate");
-var requestItemStatus_hooks_1 = require("./requestItemStatus.hooks");
-exports.requestItemStatusSchema = new mongoose.Schema({
-    name: {
-        type: String
-    },
-    team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Team'
-    },
-    weigth: {
-        type: Number,
-        required: true
-    },
-    "default": {
-        type: Boolean,
-        "default": false
+var server_1 = require("../../server");
+var requestIteam_meta_1 = require("../../request/models/requestIteam.meta");
+var VenueHooks = /** @class */ (function () {
+    function VenueHooks() {
+        this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
     }
-}, {
-    timestamps: true
-});
-exports.requestItemStatusSchema.statics.findOneOrCreate = function (condition, create) {
-    var model = this;
-    return new Promise(function (resolve, reject) {
-        model.findOne(condition, function (err, result) {
-            if (err) {
-                return reject(err);
-            }
-            if (result) {
-                return resolve(result);
-            }
-            model.create(create, function (err, result) {
-                if (err) {
-                    return reject(err);
+    VenueHooks.prototype.postFindOneAndUpdateHandler = function (doc) {
+        return __awaiter(this, void 0, void 0, function () {
+            var venue;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('venues').findOne({ _id: doc._id })];
+                    case 1:
+                        venue = _a.sent();
+                        console.log(venue);
+                        if (!venue) return [3 /*break*/, 4];
+                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'origin': doc._id }, { $set: { 'meta.origin': requestIteam_meta_1["default"].processVenue(venue) } })];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'destination': doc._id }, { $set: { 'meta.destination': requestIteam_meta_1["default"].processVenue(venue) } })];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: return [2 /*return*/];
                 }
-                return resolve(result);
             });
         });
-    });
-};
-exports.requestItemStatusSchema.plugin(mongoosePaginate);
-exports.requestItemStatusSchema.post('findOneAndUpdate', function (doc) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                console.log('******************** REQUET ITEM findOneAndUpdate *******************');
-                console.log(doc);
-                return [4 /*yield*/, requestItemStatus_hooks_1["default"].postFindOneAndUpdateHandler(doc)];
-            case 1:
-                _a.sent();
-                return [2 /*return*/];
-        }
-    });
-}); });
-var RequestItemStatus = mongoose.model('RequestItemStatus', exports.requestItemStatusSchema);
-exports["default"] = RequestItemStatus;
-//# sourceMappingURL=requestItemStatus.model.js.map
+    };
+    return VenueHooks;
+}());
+var venuesHooks = new VenueHooks();
+exports["default"] = venuesHooks;
+//# sourceMappingURL=venue.hooks.js.map

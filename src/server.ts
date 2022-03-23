@@ -41,9 +41,6 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   }
 });
 
-
-export const mongooseRaw = mongoose;
-
 export const io = new Server(server);
 io.adapter(createAdapter(createRedisClient(), createRedisClient()));
 

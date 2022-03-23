@@ -1,5 +1,6 @@
 import { IUserModel } from '../../app/models/user.model';
-import { mongooseRaw } from '../../server';
+import mongooseRaw from '../../mongoRaw';
+import requestItemsMeta from '../../request/models/requestIteam.meta';
 
 class UserHooks {
 
@@ -11,8 +12,8 @@ class UserHooks {
     const user = await mongooseRaw.connection.db.collection('users').findOne({ _id: doc._id });
     if (user) {
       await mongooseRaw.connection.db.collection('requestitems').updateMany(
-        { 'meta.user._id': doc._id },
-        { $set: { 'meta.user': user } }
+        { 'createdBy': doc._id },
+        { $set: { 'meta.user': requestItemsMeta.processUser(user) } }
       );
     }
   }

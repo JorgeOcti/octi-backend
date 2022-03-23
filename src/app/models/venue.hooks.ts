@@ -1,5 +1,6 @@
-import { mongooseRaw } from '../../server';
+import mongooseRaw from '../../mongoRaw';
 import { IVenueModel } from './venue.model';
+import requestItemsMeta from '../../request/models/requestIteam.meta';
 
 class VenueHooks {
 
@@ -9,14 +10,15 @@ class VenueHooks {
 
   public async postFindOneAndUpdateHandler(doc: IVenueModel): Promise<void> {
     const venue = await mongooseRaw.connection.db.collection('venues').findOne({ _id: doc._id });
+    console.log(venue);
     if (venue) {
       await mongooseRaw.connection.db.collection('requestitems').updateMany(
-        { 'meta.origin._id': doc._id },
-        { $set: { 'meta.origin': venue } }
+        { 'origin': doc._id },
+        { $set: { 'meta.origin': requestItemsMeta.processVenue(venue) } }
       );
       await mongooseRaw.connection.db.collection('requestitems').updateMany(
-        { 'meta.destination._id': doc._id },
-        { $set: { 'meta.destination': venue } }
+        { 'destination': doc._id },
+        { $set: { 'meta.destination': requestItemsMeta.processVenue(venue) } }
       );
     }
   }

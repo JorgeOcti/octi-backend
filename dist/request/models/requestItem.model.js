@@ -36,31 +36,32 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.RequestItem = void 0;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
 var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var requestItem_hooks_1 = require("./requestItem.hooks");
 var models_1 = require("../../app/models");
 var request_model_1 = require("./request.model");
-var requestItemStatus_model_1 = require("./requestItemStatus.model");
+var _1 = require("./");
 var metaSchema = new mongoose.Schema({
     car: {
-        type: models_1.carSchema
+        type: models_1.baseCarSchema
     },
     request: {
         type: request_model_1.requestSchema
     },
     user: {
-        type: models_1.userSchema
+        type: models_1.baseUserSchema
     },
     origin: {
-        type: models_1.venueSchema
+        type: models_1.baseVenueSchema
     },
     destination: {
-        type: models_1.venueSchema
+        type: models_1.baseVenueSchema
     },
     status: {
-        type: requestItemStatus_model_1.requestItemStatusSchema
+        type: _1.requestItemStatusSchema
     }
 });
 var requestItemAnswerSchema = new mongoose.Schema({
@@ -192,16 +193,18 @@ requestItemSchema.plugin(mongooseAggregatePaginate);
 requestItemSchema.post('findOneAndUpdate', function (doc) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                console.log('******************** REQUET ITEM findOneAndUpdate *******************');
-                console.log(doc);
-                return [4 /*yield*/, requestItem_hooks_1["default"].postFindOneAndUpdateHandler(doc)];
+            case 0: 
+            // console.log('******************** REQUET ITEM findOneAndUpdate *******************');
+            // console.log(doc);
+            return [4 /*yield*/, requestItem_hooks_1["default"].postFindOneAndUpdateHandler(doc)];
             case 1:
+                // console.log('******************** REQUET ITEM findOneAndUpdate *******************');
+                // console.log(doc);
                 _a.sent();
                 return [2 /*return*/];
         }
     });
 }); });
-var RequestItem = mongoose.model('RequestItem', requestItemSchema);
-exports["default"] = RequestItem;
+exports.RequestItem = mongoose.model('RequestItem', requestItemSchema);
+exports["default"] = exports.RequestItem;
 //# sourceMappingURL=requestItem.model.js.map

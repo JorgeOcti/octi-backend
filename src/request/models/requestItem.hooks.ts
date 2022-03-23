@@ -2,6 +2,7 @@ import Request from './request.model';
 import RequestItem, { IRequestItemModel } from './requestItem.model';
 import { Car, User, Venue } from '../../app/models';
 import RequestItemStatus from './requestItemStatus.model';
+import requestItemsMeta from './requestIteam.meta';
 
 class RequestItemHooks {
 
@@ -19,15 +20,18 @@ class RequestItemHooks {
         Venue.findById(doc.destination),
         RequestItemStatus.findById(doc.status)
       ]);
+      await RequestItem.updateMany({ request: request }, {$unset: { meta: {}}});
+      const meta = requestItemsMeta.processMeta({
+        request,
+        car,
+        user,
+        origin,
+        destination,
+        status
+      });
+      console.log(meta);
       await RequestItem.updateMany({ request: request }, {
-        meta: {
-          request,
-          car,
-          user,
-          origin,
-          destination,
-          status
-        }
+        $set: { meta }
       });
     }
   }

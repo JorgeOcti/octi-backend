@@ -19,7 +19,7 @@ export const choicesStatusCar = [
 export interface ICarModel extends ICar, mongoose.Document {
 }
 
-export const carSchema = new mongoose.Schema({
+export const baseCarSchema = new mongoose.Schema({
   vin: {
     type: String,
     trim: true
@@ -27,6 +27,14 @@ export const carSchema = new mongoose.Schema({
   vin2: {
     type: String,
     trim: true
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
   },
   internalNumber: {
     type: String,
@@ -76,6 +84,10 @@ export const carSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+});
+
+export const carSchema = new mongoose.Schema({
+  ...baseCarSchema.obj,
   invoice: {
     type: String,
     default: ''
@@ -119,14 +131,6 @@ export const carSchema = new mongoose.Schema({
   isExhibition: {
     type: Boolean,
     default: false
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
   },
   imported: {
     type: Boolean,

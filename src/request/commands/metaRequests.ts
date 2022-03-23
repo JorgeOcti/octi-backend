@@ -14,6 +14,7 @@ async function metaRequests() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
+    // const requestItems = await RequestItem.find({request: '614c8e7683818b00140be735'}, {
     const requestItems = await RequestItem.find({}, {
       request: true,
       car: true,

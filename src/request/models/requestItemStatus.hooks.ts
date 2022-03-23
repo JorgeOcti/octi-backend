@@ -1,5 +1,5 @@
 import { IRequestItemStatusModel } from './requestItemStatus.model';
-import { mongooseRaw } from '../../server';
+import mongooseRaw from '../../mongoRaw';
 
 class RequestItemStatusHooks {
 

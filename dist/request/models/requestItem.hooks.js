@@ -38,48 +38,50 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var request_model_1 = require("./request.model");
 var requestItem_model_1 = require("./requestItem.model");
-var car_model_1 = require("../../app/models/car.model");
-var user_model_1 = require("../../app/models/user.model");
-var venue_model_1 = require("../../app/models/venue.model");
+var models_1 = require("../../app/models");
 var requestItemStatus_model_1 = require("./requestItemStatus.model");
+var requestIteam_meta_1 = require("./requestIteam.meta");
 var RequestItemHooks = /** @class */ (function () {
     function RequestItemHooks() {
         this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
     }
     RequestItemHooks.prototype.postFindOneAndUpdateHandler = function (doc) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, _a, car, user, origin, destination, status;
+            var request, _a, car, user, origin, destination, status, meta;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0:
-                        console.log('doc.request', doc.request);
-                        return [4 /*yield*/, request_model_1["default"].findById(doc.request)];
+                    case 0: return [4 /*yield*/, request_model_1["default"].findById(doc.request)];
                     case 1:
                         request = _b.sent();
-                        if (!request) return [3 /*break*/, 4];
+                        if (!request) return [3 /*break*/, 5];
                         return [4 /*yield*/, Promise.all([
-                                car_model_1["default"].findById(doc.car),
-                                user_model_1["default"].findById(doc.createdBy),
-                                venue_model_1["default"].findById(doc.origin),
-                                venue_model_1["default"].findById(doc.destination),
+                                models_1.Car.findById(doc.car),
+                                models_1.User.findById(doc.createdBy),
+                                models_1.Venue.findById(doc.origin),
+                                models_1.Venue.findById(doc.destination),
                                 requestItemStatus_model_1["default"].findById(doc.status)
                             ])];
                     case 2:
                         _a = _b.sent(), car = _a[0], user = _a[1], origin = _a[2], destination = _a[3], status = _a[4];
-                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, {
-                                meta: {
-                                    request: request,
-                                    car: car,
-                                    user: user,
-                                    origin: origin,
-                                    destination: destination,
-                                    status: status
-                                }
-                            })];
+                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, { $unset: { meta: {} } })];
                     case 3:
                         _b.sent();
-                        _b.label = 4;
-                    case 4: return [2 /*return*/];
+                        meta = requestIteam_meta_1["default"].processMeta({
+                            request: request,
+                            car: car,
+                            user: user,
+                            origin: origin,
+                            destination: destination,
+                            status: status
+                        });
+                        console.log(meta);
+                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, {
+                                $set: { meta: meta }
+                            })];
+                    case 4:
+                        _b.sent();
+                        _b.label = 5;
+                    case 5: return [2 /*return*/];
                 }
             });
         });

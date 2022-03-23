@@ -25,7 +25,7 @@ const userSettingsSchema = new mongoose.Schema({
   }
 });
 
-export const userSchema = new mongoose.Schema({
+export const baseUserSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true
@@ -53,6 +53,17 @@ export const userSchema = new mongoose.Schema({
     ref: 'Venue',
     required: [true, 'La sucursal es requerida']
   },
+  email: {
+    type: String,
+    trim: true,
+    required: [true, 'El email es requerido'],
+    unique: true,
+    index: true
+  },
+});
+
+export const userSchema = new mongoose.Schema({
+  ...baseUserSchema.obj,
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
@@ -61,13 +72,6 @@ export const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
     default: null
-  },
-  email: {
-    type: String,
-    trim: true,
-    required: [true, 'El email es requerido'],
-    unique: true,
-    index: true
   },
   group: {
     type: mongoose.Schema.Types.ObjectId,

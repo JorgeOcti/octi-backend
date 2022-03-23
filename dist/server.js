@@ -47,7 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.io = void 0;
+exports.io = exports.mongooseRaw = void 0;
 var bluebird = require("bluebird");
 var jwt = require("jsonwebtoken");
 var mongoose = require("mongoose");
@@ -84,6 +84,7 @@ var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) 
         console.log("".concat(logger_service_1["default"].colors.brightBlack, "Press CTRL-C to stop").concat(logger_service_1["default"].colors.reset));
     }
 });
+exports.mongooseRaw = mongoose;
 exports.io = new socket_io_1.Server(server);
 exports.io.adapter((0, redis_adapter_1.createAdapter)((0, redis_service_1.createRedisClient)(), (0, redis_service_1.createRedisClient)()));
 /* istanbul ignore next */

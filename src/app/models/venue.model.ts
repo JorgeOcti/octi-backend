@@ -17,11 +17,23 @@ export const choicesStatusCarInventory = [
   ChoicesTypeVenue.receiver
 ];
 
-export const venueSchema = new mongoose.Schema({
+export const baseVenueSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
   },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
+});
+
+export const venueSchema = new mongoose.Schema({
+  ...baseVenueSchema.obj,
   code: {
     type: String,
   },
@@ -35,14 +47,6 @@ export const venueSchema = new mongoose.Schema({
   lng: {
     type: Number,
     default: 0
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
   },
   region: {
     type: mongoose.Schema.Types.ObjectId,

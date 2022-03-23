@@ -4,7 +4,7 @@ import { IRequestItem } from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import requestItemsHooks from './requestItem.hooks';
-import { carSchema, userSchema, venueSchema } from '../../app/models';
+import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
 import { requestSchema } from './request.model';
 import { requestItemStatusSchema } from './';
 
@@ -15,19 +15,19 @@ export interface IRequestItemModel extends IRequestItem, mongoose.Document {
 
 const metaSchema = new mongoose.Schema({
   car: {
-    type: carSchema
+    type: baseCarSchema
   },
   request: {
     type: requestSchema
   },
   user: {
-    type: userSchema
+    type: baseUserSchema
   },
   origin: {
-    type: venueSchema
+    type: baseVenueSchema
   },
   destination: {
-    type: venueSchema
+    type: baseVenueSchema
   },
   status: {
     type: requestItemStatusSchema
