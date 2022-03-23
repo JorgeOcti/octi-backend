@@ -1042,12 +1042,12 @@ class CarController {
 
       cursor.on('data', async (participant) => {
         const row = await this.processParticipant(participant);
-        await worksheet.addRow(row).commit();
+        worksheet.addRow(row).commit();
       });
 
       // code to handle connection abort or finish query read process
       cursor.on('end', async ()  => {
-        await workbook.commit();
+        workbook.commit();
         res.status(200);
       });
 

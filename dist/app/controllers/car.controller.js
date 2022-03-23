@@ -1251,9 +1251,7 @@ var CarController = /** @class */ (function () {
                                     case 0: return [4 /*yield*/, this.processParticipant(participant)];
                                     case 1:
                                         row = _a.sent();
-                                        return [4 /*yield*/, worksheet_1.addRow(row).commit()];
-                                    case 2:
-                                        _a.sent();
+                                        worksheet_1.addRow(row).commit();
                                         return [2 /*return*/];
                                 }
                             });
@@ -1261,13 +1259,9 @@ var CarController = /** @class */ (function () {
                         // code to handle connection abort or finish query read process
                         cursor_1.on('end', function () { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, workbook_1.commit()];
-                                    case 1:
-                                        _a.sent();
-                                        res.status(200);
-                                        return [2 /*return*/];
-                                }
+                                workbook_1.commit();
+                                res.status(200);
+                                return [2 /*return*/];
                             });
                         }); });
                         cursor_1.on('error', function (error) { return logger_service_1["default"].error(error.message); });

@@ -837,7 +837,7 @@ class RequestController {
         .cursor({ batchSize: 100 })
         .exec();
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+      res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYYMMDD')}-revisiones.xlsx`);
       const options = {
         stream: res,
         useStyles: true,
@@ -970,10 +970,10 @@ class RequestController {
           paymentNumber: item.request?.advancePaymentInformation?.number ?? '',
           uploadDate: item.uploadDate,
           estimatedArrival: item.estimatedArrival,
-        });
+        }).commit();
       });
       cursor.on('end', async () => {
-        await workbook.commit();
+        workbook.commit();
         res.status(200);
       });
 
