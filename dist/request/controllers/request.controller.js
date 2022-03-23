@@ -126,6 +126,9 @@ var RequestController = /** @class */ (function () {
                 path: 'advancePaymentInformation.files'
             }, {
                 path: 'items',
+                select: [
+                    'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy'
+                ],
                 options: {
                     sort: {
                         _id: 1
@@ -316,15 +319,15 @@ var RequestController = /** @class */ (function () {
             });
         });
     };
-    RequestController.prototype.createRequest = function (user, request) {
+    RequestController.prototype.createRequest = function (createdBy, request) {
         var _this = this;
         return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-            var company, team, cars, number, channel, sellerText, operationType, defaultItemStatus, newRequest, _i, cars_1, car, currentCar, updatedRequest, e_4;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var company, team, cars, number, channel, sellerText, operationType, defaultItemStatus, newRequest, _i, cars_1, car, currentCar, _a, user, origin, destination, updatedRequest, e_4;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _a.trys.push([0, 12, , 13]);
-                        company = user.company, team = user.team;
+                        _b.trys.push([0, 13, , 14]);
+                        company = createdBy.company, team = createdBy.team;
                         cars = request.cars, number = request.number, channel = request.channel, sellerText = request.sellerText, operationType = request.operationType;
                         return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
                                 team: team,
@@ -336,7 +339,7 @@ var RequestController = /** @class */ (function () {
                                 weigth: 10
                             })];
                     case 1:
-                        defaultItemStatus = _a.sent();
+                        defaultItemStatus = _b.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
                                 sellerText: sellerText,
@@ -347,21 +350,21 @@ var RequestController = /** @class */ (function () {
                                 destination: cars[0].destination,
                                 operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 channel: channel,
-                                createdBy: user
+                                createdBy: createdBy
                             }).save()];
                     case 2:
-                        newRequest = _a.sent();
+                        newRequest = _b.sent();
                         _i = 0, cars_1 = cars;
-                        _a.label = 3;
+                        _b.label = 3;
                     case 3:
-                        if (!(_i < cars_1.length)) return [3 /*break*/, 10];
+                        if (!(_i < cars_1.length)) return [3 /*break*/, 11];
                         car = cars_1[_i];
                         return [4 /*yield*/, car_model_1["default"].findOne({
                                 team: team,
                                 vin: car.vin.trim()
                             })];
                     case 4:
-                        currentCar = _a.sent();
+                        currentCar = _b.sent();
                         if (!currentCar) return [3 /*break*/, 5];
                         currentCar.engineNumber = car.engineNumber;
                         currentCar.brand = car.brand;
@@ -409,31 +412,45 @@ var RequestController = /** @class */ (function () {
                             ap: car.ap,
                             countryOrigin: car.countryOrigin,
                             status: car_model_1.ChoicesStatusCar.pending,
-                            createdBy: user
+                            createdBy: createdBy
                         }).save()];
                     case 6:
-                        currentCar = _a.sent();
-                        _a.label = 7;
-                    case 7: return [4 /*yield*/, new requestItem_model_1["default"]({
-                            team: team,
-                            request: newRequest,
-                            car: currentCar,
-                            reason: car.reason,
-                            origin: car.origin,
-                            destination: car.destination,
-                            observation: car.observation,
-                            status: defaultItemStatus,
-                            createdBy: user
-                        }).save()];
+                        currentCar = _b.sent();
+                        _b.label = 7;
+                    case 7: return [4 /*yield*/, Promise.all([
+                            user_model_1["default"].findById(createdBy._id),
+                            venue_model_1["default"].findById(car.origin),
+                            venue_model_1["default"].findById(car.destination)
+                        ])];
                     case 8:
-                        _a.sent();
-                        _a.label = 9;
+                        _a = _b.sent(), user = _a[0], origin = _a[1], destination = _a[2];
+                        return [4 /*yield*/, new requestItem_model_1["default"]({
+                                team: team,
+                                request: newRequest,
+                                car: currentCar, meta: {
+                                    request: request,
+                                    car: car,
+                                    user: user,
+                                    origin: origin,
+                                    destination: destination,
+                                    status: defaultItemStatus
+                                },
+                                reason: car.reason,
+                                origin: car.origin,
+                                destination: car.destination,
+                                observation: car.observation,
+                                status: defaultItemStatus,
+                                createdBy: user
+                            }).save()];
                     case 9:
+                        _b.sent();
+                        _b.label = 10;
+                    case 10:
                         _i++;
                         return [3 /*break*/, 3];
-                    case 10: return [4 /*yield*/, request_model_1["default"].findById(newRequest._id).populate(this.requestPopulate)];
-                    case 11:
-                        updatedRequest = _a.sent();
+                    case 11: return [4 /*yield*/, request_model_1["default"].findById(newRequest._id).populate(this.requestPopulate)];
+                    case 12:
+                        updatedRequest = _b.sent();
                         server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
                             request: updatedRequest
                         });
@@ -443,17 +460,17 @@ var RequestController = /** @class */ (function () {
                         resolve({
                             updatedRequest: updatedRequest
                         });
-                        return [3 /*break*/, 13];
-                    case 12:
-                        e_4 = _a.sent();
+                        return [3 /*break*/, 14];
+                    case 13:
+                        e_4 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.createRequest: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(user._id, ", email: ").concat(user.email, "}, user: ").concat(JSON.stringify(user)));
+                        logger_service_1["default"].error("{user: {_id: ".concat(createdBy._id, ", email: ").concat(createdBy.email, "}, user: ").concat(JSON.stringify(createdBy)));
                         logger_service_1["default"].error(e_4);
                         reject(e_4);
-                        return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                        return [3 /*break*/, 14];
+                    case 14: return [2 /*return*/];
                 }
             });
         }); });
@@ -1191,7 +1208,7 @@ var RequestController = /** @class */ (function () {
                                 _b[orderBy] = orderType === 'ascending' ? 1 : -1,
                                 _b),
                             populate: this.requestPopulate,
-                            select: { meta: false },
+                            // select: {_id: true},
                             page: parseInt(page ? page : '1', 10),
                             limit: parseInt(pageSize ? pageSize : '20', 10)
                         };

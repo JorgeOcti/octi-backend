@@ -223,10 +223,10 @@ class RequestController {
     }
   }
 
-  private createRequest(user: any, request: any): Promise<any> {
+  private createRequest(createdBy: any, request: any): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        const { company, team } = user;
+        const { company, team } = createdBy;
         const { cars, number, channel, sellerText, operationType } = request;
         const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
           team,
@@ -247,7 +247,7 @@ class RequestController {
           destination: cars[0].destination,
           operationType: operationType?.length ? operationType : null,
           channel,
-          createdBy: user
+          createdBy
         }).save();
         for (const car of cars) {
           let currentCar = await CarModel.findOne({
@@ -301,13 +301,25 @@ class RequestController {
               ap: car.ap,
               countryOrigin: car.countryOrigin,
               status: ChoicesStatusCar.pending,
-              createdBy: user
+              createdBy: createdBy
             }).save();
           }
+          const [user, origin, destination] = await Promise.all([
+            User.findById(createdBy._id),
+            Venue.findById(car.origin),
+            Venue.findById(car.destination)
+          ]);
           await new RequestItem({
             team,
             request: newRequest,
-            car: currentCar,
+            car: currentCar, meta: {
+              request,
+              car,
+              user,
+              origin,
+              destination,
+              status: defaultItemStatus
+            },
             reason: car.reason,
             origin: car.origin,
             destination: car.destination,
@@ -330,7 +342,7 @@ class RequestController {
         /* istanbul ignore next */
         logger.error(`RequestController.createRequest: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${user._id}, email: ${user.email}}, user: ${JSON.stringify(user)}`);
+        logger.error(`{user: {_id: ${createdBy._id}, email: ${createdBy.email}}, user: ${JSON.stringify(createdBy)}`);
         logger.error(e);
         reject(e);
       }

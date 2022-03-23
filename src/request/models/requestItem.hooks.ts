@@ -15,11 +15,13 @@ class RequestItemHooks {
     console.log('doc.request', doc.request);
     const request = await Request.findById(doc.request);
     if (request) {
-      const car = await Car.findById(doc.car);
-      const user = await User.findById(doc.createdBy);
-      const origin = await Venue.findById(doc.origin);
-      const destination = await Venue.findById(doc.destination);
-      const status = await RequestItemStatus.findById(doc.status);
+      const [car, user, origin, destination, status] = await Promise.all([
+        Car.findById(doc.car),
+        User.findById(doc.createdBy),
+        Venue.findById(doc.origin),
+        Venue.findById(doc.destination),
+        RequestItemStatus.findById(doc.status)
+      ]);
       await RequestItem.updateMany({ request: request }, {
         meta: {
           request,

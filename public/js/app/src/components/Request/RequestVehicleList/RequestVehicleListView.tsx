@@ -528,20 +528,20 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <th
                         className='middle pointer'
                         style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('origin.name')}
+                        onClick={() => this.changeOrder('meta.origin.name')}
                       >
                         Creada
                         <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
                       <th
                         className='middle pointer'
                         style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('destination.name')}
+                        onClick={() => this.changeOrder('meta.destination.name')}
                       >
                         Destino
                         <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
                       {/*<th*/}
                       {/*  className='middle pointer'*/}
@@ -593,11 +593,11 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <th
                         className='middle pointer'
                         style={{ minWidth: '120px', maxWidth: '160px' }}
-                        onClick={() => this.changeOrder('status.weigth')}
+                        onClick={() => this.changeOrder('meta.status.weigth')}
                       >
                         Estado
                         <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
                       <ShowIf condition={requestSettings.internalNumber}>
                         <th className='middle' style={{ width: '60px' }}>CDO</th>
