@@ -3,6 +3,7 @@ import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import { IVenue } from '../interfaces';
 import { venueDaySchema } from './venueDay.model';
+import venuesHooks from './venue.hooks';
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 
@@ -105,6 +106,10 @@ export const venueSchema = new mongoose.Schema({
 
 mongoose.plugin(mongoosePaginate);
 
+venueSchema.post<IVenueModel>('findOneAndUpdate', async (doc: any) => {
+  await venuesHooks.postFindOneAndUpdateHandler(doc);
+});
+
 venueSchema.virtual('users', {
   ref: 'User', // The model to use
   localField: '_id', // Find field in this model
@@ -121,6 +126,6 @@ venueSchema.virtual('participants', {
 
 export type VenueSchema = mongoose.Model<IVenueModel> & PaginateModel<IVenueModel>;
 
-const Venue = mongoose.model<IVenueModel, VenueSchema>('Venue', venueSchema);
+export const Venue = mongoose.model<IVenueModel, VenueSchema>('Venue', venueSchema);
 
 export default Venue;

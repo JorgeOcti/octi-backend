@@ -7,6 +7,7 @@ import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import { IUser } from '../interfaces';
 import { IPermissionModel } from './permission.model';
+import usersHooks from './user.hooks';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
@@ -125,6 +126,10 @@ userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
 userSchema.plugin(mongoosePaginate);
 
+userSchema.post<IUserModel>('findOneAndUpdate', async (doc: any) => {
+  await usersHooks.postFindOneAndUpdateHandler(doc);
+});
+
 userSchema.methods.fullName = function(): string {
   return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
@@ -211,6 +216,6 @@ userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
 
 export type UserSchema = mongoose.Model<IUserModel> & PaginateModel<IUserModel>;
 
-const User = mongoose.model<IUserModel, UserSchema>('User', userSchema);
+export const User = mongoose.model<IUserModel, UserSchema>('User', userSchema);
 
 export default User;

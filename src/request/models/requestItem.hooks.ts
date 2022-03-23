@@ -1,8 +1,6 @@
 import Request from './request.model';
 import RequestItem, { IRequestItemModel } from './requestItem.model';
-import Car from '../../app/models/car.model';
-import User from '../../app/models/user.model';
-import Venue from '../../app/models/venue.model';
+import { Car, User, Venue } from '../../app/models';
 import RequestItemStatus from './requestItemStatus.model';
 
 class RequestItemHooks {
@@ -12,7 +10,6 @@ class RequestItemHooks {
   }
 
   public async postFindOneAndUpdateHandler(doc: IRequestItemModel): Promise<void> {
-    console.log('doc.request', doc.request);
     const request = await Request.findById(doc.request);
     if (request) {
       const [car, user, origin, destination, status] = await Promise.all([

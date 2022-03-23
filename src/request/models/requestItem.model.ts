@@ -6,7 +6,7 @@ import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import requestItemsHooks from './requestItem.hooks';
 import { carSchema, userSchema, venueSchema } from '../../app/models';
 import { requestSchema } from './request.model';
-import { requestItemStatusSchema } from './requestItemStatus.model';
+import { requestItemStatusSchema } from './';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
@@ -167,13 +167,13 @@ requestItemSchema.plugin(mongooseAggregatePaginate);
 // });
 
 requestItemSchema.post<IRequestItemModel>('findOneAndUpdate', async (doc: any) => {
-  console.log('******************** REQUET ITEM findOneAndUpdate *******************');
-  console.log(doc);
+  // console.log('******************** REQUET ITEM findOneAndUpdate *******************');
+  // console.log(doc);
   await requestItemsHooks.postFindOneAndUpdateHandler(doc);
 });
 
 export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel> & AggregatePaginateModel<IRequestItemModel>;
 
-const RequestItem = mongoose.model<IRequestItemModel, RequestItemSchema>('RequestItem', requestItemSchema);
+export const RequestItem = mongoose.model<IRequestItemModel, RequestItemSchema>('RequestItem', requestItemSchema);
 
 export default RequestItem;

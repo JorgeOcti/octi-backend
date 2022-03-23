@@ -213,6 +213,6 @@ export type CarSchema = mongoose.Model<ICarModel> & PaginateModel<ICarModel> & {
   findOneOrCreate(condition: any, create: any): Promise<ICarModel>
 };
 
-const Car = mongoose.model<ICarModel, CarSchema>('Car', carSchema);
+export const Car = mongoose.model<ICarModel, CarSchema>('Car', carSchema);
 
 export default Car;
