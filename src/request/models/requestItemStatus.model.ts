@@ -6,7 +6,7 @@ import requestItemStatusHooks from './requestItemStatus.hooks';
 
 export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document {}
 
-export const requestItemStatusSchema = new mongoose.Schema({
+export const baseRequestItemStatusSchema = new mongoose.Schema({
   name: {
     type: String
   },
@@ -17,7 +17,11 @@ export const requestItemStatusSchema = new mongoose.Schema({
   weigth: {
     type: Number,
     required: true
-  },
+  }
+});
+
+export const requestItemStatusSchema = new mongoose.Schema({
+  ...baseRequestItemStatusSchema.obj,
   default: {
     type: Boolean,
     default: false

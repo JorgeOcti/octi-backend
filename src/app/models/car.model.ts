@@ -72,17 +72,21 @@ export const baseCarSchema = new mongoose.Schema({
     trim: true
   },
   brand: {
-    type: String
+    type: String,
+    trim: true
   },
   denomination: {
-    type: String
+    type: String,
+    trim: true
   },
   material: {
-    type: String
+    type: String,
+    trim: true
   },
   color: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
 });
 

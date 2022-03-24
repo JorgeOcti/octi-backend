@@ -54,21 +54,20 @@ class RequestItemMeta {
   }
 
   public processMeta({ request, car, user, origin, destination, status }: any) {
-    const data: any = {};
     if (request) {
-      data.request = this.processRequest(request);
+      request = this.processRequest(request);
     }
     if (car) {
-      data.car = this.processCar(car);
+      car = this.processCar(car);
     }
     if (user) {
-      data.user = this.processUser(user);
+      user = this.processUser(user);
     }
     if (origin) {
-      data.origin = this.processVenue(origin);
+      origin = this.processVenue(origin);
     }
     if (destination) {
-      data.destination = this.processVenue(destination);
+      destination = this.processVenue(destination);
     }
     return {
       request, car, user, origin, destination, status

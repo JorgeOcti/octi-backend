@@ -313,55 +313,56 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public exportExcel() {
     this.trackClick("Exportar");
-    this.setState({
-      exporing: true
-    });
-    const api: ApiService = new ApiService();
-    const instance = api.getInstance();
-    instance.defaults.responseType = 'blob';
-    instance
-      .get(`/requests/export/`)
-      .then((response) => {
-        const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const fileName = `${moment().format('YYYYMMDD')}-solicitudes.xlsx`;
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          // IE workaround for "HTML7007: One or more blob URLs were
-          // revoked by closing the blob for which they were created.
-          // These URLs will no longer resolve as the data backing
-          // the URL has been freed."
-          window.navigator.msSaveBlob(blob, fileName);
-        } else {
-          const blobURL = URL.createObjectURL(blob);
-          const tempLink = document.createElement('a');
-          tempLink.style.display = 'none';
-          tempLink.href = blobURL;
-          tempLink.setAttribute('download', fileName);
-          // Safari thinks _blank anchor are pop ups. We only want to set _blank
-          // target if the browser does not support the HTML5 download attribute.
-          // This allows you to download files in desktop safari if pop up blocking
-          // is enabled.
-          if (typeof tempLink.download === 'undefined') {
-            tempLink.setAttribute('target', '_blank');
-          }
-          this.setState({
-            exporing: false
-          });
-          document.body.appendChild(tempLink);
-          tempLink.click();
-          document.body.removeChild(tempLink);
-          URL.revokeObjectURL(blobURL);
-        }
-      })
-      .catch((err) => {
-        this.setState({
-          exporing: false
-        });
-        if (!Axios.isCancel(err)) {
-          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
-        }
-      });
+    window.open(`/requests/export/`, '_blank');
+    // this.setState({
+    //   exporing: true
+    // });
+    // const api: ApiService = new ApiService();
+    // const instance = api.getInstance();
+    // instance.defaults.responseType = 'blob';
+    // instance
+    //   .get(`/requests/export/`)
+    //   .then((response) => {
+    //     const blob = new Blob([response.data], {
+    //       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    //     });
+    //     const fileName = `${moment().format('YYYYMMDD')}-solicitudes.xlsx`;
+    //     if (typeof window.navigator.msSaveBlob !== 'undefined') {
+    //       // IE workaround for "HTML7007: One or more blob URLs were
+    //       // revoked by closing the blob for which they were created.
+    //       // These URLs will no longer resolve as the data backing
+    //       // the URL has been freed."
+    //       window.navigator.msSaveBlob(blob, fileName);
+    //     } else {
+    //       const blobURL = URL.createObjectURL(blob);
+    //       const tempLink = document.createElement('a');
+    //       tempLink.style.display = 'none';
+    //       tempLink.href = blobURL;
+    //       tempLink.setAttribute('download', fileName);
+    //       // Safari thinks _blank anchor are pop ups. We only want to set _blank
+    //       // target if the browser does not support the HTML5 download attribute.
+    //       // This allows you to download files in desktop safari if pop up blocking
+    //       // is enabled.
+    //       if (typeof tempLink.download === 'undefined') {
+    //         tempLink.setAttribute('target', '_blank');
+    //       }
+    //       this.setState({
+    //         exporing: false
+    //       });
+    //       document.body.appendChild(tempLink);
+    //       tempLink.click();
+    //       document.body.removeChild(tempLink);
+    //       URL.revokeObjectURL(blobURL);
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     this.setState({
+    //       exporing: false
+    //     });
+    //     if (!Axios.isCancel(err)) {
+    //       swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+    //     }
+    //   });
   }
 
 }

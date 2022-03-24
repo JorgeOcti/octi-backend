@@ -2,11 +2,11 @@ import * as mongoose from 'mongoose';
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import { IRequestItem } from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
-import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import requestItemsHooks from './requestItem.hooks';
 import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
 import { requestSchema } from './request.model';
-import { requestItemStatusSchema } from './';
+import { baseRequestItemStatusSchema } from './';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
@@ -30,7 +30,7 @@ const metaSchema = new mongoose.Schema({
     type: baseVenueSchema
   },
   status: {
-    type: requestItemStatusSchema
+    type: baseRequestItemStatusSchema
   }
 });
 
