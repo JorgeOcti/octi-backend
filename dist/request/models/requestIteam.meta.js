@@ -32,6 +32,7 @@ var RequestItemMeta = /** @class */ (function () {
             team: car.team,
             company: car.company,
             vin: car.vin,
+            vin2: car.vin2,
             entry: car.entry,
             brand: car.brand,
             color: car.color,

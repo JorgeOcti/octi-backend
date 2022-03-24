@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var server_1 = require("../../server");
+var mongoRaw_1 = require("../../mongoRaw");
 var RequestItemStatusHooks = /** @class */ (function () {
     function RequestItemStatusHooks() {
         this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
@@ -46,11 +46,11 @@ var RequestItemStatusHooks = /** @class */ (function () {
             var status;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitemstatuses').findOne({ _id: doc._id })];
+                    case 0: return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('requestitemstatuses').findOne({ _id: doc._id })];
                     case 1:
                         status = _a.sent();
                         if (!status) return [3 /*break*/, 3];
-                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'meta.status._id': doc._id }, { $set: { 'meta.status': status } })];
+                        return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('requestitems').updateMany({ 'meta.status._id': doc._id }, { $set: { 'meta.status': status } })];
                     case 2:
                         _a.sent();
                         _a.label = 3;

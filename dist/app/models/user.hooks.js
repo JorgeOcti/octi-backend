@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var server_1 = require("../../server");
+var mongoRaw_1 = require("../../mongoRaw");
 var requestIteam_meta_1 = require("../../request/models/requestIteam.meta");
 var UserHooks = /** @class */ (function () {
     function UserHooks() {
@@ -47,11 +47,11 @@ var UserHooks = /** @class */ (function () {
             var user;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('users').findOne({ _id: doc._id })];
+                    case 0: return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('users').findOne({ _id: doc._id })];
                     case 1:
                         user = _a.sent();
                         if (!user) return [3 /*break*/, 3];
-                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'createdBy': doc._id }, { $set: { 'meta.user': requestIteam_meta_1["default"].processUser(user) } })];
+                        return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('requestitems').updateMany({ 'createdBy': doc._id }, { $set: { 'meta.user': requestIteam_meta_1["default"].processUser(user) } })];
                     case 2:
                         _a.sent();
                         _a.label = 3;

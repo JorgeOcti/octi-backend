@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var server_1 = require("../../server");
+var mongoRaw_1 = require("../../mongoRaw");
 var requestIteam_meta_1 = require("../../request/models/requestIteam.meta");
 var VenueHooks = /** @class */ (function () {
     function VenueHooks() {
@@ -47,15 +47,15 @@ var VenueHooks = /** @class */ (function () {
             var venue;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('venues').findOne({ _id: doc._id })];
+                    case 0: return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('venues').findOne({ _id: doc._id })];
                     case 1:
                         venue = _a.sent();
                         console.log(venue);
                         if (!venue) return [3 /*break*/, 4];
-                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'origin': doc._id }, { $set: { 'meta.origin': requestIteam_meta_1["default"].processVenue(venue) } })];
+                        return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('requestitems').updateMany({ 'origin': doc._id }, { $set: { 'meta.origin': requestIteam_meta_1["default"].processVenue(venue) } })];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, server_1.mongooseRaw.connection.db.collection('requestitems').updateMany({ 'destination': doc._id }, { $set: { 'meta.destination': requestIteam_meta_1["default"].processVenue(venue) } })];
+                        return [4 /*yield*/, mongoRaw_1["default"].connection.db.collection('requestitems').updateMany({ 'destination': doc._id }, { $set: { 'meta.destination': requestIteam_meta_1["default"].processVenue(venue) } })];
                     case 3:
                         _a.sent();
                         _a.label = 4;

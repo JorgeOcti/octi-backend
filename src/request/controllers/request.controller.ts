@@ -26,6 +26,7 @@ import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activ
 import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
+import requestItemsMeta from '../models/requestIteam.meta';
 
 class RequestController {
 
@@ -312,14 +313,15 @@ class RequestController {
           await new RequestItem({
             team,
             request: newRequest,
-            car: currentCar, meta: {
+            car: currentCar,
+            meta: requestItemsMeta.processMeta({
               request,
               car,
               user,
               origin,
               destination,
-              status: defaultItemStatus
-            },
+              defaultItemStatus
+            }),
             reason: car.reason,
             origin: car.origin,
             destination: car.destination,
@@ -469,14 +471,14 @@ class RequestController {
           origin: req.user.venue,
           destination: venue,
           status: defaultItemStatus,
-          meta: {
+          meta: requestItemsMeta.processMeta({
             request,
             car: newCar,
             user: await User.findOne({_id: req.user._id}),
             origin,
             destination,
             status
-          },
+          }),
           createdBy: req.user
         }).save();
       }

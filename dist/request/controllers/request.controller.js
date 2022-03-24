@@ -80,6 +80,7 @@ var activityHistory_model_1 = require("../../billing/models/activityHistory.mode
 var reason_model_1 = require("../models/reason.model");
 var inputsSchema_1 = require("../inputsSchema");
 var venue_model_1 = require("../../app/models/venue.model");
+var requestIteam_meta_1 = require("../models/requestIteam.meta");
 var RequestController = /** @class */ (function () {
     function RequestController() {
         this.itemPopulate = [{
@@ -427,14 +428,15 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, new requestItem_model_1["default"]({
                                 team: team,
                                 request: newRequest,
-                                car: currentCar, meta: {
+                                car: currentCar,
+                                meta: requestIteam_meta_1["default"].processMeta({
                                     request: request,
                                     car: car,
                                     user: user,
                                     origin: origin,
                                     destination: destination,
-                                    status: defaultItemStatus
-                                },
+                                    defaultItemStatus: defaultItemStatus
+                                }),
                                 reason: car.reason,
                                 origin: car.origin,
                                 destination: car.destination,
@@ -550,21 +552,21 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, origin, destination, status, _c, newRequest, e_6;
-            var _d, _e;
-            return __generator(this, function (_f) {
-                switch (_f.label) {
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation, existConectId, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, origin, destination, status, _c, _d, _e, newRequest, e_6;
+            var _f, _g;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
                         _a = req.user, company = _a.company, team = _a.team;
                         _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
-                        _f.label = 1;
+                        _h.label = 1;
                     case 1:
-                        _f.trys.push([1, 15, , 16]);
+                        _h.trys.push([1, 15, , 16]);
                         return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 2:
-                        existConectId = _f.sent();
+                        existConectId = _h.sent();
                         if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
                             return [2 /*return*/, res.status(400).json({
                                     message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud ").concat(existConectId.number, ".")
@@ -580,10 +582,10 @@ var RequestController = /** @class */ (function () {
                                 weigth: 10
                             })];
                     case 3:
-                        defaultItemStatus = _f.sent();
+                        defaultItemStatus = _h.sent();
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { "new": true })];
                     case 4:
-                        updateTeam = _f.sent();
+                        updateTeam = _h.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
                                 sellerText: sellerText !== null && sellerText !== void 0 ? sellerText : req.user.fullName(),
@@ -602,9 +604,9 @@ var RequestController = /** @class */ (function () {
                                 createdBy: req.user
                             }).save()];
                     case 5:
-                        request = _f.sent();
+                        request = _h.sent();
                         _i = 0, cars_2 = cars;
-                        _f.label = 6;
+                        _h.label = 6;
                     case 6:
                         if (!(_i < cars_2.length)) return [3 /*break*/, 13];
                         car = cars_2[_i];
@@ -621,16 +623,16 @@ var RequestController = /** @class */ (function () {
                                 createdBy: req.user
                             }).save()];
                     case 7:
-                        newCar = _f.sent();
+                        newCar = _h.sent();
                         return [4 /*yield*/, venue_model_1["default"].findById(req.user.venue)];
                     case 8:
-                        origin = _f.sent();
+                        origin = _h.sent();
                         return [4 /*yield*/, venue_model_1["default"].findById(venue)];
                     case 9:
-                        destination = _f.sent();
+                        destination = _h.sent();
                         status = defaultItemStatus;
                         _c = requestItem_model_1["default"].bind;
-                        _d = {
+                        _f = {
                             team: team,
                             request: request,
                             car: newCar,
@@ -645,27 +647,28 @@ var RequestController = /** @class */ (function () {
                             destination: venue,
                             status: defaultItemStatus
                         };
-                        _e = {
+                        _e = (_d = requestIteam_meta_1["default"]).processMeta;
+                        _g = {
                             request: request,
                             car: newCar
                         };
                         return [4 /*yield*/, user_model_1["default"].findOne({ _id: req.user._id })];
-                    case 10: return [4 /*yield*/, new (_c.apply(requestItem_model_1["default"], [void 0, (_d.meta = (_e.user = _f.sent(),
-                                _e.origin = origin,
-                                _e.destination = destination,
-                                _e.status = status,
-                                _e),
-                                _d.createdBy = req.user,
-                                _d)]))().save()];
+                    case 10: return [4 /*yield*/, new (_c.apply(requestItem_model_1["default"], [void 0, (_f.meta = _e.apply(_d, [(_g.user = _h.sent(),
+                                    _g.origin = origin,
+                                    _g.destination = destination,
+                                    _g.status = status,
+                                    _g)]),
+                                _f.createdBy = req.user,
+                                _f)]))().save()];
                     case 11:
-                        _f.sent();
-                        _f.label = 12;
+                        _h.sent();
+                        _h.label = 12;
                     case 12:
                         _i++;
                         return [3 /*break*/, 6];
                     case 13: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
                     case 14:
-                        newRequest = _f.sent();
+                        newRequest = _h.sent();
                         server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
                             request: newRequest
                         });
@@ -678,7 +681,7 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 16];
                     case 15:
-                        e_6 = _f.sent();
+                        e_6 = _h.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
                         /* istanbul ignore next */
