@@ -1037,7 +1037,7 @@ var RequestController = /** @class */ (function () {
                                 $sort: { _id: 1 }
                             }])
                             .allowDiskUse(true)
-                            .cursor({ batchSize: 100 })
+                            .cursor({ batchSize: 20 })
                             .exec();
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                         res.setHeader('Content-Disposition', "attachment; filename=".concat(moment().format('YYYYMMDD'), "-revisiones.xlsx"));
