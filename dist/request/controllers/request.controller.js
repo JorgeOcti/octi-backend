@@ -1404,7 +1404,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequestItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, item, e_13;
+            var team, id, item, itemsInRequest, e_13;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1413,7 +1413,7 @@ var RequestController = /** @class */ (function () {
                         id = req.params.id;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 7, , 8]);
+                        _a.trys.push([1, 10, , 11]);
                         return [4 /*yield*/, requestItem_model_1["default"]
                                 .findOne({
                                 _id: id,
@@ -1422,12 +1422,9 @@ var RequestController = /** @class */ (function () {
                                 .populate(this.itemPopulate)];
                     case 2:
                         item = _a.sent();
-                        if (!item) return [3 /*break*/, 5];
+                        if (!item) return [3 /*break*/, 8];
                         return [4 /*yield*/, item.remove()];
                     case 3:
-                        _a.sent();
-                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
-                    case 4:
                         _a.sent();
                         server_1.io.to("request-list-".concat(team)).emit('DELETE_REQUEST_ITEM', {
                             idRequest: item.request._id,
@@ -1437,19 +1434,38 @@ var RequestController = /** @class */ (function () {
                             idRequest: item.request._id,
                             item: item
                         });
+                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
+                    case 4:
+                        _a.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"].find({ request: item.request._id }).count()];
+                    case 5:
+                        itemsInRequest = _a.sent();
+                        console.log('itemsInRequest', itemsInRequest);
+                        if (!!itemsInRequest) return [3 /*break*/, 7];
+                        return [4 /*yield*/, request_model_1["default"].deleteOne({ _id: item.request._id })];
+                    case 6:
+                        _a.sent();
+                        server_1.io.to("request-list-".concat(team)).emit('DELETE_REQUEST', {
+                            idRequest: item.request._id
+                        });
+                        server_1.io.to("request-detail-".concat(team)).emit('DELETE_REQUEST', {
+                            idRequest: item.request._id
+                        });
+                        _a.label = 7;
+                    case 7:
                         res.status(200).json({
                             message: "ok",
                             status: 200
                         });
-                        return [3 /*break*/, 6];
-                    case 5:
+                        return [3 /*break*/, 9];
+                    case 8:
                         res.status(404).json({
                             message: "No se ha encontrado la solicitud ".concat(id),
                             status: 404
                         });
-                        _a.label = 6;
-                    case 6: return [3 /*break*/, 8];
-                    case 7:
+                        _a.label = 9;
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
                         e_13 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequestItem: Async Error.");
@@ -1457,8 +1473,8 @@ var RequestController = /** @class */ (function () {
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
                         logger_service_1["default"].error(e_13);
                         res.status(500).json(e_13);
-                        return [3 /*break*/, 8];
-                    case 8: return [2 /*return*/];
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
