@@ -15,7 +15,8 @@ var RequestItemMeta = /** @class */ (function () {
             company: user.company,
             firstName: user.firstName,
             lastName: user.lastName,
-            venue: user.venue
+            venue: user.venue,
+            email: user.email
         };
     };
     RequestItemMeta.prototype.processRequest = function (request) {

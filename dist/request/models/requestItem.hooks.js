@@ -53,7 +53,7 @@ var RequestItemHooks = /** @class */ (function () {
                     case 0: return [4 /*yield*/, request_model_1["default"].findById(doc.request, { meta: false })];
                     case 1:
                         request = _b.sent();
-                        if (!request) return [3 /*break*/, 5];
+                        if (!request) return [3 /*break*/, 4];
                         return [4 /*yield*/, Promise.all([
                                 models_1.Car.findById(doc.car),
                                 models_1.User.findById(doc.createdBy),
@@ -63,9 +63,6 @@ var RequestItemHooks = /** @class */ (function () {
                             ])];
                     case 2:
                         _a = _b.sent(), car = _a[0], user = _a[1], origin = _a[2], destination = _a[3], status = _a[4];
-                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: doc._id }, { $unset: { meta: {} } })];
-                    case 3:
-                        _b.sent();
                         meta = requestIteam_meta_1["default"].processMeta({
                             request: request,
                             car: car,
@@ -75,13 +72,13 @@ var RequestItemHooks = /** @class */ (function () {
                             status: status
                         });
                         console.log(meta);
-                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, {
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: doc._id }, {
                                 $set: { meta: meta }
                             })];
-                    case 4:
+                    case 3:
                         _b.sent();
-                        _b.label = 5;
-                    case 5: return [2 /*return*/];
+                        _b.label = 4;
+                    case 4: return [2 /*return*/];
                 }
             });
         });

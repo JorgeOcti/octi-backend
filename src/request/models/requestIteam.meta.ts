@@ -15,7 +15,8 @@ class RequestItemMeta {
       company: user.company,
       firstName: user.firstName,
       lastName: user.lastName,
-      venue: user.venue
+      venue: user.venue,
+      email: user.email
     };
   }
 
