@@ -1040,14 +1040,14 @@ var RequestController = /** @class */ (function () {
                             .cursor({ batchSize: 20 })
                             .exec();
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=".concat(moment().format('YYYYMMDD'), "-revisiones.xlsx"));
+                        res.setHeader('Content-Disposition', "attachment; filename=".concat(moment().format('YYYYMMDD'), "-solicitudes.xlsx"));
                         options = {
                             stream: res,
                             useStyles: true,
                             useSharedStrings: true
                         };
                         workbook_1 = new excel.stream.xlsx.WorkbookWriter(options);
-                        worksheet_1 = workbook_1.addWorksheet('Usuarios', {
+                        worksheet_1 = workbook_1.addWorksheet('Solicitudes', {
                             properties: {
                                 defaultRowHeight: 30
                             }, pageSetup: {

@@ -836,14 +836,14 @@ class RequestController {
         .cursor({ batchSize: 20 })
         .exec();
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYYMMDD')}-revisiones.xlsx`);
+      res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYYMMDD')}-solicitudes.xlsx`);
       const options = {
         stream: res,
         useStyles: true,
         useSharedStrings: true
       };
       const workbook = new excel.stream.xlsx.WorkbookWriter(options);
-      const worksheet = workbook.addWorksheet('Usuarios', {
+      const worksheet = workbook.addWorksheet('Solicitudes', {
         properties: {
           defaultRowHeight: 30
         }, pageSetup: {
