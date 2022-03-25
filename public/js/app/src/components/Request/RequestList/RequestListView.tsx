@@ -1,16 +1,11 @@
-import Axios from 'axios';
-import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import { Dispatch, ErrorInfo, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
-import * as swal from 'sweetalert';
-import {
-  IRequestItem
-} from '../../../../../../../src/request/interfaces/requestItem.interface';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {
   createRequestItemActionInList,
   deleteRequestActionInList,
@@ -18,16 +13,15 @@ import {
   getRequestsThunkAction,
   updateRequestItemActionInList
 } from '../../../actions/requests.actions';
-import {IRequestsState } from '../../../actions/requests.types';
+import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
-import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestListDetail from './RequestDetail';
-import TrackingBasePage from "../../Utils/TrackingBasePage";
+import TrackingBasePage from '../../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
@@ -117,7 +111,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
       }, 300);
     });
 
-    this.socket.on('CREATE_REQUEST', (data: any): void => {
+    this.socket.on('CREATE_REQUEST', (): void => {
       const { page } = this.props.requests.pagination;
       const { orderBy, orderType } = this.props.requests.options;
       this.props.getRequestsThunkAction(page, orderBy, orderType, true);

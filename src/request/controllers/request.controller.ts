@@ -1011,8 +1011,26 @@ class RequestController {
       sort: {
         [orderBy]: orderType === 'ascending' ? 1 : -1
       },
-      populate: this.requestPopulate,
-      // select: {_id: true},
+      // populate: this.requestPopulate,
+      populate: [{
+        path: 'origin',
+        select: ['name']
+      }, {
+        path: 'destination',
+        select: ['name']
+      }, {
+        path: 'channel',
+        select: ['name']
+      }, {
+        path: 'createdBy',
+        select: ['firstName', 'lastName']
+      }, {
+        path: 'advancePaymentInformation.files'
+      }, {
+        path: 'items',
+        select: ['_id']
+      }],
+      select: {meta: false},
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };

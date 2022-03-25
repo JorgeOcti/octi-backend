@@ -11,7 +11,6 @@ import { tabStatusAction, updateRequestItemInListThunkAction } from '../../../ac
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
-import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 
 declare let window: IWindow;
@@ -28,13 +27,14 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 interface IStateType {
+  open: boolean;
   error: Error | null;
 }
 
 const getColorForPercentage = (value: number): string => {
-  if(value < 40){
+  if (value < 40) {
     return '#00c0ef';
-  } else if (value <60){
+  } else if (value < 60) {
     return '#f39c12';
   } else {
     return '#00a65a';
@@ -55,24 +55,24 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {requests, request, reasons, requestItemStatus} = this.props;
-    const {requestSettings} = requests;
+    const { requests, request, reasons, requestItemStatus } = this.props;
+    const { requestSettings } = requests;
     const open = this.props.requests.requestOpen.includes(request._id);
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <React.Fragment>
-        <div id={`request-${request._id}`} className="row request bg-request-title background-transition">
+        <div id={`request-${request._id}`} className='row request bg-request-title background-transition'>
           <div
-            className="col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer center"
+            className='col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer center'
             onClick={() => this.goToDetail(request._id)}
           >
             {/* <i className="fa fa-circle status-circle-red" /> */}
-            <strong className="text-underline">
+            <strong className='text-underline'>
               #{request.number}
             </strong>&nbsp;
-            <i className="fa fa-share-square-o" style={{fontSize: '10px'}}/>
+            <i className='fa fa-share-square-o' style={{ fontSize: '10px' }} />
           </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {request.channel ? request.channel.name : ''}
             {/* {
               request.fleet ?
@@ -80,36 +80,49 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 : null
             } */}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.sellerText?.length ? request.sellerText : '-'}</div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.destination.name}</div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-            {request.items.length}
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.sellerText?.length ? request.sellerText : '-'}</div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.destination.name}</div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+            {
+              request.items.length
+            }
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
             {moment(request.createdAt).format('DD-MM-YY')}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
             {moment(request.updatedAt).format('DD-MM-YY')}
           </div>
           {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
-            {/* 10 */}
+          {/* 10 */}
           {/* </div> */}
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer" onClick={() => this.props.tabStatusAction(request._id)}>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer' onClick={() => this.props.tabStatusAction(request._id)}>
             {
               open ? (<i className='fa fa-chevron-up' />) : (<i className='fa fa-chevron-down' />)
             }
           </div>
         </div>
-        <div className="table-request" style={{display: open ? 'block' : 'none'}}>
-          <table className="table table-hover">
-            <thead>
+        <div className='table-request' style={{ display: open ? 'block' : 'none' }}>
+          <ShowIf condition={!this.props.requests.requestItemsById.hasOwnProperty(request._id)}>
+            <div className='text-center' style={{
+              padding: '10px',
+              borderBottom: '1px solid #e1e1e1',
+              borderLeft: '1px solid #e1e1e1',
+              borderRight: '1px solid #e1e1e1',
+            }}>
+              <i className="fa fa-spinner fa-spin text-purple"/>
+            </div>
+          </ShowIf>
+          <ShowIf condition={this.props.requests.requestItemsById.hasOwnProperty(request._id)}>
+            <table className='table table-hover'>
+              <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
-                <th className="middle" style={{ width: '28px' }} />
-                <th className="middle" style={{ width: '100px' }} >Progreso</th>
-                <th className="middle" style={{ width: '120px' }}>Estado</th>
-                <th className="middle" style={{ width: '200px' }}>Modelo</th>
-                <th className="middle" style={{ width: '100px' }}>Color</th>
-                <th className="middle" style={{ width: '140px' }}>VIN</th>
+                <th className='middle' style={{ width: '28px' }} />
+                <th className='middle' style={{ width: '100px' }}>Progreso</th>
+                <th className='middle' style={{ width: '120px' }}>Estado</th>
+                <th className='middle' style={{ width: '200px' }}>Modelo</th>
+                <th className='middle' style={{ width: '120px' }}>Color</th>
+                <th className='middle' style={{ width: '160px' }}>VIN</th>
                 <ShowIf condition={requestSettings.ticket}>
                   <th className='middle-center pointer' style={{ width: '60px' }}>
                     Ticket
@@ -119,49 +132,52 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                   </th>
                 </ShowIf>
                 <ShowIf condition={requestSettings.entry}>
-                  <th className="middle-center">Partida</th>
+                  <th>Partida</th>
                 </ShowIf>
-                <th className="middle-center" style={{ width: '20px' }}>Adj</th>
-                <th className="middle">Obs</th>
+                <th className='middle-center' style={{ width: '20px' }}>Adj</th>
+                <th className='middle'>Obs</th>
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
                 <ShowIf condition={requestSettings.reason}>
-                  <th className="middle"  style={{ width: '150px' }}>Motivo</th>
+                  <th className='middle' style={{ width: '150px' }}>Motivo</th>
                 </ShowIf>
                 {/* <th className="middle" >Transporte</th>
                 <th  className="middle" style={{ width: '70px' }}>Fecha carga</th>
                 <th className="middle"  style={{ width: '70px' }}>Fecha llegada</th> */}
                 <th />
               </tr>
-            </thead>
-            <tbody>
+              </thead>
+              <tbody>
               {
-                request.items.map((item: any) => (
+                (this.props.requests.requestItemsById[request._id] || []).map((item: any) => (
                   <tr key={item._id} id={`request-item-${item._id}`} className={'background-transition'}>
-                    <td className="middle-center">
+                    <td className='middle-center'>
                       {item.priority ?
-                        <i className="fa fa-star text-yellow" />
+                        <i className='fa fa-star text-yellow' />
                         : null}
                     </td>
-                    <td className="middle">
-                      <div className="progress progress-xs">
+                    <td className='middle'>
+                      <div className='progress progress-xs'>
                         <div
                           className={`progress-bar progress-bar-aqua`}
-                          style={{ width: `${(item.status?.weigth ?? 0)}%`, backgroundColor: getColorForPercentage(100 / requests.requestItemStatusMax * (item.status?.weigth ?? 0)) }}
+                          style={{
+                            width: `${(item.status?.weigth ?? 0)}%`,
+                            backgroundColor: getColorForPercentage(100 / requests.requestItemStatusMax * (item.status?.weigth ?? 0))
+                          }}
                         />
                       </div>
                     </td>
                     {
                       canChangeRequest ?
-                        <td className="middle">
-                          <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                              this.props.updateRequestItemInListReduxAction!(request._id, {
-                                ...item,
-                                status: e.target.value
-                              });
-                            }}
+                        <td className='middle'>
+                          <select className='form-control select-sm font-12' value={item.status?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    this.props.updateRequestItemInListReduxAction!(request._id, {
+                                      ...item,
+                                      status: e.target.value
+                                    });
+                                  }}
                           >
-                            <option value="" disabled={true}>-</option>
+                            <option value='' disabled={true}>-</option>
                             {
                               requestItemStatus.map((req) => (
                                 <option key={req._id} value={req._id}>{req.name}</option>
@@ -170,19 +186,19 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
                           </select>
                         </td> :
-                        <td className="middle">{item.status?.name}</td>
+                        <td className='middle'>{item.status?.name}</td>
                     }
-                    <td className="middle">
+                    <td className='middle'>
                       {`${item.car.brand} ${item.car.denomination} ${item.car.material ?? ''}`}
                     </td>
-                    <td className="middle">
+                    <td className='middle'>
                       {item.car.color}
                     </td>
-                    <td className='middle-center'>
-                      <ShowIf condition={item.car.vin?.length }>
+                    <td>
+                      <ShowIf condition={item.car.vin?.length}>
                         <a
                           href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
-                          target="_blank"
+                          target='_blank'
                           style={{
                             textDecoration: 'underline'
                           }}
@@ -205,7 +221,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       <td className='middle'>{request.advancePaymentInformation?.number}</td>
                     </ShowIf>
                     <ShowIf condition={requestSettings.entry}>
-                      <td className='middle-center'>
+                      <td>
                         {
                           item.car.entry && item.car.entry.length ? item.car.entry : null
                         }
@@ -218,20 +234,20 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       {
                         item.files?.length ?
                           <i
-                            className="fa fa-paperclip"
-                            data-toggle="tooltip"
-                            data-placement="top"
+                            className='fa fa-paperclip'
+                            data-toggle='tooltip'
+                            data-placement='top'
                             title={`${item.files.length} archivos adjuntos.`}
                           /> : null
                       }
                     </td>
-                    <td className="middle-center">
+                    <td className='middle-center'>
                       {
                         item.observation && item.observation.length ?
                           <i
-                            className="fa fa-comment"
-                            data-toggle="tooltip"
-                            data-placement="top"
+                            className='fa fa-comment'
+                            data-toggle='tooltip'
+                            data-placement='top'
                             title={item.observation}
                           /> : null
                       }
@@ -356,8 +372,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                   </tr>
                 ))
               }
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </ShowIf>
         </div>
       </React.Fragment>
     );

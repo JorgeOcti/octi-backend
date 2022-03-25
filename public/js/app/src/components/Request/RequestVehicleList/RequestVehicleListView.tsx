@@ -1,10 +1,7 @@
-import Axios from 'axios';
-import * as moment from 'moment';
 import * as React from 'react';
 import { Dispatch, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {
@@ -17,7 +14,6 @@ import {
 import { IRequestItemsFilters, IRequestItemsState, RequestItemsReduxActions } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
-import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import BootstrapSelect from '../../Utils/BootstrapSelect';
 import DateRangePicker from '../../Utils/DateRangePicker';
@@ -115,7 +111,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
       }, 300);
     });
 
-    this.socket.on('DELETE_REQUEST', (data: any): void => {
+    // this.socket.on('DELETE_REQUEST', (data: any): void => {
       // const $item = $(`#request-${data.idRequest}`);
       // if ($item) {
       //   $item.addClass('bg-red-active');
@@ -123,7 +119,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
       // setTimeout(() => {
       //   this.props.deleteRequestActionInList(data.idRequest);
       // }, 300);
-    });
+    // });
 
     this.socket.on('CREATE_REQUEST', (data: any): void => {
       const { page } = this.props.requestItems.pagination;
@@ -660,7 +656,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     </thead>
                     <tbody>
                     {
-                      requestItems.map((item, index) => (
+                      requestItems.map((item) => (
                         <RequestVehicleItem
                           key={item._id}
                           item={item}

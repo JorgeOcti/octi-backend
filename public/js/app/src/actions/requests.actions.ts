@@ -43,7 +43,7 @@ import {
   REQUEST_TAB_STATUS,
   REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
-  REQUEST_LOAD_SETTINGS
+  REQUEST_LOAD_SETTINGS, ILoadItemsRequest, REQUEST_LOAD_ITEMS
 } from './requests.types';
 import { IRequestSetting } from '../../../../../src/app/interfaces';
 
@@ -182,11 +182,37 @@ export function deleteRequestItemActionInDetail(item: IRequestItem): IDeleteRequ
   };
 }
 
-export function tabStatusAction(request: string): ITabStatusRequest {
+export function changeTabStatusAction(request: string): ITabStatusRequest {
   return {
     type: REQUEST_TAB_STATUS,
     payload: {
       request
+    }
+  };
+}
+
+export function loadItemsAction(request: string, items: any): ILoadItemsRequest {
+  return {
+    type: REQUEST_LOAD_ITEMS,
+    payload: {
+      request,
+      items
+    }
+  };
+}
+
+export function tabStatusAction(request: string) {
+  return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
+    const state = getState();
+    const isOpen = state.requests.requestOpen.includes(request);
+    const hasItems = state.requests.requestItemsById.hasOwnProperty(request);
+    dispatch(changeTabStatusAction(request));
+    if (!isOpen && !hasItems) {
+      const api: ApiService = new ApiService();
+      api.getRequest(request)
+        .then((response: AxiosResponse) => {
+          dispatch(loadItemsAction(request, response.data.items));
+        });
     }
   };
 }

@@ -9,7 +9,7 @@ import {
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
   REQUEST_IS_LOADING,
-  REQUEST_LOAD_CARRIERS,
+  REQUEST_LOAD_CARRIERS, REQUEST_LOAD_ITEMS,
   REQUEST_LOAD_REASONS,
   REQUEST_LOAD_REQUEST,
   REQUEST_LOAD_REQUEST_ITEM_STATUS,
@@ -28,6 +28,7 @@ const initialState: IRequestsState = {
   reasons: [],
   carriers: [],
   requestOpen: [],
+  requestItemsById: {},
   requestItemStatus: [],
   requestItemStatusMin: 0,
   requestItemStatusMax: 100,
@@ -86,6 +87,14 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
         options: {
           orderBy: action.payload.orderBy,
           orderType: action.payload.orderType
+        }
+      };
+    case REQUEST_LOAD_ITEMS:
+      return {
+        ...state,
+        requestItemsById: {
+          ...state.requestItemsById,
+          [action.payload.request]: action.payload.items
         }
       };
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:

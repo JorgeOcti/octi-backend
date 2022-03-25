@@ -22,6 +22,7 @@ export const REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/DELETE_REQUEST_I
 export const REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/CREATE_REQUEST_ITEM_IN_DETAIL';
 export const REQUEST_DELETE_REQUEST_IN_LIST = '/REQUESTS/DELETE_REQUEST_IN_LIST';
 export const REQUEST_TAB_STATUS = '/REQUESTS/TAB_STATUS';
+export const REQUEST_LOAD_ITEMS = '/REQUESTS/LOAD_ITEMS';
 export const REQUEST_CHANGE_ORDER = '/REQUESTS/CHANGE_ORDER';
 
 export interface IRequestsState {
@@ -30,6 +31,7 @@ export interface IRequestsState {
   reasons: IReason[];
   carriers: ICarrier[];
   requestOpen: string[];
+  requestItemsById: any;
   requestItemStatus: IRequestItemStatus[];
   requestItemStatusMin: number;
   requestItemStatusMax: number;
@@ -168,6 +170,14 @@ export interface ITabStatusRequest {
   };
 }
 
+export interface ILoadItemsRequest {
+  type: typeof REQUEST_LOAD_ITEMS;
+  payload: {
+    request: string;
+    items: any;
+  };
+}
+
 export interface IChangeOrderRequest {
   type: typeof REQUEST_CHANGE_ORDER;
   payload: {
@@ -180,6 +190,7 @@ export type RequestsReduxActions =
   ICancelRequest |
   IIsLoadingRequest |
   ILoadRequest |
+  ILoadItemsRequest |
   ICreateRequestItemInList |
   IUpdateRequestItemInList |
   IDeleteRequestItemInList |
