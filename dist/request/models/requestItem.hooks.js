@@ -50,7 +50,7 @@ var RequestItemHooks = /** @class */ (function () {
             var request, _a, car, user, origin, destination, status, meta;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, request_model_1["default"].findById(doc.request)];
+                    case 0: return [4 /*yield*/, request_model_1["default"].findById(doc.request, { meta: false })];
                     case 1:
                         request = _b.sent();
                         if (!request) return [3 /*break*/, 5];
@@ -63,7 +63,7 @@ var RequestItemHooks = /** @class */ (function () {
                             ])];
                     case 2:
                         _a = _b.sent(), car = _a[0], user = _a[1], origin = _a[2], destination = _a[3], status = _a[4];
-                        return [4 /*yield*/, requestItem_model_1["default"].updateMany({ request: request }, { $unset: { meta: {} } })];
+                        return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: doc._id }, { $unset: { meta: {} } })];
                     case 3:
                         _b.sent();
                         meta = requestIteam_meta_1["default"].processMeta({

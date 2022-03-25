@@ -28,6 +28,10 @@ export const baseCarSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  entry: {
+    type: String,
+    default: ''
+  },
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
@@ -73,11 +77,13 @@ export const baseCarSchema = new mongoose.Schema({
   },
   brand: {
     type: String,
-    trim: true
+    trim: true,
+    uppercase: true
   },
   denomination: {
     type: String,
-    trim: true
+    trim: true,
+    uppercase: true
   },
   material: {
     type: String,
@@ -119,10 +125,6 @@ export const carSchema = new mongoose.Schema({
   },
   ap:{
     type: String,
-  },
-  entry: {
-    type: String,
-    default: ''
   },
   client: {
     type: String,

@@ -20,7 +20,7 @@ class RequestItemHooks {
         Venue.findById(doc.destination),
         RequestItemStatus.findById(doc.status)
       ]);
-      await RequestItem.updateMany({ request: request }, {$unset: { meta: {}}});
+      await RequestItem.updateOne({ _id: doc._id }, { $unset: { meta: {} } });
       const meta = requestItemsMeta.processMeta({
         request,
         car,

@@ -39,11 +39,11 @@ exports.__esModule = true;
 exports.RequestItem = void 0;
 var mongoose = require("mongoose");
 var mongoosePaginate = require("mongoose-paginate");
-var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var requestItem_hooks_1 = require("./requestItem.hooks");
 var models_1 = require("../../app/models");
 var request_model_1 = require("./request.model");
 var _1 = require("./");
+var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var metaSchema = new mongoose.Schema({
     car: {
         type: models_1.baseCarSchema
@@ -61,7 +61,7 @@ var metaSchema = new mongoose.Schema({
         type: models_1.baseVenueSchema
     },
     status: {
-        type: _1.requestItemStatusSchema
+        type: _1.baseRequestItemStatusSchema
     }
 });
 var requestItemAnswerSchema = new mongoose.Schema({

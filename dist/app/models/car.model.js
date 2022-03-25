@@ -35,6 +35,10 @@ exports.baseCarSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    entry: {
+        type: String,
+        "default": ''
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -79,17 +83,23 @@ exports.baseCarSchema = new mongoose.Schema({
         trim: true
     },
     brand: {
-        type: String
+        type: String,
+        trim: true,
+        uppercase: true
     },
     denomination: {
-        type: String
+        type: String,
+        trim: true,
+        uppercase: true
     },
     material: {
-        type: String
+        type: String,
+        trim: true
     },
     color: {
         type: String,
-        "default": ''
+        "default": '',
+        trim: true
     }
 });
 exports.carSchema = new mongoose.Schema(__assign(__assign({}, exports.baseCarSchema.obj), { invoice: {
@@ -111,9 +121,6 @@ exports.carSchema = new mongoose.Schema(__assign(__assign({}, exports.baseCarSch
         type: String
     }, ap: {
         type: String
-    }, entry: {
-        type: String,
-        "default": ''
     }, client: {
         type: String,
         "default": ''
