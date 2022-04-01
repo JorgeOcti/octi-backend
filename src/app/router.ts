@@ -165,12 +165,12 @@ appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserContro
 
 // web login
 appRouter.get('/account/login/', appController.login);
+appRouter.post('/account/login/', appController.processLogin);
 
 appRouter.get('/account/login/soo/:id', passport.authenticate('multy-saml'));
 
 appRouter.post('/account/login/soo/callback/', appController.processLoginSoo);
 
-appRouter.post('/account/login/', appController.processLogin);
 
 appRouter.get('/account/forgot-password/', csrfProtection, appController.forgotPassword);
 appRouter.post('/account/forgot-password/', csrfProtection, appController.processForgotPassword);

@@ -946,7 +946,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.exportExcel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, cursor_1, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, e_8;
+            var team, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, cursor_1, e_8;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -955,90 +955,6 @@ var RequestController = /** @class */ (function () {
                         _d.label = 1;
                     case 1:
                         _d.trys.push([1, 6, , 7]);
-                        cursor_1 = requestItem_model_1["default"].aggregate([{
-                                $match: {
-                                    team: team,
-                                    'destination': {
-                                        $in: req.user.venuesPermissions()
-                                    }
-                                }
-                            }, {
-                                $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-                            }, {
-                                $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
-                            }, {
-                                $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-                            }, {
-                                $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-                            }, {
-                                $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-                            }, {
-                                $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-                            }, {
-                                $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-                            }, {
-                                $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-                            }, {
-                                $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-                            }, {
-                                $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
-                            }, {
-                                $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $lookup: { from: 'paymentmethods', localField: 'request.advancePaymentInformation.method', foreignField: '_id', as: 'request.advancePaymentInformation.method' }
-                            }, {
-                                $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
-                            }, {
-                                $project: {
-                                    '_id': 1,
-                                    'request': 1,
-                                    'priority': 1,
-                                    'observation': 1,
-                                    'equipment': 1,
-                                    'washed': 1,
-                                    'answers': 1,
-                                    'review': 1,
-                                    'body': 1,
-                                    'status._id': 1,
-                                    'status.name': 1,
-                                    'carrier._id': 1,
-                                    'carrier.name': 1,
-                                    'status.weigth': 1,
-                                    'createdBy._id': 1,
-                                    'createdBy.firstName': 1,
-                                    'createdBy.lastName': 1,
-                                    'car': 1,
-                                    'origin._id': 1,
-                                    'origin.name': 1,
-                                    'destination._id': 1,
-                                    'destination.name': 1,
-                                    'reason._id': 1,
-                                    'reason.name': 1,
-                                    'uploadDate': 1,
-                                    'estimatedArrival': 1,
-                                    'createdAt': 1,
-                                    'updatedAt': 1
-                                }
-                            }, {
-                                $sort: { _id: 1 }
-                            }])
-                            .allowDiskUse(true)
-                            .cursor({ batchSize: 20 })
-                            .exec();
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                         res.setHeader('Content-Disposition', "attachment; filename=".concat(moment().format('YYYYMMDD'), "-solicitudes.xlsx"));
                         options = {
@@ -1141,6 +1057,90 @@ var RequestController = /** @class */ (function () {
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
                             }], questionColumns, true);
+                        cursor_1 = requestItem_model_1["default"].aggregate([{
+                                $match: {
+                                    team: team,
+                                    'destination': {
+                                        $in: req.user.venuesPermissions()
+                                    }
+                                }
+                            }, {
+                                $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+                            }, {
+                                $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+                            }, {
+                                $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+                            }, {
+                                $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+                            }, {
+                                $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+                            }, {
+                                $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+                            }, {
+                                $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+                            }, {
+                                $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+                            }, {
+                                $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+                            }, {
+                                $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+                            }, {
+                                $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'paymentmethods', localField: 'request.advancePaymentInformation.method', foreignField: '_id', as: 'request.advancePaymentInformation.method' }
+                            }, {
+                                $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $project: {
+                                    '_id': 1,
+                                    'request': 1,
+                                    'priority': 1,
+                                    'observation': 1,
+                                    'equipment': 1,
+                                    'washed': 1,
+                                    'answers': 1,
+                                    'review': 1,
+                                    'body': 1,
+                                    'status._id': 1,
+                                    'status.name': 1,
+                                    'carrier._id': 1,
+                                    'carrier.name': 1,
+                                    'status.weigth': 1,
+                                    'createdBy._id': 1,
+                                    'createdBy.firstName': 1,
+                                    'createdBy.lastName': 1,
+                                    'car': 1,
+                                    'origin._id': 1,
+                                    'origin.name': 1,
+                                    'destination._id': 1,
+                                    'destination.name': 1,
+                                    'reason._id': 1,
+                                    'reason.name': 1,
+                                    'uploadDate': 1,
+                                    'estimatedArrival': 1,
+                                    'createdAt': 1,
+                                    'updatedAt': 1
+                                }
+                            }, {
+                                $sort: { _id: 1 }
+                            }])
+                            .allowDiskUse(true)
+                            .cursor({ batchSize: 20 })
+                            .exec();
                         cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
                             var extraAnswers, _i, _a, answer;
                             var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;

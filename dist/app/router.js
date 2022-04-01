@@ -138,9 +138,9 @@ appRouter.post('/api/v1/cars/', middlewares_1["default"].isJWTAuthenticated, car
 appRouter.get('/api/v1/pusher/auth/', middlewares_1["default"].isJWTAuthenticated, user_controller_1["default"].getPusherToken);
 // web login
 appRouter.get('/account/login/', app_controller_1["default"].login);
+appRouter.post('/account/login/', app_controller_1["default"].processLogin);
 appRouter.get('/account/login/soo/:id', passportConfig_1.passport.authenticate('multy-saml'));
 appRouter.post('/account/login/soo/callback/', app_controller_1["default"].processLoginSoo);
-appRouter.post('/account/login/', app_controller_1["default"].processLogin);
 appRouter.get('/account/forgot-password/', csrfProtection, app_controller_1["default"].forgotPassword);
 appRouter.post('/account/forgot-password/', csrfProtection, app_controller_1["default"].processForgotPassword);
 appRouter.get('/account/recovery/:token', csrfProtection, app_controller_1["default"].recovery);

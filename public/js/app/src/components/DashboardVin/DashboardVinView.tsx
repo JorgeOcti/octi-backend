@@ -360,7 +360,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="middle hidden-xs">{participant.number}</td>
                               <td className="middle">
                                 {participant.car.vin}
-                                <div className='visible-xs-*'>
+                                <div className='visible-xs'>
                                   <ShowIf condition={!!participant.car.patent?.length}>
                                     <br />{participant.car.patent}
                                   </ShowIf>

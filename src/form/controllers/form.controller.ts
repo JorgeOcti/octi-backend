@@ -38,6 +38,7 @@ import RequestController from '../../request/controllers/request.controller';
 import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
+import Car from '../../app/models/car.model';
 // import {ValidationResult} from 'joi';
 
 
@@ -679,6 +680,11 @@ class FormController {
               const { receptionVenue } = answers;
               participantObject.receiveFrom = receptionVenue.value;
             }
+            // add meta to car
+            await Car.updateOne({ _id: car._id }, {
+              'meta.location.venue': updatedUser.venue,
+              'meta.location.checkedDate': new Date()
+            });
           }
 
           if (form.shipping) {

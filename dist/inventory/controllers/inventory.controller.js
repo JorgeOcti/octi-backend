@@ -458,17 +458,17 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.list = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, venuesPermissions, options, paginatedInventories, response, inventories, _i, inventories_1, inventory, defaultResults, teamSettings, e_6;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var team, _a, page, pageSize, venuesPermissions, options, paginatedInventories, response, _b, inventories, teamSettings, _i, inventories_1, inventory, defaultResults, e_6;
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         venuesPermissions = req.user.venuesPermissions();
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _c.trys.push([1, 7, , 8]);
+                        _d.trys.push([1, 6, , 7]);
                         options = {
                             select: {
                                 _id: true
@@ -486,142 +486,145 @@ var InventoryController = /** @class */ (function () {
                                 }
                             }, options)];
                     case 2:
-                        paginatedInventories = _c.sent();
+                        paginatedInventories = _d.sent();
                         if (!(options.page && paginatedInventories.pages && paginatedInventories.pages < options.page)) return [3 /*break*/, 3];
                         res.status(400).json({
                             message: 'La página solicitada no existe.',
                             status: 200
                         });
-                        return [3 /*break*/, 6];
+                        return [3 /*break*/, 5];
                     case 3:
                         response = [];
-                        return [4 /*yield*/, inventory_model_1["default"].aggregate([{
-                                    $match: {
-                                        _id: {
-                                            $in: paginatedInventories.docs.map(function (v) { return v._id; })
-                                        }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'inventorycars',
-                                        localField: '_id',
-                                        foreignField: 'inventory',
-                                        as: 'cars'
-                                    }
-                                }, {
-                                    $unwind: '$cars'
-                                }, {
-                                    $match: {
-                                        'cars.venue': {
-                                            $in: venuesPermissions
-                                        },
-                                        'cars.status': {
-                                            $in: [
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                            ]
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: {
-                                            category: '$_id',
-                                            status: '$status',
-                                            carStatus: '$cars.status',
-                                            name: '$name',
-                                            file: '$file',
-                                            backup: '$backup',
-                                            createdBy: '$createdBy',
-                                            createdAt: '$createdAt',
-                                            finalizedBy: '$finalizedBy',
-                                            finalizedAt: '$finalizedAt'
-                                        },
-                                        total: {
-                                            $sum: 1
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: '$_id.category',
-                                        name: {
-                                            $first: '$_id.name'
-                                        },
-                                        createdAt: {
-                                            $first: '$_id.createdAt'
-                                        },
-                                        file: {
-                                            $first: '$_id.file'
-                                        },
-                                        backup: {
-                                            $first: '$_id.backup'
-                                        },
-                                        finalizedAt: {
-                                            $first: '$_id.finalizedAt'
-                                        },
-                                        createdBy: {
-                                            $first: '$_id.createdBy'
-                                        },
-                                        finalizedBy: {
-                                            $first: '$_id.finalizedBy'
-                                        },
-                                        results: {
-                                            $push: {
-                                                status: '$_id.carStatus',
-                                                total: '$total'
+                        return [4 /*yield*/, Promise.all([
+                                inventory_model_1["default"].aggregate([{
+                                        $match: {
+                                            _id: {
+                                                $in: paginatedInventories.docs.map(function (v) { return v._id; })
                                             }
-                                        },
-                                        status: {
-                                            $first: '$_id.status'
                                         }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'users',
-                                        localField: 'createdBy',
-                                        foreignField: '_id',
-                                        as: 'createdBy'
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'users',
-                                        localField: 'finalizedBy',
-                                        foreignField: '_id',
-                                        as: 'finalizedBy'
-                                    }
-                                }, {
-                                    $project: {
-                                        '_id': 1,
-                                        'name': 1,
-                                        'results': 1,
-                                        'file': 1,
-                                        'backup': 1,
-                                        'createdBy.firstName': 1,
-                                        'createdBy.lastName': 1,
-                                        'finalizedBy.firstName': 1,
-                                        'finalizedBy.lastName': 1,
-                                        'status': 1,
-                                        'createdAt': 1,
-                                        'finalizedAt': 1
-                                    }
-                                }, {
-                                    $sort: {
-                                        createdAt: -1
-                                    }
-                                }])];
+                                    }, {
+                                        $lookup: {
+                                            from: 'inventorycars',
+                                            localField: '_id',
+                                            foreignField: 'inventory',
+                                            as: 'cars'
+                                        }
+                                    }, {
+                                        $unwind: '$cars'
+                                    }, {
+                                        $match: {
+                                            'cars.venue': {
+                                                $in: venuesPermissions
+                                            },
+                                            'cars.status': {
+                                                $in: [
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                                ]
+                                            }
+                                        }
+                                    }, {
+                                        $group: {
+                                            _id: {
+                                                category: '$_id',
+                                                status: '$status',
+                                                carStatus: '$cars.status',
+                                                name: '$name',
+                                                file: '$file',
+                                                backup: '$backup',
+                                                createdBy: '$createdBy',
+                                                createdAt: '$createdAt',
+                                                finalizedBy: '$finalizedBy',
+                                                finalizedAt: '$finalizedAt'
+                                            },
+                                            total: {
+                                                $sum: 1
+                                            }
+                                        }
+                                    }, {
+                                        $group: {
+                                            _id: '$_id.category',
+                                            name: {
+                                                $first: '$_id.name'
+                                            },
+                                            createdAt: {
+                                                $first: '$_id.createdAt'
+                                            },
+                                            file: {
+                                                $first: '$_id.file'
+                                            },
+                                            backup: {
+                                                $first: '$_id.backup'
+                                            },
+                                            finalizedAt: {
+                                                $first: '$_id.finalizedAt'
+                                            },
+                                            createdBy: {
+                                                $first: '$_id.createdBy'
+                                            },
+                                            finalizedBy: {
+                                                $first: '$_id.finalizedBy'
+                                            },
+                                            results: {
+                                                $push: {
+                                                    status: '$_id.carStatus',
+                                                    total: '$total'
+                                                }
+                                            },
+                                            status: {
+                                                $first: '$_id.status'
+                                            }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'users',
+                                            localField: 'createdBy',
+                                            foreignField: '_id',
+                                            as: 'createdBy'
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'users',
+                                            localField: 'finalizedBy',
+                                            foreignField: '_id',
+                                            as: 'finalizedBy'
+                                        }
+                                    }, {
+                                        $project: {
+                                            '_id': 1,
+                                            'name': 1,
+                                            'results': 1,
+                                            'file': 1,
+                                            'backup': 1,
+                                            'createdBy.firstName': 1,
+                                            'createdBy.lastName': 1,
+                                            'finalizedBy.firstName': 1,
+                                            'finalizedBy.lastName': 1,
+                                            'status': 1,
+                                            'createdAt': 1,
+                                            'finalizedAt': 1
+                                        }
+                                    }, {
+                                        $sort: {
+                                            createdAt: -1
+                                        }
+                                    }]),
+                                teamSetting_model_1["default"].findOne({ team: team })
+                            ])];
                     case 4:
-                        inventories = _c.sent();
+                        _b = _d.sent(), inventories = _b[0], teamSettings = _b[1];
                         for (_i = 0, inventories_1 = inventories; _i < inventories_1.length; _i++) {
                             inventory = inventories_1[_i];
-                            defaultResults = (_b = {},
-                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
-                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
-                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
-                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
-                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
-                                _b);
+                            defaultResults = (_c = {},
+                                _c[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
+                                _c[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
+                                _c[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
+                                _c[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
+                                _c[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
+                                _c);
                             response.push({
                                 _id: inventory._id,
                                 name: inventory.name,
@@ -642,9 +645,6 @@ var InventoryController = /** @class */ (function () {
                                 finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
                             });
                         }
-                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
-                    case 5:
-                        teamSettings = _c.sent();
                         res.json({
                             inventories: response,
                             inventorySettings: teamSettings.inventory,
@@ -654,10 +654,10 @@ var InventoryController = /** @class */ (function () {
                             hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
                             status: 200
                         });
-                        _c.label = 6;
-                    case 6: return [3 /*break*/, 8];
-                    case 7:
-                        e_6 = _c.sent();
+                        _d.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        e_6 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("list: Async Error.");
                         /* istanbul ignore next */
@@ -669,8 +669,8 @@ var InventoryController = /** @class */ (function () {
                             message: e_6,
                             status: 500
                         });
-                        return [3 /*break*/, 8];
-                    case 8: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
@@ -688,7 +688,7 @@ var InventoryController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
-                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id)];
+                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id, { venue: true })];
                     case 2:
                         updatedUser = _a.sent();
                         if (!!updatedUser) return [3 /*break*/, 3];
@@ -1780,287 +1780,365 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.detaill = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, venuesPermissions, inventory, detailByVenues, detailByBrands, detailByBrand, detailByVenue, defaultResults, _i, detailByBrands_1, db, _a, detailByVenues_1, dv, currentInventory, response, detailInventory, teamSettings, labels, e_18;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var id, team, venuesPermissions, _a, inventory, detailByVenues, detailByBrands, teamSettings, labels, detailInventory, detailByBrand, detailByVenue, defaultResults, _i, detailByBrands_1, db, _b, detailByVenues_1, dv, currentInventory, response, e_18;
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
-                        _c.trys.push([0, 9, , 10]);
+                        _d.trys.push([0, 2, , 3]);
                         id = req.params.id;
                         team = req.user.team._id;
                         venuesPermissions = req.user.venuesPermissions();
-                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
-                                {
-                                    $match: {
-                                        team: team,
-                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'inventorycars',
-                                        localField: '_id',
-                                        foreignField: 'inventory',
-                                        as: 'cars'
-                                    }
-                                }, {
-                                    $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $match: {
-                                        $or: [
-                                            {
-                                                'cars.venue': {
-                                                    $in: venuesPermissions
+                        return [4 /*yield*/, Promise.all([
+                                inventory_model_1["default"].aggregate([
+                                    {
+                                        $match: {
+                                            team: team,
+                                            _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'inventorycars',
+                                            localField: '_id',
+                                            foreignField: 'inventory',
+                                            as: 'cars'
+                                        }
+                                    }, {
+                                        $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
+                                    }, {
+                                        $match: {
+                                            $or: [
+                                                {
+                                                    'cars.venue': {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }, {
+                                                    'cars.venueFound': {
+                                                        $in: venuesPermissions
+                                                    }
                                                 }
-                                            }, {
-                                                'cars.venueFound': {
-                                                    $in: venuesPermissions
-                                                }
+                                            ],
+                                            'cars.status': {
+                                                $in: [
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                                ]
                                             }
-                                        ],
-                                        'cars.status': {
-                                            $in: [
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                            ]
                                         }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: {
-                                            category: '$_id',
-                                            status: '$status',
-                                            carStatus: '$cars.status',
-                                            name: '$name',
-                                            createdBy: '$createdBy',
-                                            createdAt: '$createdAt',
-                                            finalizedAt: '$finalizedAt'
-                                        },
-                                        total: {
-                                            $sum: 1
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: '$_id.category',
-                                        name: {
-                                            $first: '$_id.name'
-                                        },
-                                        createdAt: {
-                                            $first: '$_id.createdAt'
-                                        },
-                                        finalizedAt: {
-                                            $first: '$_id.finalizedAt'
-                                        },
-                                        user: {
-                                            $first: '$_id.createdBy'
-                                        },
-                                        results: {
-                                            $push: {
-                                                status: '$_id.carStatus',
-                                                total: '$total'
+                                    }, {
+                                        $group: {
+                                            _id: {
+                                                category: '$_id',
+                                                status: '$status',
+                                                carStatus: '$cars.status',
+                                                name: '$name',
+                                                createdBy: '$createdBy',
+                                                createdAt: '$createdAt',
+                                                finalizedAt: '$finalizedAt'
+                                            },
+                                            total: {
+                                                $sum: 1
                                             }
-                                        },
-                                        status: {
-                                            $first: '$_id.status'
                                         }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'users',
-                                        localField: 'user',
-                                        foreignField: '_id',
-                                        as: 'userInfo'
-                                    }
-                                }, {
-                                    $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $project: {
-                                        '_id': 1,
-                                        'name': 1,
-                                        'results': 1,
-                                        'userInfo.firstName': 1,
-                                        'userInfo.lastName': 1,
-                                        'status': 1,
-                                        'createdAt': 1,
-                                        'finalizedAt': 1
-                                    }
-                                }, {
-                                    $sort: {
-                                        createdAt: -1
-                                    }
-                                }
-                            ])];
-                    case 1:
-                        inventory = _c.sent();
-                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
-                                {
-                                    $match: {
-                                        team: team,
-                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'inventorycars',
-                                        localField: '_id',
-                                        foreignField: 'inventory',
-                                        as: 'cars'
-                                    }
-                                }, {
-                                    $unwind: '$cars'
-                                }, {
-                                    $match: {
-                                        $or: [
-                                            {
-                                                'cars.venue': {
-                                                    $in: venuesPermissions
-                                                }
-                                            }, {
-                                                'cars.venueFound': {
-                                                    $in: venuesPermissions
-                                                }
-                                            }
-                                        ],
-                                        'cars.status': {
-                                            $in: [
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                            ]
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: {
-                                            category: {
-                                                $cond: {
-                                                    "if": {
-                                                        $gt: ['$cars.venueFound', null]
-                                                    },
-                                                    then: '$cars.venueFound',
-                                                    "else": '$cars.venue'
+                                    }, {
+                                        $group: {
+                                            _id: '$_id.category',
+                                            name: {
+                                                $first: '$_id.name'
+                                            },
+                                            createdAt: {
+                                                $first: '$_id.createdAt'
+                                            },
+                                            finalizedAt: {
+                                                $first: '$_id.finalizedAt'
+                                            },
+                                            user: {
+                                                $first: '$_id.createdBy'
+                                            },
+                                            results: {
+                                                $push: {
+                                                    status: '$_id.carStatus',
+                                                    total: '$total'
                                                 }
                                             },
-                                            status: '$cars.status'
-                                        },
-                                        total: {
-                                            $sum: 1
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: '$_id.category',
-                                        status: {
-                                            $push: {
-                                                name: '$_id.status',
-                                                total: '$total'
+                                            status: {
+                                                $first: '$_id.status'
                                             }
                                         }
+                                    }, {
+                                        $lookup: {
+                                            from: 'users',
+                                            localField: 'user',
+                                            foreignField: '_id',
+                                            as: 'userInfo'
+                                        }
+                                    }, {
+                                        $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
+                                    }, {
+                                        $project: {
+                                            '_id': 1,
+                                            'name': 1,
+                                            'results': 1,
+                                            'userInfo.firstName': 1,
+                                            'userInfo.lastName': 1,
+                                            'status': 1,
+                                            'createdAt': 1,
+                                            'finalizedAt': 1
+                                        }
+                                    }, {
+                                        $sort: {
+                                            createdAt: -1
+                                        }
                                     }
-                                }, {
-                                    $lookup: {
-                                        from: 'venues',
-                                        localField: '_id',
-                                        foreignField: '_id',
-                                        as: 'info'
-                                    }
-                                }, {
-                                    $unwind: '$info'
-                                }
-                            ])];
-                    case 2:
-                        detailByVenues = _c.sent();
-                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
-                                {
-                                    $match: {
-                                        team: team,
-                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'inventorycars',
-                                        localField: '_id',
-                                        foreignField: 'inventory',
-                                        as: 'cars'
-                                    }
-                                }, {
-                                    $unwind: '$cars'
-                                }, {
-                                    $match: {
-                                        $or: [
-                                            {
-                                                'cars.venue': {
-                                                    $in: venuesPermissions
+                                ]),
+                                inventory_model_1["default"].aggregate([
+                                    {
+                                        $match: {
+                                            team: team,
+                                            _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'inventorycars',
+                                            localField: '_id',
+                                            foreignField: 'inventory',
+                                            as: 'cars'
+                                        }
+                                    }, {
+                                        $unwind: '$cars'
+                                    }, {
+                                        $match: {
+                                            $or: [
+                                                {
+                                                    'cars.venue': {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }, {
+                                                    'cars.venueFound': {
+                                                        $in: venuesPermissions
+                                                    }
                                                 }
+                                            ],
+                                            'cars.status': {
+                                                $in: [
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                                ]
+                                            }
+                                        }
+                                    }, {
+                                        $group: {
+                                            _id: {
+                                                category: {
+                                                    $cond: {
+                                                        "if": {
+                                                            $gt: ['$cars.venueFound', null]
+                                                        },
+                                                        then: '$cars.venueFound',
+                                                        "else": '$cars.venue'
+                                                    }
+                                                },
+                                                status: '$cars.status'
+                                            },
+                                            total: {
+                                                $sum: 1
+                                            }
+                                        }
+                                    }, {
+                                        $group: {
+                                            _id: '$_id.category',
+                                            status: {
+                                                $push: {
+                                                    name: '$_id.status',
+                                                    total: '$total'
+                                                }
+                                            }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'venues',
+                                            localField: '_id',
+                                            foreignField: '_id',
+                                            as: 'info'
+                                        }
+                                    }, {
+                                        $unwind: '$info'
+                                    }
+                                ]),
+                                inventory_model_1["default"].aggregate([
+                                    {
+                                        $match: {
+                                            team: team,
+                                            _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'inventorycars',
+                                            localField: '_id',
+                                            foreignField: 'inventory',
+                                            as: 'cars'
+                                        }
+                                    }, {
+                                        $unwind: '$cars'
+                                    }, {
+                                        $match: {
+                                            $or: [
+                                                {
+                                                    'cars.venue': {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }, {
+                                                    'cars.venueFound': {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }
+                                            ],
+                                            'cars.status': {
+                                                $in: [
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                                ]
+                                            }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'cars',
+                                            localField: 'cars.car',
+                                            foreignField: '_id',
+                                            as: 'car'
+                                        }
+                                    }, {
+                                        $unwind: '$car'
+                                    }, {
+                                        $group: {
+                                            _id: {
+                                                car: '$car.brand',
+                                                status: '$cars.status'
+                                            },
+                                            total: {
+                                                $sum: 1
+                                            }
+                                        }
+                                    }, {
+                                        $group: {
+                                            _id: '$_id.car',
+                                            status: {
+                                                $push: {
+                                                    name: '$_id.status',
+                                                    total: '$total'
+                                                }
+                                            }
+                                        }
+                                    }, {
+                                        $lookup: {
+                                            from: 'venues',
+                                            localField: '_id',
+                                            foreignField: '_id',
+                                            as: 'info'
+                                        }
+                                    }
+                                ]),
+                                teamSetting_model_1["default"].findOne({ team: team }),
+                                inventoryLabel_model_1["default"].find({
+                                    team: team,
+                                    active: true
+                                }, {
+                                    name: true,
+                                    color: true,
+                                    affected: true,
+                                    sendTo: true,
+                                    isExhibition: true,
+                                    requireCustomText: true
+                                }),
+                                inventory_model_1["default"].findById(id, {
+                                    name: true,
+                                    status: true,
+                                    cars: true,
+                                    venues: true,
+                                    company: true,
+                                    team: true
+                                }).populate([{
+                                        path: 'cars',
+                                        match: {
+                                            $or: [
+                                                {
+                                                    venue: {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }, {
+                                                    venueFound: {
+                                                        $in: venuesPermissions
+                                                    }
+                                                }
+                                            ],
+                                            status: {
+                                                $in: [
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                                ]
+                                            }
+                                        },
+                                        populate: [{
+                                                path: 'car',
+                                                select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
                                             }, {
-                                                'cars.venueFound': {
-                                                    $in: venuesPermissions
-                                                }
+                                                path: 'label'
+                                            }, {
+                                                path: 'venue',
+                                                select: ['name']
+                                            }, {
+                                                path: 'images'
+                                            }, {
+                                                path: 'files'
+                                            }, {
+                                                path: 'venueFound',
+                                                select: ['name']
+                                            }, {
+                                                path: 'inventoriedBy',
+                                                select: ['firstName', 'lastName']
+                                            }, {
+                                                path: 'comments.user',
+                                                select: ['_id', 'firstName', 'lastName']
+                                            }],
+                                        select: { meta: false }
+                                    }, {
+                                        path: 'venues',
+                                        select: ['_id', 'name'],
+                                        match: {
+                                            _id: {
+                                                $in: venuesPermissions
                                             }
-                                        ],
-                                        'cars.status': {
-                                            $in: [
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                            ]
-                                        }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'cars',
-                                        localField: 'cars.car',
-                                        foreignField: '_id',
-                                        as: 'car'
-                                    }
-                                }, {
-                                    $unwind: '$car'
-                                }, {
-                                    $group: {
-                                        _id: {
-                                            car: '$car.brand',
-                                            status: '$cars.status'
                                         },
-                                        total: {
-                                            $sum: 1
-                                        }
-                                    }
-                                }, {
-                                    $group: {
-                                        _id: '$_id.car',
-                                        status: {
-                                            $push: {
-                                                name: '$_id.status',
-                                                total: '$total'
+                                        options: {
+                                            sort: {
+                                                name: 1
                                             }
                                         }
-                                    }
-                                }, {
-                                    $lookup: {
-                                        from: 'venues',
-                                        localField: '_id',
-                                        foreignField: '_id',
-                                        as: 'info'
-                                    }
-                                }
+                                    }]).lean()
                             ])];
-                    case 3:
-                        detailByBrands = _c.sent();
+                    case 1:
+                        _a = _d.sent(), inventory = _a[0], detailByVenues = _a[1], detailByBrands = _a[2], teamSettings = _a[3], labels = _a[4], detailInventory = _a[5];
                         detailByBrand = [];
                         detailByVenue = [];
-                        defaultResults = (_b = {},
-                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
-                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
-                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
-                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
-                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
-                            _b);
+                        defaultResults = (_c = {},
+                            _c[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
+                            _c[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
+                            _c[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
+                            _c[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
+                            _c[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
+                            _c);
                         for (_i = 0, detailByBrands_1 = detailByBrands; _i < detailByBrands_1.length; _i++) {
                             db = detailByBrands_1[_i];
                             detailByBrand.push({
@@ -2071,8 +2149,8 @@ var InventoryController = /** @class */ (function () {
                                 }, __assign({}, defaultResults))
                             });
                         }
-                        for (_a = 0, detailByVenues_1 = detailByVenues; _a < detailByVenues_1.length; _a++) {
-                            dv = detailByVenues_1[_a];
+                        for (_b = 0, detailByVenues_1 = detailByVenues; _b < detailByVenues_1.length; _b++) {
+                            dv = detailByVenues_1[_b];
                             detailByVenue.push({
                                 _id: dv.info._id,
                                 name: dv.info.name,
@@ -2082,125 +2160,40 @@ var InventoryController = /** @class */ (function () {
                                 }, __assign({}, defaultResults))
                             });
                         }
-                        if (!(inventory && inventory.length)) return [3 /*break*/, 7];
-                        currentInventory = inventory[0];
-                        response = {
-                            _id: currentInventory._id,
-                            name: currentInventory.name,
-                            createdBy: currentInventory.userInfo ? __assign(__assign({}, currentInventory.userInfo), { fullName: "".concat(currentInventory.userInfo.firstName, " ").concat(currentInventory.userInfo.lastName) }) : {},
-                            results: currentInventory.results.reduce(function (acc, cur) {
-                                acc[cur.status] = cur.total;
-                                return acc;
-                            }, __assign({}, defaultResults)),
-                            status: currentInventory.status,
-                            createdAt: currentInventory.createdAt,
-                            finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
-                        };
-                        return [4 /*yield*/, inventory_model_1["default"].findById(id, {
-                                name: true,
-                                status: true,
-                                cars: true,
-                                venues: true,
-                                company: true,
-                                team: true
-                            }).populate([{
-                                    path: 'cars',
-                                    match: {
-                                        $or: [
-                                            {
-                                                venue: {
-                                                    $in: venuesPermissions
-                                                }
-                                            }, {
-                                                venueFound: {
-                                                    $in: venuesPermissions
-                                                }
-                                            }
-                                        ],
-                                        status: {
-                                            $in: [
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                            ]
-                                        }
-                                    },
-                                    populate: [{
-                                            path: 'car',
-                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-                                        }, {
-                                            path: 'label'
-                                        }, {
-                                            path: 'venue',
-                                            select: ['name']
-                                        }, {
-                                            path: 'images'
-                                        }, {
-                                            path: 'files'
-                                        }, {
-                                            path: 'venueFound',
-                                            select: ['name']
-                                        }, {
-                                            path: 'inventoriedBy',
-                                            select: ['firstName', 'lastName']
-                                        }, {
-                                            path: 'comments.user',
-                                            select: ['_id', 'firstName', 'lastName']
-                                        }]
-                                }, {
-                                    path: 'venues',
-                                    select: ['_id', 'name'],
-                                    match: {
-                                        _id: {
-                                            $in: venuesPermissions
-                                        }
-                                    },
-                                    options: {
-                                        sort: {
-                                            name: 1
-                                        }
-                                    }
-                                }]).lean()];
-                    case 4:
-                        detailInventory = _c.sent();
-                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
-                    case 5:
-                        teamSettings = _c.sent();
-                        return [4 /*yield*/, inventoryLabel_model_1["default"].find({
-                                team: team,
-                                active: true
-                            }, {
-                                name: true,
-                                color: true,
-                                affected: true,
-                                sendTo: true,
-                                isExhibition: true,
-                                requireCustomText: true
-                            })];
-                    case 6:
-                        labels = _c.sent();
-                        res.json({
-                            summary: response,
-                            inventorySettings: teamSettings.inventory,
-                            labels: labels,
-                            detailByVenue: detailByVenue,
-                            detailByBrand: detailByBrand,
-                            detail: detailInventory,
-                            status: 200
-                        });
-                        return [3 /*break*/, 8];
-                    case 7:
-                        console.log('inventory', inventory);
-                        res.status(404).json({
-                            message: 'Inventario no encontrado',
-                            status: 404
-                        });
-                        _c.label = 8;
-                    case 8: return [3 /*break*/, 10];
-                    case 9:
-                        e_18 = _c.sent();
+                        if (inventory && inventory.length) {
+                            currentInventory = inventory[0];
+                            response = {
+                                _id: currentInventory._id,
+                                name: currentInventory.name,
+                                createdBy: currentInventory.userInfo ? __assign(__assign({}, currentInventory.userInfo), { fullName: "".concat(currentInventory.userInfo.firstName, " ").concat(currentInventory.userInfo.lastName) }) : {},
+                                results: currentInventory.results.reduce(function (acc, cur) {
+                                    acc[cur.status] = cur.total;
+                                    return acc;
+                                }, __assign({}, defaultResults)),
+                                status: currentInventory.status,
+                                createdAt: currentInventory.createdAt,
+                                finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
+                            };
+                            res.json({
+                                summary: response,
+                                inventorySettings: teamSettings.inventory,
+                                labels: labels,
+                                detailByVenue: detailByVenue,
+                                detailByBrand: detailByBrand,
+                                detail: detailInventory,
+                                status: 200
+                            });
+                        }
+                        else {
+                            console.log('inventory', inventory);
+                            res.status(404).json({
+                                message: 'Inventario no encontrado',
+                                status: 404
+                            });
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_18 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detaill: Async Error.");
                         /* istanbul ignore next */
@@ -2212,8 +2205,8 @@ var InventoryController = /** @class */ (function () {
                             message: e_18,
                             status: 400
                         });
-                        return [3 /*break*/, 10];
-                    case 10: return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -2644,16 +2637,11 @@ var InventoryController = /** @class */ (function () {
                         showStock = false;
                         if (lastInventory && !lastStock) {
                             showInventory = true;
-                            console.log('showInventory');
                         }
                         else if (!lastInventory && lastStock) {
                             showStock = true;
-                            console.log('showStock');
                         }
                         else if (lastInventory && lastStock) {
-                            console.log('lastInventory.createdAt', lastInventory.createdAt);
-                            console.log('lastStock.createdAt', lastStock.createdAt);
-                            console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
                             if (moment(lastInventory.createdAt).isAfter(lastStock.createdAt)) {
                                 showInventory = true;
                                 console.log('showInventory');
@@ -2687,7 +2675,7 @@ var InventoryController = /** @class */ (function () {
                                     },
                                     populate: [{
                                             path: 'car',
-                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
                                         }, {
                                             path: 'venue',
                                             select: ['name'],

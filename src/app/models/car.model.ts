@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import { ICar } from '../interfaces';
+import { baseVenueSchema } from './venue.model';
 
 export enum ChoicesStatusCar {
   active = 'active',
@@ -16,8 +17,22 @@ export const choicesStatusCar = [
   ChoicesStatusCar.inventory
 ];
 
-export interface ICarModel extends ICar, mongoose.Document {
-}
+const locationSchema = new mongoose.Schema({
+  venue: {
+    type: baseVenueSchema
+  },
+  checkedDate: {
+    type: Date
+  }
+});
+
+const metaSchema = new mongoose.Schema({
+  location: {
+    type: locationSchema
+  }
+});
+
+export interface ICarModel extends ICar, mongoose.Document {}
 
 export const baseCarSchema = new mongoose.Schema({
   vin: {
@@ -98,6 +113,10 @@ export const baseCarSchema = new mongoose.Schema({
 
 export const carSchema = new mongoose.Schema({
   ...baseCarSchema.obj,
+  meta: {
+    type: metaSchema,
+    default: {}
+  },
   invoice: {
     type: String,
     default: ''

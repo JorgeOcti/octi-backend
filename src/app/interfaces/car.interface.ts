@@ -1,11 +1,20 @@
-import {ICompany} from './company.interface';
-import {IInventoryCar} from '../../inventory/interfaces/inventory.interface';
-import {IParticipant} from '../../form/interfaces/participant.interface';
-import {ITeam} from './team.interface';
-import {IUser} from './user.interface';
+import { ICompany } from './company.interface';
+import { IInventoryCar } from '../../inventory/interfaces/inventory.interface';
+import { IParticipant } from '../../form/interfaces/participant.interface';
+import { ITeam } from './team.interface';
+import { IUser } from './user.interface';
+import { IVenue } from './venue.interface';
+
+export interface ICarLocation {
+  venue: IVenue;
+  checkedDate: Date;
+}
 
 export interface ICar {
   _id: any;
+  meta: {
+    location: ICarLocation;
+  };
   internalNumber: string;
   patent: string;
   engineNumber: string;

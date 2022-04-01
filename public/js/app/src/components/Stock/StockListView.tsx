@@ -82,6 +82,8 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     super(props);
     this.title = 'Stock Actual';
     this.xlsExport = this.xlsExport.bind(this);
+    this.daysInVenue = this.daysInVenue.bind(this);
+    this.repcetionVenue = this.repcetionVenue.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
     this.filterAllBrands = this.filterAllBrands.bind(this);
@@ -103,34 +105,48 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'internalNumber',
       text: 'Nº Interno',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'brand',
       text: 'Marca',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'denomination',
       text: 'Modelo',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'color',
       text: 'Color',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'venueFound',
       text: 'Sucursal',
       formatter: this.venueFormatter,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'receptionVenue',
+      text: 'Fecha Recepción',
+      formatter: this.repcetionVenue,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'daysInVenue',
+      text: 'Días en Sucursal',
+      formatter: this.daysInVenue,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
@@ -581,6 +597,14 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
         &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
+  }
+
+  private daysInVenue(cell: string, row: any) {
+    return row.daysInVenue ?? '-'
+  }
+
+  private repcetionVenue(cell: string, row: any) {
+    return row.receptionVenue ? moment(row.receptionVenue).format('L')  : '-'
   }
 
   private venueFormatter(cell: string, row: any) {
