@@ -879,6 +879,30 @@ class FormController {
             }
 
             if (transmittal && transmittal?.length) {
+              // update request when finish transmittal
+              const milestone = await Milestone.findOne({
+                step: ChoicesStepMilestone.finishTransmittal,
+                team
+              });
+              let requestItems: any[] = [];
+
+              if (milestone?.updateItems?.arrivalDate) {
+                await TransmittalItem
+                  .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
+                requestItems = await RequestItem
+                  .find({ transmittal, team })
+                  .populate(RequestController.itemPopulate)
+                  .lean();
+              }
+
+
+              if (milestone && milestone?.requestItemStatus) {
+                await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
+                requestItems = await RequestItem
+                  .find({ transmittal, team })
+                  .populate(RequestController.itemPopulate)
+                  .lean();
+              }
               const newTransmittal = await Transmittal
                 .findOneAndUpdate({
                   _id: transmittal
@@ -889,34 +913,38 @@ class FormController {
                 }, {
                   new: true
                 })
-                .populate(TransmittalController.populate);
+                .populate([{
+                  path: 'revision',
+                  select: ['_id', 'hasDamages']
+                }, {
+                  path: 'transporter.carrier',
+                  select: ['name']
+                }, {
+                  path: 'type',
+                  select: ['name']
+                }, {
+                  path: 'evidenceFullLoad',
+                  select: ['file', 'thumbnail', 'milestone']
+                }, {
+                  path: 'transporter.driver',
+                  select: ['firstName', 'lastName']
+                }, {
+                  path: 'items',
+                  select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
+                  populate: TransmittalController.itemPopulate
+                }, {
+                  path: 'files',
+                  select: ['file', 'thumbnail']
+                }, {
+                  path: 'createdBy',
+                  select: ['firstName', 'lastName']
+                }]);
 
-              // update request when finish transmittal
-              const milestone = await Milestone.findOne({
-                step: ChoicesStepMilestone.finishTransmittal,
-                team
+              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+                transmittal: newTransmittal
               });
-              console.log('milestone');
-              console.log(milestone);
 
-              if (milestone?.updateItems?.arrivalDate) {
-                await TransmittalItem
-                  .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
-                const transmitallItems = await Transmittal.find({ transmittal: transmittal })
-                  .populate(RequestController.itemPopulate);
-                for (const item of transmitallItems) {
-                  io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
-                    transmittalItem: item
-                  });
-                }
-              }
-
-              if (milestone && milestone?.requestItemStatus) {
-                await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
-                const requestItems = await RequestItem
-                  .find({ transmittal, team })
-                  .populate(RequestController.itemPopulate)
-                  .lean();
+              if(requestItems.length){
                 for (const requestItem of requestItems) {
                   io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
@@ -928,11 +956,10 @@ class FormController {
                   });
                 }
               }
+
+
               // end update request when finish transmittal
 
-              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
-                transmittal: newTransmittal
-              });
             }
 
             // associate file to participant

@@ -89,14 +89,6 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           orderType: action.payload.orderType
         }
       };
-    case REQUEST_LOAD_ITEMS:
-      return {
-        ...state,
-        requestItemsById: {
-          ...state.requestItemsById,
-          [action.payload.request]: action.payload.items
-        }
-      };
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:
       return {
         ...state,
@@ -126,24 +118,30 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           return request;
         })
       };
-    case REQUEST_UDPATE_REQUEST_ITEM_IN_LIST:
+    case REQUEST_LOAD_ITEMS:
       return {
         ...state,
-        requests: [...state.requests].map((request) => {
-          if (request._id === action.payload.idRequest) {
-            request.updatedAt = moment().toDate();
-            request.items = request.items.map((item) => {
-              if (item._id === action.payload.item._id) {
-                return {
-                  item,
-                  ...action.payload.item
-                };
-              }
-              return item;
-            });
+        requestItemsById: {
+          ...state.requestItemsById,
+          [action.payload.request]: action.payload.items
+        }
+      };
+    case REQUEST_UDPATE_REQUEST_ITEM_IN_LIST:
+      let updateItem: any = {};
+      if(state.requestItemsById.hasOwnProperty(action.payload.request)){
+        updateItem[action.payload.request] = state.requestItemsById[action.payload.request].map((item:any)=>{
+          if(item._id === action.payload.item._id){
+            return action.payload.item
           }
-          return request;
+          return item;
         })
+      }
+      return {
+        ...state,
+        requestItemsById: {
+          ...state.requestItemsById,
+          ...updateItem
+        }
       };
     case REQUEST_DELETE_REQUEST_ITEM_IN_LIST:
       return {

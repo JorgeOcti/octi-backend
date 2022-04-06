@@ -3,10 +3,12 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 import TransmittalItem from '../models/transmittalItem.model';
+import Transmittal from '../models/transmittal.model';
+import Participant from '../../form/models/participant.model';
 
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 
-async function updateLoadingDate() {
+async function updateArribalDate() {
   try {
     dotenv.config({
       path: path.join(__dirname, '../../../.env')
@@ -15,9 +17,20 @@ async function updateLoadingDate() {
     (mongoose as any).Promise = bluebird;
     await mongoose.connect(MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
     mongoose.set('debug', true);
-    const transmittalItems = await TransmittalItem.find({});
+    console.log(new Transmittal({}));
+    console.log(new Participant({}));
+    const transmittalItems = await TransmittalItem.find({}).populate([{
+      path: 'transmittal',
+      select: ['revision'],
+      populate: [{
+        path: 'revision',
+        select: ['createdAt']
+      }]
+    }]);
     for (const transmittalItem of transmittalItems) {
-      await transmittalItem.update({loadingDate: (transmittalItem as any).createdAt})
+      if(transmittalItem?.transmittal?.revision){
+        await transmittalItem.update({arrivalDate: transmittalItem?.transmittal?.revision.createdAt})
+      }
     }
   } catch (e) {
     console.log(e);
@@ -26,4 +39,4 @@ async function updateLoadingDate() {
   process.exit(1);
 }
 
-updateLoadingDate();
+updateArribalDate();

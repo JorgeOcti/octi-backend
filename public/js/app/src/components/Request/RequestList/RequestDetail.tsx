@@ -120,7 +120,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className='middle' style={{ width: '28px' }} />
                 <th className='middle' style={{ width: '100px' }}>Progreso</th>
                 <th className='middle' style={{ width: '120px' }}>Estado</th>
-                <th className='middle' style={{ width: '200px' }}>Modelo</th>
+                <th className='middle' style={{ width: '220px' }}>Modelo</th>
                 <th className='middle' style={{ width: '120px' }}>Color</th>
                 <th className='middle' style={{ width: '160px' }}>VIN</th>
                 <ShowIf condition={requestSettings.ticket}>
@@ -198,7 +198,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     <td className='middle'>
                       {item.car.color}
                     </td>
-                    <td>
+                    <td className={`middle`}>
                       <ShowIf condition={item.car.vin?.length}>
                         <a
                           href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
@@ -225,19 +225,19 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       <td className='middle'>{request.advancePaymentInformation?.number}</td>
                     </ShowIf>
                     <ShowIf condition={requestSettings.entry}>
-                      <td>
+                      <td className='middle'>
                         {
                           item.car.entry && item.car.entry.length ? item.car.entry : null
                         }
                       </td>
                     </ShowIf>
                     <td
-                      className={`${item.transmittal?.number ? 'pointer' : ''}`}
+                      className={`middle ${item.transmittal?.number ? 'pointer' : ''}`}
                       onClick={item.transmittal?.number ? () => this.openOT(item.transmittal.number.toString()) : undefined}
                     ><strong>{item?.transmittal?.number ? `#${item?.transmittal?.number}`: '-'}</strong></td>
-                    <td>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}</td>
-                    <td>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): '-'}</td>
-                    <td>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): '-'}</td>
+                    <td className='middle'>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}</td>
+                    <td className='middle'>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): '-'}</td>
+                    <td className='middle'>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): '-'}</td>
                     {/*<td>{item.transmittalItem?.arrivalDate ? moment(item.transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}</td>*/}
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}

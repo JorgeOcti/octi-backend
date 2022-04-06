@@ -115,7 +115,7 @@ export interface ICreateRequestItemInList {
 export interface IUpdateRequestItemInList {
   type: typeof REQUEST_UDPATE_REQUEST_ITEM_IN_LIST;
   payload: {
-    idRequest: string;
+    request: string;
     item: IRequestItem
   };
 }

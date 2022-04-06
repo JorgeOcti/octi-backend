@@ -135,11 +135,11 @@ export function createRequestItemActionInList(idRequest: string, item: IRequestI
   };
 }
 
-export function updateRequestItemActionInList(idRequest: string, item: IRequestItem): IUpdateRequestItemInList {
+export function updateRequestItemActionInList(request: string, item: IRequestItem): IUpdateRequestItemInList {
   return {
     type: REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
     payload: {
-      idRequest,
+      request,
       item
     }
   };
