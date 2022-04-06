@@ -1044,6 +1044,8 @@ var FormController = /** @class */ (function () {
                             })];
                     case 25:
                         milestone = _m.sent();
+                        console.log('milestone');
+                        console.log(milestone);
                         if (!((_a = milestone === null || milestone === void 0 ? void 0 : milestone.updateItems) === null || _a === void 0 ? void 0 : _a.arrivalDate)) return [3 /*break*/, 28];
                         return [4 /*yield*/, transmittalItem_model_1["default"]
                                 .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } })];

@@ -896,6 +896,8 @@ class FormController {
                 step: ChoicesStepMilestone.finishTransmittal,
                 team
               });
+              console.log('milestone');
+              console.log(milestone);
 
               if (milestone?.updateItems?.arrivalDate) {
                 await TransmittalItem
