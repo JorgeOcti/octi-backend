@@ -854,11 +854,7 @@ class FormController {
                 step: ChoicesStepMilestone.checkItem,
                 team
               });
-              if (milestone?.updateItems?.arrivalDate) {
-                transmittalItemData = await TransmittalItem
-                  .findOneAndUpdate({ _id: transmittalItem }, { $set: { arrivalDate: moment().toDate() } }, { new: true })
-                  .populate(TransmittalController.itemPopulate);
-              }
+
               if (milestone?.requestItemStatus) {
                 const requestItem = await RequestItem
                   .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
@@ -900,6 +896,19 @@ class FormController {
                 step: ChoicesStepMilestone.finishTransmittal,
                 team
               });
+
+              if (milestone?.updateItems?.arrivalDate) {
+                await TransmittalItem
+                  .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
+                const transmitallItems = await Transmittal.find({ transmittal: transmittal })
+                  .populate(RequestController.itemPopulate);
+                for (const item of transmitallItems) {
+                  io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+                    transmittalItem: item
+                  });
+                }
+              }
+
               if (milestone && milestone?.requestItemStatus) {
                 await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
                 const requestItems = await RequestItem

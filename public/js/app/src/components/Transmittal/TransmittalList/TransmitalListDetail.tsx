@@ -252,33 +252,37 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             </ShowIf>
           </div>
 
-            {
-              evidenceMilestones.map((milestone: IMilestone, index: number) => {
-                let tmp = transmittal.evidenceFullLoad.filter(e => {
-                  if(e.milestone != undefined){
-                    let is_in : Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0
-                    return is_in ?  e.milestone == milestone._id :  index == 0
-                  } else
-                    return index == 0
-                })
-                return (<div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
-                  {tmp.map((image: any, index: number) => (
-                    <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
-                      <a href={decodeURI(image.file.url)}
-                         data-toggle='lightbox'
-                         data-gallery={`${transmittal._id}-${milestone._id}`}
-                         data-title={`#${this.padNumber(transmittal.number)}`}
-                         data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
-                      >
-                        <button className='btn btn-xs btn-default'>
-                          <i className='fa fa-fw fa-image' /> {tmp.length}
-                        </button>
-                      </a>
-                    </div>
-                  ))}
-                    </div>)
+          {
+            evidenceMilestones.map((milestone: IMilestone, index: number) => {
+              let tmp = transmittal.evidenceFullLoad.filter(e => {
+                if (e.milestone != undefined) {
+                  let is_in: Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0;
+                  return is_in ? e.milestone == milestone._id : index == 0;
+                } else
+                  return index == 0;
+              });
+              return (
+                <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
+                  {
+                    tmp.map((image: any, index: number) => (
+                      <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
+                        <a href={decodeURI(image.file.url)}
+                           data-toggle='lightbox'
+                           data-gallery={`${transmittal._id}-${milestone._id}`}
+                           data-title={`#${this.padNumber(transmittal.number)}`}
+                           data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
+                        >
+                          <button className='btn btn-xs btn-default'>
+                            <i className='fa fa-fw fa-image' /> {tmp.length}
+                          </button>
+                        </a>
+                      </div>
+                    ))
+                  }
+                </div>
+              );
             })
-            }
+          }
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
               transmittal?.revision ?

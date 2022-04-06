@@ -57,6 +57,20 @@ class RequestController {
   }, {
     path: 'destination',
     select: ['name']
+  }, {
+    path: 'transmittalItem',
+    select: ['loadingDate', 'arrivalDate', 'revisions'],
+    populate:[{
+      path: 'revisions',
+      select: ['createdAt']
+    }]
+  }, {
+    path: 'transmittal',
+    select:['number', 'revision'],
+    populate:[{
+      path: 'revision',
+      select: ['createdAt']
+    }]
   }];
 
   private requestPopulate: QueryPopulateOptions[] = [{

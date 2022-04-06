@@ -110,6 +110,20 @@ var RequestController = /** @class */ (function () {
             }, {
                 path: 'destination',
                 select: ['name']
+            }, {
+                path: 'transmittalItem',
+                select: ['loadingDate', 'arrivalDate', 'revisions'],
+                populate: [{
+                        path: 'revisions',
+                        select: ['createdAt']
+                    }]
+            }, {
+                path: 'transmittal',
+                select: ['number', 'revision'],
+                populate: [{
+                        path: 'revision',
+                        select: ['createdAt']
+                    }]
             }];
         this.requestPopulate = [{
                 path: 'origin',

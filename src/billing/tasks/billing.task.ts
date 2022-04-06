@@ -170,8 +170,7 @@ class BillingQueue {
             $sum: 1
           }
         }
-      }]
-      );
+      }]);
     return vinInInventories.length ? vinInInventories[0].count : 0;
   }
 

@@ -134,6 +134,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <ShowIf condition={requestSettings.entry}>
                   <th>Partida</th>
                 </ShowIf>
+                <th>OT</th>
+                <th>F. emisión</th>
+                <th>F. carga</th>
+                <th>F. arribo</th>
                 <th className='middle-center' style={{ width: '20px' }}>Adj</th>
                 <th className='middle'>Obs</th>
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
@@ -227,6 +231,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         }
                       </td>
                     </ShowIf>
+                    <td
+                      className={`${item.transmittal?.number ? 'pointer' : ''}`}
+                      onClick={item.transmittal?.number ? () => this.openOT(item.transmittal.number.toString()) : undefined}
+                    ><strong>{item?.transmittal?.number ? `#${item?.transmittal?.number}`: '-'}</strong></td>
+                    <td>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}</td>
+                    <td>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): '-'}</td>
+                    <td>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): '-'}</td>
+                    {/*<td>{item.transmittalItem?.arrivalDate ? moment(item.transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}</td>*/}
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
                       onClick={item.files?.length ? () => this.downloadFiles(item) : undefined}
@@ -378,6 +390,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
         </div>
       </React.Fragment>
     );
+  }
+
+  private openOT(number: string) {
+    window.open(parseReplicableURL(`/transmittals/?number=${number}`), '_blank');
   }
 
   private downloadFiles(item: IRequestItem) {
