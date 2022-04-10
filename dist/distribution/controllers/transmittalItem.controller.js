@@ -156,7 +156,7 @@ var TransmittalItemController = /** @class */ (function () {
                         team = user.team;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 5, , 6]);
+                        _a.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({ team: team }, item), { loadingDate: moment().toDate() })).save()];
                     case 2:
                         transmittalItem = _a.sent();
@@ -165,7 +165,7 @@ var TransmittalItemController = /** @class */ (function () {
                                 .populate(transmittal_controller_1["default"].itemPopulate)];
                     case 3:
                         transmittalItemData = _a.sent();
-                        // associate request item with transmittal and transmittal item
+                        if (!item.requestItem) return [3 /*break*/, 5];
                         return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
                                 _id: item.requestItem
                             }, {
@@ -174,8 +174,9 @@ var TransmittalItemController = /** @class */ (function () {
                                 transmittalItem: transmittalItem._id
                             })];
                     case 4:
-                        // associate request item with transmittal and transmittal item
                         _a.sent();
+                        _a.label = 5;
+                    case 5:
                         server_1.io.to("transmittal-list-".concat(team._id))
                             .emit('CREATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
@@ -183,8 +184,8 @@ var TransmittalItemController = /** @class */ (function () {
                         res.json({
                             data: transmittalItemData
                         });
-                        return [3 /*break*/, 6];
-                    case 5:
+                        return [3 /*break*/, 7];
+                    case 6:
                         e_2 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_2);
@@ -193,8 +194,8 @@ var TransmittalItemController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
                         res.status(500).json(e_2);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
