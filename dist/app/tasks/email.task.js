@@ -24,7 +24,7 @@ var EmailQueue = /** @class */ (function () {
             job.log('start process');
             // generate email
             var mail = {
-                from: "\"".concat(job.data.from && job.data.from.length ? job.data.from : 'OSA Andes', "\"<osa.andes@osacontrol.com>"),
+                from: "\"".concat(job.data.from && job.data.from.length ? job.data.from : 'OSA Andes', "\"<soporte@osacontrol.com>"),
                 // to: job.data.to,
                 to: job.data.to,
                 bcc: job.data.bcc,
@@ -34,11 +34,10 @@ var EmailQueue = /** @class */ (function () {
                 attachments: job.data.attachments || [],
                 headers: {
                     // 'Content-Type:': 'text/html; charset="UTF-8"',
-                    'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
+                    'Reply-To': 'OSA Andes<soporte@osacontrol.com>',
                     'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
                     'List-ID': 'mail.osacontrol.com',
-                    'X-Report-Abuse-To': 'abuse@osacontrol.com',
-                    'X-CSA-Complaints': 'whitelistcomplaints@eco.de'
+                    'X-Report-Abuse-To': 'abuse@osacontrol.com'
                 }
             };
             job.log('send email');
