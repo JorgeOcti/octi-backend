@@ -355,7 +355,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiCreateUser = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, team, existUser, password, newUser, fullname, e_3;
+            var _a, firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings, team, existUser, password, updateItems, newUser, fullname, e_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -365,7 +365,7 @@ var AdminUsersController = /** @class */ (function () {
                                     message: 'No tienes permisos para esta operación'
                                 })];
                         }
-                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, venuesAccess = _a.venuesAccess;
+                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, venuesAccess = _a.venuesAccess, isAdmin = _a.isAdmin, isDriver = _a.isDriver, settings = _a.settings;
                         team = req.user.team._id;
                         // validate fields required
                         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -388,21 +388,27 @@ var AdminUsersController = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 3:
                         password = Math.random().toString(36).slice(-8);
-                        return [4 /*yield*/, new user_model_1["default"]({
-                                firstName: firstName,
-                                lastName: lastName,
-                                username: email,
-                                venue: venue,
-                                venuesAccess: venuesAccess,
-                                preferred: preferred,
-                                userPermissions: userPermissions && userPermissions.length ? userPermissions.map(function (userPermission) { return userPermission._id; }) : [],
-                                userForms: userForms && userForms.length ? userForms.map(function (userForm) { return userForm._id; }) : [],
-                                company: company,
-                                team: team,
-                                password: password,
-                                email: email,
-                                active: true
-                            }).save()];
+                        updateItems = {
+                            firstName: firstName,
+                            lastName: lastName,
+                            username: email,
+                            venue: venue,
+                            venuesAccess: venuesAccess,
+                            settings: settings,
+                            isDriver: isDriver,
+                            preferred: preferred,
+                            userForms: userForms && userForms.length ? userForms.map(function (userForm) { return userForm._id; }) : [],
+                            company: company,
+                            team: team,
+                            password: password,
+                            email: email,
+                            active: true
+                        };
+                        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions")) {
+                            updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map(function (userPermission) { return userPermission._id; }) : [];
+                            updateItems.isAdmin = isAdmin;
+                        }
+                        return [4 /*yield*/, new user_model_1["default"](updateItems).save()];
                     case 4:
                         newUser = _b.sent();
                         fullname = newUser.fullName();
@@ -444,7 +450,7 @@ var AdminUsersController = /** @class */ (function () {
     };
     AdminUsersController.prototype.apiUpdateUser = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, settings, countUser, updateItems, user, user_venues, response, response, e_4;
+            var id, team, _a, firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings, countUser, updateItems, user, user_venues, response, response, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -456,7 +462,7 @@ var AdminUsersController = /** @class */ (function () {
                         }
                         id = req.params.id;
                         team = req.user.team._id;
-                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, venuesAccess = _a.venuesAccess, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, isAdmin = _a.isAdmin, isDriver = _a.isDriver, settings = _a.settings;
+                        _a = req.body, firstName = _a.firstName, lastName = _a.lastName, email = _a.email, venue = _a.venue, userPermissions = _a.userPermissions, userForms = _a.userForms, preferred = _a.preferred, company = _a.company, venuesAccess = _a.venuesAccess, isAdmin = _a.isAdmin, isDriver = _a.isDriver, settings = _a.settings;
                         // validate fields required
                         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
                             res.status(400).json({
