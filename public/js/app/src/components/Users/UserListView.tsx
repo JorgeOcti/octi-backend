@@ -285,10 +285,10 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                               className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
                           </div>
                         </td>
-                        <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br/>
+                        <td className="middle hidden-xs">{user.venue ? user.venue.name : ''}<br/>
                           <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                         </td>
-                        <td className="hidden-xs">
+                        <td className="middle hidden-xs">
                           {forms.map((form, index) => {
                             return <React.Fragment key={`${form._id}-${index}`}>
                               {index > 0 ?

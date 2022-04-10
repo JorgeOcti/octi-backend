@@ -665,7 +665,16 @@ class Form extends React.Component<IPropsType, IStateType> {
         this.setState({
           venues: venues.data.results,
           colors: colors.data.results,
-          reasons: reasons.data.results,
+          reasons: reasons.data.results.map((reason: any) => {
+            // disable questions and extra files
+            reason.questions = [];
+            reason.file = {
+              '_id': '62521d050cf69800277f2686',
+              'active': false,
+              'required': false
+            };
+            return reason;
+          }),
           channels: channels.data.results,
           paymentMethods: paymentMethods.data.results,
           requestSettings: teamSettings.data.request,
