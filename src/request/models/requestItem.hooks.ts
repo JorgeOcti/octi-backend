@@ -11,7 +11,7 @@ class RequestItemHooks {
   }
 
   public async postFindOneAndUpdateHandler(doc: IRequestItemModel): Promise<void> {
-    const request = await Request.findById(doc.request, { meta: false });
+    const request = doc?.request ? await Request.findById(doc.request, { meta: false }) : null;
     if (request) {
       const [car, user, origin, destination, status] = await Promise.all([
         Car.findById(doc.car),

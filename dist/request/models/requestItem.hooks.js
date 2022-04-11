@@ -47,13 +47,21 @@ var RequestItemHooks = /** @class */ (function () {
     }
     RequestItemHooks.prototype.postFindOneAndUpdateHandler = function (doc) {
         return __awaiter(this, void 0, void 0, function () {
-            var request, _a, car, user, origin, destination, status, meta;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4 /*yield*/, request_model_1["default"].findById(doc.request, { meta: false })];
+            var request, _a, _b, car, user, origin, destination, status, meta;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        if (!(doc === null || doc === void 0 ? void 0 : doc.request)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, request_model_1["default"].findById(doc.request, { meta: false })];
                     case 1:
-                        request = _b.sent();
-                        if (!request) return [3 /*break*/, 4];
+                        _a = _c.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        _a = null;
+                        _c.label = 3;
+                    case 3:
+                        request = _a;
+                        if (!request) return [3 /*break*/, 6];
                         return [4 /*yield*/, Promise.all([
                                 models_1.Car.findById(doc.car),
                                 models_1.User.findById(doc.createdBy),
@@ -61,8 +69,8 @@ var RequestItemHooks = /** @class */ (function () {
                                 models_1.Venue.findById(doc.destination),
                                 requestItemStatus_model_1["default"].findById(doc.status)
                             ])];
-                    case 2:
-                        _a = _b.sent(), car = _a[0], user = _a[1], origin = _a[2], destination = _a[3], status = _a[4];
+                    case 4:
+                        _b = _c.sent(), car = _b[0], user = _b[1], origin = _b[2], destination = _b[3], status = _b[4];
                         meta = requestIteam_meta_1["default"].processMeta({
                             request: request,
                             car: car,
@@ -75,10 +83,10 @@ var RequestItemHooks = /** @class */ (function () {
                         return [4 /*yield*/, requestItem_model_1["default"].updateOne({ _id: doc._id }, {
                                 $set: { meta: meta }
                             })];
-                    case 3:
-                        _b.sent();
-                        _b.label = 4;
-                    case 4: return [2 /*return*/];
+                    case 5:
+                        _c.sent();
+                        _c.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });

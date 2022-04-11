@@ -47,7 +47,7 @@ class AppController {
 
   public robots(req: Request, res: Response): void {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
-    res.send(`User-Agent: *\nDisallow: /`);
+    res.send(`User-agent: *\nAllow: /`);
   }
 
   public login(req: Request, res: Response): void {

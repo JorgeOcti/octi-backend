@@ -72,7 +72,7 @@ var AppController = /** @class */ (function () {
     };
     AppController.prototype.robots = function (req, res) {
         res.setHeader('content-type', 'text/plain; charset=utf-8');
-        res.send("User-Agent: *\nDisallow: /");
+        res.send("User-agent: *\nAllow: /");
     };
     AppController.prototype.login = function (req, res) {
         if (req.user) {
