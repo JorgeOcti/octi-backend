@@ -783,13 +783,12 @@ var FormController = /** @class */ (function () {
                             receptionVenue = answers.receptionVenue;
                             participantObject.receiveFrom = receptionVenue.value;
                         }
-                        // add meta to car
+                        if (!(car_1 === null || car_1 === void 0 ? void 0 : car_1._id)) return [3 /*break*/, 7];
                         return [4 /*yield*/, car_model_2["default"].updateOne({ _id: car_1._id }, {
                                 'meta.location.venue': updatedUser.venue,
                                 'meta.location.checkedDate': new Date()
                             })];
                     case 6:
-                        // add meta to car
                         _l.sent();
                         _l.label = 7;
                     case 7:

@@ -681,10 +681,12 @@ class FormController {
               participantObject.receiveFrom = receptionVenue.value;
             }
             // add meta to car
-            await Car.updateOne({ _id: car._id }, {
-              'meta.location.venue': updatedUser.venue,
-              'meta.location.checkedDate': new Date()
-            });
+            if (car?._id) {
+              await Car.updateOne({ _id: car._id }, {
+                'meta.location.venue': updatedUser.venue,
+                'meta.location.checkedDate': new Date()
+              });
+            }
           }
 
           if (form.shipping) {
