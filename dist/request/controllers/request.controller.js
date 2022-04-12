@@ -189,33 +189,37 @@ var RequestController = /** @class */ (function () {
         this.searchVinContecta = this.searchVinContecta.bind(this);
     }
     RequestController.prototype.integration = function (req, res) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var query, params, _a, _b, _c, e_1;
-            var _d;
-            return __generator(this, function (_e) {
-                switch (_e.label) {
+            var query, params, _c, _d, _e, e_1;
+            var _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
                     case 0:
                         query = req.query;
+                        logger_service_1["default"].info("RequestController.integration");
                         query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
-                        _e.label = 1;
+                        _g.label = 1;
                     case 1:
-                        _e.trys.push([1, 4, , 5]);
+                        _g.trys.push([1, 4, , 5]);
                         return [4 /*yield*/, inputsSchema_1.createRequestSalfaParams.validate(query, {
                                 stripUnknown: true
                             })];
                     case 2:
-                        params = _e.sent();
-                        _b = (_a = res).render;
-                        _c = ['app/index'];
-                        _d = {};
+                        params = _g.sent();
+                        _d = (_c = res).render;
+                        _e = ['app/index'];
+                        _f = {};
                         return [4 /*yield*/, req.user.generateToken()];
                     case 3:
-                        _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
+                        _d.apply(_c, _e.concat([(_f.token = _g.sent(), _f)]));
                         res.json(params);
                         return [3 /*break*/, 5];
                     case 4:
-                        e_1 = _e.sent();
-                        res.status(400).json({ error: e_1.errors.join(', ') });
+                        e_1 = _g.sent();
+                        logger_service_1["default"].error(e_1);
+                        console.log(e_1);
+                        res.status(400).json({ error: (_b = (_a = e_1.errors) === null || _a === void 0 ? void 0 : _a.join(', ')) !== null && _b !== void 0 ? _b : e_1 });
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];
                 }
