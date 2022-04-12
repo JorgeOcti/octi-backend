@@ -133,7 +133,7 @@ var AppController = /** @class */ (function () {
         // const {next: nextPage} = req.query as {next: string};
         var redirectTo = req.session.redirectTo;
         logger_service_1["default"].info("AppController.processLogin");
-        logger_service_1["default"].info("".concat(JSON.stringify(req)));
+        logger_service_1["default"].info("".concat(JSON.stringify(req.session)));
         if (req.user) {
             return res.redirect(redirectTo);
         }
