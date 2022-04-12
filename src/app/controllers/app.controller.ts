@@ -97,6 +97,8 @@ class AppController {
     /* istanbul ignore if */
     // const {next: nextPage} = req.query as {next: string};
     const redirectTo = (req.session as any).redirectTo;
+    logger.info(`AppController.processLogin`);
+    logger.info(`${JSON.stringify(req.session)}`);
     if (req.user) {
       return res.redirect(redirectTo);
     } else {
@@ -104,10 +106,13 @@ class AppController {
       passport.authenticate('local', (err, user) => {
         /* istanbul ignore if */
         if (err) {
+          logger.error(err);
+          console.log(err);
           return next(err); // will generate a 500 error
         }
         /* istanbul ignore if */
         if (!user) {
+          logger.error(`AppController.processLogin.authenticate: Usuario o contraseña incorrecta`);
           return res.render('app/login', {
             username, error: 'Usuario o contraseña incorrecta.'
           });
@@ -115,12 +120,15 @@ class AppController {
         req.login(user, (loginErr) => {
           /* istanbul ignore if */
           if (loginErr) {
+            logger.error(loginErr);
+            console.log(loginErr);
             return next(loginErr);
           } else {
             user.lastLogin = new Date();
             user.save(async (err: any) => {
               /* istanbul ignore if */
               if (err) {
+                logger.error(err);
                 console.log(err); // handle errors!
               } else {
                 try {
@@ -129,11 +137,13 @@ class AppController {
                     select: ['codeName']
                   });
                   if (redirectTo) {
+                    logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
                     delete (req.session as any).redirectTo;
                     return res.redirect(redirectTo);
                   }
                   return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
                 } catch (e) {
+                  logger.error(e);
                   console.log(err); // handle errors!
                 }
               }

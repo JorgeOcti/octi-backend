@@ -132,6 +132,8 @@ var AppController = /** @class */ (function () {
         /* istanbul ignore if */
         // const {next: nextPage} = req.query as {next: string};
         var redirectTo = req.session.redirectTo;
+        logger_service_1["default"].info("AppController.processLogin");
+        logger_service_1["default"].info("".concat(JSON.stringify(req)));
         if (req.user) {
             return res.redirect(redirectTo);
         }
@@ -140,10 +142,13 @@ var AppController = /** @class */ (function () {
             passportConfig_1.passport.authenticate('local', function (err, user) {
                 /* istanbul ignore if */
                 if (err) {
+                    logger_service_1["default"].error(err);
+                    console.log(err);
                     return next(err); // will generate a 500 error
                 }
                 /* istanbul ignore if */
                 if (!user) {
+                    logger_service_1["default"].error("AppController.processLogin.authenticate: Usuario o contrase\u00F1a incorrecta");
                     return res.render('app/login', {
                         username: username_1,
                         error: 'Usuario o contraseña incorrecta.'
@@ -152,6 +157,8 @@ var AppController = /** @class */ (function () {
                 req.login(user, function (loginErr) {
                     /* istanbul ignore if */
                     if (loginErr) {
+                        logger_service_1["default"].error(loginErr);
+                        console.log(loginErr);
                         return next(loginErr);
                     }
                     else {
@@ -162,6 +169,7 @@ var AppController = /** @class */ (function () {
                                 switch (_a.label) {
                                     case 0:
                                         if (!err) return [3 /*break*/, 1];
+                                        logger_service_1["default"].error(err);
                                         console.log(err); // handle errors!
                                         return [3 /*break*/, 4];
                                     case 1:
@@ -173,12 +181,14 @@ var AppController = /** @class */ (function () {
                                     case 2:
                                         user = _a.sent();
                                         if (redirectTo) {
+                                            logger_service_1["default"].error("AppController.processLogin.login.redirectTo ".concat(redirectTo));
                                             delete req.session.redirectTo;
                                             return [2 /*return*/, res.redirect(redirectTo)];
                                         }
                                         return [2 /*return*/, res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/')];
                                     case 3:
                                         e_2 = _a.sent();
+                                        logger_service_1["default"].error(e_2);
                                         console.log(err); // handle errors!
                                         return [3 /*break*/, 4];
                                     case 4: return [2 /*return*/];
