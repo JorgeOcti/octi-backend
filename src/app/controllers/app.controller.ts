@@ -136,7 +136,7 @@ class AppController {
                     path: 'userPermissions',
                     select: ['codeName']
                   });
-                  if (redirectTo) {
+                  if (redirectTo?.length) {
                     logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
                     delete (req.session as any).redirectTo;
                     return res.redirect(redirectTo);

@@ -180,7 +180,7 @@ var AppController = /** @class */ (function () {
                                             })];
                                     case 2:
                                         user = _a.sent();
-                                        if (redirectTo) {
+                                        if (redirectTo === null || redirectTo === void 0 ? void 0 : redirectTo.length) {
                                             logger_service_1["default"].error("AppController.processLogin.login.redirectTo ".concat(redirectTo));
                                             delete req.session.redirectTo;
                                             return [2 /*return*/, res.redirect(redirectTo)];
