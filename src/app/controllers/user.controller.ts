@@ -7,6 +7,7 @@ import User, { IUserModel } from '../models/user.model';
 import Venue from '../models/venue.model';
 import PushService from '../../services/push.service';
 import { PaginateOptions, PaginateResult } from 'mongoose';
+import Permission from "../models/permission.model";
 
 class UserController {
 
@@ -15,6 +16,7 @@ class UserController {
     this.apiListVenues = this.apiListVenues.bind(this);
     this.apiListDrivers = this.apiListDrivers.bind(this);
     this.getUsers = this.getUsers.bind(this);
+    this.getStatsAccessUser = this.getStatsAccessUser.bind(this);
     this.apiChangeVenue = this.apiChangeVenue.bind(this);
   }
 
@@ -199,6 +201,48 @@ class UserController {
         return resolve(result);
       });
     });
+  }
+
+  public async getStatsAccessUser(req: IRequest, res: Response) {
+    logger.info(`UserController.apiListStatsUser`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const team = req.user.team._id;
+
+    let permissions = await Permission.find({
+      codeName: { $in: [ 'viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio' ] }
+    })
+
+    logger.info(JSON.stringify(permissions))
+
+    // paginate options
+    const options: PaginateOptions = {
+      sort: {
+        firstName: 1
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+      }
+    };
+    const filter: any = {
+      team,
+      userPermissions: {$in: permissions.map(p => p._id)}
+    };
+    try {
+      const users = await this.getUsers(filter, options);
+      /* istanbul ignore if  */
+
+      res.json({
+        results: users.docs,
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`UserController.apiListDrivers: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   public async getPusherToken(req: IRequest, res: Response){
