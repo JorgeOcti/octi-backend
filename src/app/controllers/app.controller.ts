@@ -100,7 +100,14 @@ class AppController {
     logger.info(`AppController.processLogin`);
     logger.info(`${JSON.stringify(req.session)}`);
     if (req.user) {
-      return res.redirect(redirectTo);
+      logger.info(`AppController.processLogin req.user`);
+      console.log(`AppController.processLogin redirectTo=${redirectTo}`);
+       if (redirectTo?.length) {
+        delete (req.session as any).redirectTo;
+        return res.redirect(redirectTo);
+      } else {
+        return res.redirect('/');
+      }
     } else {
       const { username } = req.body;
       passport.authenticate('local', (err, user) => {

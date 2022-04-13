@@ -65,6 +65,7 @@ var Middlewares = /** @class */ (function () {
                         // if they aren't redirect them to the login page
                         console.log('isLoggedIn');
                         console.log('req.url', req.url);
+                        req.logout();
                         req.session.redirectTo = req.url;
                         res.redirect("/account/login/");
                         _b.label = 5;

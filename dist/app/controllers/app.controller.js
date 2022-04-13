@@ -135,7 +135,15 @@ var AppController = /** @class */ (function () {
         logger_service_1["default"].info("AppController.processLogin");
         logger_service_1["default"].info("".concat(JSON.stringify(req.session)));
         if (req.user) {
-            return res.redirect(redirectTo);
+            logger_service_1["default"].info("AppController.processLogin req.user");
+            console.log("AppController.processLogin redirectTo=".concat(redirectTo));
+            if (redirectTo === null || redirectTo === void 0 ? void 0 : redirectTo.length) {
+                delete req.session.redirectTo;
+                return res.redirect(redirectTo);
+            }
+            else {
+                return res.redirect('/');
+            }
         }
         else {
             var username_1 = req.body.username;

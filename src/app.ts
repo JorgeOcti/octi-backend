@@ -298,6 +298,8 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+  console.log('app.showError');
+  console.log('req.url', req.url);
   console.log('err', err);
   res.status(statusCode).render(statusCode.toString());
   // res.json({
