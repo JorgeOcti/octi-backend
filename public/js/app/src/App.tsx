@@ -54,6 +54,11 @@ import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeLis
 import FormsSettingsListView from './components/FormsSettings/FormListView';
 import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
 import ColorListView from './components/Colors/ColorsListView';
+import DashboardStatsView, {
+  VDistributionDashboardStatsView, VInventoryDashboardStatsView, VPlanificationDashboardStatsView,
+  VUnitControlDashboardStatsView
+} from "./components/Stats/DashboardStatsView";
+import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
 
 
 declare let window: IWindow;
@@ -73,17 +78,19 @@ const App = () => (
         <Route exact path='/revision-report/' component={DashboardRevisionsView} />
         <Route exact path='/cars/' component={DashboardVinView} />
         <Route exact path='/planning/import/' component={PlanningImportView} />
+        <Route exact path='/planning/studio/' component={VPlanificationDashboardStatsView} />
         <Route exact path='/planning/' component={PlanningListView} />
         <Route exact path='/dashboard/damages/' component={DashboardDamagesView} />
         <Route exact path='/dashboard/timing/' component={DashboardTimingView} />
         <Route exact path='/dashboard/derco/' component={DashboardDercoView} />
+        <Route exact path='/dashboard/studio/' component={VUnitControlDashboardStatsView}  />
         <Route exact path='/dashboard/custom-dashboard/' component={CustomDashboardComponent} />
         <Route exact path='/forms/settings/forms/' component={FormsSettingsListView} />
         <Route exact path='/stock/' component={StockView} />
         <Route exact path='/stock/import/' component={StockImportView} />
         <Route exact path='/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/inventory/' component={InventoryListView} />
-        <Route exact path='/inventory/analysis/' component={CustomInventoryAnalysis} />
+        <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />
         <Route exact path='/inventory/create/' component={InventoryCreateView} />
         <Route exact path='/inventory/:id/' component={InventoryDetailView} />
@@ -101,6 +108,7 @@ const App = () => (
         <Route exact path='/settings/alerts/' component={AlertsViews} />
         <Route exact path='/settings/billing/' component={BillingListView} />
         <Route exact path='/settings/versions/' component={VersionListView} />
+        <Route exact path='/settings/stats/' component={DashboardStatsListView} />
         <Route exact path='/requests/create/' component={RequestCreateView} />
         <Route exact path='/transmittals/' component={TransmittalListView} />
         <Route exact path='/transmittals/create/' component={TransmittalCreateView} />
@@ -114,6 +122,7 @@ const App = () => (
         <Route exact path='/transmittals/settings/milestone-type/' component={MilestoneTypeListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
+        <Route exact path='/requests/studio/' component={VDistributionDashboardStatsView} />
         <Route exact path='/requests/vehicles/external/create/' component={RequestCreateIntegration} />
         <Route exact path='/requests/vehicles/create' component={RequestCreateView} />
         <Route exact path='/requests/vehicles/:id/' component={RequestDetailView} />

@@ -32,6 +32,7 @@ import { milestoneReducer } from './milestone.reducer';
 import { milestoneTypeReducer } from './milestoneType.reducer';
 import { formsReducer } from './form.reducer';
 import { colorsReducer } from './color.reducer';
+import {statsDashboardReducer} from "./statsDashboard.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -64,6 +65,7 @@ export default (history: any) => combineReducers({
   milestoneType: milestoneTypeReducer,
   regions: regionsReducer,
   stock: stockReducer,
+  statsDashboard: statsDashboardReducer,
   planning: planningReducer,
   form: formReducer,
   router: connectRouter(history)

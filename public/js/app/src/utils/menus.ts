@@ -52,12 +52,12 @@ if (hasPermission(window.user, 'viewDashboardDerco')) {
   });
 }
 
-if (hasPermission(window.user, 'viewCustomDashboard')) {
+if (hasPermission(window.user, 'viewChecklistStudio')) {
   dashboardItems.push({
     id: '1.7',
     icon: 'fa-circle-o',
     text: 'Análisis',
-    url: '/dashboard/custom-dashboard/'
+    url: '/dashboard/studio/'
   });
 }
 
@@ -118,6 +118,15 @@ if (hasPermission(window.user, 'adminRequest')) {
   });
 }
 
+if (hasPermission(window.user, 'viewDistributionStudio')) {
+  distributionItems.push({
+    id: '3.5',
+    icon: 'fa-circle-o',
+    text: 'Análisis',
+    url: '/requests/studio/'
+  });
+}
+
 if (distributionItems.length) {
   menus.push({
     id: '3',
@@ -168,12 +177,12 @@ if (hasPermission(window.user, 'viewLabel')) {
   });
 }
 
-if (hasPermission(window.user, 'viewInventoryCustomDashboard')) {
+if (hasPermission(window.user, 'viewInventoryStudio')) {
   inventoryItems.push({
     id: '2.5',
     icon: 'fa-circle-o',
     text: 'Análisis',
-    url: '/inventory/analysis/'
+    url: '/inventory/studio/'
   });
 }
 
@@ -209,6 +218,16 @@ if (hasPermission(window.user, 'viewPlanning')) {
     url: '/planning/import/'
   });
 }
+
+if (hasPermission(window.user, 'viewPlanificationStudio')) {
+  planningItems.push({
+    id: '4.3',
+    icon: 'fa-circle-o',
+    text: 'Análisis',
+    url: '/planning/studio/'
+  });
+}
+
 
 if (planningItems.length) {
   menus.push({
@@ -309,6 +328,15 @@ if (hasPermission(window.user, 'viewColor')) {
     icon: 'fa-circle-o',
     text: 'Colores',
     url: '/settings/colors/'
+  });
+}
+
+if (hasPermission(window.user, 'viewStatsDashboard')) {
+  settingItems.push({
+    id: '10.11',
+    icon: 'fa-circle-o',
+    text: 'Estádisticas',
+    url: '/settings/stats/'
   });
 }
 

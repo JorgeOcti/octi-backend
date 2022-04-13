@@ -112,6 +112,7 @@ export function changeTempUserAction(user: ITempUser): IChangeTempUser {
     },
     meta: {
       debounce: {
+
         time: 100
       }
     }

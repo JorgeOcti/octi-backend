@@ -3,7 +3,8 @@ import Axios, {
   AxiosInstance,
   AxiosPromise,
   CancelTokenSource,
-  CancelTokenStatic
+  CancelTokenStatic,
+  AxiosRequestHeaders
 } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
@@ -29,6 +30,8 @@ import { ITransmittalModel } from '../../../../../src/distribution/models/transm
 import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
 import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
+import {ITempStudio} from "../actions/statsDashboard.actions";
+import {IStudio} from "../../../../../src/stats/interfaces/studio.interface";
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -45,7 +48,7 @@ export default class ApiService {
 
   constructor(private headers: IHeaders = {}) {
     this.instance = Axios.create({
-      headers: this.headers
+      headers: this.headers as AxiosRequestHeaders
     });
     this.CancelToken = Axios.CancelToken;
   }
@@ -959,6 +962,38 @@ export default class ApiService {
   public validateContectaID(conectaID: string): AxiosPromise {
     return this.instance.post(
       `/requests/vehicles/validate-conecta/`, { conectaID }
+    );
+  }
+
+  public getMyStudiosDashboards(type? : string) : AxiosPromise {
+    return this.instance.get(`/api/stats/my-studio/${type ? `?type=${type}` : ''}`)
+  }
+
+  public getStudiosDashboards(type? : string) : AxiosPromise {
+    return this.instance.get(`/api/stats/studios/${type ? `?type=${type}` : ''}`)
+  }
+
+  public deleteStudio(id: String): AxiosPromise {
+    return this.instance.delete(
+      `/api/stats/studios/${id}/`
+    );
+  }
+
+  public getStudioUsers(): AxiosPromise {
+    return this.instance.get(
+      '/api/stats/users/'
+    )
+  }
+
+  public createStudio(studio: ITempStudio): AxiosPromise {
+    return this.instance.post(
+      `/api/stats/studios/`, {studio}
+    );
+  }
+
+  public updateStudio(studio: ITempStudio): AxiosPromise {
+    return this.instance.patch(
+      `/api/stats/studios/${studio._id}/`, {studio}
     );
   }
 }
