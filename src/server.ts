@@ -1,7 +1,9 @@
 import * as bluebird from 'bluebird';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
-import { Server} from 'socket.io';
+// @ts-ignore
+import { Server, Socket } from 'socket.io';
+// @ts-ignore
 import { createAdapter } from "@socket.io/redis-adapter";
 import app from './app';
 import logger from './services/logger.service';
@@ -41,11 +43,12 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   }
 });
 
+// @ts-ignore
 export const io = new Server(server);
 io.adapter(createAdapter(createRedisClient(), createRedisClient()));
 
 /* istanbul ignore next */
-io.use( async (socket, next) => {
+io.use( async (socket: Socket, next: any) => {
   // validate token to use socket
   const token = socket.handshake.query.token as string;
   const msgErrorAuthentication: string = 'authentication error';
@@ -77,7 +80,7 @@ io.use( async (socket, next) => {
 });
 
 /* istanbul ignore next */
-io.on( 'connection', async ( socket ) => {
+io.on( 'connection', async ( socket: Socket) => {
   // logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
   socket.on('join', (data) => {
     const {room} = data;
@@ -111,7 +114,7 @@ io.on( 'connection', async ( socket ) => {
     return socket.id;
   });
 
-  socket.on('leave', (data) => {
+  socket.on('leave', (data: any ) => {
     const {room} = data;
     redisClient.get(room, async (error, result) => {
       let data: any;
