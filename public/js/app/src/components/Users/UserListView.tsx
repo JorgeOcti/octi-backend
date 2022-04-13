@@ -254,7 +254,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       <th style={{width: '1%'}} className="width-10"/> : null
                   }
                   {
-                    hasPermission(window.user, 'changeUser') ?
+                    hasPermission(window.user, 'addUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                  {
+                    window.user.isAdmin || (hasPermission(window.user, 'changeUser')) ?
                       <th style={{width: '1%'}} className="width-10"/> : null
                   }
                   {
@@ -285,10 +289,10 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                               className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
                           </div>
                         </td>
-                        <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br/>
+                        <td className="middle hidden-xs">{user.venue ? user.venue.name : ''}<br/>
                           <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                         </td>
-                        <td className="hidden-xs">
+                        <td className="middle hidden-xs">
                           {forms.map((form, index) => {
                             return <React.Fragment key={`${form._id}-${index}`}>
                               {index > 0 ?
@@ -311,7 +315,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                         {
                           window.user.isAdmin || (hasPermission(window.user, 'changeUser') && !user.isAdmin) ?
                             <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
-                              className="fa fa-pencil"/></td> : null
+                              className="fa fa-pencil"/></td> : <td></td>
                         }
                         {
                           hasPermission(window.user, 'deleteUser') ?

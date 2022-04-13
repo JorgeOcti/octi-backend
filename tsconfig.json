@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "baseUrl": "src",
     "sourceMap": true,
+    "skipLibCheck": true,
     "inlineSources": true,
     "outDir": "dist",
     "tsBuildInfoFile": "./buildcache/buildcache",

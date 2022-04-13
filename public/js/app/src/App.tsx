@@ -133,9 +133,9 @@ const App = () => (
     </ConnectedRouter>
   </Provider>
 );
-
+const $body = $('body');
 // clear state of the modeal on hidden
-$('body').on('hidden.bs.modal', '#andesModal', () => {
+$body.on('hidden.bs.modal', '#andesModal', () => {
   store.dispatch({
     type: '/MODAL/CLEAR'
   });
@@ -158,8 +158,8 @@ $(() => {
     document.querySelector('#app')
   );
   ($('.sidebar-menu') as any).tree();
-  $('body').on('click', '.treeview-menu li', () => {
-    $('body').removeClass('sidebar-open');
+  $body.on('click', '.treeview-menu li', () => {
+    $body.removeClass('sidebar-open');
   });
   // ekk-lightbox
   $(document).on('click', '[data-toggle="lightbox"]', function(event) {
@@ -169,7 +169,7 @@ $(() => {
   // fix ekk-lightbox
   $(document).on('hidden.bs.modal', () => {
     if ($('.modal:visible').length) {
-      $('body').addClass('modal-open');
+      $body.addClass('modal-open');
     }
   });
 
@@ -179,8 +179,53 @@ $(() => {
   // prevenet show modal addons when is open and user change page
   window.addEventListener('popstate', function(e) {
     $('.modal-backdrop').remove();
-    $('body').removeClass('modal-open');
+    $body.removeClass('modal-open');
     // ($('#andesModal') as any).modal('hide');
+  });
+
+
+  ($ as any).AdminLTESidebarTweak = {};
+
+  ($ as any).AdminLTESidebarTweak.options = {
+    EnableRemember: true,
+    NoTransitionAfterReload: true
+    //Removes the transition after page reload.
+  };
+
+  $(function() {
+    'use strict';
+    $body.on('collapsed.pushMenu', function() {
+      if (($ as any).AdminLTESidebarTweak.options.EnableRemember) {
+        localStorage.setItem('toggleState', 'closed');
+      }
+    });
+
+    $body.on('expanded.pushMenu', function() {
+      if (($ as any).AdminLTESidebarTweak.options.EnableRemember) {
+        localStorage.setItem('toggleState', 'opened');
+      }
+    });
+    // $('.sidebar-menu a').on('click', function() {
+    //   const toggleState = localStorage.getItem('toggleState');
+    //   console.log(toggleState);
+    //   if(toggleState === 'closed'){
+    //     localStorage.setItem('toggleState', 'closed');
+    //     $body.addClass('sidebar-collapse');
+    //   }
+    // });
+
+    if (($ as any).AdminLTESidebarTweak.options.EnableRemember) {
+      const toggleState = localStorage.getItem('toggleState');
+      if (toggleState === 'closed') {
+        if (($ as any).AdminLTESidebarTweak.options.NoTransitionAfterReload) {
+          $body.addClass('sidebar-collapse hold-transition').delay(100).queue(function() {
+            $(this).removeClass('hold-transition');
+          });
+        } else {
+          $body.addClass('sidebar-collapse');
+        }
+      }
+    }
   });
 });
 

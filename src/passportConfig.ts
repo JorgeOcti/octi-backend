@@ -52,20 +52,29 @@ passport.deserializeUser((user: any, done: any) => {
  * Sign in using Email and Password.
  */
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  console.log('passportLocal.verify()');
+  console.log('passport.LocalStrategy.verify()');
+  console.log('passport.LocalStrategy.username', username);
   User.findOne({
     username: username.toLowerCase(),
     active: true
   }, (err: any, user: any) => {
-    if (err) { return done(err); }
+    if (err) {
+      console.log('passport.LocalStrategy.findOne.error', err);
+      return done(err);
+    }
     if (!user) {
+      console.log('passport.LocalStrategy.findOne.!user', { message: `username ${username} not found.` });
       return done(undefined, false, { message: `username ${username} not found.` });
     }
     user.comparePassword(password, (err: Error, isMatch: boolean) => {
-      if (err) { return done(err); }
+      if (err) {
+        console.log('passport.LocalStrategy.comparePassword.error', err);
+        return done(err);
+      }
       if (isMatch) {
         return done(undefined, user);
       }
+      console.log('passport.LocalStrategy.comparePassword.!isMatch', { message: 'Invalid email or password.' });
       return done(undefined, false, { message: 'Invalid email or password.' });
     });
   });

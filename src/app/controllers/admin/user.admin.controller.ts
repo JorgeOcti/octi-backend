@@ -311,7 +311,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess} = req.body;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
     const team = req.user.team._id;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -332,21 +332,28 @@ class AdminUsersController {
         // generate password
         const password = Math.random().toString(36).slice(-8);
         // create user
-        let newUser = await new User({
+        const updateItems: any = {
           firstName,
           lastName,
           username: email,
           venue,
           venuesAccess,
+          settings,
+          isDriver,
           preferred,
-          userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           company,
           team,
           password,
           email,
           active: true
-        }).save();
+        };
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
+          updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
+          updateItems.isAdmin = isAdmin;
+        }
+
+        let newUser = await new User(updateItems).save();
 
         // const errors = await newUser.validate();
         // console.log(errors);
@@ -402,7 +409,7 @@ class AdminUsersController {
     }
     const {id} = req.params;
     const team = req.user.team._id;
-    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver, settings} = req.body;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({

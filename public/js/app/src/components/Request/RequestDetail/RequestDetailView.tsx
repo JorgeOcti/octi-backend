@@ -123,7 +123,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.on('DELETE_REQUEST', (data: any): void => {
       if (data.idRequest === id) {
         const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
-        this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
+        this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
       }
     });
 
