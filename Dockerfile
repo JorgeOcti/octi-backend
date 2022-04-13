@@ -39,16 +39,23 @@ COPY ./package.json /srv/package.json
 
 RUN npm --build-from-source install bcrypt && \
     npm --unsafe-perm --production install && \
-    npm i -g pm2 && \
+    npm i -g pm2 typescript && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \
     touch /srv/ses-config.json && \
     echo "{}" >> /srv/ses-config.json
 
-COPY ./dist /srv/dist
+COPY ./src /srv/src
 COPY ./public /srv/public
 COPY ./views /srv/views
 COPY ./pm2.json /srv/pm2.json
+COPY ./tsconfig.json /srv/tsconfig.json
+
+RUN npm i
+
+RUN tsc --project tsconfig.json
+
+RUN rm -rf /srv/src
 
 EXPOSE 3000
 
