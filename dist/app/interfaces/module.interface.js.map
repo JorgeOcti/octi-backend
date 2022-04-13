@@ -1,1 +1,0 @@
-{"version":3,"file":"module.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/module.interface.ts"],"names":[],"mappings":"","sourcesContent":["export interface IModule {\n  _id: any;\n  name: string;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

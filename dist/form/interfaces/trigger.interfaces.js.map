@@ -1,1 +1,0 @@
-{"version":3,"file":"trigger.interfaces.js","sourceRoot":"","sources":["../../../src/form/interfaces/trigger.interfaces.ts"],"names":[],"mappings":"","sourcesContent":["import { IFormTriggerModel } from '../models/trigger.model';\n\nexport interface ITriggerDelegate {\n  trigger(trigger: IFormTriggerModel, answers: any, payload: any): any;\n}\n"]}
