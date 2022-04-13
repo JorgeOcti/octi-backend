@@ -97,9 +97,9 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 4, , 5]);
-                        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
+                        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
                         context_1 = this.processTrigerConfig(trigger, answers);
-                        filename = "".concat(moment().unix(), "_").concat(context_1.filename);
+                        filename = moment().unix() + "_" + context_1.filename;
                         participant_1 = payload.participant;
                         participantCompany = participant_1.user.venue && participant_1.user.venue.company || {};
                         _a = context_1;
@@ -168,8 +168,8 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
                         else {
                             payload['files'] = [{ filename: filename, path: url }];
                         }
-                        logger_service_1["default"].info("Trigger: files ".concat(JSON.stringify(payload['files'])));
-                        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " executed"));
+                        logger_service_1["default"].info("Trigger: files " + JSON.stringify(payload['files']));
+                        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " executed");
                         return [2 /*return*/, payload];
                     case 4:
                         e_1 = _b.sent();
@@ -182,7 +182,7 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
     };
     FileTriggerDelegate.prototype.createPDF = function (html, options, filename) {
         return new Promise((function (resolve, reject) {
-            HtmlPdf.create(html, options).toFile("/tmp/".concat(filename), function (err, file) {
+            HtmlPdf.create(html, options).toFile("/tmp/" + filename, function (err, file) {
                 if (err !== null) {
                     reject(err);
                 }
@@ -213,7 +213,7 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
                     case 1:
                         data = _a.sent();
                         s3FileOptions_1 = {
-                            Key: "/tmp/".concat(filename),
+                            Key: "/tmp/" + filename,
                             Bucket: process.env.S3_BUCKET || s3Config.bucket,
                             ACL: 'public-read',
                             Body: data

@@ -24,7 +24,7 @@ var EmailQueue = /** @class */ (function () {
             job.log('start process');
             // generate email
             var mail = {
-                from: "\"".concat(job.data.from && job.data.from.length ? job.data.from : 'OSA Andes', "\"<osa.andes@osacontrol.com>"),
+                from: "\"" + (job.data.from && job.data.from.length ? job.data.from : 'OSA Andes') + "\"<osa.andes@osacontrol.com>",
                 // to: job.data.to,
                 to: job.data.to,
                 bcc: job.data.bcc,

@@ -177,7 +177,7 @@ var AdminsTeamController = /** @class */ (function () {
                         console.log(e_1);
                         logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];

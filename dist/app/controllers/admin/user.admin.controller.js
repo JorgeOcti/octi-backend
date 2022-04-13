@@ -408,10 +408,10 @@ var AdminUsersController = /** @class */ (function () {
                         fullname = newUser.fullName();
                         app_1.queue.create('email', {
                             from: '',
-                            title: "Welcome email for ".concat(fullname),
-                            to: "\"".concat(fullname, "\"<").concat(newUser.email, ">"),
-                            subject: "".concat(fullname, " bienvenido(a) a OSA Andes"),
-                            text: "".concat(fullname, " bienvenido(a) a OSA Andes\n          {Empresa} te da la bienvenida a usar OSA Andes.\n\n          Tus Datos para acceder a la aplicaci\u00F3n son:\n          Usuario: ").concat(newUser.email, "\n          Contrase\u00F1a ").concat(password, "\n          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.\n\n          \u00A9 2021 OSA SpA. All rights reserved."),
+                            title: "Welcome email for " + fullname,
+                            to: "\"" + fullname + "\"<" + newUser.email + ">",
+                            subject: fullname + " bienvenido(a) a OSA Andes",
+                            text: fullname + " bienvenido(a) a OSA Andes\n          {Empresa} te da la bienvenida a usar OSA Andes.\n\n          Tus Datos para acceder a la aplicaci\u00F3n son:\n          Usuario: " + newUser.email + "\n          Contrase\u00F1a " + password + "\n          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.\n\n          \u00A9 2021 OSA SpA. All rights reserved.",
                             view: 'account/welcome',
                             context: {
                                 fullname: fullname,
@@ -422,7 +422,7 @@ var AdminUsersController = /** @class */ (function () {
                         // prevent return password
                         newUser = newUser.toObject();
                         delete newUser.password;
-                        server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
+                        server_1.io.to("user-list-" + team).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });
@@ -540,7 +540,7 @@ var AdminUsersController = /** @class */ (function () {
                             message: 'Usuario editado satisfactoriamente.',
                             user: user
                         };
-                        server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
+                        server_1.io.to("user-list-" + team).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });
@@ -595,7 +595,7 @@ var AdminUsersController = /** @class */ (function () {
                             message: 'Usuario eliminado satisfactoriamente.',
                             id: user._id
                         };
-                        server_1.io.to("user-list-".concat(team)).emit('REFRESH', {
+                        server_1.io.to("user-list-" + team).emit('REFRESH', {
                             update: true,
                             updatedBy: req.user._id
                         });

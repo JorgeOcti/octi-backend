@@ -124,7 +124,7 @@ var TransmittalItemController = /** @class */ (function () {
                             .populate(transmittal_controller_1["default"].itemPopulate)];
                     case 3:
                         newTransmittalItem = _a.sent();
-                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL_ITEM', {
+                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: newTransmittalItem
                         });
                         res.json({
@@ -138,7 +138,7 @@ var TransmittalItemController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalItemController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];
@@ -176,7 +176,7 @@ var TransmittalItemController = /** @class */ (function () {
                     case 4:
                         // associate request item with transmittal and transmittal item
                         _a.sent();
-                        server_1.io.to("transmittal-list-".concat(team._id))
+                        server_1.io.to("transmittal-list-" + team._id)
                             .emit('CREATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
                         });
@@ -191,7 +191,7 @@ var TransmittalItemController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalItemController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/];
@@ -221,7 +221,7 @@ var TransmittalItemController = /** @class */ (function () {
                         return [4 /*yield*/, transmittalItem_model_1["default"].find({ transmittal: transmittalItem.transmittal }).count()];
                     case 4:
                         transmittalItems = _a.sent();
-                        server_1.io.to("transmittal-list-".concat(team._id)).emit('DELETE_TRANSMITTAL_ITEM', {
+                        server_1.io.to("transmittal-list-" + team._id).emit('DELETE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItem
                         });
                         // clear assigned request item
@@ -242,7 +242,7 @@ var TransmittalItemController = /** @class */ (function () {
                         return [4 /*yield*/, transmittal.remove()];
                     case 7:
                         _a.sent();
-                        server_1.io.to("transmittal-list-".concat(team._id)).emit('DELETE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-" + team._id).emit('DELETE_TRANSMITTAL', {
                             transmittal: transmittal
                         });
                         _a.label = 8;
@@ -258,7 +258,7 @@ var TransmittalItemController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalItemController.apiDelete: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_3);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];

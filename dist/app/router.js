@@ -22,6 +22,7 @@ var user_controller_1 = require("./controllers/user.controller");
 var router_1 = require("../form/router");
 var passportConfig_1 = require("../passportConfig");
 var app_controller_1 = require("./controllers/app.controller");
+var studio_controller_1 = require("../stats/controllers/studio.controller");
 // setup route middlewares
 var appRouter = express.Router();
 exports.appRouter = appRouter;
@@ -31,7 +32,7 @@ appRouter.get('/', middlewares_1["default"].isLoggedIn, car_controller_1["defaul
 appRouter.get('/dashboard/damages/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
 appRouter.get('/dashboard/timing/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
 appRouter.get('/dashboard/derco/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
-appRouter.get('/dashboard/custom-dashboard/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
+appRouter.get('/dashboard/studio/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
 // DashBoard Cars
 appRouter.get('/cars/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].vinDashboard);
 appRouter.get('/forms/settings/forms/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].index);
@@ -122,6 +123,9 @@ appRouter.post('/api/admin/alerts/', middlewares_1["default"].isLoggedIn, alert_
 appRouter["delete"]('/api/admin/alerts/:id', middlewares_1["default"].isLoggedIn, alert_admin_controller_1["default"].apiDeleteAlert);
 // versions
 appRouter.get('/settings/versions/', middlewares_1["default"].isLoggedIn, alert_admin_controller_1["default"].index);
+//Stats Dashboard
+appRouter.get('/settings/stats/', middlewares_1["default"].isLoggedIn, studio_controller_1["default"].index);
+appRouter.get('/api/stats/users/', middlewares_1["default"].isJWTAuthenticated, user_controller_1["default"].getStatsAccessUser);
 // api versions
 appRouter.get('/api/admin/versions/', middlewares_1["default"].isLoggedIn, version_admin_controller_1["default"].apiListVersions);
 appRouter.post('/api/admin/versions/', middlewares_1["default"].isLoggedIn, version_admin_controller_1["default"].apiCreateVersion);

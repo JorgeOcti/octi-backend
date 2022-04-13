@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -237,7 +233,7 @@ var RequestController = /** @class */ (function () {
                         existConectId = _a.sent();
                         if (existConectId) {
                             res.json({
-                                error: "connectID used in another request ".concat(existConectId.number),
+                                error: "connectID used in another request " + existConectId.number,
                                 number: existConectId.number
                             });
                         }
@@ -467,10 +463,10 @@ var RequestController = /** @class */ (function () {
                     case 11: return [4 /*yield*/, request_model_1["default"].findById(newRequest._id).populate(this.requestPopulate)];
                     case 12:
                         updatedRequest = _b.sent();
-                        server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
+                        server_1.io.to("request-list-" + team._id).emit('CREATE_REQUEST', {
                             request: updatedRequest
                         });
-                        server_1.io.to("request-detail-".concat(team._id)).emit('CREATE_REQUEST', {
+                        server_1.io.to("request-detail-" + team._id).emit('CREATE_REQUEST', {
                             request: updatedRequest
                         });
                         resolve({
@@ -482,7 +478,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.createRequest: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(createdBy._id, ", email: ").concat(createdBy.email, "}, user: ").concat(JSON.stringify(createdBy)));
+                        logger_service_1["default"].error("{user: {_id: " + createdBy._id + ", email: " + createdBy.email + "}, user: " + JSON.stringify(createdBy));
                         logger_service_1["default"].error(e_4);
                         reject(e_4);
                         return [3 /*break*/, 14];
@@ -513,14 +509,14 @@ var RequestController = /** @class */ (function () {
                         minRequest = Math.min.apply(Math, requestsNumbers);
                         if (!existsRequest.length) return [3 /*break*/, 3];
                         res.status(400).json({
-                            message: "Solicitudes n\u00FAmero ".concat(existsRequest.map(function (e) { return e.number; }).join(','), " ya ").concat(existsRequest.length > 1 ? 'existen' : 'existe'),
+                            message: "Solicitudes n\u00FAmero " + existsRequest.map(function (e) { return e.number; }).join(',') + " ya " + (existsRequest.length > 1 ? 'existen' : 'existe'),
                             status: 400
                         });
                         return [3 /*break*/, 6];
                     case 3:
                         if (!(minRequest < updateTeam.requestNumber)) return [3 /*break*/, 4];
                         res.status(400).json({
-                            message: "El n\u00FAmero de solicitud no puede ser menor que ".concat(updateTeam.requestNumber),
+                            message: "El n\u00FAmero de solicitud no puede ser menor que " + updateTeam.requestNumber,
                             status: 400
                         });
                         return [3 /*break*/, 6];
@@ -572,7 +568,7 @@ var RequestController = /** @class */ (function () {
                 switch (_h.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         _a = req.user, company = _a.company, team = _a.team;
                         _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID, advancePaymentInformation = _b.advancePaymentInformation, customerInformation = _b.customerInformation;
                         _h.label = 1;
@@ -583,7 +579,7 @@ var RequestController = /** @class */ (function () {
                         existConectId = _h.sent();
                         if ((conectaID === null || conectaID === void 0 ? void 0 : conectaID.length) && existConectId) {
                             return [2 /*return*/, res.status(400).json({
-                                    message: "ID de cotizaci\u00F3n conecta ".concat(conectaID, " ya se encuentra asociado en la solicitud ").concat(existConectId.number, ".")
+                                    message: "ID de cotizaci\u00F3n conecta " + conectaID + " ya se encuentra asociado en la solicitud " + existConectId.number + "."
                                 })];
                         }
                         return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
@@ -683,10 +679,10 @@ var RequestController = /** @class */ (function () {
                     case 13: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
                     case 14:
                         newRequest = _h.sent();
-                        server_1.io.to("request-list-".concat(team._id)).emit('CREATE_REQUEST', {
+                        server_1.io.to("request-list-" + team._id).emit('CREATE_REQUEST', {
                             request: newRequest
                         });
-                        server_1.io.to("request-detail-".concat(team._id)).emit('CREATE_REQUEST', {
+                        server_1.io.to("request-detail-" + team._id).emit('CREATE_REQUEST', {
                             request: newRequest
                         });
                         res.json({
@@ -699,7 +695,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body));
                         logger_service_1["default"].error(e_6);
                         res.status(500).json(e_6);
                         return [3 /*break*/, 16];
@@ -717,7 +713,7 @@ var RequestController = /** @class */ (function () {
                 switch (_h.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiListItems");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         team = req.user.team._id;
                         _b = req.body, page = _b.page, pageSize = _b.pageSize, orderBy = _b.orderBy, orderType = _b.orderType, filters = _b.filters;
                         requestNumbers = filters.request
@@ -937,7 +933,7 @@ var RequestController = /** @class */ (function () {
                                     $match: {
                                         _id: { $in: requests.docs.map(function (d) { return d._id; }) }
                                     }
-                                }], aggregatePopulate, true))];
+                                }], aggregatePopulate))];
                     case 4:
                         _d.apply(_c, [(_g.results = _h.sent(),
                                 _g.status = 200,
@@ -949,7 +945,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiListItems: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_7);
                         res.status(500).json(e_7);
                         return [3 /*break*/, 7];
@@ -970,7 +966,7 @@ var RequestController = /** @class */ (function () {
                     case 1:
                         _d.trys.push([1, 6, , 7]);
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=".concat(moment().format('YYYYMMDD'), "-solicitudes.xlsx"));
+                        res.setHeader('Content-Disposition', "attachment; filename=" + moment().format('YYYYMMDD') + "-solicitudes.xlsx");
                         options = {
                             stream: res,
                             useStyles: true,
@@ -1070,7 +1066,7 @@ var RequestController = /** @class */ (function () {
                                 header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns, true);
+                            }], questionColumns);
                         cursor_1 = requestItem_model_1["default"].aggregate([{
                                 $match: {
                                     team: team,
@@ -1164,7 +1160,7 @@ var RequestController = /** @class */ (function () {
                                     answer = _a[_i];
                                     extraAnswers[answer.questionId] = answer.answer;
                                 }
-                                worksheet_1.addRow(__assign(__assign({}, extraAnswers), { request: item.request.number, created: item.createdAt, updated: item.updatedAt, observation: item.observation, fleet: item.request.fleet ? 'Si' : 'No', priority: item.priority ? 'Si' : 'No', createdBy: item.createdBy ? "".concat(item.createdBy.firstName, " ").concat(item.createdBy.lastName) : '-', seller: item.request.sellerText, channel: item.request.channel ? item.request.channel.name : '', reason: (_c = (_b = item.reason) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : '', group: '', property: item.car.property, brand: item.car.brand, denomination: item.car.denomination, material: item.car.material, vin: item.car.vin, cdo: item.car.internalNumber, color: item.car.color, destination: (_e = (_d = item.destination) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '', origin: (_g = (_f = item.origin) === null || _f === void 0 ? void 0 : _f.name) !== null && _g !== void 0 ? _g : '', status: (_j = (_h = item.status) === null || _h === void 0 ? void 0 : _h.name) !== null && _j !== void 0 ? _j : '', equipment: item.equipment ? 'Si' : 'No', body: item.body ? 'Si' : 'No', washed: item.washed ? 'Si' : 'No', review: item.review ? 'Si' : 'No', carrier: item.carrier ? item.carrier.name : '', customerName: (_m = (_l = (_k = item.request) === null || _k === void 0 ? void 0 : _k.customerInformation) === null || _l === void 0 ? void 0 : _l.name) !== null && _m !== void 0 ? _m : '', customerRut: (_q = (_p = (_o = item.request) === null || _o === void 0 ? void 0 : _o.customerInformation) === null || _p === void 0 ? void 0 : _p.rut) !== null && _q !== void 0 ? _q : '', customerEmail: (_t = (_s = (_r = item.request) === null || _r === void 0 ? void 0 : _r.customerInformation) === null || _s === void 0 ? void 0 : _s.email) !== null && _t !== void 0 ? _t : '', paymentMethod: (_x = (_w = (_v = (_u = item.request) === null || _u === void 0 ? void 0 : _u.advancePaymentInformation) === null || _v === void 0 ? void 0 : _v.method) === null || _w === void 0 ? void 0 : _w.name) !== null && _x !== void 0 ? _x : '', paymentNumber: (_0 = (_z = (_y = item.request) === null || _y === void 0 ? void 0 : _y.advancePaymentInformation) === null || _z === void 0 ? void 0 : _z.number) !== null && _0 !== void 0 ? _0 : '', uploadDate: item.uploadDate, estimatedArrival: item.estimatedArrival })).commit();
+                                worksheet_1.addRow(__assign(__assign({}, extraAnswers), { request: item.request.number, created: item.createdAt, updated: item.updatedAt, observation: item.observation, fleet: item.request.fleet ? 'Si' : 'No', priority: item.priority ? 'Si' : 'No', createdBy: item.createdBy ? item.createdBy.firstName + " " + item.createdBy.lastName : '-', seller: item.request.sellerText, channel: item.request.channel ? item.request.channel.name : '', reason: (_c = (_b = item.reason) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : '', group: '', property: item.car.property, brand: item.car.brand, denomination: item.car.denomination, material: item.car.material, vin: item.car.vin, cdo: item.car.internalNumber, color: item.car.color, destination: (_e = (_d = item.destination) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '', origin: (_g = (_f = item.origin) === null || _f === void 0 ? void 0 : _f.name) !== null && _g !== void 0 ? _g : '', status: (_j = (_h = item.status) === null || _h === void 0 ? void 0 : _h.name) !== null && _j !== void 0 ? _j : '', equipment: item.equipment ? 'Si' : 'No', body: item.body ? 'Si' : 'No', washed: item.washed ? 'Si' : 'No', review: item.review ? 'Si' : 'No', carrier: item.carrier ? item.carrier.name : '', customerName: (_m = (_l = (_k = item.request) === null || _k === void 0 ? void 0 : _k.customerInformation) === null || _l === void 0 ? void 0 : _l.name) !== null && _m !== void 0 ? _m : '', customerRut: (_q = (_p = (_o = item.request) === null || _o === void 0 ? void 0 : _o.customerInformation) === null || _p === void 0 ? void 0 : _p.rut) !== null && _q !== void 0 ? _q : '', customerEmail: (_t = (_s = (_r = item.request) === null || _r === void 0 ? void 0 : _r.customerInformation) === null || _s === void 0 ? void 0 : _s.email) !== null && _t !== void 0 ? _t : '', paymentMethod: (_x = (_w = (_v = (_u = item.request) === null || _u === void 0 ? void 0 : _u.advancePaymentInformation) === null || _v === void 0 ? void 0 : _v.method) === null || _w === void 0 ? void 0 : _w.name) !== null && _x !== void 0 ? _x : '', paymentNumber: (_0 = (_z = (_y = item.request) === null || _y === void 0 ? void 0 : _y.advancePaymentInformation) === null || _z === void 0 ? void 0 : _z.number) !== null && _0 !== void 0 ? _0 : '', uploadDate: item.uploadDate, estimatedArrival: item.estimatedArrival })).commit();
                                 return [2 /*return*/];
                             });
                         }); });
@@ -1196,7 +1192,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.exportExcel: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_8);
                         res.status(500).json(e_8);
                         return [3 /*break*/, 7];
@@ -1213,7 +1209,7 @@ var RequestController = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiList");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, orderBy = _a.orderBy, orderType = _a.orderType;
                         options = {
@@ -1281,7 +1277,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_9);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -1296,7 +1292,7 @@ var RequestController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiDetail");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         team = req.user.team._id;
                         id = req.params.id;
                         _a.label = 1;
@@ -1315,7 +1311,7 @@ var RequestController = /** @class */ (function () {
                         }
                         else {
                             res.status(404).json({
-                                message: "No se ha encontrado la solicitud ".concat(id),
+                                message: "No se ha encontrado la solicitud " + id,
                                 status: 404
                             });
                         }
@@ -1325,7 +1321,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_10);
                         res.status(500).json(e_10);
                         return [3 /*break*/, 4];
@@ -1341,7 +1337,7 @@ var RequestController = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiDetail");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         team = req.user.team._id;
                         id = req.params.id;
                         _a.label = 1;
@@ -1367,7 +1363,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_11);
                         res.status(500).json(e_11);
                         return [3 /*break*/, 4];
@@ -1402,10 +1398,10 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, request.remove()];
                     case 4:
                         _a.sent();
-                        server_1.io.to("request-list-".concat(team)).emit('DELETE_REQUEST', {
+                        server_1.io.to("request-list-" + team).emit('DELETE_REQUEST', {
                             idRequest: request._id
                         });
-                        server_1.io.to("request-detail-".concat(team)).emit('DELETE_REQUEST', {
+                        server_1.io.to("request-detail-" + team).emit('DELETE_REQUEST', {
                             idRequest: request._id
                         });
                         res.status(200).json({
@@ -1415,7 +1411,7 @@ var RequestController = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         res.status(404).json({
-                            message: "No se ha encontrado la solicitud ".concat(id),
+                            message: "No se ha encontrado la solicitud " + id,
                             status: 404
                         });
                         _a.label = 6;
@@ -1425,7 +1421,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequest: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_12);
                         res.status(500).json(e_12);
                         return [3 /*break*/, 8];
@@ -1458,11 +1454,11 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, item.remove()];
                     case 3:
                         _a.sent();
-                        server_1.io.to("request-list-".concat(team)).emit('DELETE_REQUEST_ITEM', {
+                        server_1.io.to("request-list-" + team).emit('DELETE_REQUEST_ITEM', {
                             idRequest: item.request._id,
                             item: item
                         });
-                        server_1.io.to("request-detail-".concat(team)).emit('DELETE_REQUEST_ITEM', {
+                        server_1.io.to("request-detail-" + team).emit('DELETE_REQUEST_ITEM', {
                             idRequest: item.request._id,
                             item: item
                         });
@@ -1477,10 +1473,10 @@ var RequestController = /** @class */ (function () {
                         return [4 /*yield*/, request_model_1["default"].deleteOne({ _id: item.request._id })];
                     case 6:
                         _a.sent();
-                        server_1.io.to("request-list-".concat(team)).emit('DELETE_REQUEST', {
+                        server_1.io.to("request-list-" + team).emit('DELETE_REQUEST', {
                             idRequest: item.request._id
                         });
-                        server_1.io.to("request-detail-".concat(team)).emit('DELETE_REQUEST', {
+                        server_1.io.to("request-detail-" + team).emit('DELETE_REQUEST', {
                             idRequest: item.request._id
                         });
                         _a.label = 7;
@@ -1492,7 +1488,7 @@ var RequestController = /** @class */ (function () {
                         return [3 /*break*/, 9];
                     case 8:
                         res.status(404).json({
-                            message: "No se ha encontrado la solicitud ".concat(id),
+                            message: "No se ha encontrado la solicitud " + id,
                             status: 404
                         });
                         _a.label = 9;
@@ -1502,7 +1498,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequestItem: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), ", params: ").concat(JSON.stringify(req.params)));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
                         logger_service_1["default"].error(e_13);
                         res.status(500).json(e_13);
                         return [3 /*break*/, 11];
@@ -1582,7 +1578,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.searhCar: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         logger_service_1["default"].error(e_14);
                         res.status(500).json(e_14);
                         return [3 /*break*/, 4];
@@ -1598,7 +1594,7 @@ var RequestController = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreateItem");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), " }"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         company = req.user.company;
                         team = req.user.team._id;
                         _a = req.body, car = _a.car, idRequest = _a.idRequest;
@@ -1643,11 +1639,11 @@ var RequestController = /** @class */ (function () {
                     case 6:
                         item = _b.sent();
                         request.update({ $set: { updatedAt: moment() } });
-                        server_1.io.to("request-list-".concat(team)).emit('CREATE_REQUEST_ITEM', {
+                        server_1.io.to("request-list-" + team).emit('CREATE_REQUEST_ITEM', {
                             idRequest: request._id,
                             item: item
                         });
-                        server_1.io.to("request-detail-".concat(team)).emit('CREATE_REQUEST_ITEM', {
+                        server_1.io.to("request-detail-" + team).emit('CREATE_REQUEST_ITEM', {
                             idRequest: request._id,
                             item: item
                         });
@@ -1666,7 +1662,7 @@ var RequestController = /** @class */ (function () {
                         console.log(e_15);
                         logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_15);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
@@ -1799,13 +1795,13 @@ var RequestController = /** @class */ (function () {
                     case 19:
                         _b.sent();
                         if (!cancelRequest_1) {
-                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem_1.request._id,
                                 item: requestItem_1
                             });
                         }
                         if (!cancelRequest_1) {
-                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem_1.request._id,
                                 item: requestItem_1
                             });
@@ -1825,7 +1821,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_16);
                         return [3 /*break*/, 24];
                     case 24: return [2 /*return*/];
@@ -1843,7 +1839,7 @@ var RequestController = /** @class */ (function () {
                         _a = req.user, team = _a.team, company = _a.company;
                         updateObject = req.body;
                         id = req.params.id;
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(updateObject), " }"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(updateObject) + " }");
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 10, , 11]);
@@ -1891,13 +1887,13 @@ var RequestController = /** @class */ (function () {
                     case 9:
                         _b.sent();
                         if (!cancelRequest_2) {
-                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: item.request._id,
                                 item: item
                             });
                         }
                         if (!cancelRequest_2) {
-                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: item.request._id,
                                 item: item
                             });
@@ -1911,7 +1907,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_17);
                         return [3 /*break*/, 11];
                     case 11: return [2 /*return*/];
@@ -1957,15 +1953,15 @@ var RequestController = /** @class */ (function () {
                                 error: err.message
                             });
                         });
-                        filename_1 = "attachments_".concat(requestItems._id, ".zip");
+                        filename_1 = "attachments_" + requestItems._id + ".zip";
                         archive_1.on('end', function () {
-                            console.log("".concat(filename_1, ": Archive wrote ").concat((archive_1.pointer() / (1024 * 1024)).toFixed(2), "MB"));
+                            console.log(filename_1 + ": Archive wrote " + (archive_1.pointer() / (1024 * 1024)).toFixed(2) + "MB");
                         });
                         res.attachment(filename_1);
                         filesToDownload = [];
                         filesToCompress = [];
                         _loop_1 = function (file) {
-                            var destDirectory = "/tmp/".concat(file._id, "_").concat(file.file.name);
+                            var destDirectory = "/tmp/" + file._id + "_" + file.file.name;
                             filesToDownload.push(function () { return _this.downloadFile(decodeURI(file.file.url), destDirectory); });
                             filesToCompress.push({
                                 destDirectory: destDirectory,
@@ -1984,10 +1980,10 @@ var RequestController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results, true)];
+                        _b = [__spreadArray([], results)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:
@@ -1999,7 +1995,7 @@ var RequestController = /** @class */ (function () {
                             });
                             setTimeout(function () {
                                 if (fs.existsSync(file.destDirectory)) {
-                                    console.log("clear ".concat(file.destDirectory));
+                                    console.log("clear " + file.destDirectory);
                                     fs.unlink(file.destDirectory, function (err) {
                                         if (err) {
                                             console.log(err);
@@ -2024,7 +2020,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_18);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
@@ -2109,12 +2105,12 @@ var RequestController = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 return [2 /*return*/, new Promise(function (resolve) {
-                        var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>".concat(vin, "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>");
+                        var data = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:sap-com:document:sap:rfc:functions\"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>" + vin + "</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>";
                         var config = {
                             headers: {
                                 'Content-Type': 'text/xml',
                                 'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-                                'Content-Length': "".concat(Buffer.byteLength(data))
+                                'Content-Length': "" + Buffer.byteLength(data)
                             },
                             auth: {
                                 username: 'USR_SOA_PI',
@@ -2122,7 +2118,7 @@ var RequestController = /** @class */ (function () {
                             }
                         };
                         var instance = axios_1["default"].create(config);
-                        instance.post("".concat(process.env.SALFA_SOAP, "/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos"), data)
+                        instance.post(process.env.SALFA_SOAP + "/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos", data)
                             .then(function (response) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 xml2js.parseString(response.data, function (error, result) {
@@ -2142,7 +2138,7 @@ var RequestController = /** @class */ (function () {
                                                 data.push({
                                                     vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
                                                     brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                                                    denomination: "".concat(denomination).concat(version ? " ".concat(version) : ''),
+                                                    denomination: "" + denomination + (version ? " " + version : ''),
                                                     material: material,
                                                     color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
                                                 });
@@ -2171,7 +2167,7 @@ var RequestController = /** @class */ (function () {
                         company = req.user.company;
                         team = req.user.team._id;
                         logger_service_1["default"].info("RequestController.uploadFile");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         if (!file) return [3 /*break*/, 15];
                         _a.label = 1;
@@ -2242,7 +2238,7 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.uploadFile: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_21);
                         /* istanbul ignore next */
@@ -2251,7 +2247,7 @@ var RequestController = /** @class */ (function () {
                     case 14: return [3 /*break*/, 16];
                     case 15:
                         logger_service_1["default"].error("RequestController.uploadFile: The file are required.");
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'La imagen es obligatoria.',

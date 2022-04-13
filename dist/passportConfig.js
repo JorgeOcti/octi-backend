@@ -63,7 +63,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, function (username
             return done(err);
         }
         if (!user) {
-            return done(undefined, false, { message: "username ".concat(username, " not found.") });
+            return done(undefined, false, { message: "username " + username + " not found." });
         }
         user.comparePassword(password, function (err, isMatch) {
             if (err) {
@@ -86,7 +86,7 @@ passport.use('local-without-password', new LocalStrategy({ usernameField: 'usern
             return done(err);
         }
         if (!user) {
-            return done(undefined, false, { message: "username ".concat(username, " not found.") });
+            return done(undefined, false, { message: "username " + username + " not found." });
         }
         return done(undefined, user);
     });

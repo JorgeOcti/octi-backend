@@ -13,6 +13,7 @@ var requestRouter = express.Router();
 exports.requestRouter = requestRouter;
 // web pages
 requestRouter.get('/requests/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/studio/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/reasons/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/payment-methods/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/channels/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);

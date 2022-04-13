@@ -72,7 +72,7 @@ var OperationTypeController = /** @class */ (function () {
                         return [4 /*yield*/, new operationType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("operation-type-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -82,7 +82,7 @@ var OperationTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("OperationTypeController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -110,7 +110,7 @@ var OperationTypeController = /** @class */ (function () {
                     case 3: return [4 /*yield*/, operationType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, update) }, { "new": true })];
                     case 4:
                         reason = _a.sent();
-                        server_1.io.to("operation-type-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(reason);
@@ -120,7 +120,7 @@ var OperationTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("OperationTypeController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/];
@@ -142,7 +142,7 @@ var OperationTypeController = /** @class */ (function () {
                         return [4 /*yield*/, operationType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("operation-type-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -152,7 +152,7 @@ var OperationTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("OperationTypeController.apiDelete: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_3);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -206,7 +206,7 @@ var OperationTypeController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("OperationTypeController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

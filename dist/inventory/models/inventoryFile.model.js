@@ -59,7 +59,7 @@ exports.inventoryFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/inventories/files/".concat(attachment.team, "/").concat(attachment.inventory, "/").concat(attachment.venue, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
+            return "/inventories/files/" + attachment.team + "/" + attachment.inventory + "/" + attachment.venue + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {

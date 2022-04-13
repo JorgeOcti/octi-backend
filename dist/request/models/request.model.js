@@ -168,7 +168,7 @@ exports.requestSchema.plugin(mongooseCrate, {
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
         path: function (attachment) {
-            return "/request/files/".concat(attachment.team, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
+            return "/request/files/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {

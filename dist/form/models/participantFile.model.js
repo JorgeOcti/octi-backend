@@ -58,7 +58,7 @@ exports.participantFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/forms/files/".concat(attachment.company, "/").concat(attachment.form, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
+            return "/forms/files/" + attachment.company + "/" + attachment.form + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {

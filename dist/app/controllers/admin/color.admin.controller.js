@@ -71,7 +71,7 @@ var AdminColorController = /** @class */ (function (_super) {
                 team = req.user.team._id;
                 req.context = {
                     name: 'Color',
-                    socketName: "color-list-".concat(team),
+                    socketName: "color-list-" + team,
                     data: { team: team, name: name },
                     filter: { team: team, name: name }
                 };
@@ -89,7 +89,7 @@ var AdminColorController = /** @class */ (function (_super) {
                 name = req.body.name;
                 req.context = {
                     name: 'Color',
-                    socketName: "color-list-".concat(team),
+                    socketName: "color-list-" + team,
                     filter: { team: team, _id: id },
                     data: { name: name }
                 };
@@ -106,7 +106,7 @@ var AdminColorController = /** @class */ (function (_super) {
                 team = req.user.team._id;
                 req.context = {
                     name: 'Color',
-                    socketName: "color-list-".concat(team),
+                    socketName: "color-list-" + team,
                     filter: { team: team, _id: id }
                 };
                 _super.prototype.apiDelete.call(this, req, res);

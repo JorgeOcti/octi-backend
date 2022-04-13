@@ -142,7 +142,7 @@ var PlanningController = /** @class */ (function () {
                     case 9: return [4 /*yield*/, planning_model_1["default"].insertMany(planningCars)];
                     case 10:
                         _c.sent();
-                        server_1.io.to("planning-list-".concat(team)).emit('REFRESH', {
+                        server_1.io.to("planning-list-" + team).emit('REFRESH', {
                             update: true
                         });
                         res.status(201)

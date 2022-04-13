@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var excel = require("exceljs");
@@ -321,7 +317,7 @@ var FormController = /** @class */ (function () {
                                 else {
                                     // set header
                                     res.setHeader('Content-Type', 'application/pdf');
-                                    res.setHeader('Content-disposition', "inline; filename=".concat(participant_1._id.toString(), ".pdf"));
+                                    res.setHeader('Content-disposition', "inline; filename=" + participant_1._id.toString() + ".pdf");
                                     // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
                                     // send a status code of 200 OK
                                     res.statusCode = 200;
@@ -354,7 +350,7 @@ var FormController = /** @class */ (function () {
                     case 0:
                         team = req.user.team._id;
                         logger_service_1["default"].info("list forms");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -410,7 +406,7 @@ var FormController = /** @class */ (function () {
                         id = req.params.id;
                         team = req.user.team._id;
                         logger_service_1["default"].info("detail forms");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, {form: ").concat(id, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, {form: " + id + "}}");
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 6, , 7]);
@@ -631,9 +627,9 @@ var FormController = /** @class */ (function () {
                             })];
                     case 5:
                         scales = _a.sent();
-                        scales = __spreadArray(__spreadArray([], scales, true), extraScales, true);
+                        scales = __spreadArray(__spreadArray([], scales), extraScales);
                         if (extraSection.questions.length) {
-                            form.sections = __spreadArray(__spreadArray([], form.sections, true), [extraSection], false);
+                            form.sections = __spreadArray(__spreadArray([], form.sections), [extraSection]);
                         }
                         baseQuestion_1 = {
                             _id: '',
@@ -680,7 +676,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detail form: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_3);
                         /* istanbul ignore next */
@@ -708,7 +704,7 @@ var FormController = /** @class */ (function () {
                         _b = req.body, vin = _b.vin, answers = _b.answers, transmittalItem = _b.transmittalItem, transmittal = _b.transmittal;
                         _c = req.user, company = _c.company, venue = _c.venue, team = _c.team;
                         logger_service_1["default"].info("complete");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
                         // validate answers in body
                         if (!answers) {
                             return [2 /*return*/, res.status(400).json({
@@ -863,7 +859,7 @@ var FormController = /** @class */ (function () {
                                         }
                                         // concat allImages
                                         if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
-                                            allImages = __spreadArray(__spreadArray([], answer.images, true), allImages, true);
+                                            allImages = __spreadArray(__spreadArray([], answer.images), allImages);
                                         }
                                         // delete images no used
                                         if (choice && !choice.requireImage && answer && answer.images && answer.images.length) {
@@ -1007,11 +1003,11 @@ var FormController = /** @class */ (function () {
                     case 21:
                         requestItem = _l.sent();
                         if (requestItem) {
-                            server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
-                            server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
@@ -1019,7 +1015,7 @@ var FormController = /** @class */ (function () {
                         _l.label = 22;
                     case 22:
                         // end update request when check item
-                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL_ITEM', {
+                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
                         });
                         _l.label = 23;
@@ -1094,17 +1090,17 @@ var FormController = /** @class */ (function () {
                             }])];
                     case 31:
                         newTransmittal = _l.sent();
-                        server_1.io.to("transmittal-list-".concat(team._id)).emit('UPDATE_TRANSMITTAL', {
+                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         if (requestItems.length) {
                             for (_g = 0, requestItems_1 = requestItems; _g < requestItems_1.length; _g++) {
                                 requestItem = requestItems_1[_g];
-                                server_1.io.to("request-list-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                                server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                     idRequest: requestItem.request._id,
                                     item: requestItem
                                 });
-                                server_1.io.to("request-detail-".concat(team._id)).emit('UPDATE_REQUEST_ITEM', {
+                                server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                     idRequest: requestItem.request._id,
                                     item: requestItem
                                 });
@@ -1130,16 +1126,16 @@ var FormController = /** @class */ (function () {
                     case 35:
                         _l.sent();
                         // send refresh with websocket to dashboard list
-                        server_1.io.to("dashboard-vin-view-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("dashboard-vin-view-" + team._id).emit('REFRESH', {
                             update: true,
                             car: newParticipant._id,
                             notification: {
                                 title: 'Vehículo revisado',
-                                text: "".concat(req.user.firstName, " ").concat(req.user.lastName, " revis\u00F3 ").concat(car_1.brand, " (").concat(car_1.denomination, ") en ").concat(updatedUser.venue.name, ".")
+                                text: req.user.firstName + " " + req.user.lastName + " revis\u00F3 " + car_1.brand + " (" + car_1.denomination + ") en " + updatedUser.venue.name + "."
                             }
                         });
                         // send refresh with websocket to dashboard detail
-                        _j = (_h = server_1.io.to("dashboard-vin-detail-".concat(team._id, "-").concat(car_1._id))).emit;
+                        _j = (_h = server_1.io.to("dashboard-vin-detail-" + team._id + "-" + car_1._id)).emit;
                         _k = ["ADD_PARTICIPANT"];
                         return [4 /*yield*/, participant_model_1["default"]
                                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
@@ -1201,21 +1197,21 @@ var FormController = /** @class */ (function () {
                         if (alerts.length && car_1) {
                             alerts.forEach(function (alert) {
                                 alert.users.forEach(function (user) {
-                                    var userName = "".concat(user.firstName, " ").concat(user.lastName);
+                                    var userName = user.firstName + " " + user.lastName;
                                     if (user.venuesPermissions(true).includes(venue._id) && user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: "Alert qualification",
-                                            to: "\"\"<".concat(user.email, ">"),
-                                            subject: "ALERTA: ".concat(alert.name),
-                                            text: "Hola ".concat(userName, "\n                        Se ha evaluado un VIN con calificaci\u00F3n ").concat(formQualification_1.toFixed(0), "%\n\n                        Datos del Vehiculo\n                        VIN: ").concat(car_1 ? car_1.vin : '', "\n                        MARCA: ").concat(car_1 && car_1.brand ? car_1.brand : '', "\n\n                        Para ver el detalle has click aqu\u00ED\n                        ").concat(process.env.SITE_URL, "cars/").concat(car_1._id, "\n\n                        \u00A9 2021 OSA SpA. Todos los derechos reservados."),
+                                            to: "\"\"<" + user.email + ">",
+                                            subject: "ALERTA: " + alert.name,
+                                            text: "Hola " + userName + "\n                        Se ha evaluado un VIN con calificaci\u00F3n " + formQualification_1.toFixed(0) + "%\n\n                        Datos del Vehiculo\n                        VIN: " + (car_1 ? car_1.vin : '') + "\n                        MARCA: " + (car_1 && car_1.brand ? car_1.brand : '') + "\n\n                        Para ver el detalle has click aqu\u00ED\n                        " + process.env.SITE_URL + "cars/" + car_1._id + "\n\n                        \u00A9 2021 OSA SpA. Todos los derechos reservados.",
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName: userName,
                                                 brand: car_1 && car_1.brand ? car_1.brand : '',
                                                 vin: car_1 && car_1.vin ? car_1.vin : '',
                                                 qualification: formQualification_1.toFixed(0),
-                                                url: "".concat(process.env.SITE_URL, "cars/").concat(car_1._id)
+                                                url: process.env.SITE_URL + "cars/" + car_1._id
                                             }
                                         }).priority('high').attempts(5).save();
                                     }
@@ -1281,7 +1277,7 @@ var FormController = /** @class */ (function () {
                         company = req.user.company;
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         logger_service_1["default"].info("uploadFile");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, {form: ").concat(id, ", file: ").concat(JSON.stringify(file), "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, {form: " + id + ", file: " + JSON.stringify(file) + "}}");
                         if (!file) return [3 /*break*/, 6];
                         _a.label = 1;
                     case 1:
@@ -1356,7 +1352,7 @@ var FormController = /** @class */ (function () {
                         form = req.body.form;
                         team = req.user.team._id;
                         logger_service_1["default"].info("changePreferred");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 9, , 10]);
@@ -1379,7 +1375,7 @@ var FormController = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         logger_service_1["default"].error("changePreferred: Formulario no encontrado");
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(400).json({
                             message: 'Formulario no encontrado',
                             status: 400
@@ -1388,7 +1384,7 @@ var FormController = /** @class */ (function () {
                     case 6: return [3 /*break*/, 8];
                     case 7:
                         logger_service_1["default"].error("changePreferred: Usuario no encontrado");
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(400).json({
                             message: 'Usuario no encontrado',
                             status: 400
@@ -1401,7 +1397,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("changePreferred: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_7);
                         res.status(400).json({
@@ -1505,7 +1501,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard damages: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_8);
                         res.status(400).json({
@@ -1582,10 +1578,10 @@ var FormController = /** @class */ (function () {
                         _c.label = 2;
                     case 2:
                         if (!promises.length) return [3 /*break*/, 4];
-                        _a = [__spreadArray([], participantsWithDamages, true)];
+                        _a = [__spreadArray([], participantsWithDamages)];
                         return [4 /*yield*/, bluebird.all(promises.splice(0, 500))];
                     case 3:
-                        participantsWithDamages = __spreadArray.apply(void 0, _a.concat([_c.sent(), true]));
+                        participantsWithDamages = __spreadArray.apply(void 0, _a.concat([_c.sent()]));
                         return [3 /*break*/, 2];
                     case 4:
                         for (_b = 0, participantsWithDamages_1 = participantsWithDamages; _b < participantsWithDamages_1.length; _b++) {
@@ -1624,7 +1620,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard damages: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_9);
                         res.status(400).json({
@@ -1756,7 +1752,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing derco: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_10);
                         res.status(400).json({
@@ -2047,7 +2043,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_11);
                         res.status(400).json({
@@ -2164,24 +2160,24 @@ var FormController = /** @class */ (function () {
                                                 var choice0Gas = null;
                                                 var choice1Gas = null;
                                                 if (p0) {
-                                                    var answer0Gas_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
+                                                    var answer0Gas_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
                                                     if (answer0Gas_1)
                                                         choice0Gas = answer0Gas_1.scale.choices.find(function (c) { return c._id.toString() == answer0Gas_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1Gas_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
+                                                    var answer1Gas_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
                                                     if (answer1Gas_1)
                                                         choice1Gas = answer1Gas_1.scale.choices.find(function (c) { return c._id.toString() == answer1Gas_1.answer.toString(); });
                                                 }
                                                 var choice0Paint = null;
                                                 var choice1Paint = null;
                                                 if (p0) {
-                                                    var answer0Paint_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
+                                                    var answer0Paint_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
                                                     if (answer0Paint_1)
                                                         choice0Paint = answer0Paint_1.scale.choices.find(function (c) { return c._id.toString() == answer0Paint_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1Paint_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
+                                                    var answer1Paint_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
                                                     if (answer1Paint_1)
                                                         choice1Paint = answer1Paint_1.scale.choices.find(function (c) { return c._id.toString() == answer1Paint_1.answer.toString(); });
                                                 }
@@ -2189,12 +2185,12 @@ var FormController = /** @class */ (function () {
                                                 var choice0SheetMetal = null;
                                                 var choice1SheetMetal = null;
                                                 if (p0) {
-                                                    var answer0SheetMetal_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
+                                                    var answer0SheetMetal_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
                                                     if (answer0SheetMetal_1)
                                                         choice0SheetMetal = answer0SheetMetal_1.scale.choices.find(function (c) { return c._id.toString() == answer0SheetMetal_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1SheetMetal_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
+                                                    var answer1SheetMetal_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
                                                     if (answer1SheetMetal_1)
                                                         choice1SheetMetal = answer1SheetMetal_1.scale.choices.find(function (c) { return c._id.toString() == answer1SheetMetal_1.answer.toString(); });
                                                 }
@@ -2232,7 +2228,7 @@ var FormController = /** @class */ (function () {
                                     case 2:
                                         _b.sent();
                                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
+                                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-" + moment().format('YYYY-MM-DD') + ".xlsx");
                                         return [2 /*return*/, { value: res.sendFile(tempFilePath) }];
                                 }
                             });
@@ -2257,7 +2253,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard revisiones: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_12);
                         res.status(400).json({
@@ -2363,7 +2359,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("dashboard timing: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_13);
                         res.status(400).json({
@@ -2415,8 +2411,8 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.getForm = function (filter) {
         var _this = this;
-        var keyCache = "form-".concat(filter._id);
-        logger_service_1["default"].debug("keyCache ".concat(keyCache));
+        var keyCache = "form-" + filter._id;
+        logger_service_1["default"].debug("keyCache " + keyCache);
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -2561,7 +2557,7 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.getScales = function (filter) {
         var _this = this;
-        var keyCache = "scales-".concat(JSON.stringify(filter));
+        var keyCache = "scales-" + JSON.stringify(filter);
         return new Promise(function (resolve, reject) {
             redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -2631,7 +2627,7 @@ var FormController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("position create. Error");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_14);
                         res.status(400).json({

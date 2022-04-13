@@ -78,7 +78,7 @@ var BillingQueue = /** @class */ (function () {
             try {
                 var now = moment().subtract(1, 'day');
                 var _a = [now.format('YYYY'), now.format('MM'), now.format('DD')], year = _a[0], month = _a[1], day = _a[2];
-                request.get("https://mindicador.cl/api/uf/".concat(day, "-").concat(month, "-").concat(year), function (err, resp, body) {
+                request.get("https://mindicador.cl/api/uf/" + day + "-" + month + "-" + year, function (err, resp, body) {
                     if (err) {
                         reject(err);
                     }
@@ -99,7 +99,7 @@ var BillingQueue = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             var now = moment().subtract(1, 'day');
             var _a = [now.format('YYYY'), now.format('MM'), now.format('DD')], year = _a[0], month = _a[1], day = _a[2];
-            request.get("https://api.sbif.cl/api-sbifv3/recursos_api/dolar/".concat(year, "/").concat(month, "/dias/").concat(day, "?apikey=").concat(_this.apiKey, "&formato=json"), function (err, resp, body) {
+            request.get("https://api.sbif.cl/api-sbifv3/recursos_api/dolar/" + year + "/" + month + "/dias/" + day + "?apikey=" + _this.apiKey + "&formato=json", function (err, resp, body) {
                 if (err) {
                     reject(err);
                 }
@@ -233,8 +233,8 @@ var BillingQueue = /** @class */ (function () {
     BillingQueue.prototype.generateHTML = function (invoice) {
         moment.locale('es');
         moment.tz.setDefault('America/Santiago');
-        var css = fs.readFileSync("".concat(path.join(__dirname, '../../../views/'), "billing/pdf/style.css"), 'utf8');
-        var templatePath = "".concat(path.join(__dirname, '../../../views/'), "billing/pdf/index.pug");
+        var css = fs.readFileSync(path.join(__dirname, '../../../views/') + "billing/pdf/style.css", 'utf8');
+        var templatePath = path.join(__dirname, '../../../views/') + "billing/pdf/index.pug";
         return general_utils_1["default"].generateHtmlFromPugFile(templatePath, {
             css: css.replace(/(\r\n|\n|\r)/gm, ''),
             moment: moment,
@@ -261,15 +261,15 @@ var BillingQueue = /** @class */ (function () {
                         if (newInvoice_1) {
                             HtmlPdf
                                 .create(this.generateHTML(newInvoice_1), this.PDFconfig)
-                                .toFile("/tmp/invoice-".concat(invoice._id, ".pdf"), function (err, res) { return __awaiter(_this, void 0, void 0, function () {
+                                .toFile("/tmp/invoice-" + invoice._id + ".pdf", function (err, res) { return __awaiter(_this, void 0, void 0, function () {
                                 var _this = this;
                                 return __generator(this, function (_a) {
                                     if (err)
                                         return [2 /*return*/, console.log(err)];
                                     invoice.attach('file', {
-                                        originalname: "invoice-".concat(invoice._id, ".pdf"),
-                                        team: "".concat(newInvoice_1.team._id, " ").concat(newInvoice_1.team.name),
-                                        company: "".concat(newInvoice_1.company._id, " ").concat(newInvoice_1.company.name),
+                                        originalname: "invoice-" + invoice._id + ".pdf",
+                                        team: newInvoice_1.team._id + " " + newInvoice_1.team.name,
+                                        company: newInvoice_1.company._id + " " + newInvoice_1.company.name,
                                         createdAt: moment(newInvoice_1.createdAt).subtract(1, 'month').format('YYYY-MM'),
                                         path: res.filename
                                     }, function (error) { return __awaiter(_this, void 0, void 0, function () {
@@ -310,12 +310,12 @@ var BillingQueue = /** @class */ (function () {
             var notification = _a[_i];
             app_1.queue.create('email', {
                 from: '',
-                title: "Billing for ".concat(invoice.company.name),
-                to: "\"".concat(notification.name, "\"<").concat(notification.email),
-                subject: "Billing ".concat(invoice.company.name, " - ").concat(period),
+                title: "Billing for " + invoice.company.name,
+                to: "\"" + notification.name + "\"<" + notification.email,
+                subject: "Billing " + invoice.company.name + " - " + period,
                 text: "",
                 attachments: {
-                    filename: "".concat(invoice.company.name, " ").concat(period, ".pdf"),
+                    filename: invoice.company.name + " " + period + ".pdf",
                     path: decodeURI(invoice.file.url)
                 },
                 view: 'billing/report',
@@ -352,7 +352,7 @@ var BillingQueue = /** @class */ (function () {
                     case 3:
                         if (!(_i < companies_1.length)) return [3 /*break*/, 11];
                         company = companies_1[_i];
-                        console.log("calculating billing ".concat(company.name));
+                        console.log("calculating billing " + company.name);
                         return [4 /*yield*/, this.calculateCarsInInventory(company)];
                     case 4:
                         inventoryCars = _a.sent();
@@ -392,7 +392,7 @@ var BillingQueue = /** @class */ (function () {
                         this.createPDF(invoice, company);
                         return [3 /*break*/, 10];
                     case 9:
-                        console.log("".concat(period, " ").concat(company.name, " ya existe!!!."));
+                        console.log(period + " " + company.name + " ya existe!!!.");
                         _a.label = 10;
                     case 10:
                         _i++;

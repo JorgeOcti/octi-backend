@@ -167,7 +167,7 @@ var MilestoneController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
@@ -210,7 +210,7 @@ var MilestoneController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("MilestoneController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];

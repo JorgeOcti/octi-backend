@@ -42,12 +42,14 @@ var user_model_1 = require("../models/user.model");
 var user_model_2 = require("../models/user.model");
 var venue_model_1 = require("../models/venue.model");
 var push_service_1 = require("../../services/push.service");
+var permission_model_1 = require("../models/permission.model");
 var UserController = /** @class */ (function () {
     function UserController() {
         this.apiChangePassword = this.apiChangePassword.bind(this);
         this.apiListVenues = this.apiListVenues.bind(this);
         this.apiListDrivers = this.apiListDrivers.bind(this);
         this.getUsers = this.getUsers.bind(this);
+        this.getStatsAccessUser = this.getStatsAccessUser.bind(this);
         this.apiChangeVenue = this.apiChangeVenue.bind(this);
     }
     UserController.prototype.apiListDrivers = function (req, res) {
@@ -57,7 +59,7 @@ var UserController = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         logger_service_1["default"].info("UserController.apiListDrivers");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         options = {
@@ -113,7 +115,7 @@ var UserController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("UserController.apiListDrivers: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -184,7 +186,7 @@ var UserController = /** @class */ (function () {
                     case 0:
                         team = req.user.team._id;
                         logger_service_1["default"].info("apiListVenues");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         _d.label = 1;
                     case 1:
                         _d.trys.push([1, 6, , 7]);
@@ -241,7 +243,7 @@ var UserController = /** @class */ (function () {
                         team = req.user.team._id;
                         venue = req.body.venue;
                         logger_service_1["default"].info("apiChangeVenue");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 7, , 8]);
@@ -294,6 +296,59 @@ var UserController = /** @class */ (function () {
                     return reject(err);
                 }
                 return resolve(result);
+            });
+        });
+    };
+    UserController.prototype.getStatsAccessUser = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, permissions, options, filter, users, e_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        logger_service_1["default"].info("UserController.apiListStatsUser");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        team = req.user.team._id;
+                        return [4 /*yield*/, permission_model_1["default"].find({
+                                codeName: { $in: ['viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio'] }
+                            })];
+                    case 1:
+                        permissions = _a.sent();
+                        logger_service_1["default"].info(JSON.stringify(permissions));
+                        options = {
+                            sort: {
+                                firstName: 1
+                            },
+                            select: {
+                                firstName: true,
+                                lastName: true
+                            }
+                        };
+                        filter = {
+                            team: team,
+                            userPermissions: { $in: permissions.map(function (p) { return p._id; }) }
+                        };
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.getUsers(filter, options)];
+                    case 3:
+                        users = _a.sent();
+                        /* istanbul ignore if  */
+                        res.json({
+                            results: users.docs,
+                            status: 200
+                        });
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_5 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("UserController.apiListDrivers: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_5);
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
             });
         });
     };

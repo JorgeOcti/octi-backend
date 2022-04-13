@@ -51,7 +51,9 @@ exports.io = void 0;
 var bluebird = require("bluebird");
 var jwt = require("jsonwebtoken");
 var mongoose = require("mongoose");
+// @ts-ignore
 var socket_io_1 = require("socket.io");
+// @ts-ignore
 var redis_adapter_1 = require("@socket.io/redis-adapter");
 var app_1 = require("./app");
 var logger_service_1 = require("./services/logger.service");
@@ -76,16 +78,17 @@ var NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
 var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) + NODE_APP_INSTANCE, function () {
     /* istanbul ignore if */
     if (app_1["default"].get('env') !== 'testing') {
-        console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
-        console.log("".concat(logger_service_1["default"].colors.brighCyan, "OSA-ANDES ").concat(logger_service_1["default"].colors.white, "v2.1.3 ").concat(logger_service_1["default"].colors.red, "RELEASE ").concat(logger_service_1["default"].colors.brighGreen, "NODE ").concat(logger_service_1["default"].colors.white).concat(process.version).concat(logger_service_1["default"].colors.reset));
-        console.log("".concat(logger_service_1["default"].colors.magenta, "------------------------").concat(logger_service_1["default"].colors.reset));
-        console.log("process.env.ENV ".concat(process.env.ENV));
+        console.log(logger_service_1["default"].colors.magenta + "------------------------" + logger_service_1["default"].colors.reset);
+        console.log(logger_service_1["default"].colors.brighCyan + "OSA-ANDES " + logger_service_1["default"].colors.white + "v2.1.3 " + logger_service_1["default"].colors.red + "RELEASE " + logger_service_1["default"].colors.brighGreen + "NODE " + logger_service_1["default"].colors.white + process.version + logger_service_1["default"].colors.reset);
+        console.log(logger_service_1["default"].colors.magenta + "------------------------" + logger_service_1["default"].colors.reset);
+        console.log("process.env.ENV " + process.env.ENV);
         console.log('is running at http://localhost:%s in %s mode', app_1["default"].get('port'), app_1["default"].get('env'));
-        console.log("".concat(logger_service_1["default"].colors.brightBlack, "Press CTRL-C to stop").concat(logger_service_1["default"].colors.reset));
+        console.log(logger_service_1["default"].colors.brightBlack + "Press CTRL-C to stop" + logger_service_1["default"].colors.reset);
     }
 });
+// @ts-ignore
 exports.io = new socket_io_1.Server(server);
-exports.io.adapter((0, redis_adapter_1.createAdapter)((0, redis_service_1.createRedisClient)(), (0, redis_service_1.createRedisClient)()));
+exports.io.adapter(redis_adapter_1.createAdapter(redis_service_1.createRedisClient(), redis_service_1.createRedisClient()));
 /* istanbul ignore next */
 exports.io.use(function (socket, next) { return __awaiter(void 0, void 0, void 0, function () {
     var token, msgErrorAuthentication, user, e_1;

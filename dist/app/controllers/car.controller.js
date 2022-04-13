@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var bluebird = require("bluebird");
@@ -372,10 +368,10 @@ var CarController = /** @class */ (function () {
                         inventory = req.body.inventory;
                         team = req.user.team._id;
                         logger_service_1["default"].info("checkVIN");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, body: ").concat(JSON.stringify(req.body), "}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
                         if (vin) {
                             vin = vin.replace(/[\W_]+/g, '');
-                            logger_service_1["default"].info("VIN fixed: ".concat(vin));
+                            logger_service_1["default"].info("VIN fixed: " + vin);
                         }
                         if (!inventory) return [3 /*break*/, 10];
                         _c.label = 1;
@@ -388,7 +384,7 @@ var CarController = /** @class */ (function () {
                         inventoryStatus = _c.sent();
                         if (!(inventoryStatus && inventoryStatus.status !== inventory_model_1.ChoicesStatusInventory.inProcess)) return [3 /*break*/, 3];
                         logger_service_1["default"].error("checkVIN: Este inventario ya no se encuentra disponible.");
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(404).json({
                             message: 'Este inventario ya no se encuentra disponible.',
                             status: 404
@@ -476,7 +472,7 @@ var CarController = /** @class */ (function () {
                             }
                             else {
                                 logger_service_1["default"].error("checkVIN: VIN no v\u00E1lido 1.");
-                                logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                                logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                                 res.status(400).json({
                                     message: 'VIN no válido.',
                                     status: 400
@@ -485,7 +481,7 @@ var CarController = /** @class */ (function () {
                         }
                         else {
                             logger_service_1["default"].error("checkVIN: Este inventario ya no se encuentra disponible.");
-                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                             res.status(404).json({
                                 message: 'Este inventario ya no se encuentra disponible.',
                                 status: 404
@@ -494,7 +490,7 @@ var CarController = /** @class */ (function () {
                         return [3 /*break*/, 7];
                     case 6:
                         logger_service_1["default"].error("checkVIN: VIN no v\u00E1lido 2.");
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(400).json({
                             message: 'VIN no válido.',
                             status: 400
@@ -508,7 +504,7 @@ var CarController = /** @class */ (function () {
                             /* istanbul ignore next */
                             logger_service_1["default"].error("checkVIN: Async Error.");
                             /* istanbul ignore next */
-                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                             /* istanbul ignore next */
                             logger_service_1["default"].error(e_4);
                             res.status(500).json(e_4);
@@ -525,7 +521,7 @@ var CarController = /** @class */ (function () {
                         }
                         if (vin2) {
                             if (vin2[0] === '0') {
-                                vinRegex = new RegExp("".concat(vin2.substr(vin2.length - 5), "$"), 'i');
+                                vinRegex = new RegExp(vin2.substr(vin2.length - 5) + "$", 'i');
                                 inventoryQuery.vin2 = { $regex: vinRegex };
                             }
                             else {
@@ -551,7 +547,7 @@ var CarController = /** @class */ (function () {
                         }
                         else {
                             logger_service_1["default"].error("checkVIN: VIN no encontrado.");
-                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                             res.status(400).json({
                                 message: 'VIN no encontrado.',
                                 status: 400
@@ -565,7 +561,7 @@ var CarController = /** @class */ (function () {
                             /* istanbul ignore next */
                             logger_service_1["default"].error("checkVIN: Async Error.");
                             /* istanbul ignore next */
-                            logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                             /* istanbul ignore next */
                             logger_service_1["default"].error(e_5);
                             res.status(500).send(e_5);
@@ -925,12 +921,12 @@ var CarController = /** @class */ (function () {
                             max = i + proyectionInterval;
                             if (i === 0) {
                                 proyection.push({
-                                    $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, "".concat(i, "-").concat(max), '']
+                                    $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, i + "-" + max, '']
                                 });
                             }
                             else {
                                 proyection.push({
-                                    $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, "".concat(i, "-").concat(max), '']
+                                    $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, i + "-" + max, '']
                                 });
                             }
                         }
@@ -950,7 +946,7 @@ var CarController = /** @class */ (function () {
                                         range: {
                                             $concat: __spreadArray([
                                                 { $cond: [{ $lt: ['$qualification', 0] }, 'Unknown', ''] }
-                                            ], proyection, true)
+                                            ], proyection)
                                         }
                                     }
                                 }, {
@@ -1020,12 +1016,12 @@ var CarController = /** @class */ (function () {
                 var question = _c[_b];
                 if (['scale', 'accessory', 'numeric-scale'].includes(question.kind)) {
                     columns.push({
-                        header: "".concat(form.name, " - ").concat(question.question), key: question._id.toString(), width: 30
+                        header: form.name + " - " + question.question, key: question._id.toString(), width: 30
                     });
                 }
                 else if (question.kind === 'damage') {
                     columns.push({
-                        header: "".concat(form.name, " - ").concat(question.question), key: question._id.toString(), width: 30, style: {
+                        header: form.name + " - " + question.question, key: question._id.toString(), width: 30, style: {
                             numFmt: '0'
                         }
                     });
@@ -1034,12 +1030,12 @@ var CarController = /** @class */ (function () {
         }
         if (form.shippingVenue) {
             columns.push({
-                header: "".concat(form.name, " - ").concat(form.shippingVenueText), key: "".concat(form._id.toString(), "-shipping"), width: 30
+                header: form.name + " - " + form.shippingVenueText, key: form._id.toString() + "-shipping", width: 30
             });
         }
         if (form.receptionVenue) {
             columns.push({
-                header: "".concat(form.name, " - ").concat(form.receptionVenueText), key: "".concat(form._id.toString(), "-reception"), width: 30
+                header: form.name + " - " + form.receptionVenueText, key: form._id.toString() + "-reception", width: 30
             });
         }
         return columns;
@@ -1080,7 +1076,7 @@ var CarController = /** @class */ (function () {
             denomination: (_f = (_e = participant.car) === null || _e === void 0 ? void 0 : _e.denomination) !== null && _f !== void 0 ? _f : '',
             color: (_h = (_g = participant.car) === null || _g === void 0 ? void 0 : _g.color) !== null && _h !== void 0 ? _h : '',
             team: participant.team.name,
-            user: participant.user ? "".concat(participant.user.firstName, " ").concat(participant.user.lastName) : '',
+            user: participant.user ? participant.user.firstName + " " + participant.user.lastName : '',
             company: participant.company.name,
             venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
             vin: participant.car ? participant.car.vin : '',
@@ -1102,10 +1098,10 @@ var CarController = /** @class */ (function () {
             }
         }
         if (participant.shippingVenue) {
-            sectionAnswers = __assign(__assign({}, sectionAnswers), (_a = {}, _a["".concat(participant.form.toString(), "-shipping")] = participant.sendTo.name, _a));
+            sectionAnswers = __assign(__assign({}, sectionAnswers), (_a = {}, _a[participant.form.toString() + "-shipping"] = participant.sendTo.name, _a));
         }
         if (participant.receptionVenue) {
-            sectionAnswers = __assign(__assign({}, sectionAnswers), (_b = {}, _b["".concat(participant.form.toString(), "-reception")] = participant.receiveFrom.name, _b));
+            sectionAnswers = __assign(__assign({}, sectionAnswers), (_b = {}, _b[participant.form.toString() + "-reception"] = participant.receiveFrom.name, _b));
         }
         return __assign(__assign({}, datum), sectionAnswers);
     };
@@ -1134,7 +1130,7 @@ var CarController = /** @class */ (function () {
                             };
                         }
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
+                        res.setHeader('Content-Disposition', "attachment; filename=revisiones-" + moment().format('YYYY-MM-DD') + ".xlsx");
                         return [4 /*yield*/, participant_model_1["default"].find(queryFilter).distinct('form')];
                     case 1:
                         forms = _b.sent();
@@ -1760,12 +1756,12 @@ var CarController = /** @class */ (function () {
                     // tslint:disable-next-line: forin
                     for (d in damages) {
                         idx = parseInt(d, 10) + 1;
-                        row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: "".concat(participant.user.firstName, " ").concat(participant.user.lastName), damages: "".concat(damages.length), has_damages: damages.length > 0 ? 'Sí' : 'No', damage: idx, position: damages[d].position ? damages[d].position.name : '-', kind: damages[d].kind.name, part: damages[d].part.name }, extraRow);
+                        row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: participant.user.firstName + " " + participant.user.lastName, damages: "" + damages.length, has_damages: damages.length > 0 ? 'Sí' : 'No', damage: idx, position: damages[d].position ? damages[d].position.name : '-', kind: damages[d].kind.name, part: damages[d].part.name }, extraRow);
                         rows.push(row);
                     }
                 }
                 else {
-                    row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: "".concat(participant.user.firstName, " ").concat(participant.user.lastName), damages: "".concat(damages.length), has_damages: damages.length > 0 ? 'Sí' : 'No', damage: '-', position: '-', kind: '-', part: '-' }, extraRow);
+                    row = __assign({ vin: participant.car.vin, denomination: participant.car.denomination, color: participant.car.color, brand: participant.car.brand, venue: participant.venue.name, created_at: moment(participant.createdAt).toDate(), user: participant.user.firstName + " " + participant.user.lastName, damages: "" + damages.length, has_damages: damages.length > 0 ? 'Sí' : 'No', damage: '-', position: '-', kind: '-', part: '-' }, extraRow);
                     rows.push(row);
                 }
                 resolve(rows);
@@ -1856,7 +1852,7 @@ var CarController = /** @class */ (function () {
                         return [4 /*yield*/, bluebird.all(revisionsToProcess.splice(0, 100))];
                     case 3:
                         data = _b.apply(_a, _c.concat([_d.sent()]));
-                        results = __spreadArray(__spreadArray([], results, true), data, true);
+                        results = __spreadArray(__spreadArray([], results), data);
                         return [3 /*break*/, 2];
                     case 4:
                         resolve(results);
@@ -1882,7 +1878,7 @@ var CarController = /** @class */ (function () {
                         team = req.user.team._id;
                         changeperiods = req.query.changeperiods;
                         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', "attachment; filename=da\u00F1os-".concat(moment().format('YYYY-MM-DD'), ".xlsx"));
+                        res.setHeader('Content-Disposition', "attachment; filename=da\u00F1os-" + moment().format('YYYY-MM-DD') + ".xlsx");
                         workbook = new excel.stream.xlsx.WorkbookWriter({
                             stream: res,
                             useStyles: true,
@@ -1952,7 +1948,7 @@ var CarController = /** @class */ (function () {
                         for (i = periods; i >= 0; i--) {
                             periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
                         }
-                        newColumns = __spreadArray(__spreadArray([], columns, true), extraColums.data, true);
+                        newColumns = __spreadArray(__spreadArray([], columns), extraColums.data);
                         worksheet.columns = newColumns;
                         worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
                         _a.label = 5;

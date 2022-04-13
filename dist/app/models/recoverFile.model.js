@@ -57,7 +57,7 @@ exports.recoverFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return "/forms/files/".concat(attachment.company, "/recover/").concat(attachment.user, "/").concat(attachment.originalname);
+            return "/forms/files/" + attachment.company + "/recover/" + attachment.user + "/" + attachment.originalname;
         }
     }),
     fields: {

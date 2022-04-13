@@ -92,7 +92,7 @@ function fixAccesories() {
                     mail = {
                         from: "\"OSA Andes\"<osa.andes@osacontrol.com>",
                         // to: job.data.to,
-                        to: "\"".concat((_b = user.firstName) !== null && _b !== void 0 ? _b : '', " ").concat((_c = user.lastName) !== null && _c !== void 0 ? _c : '', "\"<").concat(user.email, ">"),
+                        to: "\"" + ((_b = user.firstName) !== null && _b !== void 0 ? _b : '') + " " + ((_c = user.lastName) !== null && _c !== void 0 ? _c : '') + "\"<" + user.email + ">",
                         // bcc: job.data.bcc,
                         subject: "OSA Andes - Cambio en checklists",
                         text: "",

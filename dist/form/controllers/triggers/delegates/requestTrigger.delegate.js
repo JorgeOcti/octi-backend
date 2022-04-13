@@ -80,9 +80,9 @@ var RequestDelegate = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
+                        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
                         context_1 = this.processTrigerConfig(trigger, __assign({}, answers));
-                        logger_service_1["default"].info("Kind Trigger: context =>".concat(JSON.stringify(context_1)));
+                        logger_service_1["default"].info("Kind Trigger: context =>" + JSON.stringify(context_1));
                         participant = payload.participant, user = payload.user;
                         car = participant.car;
                         return [4 /*yield*/, user_model_1["default"].findOne({ _id: user._id })];
@@ -94,11 +94,11 @@ var RequestDelegate = /** @class */ (function (_super) {
                     case 2:
                         requestItem = _a.sent();
                         if (requestItem) {
-                            server_1.io.to("request-list-".concat(currentUser.team)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-list-" + currentUser.team).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });
-                            server_1.io.to("request-detail-".concat(currentUser.team)).emit('UPDATE_REQUEST_ITEM', {
+                            server_1.io.to("request-detail-" + currentUser.team).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
                             });

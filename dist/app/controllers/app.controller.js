@@ -229,14 +229,14 @@ var AppController = /** @class */ (function () {
                             fullname = user.fullName();
                             app_1.queue.create('email', {
                                 from: '',
-                                title: "Recovery password for ".concat(fullname),
-                                to: "\"".concat(fullname, "\"<").concat(user.email, ">"),
+                                title: "Recovery password for " + fullname,
+                                to: "\"" + fullname + "\"<" + user.email + ">",
                                 subject: "Recuperaci\u00F3n de tu cuenta en OSA Andes",
-                                text: "Hola ".concat(fullname, "\n\n            Recibimos una solicitud para restablecer tu contrase\u00F1a.\n\n            Haz clic aqu\u00ED para cambiar tu contrase\u00F1a.\n            ").concat(process.env.SITE_URL, "account/recovery/").concat(token, "/\n\n            \u00BFNo solicitaste este cambio?\n            Puedes contactarte con nosotros a trav\u00E9s de soporte@osacontrol.com.\n\n            \u00A9 2021 OSA SpA. Todos los derechos reservados."),
+                                text: "Hola " + fullname + "\n\n            Recibimos una solicitud para restablecer tu contrase\u00F1a.\n\n            Haz clic aqu\u00ED para cambiar tu contrase\u00F1a.\n            " + process.env.SITE_URL + "account/recovery/" + token + "/\n\n            \u00BFNo solicitaste este cambio?\n            Puedes contactarte con nosotros a trav\u00E9s de soporte@osacontrol.com.\n\n            \u00A9 2021 OSA SpA. Todos los derechos reservados.",
                                 view: 'account/forgotPassword',
                                 context: {
                                     fullname: fullname,
-                                    url: "".concat(process.env.SITE_URL, "account/recovery/").concat(token, "/")
+                                    url: process.env.SITE_URL + "account/recovery/" + token + "/"
                                 }
                             }).priority('high').attempts(5).save();
                             user.passwordResetToken = token;
@@ -310,7 +310,7 @@ var AppController = /** @class */ (function () {
                         }
                         /* istanbul ignore next */
                         if (!password.trim().length || !password2.trim().length || password !== password2) {
-                            return [2 /*return*/, res.redirect("/account/recovery/".concat(token))];
+                            return [2 /*return*/, res.redirect("/account/recovery/" + token)];
                         }
                         _b.label = 1;
                     case 1:
@@ -342,7 +342,7 @@ var AppController = /** @class */ (function () {
                             }
                         });
                         return [3 /*break*/, 5];
-                    case 4: return [2 /*return*/, res.redirect("/account/recovery/".concat(token))];
+                    case 4: return [2 /*return*/, res.redirect("/account/recovery/" + token)];
                     case 5: return [3 /*break*/, 7];
                     case 6:
                         e_5 = _b.sent();
@@ -368,7 +368,7 @@ var AppController = /** @class */ (function () {
                         _a = req.user, company = _a.company, team = _a.team;
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         logger_service_1["default"].info("uploadFile");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}, file: ").concat(JSON.stringify(file), "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, file: " + JSON.stringify(file) + "}}");
                         if (!file) return [3 /*break*/, 6];
                         _b.label = 1;
                     case 1:

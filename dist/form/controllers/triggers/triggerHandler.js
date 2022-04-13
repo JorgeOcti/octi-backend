@@ -78,11 +78,11 @@ var TriggerHandler = /** @class */ (function () {
                         if (!(_i < _b.length)) return [3 /*break*/, 5];
                         trigger = _b[_i];
                         if (!trigger.enabled) {
-                            logger_service_1["default"].info("Trigger: ".concat(trigger.name, " deactivated"));
+                            logger_service_1["default"].info("Trigger: " + trigger.name + " deactivated");
                             return [3 /*break*/, 4];
                         }
                         triggerDelegate = this.getTrigger(trigger);
-                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, responsible: (_a = this.participant) === null || _a === void 0 ? void 0 : _a.venue.responsible, user: __assign(__assign({}, this.participant.user), { fullName: "".concat(this.participant.user.firstName, " ").concat(this.participant.user.lastName) }) }))];
+                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, responsible: (_a = this.participant) === null || _a === void 0 ? void 0 : _a.venue.responsible, user: __assign(__assign({}, this.participant.user), { fullName: this.participant.user.firstName + " " + this.participant.user.lastName }) }))];
                     case 3:
                         payload = _c.sent();
                         _c.label = 4;

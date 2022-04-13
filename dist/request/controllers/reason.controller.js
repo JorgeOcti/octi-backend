@@ -64,7 +64,7 @@ var ReasonController = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         logger_service_1["default"].info("ReasonController.apiList");
-                        logger_service_1["default"].info("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         options = {
@@ -110,7 +110,7 @@ var ReasonController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("ReasonController.apiList: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -132,7 +132,7 @@ var ReasonController = /** @class */ (function () {
                         return [4 /*yield*/, new reason_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("reasons-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("reasons-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -142,7 +142,7 @@ var ReasonController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("ReasonController.apiCreate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -165,7 +165,7 @@ var ReasonController = /** @class */ (function () {
                         return [4 /*yield*/, reason_model_1["default"].findOneAndUpdate({ _id: id }, { $set: __assign({}, update) })];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("reasons-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("reasons-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -175,7 +175,7 @@ var ReasonController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("ReasonController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_3);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -197,7 +197,7 @@ var ReasonController = /** @class */ (function () {
                         return [4 /*yield*/, reason_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("reasons-list-".concat(team._id)).emit('REFRESH', {
+                        server_1.io.to("reasons-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -207,7 +207,7 @@ var ReasonController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("ReasonController.apiDelete: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: ".concat(req.user._id, ", email: ").concat(req.user.email, "}}"));
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

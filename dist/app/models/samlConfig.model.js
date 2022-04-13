@@ -62,7 +62,7 @@ samlConfigSchema.plugin(mongooseCrate, {
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
         path: function (attachment) {
-            return "/saml/cert/".concat(attachment.team, "/").concat(uuid.v1(), "-").concat(attachment.originalname);
+            return "/saml/cert/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {

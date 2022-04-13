@@ -77,10 +77,10 @@ var IntegrationDelegate = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        logger_service_1["default"].info("Kind Trigger: ".concat(trigger.kind, " performing"));
+                        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
                         context_1 = this.processTrigerConfig(trigger, __assign({}, answers));
-                        logger_service_1["default"].info("Kind Trigger: context =>".concat(JSON.stringify(context_1)));
-                        logger_service_1["default"].info("Kind Trigger: integrationType =>".concat(context_1.integrationType));
+                        logger_service_1["default"].info("Kind Trigger: context =>" + JSON.stringify(context_1));
+                        logger_service_1["default"].info("Kind Trigger: integrationType =>" + context_1.integrationType);
                         participant = payload.participant;
                         apiInstance = axios_1["default"].create(__assign({}, this.parseHeader(context_1.header)));
                         return [4 /*yield*/, apiInstance.post(context_1.url, __assign(__assign({}, this.parseBody(context_1.body)), participant))];

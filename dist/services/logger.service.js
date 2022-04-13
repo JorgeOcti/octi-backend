@@ -56,13 +56,13 @@ var LoggerService = /** @class */ (function () {
             if (!textColor) {
                 textColor = this.colors.reset;
             }
-            console.log("".concat(color, "[").concat(this.now(), "] [").concat(type, "]:").concat(textColor, " ").concat(this.message).concat(this.colors.reset));
+            console.log(color + "[" + this.now() + "] [" + type + "]:" + textColor + " " + this.message + this.colors.reset);
             this.writeLog(type);
         }
     };
     /* istanbul ignore next */
     LoggerService.prototype.writeLog = function (type) {
-        app_1.accessLogStream.write("[".concat(this.now(), "] [").concat(type, "]: ").concat(this.message, " \n"));
+        app_1.accessLogStream.write("[" + this.now() + "] [" + type + "]: " + this.message + " \n");
     };
     return LoggerService;
 }());

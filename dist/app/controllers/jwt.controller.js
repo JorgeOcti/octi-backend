@@ -63,7 +63,7 @@ var JWTController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        logger_service_1["default"].info("login: {username: ".concat(req.body.username));
+                        logger_service_1["default"].info("login: {username: " + req.body.username);
                         if (!(req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined)) return [3 /*break*/, 1];
                         logger_service_1["default"].error("login: Authentication failed. Invalid user or password.");
                         res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
@@ -227,7 +227,7 @@ var JWTController = /** @class */ (function () {
         var refreshToken = req.body.refreshToken;
         if (!refreshToken) {
             logger_service_1["default"].error("token: refresh token is required");
-            logger_service_1["default"].error("{body: ".concat(req.body, ", headers: ").concat(JSON.stringify(req.headers), "}"));
+            logger_service_1["default"].error("{body: " + req.body + ", headers: " + JSON.stringify(req.headers) + "}");
             res.status(400).json({
                 message: 'refresh token is required',
                 status: 400
@@ -237,7 +237,7 @@ var JWTController = /** @class */ (function () {
             jwt.verify(refreshToken, req.app.locals.secretKey, function (err, decode) {
                 if (err) {
                     logger_service_1["default"].error("token: JWT error");
-                    logger_service_1["default"].error("{body: ".concat(req.body, ", headers: ").concat(JSON.stringify(req.headers), "}"));
+                    logger_service_1["default"].error("{body: " + req.body + ", headers: " + JSON.stringify(req.headers) + "}");
                     res.status(401).json({
                         message: err.message,
                         status: 401
@@ -401,14 +401,14 @@ var JWTController = /** @class */ (function () {
                         fullname = user.fullName();
                         app_1.queue.create('email', {
                             from: '',
-                            title: "Recovery password for ".concat(fullname),
-                            to: "\"".concat(fullname, "\"<").concat(user.email, ">"),
+                            title: "Recovery password for " + fullname,
+                            to: "\"" + fullname + "\"<" + user.email + ">",
                             subject: "Recuperaci\u00F3n de tu cuenta en OSA Andes",
-                            text: "Hola ".concat(fullname, "\n\n            Recibimos una solicitud para restablecer tu contrase\u00F1a.\n\n            Haz clic aqu\u00ED para cambiar tu contrase\u00F1a.\n            ").concat(process.env.SITE_URL, "account/recovery/").concat(token, "/\n\n            \u00BFNo solicitaste este cambio?\n            Puedes contactarte con nosotros a trav\u00E9s de soporte@osacontrol.com.\n\n            \u00A9 2021 OSA SpA. Todos los derechos reservados."),
+                            text: "Hola " + fullname + "\n\n            Recibimos una solicitud para restablecer tu contrase\u00F1a.\n\n            Haz clic aqu\u00ED para cambiar tu contrase\u00F1a.\n            " + process.env.SITE_URL + "account/recovery/" + token + "/\n\n            \u00BFNo solicitaste este cambio?\n            Puedes contactarte con nosotros a trav\u00E9s de soporte@osacontrol.com.\n\n            \u00A9 2021 OSA SpA. Todos los derechos reservados.",
                             view: 'account/forgotPassword',
                             context: {
                                 fullname: fullname,
-                                url: "".concat(process.env.SITE_URL, "account/recovery/").concat(token, "/")
+                                url: process.env.SITE_URL + "account/recovery/" + token + "/"
                             }
                         }).priority('high').attempts(5).save();
                         user.passwordResetToken = token;
