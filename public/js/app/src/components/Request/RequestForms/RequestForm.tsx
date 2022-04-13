@@ -250,13 +250,13 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <td className={'middle'} style={{ width: '30%' }}>
                               <Field
                                 name='customerInformation.email'
-                                label='Correo Electrónico'
+                                label='Correo Electrónico *'
                                 type='text'
                                 props={{
                                   readOnly: query.hasOwnProperty('60b9232164adc90013a79b45')
                                 }}
                                 component={InputField}
-                                // validate={[inputStringRequired]}
+                                validate={[inputStringRequired]}
                               />
                             </td>
                           </tr>
