@@ -55,6 +55,8 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     showTotal: true,
     paginationTotalRenderer: this.customTotal,
     sizePerPageList: [{
+      text: '20', value: 20
+    },{
       text: '50', value: 50
     }, {
       text: '100', value: 100
