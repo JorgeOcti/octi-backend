@@ -50,5 +50,6 @@ secrets.yaml
 
 buildcache
 
-
 .scannerwork/
+
+/dist/

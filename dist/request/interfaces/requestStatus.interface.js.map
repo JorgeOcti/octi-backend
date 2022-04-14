@@ -1,1 +1,0 @@
-{"version":3,"file":"requestStatus.interface.js","sourceRoot":"","sources":["../../../src/request/interfaces/requestStatus.interface.ts"],"names":[],"mappings":"","sourcesContent":["import {ITeam} from '../../app/interfaces/team.interface';\n\nexport interface IRequestStatus {\n  _id: any;\n  name: string;\n  weigth: number;\n  team: ITeam;\n  default: boolean;\n}\n"]}

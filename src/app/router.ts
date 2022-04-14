@@ -19,6 +19,7 @@ import UserController from './controllers/user.controller';
 import router from '../form/router';
 import {passport} from '../passportConfig'
 import appController from './controllers/app.controller';
+import StudioController from "../stats/controllers/studio.controller";
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -30,7 +31,7 @@ appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/damages/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/timing/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.generalDashboard);
-appRouter.get('/dashboard/custom-dashboard/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/dashboard/studio/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
@@ -142,6 +143,10 @@ appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsCon
 
 // versions
 appRouter.get('/settings/versions/', Middlewares.isLoggedIn, AdminAlertsController.index);
+
+//Stats Dashboard
+appRouter.get('/settings/stats/', Middlewares.isLoggedIn, StudioController.index);
+appRouter.get('/api/stats/users/', Middlewares.isJWTAuthenticated, UserController.getStatsAccessUser);
 
 // api versions
 appRouter.get('/api/admin/versions/', Middlewares.isLoggedIn, AdminVersionsController.apiListVersions);

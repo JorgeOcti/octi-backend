@@ -80,6 +80,7 @@ var router_5 = require("./planning/router");
 var router_6 = require("./request/router");
 var redis_service_1 = require("./services/redis.service");
 var router_7 = require("./distribution/router");
+var router_8 = require("./stats/router");
 // Create Express server
 var app = express();
 exports["default"] = app;
@@ -241,6 +242,7 @@ app.use('/', router_4.inventoryRouter);
 app.use('/', router_6.requestRouter);
 app.use('/', router_7.distributionRouter);
 app.use('/', router_2.billingRouter);
+app.use('/', router_8.statsRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */
 exports.queue = kue.createQueue({

@@ -32,6 +32,7 @@ import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { distributionRouter } from './distribution/router';
 import { CookieOptions } from 'express-session';
+import {statsRouter} from "./stats/router";
 
 // Create Express server
 const app = express();
@@ -221,6 +222,7 @@ app.use('/', inventoryRouter);
 app.use('/', requestRouter);
 app.use('/', distributionRouter);
 app.use('/', billingRouter);
+app.use('/', statsRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */

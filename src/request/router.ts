@@ -11,6 +11,7 @@ const requestRouter = express.Router();
 
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/studio/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/reasons/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/payment-methods/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/channels/', Middlewares.isLoggedIn, RequestController.index);

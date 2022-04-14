@@ -1,5 +1,12 @@
-import Axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from 'axios';
+import Axios, {AxiosError, AxiosInstance, AxiosRequestHeaders} from 'axios';
 import logger from './logger.service';
+
+export interface IHeaders{
+  'X-CSRFToken'?: string;
+  'Content-Type'?: string;
+  Authorization?: string;
+  timeout?: number;
+}
 
 class ApiService {
   public instance: AxiosInstance;

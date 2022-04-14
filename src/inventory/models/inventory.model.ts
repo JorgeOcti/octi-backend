@@ -58,6 +58,7 @@ export const choicesStatusInventory = [
   ChoicesStatusInventory.inProcess,
   ChoicesStatusInventory.finalized
 ];
+
 const inventorySchema = new mongoose.Schema({
   name: {
     type: String
