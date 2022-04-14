@@ -154,7 +154,7 @@ let cookieSetting: CookieOptions = {
 if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
-
+console.log('cookieSetting', cookieSetting);
 app.use(session({
   resave: false,
   saveUninitialized: false,
@@ -162,6 +162,7 @@ app.use(session({
   cookie: {
     ...cookieSetting
   },
+  // proxy: process.env.ENV === 'production',
   store: new redisStore({ client: redisClient as any })
 }));
 
