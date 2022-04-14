@@ -8,10 +8,12 @@ var passport = require("passport");
 exports.passport = passport;
 var LocalStrategy = passportLocal.Strategy;
 passport.serializeUser(function (user, done) {
+    console.log('serializeUser.user', user);
     done(null, user);
 });
 passport.deserializeUser(function (user, done) {
     var _a;
+    console.log('deserializeUser.user', user);
     try {
         user_model_1["default"].findOne({ email: (_a = user.email) !== null && _a !== void 0 ? _a : user }, {
             _id: true,

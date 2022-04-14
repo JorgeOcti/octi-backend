@@ -184,11 +184,13 @@ var cookieSetting = {
 if (process.env.ENV === 'production') {
     cookieSetting.sameSite = 'none';
 }
+console.log('cookieSetting', cookieSetting);
 app.use(session({
     resave: false,
     saveUninitialized: false,
     secret: process.env.SECRET_KEY,
     cookie: __assign({}, cookieSetting),
+    // proxy: process.env.ENV === 'production',
     store: new redisStore({ client: redis_service_1["default"] })
 }));
 app.use(passportConfig_1.passport.initialize());

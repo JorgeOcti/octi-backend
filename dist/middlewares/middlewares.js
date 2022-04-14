@@ -50,6 +50,8 @@ var Middlewares = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        logger_service_1["default"].info("Middlewares.isLoggedIn");
+                        logger_service_1["default"].info("isLoggedIn ".concat(JSON.stringify(req.session)));
                         if (!req.isAuthenticated()) return [3 /*break*/, 4];
                         if (!req.user) return [3 /*break*/, 2];
                         _a = res.locals;
