@@ -195,9 +195,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     <td className='middle'>
                       {`${item.car.brand} ${item.car.denomination} ${item.car.material ?? ''}`}
                     </td>
-                    <td className='middle'>
-                      {item.car.color}
-                    </td>
+                    <td className='middle'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
                     <td className={`middle`}>
                       <ShowIf condition={item.car.vin?.length}>
                         <a

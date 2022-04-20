@@ -268,7 +268,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                   <div className='col-md-12'>
                     <div className='box'>
                       <div className='box-header with-border'>
-                        <h3 className='box-title'>Datos del anticipo o la orden de compra</h3>
+                        <h3 className='box-title'>Datos de la reserva</h3>
                       </div>
                       <div className='box-body create-request' style={{ paddingBottom: '0' }}>
                         <div className='row'>
@@ -310,7 +310,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <td className={'middle form-group-no-margin'} style={{ width: '35%' }}>
                               <Field
                                 name='advancePaymentInformation.number'
-                                label='Nº de Ticket u Orden de Compra *'
+                                label='Nº de Ticket de Anticipo u Orden de Compra *'
                                 type='text'
                                 component={InputField}
                                 validate={[inputStringRequired]}
@@ -321,7 +321,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <td className={'middle form-group-no-margin'}>
                               <div
                                 className={`form-group ${submitFailed && !valid && !formValues?.advancePaymentInformation?.files?.length ? 'has-error' : ''}`}>
-                                <label className='control-label text-ellipsis'>Comprobante de Ticket u OC *</label>
+                                <label className='control-label text-ellipsis'>Subir Ticket de Anticipo u Orden de Compra *</label>
                                 <Field
                                   name={`advancePaymentInformation.files`}
                                   type='hidden'

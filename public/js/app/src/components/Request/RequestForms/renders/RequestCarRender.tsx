@@ -175,7 +175,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                 colors.length ?
                                   <Field
                                     name={`${item}.secondColorOption`}
-                                    label='Color 2'
+                                    label='Color 2 (Opcional)'
                                     component={BootstrapSelectField}
                                     // validate={[inputStringRequired]}
                                     props={{
@@ -193,7 +193,11 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                         }))
                                       ],
                                       onClick: (value: string) => {
-                                        this.props.autofill(`${item}.secondColorOption`, value);
+                                        if (formValues.cars[index]?.secondColorOption === value) {
+                                          this.props.autofill(`${item}.secondColorOption`, "");
+                                        } else {
+                                          this.props.autofill(`${item}.secondColorOption`, value);
+                                        }
                                       }
                                     }}
                                   >
@@ -201,7 +205,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                   :
                                   <Field
                                     name={`${item}.secondColorOption`}
-                                    label='Color *'
+                                    label='Color 2 (Opcional)'
                                     type='text'
                                     component={InputField}
                                     // validate={[inputStringRequired]}
@@ -215,7 +219,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                 colors.length ?
                                   <Field
                                     name={`${item}.thirdColorOption`}
-                                    label='Color 3'
+                                    label='Color 3 (Opcional)'
                                     component={BootstrapSelectField}
                                     // validate={[inputStringRequired]}
                                     props={{
@@ -233,7 +237,11 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                         }))
                                       ],
                                       onClick: (value: string) => {
-                                        this.props.autofill(`${item}.thirdColorOption`, value);
+                                        if (formValues.cars[index]?.thirdColorOption === value) {
+                                          this.props.autofill(`${item}.thirdColorOption`, "");
+                                        } else {
+                                          this.props.autofill(`${item}.thirdColorOption`, value);
+                                        }
                                       }
                                     }}
                                   >
@@ -241,7 +249,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                   :
                                   <Field
                                     name={`${item}.thirdColorOption`}
-                                    label='Color *'
+                                    label='Color 3 (Opcional)'
                                     type='text'
                                     component={InputField}
                                     // validate={[inputStringRequired]}

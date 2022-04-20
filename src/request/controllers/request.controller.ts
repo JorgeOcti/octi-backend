@@ -712,6 +712,8 @@ class RequestController {
           'car.vin': 1,
           'car.brand': 1,
           'car.color': 1,
+          'car.secondColorOption': 1,
+          'car.thirdColorOption': 1,
           'car.material': 1,
           'car.entry': 1,
           'car.invoice': 1,
@@ -829,6 +831,10 @@ class RequestController {
         header: 'MATERIAL', key: 'material', width: 20
       }, {
         header: 'COLOR', key: 'color', width: 20
+      }, {
+        header: 'COLOR 2', key: 'secondColorOption', width: 20
+      }, {
+        header: 'COLOR 3', key: 'thirdColorOption', width: 20
       }, {
         header: 'ESTADO', key: 'status', width: 20
       }, {
@@ -979,6 +985,8 @@ class RequestController {
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
+          secondColorOption: item.car.secondColorOption,
+          thirdColorOption: item.car.thirdColorOption,
           destination: item.destination?.name ?? '',
           origin: item.origin?.name ?? '',
           status: item.status?.name ?? '',

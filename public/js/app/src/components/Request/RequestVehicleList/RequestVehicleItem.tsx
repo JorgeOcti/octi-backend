@@ -323,7 +323,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle">{item.car.color}</td>
+              : <td className='middle'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
           }
         </ShowIf>
         {
