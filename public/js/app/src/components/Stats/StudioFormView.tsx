@@ -128,7 +128,6 @@ class StudioFormView extends React.Component<IPropsType, IStateType>{
                     type="text"
                     name="embedURL"
                     className="form-control"
-                    maxLength={50}
                     defaultValue={tempStudio ? tempStudio.embedURL : undefined}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempStudioAction({
                       ...tempStudio,

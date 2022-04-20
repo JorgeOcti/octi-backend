@@ -208,8 +208,9 @@ class UserController {
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
 
+    //TODO: Change to dinamic query instead of hardcoded
     let permissions = await Permission.find({
-      codeName: { $in: [ 'viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio' ] }
+      codeName: { $in: [ 'viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio', 'viewPlanificationStudio' ] }
     })
 
     logger.info(JSON.stringify(permissions))
