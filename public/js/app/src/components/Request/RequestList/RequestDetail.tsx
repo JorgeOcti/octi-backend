@@ -401,7 +401,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   private openBlank(url: string) {
-    window.open(url, '_blank');
+    window.open(decodeURI(url), '_blank');
   }
 
   private goToDetail(id: string): void {
