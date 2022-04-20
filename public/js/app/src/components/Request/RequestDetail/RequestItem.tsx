@@ -593,7 +593,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   private openBlank(url: string) {
-    window.open(url, '_blank');
+    window.open(decodeURI(url), '_blank');
   }
 
   private search(text: string): void {

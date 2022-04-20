@@ -494,7 +494,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private openBlank(url: string) {
-    window.open(url, '_blank');
+    window.open(decodeURI(url), '_blank');
   }
 }
 

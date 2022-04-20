@@ -18,5 +18,8 @@ export const requestSettings = {
   sellerText: false,
   ticket: false,
   priority: false,
-  conectaID: false
+  conectaID: false,
+  secondColorOption: false,
+  thirdColorOption: false,
+
 };

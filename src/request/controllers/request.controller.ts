@@ -88,6 +88,8 @@ class RequestController {
   }, {
     path: 'advancePaymentInformation.files'
   }, {
+    path: 'advancePaymentInformation.letters'
+  }, {
     path: 'items',
     select: [
       'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy'
@@ -468,6 +470,8 @@ class RequestController {
           denomination: car.denomination,
           material: car.material,
           color: car.color,
+          secondColorOption: car?.secondColorOption ?? '',
+          thirdColorOption: car?.thirdColorOption ?? '',
           status: ChoicesStatusCar.pending,
           createdBy: req.user
         }).save();
@@ -665,11 +669,13 @@ class RequestController {
       }, {
         $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'requestfiles', localField: 'request.advancePaymentInformation.files', foreignField: '_id', as: 'request.advancePaymentInformation.files' }
+      }, {
+        $lookup: { from: 'requestfiles', localField: 'request.advancePaymentInformation.letters', foreignField: '_id', as: 'request.advancePaymentInformation.letters' }
+      }, {
         $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
       }, {
         $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
       }, {
         $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
       }, {

@@ -91,7 +91,7 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
-    const { venues, channels, reasons, colors, loading, exist, filesCache, paymentMethods } = this.state;
+    const { venues, channels, reasons, colors, loading, exist, filesCache, paymentMethods, requestSettings } = this.state;
     const uploadingFiles = !!Object.values(filesCache).filter((files: any) => {
       return !!files.filter((file: any) => file.status !== imageStatus.complete).length;
     }).length;
@@ -475,6 +475,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             props={{
                               reasons,
                               colors,
+                              requestSettings,
                               updateFileCache: this.updateFileCache,
                               filesCache,
                               loading,

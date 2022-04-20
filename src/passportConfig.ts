@@ -42,7 +42,6 @@ passport.deserializeUser((user: any, done: any) => {
       } else {
         done(new Error('User not found'));
       }
-
     });
   } catch (e) {
     /* istanbul ignore next */
@@ -53,7 +52,8 @@ passport.deserializeUser((user: any, done: any) => {
 /**
  * Sign in using Email and Password.
  */
-passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
+// passport.use(new LocalStrategy(User.authenticate()));
+passport.use('local', new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
   console.log('passport.LocalStrategy.verify()');
   console.log('passport.LocalStrategy.username', username);
   User.findOne({

@@ -21,6 +21,7 @@ interface IPropsType extends WrappedFieldArrayProps<{}>, IRenderItemProps {
   updateFileCache: any;
   filesCache: Dictionary<any>
   query: any;
+  requestSettings: any;
   submitFailed: any;
   valid: any;
   loading: boolean;
@@ -49,7 +50,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
 
 
   public render(): React.ReactElement<IPropsType> {
-    const { fields, submitFailed, valid, reasons, colors, syncErrors, query, formValues, loading, filesCache } = this.props;
+    const { fields, submitFailed, valid, reasons, colors, syncErrors, query, formValues, loading, filesCache, requestSettings } = this.props;
     const { openTabs, reasonSelectedState } = this.state;
     return (
       <React.Fragment>
@@ -136,7 +137,6 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                 <Field
                                   name={`${item}.color`}
                                   label='Color *'
-                                  // labelOff={true}
                                   component={BootstrapSelectField}
                                   validate={[inputStringRequired]}
                                   props={{
@@ -164,14 +164,91 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                   name={`${item}.color`}
                                   label='Color *'
                                   type='text'
-                                  // input={{
-                                  //   disabled: true
-                                  // }}
                                   component={InputField}
                                   validate={[inputStringRequired]}
                                 />
                             }
                           </td>
+                          <ShowIf condition={requestSettings.secondColorOption}>
+                            <td className={`middle form-group-no-margin`}>
+                              {
+                                colors.length ?
+                                  <Field
+                                    name={`${item}.secondColorOption`}
+                                    label='Color 2'
+                                    component={BootstrapSelectField}
+                                    // validate={[inputStringRequired]}
+                                    props={{
+                                      noneSelectedText: 'Seleccione...',
+                                      displayItems: 2,
+                                      selectedText: 'sucursal seleccionadas.',
+                                      autoClouse: true,
+                                      sm: true,
+                                      allOption: false,
+                                      search: true,
+                                      options: [
+                                        ...colors.map((color) => ({
+                                          value: color.name,
+                                          text: color.name
+                                        }))
+                                      ],
+                                      onClick: (value: string) => {
+                                        this.props.autofill(`${item}.secondColorOption`, value);
+                                      }
+                                    }}
+                                  >
+                                  </Field>
+                                  :
+                                  <Field
+                                    name={`${item}.secondColorOption`}
+                                    label='Color *'
+                                    type='text'
+                                    component={InputField}
+                                    // validate={[inputStringRequired]}
+                                  />
+                              }
+                            </td>
+                          </ShowIf>
+                          <ShowIf condition={requestSettings.thirdColorOption}>
+                            <td className={`middle form-group-no-margin`}>
+                              {
+                                colors.length ?
+                                  <Field
+                                    name={`${item}.thirdColorOption`}
+                                    label='Color 3'
+                                    component={BootstrapSelectField}
+                                    // validate={[inputStringRequired]}
+                                    props={{
+                                      noneSelectedText: 'Seleccione...',
+                                      displayItems: 2,
+                                      selectedText: 'sucursal seleccionadas.',
+                                      autoClouse: true,
+                                      sm: true,
+                                      allOption: false,
+                                      search: true,
+                                      options: [
+                                        ...colors.map((color) => ({
+                                          value: color.name,
+                                          text: color.name
+                                        }))
+                                      ],
+                                      onClick: (value: string) => {
+                                        this.props.autofill(`${item}.thirdColorOption`, value);
+                                      }
+                                    }}
+                                  >
+                                  </Field>
+                                  :
+                                  <Field
+                                    name={`${item}.thirdColorOption`}
+                                    label='Color *'
+                                    type='text'
+                                    component={InputField}
+                                    // validate={[inputStringRequired]}
+                                  />
+                              }
+                            </td>
+                          </ShowIf>
                           <td className={`middle form-group-no-margin`}>
                             <Field
                               name={`${item}.reason`}

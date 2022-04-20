@@ -43,6 +43,8 @@ export interface ICar {
   bl: string;
   client: string;
   color: string;
+  secondColorOption: string;
+  thirdColorOption: string;
   team: ITeam | any;
   company: ICompany | any;
   lastForm: IParticipant | any;

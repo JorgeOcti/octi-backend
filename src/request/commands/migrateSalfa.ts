@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 import Team from '../../app/models/team.model';
-import RequestItem from '../../request/models/requestItem.model';
+/*import RequestItem from '../../request/models/requestItem.model';
 import Request from '../../request/models/request.model';
-import PaymentMethods from '../models/paymentMethod.model';
+import PaymentMethods from '../models/paymentMethod.model';*/
 import TeamSetting from '../../app/models/teamSetting.model';
 
 async function migrateSalfa() {
@@ -34,13 +34,15 @@ async function migrateSalfa() {
           internalNumber: !isSalfa,
           entry: !isSalfa,
           sellerText: isSalfa,
+          secondColorOption: isSalfa,
+          thirdColorOption: isSalfa,
         },
       });
     }
     // await process.exit(1);
 
 
-    const team = await Team.findById('5bf2de35caf8ef7096105cdd');
+    /*const team = await Team.findById('5bf2de35caf8ef7096105cdd');
     const requestItems = await RequestItem.find({ team }).populate([{
       path: 'request'
     }]);
@@ -84,7 +86,7 @@ async function migrateSalfa() {
         console.log('Ha ocurrido un error en migrateSalfa');
         console.log('error:', e);
       }
-    }
+    }*/
   } catch (e) {
     console.log('Ha ocurrido un error en migrateSalfa');
     console.log('error:', e);

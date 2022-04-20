@@ -202,6 +202,14 @@ const requestSettingSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  secondColorOption: {
+    type: Boolean,
+    default: false
+  },
+  thirdColorOption: {
+    type: Boolean,
+    default: false
+  },
 });
 
 const teamSettingSchema = new mongoose.Schema({

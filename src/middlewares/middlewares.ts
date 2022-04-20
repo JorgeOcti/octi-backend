@@ -15,6 +15,7 @@ class Middlewares {
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
     logger.info(`Middlewares.isLoggedIn`);
     logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
+    logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     if (req.isAuthenticated()) {

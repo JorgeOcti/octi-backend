@@ -48,6 +48,8 @@ export interface IRequestSetting {
   internalNumber: boolean;
   internalNumberRequired: boolean;
   internalNumberText: string;
+  secondColorOption: boolean;
+  thirdColorOption: boolean;
 }
 
 export interface IHelpPhonesSettingSchema {
