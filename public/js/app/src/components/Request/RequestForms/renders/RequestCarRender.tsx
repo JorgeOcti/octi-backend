@@ -131,7 +131,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                               validate={[inputStringRequired]}
                             />
                           </td>
-                          <td className={`middle form-group-no-margin`}>
+                          <td className={`middle form-group-no-margin`} style={{width: '120px'}}>
                             {
                               colors.length ?
                                 <Field
@@ -170,7 +170,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                             }
                           </td>
                           <ShowIf condition={requestSettings.secondColorOption}>
-                            <td className={`middle form-group-no-margin`}>
+                            <td className={`middle form-group-no-margin`} style={{width: '120px'}}>
                               {
                                 colors.length ?
                                   <Field
@@ -214,7 +214,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                             </td>
                           </ShowIf>
                           <ShowIf condition={requestSettings.thirdColorOption}>
-                            <td className={`middle form-group-no-margin`}>
+                            <td className={`middle form-group-no-margin`} style={{width: '120px'}}>
                               {
                                 colors.length ?
                                   <Field
