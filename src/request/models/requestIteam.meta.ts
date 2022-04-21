@@ -25,6 +25,7 @@ class RequestItemMeta {
       _id: request._id,
       number: request.number,
       sellerText: request.sellerText,
+      conectaID: request.conectaID,
       advancePaymentInformation: request.advancePaymentInformation
     };
   }

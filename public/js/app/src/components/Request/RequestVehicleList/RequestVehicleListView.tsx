@@ -107,7 +107,10 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
         $item.addClass('bg-red-active');
       }
       setTimeout(() => {
-        this.props.deleteRequestItemAction(data.item);
+        const { orderBy, orderType } = this.props.requestItems.options;
+        const { page } = this.props.requestItems.pagination;
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        // this.props.deleteRequestItemAction(data.item);
       }, 300);
     });
 
@@ -259,19 +262,19 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
-                  <ShowIf condition={requestSettings.ticket}>
+                  <ShowIf condition={requestSettings.conectaID}>
                     <div className='col-md-3' style={{padding: '0 5px'}}>
                       <div className='form-group'>
                         <label className='control-label'>
-                          Nº Ticket Anticipo
+                          Conecta ID
                         </label>
                         <input
                           type='text'
                           className='form-control input-sm'
                           placeholder='Nº de ticket: 14795'
-                          defaultValue={filters.ticket}
+                          defaultValue={filters.conectaID}
                           onChange={(e) => {
-                            this.changeFilterDebounced('ticket', e.target.value);
+                            this.changeFilterDebounced('conectaID', e.target.value);
                           }}
                         />
                       </div>

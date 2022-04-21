@@ -616,17 +616,18 @@ class RequestController {
         'meta.car.property': { $in: filters.properties.map((s: any) => s) }
       });
     }
-    if (filters.ticket && filters.ticket.length) {
+    if (filters.conectaID && filters.conectaID.length) {
       if (!extraQuery.hasOwnProperty('$or')) {
         extraQuery.$or = [];
       }
       extraQuery.$or.push({
-        'meta.request.advancePaymentInformation.number': filters.ticket
+        'meta.request.conectaID': filters.conectaID
       });
     }
     if (filters && filters.transmitttalModule) {
       extraQuery.assigned = { $in: [null, false] };
     }
+    console.log('extraQuery', extraQuery);
 
     try {
       const baseAggregate: any[] = [{
@@ -755,6 +756,7 @@ class RequestController {
           pages: requests.pages,
           hasPrevious: requests.hasPrevious,
           hasNext: requests.hasNext,
+          pre: requests.docs,
           results: await RequestItem.aggregate([{
             $match: {
               _id: { $in: requests.docs.map((d) => d._id) }
@@ -1201,9 +1203,9 @@ class RequestController {
 
   public async apiDeleteRequestItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDeleteRequestItem`);
-    const team = req.user.team._id;
-    const { id } = req.params;
     try {
+      const team = req.user.team._id;
+      const { id } = req.params;
       const item = await RequestItem
         .findOne({
           _id: id,
@@ -1222,7 +1224,6 @@ class RequestController {
         });
         await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
         const itemsInRequest = await RequestItem.find({ request: item.request._id }).count();
-        console.log('itemsInRequest', itemsInRequest);
         if(!itemsInRequest){
           await Request.deleteOne({ _id: item.request._id });
           io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
