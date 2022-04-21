@@ -228,6 +228,7 @@ const formSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
   shippingImage: {
     type: Boolean,
     default: false

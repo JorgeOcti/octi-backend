@@ -1168,7 +1168,7 @@ class CarController {
           createdAt: true,
           patent: true,
           denomination: true,
-          color: true
+          color: true,
         })
         .populate([{
           path: 'inventories',
@@ -1229,7 +1229,7 @@ class CarController {
         }, {
           // reverse populate
           path: 'participants',
-          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages'],
+          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages', 'kind'],
           match: {
             $or: [{
               venue: {
