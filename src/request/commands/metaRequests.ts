@@ -4,6 +4,7 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import RequestItem from '../../request/models/requestItem.model';
 import requestItemsHooks from '../models/requestItem.hooks';
+import Request from '../models/request.model';
 
 async function metaRequests() {
   dotenv.config({
@@ -15,7 +16,8 @@ async function metaRequests() {
   mongoose.set('debug', true);
   try {
     // const requestItems = await RequestItem.find({request: '6238d7949cd9b20010e557cc'}, {
-    const requestItems = await RequestItem.find({}, {
+    const requests = await Request.find({conectaID: {$exists: true}}, {_id: true});
+    const requestItems = await RequestItem.find({ team: '5bf2de35caf8ef7096105cdd', request: { $in: requests.map((item) => item._id) } }, {
       request: true,
       car: true,
       createdBy: true,

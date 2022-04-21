@@ -27,6 +27,7 @@ export interface IRequestItemsFilters {
   text: string;
   sellerText: string;
   ticket: string;
+  conectaID: string;
   request: string;
   entry: string;
   venues: any[];
