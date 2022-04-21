@@ -45,8 +45,13 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
           <h3 className='timeline-header'><a href='javascript:void(0)'>{form.name}</a></h3>
 
           <div className='timeline-body'>
+            {form.kind === 'final' ?
+              <React.Fragment>
+                El vehículo fue entregado en <span className='text-blue'>{form.venue.name}</span>
+              </React.Fragment> : null
+            }
             {
-              form.form.reception ?
+              form.kind != 'final' && form.form.reception ?
                 <React.Fragment>
                   El vehículo fue recepcionado
                   {
@@ -58,7 +63,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
                 </React.Fragment> : null
             }
             {
-              form.form.shipping ?
+              form.kind != 'final' && form.form.shipping ?
                 <React.Fragment>
                   El vehículo fue Despachado.
                   {/* Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>. */}

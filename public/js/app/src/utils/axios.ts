@@ -4,7 +4,7 @@ import Axios, {
   AxiosPromise,
   CancelTokenSource,
   CancelTokenStatic,
-  AxiosRequestConfig
+  AxiosRequestHeaders
 } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
@@ -48,7 +48,7 @@ export default class ApiService {
 
   constructor(private headers: IHeaders = {}) {
     this.instance = Axios.create({
-      headers: this.headers as AxiosRequestConfig
+      headers: this.headers as AxiosRequestHeaders
     });
     this.CancelToken = Axios.CancelToken;
   }
@@ -354,7 +354,7 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(onlyControls : Boolean,page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
+  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
     let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;

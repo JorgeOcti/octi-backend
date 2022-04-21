@@ -229,7 +229,7 @@ export function loadForms(forms: IForm[]): ILoadingForms {
   };
 }
 
-export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
+export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -271,7 +271,7 @@ export function getRevisionsThunkAction(nextPage: number, loading: boolean, sear
 }
 
 
-export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
+export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
