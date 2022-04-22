@@ -354,7 +354,7 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(onlyControls : Boolean,page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
+  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
     let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;
