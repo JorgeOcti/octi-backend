@@ -756,7 +756,6 @@ class RequestController {
           pages: requests.pages,
           hasPrevious: requests.hasPrevious,
           hasNext: requests.hasNext,
-          pre: requests.docs,
           results: await RequestItem.aggregate([{
             $match: {
               _id: { $in: requests.docs.map((d) => d._id) }
