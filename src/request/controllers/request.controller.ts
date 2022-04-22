@@ -259,6 +259,7 @@ class RequestController {
         });
         const newRequest: IRequestModel = await new Request({
           team,
+          company,
           sellerText,
           number: number,
           // mark origin and destination with first car
@@ -331,6 +332,7 @@ class RequestController {
           ]);
           await new RequestItem({
             team,
+            company,
             request: newRequest,
             car: currentCar,
             meta: requestItemsMeta.processMeta({
@@ -445,6 +447,7 @@ class RequestController {
 
       const request = await new Request({
         team,
+        company,
         sellerText: sellerText ?? req.user.fullName(),
         number: updateTeam!.requestNumber,
         origin: venue,
@@ -480,6 +483,7 @@ class RequestController {
         const status = defaultItemStatus;
         await new RequestItem({
           team,
+          company,
           request,
           car: newCar,
           reason: car.reason,
@@ -1343,6 +1347,7 @@ class RequestController {
         }).save();
         const newItem = await new RequestItem({
           team,
+          company,
           request,
           car: newCar,
           reason: car.reason,

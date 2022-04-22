@@ -47,6 +47,14 @@ const requestItemAnswerSchema = new mongoose.Schema({
 });
 
 const requestItemSchema = new mongoose.Schema({
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'company'
+  },
   request: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Request'
@@ -67,10 +75,6 @@ const requestItemSchema = new mongoose.Schema({
   assigned: {
     type: Boolean,
     default: false
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
   },
   origin: {
     type: mongoose.Schema.Types.ObjectId,

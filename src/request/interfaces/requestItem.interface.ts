@@ -19,6 +19,8 @@ import { ITransmittal } from '../../distribution/interfaces/transmittal.interfac
 import { ITransmittalModel } from '../../distribution/models/transmittal.model';
 import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
 import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
+import { ICompanyModel } from '../../app/models';
+import { ICompany } from '../../app/interfaces';
 
 export interface IRequestAnswer {
   questionId: any;
@@ -29,6 +31,8 @@ export interface IRequestAnswer {
 export interface IRequestItem {
   _id: any;
   request: IRequest | IRequestModel;
+  team: ITeam | ITeamModel;
+  company: ICompanyModel | ICompany
   transmittal: ITransmittal | ITransmittalModel;
   transmittalItem: ITransmittalItem | ITransmittalItemModel;
   assigned: boolean;
@@ -40,7 +44,6 @@ export interface IRequestItem {
     destination: IVenue;
     status: IRequestItemStatus;
   };
-  team: ITeam | ITeamModel;
   origin: IVenue | IVenueModel;
   position: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;

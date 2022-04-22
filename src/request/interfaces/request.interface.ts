@@ -18,6 +18,8 @@ import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.
 import { IOperationType } from './operationType.interface';
 import { IOperationTypeModel } from '../models/operationType.model';
 import { IRequestFile } from './requestFile.interface';
+import { ICompanyModel } from '../../app/models';
+import { ICompany } from '../../app/interfaces';
 
 export interface IRequestCustomer {
   name: string;
@@ -38,6 +40,7 @@ export interface IRequest {
   number: number;
   car: ICar | ICarModel;
   team: ITeam | ITeamModel;
+  company: ICompanyModel | ICompany
   createdBy: IUser | IUserModel;
   origin: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;
