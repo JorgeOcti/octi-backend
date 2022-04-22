@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 import Team from '../../app/models/team.model';
-/*import RequestItem from '../../request/models/requestItem.model';
+import RequestItem from '../../request/models/requestItem.model';
 import Request from '../../request/models/request.model';
-import PaymentMethods from '../models/paymentMethod.model';*/
+// import PaymentMethods from '../models/paymentMethod.model';
 import TeamSetting from '../../app/models/teamSetting.model';
 
 async function migrateSalfa() {
@@ -39,22 +39,21 @@ async function migrateSalfa() {
         },
       });
     }
-    // await process.exit(1);
 
-
-    /*const team = await Team.findById('5bf2de35caf8ef7096105cdd');
-    const requestItems = await RequestItem.find({ team }).populate([{
+    const team = await Team.findById('5bf2de35caf8ef7096105cdd');
+    const requestItems = await RequestItem.find({ team, answers: {$exists: true} }).populate([{
       path: 'request'
     }]);
-    const paymentMethods = await PaymentMethods.find({ team });
-    const paymentMethodByKey = paymentMethods.reduce((acc: any, cur: any) => {
-      return {
-        ...acc,
-        [cur.name]: cur._id
-      };
-    }, {});
+    // const paymentMethods = await PaymentMethods.find({ team });
+    // const paymentMethodByKey = paymentMethods.reduce((acc: any, cur: any) => {
+    //   return {
+    //     ...acc,
+    //     [cur.name]: cur._id
+    //   };
+    // }, {});
     for (const requestItem of requestItems) {
       try {
+        // const paymentMethodText = answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer.trim() : '';
         const answerByKey = requestItem.answers.reduce((acc: any, cur: any) => {
           if (cur?.questionId) {
             return {
@@ -66,27 +65,18 @@ async function migrateSalfa() {
             ...acc
           };
         }, {});
-        const paymentMethodText = answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c23') ? answerByKey['5bf2de35caf8ef7096105c23'].answer.trim() : '';
-        await Request.findByIdAndUpdate(requestItem.request, {
-          customerInformation: {
-            name: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c21') ? answerByKey['5bf2de35caf8ef7096105c21'].answer : '',
-            rut: answerByKey.hasOwnProperty('5bf2de35caf8ef7096105c22') ? answerByKey['5bf2de35caf8ef7096105c22'].answer : '',
-            email: answerByKey.hasOwnProperty('60b9232164adc90013a79b45') ? answerByKey['60b9232164adc90013a79b45'].answer : '',
-            phone: ''
-          },
-          advancePaymentInformation: {
-            method: paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodByKey[paymentMethodText] : null,
-            otherMethod: !paymentMethodByKey.hasOwnProperty(paymentMethodText) ? paymentMethodText : '',
-            number: requestItem.request?.advancePaymentInformation?.number ?? '',
-            files: requestItem.request?.advancePaymentInformation?.files ?? []
-          }
-        });
+        if (!requestItem.request?.conectaID?.length && answerByKey.hasOwnProperty('6154722a94bba10012230aae')) {
+          const conectaID = answerByKey['6154722a94bba10012230aae'].answer;
+          await Request.findByIdAndUpdate(requestItem.request, {
+            conectaID
+          });
+        }
       } catch (e) {
         console.log(JSON.stringify(requestItem));
         console.log('Ha ocurrido un error en migrateSalfa');
         console.log('error:', e);
       }
-    }*/
+    }
   } catch (e) {
     console.log('Ha ocurrido un error en migrateSalfa');
     console.log('error:', e);

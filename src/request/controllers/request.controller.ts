@@ -867,6 +867,8 @@ class RequestController {
       }, {
         header: 'TICKET', key: 'paymentNumber', width: 20
       }, {
+        header: 'ID Conecta', key: 'conectaID', width: 20
+      }, {
         header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
@@ -996,6 +998,7 @@ class RequestController {
           washed: item.washed ? 'Si' : 'No',
           review: item.review ? 'Si' : 'No',
           carrier: item.carrier ? item.carrier.name : '',
+          conectaID: item.request?.conectaID ?? '',
           customerName: item.request?.customerInformation?.name ?? '',
           customerRut: item.request?.customerInformation?.rut ?? '',
           customerEmail: item.request?.customerInformation?.email ?? '',
