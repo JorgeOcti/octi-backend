@@ -140,6 +140,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             }, 300);
           }
         }
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
       } else {
         this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
       }

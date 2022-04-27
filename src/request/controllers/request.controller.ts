@@ -259,6 +259,7 @@ class RequestController {
         });
         const newRequest: IRequestModel = await new Request({
           team,
+          company,
           sellerText,
           number: number,
           // mark origin and destination with first car
@@ -331,6 +332,7 @@ class RequestController {
           ]);
           await new RequestItem({
             team,
+            company,
             request: newRequest,
             car: currentCar,
             meta: requestItemsMeta.processMeta({
@@ -445,6 +447,7 @@ class RequestController {
 
       const request = await new Request({
         team,
+        company,
         sellerText: sellerText ?? req.user.fullName(),
         number: updateTeam!.requestNumber,
         origin: venue,
@@ -480,6 +483,7 @@ class RequestController {
         const status = defaultItemStatus;
         await new RequestItem({
           team,
+          company,
           request,
           car: newCar,
           reason: car.reason,
@@ -756,7 +760,6 @@ class RequestController {
           pages: requests.pages,
           hasPrevious: requests.hasPrevious,
           hasNext: requests.hasNext,
-          pre: requests.docs,
           results: await RequestItem.aggregate([{
             $match: {
               _id: { $in: requests.docs.map((d) => d._id) }
@@ -867,6 +870,8 @@ class RequestController {
         header: 'METHODO DE PAGO', key: 'paymentMethod', width: 20
       }, {
         header: 'TICKET', key: 'paymentNumber', width: 20
+      }, {
+        header: 'ID Conecta', key: 'conectaID', width: 20
       }, {
         header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
@@ -997,6 +1002,7 @@ class RequestController {
           washed: item.washed ? 'Si' : 'No',
           review: item.review ? 'Si' : 'No',
           carrier: item.carrier ? item.carrier.name : '',
+          conectaID: item.request?.conectaID ?? '',
           customerName: item.request?.customerInformation?.name ?? '',
           customerRut: item.request?.customerInformation?.rut ?? '',
           customerEmail: item.request?.customerInformation?.email ?? '',
@@ -1341,6 +1347,7 @@ class RequestController {
         }).save();
         const newItem = await new RequestItem({
           team,
+          company,
           request,
           car: newCar,
           reason: car.reason,

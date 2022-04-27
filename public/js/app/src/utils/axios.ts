@@ -4,7 +4,7 @@ import Axios, {
   AxiosPromise,
   CancelTokenSource,
   CancelTokenStatic,
-  AxiosRequestHeaders
+  AxiosRequestConfig
 } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
@@ -48,7 +48,7 @@ export default class ApiService {
 
   constructor(private headers: IHeaders = {}) {
     this.instance = Axios.create({
-      headers: this.headers as AxiosRequestHeaders
+      headers: this.headers as AxiosRequestConfig
     });
     this.CancelToken = Axios.CancelToken;
   }

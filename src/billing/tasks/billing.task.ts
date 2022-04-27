@@ -10,6 +10,7 @@ import { ICompany } from '../../app/interfaces/company.interface';
 import GeneralUtils from '../../utils/general.utils';
 import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 import Invoice, { IInvoiceModel } from '../models/invoice.model';
+import { RequestItem } from '../../request/models';
 
 class BillingQueue {
 
@@ -143,11 +144,10 @@ class BillingQueue {
   }
 
   private async calculateCarsInRequest(company: ICompany): Promise<number> {
-    const vinInInventories = await ActivityHistory
+    const vinInInventories = await RequestItem
       .aggregate([{
         $match: {
           company: company._id,
-          type: ChoicesTypeActivity.request,
           createdAt: {
             $gte: moment()
               .subtract(1, 'day')
