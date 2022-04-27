@@ -325,7 +325,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       }))}
                       onClick={this.filterForms}
                       displayHandler={this.showSelect}
-                      notHideOnClickOutside={false}
+                      notHideOnClickOutside={true}
                     />
                   </div>
                 </div>
@@ -516,7 +516,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search)),
+    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search, undefined, undefined, undefined, true)),
     changeSearchFormsDashboardAction : (forms : string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
     changeRangeDashboardAction: (from: string, to: string) => dispatch(changeRangeDashboardAction(from, to)),

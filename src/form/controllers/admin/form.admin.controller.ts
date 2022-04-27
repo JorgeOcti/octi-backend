@@ -87,7 +87,7 @@ class AdminFormsController {
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
-    const {page, pageSize} = req.query as { page: string, pageSize: string };
+    const {page, pageSize, activated} = req.query as { page: string, pageSize: string, activated?: string };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -102,10 +102,14 @@ class AdminFormsController {
       page: parseInt(page ? page : "1", 10),
       limit: parseInt(pageSize ? pageSize : "20", 10)
     };
+
+    let filter : any = { team };
+    if (activated) {
+      filter = { ...filter, active: activated === '1' };
+    }
+
     try {
-      const forms = await this.getForms({
-        team
-      }, options);
+      const forms = await this.getForms(filter, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {
         /* istanbul ignore next */

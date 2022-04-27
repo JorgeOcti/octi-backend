@@ -229,7 +229,7 @@ export function loadForms(forms: IForm[]): ILoadingForms {
   };
 }
 
-export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true) {
+export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true, activated_forms? : boolean) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -245,7 +245,7 @@ export function getRevisionsThunkAction(nextPage: number, loading: boolean, sear
     Axios
       .all([
         api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms),
-        api.getForms(1, 100)
+        api.getForms(1, 100, activated_forms)
       ])
       .then(Axios.spread((response, forms) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));

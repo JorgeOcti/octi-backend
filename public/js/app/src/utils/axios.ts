@@ -923,9 +923,9 @@ export default class ApiService {
     );
   }
 
-  public getForms(page: number, pageSize?: number): AxiosPromise {
+  public getForms(page: number, pageSize?: number, activated?: boolean): AxiosPromise {
     return this.instance.get(
-      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${activated ? `&activated=1` : ''}`
     );
   }
 
