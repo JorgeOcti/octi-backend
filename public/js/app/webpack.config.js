@@ -1,6 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const SentryCliPlugin = require('@sentry/webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'production') {
   ];
 } else {
   plugins = [
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV'])
   ];

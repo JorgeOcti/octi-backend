@@ -1,4 +1,4 @@
-import Axios, { AxiosError, AxiosInstance, AxiosPromise, AxiosRequestHeaders, CancelTokenSource, CancelTokenStatic } from 'axios';
+import Axios, {AxiosError, AxiosInstance, AxiosPromise, AxiosRequestHeaders, CancelTokenSource, CancelTokenStatic } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
 import { IBaseCarrier } from '../../../../../src/app/interfaces/carrier.interface';
@@ -18,13 +18,6 @@ import { IOperationType } from '../../../../../src/request/interfaces/operationT
 import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 import { ITempStudio } from '../actions/statsDashboard.actions';
-
-export interface IHeaders {
-  'X-CSRFToken'?: string;
-  'Content-Type'?: string;
-  Authorization?: string;
-  timeout?: number;
-}
 
 export default class ApiService {
 
@@ -352,7 +345,7 @@ export default class ApiService {
       query += `&to=${to}`;
 
     if (forms)
-      query += `&forms=${forms.join(",")}`
+      query += `&forms=${forms.join(",")}`;
 
     return this.instance.get(
       `/api/revisions/${query}`, {
@@ -922,9 +915,9 @@ export default class ApiService {
     );
   }
 
-  public getForms(page: number, pageSize?: number): AxiosPromise {
+  public getForms(page: number, pageSize?: number, activated?: boolean): AxiosPromise {
     return this.instance.get(
-      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${activated ? `&activated=1` : ''}`
     );
   }
 

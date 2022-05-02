@@ -80,7 +80,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
-    this.showSelect = this.showSelect.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -324,7 +323,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         text: form.name
                       }))}
                       onClick={this.filterForms}
-                      displayHandler={this.showSelect}
                       notHideOnClickOutside={false}
                     />
                   </div>
@@ -465,6 +463,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
     this.setState({
       selectedForms: sForms
+    }, () => {
+      this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
+      this.props.getRevisionsAction(1, true);
     });
   }
 
@@ -472,17 +473,13 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     let {forms} = this.props.dashboard;
     let sForms = value ? forms.map( (f: IForm) => f._id) : [];
 
+
     this.setState({
       selectedForms: sForms
-    });
-  }
-
-  showSelect(value: boolean) : void {
-    let {selectedForms} = this.state;
-    if (!value) {
-      this.props.changeSearchFormsDashboardAction(selectedForms);
+    }, () => {
+      this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
       this.props.getRevisionsAction(1, true);
-    }
+    });
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -516,7 +513,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search)),
+    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search, undefined, undefined, undefined, true)),
     changeSearchFormsDashboardAction : (forms : string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
     changeRangeDashboardAction: (from: string, to: string) => dispatch(changeRangeDashboardAction(from, to)),

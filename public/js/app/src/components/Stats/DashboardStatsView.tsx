@@ -95,22 +95,24 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
             {!loading && studios.length > 0 &&
               <div className="col-md-12 col-lg-12">
                 <div className="box box-solid">
-                  <ul className="nav nav-pills nav-justified">
-                    {
-                      studios.map((studio: any) => {
-                        return (
-                          <li className={tab === studio._id ? 'active' : ''} key={studio._id}>
-                          <a
-                            href="javascript:void(0);"
-                            className={tab === studio._id ? 'background-transition' : ''}
-                            style={{borderTop: '0', marginBottom: '0'}}
-                            onClick={() => this.changeTab(studio._id)}
-                          >{studio.name}</a>
-                        </li>
-                        )
-                      })
-                    }
-                  </ul>
+                  <div className="nav-tabs-custom">
+                    <ul className="nav nav-tabs">
+                      {
+                        studios.map((studio: any) => {
+                          return (
+                            <li className={tab === studio._id ? 'active' : ''} key={studio._id}>
+                              <a
+                                href="javascript:void(0);"
+                                className={tab === studio._id ? 'background-transition' : ''}
+                                style={{borderTop: '0', marginBottom: '0'}}
+                                onClick={() => this.changeTab(studio._id)}
+                              >{studio.name}</a>
+                            </li>
+                          )
+                        })
+                      }
+                    </ul>
+                  </div>
                 </div>
               </div>
             }
@@ -118,8 +120,6 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
               <Row>
                 <div className="col-md-12">
                   <div className="box">
-                    <div className="box-header with-border"><h1 className="box-title">Dashboard de análisis de datos</h1>
-                    </div>
                     <div className="box-body">
                       <iframe src={selectedStudio.embedURL} style={{width: "100%", minWidth: "1000px" ,minHeight: "500px", height: "100vh"}} allowFullScreen={true}  frameBorder={0} security={""}/>
                     </div>
