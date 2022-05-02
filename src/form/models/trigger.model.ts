@@ -1,12 +1,7 @@
 import * as mongoose from 'mongoose';
 import { IFormTrigger, ITriggerConfig } from '../interfaces/form.interface';
+import { KindTrigger } from './trigger.types';
 
-export enum KindTrigger {
-  file = 'file',
-  email = 'email',
-  request = 'request',
-  integration = 'integration',
-}
 
 export const kindsTrigger = [
   KindTrigger.file,

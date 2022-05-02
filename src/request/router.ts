@@ -19,6 +19,7 @@ requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestC
 requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
 requestRouter.get('/requests/import/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/mass-allocation/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/external/create/', Middlewares.isLoggedIn, RequestController.integration);
 requestRouter.post('/requests/vehicles/validate-conecta/', Middlewares.isLoggedIn, RequestController.validateContectaID);
 requestRouter.get('/requests/vehicles/create/', Middlewares.isLoggedIn, RequestController.index);
@@ -26,6 +27,11 @@ requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestControll
 requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
+
+// Import vins
+requestRouter.post('/api/v1/requests/pre-mass-allocation/', Middlewares.isJWTAuthenticated, RequestController.preMassAllocation);
+
+requestRouter.post('/api/v1/requests/check-item-mass-allocation/', Middlewares.isJWTAuthenticated, RequestController.checkItemMassAllocation);
 
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isJWTAuthenticated, RequestController.searhCar);

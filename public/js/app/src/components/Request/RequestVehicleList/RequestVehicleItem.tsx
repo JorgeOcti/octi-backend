@@ -13,10 +13,10 @@ import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
-import * as Rx from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 import AutoCompleteVinInput from '../../Utils/AutoCompleteVinInput';
+import { Subject } from 'rxjs/internal/Subject';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
@@ -34,7 +34,7 @@ declare let window: IWindow;
 
 class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
-  readonly $subjectRecommends = new Rx.Subject<any>();
+  readonly $subjectRecommends = new Subject<any>();
 
   readonly state = {
     error: null,

@@ -1,19 +1,15 @@
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
-import TrackingBasePage from "../Utils/TrackingBasePage";
-import AppContainer from "../../container/AppContainer";
-import * as React from "react";
-import {ErrorInfo} from "react";
-import * as Raven from "raven-js";
-import {connect} from "react-redux";
-import {
-  getMyStudiosAction,
-  IStatsDashboardState,
-  StatsDashboardReducerAction
-} from "../../actions/statsDashboard.actions";
-import {StatsDashboardTypes} from "../../../../../../src/stats/models/studio.model";
-import {IStudio} from "../../../../../../src/stats/interfaces/studio.interface";
-import Row from "../Utils/Row";
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import AppContainer from '../../container/AppContainer';
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import * as Raven from 'raven-js';
+import { connect } from 'react-redux';
+import { getMyStudiosAction, IStatsDashboardState, StatsDashboardReducerAction } from '../../actions/statsDashboard.actions';
+import { IStudio } from '../../../../../../src/stats/interfaces/studio.interface';
+import Row from '../Utils/Row';
+import { StatsDashboardTypes } from '../../../../../../src/stats/models/studio.types';
 
 interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<StatsDashboardReducerAction>;

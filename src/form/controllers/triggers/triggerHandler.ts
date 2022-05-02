@@ -2,7 +2,7 @@ import { IForm } from '../../interfaces/form.interface';
 import { IParticipant, IParticipantAnswer } from '../../interfaces/participant.interface';
 import ParticipantModel from '../../models/participant.model';
 import logger from '../../../services/logger.service';
-import { IFormTriggerModel, KindTrigger } from '../../models/trigger.model';
+import { IFormTriggerModel } from '../../models/trigger.model';
 import { KindQuestion } from '../../models/form.model';
 import { ITriggerDelegate } from '../../interfaces/trigger.interfaces';
 import NullTriggerDelegate from './delegates/nullTrigger.delegate';
@@ -11,6 +11,7 @@ import FileTriggerDelegate from './delegates/fileTrigger.delegate';
 import { IAnyObject } from '../../../interfaces/global.interface';
 import RequestDelegate from './delegates/requestTrigger.delegate';
 import IntegrationDelegate from './delegates/integrationTrigger.delegate';
+import { KindTrigger } from '../../models/trigger.types';
 
 export default class TriggerHandler {
   private form: IForm;

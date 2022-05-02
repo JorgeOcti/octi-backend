@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { InputHTMLAttributes } from 'react';
 
 interface IPropsType {
-  input: InputHTMLAttributes<any>;
+  input: any;
   label: string;
   labelOff?: boolean;
   readOnly?: boolean;

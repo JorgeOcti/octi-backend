@@ -33,6 +33,8 @@ export interface IRequestItem {
   request: IRequest | IRequestModel;
   team: ITeam | ITeamModel;
   company: ICompanyModel | ICompany
+  code: string;
+  order: number;
   transmittal: ITransmittal | ITransmittalModel;
   transmittalItem: ITransmittalItem | ITransmittalItemModel;
   assigned: boolean;

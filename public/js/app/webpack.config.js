@@ -1,6 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
-const DashboardPlugin = require('webpack-dashboard/plugin');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const SentryCliPlugin = require('@sentry/webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'production') {
   ];
 } else {
   plugins = [
-    new DashboardPlugin(),
+    // new BundleAnalyzerPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV'])
   ];
@@ -44,31 +44,35 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   },
   optimization: {
     splitChunks: {
-      chunks: 'all'
+      chunks: 'all',
+      name: 'vendors'
       // maxSize: 128000,
     }
   },
   performance: {
     // hints: false,
-    maxEntrypointSize: 1024000,
-    maxAssetSize: 512000
+    maxEntrypointSize: 20480000,
+    maxAssetSize: 1024000
   },
   module: {
     rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader'
-        },
-      },
+      // {
+      //   test: /\.(js|jsx)$/,
+      //   exclude: /node_modules/,
+      //   use: {
+      //     loader: 'babel-loader'
+      //   },
+      // },
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: process.env.NODE_ENV === 'production' ? [{
           loader: 'babel-loader'
         }, {
-          loader: 'ts-loader'
+          loader: 'ts-loader',
+          // options: {
+          //   transpileOnly: true,
+          // },
         }] : {
           loader: 'ts-loader',
           options: {
@@ -77,8 +81,7 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
               target: 'es5',
               incremental: true  // this could also be in tsconfig.json directly
             },
-            experimentalWatchApi: true,
-            transpileOnly: true,
+            // transpileOnly: true,
           },
         },
       },
@@ -86,7 +89,9 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   },
   plugins: plugins,
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx']
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    fallback: {
+    }
   },
   externals: {
     _: '_',
@@ -108,5 +113,8 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
       disableDotRule: true
     },
     stats: 'minimal'
-  }
+  },
+  watchOptions: {
+    ignored: /node_modules/,
+  },
 };

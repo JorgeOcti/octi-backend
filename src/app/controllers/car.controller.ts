@@ -1321,10 +1321,10 @@ class CarController {
       populate: [{
         path: 'car',
         select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
-        populate: {
-          path: 'lastForm',
-          select: ['createdAt']
-        }
+        // populate: {
+        //   path: 'lastForm',
+        //   select: ['createdAt']
+        // }
       }, {
         path: 'user',
         select: ['firstName', 'lastName']

@@ -49,6 +49,7 @@ import TransmittalCreateView from './components/Transmittal/TransmittalCreateVie
 import CustomInventoryAnalysis from './components/CustomDashboard/CustomInventoryAnalysis';
 import OperationTypeListView from './components/RequestSettings/OperationTypeListView';
 import RequestImportView from './components/Request/RequestImportView';
+import RequestImportVINSView from './components/Request/RequestImportVINSView';
 import MilestoneListView from './components/RequestSettings/MilestoneListView';
 import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeListView';
 import FormsSettingsListView from './components/FormsSettings/FormListView';
@@ -121,6 +122,7 @@ const App = () => (
         <Route exact path='/transmittals/settings/milestone/' component={MilestoneListView} />
         <Route exact path='/transmittals/settings/milestone-type/' component={MilestoneTypeListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
+        <Route exact path='/requests/import-vins/' component={RequestImportVINSView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
         <Route exact path='/requests/studio/' component={VDistributionDashboardStatsView} />
         <Route exact path='/requests/vehicles/external/create/' component={RequestCreateIntegration} />

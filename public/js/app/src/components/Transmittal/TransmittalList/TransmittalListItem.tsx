@@ -5,13 +5,12 @@ import { RouteComponentProps } from 'react-router';
 import * as moment from 'moment-timezone';
 import TransmittalActions from '../../../actions/transmittal.actions';
 import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/transmittal.types';
-import { ITransmittalItemModel } from '../../../../../../../src/distribution/models/transmittalItem.model';
+import { ITransmittalItem } from '../../../../../../../src/distribution/interfaces/transmittalItem.interface';
 import DateRangePicker from '../../Utils/DateRangePicker';
-import BootstrapSelect from '../../Utils/BootstrapSelect';
 import ShowIf from '../../Utils/ShowIf';
 import * as swal from 'sweetalert';
 import ApiService from '../../../utils/axios';
-import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
+import { ITransmittal } from '../../../../../../../src/distribution/interfaces/transmittal.interface';
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
@@ -21,8 +20,8 @@ import { IWindow } from '../../../interfaces/window';
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
-  item: ITransmittalModel;
-  transmittalItem: ITransmittalItemModel;
+  item: ITransmittal;
+  transmittalItem: ITransmittalItem;
   transmittalActions: TransmittalActions;
 
   getParticipant(id: string): void;
@@ -279,7 +278,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private debounceUpdateTransmittalItem(transmittalItem: RecursivePartial<ITransmittalItemModel>) {
+  private debounceUpdateTransmittalItem(transmittalItem: RecursivePartial<ITransmittalItem>) {
     this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
   }
 

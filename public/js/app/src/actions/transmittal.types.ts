@@ -1,13 +1,12 @@
-import {ITransmittal} from '../../../../../src/distribution/interfaces/transmittal.interface';
-import {CancelTokenSource} from "axios";
-import {IVenueModel} from '../../../../../src/app/models/venue.model';
-import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
-import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
-import {IUserModel} from '../../../../../src/app/models/user.model';
-import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
-import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
+import { CancelTokenSource } from 'axios';
+import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { ITransmittalItem } from '../../../../../src/distribution/interfaces/transmittalItem.interface';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import { ITransmittal } from '../../../../../src/distribution/interfaces/transmittal.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
-import {IMilestone} from "../../../../../src/distribution/interfaces";
+import { IMilestone } from '../../../../../src/distribution/interfaces';
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
@@ -59,9 +58,9 @@ export interface IRequestItemsFilters {
 
 export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
   requestItemsLoading: boolean;
-  venues: IVenueModel[];
-  carriers: ICarrierModel[];
-  drivers: IUserModel[];
+  venues: IVenue[];
+  carriers: ICarrier[];
+  drivers: IUser[];
   milestoneTypes: IMilestoneType[];
   milestones: IMilestone[];
   requestItems: IRequestItem[];
@@ -112,21 +111,21 @@ interface ITransmittalLoadAction {
 interface ITransmittalLoadVenuesAction {
   type: typeof LOAD_VENUES_TRANSMITTAL;
   payload: {
-    venues: IVenueModel[];
+    venues: IVenue[];
   }
 }
 
 interface ITransmittalLoadCarriersAction {
   type: typeof LOAD_CARRIERS_TRANSMITTAL;
   payload: {
-    carriers: ICarrierModel[];
+    carriers: ICarrier[];
   }
 }
 
 interface ITransmittalLoadDriversAction {
   type: typeof LOAD_DRIVERS_TRANSMITTAL;
   payload: {
-    drivers: IUserModel[];
+    drivers: IUser[];
   }
 }
 
@@ -147,35 +146,35 @@ interface ITransmittalToogleTabAction {
 interface ICreateTransmittalItemAction {
   type: typeof CREATE_TRANSMITTAL_ITEM_TRANSMITTAL;
   payload: {
-    transmittalItem: Partial<ITransmittalItemModel>;
+    transmittalItem: Partial<ITransmittalItem>;
   }
 }
 
 interface IUpdateTransmittalItemAction {
   type: typeof UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL;
   payload: {
-    transmittalItem: Partial<ITransmittalItemModel>;
+    transmittalItem: Partial<ITransmittalItem>;
   }
 }
 
 interface IDeleteTransmittalAction {
   type: typeof DELETE_TRANSMITTAL_TRANSMITTAL;
   payload: {
-    transmittal: Partial<ITransmittalModel>;
+    transmittal: Partial<ITransmittal>;
   }
 }
 
 interface IDeleteTransmittalItemAction {
   type: typeof DELETE_TRANSMITTAL_ITEM_TRANSMITTAL;
   payload: {
-    transmittalItem: Partial<ITransmittalItemModel>;
+    transmittalItem: Partial<ITransmittalItem>;
   }
 }
 
 interface IUpdateTransmittalAction {
   type: typeof UPDATE_TRANSMITTAL_TRANSMITTAL;
   payload: {
-    transmittal: Partial<ITransmittalModel>;
+    transmittal: Partial<ITransmittal>;
   }
 }
 

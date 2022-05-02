@@ -13,51 +13,89 @@ import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
-import Axios, { AxiosError } from 'axios';
+import Axios, { AxiosError, AxiosResponse } from 'axios';
 import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-import { ISalesChannel } from '../../../../../../src/request/interfaces/salesChannel.interface';
-import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
-import { IReason } from '../../../../../../src/request/interfaces/reason.interface';
-import { IVenue } from '../../../../../../src/app/interfaces/venue.interface';
-import RequestImportForm from './RequestImportForm/RequestImportForm';
+import { IRequestItem } from '../../../../../../src/request/interfaces/requestItem.interface';
 import { submit } from 'redux-form';
 import { requestSettings } from './defaults';
+import filterFactory from 'react-bootstrap-table2-filter';
+import paginationFactory from 'react-bootstrap-table2-paginator';
+import BootstrapTable from 'react-bootstrap-table-next';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
   dispatch: Dispatch<any>;
 }
 
+enum itemStatus {
+  PENDING,
+  IN_PROCESS,
+  READY,
+  ERROR
+}
+
+interface IRequestItemMassAllocation extends IRequestItem {
+  processStatus: itemStatus;
+  errors: string[]
+}
+
 interface IStateType {
   error: Error | null;
-  requests: any[];
   canDrop: boolean;
   loading: boolean;
   sending: boolean;
-  venues: IVenue[];
-  reasons: IReason[];
-  channels: ISalesChannel[];
-  operationTypes: IOperationType[];
+  requestItems: IRequestItemMassAllocation[];
   requestSettings: IRequestSetting;
+  countItemsByStatus: any
 }
 
 declare let window: IWindow;
 
-class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
+class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
   readonly inputFile: RefObject<HTMLInputElement>;
-  readonly api: ApiService;
+  readonly apiService: ApiService;
+
+  private paginationOption: any = {
+    paginationSize: 4,
+    showTotal: true,
+    paginationTotalRenderer: this.customTotal,
+    sizePerPageList: [{
+      text: '20', value: 20
+    },{
+      text: '50', value: 50
+    }, {
+      text: '100', value: 100
+    }, {
+      text: '200', value: 200
+    }],
+    // onPageChange: () => {
+    //   window.scrollTo(0, 0);
+    //   setTimeout(() => {
+    //     $('[data-toggle="tooltip"]').tooltip();
+    //   }, 200);
+    // }
+  };
+
+  readonly defaultSorted = [{
+    dataField: 'errors.length',
+    order: 'desc'
+  }];
+
+  readonly columns: any[] = [];
 
   readonly state: IStateType = {
     error: null,
     canDrop: false,
     loading: true,
     sending: false,
-    requests: [],
-    venues: [],
-    reasons: [],
-    channels: [],
-    operationTypes: [],
+    requestItems: [],
+    countItemsByStatus: {
+      [itemStatus.PENDING]: 0,
+      [itemStatus.IN_PROCESS]: 0,
+      [itemStatus.READY]: 0,
+      [itemStatus.ERROR]: 0,
+    },
     requestSettings
   };
 
@@ -72,11 +110,59 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
     this.downloadTemplate = this.downloadTemplate.bind(this);
-    this.parseRequestItem = this.parseRequestItem.bind(this);
     this.processSettings = this.processSettings.bind(this);
     this.sendCreate = this.sendCreate.bind(this);
     this.checkSameVenue = this.checkSameVenue.bind(this);
-    this.api = new ApiService();
+    this.customTotal = this.customTotal.bind(this);
+    this.checkItems = this.checkItems.bind(this);
+    this.itemsByStatus = this.itemsByStatus.bind(this);
+    this.updateItemStatusByID = this.updateItemStatusByID.bind(this);
+    this.statusFormatter = this.statusFormatter.bind(this);
+    this.apiService = new ApiService();
+    this.columns = [{
+      dataField: 'processStatus',
+      text: '',
+      formatter: this.statusFormatter,
+      classes: 'middle-center',
+      headerClasses: 'middle-center pointer'
+    },{
+      dataField: 'code',
+      text: 'CODIGO',
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'vin',
+      text: 'VIN',
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'car.brand',
+      text: 'Marca',
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'car.denomination',
+      text: 'Modelo',
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'car.material',
+      text: 'Material',
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'errors.length',
+      text: 'Problemas',
+      formatter: this.errorsFormatter,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }];
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -92,25 +178,13 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     Axios
       .all([
-        this.api.getOperationTypes({ page: 1, pageSize: 200 }),
-        this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
-        this.api.getSalesChannel({ page: 1, pageSize: 200 }),
-        this.api.getReasons({ page: 1, pageSize: 200 }),
-        this.api.getTeamSettings()
+        this.apiService.getTeamSettings()
       ])
       .then(Axios.spread((
-        operationTypes,
-        venues,
-        channels,
-        reasons,
         teamSettings
       ) => {
         this.setState({
           requestSettings: teamSettings.data.request,
-          venues: venues.data.results,
-          reasons: reasons.data.results,
-          channels: channels.data.results,
-          operationTypes: operationTypes.data.results,
           loading: false
         });
       }))
@@ -119,25 +193,41 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       });
   }
 
-  public componentWillUnmount(): void {
-    // cancel request if component is inmounted
-    if (this.props.requestItems.source) {
-      this.props.requestItems.source.cancel('Operation canceled by the user.');
-    }
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    $('.react-bootstrap-table-pagination')
+      .css({padding: '3px 15px'});
+    $('.react-bootstrap-table-pagination div')
+      .removeClass('col-xs-6')
+      .addClass('col-xs-12')
+      .css({padding: '3px 15px'});
+    $('.react-bootstrap-table-pagination div:last-child')
+      .removeClass('text-right')
+      .addClass('text-right');
+    $('#pageDropDown')
+      .removeClass('btn-sm')
+      .addClass('btn-sm');
+    $('.bs-searchbox input')
+      .removeClass('input-sm')
+      .addClass('input-sm');
+    $('.pagination')
+      .removeClass('pagination-sm')
+      .addClass('pagination-sm')
+      .css({margin: 0});
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      loading, requests, sending, channels, operationTypes, reasons, venues
+      loading, sending, requestItems,countItemsByStatus
     } = this.state;
+    // @ts-ignore
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Importador de solicitudes'>
+      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignador masivo de vehículos'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Importador de solicitudes</h3>
+              <h3 className='box-title'>Asignador masivo de vehículos</h3>
               <div className='pull-right box-tools'>
-                <ShowIf condition={!requests.length}>
+                <ShowIf condition={!requestItems.length}>
                   <button
                     className='btn btn-sm btn-primary'
                     onClick={this.downloadTemplate}
@@ -145,41 +235,49 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
                     <i className='fa fa-fw fa-download' /> Descargar Formato
                   </button>
                 </ShowIf>
+                <ShowIf condition={!!requestItems.length}>
+                  <button
+                    className='btn btn-sm btn-default'
+                    onClick={this.clickUploadFile}
+                    // disabled={true}
+                  >
+                    <i className='fa fa-fw fa-cogs' /> Cambiar archivo
+                  </button>
+                  <button
+                    className="btn btn-sm btn-primary"
+                    style={{marginLeft: '5px'}}
+                    disabled={true}
+                  >
+                    <i className="fa fa-fw fa-spin fa-spinner"/> Asignar
+                  </button>
+                </ShowIf>
               </div>
             </div>
-            <div className='box-body margin'>
+            <div className={`box-body ${requestItems.length ? 'no-padding' : 'margin'}`}>
+              <ul>
+                <li>Pendiente: {countItemsByStatus[itemStatus.PENDING]}</li>
+                <li>En proceso: {countItemsByStatus[itemStatus.IN_PROCESS]}</li>
+                <li>Listos: {countItemsByStatus[itemStatus.READY]}</li>
+                <li>Error: {countItemsByStatus[itemStatus.ERROR]}</li>
+              </ul>
               {
-                requests.length ?
+                requestItems.length ?
                   <>
-                    <RequestImportForm
-                      channels={channels}
-                      operationTypes={operationTypes}
-                      reasons={reasons}
-                      venues={venues}
-                      onSubmit={this.sendCreate}
-                      initialValues={{
-                        requests: requests
-                      }}
-                    />
-                    <div className='row'>
-                      <div className='col col-md-6'>
-                        {/*  <strong>Total de :</strong> {requests.length}*/}
-                      </div>
-                      <div className='col-md-6 text-right'>
-                        <button className='btn btn-sm btn-primary' onClick={this.downloadTemplate}>
-                          <i className='fa fa-fw fa-download' /> Descargar Formato
-                        </button>
-                        <button className='btn btn-sm btn-default' onClick={this.clickUploadFile} style={{ marginLeft: '5px' }}>
-                          <i className='fa fa-fw fa-cogs' /> Cambiar configuración
-                        </button>
-                      </div>
+                    <div className='mass-allocate-requests'>
+                      <BootstrapTable
+                        keyField='_id'
+                        data={requestItems}
+                        columns={this.columns}
+                        filter={filterFactory()}
+                        pagination={paginationFactory(this.paginationOption)}
+                        defaultSorted={this.defaultSorted}
+                      />
                     </div>
                   </>
                   :
                   <div className='row'>
                     <div className='col col-md-12'>
                       <div className='form-group'>
-                        {/*<label>Días que serán importardos</label>*/}
                         <div
                           className='upload-file text-center pointer'
                           onClick={this.clickUploadFile}
@@ -217,7 +315,7 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
               >
                 Cancelar
               </button>
-              <ShowIf condition={!!requests.length}>
+              <ShowIf condition={false}>
                 <button
                   className='btn btn-sm btn-primary'
                   style={{ marginLeft: '5px' }}
@@ -335,47 +433,9 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
     }]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Propiedades');
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
     /* generate an XLSX file */
     XLSX.writeFile(wb, 'template_request_settings.xlsx');
-  }
-
-  private parseRequestItem(requestItem: any) {
-    const { venues, reasons } = this.state;
-    return {
-      ['reason']: reasons.find((reason) => {
-        return reason.name?.trim().toLowerCase() === requestItem['Motivo']?.trim().toLowerCase();
-      })?._id,
-      ['vin']: requestItem['Chasis'],
-      ['engineNumber']: requestItem['Motor'],
-      ['brand']: requestItem['Marca'],
-      ['denomination']: requestItem['Modelo'],
-      ['color']: requestItem['Color'],
-      ['type']: requestItem['Tipo'],
-      ['client']: requestItem['Cliente'],
-      ['entry']: requestItem['Partida'],
-      ['invoice']: requestItem['Factura'],
-      ['origin']: venues.find((venue) => {
-        return this.checkSameVenue(venue, requestItem['Origen']);
-        // return venue.name?.trim().toLowerCase() === requestItem['Origen']?.trim().toLowerCase();
-      })?._id,
-      ['destination']: venues.find((venue) => {
-        return this.checkSameVenue(venue, requestItem['Destino']);
-        // return venue.name?.trim().toLowerCase() === requestItem['Destino']?.trim().toLowerCase();
-      })?._id,
-      ['bl']: requestItem['BL'],
-      ['engineSize']: requestItem['Cilindrada'],
-      ['driveType']: requestItem['Traccion'],
-      ['businessYear']: requestItem['Ano Comercial'],
-      ['manufacturingYear']: requestItem['Ano Fabricacion'],
-      ['price']: requestItem['Monto'],
-      ['insurancePrice']: requestItem['Seguro'],
-      ['weight']: requestItem['Peso'],
-      ['gas']: requestItem['Gas'],
-      ['ap']: requestItem['AP'],
-      ['countryOrigin']: requestItem['Pais Origen'],
-      ['observation']: requestItem['Observacion']
-    };
   }
 
   private checkSameVenue(venueA: any, venueB: any){
@@ -392,7 +452,6 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       const reader = new FileReader();
       const rABS = !!reader.readAsBinaryString;
       reader.onload = (e: any) => {
-        const { channels, operationTypes } = this.state;
         let data = e.target.result;
         if (!rABS) {
           data = new Uint8Array(data);
@@ -401,42 +460,54 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
           type: rABS ? 'binary' : 'array',
           cellDates: true
         });
-        const excelData = 'Propiedades' in workbook.Sheets
-          ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades)
+        const excelData: any [] = 'Solicitudes' in workbook.Sheets
+          ? XLSX.utils.sheet_to_json(workbook.Sheets.Solicitudes)
           : [];
         if (excelData.length >= 1) {
-          const requestByNumber = excelData.reduce<any>((acc: any, cur: any) => {
-            const key = cur['Numero solicitud'];
-            if (!acc.hasOwnProperty(key)) {
-              acc[key] = {
-                ['number']: key,
-                ['sellerText']: cur['Vendedor'],
-                ['channel']: channels.find((channel) => {
-                  return channel.name?.trim().toLowerCase() === cur['Canal']?.trim().toLowerCase();
-                })?._id,
-                ['operationType']: operationTypes.find((operationType) => {
-                  return operationType.name?.trim().toLowerCase() === cur['Tipo operacion']?.trim().toLowerCase();
-                })?._id,
-                cars: [this.parseRequestItem(cur)]
+          const data: any[] = [];
+          const vinByCode: any = {};
+          for (const item of excelData) {
+            const code = item.hasOwnProperty('CODIGO') ? item['CODIGO'] : null;
+            const vin = item.hasOwnProperty('VIN/ID') ? item['VIN/ID'] : null;
+            if(code?.length){
+              vinByCode[code] = {
+                vin,
+                count: vinByCode[code]?.count ? vinByCode[code].count + 1 : 1
               };
-            } else {
-              acc[key] = {
-                ...acc[key],
-                cars: [...acc[key].cars, this.parseRequestItem(cur)]
-              };
+              data.push({
+                code,
+                vin
+              });
             }
-            return acc;
-          }, {});
-
-          this.setState({
-            loading: false,
-            requests: Object.values(requestByNumber)
-              .sort((a: any, b: any) => {
-                return a['number'].localeCompare(b['number'], 'en', { numeric: true });
-              })
-          }, () => {
-            console.log('this.state.requests', this.state.requests);
-          });
+          }
+          this.apiService
+            .preMassAllocation({ items: data })
+            .then((response: any) => {
+              this.setState({
+                requestItems: response.data.results.map((item: any) => {
+                  return {
+                    ...item,
+                    processStatus: itemStatus.PENDING,
+                    errors: [],
+                    car:{
+                      ...item.car,
+                      vin: vinByCode[item.code].vin,
+                    },
+                    vin: vinByCode[item.code].vin,
+                    checked: false
+                  };
+                }),
+                countItemsByStatus: {
+                  [itemStatus.PENDING]: response.data.results.length,
+                  [itemStatus.IN_PROCESS]: 0,
+                  [itemStatus.READY]: 0,
+                  [itemStatus.ERROR]: 0
+                },
+                loading: false
+              }, ()=>{
+                this.checkItems();
+              });
+            });
         } else {
           swal!(
             'Importador de configuración',
@@ -464,13 +535,11 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
     this.setState({
       sending: true
     });
-    const api = new ApiService();
-    api.getSource();
-    api
+    this.apiService.getSource();
+    this.apiService
       .importRequests(data)
       .then((response: any) => {
         const { message } = response.data;
-        console.log('message', message);
         history.push('/requests/vehicles/');
         setTimeout(() => {
           swal!('Importador de solicitudes', message, 'success');
@@ -481,14 +550,91 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       })
       .catch((error) => {
         if (error.status === 400) {
-          swal!('Importador de solicitudes', error.data.message, 'error');
+          swal!('Asignador masivo de vehículos', error.data.message, 'error');
         } else {
-          api.errorHandler(error);
+          this.apiService.errorHandler(error);
         }
         this.setState({
           sending: false
         });
       });
+  }
+
+  private customTotal(from: any, to: any, size: any) {
+    return(
+      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '14px'}}>
+        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
+      </span>
+    );
+  }
+
+  private checkItems(){
+    const pendings = this.itemsByStatus(itemStatus.PENDING);
+    if (pendings.length) {
+      let item =  pendings[0];
+      item = this.updateItemStatusByID(item, itemStatus.IN_PROCESS);
+      this.apiService
+        .checkItemMassAllocation({ item })
+        .then((response: AxiosResponse) => {
+          console.log(response.data);
+          this.updateItemStatusByID({
+              ...item,
+              errors: response.data.errors
+            },
+            response.data.errors.length ? itemStatus.ERROR : itemStatus.READY,
+            this.checkItems
+          );
+        })
+        .catch((error) => {
+        if (error.status === 400) {
+          swal!('Asignador masivo de vehículos', error.data.message, 'error');
+        } else {
+          this.apiService.errorHandler(error);
+        }
+        this.setState({
+          sending: false
+        });
+      });
+    }
+  }
+
+  private updateItemStatusByID(item: IRequestItemMassAllocation, processStatus: itemStatus, callback?: () => void): any {
+    const { requestItems, countItemsByStatus } = this.state;
+    this.setState({
+      countItemsByStatus: {
+        ...countItemsByStatus,
+        [processStatus]: countItemsByStatus[processStatus] + 1,
+        [item.processStatus]: countItemsByStatus[item.processStatus] - 1
+      },
+      requestItems: requestItems.map((requestItem) => {
+        if (requestItem._id === item._id) {
+          return {
+            ...item,
+            processStatus
+          };
+        }
+        return requestItem;
+      })
+    }, callback);
+    return { ...item, processStatus };
+  }
+
+
+  private itemsByStatus(processStatus: itemStatus) {
+    const { requestItems } = this.state;
+    return requestItems
+      .filter((item)=> item.processStatus === processStatus);
+  }
+
+  private errorsFormatter(_: string, row: any) {
+    return row.errors.length > 0 ? JSON.stringify(row.errors) : "-";
+  }
+
+  private statusFormatter(_: string, row: any) {
+    if([itemStatus.READY, itemStatus.ERROR].includes(row.processStatus)){
+      return row.errors.length > 0 ? <i className={'fa fa-ban red'} /> : <i className={'fa fa-check-circle green'} />;
+    }
+    return ''
   }
 }
 
@@ -497,10 +643,11 @@ const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
     requestItems: state.requestItems
   };
 };
+
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestImportView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestImportVINSView);
