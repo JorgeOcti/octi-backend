@@ -851,10 +851,13 @@ class FormController {
                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
                 .populate(TransmittalController.itemPopulate);
 
+              let transmittal = await Transmittal.findOne({ _id: transmittalItemData!!.transmittal });
+
               // update request when check item
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.checkItem,
-                team
+                team,
+                type: transmittal!!.type,
               });
 
               if (milestone?.requestItemStatus) {
