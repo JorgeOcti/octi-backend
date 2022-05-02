@@ -51,6 +51,12 @@ const requestItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
+  order: {
+    type: Number
+  },
+  code: {
+    type: String
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'company'
@@ -151,9 +157,9 @@ const requestItemSchema = new mongoose.Schema({
   timestamps: true
 });
 
-requestItemSchema.index({'meta.request.number': 1});
-requestItemSchema.index({'destination': 1, 'origin': 1,  'team': 1});
-requestItemSchema.index({'destination': 1, 'origin': 1,  'createdAt': 1});
+requestItemSchema.index({ 'meta.request.number': 1 });
+requestItemSchema.index({ 'destination': 1, 'origin': 1, 'team': 1 });
+requestItemSchema.index({ 'destination': 1, 'origin': 1, 'createdAt': 1 });
 
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);

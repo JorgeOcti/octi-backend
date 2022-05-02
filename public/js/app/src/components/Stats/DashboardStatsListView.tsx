@@ -1,28 +1,32 @@
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
-import TrackingBasePage from "../Utils/TrackingBasePage";
-import AppContainer from "../../container/AppContainer";
-import * as React from "react";
-import {ErrorInfo} from "react";
-import * as Raven from "raven-js";
-import {connect} from "react-redux";
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import AppContainer from '../../container/AppContainer';
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import * as Raven from 'raven-js';
+import { connect } from 'react-redux';
 import {
-  changeTempStudioAction, createStudioAction, deleteStudioAction, editStudioAction,
+  changeTempStudioAction,
+  createStudioAction,
+  deleteStudioAction,
+  editStudioAction,
   getStudiosAction,
-  IStatsDashboardState, ITempStudio, loadStudioUsersAction,
+  IStatsDashboardState,
+  ITempStudio,
+  loadStudioUsersAction,
   StatsDashboardReducerAction
-} from "../../actions/statsDashboard.actions";
-import {DashboardTypesDictionary, StatsDashboardTypes} from "../../../../../../src/stats/models/studio.model";
-import {IStudio} from "../../../../../../src/stats/interfaces/studio.interface";
-import {hasPermission} from "../../utils/common";
-import * as moment from "moment";
-import Paginator from "../Utils/Paginator";
-import ModalView from "../Modal/ModalView";
-import {IWindow} from "../../interfaces/window";
-import {loadDataAction, ModalReduxAction} from "../../actions/modal.actions";
-import {RegionReduxAction} from "../../actions/regions.actions";
+} from '../../actions/statsDashboard.actions';
+import { DashboardTypesDictionary, StatsDashboardTypes } from '../../../../../../src/stats/models/studio.types';
+import { IStudio } from '../../../../../../src/stats/interfaces/studio.interface';
+import { hasPermission } from '../../utils/common';
+import * as moment from 'moment';
+import Paginator from '../Utils/Paginator';
+import ModalView from '../Modal/ModalView';
+import { IWindow } from '../../interfaces/window';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import * as swal from 'sweetalert';
-import StudioFormView from "./StudioFormView";
+import StudioFormView from './StudioFormView';
 
 interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<StatsDashboardReducerAction>;

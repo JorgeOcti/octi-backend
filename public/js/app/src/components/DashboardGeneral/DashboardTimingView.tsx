@@ -62,7 +62,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
 
   getDateRangeOptions(): daterangepicker.Options {
     return {
-      maxDate: moment(),
+      maxDate: moment().toDate(),
       locale: {
         format: 'MM/YYYY',
         customRangeLabel: 'Período personalizado',
@@ -70,10 +70,10 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
         cancelLabel: 'Cancelar'
       },
       ranges: {
-        'Este mes': [moment().startOf('month'), moment().endOf('month')],
-        'Últimos 3 meses': [moment().subtract(2, 'months').startOf('month'), moment().endOf('month')],
-        'Últimos 6 meses': [moment().subtract(5, 'months').startOf('month'), moment().endOf('month')],
-        'Último año': [moment().subtract(11, 'months').startOf('month'), moment().endOf('month')]
+        'Este mes': [moment().startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Últimos 3 meses': [moment().subtract(2, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Últimos 6 meses': [moment().subtract(5, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Último año': [moment().subtract(11, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
       }
     };
   }

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { InputHTMLAttributes } from 'react';
+import { DetailedHTMLFactory, InputHTMLAttributes } from 'react';
 
 interface IPropsType {
-  input: InputHTMLAttributes<any>;
+  input: DetailedHTMLFactory<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
   type: string;
 }
 

@@ -1,7 +1,7 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
-import {StatsDashboardTypes} from '../../../../../src/stats/models/studio.model';
+import {StatsDashboardTypes} from '../../../../../src/stats/models/studio.types';
 import {IStudio} from '../../../../../src/stats/interfaces/studio.interface';
 import {ITeam, IUser} from '../../../../../src/app/interfaces';
 import * as swal from 'sweetalert';

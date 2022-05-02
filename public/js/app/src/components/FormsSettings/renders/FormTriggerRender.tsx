@@ -6,7 +6,7 @@ import InputField from '../../Utils/forms/InputField';
 import { inputStringRequired } from '../../Utils/forms/validations';
 import CheckBoxField from '../../Utils/forms/CheckBoxField';
 import SelectField from '../../Utils/forms/SelectField';
-import { KindTrigger } from '../../../../../../../src/form/models/trigger.model';
+import { KindTrigger } from '../../../../../../../src/form/models/trigger.types';
 import FormFileTriggerRender from './TriggersTypes/FormFileTriggerRender';
 import FormEmailTriggerRender from './TriggersTypes/FormEmaiTriggerRender';
 import FormRequestTriggerRender from './TriggersTypes/FormRequestTriggerRender';

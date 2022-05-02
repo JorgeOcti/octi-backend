@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { RefObject } from 'react';
-import * as Rx from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 import { IRequestItem } from '../../../../../../src/request/interfaces';
@@ -8,6 +7,7 @@ import ApiService from '../../utils/axios';
 import { AxiosError, AxiosResponse } from 'axios';
 import { parseReplicableURL } from '../../utils/common';
 import ShowIf from './ShowIf';
+import { Subject } from 'rxjs/internal/Subject';
 
 interface IPropsType {
   defaultValue: string;
@@ -26,7 +26,7 @@ interface IStateType {
 }
 
 class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
-  readonly $subjectVINRecommends = new Rx.Subject<any>();
+  readonly $subjectVINRecommends = new Subject<any>();
   readonly api: ApiService;
   readonly autocompleteElement: RefObject<HTMLInputElement>;
   readonly items: RefObject<HTMLInputElement>;

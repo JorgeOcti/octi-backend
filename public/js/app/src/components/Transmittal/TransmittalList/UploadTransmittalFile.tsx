@@ -1,12 +1,11 @@
 import * as React from 'react';
 import { RefObject } from 'react';
-import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
+import { ITransmittal } from '../../../../../../../src/distribution/interfaces/transmittal.interface';
 import ApiService from '../../../utils/axios';
 import { AxiosError } from 'axios';
-import ShowIf from '../../Utils/ShowIf';
 
 interface IPropsType {
-  transmittal: ITransmittalModel;
+  transmittal: ITransmittal;
 }
 
 interface IStateType {

@@ -6,12 +6,12 @@ import * as passport from 'passport';
 const LocalStrategy = passportLocal.Strategy;
 
 passport.serializeUser((user, done) => {
-  console.log('serializeUser.user', user);
+  console.log('serializeUser.user');
   done(null, user);
 });
 
 passport.deserializeUser((user: any, done: any) => {
-  console.log('deserializeUser.user', user);
+  console.log('deserializeUser.user');
   try {
     User.findOne({ email: user.email ?? user }, {
       _id: true,

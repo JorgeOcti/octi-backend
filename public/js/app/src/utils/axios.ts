@@ -1,37 +1,23 @@
-import Axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosPromise,
-  CancelTokenSource,
-  CancelTokenStatic,
-  AxiosRequestConfig
-} from 'axios';
+import Axios, { AxiosError, AxiosInstance, AxiosPromise, AxiosRequestHeaders, CancelTokenSource, CancelTokenStatic } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
-import {
-  IBaseCarrier
-} from '../../../../../src/app/interfaces/carrier.interface';
-import {
-  IBaseCompany
-} from '../../../../../src/app/interfaces/company.interface';
+import { IBaseCarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { IBaseCompany } from '../../../../../src/app/interfaces/company.interface';
 import { IReason } from '../../../../../src/request/interfaces/reason.interface';
-import {
-  IBaseRegion
-} from '../../../../../src/app/interfaces/region.interface';
+import { IBaseRegion } from '../../../../../src/app/interfaces/region.interface';
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import { IPaymentMethod } from '../../../../../src/request/interfaces/paymentMethod.interface';
-import {IBaseVenue} from '../../../../../src/app/interfaces/venue.interface';
+import { IBaseVenue } from '../../../../../src/app/interfaces/venue.interface';
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
-import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
-import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
+import { ITransmittalItem } from '../../../../../src/distribution/interfaces/transmittalItem.interface';
+import { ITransmittal } from '../../../../../src/distribution/interfaces/transmittal.interface';
 import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
 import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
-import {ITempStudio} from "../actions/statsDashboard.actions";
-import {IStudio} from "../../../../../src/stats/interfaces/studio.interface";
+import { ITempStudio } from '../actions/statsDashboard.actions';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -46,9 +32,9 @@ export default class ApiService {
   private CancelToken: CancelTokenStatic;
   private source: CancelTokenSource;
 
-  constructor(private headers: IHeaders = {}) {
+  constructor(private headers: AxiosRequestHeaders = {}) {
     this.instance = Axios.create({
-      headers: this.headers as AxiosRequestConfig
+      headers: this.headers
     });
     this.CancelToken = Axios.CancelToken;
   }
@@ -507,6 +493,19 @@ export default class ApiService {
       `/api/admin/alerts/${id}/`
     );
   }
+  public preMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/pre-mass-allocation/`,
+      data
+    );
+  }
+
+  public checkItemMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/check-item-mass-allocation/`,
+      data
+    );
+  }
 
   public getSource(): CancelTokenSource {
     this.source = this.CancelToken.source();
@@ -801,7 +800,7 @@ export default class ApiService {
     );
   }
 
-  public updateTransmittal(transmittal: Partial<ITransmittalModel>): AxiosPromise {
+  public updateTransmittal(transmittal: Partial<ITransmittal>): AxiosPromise {
     return this.instance.patch(
       `/api/v1/transmittals/${transmittal._id}/`,
       transmittal
@@ -821,14 +820,14 @@ export default class ApiService {
     );
   }
 
-  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>): AxiosPromise {
+  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItem>): AxiosPromise {
     return this.instance.patch(
       `/api/v1/transmittals/item/${transmittalItem._id}/`,
       transmittalItem
     );
   }
 
-  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>): AxiosPromise {
+  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItem>): AxiosPromise {
     return this.instance.delete(
       `/api/v1/transmittals/item/${transmittalItem._id}/`
     );

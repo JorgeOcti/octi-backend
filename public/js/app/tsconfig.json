@@ -3,6 +3,7 @@
     "outDir": "dist/",
     "sourceMap": true,
     "incremental": true,
+    "skipLibCheck": true,
     "tsBuildInfoFile": "./buildcache/buildcache",
     "noImplicitReturns": true,
     "noImplicitThis": true,

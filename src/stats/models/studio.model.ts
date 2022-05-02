@@ -2,20 +2,8 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import { PaginateModel } from 'mongoose';
 import {IInvoiceModel} from "../../billing/models/invoice.model";
+import {StatsDashboardTypes} from './studio.types'
 
-export enum StatsDashboardTypes {
-  UNIT_CONTROL = "UNIT_CONTROL",
-  INVENTORY = "INVENTORY",
-  DISTRIBUTION = "DISTRIBUTION",
-  PLANIFICATION = "PLANIFICATION"
-}
-
-export const DashboardTypesDictionary : {[id: string]: string} = {
-  [StatsDashboardTypes.UNIT_CONTROL]: "Control de unidades",
-  [StatsDashboardTypes.INVENTORY]: "Inventarios",
-  [StatsDashboardTypes.DISTRIBUTION]: "Distribución",
-  [StatsDashboardTypes.PLANIFICATION]: "Planificación"
-};
 
 export const choicesStatsDashboardTypes = [
   StatsDashboardTypes.UNIT_CONTROL,

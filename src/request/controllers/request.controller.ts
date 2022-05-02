@@ -140,6 +140,7 @@ class RequestController {
     this.createRequest = this.createRequest.bind(this);
     this.searchVin = this.searchVin.bind(this);
     this.searchVinContecta = this.searchVinContecta.bind(this);
+    this.checkItemMassAllocation = this.checkItemMassAllocation.bind(this);
   }
 
   public async integration(req: IRequest, res: Response) {
@@ -809,6 +810,8 @@ class RequestController {
         }
       }
       worksheet.columns = [{
+        header: 'CODIGO', key: 'code', width: 10
+      },{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
         header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
@@ -932,6 +935,7 @@ class RequestController {
       }, {
         $project: {
           '_id': 1,
+          'code': 1,
           'request': 1,
           'priority': 1,
           'observation': 1,
@@ -968,6 +972,7 @@ class RequestController {
         .exec();
 
       cursor.on('data', async (item: any) => {
+        // console.log(item)
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
@@ -975,6 +980,7 @@ class RequestController {
         worksheet.addRow({
           ...extraAnswers,
           request: item.request.number,
+          code: item.code,
           created: item.createdAt,
           updated: item.updatedAt,
           observation: item.observation,
@@ -1730,7 +1736,7 @@ class RequestController {
         },
         auth: {
           username: 'USR_SOA_PI',
-          password: 'Inicio.2130'
+          password: 'Inicio.2022'
         }
       };
       const instance = axios.create(config);
@@ -1767,6 +1773,62 @@ class RequestController {
           console.log(error);
           resolve([])
         });
+    });
+  }
+
+  public async preMassAllocation(req: IRequest, res: Response) {
+    const { team } = req.user;
+    const { items} = req.body;
+    const results = await RequestItem
+      .find({
+        team,
+        $or: items.map((item: any) => ({
+          code: item.code
+        }))
+      }, {
+        meta: false
+      })
+      .populate([{
+        path: 'car'
+      }]);
+    res.json({
+      results,
+      status: 200
+    })
+  }
+
+  public async checkItemMassAllocation(req: IRequest, res: Response) {
+    const { team } = req.user;
+    let { vin, _id: id } = req.body.item;
+    const item = await RequestItem.findOne({ _id: id, team }).populate([{
+      path: 'car'
+    }]);
+    const errors = [];
+    let conectaData: any [] = [];
+    if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+      console.log('vin', vin);
+      if (vin?.length >= 6) {
+        conectaData = await this.searchVinContecta(vin);
+        const materialCheked = conectaData.filter((car) => car.material === item.car.material);
+        console.log('conectaData', conectaData);
+        if(!conectaData.length){
+          errors.push({
+            message: 'Vin no encontrado en conecta'
+          })
+        } else if(conectaData.length && !materialCheked.length){
+          errors.push({
+            message: 'Material no corresponde a VIN'
+          })
+        }
+      } else{
+        errors.push({
+          message: 'No se ingreso VIN'
+        });
+      }
+    }
+    res.json({
+      errors,
+      conectaData
     });
   }
 

@@ -24,12 +24,12 @@ import {
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
 import {ThunkDispatch} from "redux-thunk";
-import {IVenueModel} from '../../../../../src/app/models/venue.model';
-import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
+import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
+import {ICarrier} from '../../../../../src/app/interfaces/carrier.interface';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
-import {IUserModel} from '../../../../../src/app/models/user.model';
+import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
-import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
+import {ITransmittalItem} from '../../../../../src/distribution/interfaces/transmittalItem.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 import {IMilestone} from "../../../../../src/distribution/interfaces";
 
@@ -84,7 +84,7 @@ export default class TransmittalActions {
     });
   }
 
-  public loadCarriers(carriers:  ICarrierModel[]): void {
+  public loadCarriers(carriers:  ICarrier[]): void {
     this.dispatch({
       type: LOAD_CARRIERS_TRANSMITTAL,
       payload: {
@@ -93,7 +93,7 @@ export default class TransmittalActions {
     });
   }
 
-  public loadDrivers(drivers: IUserModel[]): void {
+  public loadDrivers(drivers: IUser[]): void {
     this.dispatch({
       type: LOAD_DRIVERS_TRANSMITTAL,
       payload: {
@@ -111,7 +111,7 @@ export default class TransmittalActions {
     });
   }
 
-  public loadVenues(venues:  IVenueModel[]): void {
+  public loadVenues(venues:  IVenue[]): void {
     this.dispatch({
       type: LOAD_VENUES_TRANSMITTAL,
       payload: {
@@ -176,7 +176,7 @@ export default class TransmittalActions {
     })
   }
 
-  public deleteTransmittalItemAction(transmittalItem: Partial<ITransmittalItemModel>){
+  public deleteTransmittalItemAction(transmittalItem: Partial<ITransmittalItem>){
     this.dispatch({
       type: DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
       payload: {

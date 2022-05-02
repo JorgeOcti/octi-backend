@@ -25,7 +25,8 @@ import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
-import * as Rx from 'rxjs';
+import { Subject } from 'rxjs/internal/Subject';
+// import * as Rx from 'rxjs';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -47,8 +48,8 @@ declare let window: IWindow;
 
 class RequestItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
-  readonly $subjectRecommends = new Rx.Subject<any>();
-  readonly $subjectVINRecommends = new Rx.Subject<any>();
+  readonly $subjectRecommends = new Subject<any>();
+  readonly $subjectVINRecommends = new Subject<any>();
 
   readonly state = {
     error: null,

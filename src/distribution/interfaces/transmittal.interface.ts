@@ -11,6 +11,7 @@ import { IMilestoneTypeModel } from '../models/milestoneType.model';
 
 
 export interface ITransmittal {
+  _id: any,
   name: string;
   number: number;
   team: ITeamModel | ITeam;

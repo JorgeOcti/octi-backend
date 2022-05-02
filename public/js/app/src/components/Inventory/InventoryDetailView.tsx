@@ -1215,13 +1215,13 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             type: 'application/zip'
           });
           const fileName = `${summary.name}.zip`;
-          if (typeof window.navigator.msSaveBlob !== 'undefined') {
-            // IE workaround for "HTML7007: One or more blob URLs were
-            // revoked by closing the blob for which they were created.
-            // These URLs will no longer resolve as the data backing
-            // the URL has been freed."
-            window.navigator.msSaveBlob(blob, fileName);
-          } else {
+          // if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          //   // IE workaround for "HTML7007: One or more blob URLs were
+          //   // revoked by closing the blob for which they were created.
+          //   // These URLs will no longer resolve as the data backing
+          //   // the URL has been freed."
+          //   window.navigator.msSaveBlob(blob, fileName);
+          // } else {
             const blobURL = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.style.display = 'none';
@@ -1238,7 +1238,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             tempLink.click();
             document.body.removeChild(tempLink);
             URL.revokeObjectURL(blobURL);
-          }
+          // }
           this.setState({
             downloadImages: {
               ...this.state.downloadImages,
