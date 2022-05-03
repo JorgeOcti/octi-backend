@@ -35,7 +35,7 @@ import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
 import RequestController from '../../request/controllers/request.controller';
-import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
+import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from '../../distribution/models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import Car from '../../app/models/car.model';
@@ -851,13 +851,13 @@ class FormController {
                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
                 .populate(TransmittalController.itemPopulate);
 
-              let transmittal = await Transmittal.findOne({ _id: transmittalItemData!!.transmittal });
+              let transmittalObject = await Transmittal.findOne({ _id: transmittalItemData!!.transmittal });
 
               // update request when check item
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.checkItem,
                 team,
-                type: transmittal!!.type,
+                type: transmittalObject!!.type,
               });
 
               if (milestone?.requestItemStatus) {
@@ -886,13 +886,13 @@ class FormController {
             if (transmittal && transmittal?.length) {
               // update request when finish transmittal
 
-              let transmittal = await Transmittal.findOne({ _id: transmittal });
+              let transmittalObject : ITransmittalModel = (await Transmittal.findOne({ _id: transmittal }))!!;
 
               // update request when check item
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
-                type: transmittal!!.type,
+                type: transmittalObject!!.type,
               });
               let requestItems: any[] = [];
 
