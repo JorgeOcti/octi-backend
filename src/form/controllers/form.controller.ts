@@ -890,7 +890,7 @@ class FormController {
 
               // update request when check item
               const milestone = await Milestone.findOne({
-                step: ChoicesStepMilestone.checkItem,
+                step: ChoicesStepMilestone.finishTransmittal,
                 team,
                 type: transmittal!!.type,
               });
