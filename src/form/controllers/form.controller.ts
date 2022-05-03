@@ -885,9 +885,14 @@ class FormController {
 
             if (transmittal && transmittal?.length) {
               // update request when finish transmittal
+
+              let transmittal = await Transmittal.findOne({ _id: transmittal });
+
+              // update request when check item
               const milestone = await Milestone.findOne({
-                step: ChoicesStepMilestone.finishTransmittal,
-                team
+                step: ChoicesStepMilestone.checkItem,
+                team,
+                type: transmittal!!.type,
               });
               let requestItems: any[] = [];
 
