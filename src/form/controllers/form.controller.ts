@@ -884,26 +884,24 @@ class FormController {
             }
 
             if (transmittal && transmittal?.length) {
-              // update request when finish transmittal
-
-              let transmittal = await Transmittal.findOne({ _id: transmittal });
 
               // update request when check item
+              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal })
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
-                type: transmittal!!.type,
+                type:  updatedTransmittal?.type,
               });
               let requestItems: any[] = [];
 
-              if (milestone?.updateItems?.arrivalDate) {
+              // if (milestone?.updateItems?.arrivalDate) {
                 await TransmittalItem
                   .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
                 requestItems = await RequestItem
                   .find({ transmittal, team })
                   .populate(RequestController.itemPopulate)
                   .lean();
-              }
+              // }
 
 
               if (milestone && milestone?.requestItemStatus) {
