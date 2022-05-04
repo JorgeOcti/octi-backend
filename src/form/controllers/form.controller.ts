@@ -12,7 +12,8 @@ import * as QRCode from 'qrcode';
 import * as Raven from 'raven';
 import { queue } from '../../app';
 import Alert from '../../app/models/alert.model';
-import CarModel, { ICarModel } from '../../app/models/car.model';
+import CarModel from '../../app/models/car.model';
+import Car, { ICarModel } from '../../app/models/car.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
@@ -23,7 +24,7 @@ import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, {IFormModel, KindForm, KindQuestion} from '../models/form.model';
+import FormModel, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
@@ -35,11 +36,9 @@ import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
 import RequestController from '../../request/controllers/request.controller';
-import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from '../../distribution/models/transmittal.model';
+import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
-import Car from '../../app/models/car.model';
-// import {ValidationResult} from 'joi';
 
 
 // import * as puppeteer from 'puppeteer';
@@ -884,26 +883,21 @@ class FormController {
             }
 
             if (transmittal && transmittal?.length) {
-              // update request when finish transmittal
-
-              let transmittalObject : ITransmittalModel = (await Transmittal.findOne({ _id: transmittal }))!!;
-
               // update request when check item
+              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal })
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
-                type: transmittalObject!!.type,
+                type:  updatedTransmittal?.type,
               });
               let requestItems: any[] = [];
 
-              if (milestone?.updateItems?.arrivalDate) {
-                await TransmittalItem
-                  .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
-                requestItems = await RequestItem
-                  .find({ transmittal, team })
-                  .populate(RequestController.itemPopulate)
-                  .lean();
-              }
+              await TransmittalItem
+                .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
+              requestItems = await RequestItem
+                .find({ transmittal, team })
+                .populate(RequestController.itemPopulate)
+                .lean();
 
 
               if (milestone && milestone?.requestItemStatus) {
