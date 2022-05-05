@@ -25,7 +25,7 @@ class StudioController {
   public async apiList(req: IRequest, res: Response) {
     const {team} = req.user;
     try {
-      let studios = await Studio.find({team}).populate('users')
+      let studios = await Studio.find({team}).populate('users');
       res.json({studios, status: 200})
     } catch (e) {
       /* istanbul ignore next  */
@@ -61,7 +61,7 @@ class StudioController {
     const {name, embedURL, type, team, users} = req.body.studio;
 
     try {
-      let studio = await Studio.create({name, embedURL, type, team, users: users.map((user: IUser) => user._id)});
+      let studio = await new Studio({name, embedURL, type, team, users: users.map((user: IUser) => user._id)}).save();
       res.json({message: 'Studio creado satisfactoriamente', studio, status: 200});
     } catch (e) {
       /* istanbul ignore next  */

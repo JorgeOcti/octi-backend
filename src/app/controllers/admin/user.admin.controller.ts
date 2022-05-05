@@ -50,7 +50,7 @@ class AdminUsersController {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Usuarios', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -58,7 +58,7 @@ class AdminUsersController {
       worksheet.autoFilter = {from: 'A1', to: 'F1'};
       const worksheetAccess = workbook.addWorksheet('Accesos', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }

@@ -319,7 +319,7 @@ class FormController {
     logger.info(`detail forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
     try {
-      if (await User.find({ _id: req.user._id, userForms: id }).count() < 1) {
+      if (await User.find({ _id: req.user._id, userForms: id }).countDocuments() < 1) {
         return res.status(403).json({
           message: 'No tienes permisos para esta operación'
         });
@@ -884,7 +884,7 @@ class FormController {
 
             if (transmittal && transmittal?.length) {
               // update request when check item
-              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal })
+              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal });
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
@@ -1489,7 +1489,7 @@ class FormController {
         const workbook = new excel.Workbook();
         const worksheet = workbook.addWorksheet('Revisiones', {
           properties: {
-            defaultRowHeight: 30
+            // defaultRowHeight: 30
           }, pageSetup: {
             fitToPage: true, fitToHeight: 100, fitToWidth: 1
           }
@@ -1856,7 +1856,7 @@ class FormController {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -2308,7 +2308,7 @@ class FormController {
             select: ['name']
           }]
         }])
-        .exec((err, form) => {
+        .exec!((err, form) => {
           if (err) {
             /* istanbul ignore next */
             return reject(err);

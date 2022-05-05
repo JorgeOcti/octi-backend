@@ -97,6 +97,7 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     _: '_',
     $: 'jQuery',
     react: 'React',
+    'mapbox-gl': 'mapboxgl',
     'react-dom': 'ReactDOM',
     'echarts': 'echarts',
     'xlsx': 'XLSX',

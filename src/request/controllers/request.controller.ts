@@ -27,6 +27,7 @@ import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
+// import * as mongoose from 'mongoose'
 
 class RequestController {
 
@@ -141,6 +142,7 @@ class RequestController {
     this.searchVin = this.searchVin.bind(this);
     this.searchVinContecta = this.searchVinContecta.bind(this);
     this.checkItemMassAllocation = this.checkItemMassAllocation.bind(this);
+    this.processItemMassAllocation = this.processItemMassAllocation.bind(this);
   }
 
   public async integration(req: IRequest, res: Response) {
@@ -793,7 +795,7 @@ class RequestController {
       const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Solicitudes', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -1235,7 +1237,7 @@ class RequestController {
           item
         });
         await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-        const itemsInRequest = await RequestItem.find({ request: item.request._id }).count();
+        const itemsInRequest = await RequestItem.find({ request: item.request._id }).countDocuments();
         if(!itemsInRequest){
           await Request.deleteOne({ _id: item.request._id });
           io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
@@ -1402,7 +1404,7 @@ class RequestController {
       let requestItem = await RequestItem
         .findOne({ _id: id, team })
         .populate(this.itemPopulate);
-      if(requestItem){
+      if (requestItem) {
         if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
           let data: any [] = [];
           if (vin?.length >= 6) {
@@ -1420,17 +1422,22 @@ class RequestController {
             });
           }
         }
-        const car = await Car.findOne({ vin, team });
+        // previene vehículos sin vin
+        const car = vin.length > 0 ? await Car.findOne({ vin, team }) : false;
         // si el vehículo ya existe
         if (car && vin?.length) {
-          const existOtherRequestWithCar = await RequestItem.find({ team, car, _id: { $ne: requestItem._id } });
-          if (existOtherRequestWithCar.length) {
+          const existOtherRequestWithCar = car ? await RequestItem.findOne({
+            team,
+            car,
+            _id: { $ne: requestItem._id }
+          }) : false;
+          if (existOtherRequestWithCar) {
             return res.status(400).json({
-              message: 'VIN ya asignado a otro vehículo.'
+              message: 'VIN ya asignado en otra solicitud.'
             });
           }
           //await Car.updateOne({ _id: car._id, team }, { vin });
-          await RequestItem.updateOne({ _id: requestItem._id }, { car });
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
         }
         // si la solicitud no tenía vin
         else if (requestItem.car.vin.length === 0) {
@@ -1450,6 +1457,8 @@ class RequestController {
             denomination: requestItem.car.denomination,
             material: requestItem.car.material,
             color: requestItem.car.color,
+            secondColorOption: requestItem.car.secondColorOption,
+            thirdColorOption: requestItem.car.thirdColorOption,
             status: ChoicesStatusCar.pending,
             createdBy: req.user
           }).save();
@@ -1458,7 +1467,10 @@ class RequestController {
         // si le cambias el VIN al vehículo
         else if (requestItem.car.vin.length > 0 && vin.length > 0) {
           console.log('3 Cambio de VIN');
-          if (requestItem.car.vin !== vin) {
+          if (car) {
+            console.log('3 vehículo existe');
+            await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+          } else {
             const newCar = await new Car({
               team,
               company,
@@ -1468,11 +1480,13 @@ class RequestController {
               denomination: requestItem.car.denomination,
               material: requestItem.car.material,
               color: requestItem.car.color,
+              secondColorOption: requestItem.car.secondColorOption,
+              thirdColorOption: requestItem.car.thirdColorOption,
               status: ChoicesStatusCar.pending,
               createdBy: req.user
             }).save();
             console.log('3 crea vehiculo');
-            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar });
+            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
           }
         }
 
@@ -1778,7 +1792,7 @@ class RequestController {
 
   public async preMassAllocation(req: IRequest, res: Response) {
     const { team } = req.user;
-    const { items} = req.body;
+    const { items } = req.body;
     const results = await RequestItem
       .find({
         team,
@@ -1794,7 +1808,7 @@ class RequestController {
     res.json({
       results,
       status: 200
-    })
+    });
   }
 
   public async checkItemMassAllocation(req: IRequest, res: Response) {
@@ -1806,29 +1820,171 @@ class RequestController {
     const errors = [];
     let conectaData: any [] = [];
     if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-      console.log('vin', vin);
       if (vin?.length >= 6) {
         conectaData = await this.searchVinContecta(vin);
         const materialCheked = conectaData.filter((car) => car.material === item.car.material);
-        console.log('conectaData', conectaData);
-        if(!conectaData.length){
+        if (!conectaData.length) {
           errors.push({
-            message: 'Vin no encontrado en conecta'
-          })
-        } else if(conectaData.length && !materialCheked.length){
+            message: 'Vin no encontrado en conecta.'
+          });
+        } else if (conectaData.length && !materialCheked.length) {
           errors.push({
-            message: 'Material no corresponde a VIN'
-          })
+            message: 'Material no corresponde a VIN.'
+          });
         }
-      } else{
+      } /*else{
         errors.push({
           message: 'No se ingreso VIN'
         });
-      }
+      }*/
     }
     res.json({
       errors,
       conectaData
+    });
+  }
+
+  public async processItemMassAllocation(req: IRequest, res: Response) {
+    const { team, company } = req.user;
+    let { item } = req.body;
+    const errors = [];
+    const vin = item.vin?.trim() ?? '';
+    let requestItem = await RequestItem.findOne({ _id: item._id, team }).populate([{
+      path: 'car'
+    }]);
+    console.log('*****************************');
+    console.log(vin);
+    // si existe la solicitud y el team es salfa
+    if (requestItem) {
+      if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+        const conectaData = await this.searchVinContecta(vin);
+        const materialCheked = conectaData.filter((car) => car.material === item.car.material);
+        if (!conectaData.length) {
+          errors.push({
+            message: 'Vin no encontrado en conecta.'
+          });
+        } else if (conectaData.length && !materialCheked.length) {
+          errors.push({
+            message: 'Material no corresponde a VIN.'
+          });
+        }
+      }
+    }
+    // si existe la solicitud, el vin y no tiene errores
+    if (requestItem && !errors.length) {
+      // mongoose.set('debug', true);
+      console.log(requestItem.code);
+      // previene vehículos sin vin
+      const car = vin.length > 0 ? await Car.findOne({ vin: vin, team }) : false;
+      const existOtherRequestWithCar = car ? await RequestItem.findOne({
+        team,
+        car,
+        _id: { $ne: requestItem._id }
+      }).populate([{
+        path: 'car'
+      }]) : false;
+      // si el vehículo ya existe en otra solicitud
+      if (car && existOtherRequestWithCar) {
+        console.log('1 Vehículo ya en otra solicitud');
+        const newCar = await new Car({
+          team,
+          company,
+          vin: '',
+          vin2: '',
+          brand: existOtherRequestWithCar.car.brand,
+          denomination: existOtherRequestWithCar.car.denomination,
+          material: existOtherRequestWithCar.car.material,
+          color: existOtherRequestWithCar.car.color,
+          secondColorOption: existOtherRequestWithCar.car.secondColorOption,
+          thirdColorOption: existOtherRequestWithCar.car.thirdColorOption,
+          status: ChoicesStatusCar.pending,
+          createdBy: req.user
+        }).save();
+        console.log('1 asigna vehículos');
+        // asigno nuevo vehículo sin vin a la solicitud en la que estaba
+        await RequestItem.updateOne({ _id: existOtherRequestWithCar._id }, { car: newCar._id });
+        // asigno vehículo existente a la solicitud
+        await Car.updateOne({ _id: car._id }, {
+          brand: requestItem.car.brand,
+          denomination: requestItem.car.denomination,
+          material: requestItem.car.material,
+          color: requestItem.car.color,
+          secondColorOption: requestItem.car.secondColorOption,
+          thirdColorOption: requestItem.car.thirdColorOption
+        });
+        await RequestItem.updateOne({ _id: requestItem._id }, {  car: car._id });
+      }
+      // si la solicitud no tenía vin
+      else if (requestItem.car.vin.length === 0) {
+        console.log('2 Vehíulo no tenía VIN');
+        await Car.updateOne({ _id: requestItem.car._id, team }, { vin: vin });
+      }
+      // si la solicitud tenia vin y ahora se elimina
+      else if (requestItem.car.vin.length > 0 && vin.length === 0) {
+        console.log('3 Vehíulo tenía VIN y ahora se le elimina');
+        const newCar = await new Car({
+          team,
+          vin: '',
+          vin2: '',
+          company,
+          brand: requestItem.car.brand,
+          denomination: requestItem.car.denomination,
+          material: requestItem.car.material,
+          color: requestItem.car.color,
+          secondColorOption: requestItem.car.secondColorOption,
+          thirdColorOption: requestItem.car.thirdColorOption,
+          status: ChoicesStatusCar.pending,
+          createdBy: req.user
+        }).save();
+        await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+      }
+      // si la solicitud tenía VIN y no tenía otra solicitud
+      else if (requestItem.car.vin.length > 0 && vin.length > 0) {
+        console.log('4 Cambio de VIN');
+        const updateItems = {
+          team,
+          company,
+          vin: vin,
+          vin2: vin.substr(vin.length - 6),
+          brand: requestItem.car.brand,
+          denomination: requestItem.car.denomination,
+          material: requestItem.car.material,
+          color: requestItem.car.color,
+          secondColorOption: requestItem.car.secondColorOption,
+          thirdColorOption: requestItem.car.thirdColorOption,
+          status: ChoicesStatusCar.pending,
+          createdBy: req.user
+        };
+        if (car) {
+          console.log('Asigna vehiculo existente');
+          await Car.updateOne({ _id: car._id }, updateItems);
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id  });
+        } else {
+          const newCar = await new Car(updateItems).save();
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+        }
+      } else {
+        console.error(`VIN ${vin} no processado.`);
+      }
+    }
+    // mongoose.set('debug', false);
+    requestItem = await RequestItem
+      .findOne({ _id: item._id, team })
+      .populate(this.itemPopulate)
+      .lean();
+    if (requestItem) {
+      await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
+      io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+        idRequest: requestItem.request._id,
+        item: requestItem
+      });
+      io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+        idRequest: requestItem.request._id,
+        item: requestItem
+      });
+    }
+    res.status(200).json({
+      ...requestItem
     });
   }
 

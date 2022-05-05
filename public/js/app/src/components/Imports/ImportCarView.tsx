@@ -199,7 +199,7 @@ class ImportCarsView extends TrackingBasePage<IPropsType, IStateType> {
                     marginBottom: '10px'
                   }}>
                   <i className="fa fa-2x fa-cloud-upload"/><br/>
-                  Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.
+                  Prueba soltando el excel aquí, o haz click para seleccionar el excel a cargar.
                 </div>
               }
             </div>

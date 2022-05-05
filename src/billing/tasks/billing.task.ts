@@ -285,7 +285,7 @@ class BillingQueue {
           // totalDolar: (totalUF * valueUF) / valueDolar,
           totalPeso: totalUF * valueUF
         });
-        if (!await Invoice.find({ company, period }).count()) {
+        if (!await Invoice.find({ company, period }).countDocuments()) {
           await invoice.save();
           this.createPDF(invoice, company);
         } else {

@@ -114,7 +114,7 @@ class TransmittalItemController {
       const transmittalItem = await TransmittalItem.findOne({ _id: id });
       if (transmittalItem) {
         await transmittalItem.remove();
-        const transmittalItems = await TransmittalItem.find({ transmittal: transmittalItem.transmittal }).count();
+        const transmittalItems = await TransmittalItem.find({ transmittal: transmittalItem.transmittal }).countDocuments();
         io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
           transmittalItem
         });

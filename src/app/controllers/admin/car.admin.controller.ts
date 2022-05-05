@@ -27,7 +27,7 @@ class AdminCarController {
     const {id} = req.params;
     const team = req.user.team._id;
     /* istanbul ignore else */
-    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({_id: id, team}).count()) {
+    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({_id: id, team}).countDocuments()) {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {
       res.redirect('/settings/cars/');
@@ -54,7 +54,7 @@ class AdminCarController {
     }
     const { company } = req.user;
     const team = req.user.team._id;
-    const {cars} = req.body;
+    const { cars } = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
         if (car.vin && car.vin.length) {
@@ -104,7 +104,7 @@ class AdminCarController {
           }
         }
       }
-      io.to(req.user._id).emit('FINISH-IMPORT', {finish: true});
+      io.to(req.user._id).emit('FINISH-IMPORT', { finish: true });
     }
     res.json({
       status: 200

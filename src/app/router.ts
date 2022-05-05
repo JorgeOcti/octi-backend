@@ -17,9 +17,9 @@ import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
 import router from '../form/router';
-import {passport} from '../passportConfig'
+import { passport } from '../passportConfig';
 import appController from './controllers/app.controller';
-import StudioController from "../stats/controllers/studio.controller";
+import StudioController from '../stats/controllers/studio.controller';
 
 // setup route middlewares
 const appRouter = express.Router();

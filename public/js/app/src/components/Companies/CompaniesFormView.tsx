@@ -325,7 +325,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                             marginBottom: '10px'
                           }}>
                           <i className="fa fa-2x fa-cloud-upload"/><br/>
-                          Prueba a soltanto la imágen aquí, o haz click para seleccionar la imágen a cargar.
+                          Prueba soltando la imágen aquí, o haz click para seleccionar la imágen a cargar.
                         </div>
                     }
                     <input
@@ -375,7 +375,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                             height: '100px'
                           }}>
                           <i className="fa fa-2x fa-cloud-upload"/><br/>
-                          Prueba a soltanto la imágen aquí, o haz click para seleccionar la imágen a cargar.
+                          Prueba soltando la imágen aquí, o haz click para seleccionar la imágen a cargar.
                         </div>
                     }
                     <input

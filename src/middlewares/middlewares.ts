@@ -14,8 +14,6 @@ class Middlewares {
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
     logger.info(`Middlewares.isLoggedIn`);
-    logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
-    logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     if (req.isAuthenticated()) {
@@ -29,6 +27,8 @@ class Middlewares {
     } else {
       // if they aren't redirect them to the login page
       console.log('isLoggedIn');
+      logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
+      logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
       console.log('req.url', req.url);
       req.logout();
       (req.session as any).redirectTo = req.url;

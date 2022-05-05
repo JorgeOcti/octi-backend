@@ -37,7 +37,7 @@ class AdminVenueController {
     const workbook = new excel.Workbook();
     const worksheetSend = workbook.addWorksheet('Sucursales', {
       properties: {
-        defaultRowHeight: 30
+        // defaultRowHeight: 30
       },
       pageSetup: {
         fitToPage: true, fitToHeight: 100, fitToWidth: 1

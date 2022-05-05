@@ -1924,7 +1924,7 @@ class InventoryController {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Detalle', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -2240,7 +2240,7 @@ class InventoryController {
               message: 'Se esta procesando la toma de inventario.',
               cars: []
             });
-        } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).count()) {
+        } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).countDocuments()) {
           res
             .status(200)
             .json({

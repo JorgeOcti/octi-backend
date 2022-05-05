@@ -500,6 +500,13 @@ export default class ApiService {
     );
   }
 
+  public processItemMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/process-item-mass-allocation/`,
+      data
+    );
+  }
+
   public getSource(): CancelTokenSource {
     this.source = this.CancelToken.source();
     return this.source;

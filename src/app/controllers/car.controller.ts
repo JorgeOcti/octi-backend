@@ -184,7 +184,7 @@ class CarController {
     const {team} = req.user;
     // validate params
     /* istanbul ignore next */
-    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).count()) {
+    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).countDocuments()) {
       return res.redirect('/cars/');
       // return res.status(404).render('404');
     }
@@ -1643,7 +1643,7 @@ class CarController {
       });
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -1744,7 +1744,7 @@ class CarController {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }

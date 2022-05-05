@@ -33,6 +33,8 @@ requestRouter.post('/api/v1/requests/pre-mass-allocation/', Middlewares.isJWTAut
 
 requestRouter.post('/api/v1/requests/check-item-mass-allocation/', Middlewares.isJWTAuthenticated, RequestController.checkItemMassAllocation);
 
+requestRouter.post('/api/v1/requests/process-item-mass-allocation/', Middlewares.isJWTAuthenticated, RequestController.processItemMassAllocation);
+
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isJWTAuthenticated, RequestController.searhCar);
 requestRouter.get('/api/v1/requests/search-vin', Middlewares.isLoggedIn, RequestController.searchVin);
