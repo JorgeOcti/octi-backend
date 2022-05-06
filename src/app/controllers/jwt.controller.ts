@@ -100,13 +100,13 @@ class JWTController {
               } else {
                 const today = moment().startOf('day');
                 const tomorrow = moment(today).add(1, 'days');
-                ParticipantModel.count({
+                ParticipantModel.find({
                   user,
                   createdAt: {
                     $gte: today.toDate(),
                     $lt: tomorrow.toDate()
                   }
-                }, async (err, count) => {
+                }).countDocuments(async (err, count) => {
                   user = user.toObject();
                   const teamSettings = await TeamSetting.findOne({ team: user.team });
                   logger.debug(JSON.stringify(teamSettings))
@@ -249,13 +249,13 @@ class JWTController {
                   } else {
                     const today = moment().startOf('day');
                     const tomorrow = moment(today).add(1, 'days');
-                    ParticipantModel.count({
+                    ParticipantModel.find({
                       user,
                       createdAt: {
                         $gte: today.toDate(),
                         $lt: tomorrow.toDate()
                       }
-                    }, async (err, count) => {
+                    }).countDocuments(async (err, count) => {
                       user = user.toObject();
                       const teamSettings = await TeamSetting.findOne({ team: user.team });
                       logger.debug(JSON.stringify(teamSettings));

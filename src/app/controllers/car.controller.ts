@@ -755,7 +755,7 @@ class CarController {
         planning,
         planningProcess,
         cars,
-        totalCars: await CarModel.count({team}),
+        totalCars: await CarModel.find({team}).countDocuments(),
         status: 200
       });
     } catch (e) {
@@ -2001,29 +2001,29 @@ class CarController {
         kind: {$ne: KindForm.transmittal}
       };
 
-      const todayParticipants: number = await ParticipantModel.count({...queryFilter,
+      const todayParticipants: number = await ParticipantModel.find({...queryFilter,
         createdAt: {
           $gte: moment().hour(0).minute(0).toDate(),
           $lt: moment().hour(23).minute(59).toDate()
-        }});
-      const yesterdayParticipants: number = await ParticipantModel.count({...queryFilter,
+        }}).countDocuments();
+      const yesterdayParticipants: number = await ParticipantModel.find({...queryFilter,
         createdAt: {
           $gte: moment().subtract(1, "day").startOf("day").toDate(),
           $lt: moment().subtract(1, "day").endOf("day").toDate()
-        }});
+        }}).countDocuments();
 
-      const lastMonthParticipants: number  = await ParticipantModel.count({...queryFilter,
+      const lastMonthParticipants: number  = await ParticipantModel.find({...queryFilter,
         createdAt: {
           $gte: moment().subtract(1,"month").startOf("month").toDate(),
           $lt: moment().subtract(1,"month").endOf("month").toDate(),
-        }});
-      const currentMonthParticipants: number = await ParticipantModel.count({...queryFilter,
+        }}).countDocuments();
+      const currentMonthParticipants: number = await ParticipantModel.find({...queryFilter,
         createdAt: {
           $gte: moment().startOf("month").toDate(),
           $lt: moment().endOf("month").toDate(),
-        }});
+        }}).countDocuments();
 
-      const totalParticipants: number = await ParticipantModel.count(queryFilter);
+      const totalParticipants: number = await ParticipantModel.find(queryFilter).countDocuments();
       const sentStats: any[] = await ParticipantModel.aggregate([
         {
           $match: {...queryFilter, shipping: true}

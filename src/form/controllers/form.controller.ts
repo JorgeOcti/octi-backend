@@ -1016,13 +1016,13 @@ class FormController {
             }
             const today = moment().startOf('day');
             const tomorrow = moment(today).add(1, 'days');
-            const count = await ParticipantModel.count({
+            const count = await ParticipantModel.find({
               user: req.user,
               createdAt: {
                 $gte: today.toDate(),
                 $lt: tomorrow.toDate()
               }
-            });
+            }).countDocuments();
 
             if (form.triggers && form.triggers.length) {
               let triggersHandler = new TriggerHandler(form, newParticipant);

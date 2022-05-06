@@ -419,7 +419,7 @@ class AdminUsersController {
     }
     try {
       // validate email not duplicate
-      const countUser = await User.count({email, _id: {$ne: id}});
+      const countUser = await User.find({email, _id: {$ne: id}}).countDocuments();
       if (countUser) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
