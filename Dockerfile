@@ -61,4 +61,4 @@ RUN rm -rf /srv/src
 
 EXPOSE 3000
 
-CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]
+CMD [ "pm2", "start", "pm2.json", "--no-daemon", " --nostream" ]
