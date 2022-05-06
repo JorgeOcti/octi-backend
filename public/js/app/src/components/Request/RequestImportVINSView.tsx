@@ -224,11 +224,11 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     } = this.state;
     const pendings = this.itemsByStatus(itemStatus.PENDING);
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignador masivo de vehículos'>
+      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignador masivo de unidades'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Asignador masivo de vehículos</h3>
+              <h3 className='box-title'>Asignador masivo de unidades</h3>
               <div className='pull-right box-tools'>
                 <ShowIf condition={!requestItems.length}>
                   <button
@@ -464,8 +464,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                   loading: false
                 });
                 swal!(
-                  'Asignador masivo de vehículos',
-                  `No se han encontrado vehículos.`,
+                  'Asignador masivo de unidades',
+                  `No se han encontrado unidades.`,
                   'error'
                 );
               } else {
@@ -539,7 +539,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         })
         .catch((error) => {
         if (error.status === 400) {
-          swal!('Asignador masivo de vehículos', error.data.message, 'error');
+          swal!('Asignador masivo de unidades', error.data.message, 'error');
         } else {
           this.apiService.errorHandler(error);
         }
@@ -552,7 +552,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     if(withErrors.length){
       swal({
         title: '¿Estás seguro que deseas continuar?',
-        text: `Hay ${withErrors.length} vehículos con errores, solo se procesarán los que no tienen ningún problema. `,
+        text: `Hay ${withErrors.length} unidades con errores, solo se procesarán los que no tienen ningún problema. `,
         icon: 'warning',
         dangerMode: true,
         buttons: {
@@ -590,7 +590,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           );
           if (toProcess.length === 1) {
             swal({
-              title: 'Asignador masivo de vehículos',
+              title: 'Asignador masivo de unidades',
               text: 'Se completo satisfactoriamente el proceso de asignación, ¿Deseas cargar otro archivo?',
               icon: 'success',
               // dangerMode: true,
@@ -614,7 +614,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         })
         .catch((error) => {
           if (error.status === 400) {
-            swal!('Asignador masivo de vehículos', error.data.message, 'error');
+            swal!('Asignador masivo de unidades', error.data.message, 'error');
           } else {
             this.apiService.errorHandler(error);
           }

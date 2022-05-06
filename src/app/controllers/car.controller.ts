@@ -5,7 +5,7 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import FormModel, {IFormModel, KindForm, KindQuestion} from '../../form/models/form.model';
+import FormModel, { IFormModel, KindForm, KindQuestion } from '../../form/models/form.model';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
@@ -16,7 +16,6 @@ import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/i
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
-// import VINService from '../../services/vin.service';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
@@ -24,41 +23,6 @@ import { ObjectID } from 'bson';
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
-
-  protected carBrands: any = {
-    'VF1': 'RENAULT',
-    'VF2': 'RENAULT',
-    'VF6': 'RENAULT',
-    '8A1': 'RENAULT',
-    '93Y': 'RENAULT',
-    '9FB': 'RENAULT',
-    '3BR': 'RENAULT',
-    'JC1': 'MAZDA',
-    'JMZ': 'MAZDA',
-    'JM6': 'MAZDA',
-    'JM7': 'MAZDA',
-    'PE3': 'MAZDA',
-    'MM8': 'MAZDA',
-    'MM0': 'MAZDA',
-    'MM7': 'MAZDA',
-    '1YV': 'MAZDA',
-    '3MD': 'MAZDA',
-    'JS2': 'SUZUKI',
-    'MMS': 'SUZUKI',
-    'JS3': 'SUZUKI',
-    'IJS': 'SUZUKI',
-    'TSM': 'SUZUKI',
-    'MA3': 'SUZUKI',
-    'MHY': 'SUZUKI',
-    'LJ1': 'JAC',
-    'LS4': 'CHANGAN',
-    'LSC': 'CHANGAN',
-    'LS5': 'CHANGAN',
-    'LPA': 'CHANGAN',
-    'LVR': 'CHANGAN',
-    'LVS': 'CHANGAN',
-    'LGW': 'GREAT WALL'
-  };
 
   constructor() {
     this.generalDashboard = this.generalDashboard.bind(this);
@@ -1429,7 +1393,6 @@ class CarController {
           createdAt: createdAtFilter
         });
       }
-      console.log(participantFilter);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page
@@ -1958,7 +1921,7 @@ class CarController {
     }
 
     return new Promise((resolve, reject) => {
-      CarModel.paginate(filter, options, (err, result) => {
+      CarModel.paginate!(filter, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);
