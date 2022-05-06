@@ -2094,7 +2094,6 @@ class FormController {
         for (const datum of cleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
-          console.log(datum);
           daysDict[day].clean = sum;
         }
 
@@ -2120,7 +2119,6 @@ class FormController {
         for (const datum of notCleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
-          console.log(day);
           daysDict[day].notClean = sum;
         }
       }

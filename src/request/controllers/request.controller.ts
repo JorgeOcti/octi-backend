@@ -478,6 +478,7 @@ class RequestController {
       }).save();
       let order = 0;
       for (const car of cars) {
+        order++;
         const newCar = await new Car({
           team,
           company,
@@ -647,7 +648,6 @@ class RequestController {
     if (filters && filters.transmitttalModule) {
       extraQuery.assigned = { $in: [null, false] };
     }
-    console.log('extraQuery', extraQuery);
 
     try {
       const baseAggregate: any[] = [{
@@ -1423,7 +1423,6 @@ class RequestController {
           if (vin?.length >= 6) {
             data = await this.searchVinContecta(vin);
             data = data.filter((car) => car.material === requestItem!.car.material);
-            console.log('data', data);
             if (!data.length) {
               return res.status(400).json({
                 message: 'VIN no encontrado en SAP.'
