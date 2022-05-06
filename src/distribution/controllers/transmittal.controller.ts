@@ -790,7 +790,7 @@ private getForm(filter: any): Promise<IFormModel> {
   }
 
 
-  public async attachEvidence(req: IRequest, res: Response) {
+  public async attachEvidence(req: IRequest, res: Response): Promise<any> {
     const { user } = req;
     const { files, transmittal } = req.body;
     logger.info(`TransmittalController.attachEvidence`);
@@ -805,12 +805,12 @@ private getForm(filter: any): Promise<IFormModel> {
             $push: { evidenceFullLoad: files },
             status: ChoicesStatusTransmittal.inTransit
           }, { new: true });
-        res.status(200).json({
+        return res.status(200).json({
           data: transmittalData,
           status: 201
         });
       }
-      res.status(400).json({
+      return res.status(400).json({
         message: 'El archivo es requerido',
         status: 400
       });
@@ -823,7 +823,7 @@ private getForm(filter: any): Promise<IFormModel> {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json(e);
+      return res.status(400).json(e);
     }
   }
 
