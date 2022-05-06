@@ -150,11 +150,10 @@ class RequestController {
     logger.info(`RequestController.integration`);
     query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
     try {
-      const params = await createRequestSalfaParams.validate(query, {
+      await createRequestSalfaParams.validate(query, {
         stripUnknown: true
       });
       res.render('app/index', { token: await req.user.generateToken() });
-      res.json(params);
     } catch (e) {
       logger.error(e);
       console.log(e);
