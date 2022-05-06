@@ -38,6 +38,8 @@ milestoneTypeSchema.statics.findOneOrCreate = function(condition: any, create: a
   });
 };
 
+milestoneTypeSchema.index({ 'team': 1 });
+
 milestoneTypeSchema.plugin(mongoosePaginate);
 milestoneTypeSchema.plugin(mongooseAggregatePaginate);
 

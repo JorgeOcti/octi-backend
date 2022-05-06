@@ -225,43 +225,9 @@ const teamSettingSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
-// db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
-
-// db.teamsettings.updateMany({}, { $set: { form: { vinMinCharacters: 17, vinMaxCharacters: 17 } } }, { many: true });
-
-/*
-db.teamsettings.updateMany({}, {
-    $set: {vocabulary: {
-            primary: "VIN",
-            secondary: "Patente",
-            unitReference: {
-                singular: "Unidad",
-                plural: "Unidades"
-            }
-        }
-    }
-})
 
 
-db.teamsettings.updateMany({}, {
-    $set: {"form.report": {
-            atLeastOne: true,
-            primaryRequired: false,
-            secondaryRequired: false
-        }
-    }
-})
-
-db.teamsettings.updateMany({}, {
-    $set: {"inventory.report": {
-            atLeastOne: true,
-            primaryRequired: false,
-            secondaryRequired: false
-        }
-    }
-})
- */
-
+teamSettingSchema.index({ 'team': 1 });
 
 teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
   const model = this;
