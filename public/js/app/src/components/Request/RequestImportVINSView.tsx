@@ -460,6 +460,9 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
             .preMassAllocation({ items: data })
             .then((response: any) => {
               if (!response.data.results.length) {
+                this.setState({
+                  loading: false
+                });
                 swal!(
                   'Asignador masivo de vehículos',
                   `No se han encontrado vehículos.`,
@@ -489,14 +492,14 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
               }
             });
         } else {
+          this.setState({
+            loading: false
+          });
           swal!(
             'Importador de configuración',
             `"${file.name}" no cumple con los requisitos mínimos o no tiene unidades.`,
             'error'
           );
-          this.setState({
-            loading: false
-          });
         }
       };
       if (rABS) {

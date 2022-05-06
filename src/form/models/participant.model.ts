@@ -432,16 +432,19 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({createdAt: 1});
-participantSchema.index({createdAt: -1});
-participantSchema.index({team: 1, createdAt: 1});
-participantSchema.index({venue: 1});
-participantSchema.index({survey: 1, completed: 1});
-participantSchema.index({form: 1, user: 1 });
-participantSchema.index({company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({venue: 1, team: 1, kind: 1 });
-participantSchema.index({_id:1, venue: 1, team: 1, kind: 1 });
+participantSchema.index({ createdAt: 1 });
+participantSchema.index({ createdAt: -1 });
+participantSchema.index({ team: 1, createdAt: 1 });
+participantSchema.index({ venue: 1 });
+participantSchema.index({ survey: 1, completed: 1 });
+participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ venue: 1, team: 1, kind: 1 });
+participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1 });
+participantSchema.index({ venue: 1, team: 1, kind: 1, form: 1 });
+participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1, form: 1 });
+participantSchema.index({ _id: 1, venue: 1, team: 1, kind: 1 });
 
 participantSchema.plugin(mongoosePaginate);
 
