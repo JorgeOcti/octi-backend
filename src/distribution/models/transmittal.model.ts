@@ -95,6 +95,9 @@ transmittalSchema.virtual('items', {
 transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 
+transmittalSchema.index({ 'team': 1 });
+transmittalSchema.index({ 'team': 1, number: 1 });
+
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
 

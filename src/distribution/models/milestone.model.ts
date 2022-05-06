@@ -103,6 +103,8 @@ milestoneSchema.statics.findOneOrCreate = function(condition: any, create: any):
   });
 };
 
+milestoneSchema.index({ 'team': 1 });
+
 milestoneSchema.plugin(mongoosePaginate);
 milestoneSchema.plugin(mongooseAggregatePaginate);
 
