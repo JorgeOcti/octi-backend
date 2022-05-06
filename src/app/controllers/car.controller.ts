@@ -56,7 +56,6 @@ class CarController {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
-
   public async createCar(req: IRequest, res: Response) {
     try {
       const car = req.body;
