@@ -122,7 +122,7 @@ const App = () => (
         <Route exact path='/transmittals/settings/milestone/' component={MilestoneListView} />
         <Route exact path='/transmittals/settings/milestone-type/' component={MilestoneTypeListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
-        <Route exact path='/requests/import-vins/' component={RequestImportVINSView} />
+        <Route exact path='/requests/mass-allocation/' component={RequestImportVINSView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
         <Route exact path='/requests/studio/' component={VDistributionDashboardStatsView} />
         <Route exact path='/requests/vehicles/external/create/' component={RequestCreateIntegration} />

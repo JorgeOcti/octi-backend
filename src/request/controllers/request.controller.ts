@@ -212,6 +212,13 @@ class RequestController {
   public async index(req: IRequest, res: Response) {
     res.render('app/index', { token: await req.user.generateToken() });
   }
+  public async massAllocation(req: IRequest, res: Response) {
+    if (req.user.hasPermission('massAllocation')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
+  }
 
   public async apiUpdateMassive(req: IRequest, res: Response) {
     const { properties } = req.body;
@@ -273,7 +280,9 @@ class RequestController {
           channel,
           createdBy
         }).save();
+        let order = 0;
         for (const car of cars) {
+          order++;
           let currentCar = await CarModel.findOne({
             team,
             vin: car.vin.trim()
@@ -351,6 +360,8 @@ class RequestController {
             destination: car.destination,
             observation: car.observation,
             status: defaultItemStatus,
+            order,
+            code: `${newRequest.number}-${order}`,
             createdBy: user
           }).save();
         }
@@ -466,6 +477,7 @@ class RequestController {
         channel,
         createdBy: req.user
       }).save();
+      let order = 0;
       for (const car of cars) {
         const newCar = await new Car({
           team,
@@ -507,6 +519,8 @@ class RequestController {
             destination,
             status
           }),
+          order,
+          code: `${request.number}-${order}`,
           createdBy: req.user
         }).save();
       }
@@ -1784,7 +1798,7 @@ class RequestController {
           });
         })
         .catch(function(error) {
-          console.log(error);
+          // console.log(error);
           resolve([])
         });
     });
@@ -1844,8 +1858,13 @@ class RequestController {
     });
   }
 
-  public async processItemMassAllocation(req: IRequest, res: Response) {
+  public async processItemMassAllocation(req: IRequest, res: Response): Promise<any> {
     const { team, company } = req.user;
+    if (!req.user.hasPermission('massAllocation')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     let { item } = req.body;
     const errors = [];
     const vin = item.vin?.trim() ?? '';

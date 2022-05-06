@@ -19,7 +19,7 @@ requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestC
 requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
 requestRouter.get('/requests/import/', Middlewares.isLoggedIn, RequestController.index);
-requestRouter.get('/requests/mass-allocation/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/mass-allocation/', Middlewares.isLoggedIn, RequestController.massAllocation);
 requestRouter.get('/requests/vehicles/external/create/', Middlewares.isLoggedIn, RequestController.integration);
 requestRouter.post('/requests/vehicles/validate-conecta/', Middlewares.isLoggedIn, RequestController.validateContectaID);
 requestRouter.get('/requests/vehicles/create/', Middlewares.isLoggedIn, RequestController.index);

@@ -63,6 +63,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.import = this.import.bind(this);
+    this.asignar = this.asignar.bind(this);
   }
 
   componentDidMount() {
@@ -190,6 +191,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     onClick={this.update}
                   >
                     <i className='fa fa-fw fa-plus' /> Actualizador
+                  </button>
+                </ShowIf>
+                <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
+                  <button
+                    style={{ marginLeft: '5px' }}
+                    className='btn btn-sm btn-success'
+                    onClick={this.asignar}
+                  >
+                    <i className='fa fa-fw fa-plus' /> Asignar
                   </button>
                 </ShowIf>
                 <ShowIf condition={hasPermission(window.user, 'importRequest')}>
@@ -734,6 +744,10 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private import() {
     this.props.history.push(parseReplicableURL('/requests/import/'));
+  }
+
+  private asignar(){
+    this.props.history.push(parseReplicableURL('/requests/mass-allocation/'));
   }
 
   private changeFilterDebounced(key: keyof IRequestItemsFilters, value: any | any[]): void {

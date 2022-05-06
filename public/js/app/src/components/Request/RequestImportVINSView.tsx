@@ -526,7 +526,6 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       this.apiService
         .checkItemMassAllocation({ item })
         .then((response: AxiosResponse) => {
-          console.log(response.data);
           this.updateItemStatusByID({
               ...item,
               errors: response.data.errors
@@ -547,7 +546,6 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
 
   private answerProcessitems() {
     const withErrors = this.itemsByStatus(itemStatus.ERROR);
-    console.log('withErrors', withErrors);
     if(withErrors.length){
       swal({
         title: '¿Estás seguro que deseas continuar?',
@@ -581,7 +579,6 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       this.apiService
         .processItemMassAllocation({ item })
         .then((response: AxiosResponse) => {
-          console.log(response.data);
           this.updateItemStatusByID({
               ...item
             },
@@ -591,7 +588,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           if (toProcess.length === 1) {
             swal({
               title: 'Asignador masivo de vehículos',
-              text: 'Se completo satisfactoriamente el proceso de asignación, deseas cargar otro archivo.',
+              text: 'Se completo satisfactoriamente el proceso de asignación, ¿Deseas cargar otro archivo?',
               icon: 'success',
               // dangerMode: true,
               buttons: {
@@ -680,45 +677,58 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
   private statusFormatter(_: string, row: any) {
     if ([itemStatus.READY, itemStatus.ERROR].includes(row.processStatus)) {
       return row.errors.length > 0
-        ? <i className={'fa fa-ban red'} />
-        : <i className={'fa fa-circle green'} />;
+        ? <i className={'fa fa-circle text-red'} />
+        : <i className={'fa fa-circle text-green'} />;
     }
     if ([itemStatus.UPDATED].includes(row.processStatus)) {
-      return <i className={'fa fa-check-circle green'} />
+      return <i className={'fa fa-check-circle text-green'} />
     }
     return '';
   }
 
   private vinFormatter(_: string, row: any) {
+    if (row.errors.length) {
+      return (
+        <div>
+          <span className={'text-red'}>{row.vin}</span>
+          <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> No se realizará ningun cambio</div>
+        </div>
+      )
+    }
     if (row.car?.vin) {
       if (!row.vin?.length) {
         return (
           <div>
             <span className={'text-red'} style={{ textDecoration: 'line-through' }}>{row.car.vin}</span>
             <ShowIf condition={!row.errors.length}>
-              <div className='text-sm text-muted'>Elimina VIN de la unidad.</div>
+              <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> Elimina VIN de la unidad</div>
             </ShowIf>
           </div>
         );
       }
       return (
         <div>
-          <span className={row.vin === row.car.vin && !row.errors.length ? 'text-yellow' : 'text-red'}>{row.car.vin}</span> <i
+          <span className={row.vin === row.car.vin && !row.errors.length ? 'text-muted' : 'text-red'}>{row.car.vin}</span> <i
           className={'fa fa-fw fa-angle-double-right'} /> <span className={!row.errors.length ? 'text-green' : 'text-red'}>{row.vin}</span>
           <ShowIf condition={!row.errors.length}>
-            <div className='text-sm text-muted'>{row.vin === row.car.vin ? 'No se detectaron cambios' : 'Cambia VIN de la unidad.'}</div>
+            <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> {row.vin === row.car.vin ? 'No se detectaron cambios' : 'Cambia VIN de la unidad'}</div>
           </ShowIf>
         </div>
       );
     }
     if (!row.vin?.length) {
-      return '';
+      return (
+        <div>
+          <span className={'text-muted'}>{row.vin?.length ? row.vin : '-'}&nbsp;</span>
+          <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> No se ingreso VIN</div>
+        </div>
+      )
     }
     return (
       <div className={!row.errors.length ? 'text-green' : 'text-red'}>
         {row.vin}
         <ShowIf condition={!row.errors.length}>
-          <div className='text-sm text-muted'>Asigna VIN de la unidad.</div>
+          <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> Asigna VIN de la unidad</div>
         </ShowIf>
       </div>
     );
