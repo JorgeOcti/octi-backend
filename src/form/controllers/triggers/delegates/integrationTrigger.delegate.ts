@@ -38,11 +38,15 @@ export default class IntegrationDelegate extends NullTriggerDelegate {
   }
 
   private parseBody(body: string) {
-    try {
-      return JSON.parse(body);
-    } catch (e) {
-      console.error('IntegrationDelegate: parseBody');
-      console.error(e);
+    if(body?.length) {
+      try {
+        return JSON.parse(body);
+      } catch (e) {
+        console.error('IntegrationDelegate: parseBody');
+        console.error(e);
+        return {};
+      }
+    } else{
       return {};
     }
   }
