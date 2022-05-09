@@ -2,20 +2,22 @@
 import * as Raven from 'raven-js';
 import * as moment from 'moment';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {DashboardReduxAction} from '../../actions/dashboard.actions';
-import {getDashboardDamagesPerVenue, IDashboardDamagesState} from '../../actions/dashboardDamages.actions';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { DashboardReduxAction } from '../../actions/dashboard.actions';
+import { getDashboardDamagesPerVenue, IDashboardDamagesState } from '../../actions/dashboardDamages.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
-import * as io from "socket.io-client";
-import {IWindow} from "../../interfaces/window";
-import * as swal from "sweetalert";
-import {default as Axios} from "axios";
-import ApiService from "../../utils/axios";
-import {hasPermission} from "../../utils/common";
+import { IWindow } from '../../interfaces/window';
+import * as swal from 'sweetalert';
+import { default as Axios } from 'axios';
+import ApiService from '../../utils/axios';
+import { hasPermission } from '../../utils/common';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 declare let window: IWindow;
 
@@ -33,7 +35,8 @@ interface IStateType {
   exporting: boolean
 }
 
-class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
+class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state: IStateType = {
     error: null,
@@ -42,10 +45,11 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     exporting: false,
   };
   protected damagesPerVenueChart: echarts.ECharts;
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Reportería de daños';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.showdetail = this.showdetail.bind(this);
     this.back = this.back.bind(this);
@@ -54,15 +58,13 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Reportería de daños';
     // get data
     this.props.getDashboardDamagesPerVenue(true);
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
@@ -71,7 +73,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team}`});
+      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
@@ -81,6 +83,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $damagesPerVenue = document.getElementById('damages-per-venue') as HTMLDivElement;
     this.damagesPerVenueChart = echarts.init($damagesPerVenue);
   }
@@ -106,6 +109,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     this.setState({
       exporting: true
     });
+    this.trackClick("Exportar");
     const api: ApiService = new ApiService();
     const instance = api.getInstance();
     instance.defaults.responseType = 'blob';
@@ -116,13 +120,13 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         const fileName = `${moment().format('YYYYMMDD')}-danos.xlsx`;
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          // IE workaround for "HTML7007: One or more blob URLs were
-          // revoked by closing the blob for which they were created.
-          // These URLs will no longer resolve as the data backing
-          // the URL has been freed."
-          window.navigator.msSaveBlob(blob, fileName);
-        } else {
+        // if (typeof window.navigator.msSaveBlob !== 'undefined') {
+        //   // IE workaround for "HTML7007: One or more blob URLs were
+        //   // revoked by closing the blob for which they were created.
+        //   // These URLs will no longer resolve as the data backing
+        //   // the URL has been freed."
+        //   window.navigator.msSaveBlob(blob, fileName);
+        // } else {
           const blobURL = URL.createObjectURL(blob);
           const tempLink = document.createElement('a');
           tempLink.style.display = 'none';
@@ -142,7 +146,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
           tempLink.click();
           document.body.removeChild(tempLink);
           URL.revokeObjectURL(blobURL);
-        }
+        // }
       })
       .catch((err) => {
         this.setState({
@@ -158,27 +162,29 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     const {loading} = this.props.dashboard;
     const {detail, detailName, exporting} = this.state;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.3">
+      <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
           <Row>
             <div className="col-md-12">
               <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">Dashboard de daños</h3>
-                  {hasPermission(window.user, 'exportDamages') ?
-                    <div className="box-tools pull-right">
+                <div className='box-header with-border'>
+                  <h3 className='box-title'>Dashboard de daños</h3>
+                  {
+                    false && hasPermission(window.user, 'exportDamages') ?
+                    <div className='box-tools pull-right'>
                       <button
-                        className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                        className='btn btn-sm btn-primary hidden-xs hidden-sm'
                         onClick={this.exportDamages}
                         disabled={exporting}
                       >
                         {
                           exporting ?
                             <React.Fragment>
-                              <i className="fa fa-fw fa-spinner fa-spin"></i> Exportando reporte
+                              <i className='fa fa-fw fa-spinner fa-spin'></i> Exportando reporte
                             </React.Fragment>
                             :
                             <React.Fragment>
-                              <i className="fa fa-fw fa-download"></i> Exportar reporte
+                              <i className='fa fa-fw fa-download'></i> Exportar reporte
                             </React.Fragment>
                         }
                       </button>

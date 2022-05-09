@@ -1,12 +1,13 @@
-import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
-import {Dispatch} from 'redux';
+import { AxiosError, AxiosResponse, CancelTokenSource, default as Axios } from 'axios';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import {ICarrier} from '../../../../../src/interfaces/carrier.interface';
-import {ICompany} from '../../../../../src/interfaces/company.interface';
-import {IRegion} from '../../../../../src/interfaces/region.interface';
-import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
+import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { ICompany } from '../../../../../src/app/interfaces/company.interface';
+import { IRegion } from '../../../../../src/app/interfaces/region.interface';
+import { IBaseVenue, IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
-import {showModal, statusFooterButttonsModal} from '../utils/common';
+import { showModal, statusFooterButttonsModal } from '../utils/common';
+import {IUser} from "../../../../../src/app/interfaces";
 
 export interface IVenuesState {
   venues: IVenue[];
@@ -14,9 +15,11 @@ export interface IVenuesState {
   companies: ICompany[];
   regions: IRegion[];
   carriers: ICarrier[];
+  users: IUser[];
   loading: boolean;
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
+  searchText: string;
   pagination: {
     count: number;
     page: number;
@@ -71,6 +74,23 @@ export function changePageAction(page: number): IChangePage {
     }
   };
 }
+
+interface IChangeSearchVenue {
+  type: '/VENUES/CHANGE_SEARCH';
+  payload: {
+    searchText: string;
+  };
+}
+
+export function changeSearchAction(searchText: string): IChangeSearchVenue {
+  return {
+    type: '/VENUES/CHANGE_SEARCH',
+    payload: {
+      searchText
+    }
+  };
+}
+
 
 interface IChangeTempVenue {
   type: '/VENUES/CHANGE_TEMP_VENUE';
@@ -183,9 +203,10 @@ export function loadRegionsAction(regions: IRegion[]): ILoadRegions {
 }
 
 export function getVenuesAction(nextPage: number) {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => { venues: IVenuesState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
+    const { searchText } = state.venues;
     if (nextPage && nextPage !== state.venues.pagination.page) {
       dispatch(isLoadingAction(true));
     }
@@ -196,7 +217,7 @@ export function getVenuesAction(nextPage: number) {
     }
     Axios.all([
       api.getCompanies(1, 200),
-      api.getVenues(1, 200),
+      api.getVenues({ page: 1, pageSize: 200, search: searchText }),
       api.getCarriers(1, 200),
       api.getRegions(1, 200)
     ])
@@ -209,7 +230,7 @@ export function getVenuesAction(nextPage: number) {
       .catch((err: AxiosError): void => {
         api.errorHandler(err);
       });
-    api.getVenues(page)
+    api.getVenues({ page, search: searchText })
       .then((response: AxiosResponse) => {
         dispatch(loadVenuesAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
@@ -227,17 +248,17 @@ export function getVenuesAction(nextPage: number) {
 }
 
 export function createVenueAction() {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => { venues: IVenuesState }) => {
     dispatch(isLoadingAction(true));
     const state = getState();
-    const {tempVenue} = state.venues;
+    const { tempVenue } = state.venues;
     const api: ApiService = new ApiService();
     api.createVenue(tempVenue)
       .then((response: AxiosResponse) => {
         dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
       })
@@ -267,18 +288,19 @@ export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
 }
 
 export function updateVenueAction() {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => { venues: IVenuesState }) => {
     const state = getState();
-    const {tempVenue} = state.venues;
+    const { tempVenue } = state.venues;
     const $venue = $(`#venue-${tempVenue._id}`);
     const api: ApiService = new ApiService();
     api.updateVenue(tempVenue)
       .then((response: AxiosResponse) => {
+        dispatch(changeVenueAction(response.data.venue));
         dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
         $venue.addClass('editing-item');
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         setTimeout(() => {
@@ -310,13 +332,29 @@ export function processDeleteVenueAction(id: string): IDeleteVenue {
   };
 }
 
+interface ILoadUsers {
+  type: '/VENUES/LOAD_USERS';
+  payload: {
+    users: IUser[];
+  };
+}
+
+export function loadUsers(users: IUser[]) : ILoadUsers {
+  return {
+    type: '/VENUES/LOAD_USERS',
+    payload: {
+      users
+    }
+  };
+}
+
 export function deleteVenueAction(id: string) {
   return (dispatch: Dispatch<VenueReduxAction>) => {
     const api: ApiService = new ApiService();
     api.deleteVenue(id)
       .then((response: AxiosResponse): void => {
         // effect when removing user
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         $(`#venue-${id}`)
@@ -332,15 +370,38 @@ export function deleteVenueAction(id: string) {
   };
 }
 
+export function getVenueUsersAction(page: number, venue: IVenue){
+  return (dispatch: Dispatch<VenueReduxAction>) => {
+    const api : ApiService = new ApiService();
+    api.getSource();
+    api.getUsers({
+      page,
+      search: '',
+      venue: venue._id,
+      minified: true,
+      limit: 100
+    })
+      .then((response: AxiosResponse) : void => {
+        dispatch(loadUsers(response.data.results));
+      })
+      .catch((err: any) => {
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      })
+  };
+}
+
 export type VenueReduxAction =
   ICancelRequest |
   IIsLoading |
   IChangePage |
   ILoadVenues |
   IDeleteVenue |
+  IChangeSearchVenue |
   IChangeTempVenue |
   IChangeVenue |
   ILoadCompaniesVenue |
   ILoadAllVenue |
   ILoadCarriers |
-  ILoadRegions;
+  ILoadRegions |
+  ILoadUsers;

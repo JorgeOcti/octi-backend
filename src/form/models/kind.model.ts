@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IKind} from '../../interfaces/kind.interface';
+import {IKind} from '../interfaces/kind.interface';
 
 export interface IKindModel extends IKind, mongoose.Document {}
 export const kindSchema = new mongoose.Schema({

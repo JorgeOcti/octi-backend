@@ -1,4 +1,6 @@
 import * as bodyParser from 'body-parser';
+import * as Bull from 'bull';
+import { DoneCallback, Job } from 'bull';
 import * as compression from 'compression';
 import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
@@ -9,25 +11,28 @@ import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
-import * as Bull from 'bull';
-import * as passport from 'passport';
-import * as passportLocal from 'passport-local';
+import * as moment from 'moment-timezone';
+import { passport } from './passportConfig';
+// const passportSaml = require('passport-saml');
 import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
 import AppController from './app/controllers/app.controller';
-import User from './app/models/user.model';
-import {appRouter, jwtRouter} from './app/router';
+import { appRouter, jwtRouter } from './app/router';
 import EmailQueue from './app/tasks/email.task';
+import { billingRouter } from './billing/router';
+import BillingQueue from './billing/tasks/billing.task';
 import formRouter from './form/router';
-import {inventoryRouter} from './inventory/router';
+import { inventoryRouter } from './inventory/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
-import redisClient, {createRedisClient} from './services/redis.service';
-import {planningRouter} from "./planning/router";
-import BillingQueue from "./billing/tasks/billing.task";
-import { billingRouter } from './billing/router';
+import { planningRouter } from './planning/router';
+import { requestRouter } from './request/router';
+import redisClient, { createRedisClient } from './services/redis.service';
+import { distributionRouter } from './distribution/router';
+import { CookieOptions } from 'express-session';
+import {statsRouter} from "./stats/router";
 
 // Create Express server
 const app = express();
@@ -37,7 +42,6 @@ const app = express();
 
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
-const LocalStrategy = passportLocal.Strategy;
 // const gitCommit = git.long();
 const redisStore = connectRedis(session);
 
@@ -107,6 +111,8 @@ app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
 
+app.use(cookieParser());
+
 // For parsing application/json
 app.use(bodyParser.json({limit: '50mb'}));
 
@@ -116,6 +122,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
 // const upload = multer({dest:'/tmp/'});
 const upload = multer({
+  limits: { fieldSize: 32 * 1024 * 1024 },
   storage: multer.diskStorage({
     destination: '/tmp/',
     filename: (req, file, callback) => {
@@ -133,74 +140,36 @@ const staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
 //
 app.locals.getVersionedPath = staticify.getVersionedPath;
+app.locals.moment = moment;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 
-app.use(cookieParser());
+// if (process.env.NODE_ENV === 'production') {
+//
+// }
+app.set('trust proxy', 1); // trust first proxy
+let cookieSetting: CookieOptions = {
+  secure: process.env.ENV === 'production',
+  maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
+};
+if (process.env.ENV === 'production') {
+  cookieSetting.sameSite = 'none';
+}
+console.log('cookieSetting', cookieSetting);
 app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
   cookie: {
-    maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
+    ...cookieSetting
   },
-  store: new redisStore({client: redisClient as any})
+  // proxy: process.env.ENV === 'production',
+  store: new redisStore({ client: redisClient as any })
 }));
 
-// passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// passport.use(new LocalStrategy((User as any).authenticate()));
-
-/**
- * Sign in using Email and Password.
- */
-
-passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({
-    username: username.toLowerCase(),
-    active: true
-  }, (err: any, user: any) => {
-    if (err) { return done(err); }
-    if (!user) {
-      return done(undefined, false, { message: `username ${username} not found.` });
-    }
-    user.comparePassword(password, (err: Error, isMatch: boolean) => {
-      if (err) { return done(err); }
-      if (isMatch) {
-        return done(undefined, user);
-      }
-      return done(undefined, false, { message: 'Invalid email or password.' });
-    });
-  });
-}));
-
-passport.serializeUser((User as any).serializeUser());
-// passport.deserializeUser((User as any).deserializeUser());
-passport.deserializeUser(async (email: string, done) => {
-  try {
-    const user = await User.findOne({email}).populate([{
-      path: 'userPermissions',
-      select: ['codeName']
-    }, {
-      path: 'userForms',
-      select: ['name']
-    }, {
-      path: 'venue',
-      select: ['name']
-    }, {
-      path: 'company'
-    }]);
-    if (user) {
-      done(null, user);
-    } else {
-      done(new Error('User not found'));
-    }
-  } catch (e) {
-    /* istanbul ignore next */
-    done(e);
-  }
-});
+// app.use(passport.authenticate('session'));
 
 /*
 passport.serializeUser<any, any>((user, done) => {
@@ -250,75 +219,56 @@ app.use('/', appRouter);
 app.use('/', formRouter);
 app.use('/', planningRouter);
 app.use('/', inventoryRouter);
+app.use('/', requestRouter);
+app.use('/', distributionRouter);
 app.use('/', billingRouter);
+app.use('/', statsRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    createClientFactory: function () {
+    createClientFactory: () => {
       return createRedisClient();
     }
   }
 });
 
 const billingQueue = new Bull('billing', {
-  createClient: function () {
+  createClient: () => {
     return createRedisClient();
   },
   prefix: '{andes}'
 });
 
-billingQueue.process(async () => {
-  await new BillingQueue().processBilling()
-});
-
-const addCronTask = async () => {
+(async () => {
   try {
     // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
-    let jobs = await billingQueue.getRepeatableJobs();
-    if (jobs && jobs.length){
-      for(const job of jobs){
+    const jobs = await billingQueue.getRepeatableJobs();
+    if (jobs && jobs.length) {
+      for (const job of jobs) {
         await billingQueue.removeRepeatableByKey(job.key);
-        console.log(`${jobs[0].key} Removida`)
+        console.log(`${jobs[0].key} Removida`);
       }
     }
+    await billingQueue.clean(0, 'delayed');
+    console.log('Se ejecuto la limpieza de tareas');
   } catch (error) {
     console.log(error);
-    console.log("NO existen tareas")
+    console.log('NO existen tareas');
   }
   if (process.env.ENV === 'development') {
     // billingQueue.add({}, {repeat: {cron: '0 */1 * * *'}, jobId: 'billing'});
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
-    billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+    billingQueue.process(async (job: Job, done: DoneCallback) => {
+      await new BillingQueue().processBilling();
+      done();
+    });
+    await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
   }
-};
-addCronTask();
-//
-/*
-export const queueScheduler = kueScheduler.createQueue({
-  redis: {
-    createClientFactory: function () {
-      return createRedisClient();
-    }
-  }
-});
+})();
 
-const job = queueScheduler
-  .createJob('billing', {})
-  .attempts(3)
-  .priority('normal')
-  .unique('billing');
-
-//schedule it to run every 2 seconds
-queueScheduler.every('30 seconds', job);
-// queueScheduler.every('30 minutes', job);
-
-//somewhere process your scheduled jobs
-queueScheduler.process('billing', new BillingQueue().processBilling);
-
-*/
 
 new EmailQueue(queue).run();
 new InventoryQueue(queue).run();
@@ -351,6 +301,8 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+  console.log('app.showError');
+  console.log('req.url', req.url);
   console.log('err', err);
   res.status(statusCode).render(statusCode.toString());
   // res.json({
@@ -360,4 +312,4 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   next();
 });
 
-export default app;
+export { app as default };

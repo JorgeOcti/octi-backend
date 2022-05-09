@@ -1,21 +1,21 @@
+import { AxiosError, AxiosResponse } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
-import {RefObject} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo, RefObject } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
-import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import { AlertReduxAction, IAlertsState } from '../../actions/alerts.actions';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import {getExtension, getIconFromExtension} from '../../utils/common';
+import { getExtension, getIconFromExtension } from '../../utils/common';
 import Checkbox from '../Utils/CheckBox';
 import VenueDetail from './VenueDetail';
-import {AxiosError, AxiosResponse} from "axios";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -40,7 +40,8 @@ interface IStateType {
   reportPhoto: number;
 }
 
-class InventoryCreateView extends React.Component<IPropsType, IStateType> {
+class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -68,6 +69,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Creando Inventario';
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.clickUploadBackup = this.clickUploadBackup.bind(this);
     this.getVenues = this.getVenues.bind(this);
@@ -88,9 +90,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     this.inputBackup = React.createRef();
   }
 
-  public componentWillMount() {
-    // set the title of the page
-    document.title = 'OSA Andes | Creando Inventario';
+  public componentWillMount(): void {
     this.getVenues();
   }
 
@@ -106,6 +106,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $reportPhoto: any = $('#report-photo');
     $reportPhoto.TouchSpin({
       initval: 1,
@@ -139,7 +140,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     const {
       loadingSettings, carsByVenue, name,
       sending, notification, backupFile,
-      backupUri, manualPhoto, loading
+      backupUri, loading
     } = this.state;
     let carsInSettings = 0;
     return (
@@ -178,7 +179,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-6">
                       <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de vehículos:</strong> {carsInSettings}</p>
+                      <p><strong>Total de unidades:</strong> {carsInSettings}</p>
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
@@ -522,7 +523,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             for (const cv in carsByVenue) {
               if (carsByVenue.hasOwnProperty(cv)) {
                 const existVenue = venues.some((venue: any) => {
-                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
+                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase();
                 });
                 carsByVenueArray.push({
                   name: cv.trim(),
@@ -539,7 +540,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               loadingSettings: false
             });
           } else {
-            swal(
+            swal!(
               'Importador de configuración',
               `"${file.name}" no cumple con los requisitos mínimos o no tiene autos.`,
               'error'
@@ -559,7 +560,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         this.inputFile.current.value = '';
       }
     } else {
-      swal('Importador de configuración', 'Este archivo no cumple con los requisitos mínimos o no tiene autos.', 'error');
+      swal!('Importador de configuración', 'Este archivo no cumple con los requisitos mínimos o no tiene autos.', 'error');
       this.setState({
         loadingSettings: false
       });
@@ -590,7 +591,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     if (files && files.length) {
       const file = files[0];
       if (!this.validateSize(file.size)) {
-        swal('Envió inventario', 'El archivo supera los 10Mb permitidos.', 'error');
+        swal!('Envió inventario', 'El archivo supera los 10Mb permitidos.', 'error');
       } else {
         if (new RegExp('\\bimage\\b').test(file.type)) {
           const reader = new FileReader();
@@ -660,7 +661,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   private getVenues(){
     this.setState({loading: true});
     const api: ApiService = new ApiService();
-    api.getVenues(1, 200)
+    api.getVenues({ page: 1, pageSize: 200, noPopulate: true })
       .then((response: AxiosResponse):void =>{
         this.setState({
           venues: response.data.results,
@@ -679,12 +680,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       sending: true
     });
     if (!name.trim().length) {
-      swal('Envió inventario', 'El nombre del inventario es obligatorio.', 'error');
+      swal!('Envió inventario', 'El nombre del inventario es obligatorio.', 'error');
       this.setState({
         sending: false
       });
     } else if (!carsByVenue.length) {
-      swal('Envió inventario', 'No se ha importado la configuración o no contiene sucursales.', 'error');
+      swal!('Envió inventario', 'No se ha importado la configuración o no contiene sucursales.', 'error');
       this.setState({
         sending: false
       });
@@ -700,7 +701,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         .then((response: any) => {
           const { message } = response.data;
           setTimeout(() => {
-            swal('Envió inventario', message, 'success');
+            swal!('Envió inventario', message, 'success');
           }, 200);
           history.push('/inventory/');
           this.setState({
@@ -709,7 +710,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         })
         .catch((e) => {
           console.log('e', e);
-          swal('Envió inventario', 'Se produjo un error al crear el inventario.', 'error');
+          swal!('Envió inventario', 'Se produjo un error al crear el inventario.', 'error');
           this.setState({
             sending: false
           });

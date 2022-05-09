@@ -8,6 +8,7 @@ import {IUsersState} from '../../actions/users.actions';
 interface IPropsType {
   dispatch?: Dispatch<ModalReduxAction>;
   modal?: IModalState;
+  modalLarge?: boolean;
 }
 
 interface IStateType {
@@ -23,10 +24,10 @@ class ModalView extends React.Component<IPropsType, IStateType> {
   // };
 
   render() {
-    const {modal} = this.props;
+    const {modal, modalLarge} = this.props;
     return (
       <div className="modal fade" role="dialog" id="andesModal" tabIndex={-1}>
-        <div className="modal-dialog" role="document">
+        <div className={`modal-dialog ${modalLarge ? 'modal-lg' : ''}`} role="document">
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>

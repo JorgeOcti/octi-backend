@@ -3,7 +3,8 @@
     "outDir": "dist/",
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "./buildcache",
+    "skipLibCheck": true,
+    "tsBuildInfoFile": "./buildcache/buildcache",
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
@@ -16,6 +17,7 @@
     "lib": [
       "es6",
       "es7",
+      "ES2020",
       "dom"
     ],
     "target": "es5",
@@ -33,7 +35,7 @@
     ".idea"
   ],
   "include": [
-    "./src/**/**/**/*.ts",
-    "./src/**/**/**/*.tsx"
+    "./src/**/**/**/**/*.ts",
+    "./src/**/**/**/**/*.tsx"
   ]
 }

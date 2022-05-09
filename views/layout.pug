@@ -4,16 +4,17 @@ html
     meta(charset='utf-8')
     //- link(rel='shortcut icon', class='favicon' href=`${process.env.SITE_URL}/static${getVersionedPath('/images/favicon.ico')}`, type='image/x-icon')
     //- link(rel='icon', class='favicon', href=`${process.env.SITE_URL}/static${getVersionedPath('/images/favicon.ico')}`, type='image/x-icon')
-    link(rel='shortcut icon', href='https://www.osa-app.cl/img-osa/logo/favicon-osa.ico')
+    link(rel='shortcut icon', href='/static/images/favicon-osa.ico')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     //- Tell the browser to be responsive to screen width
     meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
     //- polyfill.io
-    script(src='https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default%2Ces2015%2Ces2016%2Ces2017%2Ces5%2Ces6%2Ces7')
+    script(src='https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default%2Ces2015%2Ces2016%2Ces2017%2Ces5%2Ces6%2Ces7%2CURLSearchParams')
     //- Bootstrap 3.3.7
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap/bootstrap.min.css')}`)
     //- Font Awesome
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/font-awesome/font-awesome.min.css')}`)
+    link(rel='stylesheet', href=`https://fonts.googleapis.com/icon?family=Material+Icons`)
     //- Theme style
     link(rel='stylesheet', href=`/static${getVersionedPath('/theme/dist/css/AdminLTE.min.css')}`)
     //- AdminLTE Skin
@@ -40,11 +41,13 @@ html
       script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
       //- moment
       script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
+      //- mapbox
+      script(src=`/static${getVersionedPath('/js/vendor/mapbox/mapbox-gl.js')}`)
       //- moment-timezone
       script(src=`/static${getVersionedPath('/js/vendor/moment/moment-timezone-with-data.min.js')}`)
       //- React
-      script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react.min.js') : getVersionedPath('/js/vendor/react/react.js')}`)
-      script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react-dom.min.js') : getVersionedPath('/js/vendor/react/react-dom.js')}`)
+      script(src=`/static${process.env.ENV === 'production' ? getVersionedPath('/js/vendor/react/react.min.js') : getVersionedPath('/js/vendor/react/react.js')}`)
+      script(src=`/static${process.env.ENV === 'production' ? getVersionedPath('/js/vendor/react/react-dom.min.js') : getVersionedPath('/js/vendor/react/react-dom.js')}`)
       //-  Sweetalert
       script(src=`/static${getVersionedPath('/js/vendor/sweetalert/sweetalert.min.js')}`)
       //- Bootstrap 3.3.7
@@ -58,7 +61,7 @@ html
       //- toas
       script(src=`/static${getVersionedPath('/js/vendor/toast/toast.js')}`)
       //- socket io
-      script(src=`/socket.io/socket.io.js`)
+      script(src=`${process.env.ENV === 'production' ? '/socket.io/socket.io.min.js' : '/socket.io/socket.io.js'}`)
       //- js app
       block js
 

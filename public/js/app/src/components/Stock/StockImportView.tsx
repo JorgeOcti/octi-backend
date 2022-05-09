@@ -17,6 +17,7 @@ import {
 } from "../../actions/stock.actions";
 import ShowIf from "../Utils/ShowIf";
 import StockVenueDetail from "./StockVenueDetail";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<StockReducerAction>;
@@ -39,7 +40,8 @@ interface IStateType {
   file: File | null;
 }
 
-class StockImportView extends React.Component<IPropsType, IStateType> {
+class StockImportView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly inputFile: RefObject<HTMLInputElement>;
 
@@ -59,6 +61,7 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Importar Stock';
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.getVenues = this.getVenues.bind(this);
     this.processSettings = this.processSettings.bind(this);
@@ -440,7 +443,7 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
   private getVenues(){
     this.setState({loading: true});
     const api: ApiService = new ApiService();
-    api.getVenues(1, 200)
+    api.getVenues({ page: 1, pageSize: 200 })
       .then((response: AxiosResponse):void =>{
         this.setState({
           venues: response.data.results,

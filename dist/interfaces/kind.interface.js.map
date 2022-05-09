@@ -1,1 +1,0 @@
-{"version":3,"file":"kind.interface.js","sourceRoot":"","sources":["../../src/interfaces/kind.interface.ts"],"names":[],"mappings":"","sourcesContent":["import {ITeam} from './team.interface';\n\nexport interface IKind {\n  _id: any;\n  name: string;\n  team: ITeam | any;\n}\n"]}

@@ -1,7 +1,7 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../../src/app/interfaces/user.interface';
 
 interface IPropsType {
   changeTempVersion: (tempVersion: ITempVersion) => void;

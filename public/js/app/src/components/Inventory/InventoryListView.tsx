@@ -5,7 +5,8 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import {
   deleteInventoryAction,
@@ -18,7 +19,9 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
-import Paginator from "../Utils/Paginator";
+import Paginator from '../Utils/Paginator';
+import { Link } from 'react-router-dom';
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 
@@ -35,7 +38,8 @@ interface IStateType {
   error: Error | null;
 }
 
-class InventoryListView extends React.Component<IPropsType, IStateType> {
+class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -44,10 +48,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   readonly state = {
     error: null
   };
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Inventarios';
     this.create = this.create.bind(this);
     this.changePage = this.changePage.bind(this);
     this.labelStatus = this.labelStatus.bind(this);
@@ -57,22 +62,24 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
+    const {page} = this.props.inventories.pagination;
     // set the title of the page
-    document.title = 'OSA Andes | Inventarios';
     window.scrollTo(0, 0);
 
     // get data
-    this.props.getInventoriesAction(true, 1);
+    this.props.getInventoriesAction(true, page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: {
+        token: window.user.token
+      }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `inventory-list-${window.user.team}`});
+      this.socket.emit('join', {room: `inventory-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
@@ -83,6 +90,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 
@@ -91,7 +99,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `inventory-list-${window.user.team}`});
+    this.socket.emit('leave', {room: `inventory-list-${window.user.team._id}`});
     this.socket.disconnect();
   }
 
@@ -149,7 +157,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   inventory.finalizedAt ?
                                     <React.Fragment>
                                       <i className="fa fa-fw fa-clock-o text-danger"/>Finalizado el {moment(inventory.finalizedAt).format('LLL')}<br/>
-                                      {inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.finalizedBy.fullName}</React.Fragment> : null}
+                                      {
+                                        inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.finalizedBy.fullName}</React.Fragment> : null
+                                      }
                                     </React.Fragment>
                                     : null
                                 }
@@ -197,9 +207,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 </button>
                                 <ul className="dropdown-menu pull-right" role="menu">
                                   <li>
-                                    <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}>
+                                    <Link to={`/inventory/${inventory._id}/detail/`}>
+                                    {/* <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}> */}
                                       <i className="fa fa-fw fa-table" />Ver Detalle
-                                    </a>
+                                    {/* </a> */}
+                                    </Link>
                                   </li>
                                   {
                                     hasPermission(window.user, 'viewFilesInventory') && inventory.file && inventory.file.hasOwnProperty('url') ?
@@ -252,8 +264,15 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               pagination.pages > 1 &&
                 <div className="box-footer">
                   <div className="row">
-                    <div className="col-md-12 text-right">
-                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                      <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                        &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 10 + 1} al {(pagination.page) * 10} de {pagination.count} registros.
+                            </span>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="text-right" style={{ marginRight: '15px' }}>
+                        <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,13 +1,15 @@
 // import * as PropTypes from 'prop-types';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
-import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
+
+import {IParticipant} from '../../../../../../src/form/interfaces/participant.interface';
 import {
   DashboardReduxAction,
   getCarAction,
@@ -18,6 +20,9 @@ import {
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import ShowIf from '../Utils/ShowIf';
+import { parseReplicableURL } from '../../utils/common';
 
 declare let window: IWindow;
 
@@ -36,7 +41,8 @@ interface IStateType {
   carLoading: string;
 }
 
-class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
+class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
+  title: string;
 
   // static propTypes = {
   //   dashboard: PropTypes.object.isRequired,
@@ -45,6 +51,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   //   getParticipant: PropTypes.func.isRequired
   // };
 
+  constructor(props : IPropsType) {
+    super(props);
+    this.title = 'Detalle VIN';
+    this.openBlank = this.openBlank.bind(this);
+  }
+
   readonly state = {
     error: null,
     highlight: [],
@@ -52,23 +64,24 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   };
   protected printIframe: any;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   componentWillMount() {
     // set the title of the page
-    const {id} = this.props.match.params;
-    document.title = 'OSA Andes | Detalle VIN';
+    const { id } = this.props.match.params;
     this.props.getCarAction(id);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: {
+        token: (window.user as any).token
+      }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-detail-${id}`});
+      this.socket.emit('join', { room: `dashboard-vin-detail-${window.user.team._id}-${id}` });
     });
     this.socket.on('ADD_PARTICIPANT', (data: any): void => {
       this.setState({
@@ -77,6 +90,10 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
       this.props.loadParticipantInCarAction(data);
     });
 
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -115,7 +132,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, car, loadingParticipant} = this.props.dashboard;
+    const {loading, car, loadingParticipant, requests} = this.props.dashboard;
     const {highlight, carLoading} = this.state;
     const {getParticipant} = this.props;
     return (
@@ -167,12 +184,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Nº</th>
-                    <th>Fecha</th>
-                    <th>Formulario</th>
-                    <th className="hidden-xs">Supervisor</th>
-                    <th className="hidden-xs">Sucursal</th>
-                    <th className="hidden-xs">Calificación</th>
+                    <th className="middle">Nº</th>
+                    <th className="middle">Fecha</th>
+                    <th className="middle">Formulario</th>
+                    <th className="middle hidden-xs">Supervisor</th>
+                    <th className="middle hidden-xs">Sucursal</th>
+                    <th className="middle-center hidden-xs">Calificación</th>
                     <th className="width-10"/>
                     <th className="width-10"/>
                   </tr>
@@ -186,7 +203,26 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
                       <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
-                      <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
+                      <td className="middle-center hidden-xs">
+                        <ShowIf
+                          condition={!!(participant.hasOwnProperty('qualification') && participant.qualification)}
+                          alternative={'-'}
+                        >
+                          {`${Math.round(participant.qualification)}%`}
+                        </ShowIf>
+                        <ShowIf
+                          condition={participant.hasDamages}
+                        >
+                          <React.Fragment>
+                            {' '}<i
+                            className='fa fa-warning text-red'
+                            data-toggle='tooltip'
+                            data-placement='top'
+                            title='Daños encontrados en esta revisión.'
+                          />
+                          </React.Fragment>
+                        </ShowIf>
+                      </td>
                       <td className="text-primary middle-center">
                         <button
                           className="btn btn-xs btn-default"
@@ -197,19 +233,72 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle pointer">
                         <button
                           className="btn btn-xs btn-primary"
-                          disabled={loadingParticipant && loadingParticipant === participant._id ? true : false}
+                          disabled={!!(loadingParticipant && loadingParticipant === participant._id)}
                           onClick={loadingParticipant ? undefined : () => getParticipant(participant._id)}
                         >
-                          {
-                            loadingParticipant && loadingParticipant === participant._id ?
-                              <i className="fa fa-spin fa-spinner"/>
-                              :
-                              <i className="fa fa-bar-chart"/>
-                          }
+                          <ShowIf
+                            condition={!!(loadingParticipant && loadingParticipant === participant._id)}
+                            alternative={<i className="fa fa-bar-chart"/>}
+                          >
+                            <i className="fa fa-spin fa-spinner"/>
+                          </ShowIf>
                         </button>
                       </td>
                     </tr>
                   ))
+                }
+                </tbody>
+              </table>
+              <h4>Solicitudes</h4>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th className="middle">Nº</th>
+                    <th className="middle">Estado</th>
+                    <th className="middle">Solicitante</th>
+                    <th className="middle">Vendedor</th>
+                    <th className="middle">Cliente</th>
+                    <th className="middle">RUT Cliente</th>
+                    <th className="middle">Correo</th>
+                    <th className="middle-center">Ticket</th>
+                    <th className="middle">Nº Ticket</th>
+                    <th className="middle">Sucursal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {
+                  requests.map((request) => {
+                    return (
+                      <tr key={request._id}>
+                        <td>
+                          <a
+                            href={parseReplicableURL(`/requests/vehicles/${request.request._id}/`)}
+                            target='_blank'
+                            style={{
+                              textDecoration: 'underline'
+                            }}
+                          >#{request.request.number} <i className='fa fa-fw fa-share-alt-square' /></a>
+                        </td>
+                        <td>{request.status?.name}</td>
+                        <td>{request.request.createdBy ? `${request.request.createdBy.firstName} ${request.request.createdBy.lastName}` : ''}</td>
+                        <td>{request.request.sellerText}</td>
+                        <td>{request.request?.customerInformation?.name}</td>
+                        <td>{request.request?.customerInformation?.rut}</td>
+                        <td>{request.request?.customerInformation?.email}</td>
+                        <td className='middle-center'>
+                          {
+                            request.request?.advancePaymentInformation?.files?.length ?
+                              <i
+                                className='fa fa-check-circle text-green pointer'
+                                onClick={() => this.openBlank(request.request.advancePaymentInformation.files[0].file.url)}
+                              /> : ''
+                          }
+                        </td>
+                        <td className='middle'>{request.request?.advancePaymentInformation?.number}</td>
+                        <td>{request.destination?.name}</td>
+                      </tr>
+                    )
+                  })
                 }
                 </tbody>
               </table>
@@ -225,6 +314,10 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private openBlank(url: string) {
+    window.open(url, '_blank');
   }
 }
 

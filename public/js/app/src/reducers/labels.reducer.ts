@@ -3,6 +3,7 @@ import {ILabelsState, LabelsReduxAction} from '../actions/labels.actions';
 const initialState: ILabelsState = {
   labels: [],
   inventorySettings: {
+    report: null,
     leftoverDifferentVenue: false,
     pending: "",
     pendingClass: "aqua",

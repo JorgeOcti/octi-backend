@@ -23,7 +23,7 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     const {name} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     req.context = {
       name: 'Transportista',
       filter: {team, name},
@@ -35,7 +35,7 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
 
   public async apiUpdate(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {name} = req.body;
     req.context = {
       name: 'Transportista',
@@ -48,7 +48,7 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
 
   public async apiDelete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     req.context = {
       name: 'Transportista',
       filter: {team, _id: id},
@@ -58,7 +58,7 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     this.paginateOptions = {
       select: {
         name: true

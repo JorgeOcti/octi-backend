@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IBaseCompany, ICompany} from '../../../../../../src/interfaces/company.interface';
+import {IBaseCompany, ICompany} from '../../../../../../src/app/interfaces/company.interface';
 import {
   changeTempCompanyAction,
   CompaniesReduxAction,
@@ -22,6 +22,7 @@ import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import CompaniesFormView from './CompaniesFormView';
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ company: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
@@ -41,10 +42,12 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class CompaniesListView extends React.Component<IPropsType, IStateType> {
+class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de empresas';
     this.addCompany = this.addCompany.bind(this);
     this.processAddCompany = this.processAddCompany.bind(this);
     this.udpateCompany = this.udpateCompany.bind(this);
@@ -52,10 +55,12 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     this.deleteCompany = this.deleteCompany.bind(this);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const {pagination} = this.props.companies;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de empresas';
     this.props.getCompaniesAction(pagination.page);
   }
 
@@ -83,7 +88,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCompany') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addCompany}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.addCompany}><i className="fa fa-plus" /> Agregar</button>
                   </div>
                   : null
               }
@@ -125,8 +130,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                                 <i
                                   className={
                                     company.billing.active ?
-                                      "fa fa-check-circle text-green":
-                                      "fa fa-times-circle text-red"
+                                      'fa fa-check-circle text-green':
+                                      'fa fa-times-circle text-red'
                                   }
                                 />
                               </td> : null
@@ -176,13 +181,16 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempCompanyAction({
       _id: '',
       name: '',
+      businessName: '',
+      rut: '',
       image: null,
       marker: null,
-      markerURI: "/static/images/files/pin_osa.svg",
+      markerURI: '/static/images/files/pin_osa.svg',
       billing: {
         active: false,
         checklistPrice: 0.0,
-        inventoryPrice: 0.0
+        inventoryPrice: 0.0,
+        requestPrice: 0.0
       },
       notifications: []
     });
@@ -208,15 +216,18 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
   }
 
   private udpateCompany(company: ICompany): void {
+    const {_id, name, businessName, rut, billing, marker, image, notifications} = company;
     this.props.changeTempCompanyAction({
-      _id: company._id,
-      name: company.name,
+      _id,
+      name,
+      businessName,
+      rut,
       image: null,
       marker: null,
-      imageURI: company.image && company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null,
-      markerURI: company.marker && company.marker.hasOwnProperty('url') ? decodeURI(company.marker.url) : "/static/images/files/pin_osa.svg",
-      billing: company.billing,
-      notifications: company.notifications
+      imageURI: image && image.hasOwnProperty('url') ? decodeURI(image.url) : null,
+      markerURI: marker && marker.hasOwnProperty('url') ? decodeURI(marker.url) : '/static/images/files/pin_osa.svg',
+      billing,
+      notifications
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -231,8 +242,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
   }
 
   private processUpdateCompany(): void {
-    const {tempCompany} = this.props.companies;
-    if (!tempCompany.name || !tempCompany.name.trim()) {
+    const {name} = this.props.companies.tempCompany;
+    if (!name || !name.trim()) {
       swal('Editar Empresa', 'El nombres es requerido', 'error');
     } else {
       this.props.updateCompanyAction();

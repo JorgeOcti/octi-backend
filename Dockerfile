@@ -1,5 +1,7 @@
-FROM node:12.18.4-stretch-slim
+FROM node:16.14.2-bullseye-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
+# phantom node 16 fix
+ENV OPENSSL_CONF=/dev/null
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -14,7 +16,7 @@ RUN apt-get update && \
         libfontconfig1 \
         libssl-dev \
         libxft-dev \
-        python \
+        python3 \
         graphicsmagick \
         gettext \
         git-core \
@@ -37,18 +39,25 @@ WORKDIR /srv
 
 COPY ./package.json /srv/package.json
 
-RUN npm --build-from-source install bcrypt && \
-    npm --unsafe-perm --production install && \
-    npm i -g pm2 && \
+RUN export PYTHON=python3
+RUN npm --unsafe-perm --production install && \
+    npm i -g pm2 typescript && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \
     touch /srv/ses-config.json && \
     echo "{}" >> /srv/ses-config.json
 
-COPY ./dist /srv/dist
+COPY ./src /srv/src
 COPY ./public /srv/public
 COPY ./views /srv/views
 COPY ./pm2.json /srv/pm2.json
+COPY ./tsconfig.json /srv/tsconfig.json
+
+RUN npm i
+
+RUN tsc --project tsconfig.json
+
+RUN rm -rf /srv/src
 
 EXPOSE 3000
 

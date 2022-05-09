@@ -3,14 +3,14 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {
   IInventoryLabel
-} from '../../../../../src/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
+} from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import {IInventorySetting} from '../../../../../src/app/interfaces/teamSetting.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface ILabelsState {
   labels: IInventoryLabel[];
-  inventorySettings: IInventorySettting;
+  inventorySettings: IInventorySetting;
   loading: boolean;
   tempLabel: IInventoryLabel;
   source: CancelTokenSource | null;
@@ -119,7 +119,7 @@ export function createLabelAction(label: IInventoryLabel) {
         showModal(false);
         dispatch(createLabel(response.data.label));
         statusFooterButttonsModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         const $label = $(`#label-${response.data.label._id}`);
@@ -145,13 +145,13 @@ interface ILoadLabels {
   type: '/LABELS/LOAD_LABELS';
   payload: {
     labels: any;
-    inventorySettings: IInventorySettting;
+    inventorySettings: IInventorySetting;
     count: number;
     pages: number
   };
 }
 
-export function loadLabelsAction(labels: any, inventorySettings: IInventorySettting, count: number, pages: number): ILoadLabels {
+export function loadLabelsAction(labels: any, inventorySettings: IInventorySetting, count: number, pages: number): ILoadLabels {
   return {
     type: '/LABELS/LOAD_LABELS',
     payload: {
@@ -221,7 +221,7 @@ export function changeLabelAction(label: IInventoryLabel, message?: boolean) {
           setTimeout(() => {
             $label.removeClass('editing-item');
           }, 1000);
-          swal(response.data.message, {
+          swal!(response.data.message, {
             icon: 'success'
           });
         }
@@ -262,7 +262,7 @@ export function deleteLabelAction(id: string) {
     api.deleteLabel(id)
       .then((response: AxiosResponse): void => {
         // effect when removing user
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         $(`#label-${id}`)

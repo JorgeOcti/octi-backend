@@ -2,8 +2,13 @@ version: '3.2'
 
 services:
   mongo:
-    image: mongo:4.2.1
+    image: mongo:4.2.17
+    command: --wiredTigerCacheSizeGB 30
     restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 500M
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'osacontrol'
       MONGO_INITDB_ROOT_PASSWORD: 'osacontrol'
@@ -15,23 +20,27 @@ services:
   redis:
     image: redis:5.0.3
     restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 500M
     ports:
       - 6379:6379
     volumes:
       - redis:/data
 
-  build:
-    build:
-      dockerfile: Dockerfile.development
-      context: .
-    image: andes:latest
-    restart: unless-stopped
-    command: ['tsc', '-w', '--project', 'tsconfig.json']
-    volumes:
-      - ./buildcache/:/srv/buildcache/
-      - ./dist:/srv/dist
-      - ./src:/srv/src
-      - ./tsconfig.json:/srv/tsconfig.json
+#  build:
+#    build:
+#      dockerfile: Dockerfile.development
+#      context: .
+#    image: andes:latest
+#    restart: unless-stopped
+#    command: ['tsc', '-w', '--project', 'tsconfig.json']
+#    volumes:
+#      - ./buildcache:/srv/buildcache
+#      - ./dist:/srv/dist
+#      - ./src:/srv/src
+#      - ./tsconfig.json:/srv/tsconfig.json
 
   backend:
     build:
@@ -39,15 +48,23 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: ['nodemon', 'dist/server.js', ' --max-old-space-size=4096']
+    command: ts-node-dev --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
+#    command: pm2 start pm2.development.json --no-daemon
+#    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 500M
+    # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env
     environment:
+      SALFA_SOAP: http://wdq.salfa.cl:8440
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
-#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority
+#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
@@ -56,9 +73,11 @@ services:
       - 3070:3070
     volumes:
       - ./dist:/srv/dist
+      - ./src:/srv/src
       - ./public:/srv/public
       - ./views:/srv/views
       - ./nodemon.json:/srv/nodemon.json
+      - ./tsconfig.json:/srv/tsconfig.json
     depends_on:
       - redis
       - mongo

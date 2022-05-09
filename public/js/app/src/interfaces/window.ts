@@ -1,4 +1,4 @@
-import {IUser} from '../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../src/app/interfaces/user.interface';
 
 interface IURL {
   current: string;
@@ -24,5 +24,6 @@ export interface IWindow extends Window {
     tooltip(): void;
     tooltipRemnove(): void;
   };
+  isTracked: boolean;
   getCookie(namecsrftoken: string): string;
 }

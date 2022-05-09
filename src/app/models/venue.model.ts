@@ -1,7 +1,9 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IVenue} from '../../interfaces/venue.interface';
-import {venueDaySchema} from "./venueDay.model";
+import { IVenue } from '../interfaces';
+import { venueDaySchema } from './venueDay.model';
+import venuesHooks from './venue.hooks';
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 
@@ -15,10 +17,25 @@ export const choicesStatusCarInventory = [
   ChoicesTypeVenue.receiver
 ];
 
-const venueSchema = new mongoose.Schema({
+export const baseVenueSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
+});
+
+export const venueSchema = new mongoose.Schema({
+  ...baseVenueSchema.obj,
+  code: {
+    type: String,
   },
   abbreviation: {
     type: String,
@@ -30,14 +47,6 @@ const venueSchema = new mongoose.Schema({
   lng: {
     type: Number,
     default: 0
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
   },
   region: {
     type: mongoose.Schema.Types.ObjectId,
@@ -83,6 +92,10 @@ const venueSchema = new mongoose.Schema({
     }],
     default: []
   },
+  responsible : [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   deleted: {
     type: Boolean,
     default: false
@@ -95,7 +108,14 @@ const venueSchema = new mongoose.Schema({
   timestamps: true
 });
 
+venueSchema.index({ 'team': 1 });
+venueSchema.index({ 'team': 1, deleted: 1 });
+
 mongoose.plugin(mongoosePaginate);
+
+venueSchema.post<IVenueModel>('findOneAndUpdate', async (doc: any) => {
+  await venuesHooks.postFindOneAndUpdateHandler(doc);
+});
 
 venueSchema.virtual('users', {
   ref: 'User', // The model to use
@@ -111,6 +131,8 @@ venueSchema.virtual('participants', {
   justOne: false
 });
 
-const Venue = mongoose.model<IVenueModel>('Venue', venueSchema);
+export type VenueSchema = mongoose.Model<IVenueModel> & PaginateModel<IVenueModel>;
+
+export const Venue = mongoose.model<IVenueModel, VenueSchema>('Venue', venueSchema);
 
 export default Venue;

@@ -4,6 +4,7 @@
     "jsRules": {},
     "rules": {
         "interface-name": [true, "always-prefix"],
+        "semicolon": [true, "always"],
         "no-multi-spaces": ["error"],
         "comma-dangle": ["error", "never"],
         "no-console": [false, "log", "error"],

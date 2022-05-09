@@ -1,18 +1,19 @@
-import * as React from "react";
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
-import {connect} from "react-redux";
-import AppContainer from "../../container/AppContainer";
-import ModalView from "../Modal/ModalView";
-import {IPlanningState, PlanningReduxAction} from "../../actions/planning.action";
-import {IWindow} from "../../interfaces/window";
-import {ErrorInfo, RefObject} from "react";
-import * as Raven from "raven-js";
-import * as XLSX from "xlsx";
-import * as moment from "moment";
+import * as React from 'react';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import {connect} from 'react-redux';
+import AppContainer from '../../container/AppContainer';
+import ModalView from '../Modal/ModalView';
+import {IPlanningState, PlanningReduxAction} from '../../actions/planning.action';
+import {IWindow} from '../../interfaces/window';
+import {ErrorInfo, RefObject} from 'react';
+import * as Raven from 'raven-js';
+import * as XLSX from 'xlsx';
+import * as moment from 'moment';
 import * as swal from 'sweetalert';
-import slugify from "slugify";
-import ApiService from "../../utils/axios";
+import slugify from 'slugify';
+import ApiService from '../../utils/axios';
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<PlanningReduxAction>;
@@ -29,7 +30,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class PlanningImportView extends React.Component<IPropsType, IStateType> {
+class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly inputFile: RefObject<HTMLInputElement>;
 
@@ -43,6 +45,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Importar planicacion';
     this.inputFile = React.createRef();
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
@@ -55,10 +58,6 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
     this.sendCreate = this.sendCreate.bind(this);
   }
 
-  public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Importar planificación';
-  }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
@@ -68,6 +67,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 
@@ -83,7 +83,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
       loadingSettings, carsByDate, sending
     } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.2">
+      <AppContainer title="" cMenu="4" cSubMenu="4.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -110,7 +110,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
                         <label>Días que serán importardos</label>
                         {
                           carsByDate.map((carByDate: any) => (
-                            <div className="panel box box-default" style={{borderTopWidth: '2px', marginBottom: "5px"}} key={carByDate.key}>
+                            <div className="panel box box-default" style={{borderTopWidth: '2px', marginBottom: '5px'}} key={carByDate.key}>
                               <div className="box-header with-border" style={{padding: '6px'}}>
                                 <h4 className="box-title" style={{
                                   fontSize: '15px',
@@ -121,7 +121,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
                                    href={`#${slugify(carByDate.key, {remove: /[*+~.()'"!:@]/g})}`}
                                    aria-expanded="false"
                                    className="collapsed">
-                                  {`${moment(carByDate.key, "YYYYMMDD").format('dddd, DD MMMM YYYY')} (${carByDate.cars.length} Vehículos)`}
+                                  {`${moment(carByDate.key, 'YYYYMMDD').format('dddd, DD MMMM YYYY')} (${carByDate.cars.length} unidades)`}
                                   </a>
                                 </h4>
                               </div>
@@ -162,7 +162,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col col-md-6">
-                      <strong>Total de vehículos:</strong> {carsByDate.reduce((total, x: any) => (total + x.cars.length), 0)}
+                      <strong>Total de unidades:</strong> {carsByDate.reduce((total, x: any) => (total + x.cars.length), 0)}
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
@@ -194,7 +194,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
                             marginBottom: '10px'
                           }}>
                           <i className="fa fa-2x fa-cloud-upload"/><br/>
-                          Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.
+                          Prueba soltando el excel aquí, o haz click para seleccionar el excel a cargar.
                         </div>
                       </div>
                     </div>
@@ -336,12 +336,12 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
           excelData.forEach((item: any, index: number) => {
             const date = moment(workbook.Sheets.Autos[`I${index + 2}`].v);
             if(date.isValid()){
-              const key: string = date.format("YYYYMMDD");
+              const key: string = date.format('YYYYMMDD');
               if (!carsByDate.hasOwnProperty(key)) {
                 carsByDate[key] = {
                   key,
                   cars: []
-                }
+                };
               }
               carsByDate[key].cars.push({
                 NInterno: item.NInterno,
@@ -353,7 +353,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
                 propiedad: item.propiedad,
                 tipo: item.tipo,
                 date
-              })
+              });
             }
           });
           this.setState({
@@ -363,12 +363,12 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
               .sort((a, b) => {
                 if (a.key < b.key) return 1;
                 if (a.key > b.key) return -1;
-                return 0
+                return 0;
               })
               .reverse()
           });
         } else {
-          !swal(
+          swal(
             'Importador de configuración',
             `"${file.name}" no cumple con los requisitos mínimos o no tiene autos.`,
             'error'
@@ -431,7 +431,7 @@ const mapStateToProps = (state: { planning: IPlanningState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    dispatch,
+    dispatch
   };
 };
 

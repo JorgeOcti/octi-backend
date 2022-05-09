@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
+import { IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection } from '../interfaces/form.interface';
+import { formTriggerSchema } from './trigger.model';
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
@@ -28,20 +30,48 @@ const accessorySchema = new mongoose.Schema({
 
 export enum KindQuestion {
   scale = 'scale',
+  numericScale = 'numeric-scale',
   accessory = 'accessory',
   text = 'text',
   venue = 'venue',
   damage = 'damage',
-  carrier = 'carrier'
+  carrier = 'carrier',
+  image ='image'
 }
 
 export const kindQuestion = [
+  KindQuestion.numericScale,
   KindQuestion.scale,
   KindQuestion.text,
   KindQuestion.accessory,
   KindQuestion.damage,
   KindQuestion.venue,
-  KindQuestion.carrier
+  KindQuestion.carrier,
+  KindQuestion.image
+];
+
+export enum KindQuestionKeyboard {
+  text = 'text',
+  numeric = 'numeric',
+  email = 'email'
+}
+
+export const kindQuestionKeyboard = [
+  KindQuestionKeyboard.text,
+  KindQuestionKeyboard.numeric,
+  KindQuestionKeyboard.email
+];
+
+export enum KindQuestionImage {
+  photo = 'photo',
+  signature = 'signature',
+  picture = 'picture'
+}
+
+export const kindQuestionImage = [
+  KindQuestionImage.photo,
+  KindQuestionImage.signature,
+  KindQuestionImage.picture
 ];
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
@@ -97,8 +127,36 @@ const formQuestionsSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
-  }
+  },
+
+  optional: {
+    type: Boolean,
+    default: false
+  },
+
+  hint: {
+    type: String,
+    trim: true
+  },
+
+  keyboardType: {
+    type: String,
+    enum: kindQuestionKeyboard,
+    default: KindQuestionKeyboard.text
+  },
+
+  imageType: {
+    type: String,
+    enum: kindQuestionImage,
+    default: KindQuestionImage.picture
+  },
+
+  minValue: Number,
+  maxValue: Number,
+  colors: [String],
 });
+
+
 
 export interface IFormSectionModel extends IFormSection, mongoose.Types.Subdocument {}
 const formSectionsSchema = new mongoose.Schema({
@@ -123,6 +181,21 @@ const formSectionsSchema = new mongoose.Schema({
     required: true
   }
 });
+
+
+export enum KindForm {
+  init = 'init',
+  control = 'control',
+  final = 'final',
+  transmittal = 'transmittal'
+}
+
+export const kindForm = [
+  KindForm.init,
+  KindForm.final,
+  KindForm.control,
+  KindForm.transmittal
+];
 
 export interface IFormModel extends IForm, mongoose.Document {}
 const formSchema = new mongoose.Schema({
@@ -155,6 +228,7 @@ const formSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
   shippingImage: {
     type: Boolean,
     default: false
@@ -217,7 +291,14 @@ const formSchema = new mongoose.Schema({
     default: false
   },
 
+  kind: {
+    type: String,
+    enum: kindForm,
+    default: KindForm.control
+  },
+
   sections: [formSectionsSchema],
+  triggers: [formTriggerSchema],
 
   active: {
     type: Boolean,
@@ -244,6 +325,8 @@ formSchema.virtual('participants', {
 //   }
 // });
 
-const Form = mongoose.model<IFormModel>('Form', formSchema);
+export type FormSchema = mongoose.Model<IFormModel> & PaginateModel<IFormModel>;
+
+const Form = mongoose.model<IFormModel, FormSchema>('Form', formSchema);
 
 export default Form;

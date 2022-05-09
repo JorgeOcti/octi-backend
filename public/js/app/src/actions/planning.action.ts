@@ -1,7 +1,7 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from "axios";
 import {
   IPlanning
-} from '../../../../../src/interfaces/planning.interface';
+} from '../../../../../src/planning/interfaces/planning.interface';
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 

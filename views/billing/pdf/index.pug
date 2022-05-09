@@ -9,10 +9,10 @@ body
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;")
     tr
       td
-        h1
-          | Reporte de Billing
-      td.text-right
         img(src="http://localhost:3030/static/images/circle_andes.png", height="100px")
+      td.text-right
+        h1
+          | Billing #{jsUcfirst(moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY"))}
   h2
     | Resumen
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;width:50%")
@@ -20,27 +20,21 @@ body
       tr
         td
           strong
-            | Empresa
+            | Razón social
         td
-          | #{invoice.company.name}
+          | #{invoice.company.businessName}
       tr
         td
           strong
-            | Periodo
+            | RUT
         td
-          | #{moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY")}
+          | #{invoice.company.rut}
       tr
         td
           strong
             | Valor UF
         td
           | #{new Intl.NumberFormat("de-DE").format(invoice.valueUF)} CLP
-      tr
-        td
-          strong
-            | Total
-        td
-          | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars)).toFixed(2))} UF (#{new Intl.NumberFormat("de-DE").format((invoice.totalPeso).toFixed(2))} CLP)
 
   h2
     | Detalle
@@ -49,40 +43,62 @@ body
       tr.heading
         th
           strong
-            | Item
+            | Producto
         th.text-right
           strong
-            | Cantidad
+            | Cantidad de vehículos
         th.text-right
           strong
-            | Precio
+            | Valor por Unidad (UF)
         th.text-right
           strong
-            | Total
+            | Total por Producto (UF)
+        th.text-right
+          strong
+            | Total por Producto (CLP)
     tbody
       tr.item
-        td(width="30%")
-          | Vehículos en Inventario
+        td(width="20%")
+          | 1 Control de Inventarios
         td(width="20%").text-right=invoice.inventoryCars
         td(width="20%").text-right
           | #{invoice.inventoryPrice} UF
         td(width="20%").text-right
           | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
+        td(width="20%").text-right
+          | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
       tr.item
-        td(width="30%")
-          | Vehículos en Checklist
+        td(width="20%")
+          | 2 Gestión de Checklist
         td(width="20%").text-right=invoice.checklistCars
         td(width="20%").text-right
           | #{invoice.checklistPrice} UF
         td(width="20%").text-right
           | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
+        td(width="20%").text-right
+          | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
+      tr.item
+        td(width="20%")
+          | 3 Control de Solicitudes
+        td(width="20%").text-right=invoice.requestCars
+        td(width="20%").text-right
+          | #{invoice.requestPrice} UF
+        td(width="20%").text-right
+          | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
+        td(width="20%").text-right
+          | #{new Intl.NumberFormat("de-DE").format(((invoice.requestPrice * invoice.requestCars) * invoice.valueUF).toFixed(2))} CLP
       tr
         td(colspan=3).text-right
           strong
-            | Total
+            | 
         td.text-right
           strong
-            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars)).toFixed(2)} UF
+            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
+        td.text-right
+          strong
+            | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
+
+
 
 
 

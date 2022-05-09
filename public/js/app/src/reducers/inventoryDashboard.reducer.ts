@@ -11,6 +11,25 @@ const initialState: IInventoryDashboardState = {
     venues: [],
     states: []
   },
+  inventorySettings: {
+    report: null,
+    leftoverDifferentVenue: false,
+    pending: "",
+    pendingClass: "aqua",
+    pendingColor: "",
+    found: "",
+    foundClass: "green",
+    foundColor: "",
+    missing: "",
+    missingClass: "red",
+    missingColor: "",
+    leftover: "",
+    leftoverClass: "yellow",
+    leftoverColor: "",
+    reported: "",
+    reportedClass: "gray-dark",
+    reportedColor: ""
+  },
   venues: [],
   monthlyReport: [],
   loading: true
@@ -28,11 +47,13 @@ export function inventoriesDashboardReducer(state = initialState, action: Invent
         ...state,
         loading: false,
         venues: action.payload.venues,
+        inventorySettings: action.payload.inventorySettings,
         monthlyReport: action.payload.monthlyReport
       };
     case '/INVENTORY_DASHBOARD/LOAD_DATA_FILTERED':
       return {
         ...state,
+        inventorySettings: action.payload.inventorySettings,
         filter: {
           ...action.payload.filter,
           venues: action.payload.filter.venues,

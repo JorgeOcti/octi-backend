@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import {ICar} from '../../../../../src/interfaces/car.interface';
+import {ICar} from '../../../../../src/app/interfaces/car.interface';
 import {CarReduxAction, ICarsState} from '../actions/cars.actions';
 
 const initialState: ICarsState = {

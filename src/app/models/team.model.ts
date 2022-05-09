@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {ITeam} from '../../interfaces/team.interface';
+import { ITeam } from '../interfaces';
 
 export interface ITeamModel extends ITeam, mongoose.Document {}
 
@@ -14,12 +15,27 @@ const teamSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  requestNumber: {
+    type: Number,
+    default: 0
+  },
+  transmittalNumber: {
+    type: Number,
+    default: 0
+  },
   active: {
     type: Boolean,
     default: true
   }
 }, {
   timestamps: true
+});
+
+teamSchema.virtual('companies', {
+  ref: 'Company', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'team', // is equal to field in another model
+  justOne: false
 });
 
 teamSchema.virtual('users', {
@@ -46,6 +62,8 @@ teamSchema.virtual('histories', {
 
 teamSchema.plugin(mongoosePaginate);
 
-const Team = mongoose.model<ITeamModel>('Team', teamSchema);
+export type TeamSchema = mongoose.Model<ITeamModel> & PaginateModel<ITeamModel>;
+
+const Team = mongoose.model<ITeamModel, TeamSchema>('Team', teamSchema);
 
 export default Team;

@@ -2,7 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import {IInventoryCar} from '../../interfaces/inventory.interface';
+import {IInventoryCar} from '../interfaces/inventory.interface';
 import Inventory from '../models/inventory.model';
 /*
 * run fix

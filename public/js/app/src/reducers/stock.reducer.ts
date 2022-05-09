@@ -1,6 +1,7 @@
 import {IStockState, StockReducerAction} from "../actions/stock.actions";
 import * as unorm from "unorm";
-import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
+import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
+import * as moment from 'moment-timezone';
 
 const initialState: IStockState = {
   cars: [],
@@ -185,6 +186,14 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
         vinInStock[vin] = {
         }
       }
+      const venueFoundID = car.venueFound ? car.venueFound._id : '-';
+      let daysInVenue = null;
+      let receptionVenue = null;
+      if (car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venueFoundID) {
+        receptionVenue = car.car.meta.location.checkedDate;
+        daysInVenue = moment().diff(moment(receptionVenue), 'days');
+      }
+
       data.push({
         _id: (car as any)._id,
         carID: (car as any).car._id,
@@ -197,11 +206,15 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
         labelBy: car.labelBy,
         color: car.car.color,
         labelText: car.labelText,
+        meta: car.car.meta,
         venue: car.venue ? car.venue.name : '-',
         images: car.images && car.images.length ? car.images : [],
         comments: car.comments && car.comments.length ? car.comments : [],
         countComments: car.comments && car.comments.length ? car.comments.length : 0,
+        venueFoundID,
         venueFound: car.venueFound ? car.venueFound.name : '-',
+        receptionVenue,
+        daysInVenue,
         patent,
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
         status: car.status,

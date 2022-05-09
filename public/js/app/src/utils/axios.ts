@@ -1,40 +1,33 @@
-import Axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosPromise,
-  CancelTokenSource,
-  CancelTokenStatic
-} from 'axios';
+import Axios, {AxiosError, AxiosInstance, AxiosPromise, AxiosRequestHeaders, CancelTokenSource, CancelTokenStatic } from 'axios';
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
-import {
-  IBaseCarrier,
-} from '../../../../../src/interfaces/carrier.interface';
-import {
-  IBaseCompany
-} from '../../../../../src/interfaces/company.interface';
-import {
-  IBaseRegion,
-} from '../../../../../src/interfaces/region.interface';
-import {
-  IBaseVenue
-} from '../../../../../src/interfaces/venue.interface';
-import {ITempUser} from '../actions/users.actions';
-import {IFilterCar} from '../reducers/inventory.reducer';
-
-export interface IHeaders {
-  'X-CSRFToken'?: string;
-  'Content-Type'?: string;
-  Authorization?: string;
-  timeout?: number;
-}
+import { IBaseCarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { IBaseCompany } from '../../../../../src/app/interfaces/company.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
+import { IBaseRegion } from '../../../../../src/app/interfaces/region.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
+import * as queryString  from 'query-string';
+import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
+import { IPaymentMethod } from '../../../../../src/request/interfaces/paymentMethod.interface';
+import { IBaseVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { ITempUser } from '../actions/users.actions';
+import { IFilterCar } from '../reducers/inventory.reducer';
+import { ITransmittalItem } from '../../../../../src/distribution/interfaces/transmittalItem.interface';
+import { ITransmittal } from '../../../../../src/distribution/interfaces/transmittal.interface';
+import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
+import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
+import { ITempStudio } from '../actions/statsDashboard.actions';
+import { getUsersParams } from './axios.types';
 
 export default class ApiService {
-  private instance: AxiosInstance;
+
+  private readonly instance: AxiosInstance;
   private CancelToken: CancelTokenStatic;
   private source: CancelTokenSource;
 
-  constructor(private headers: IHeaders = {}) {
+  constructor(private headers: AxiosRequestHeaders = {}) {
     this.instance = Axios.create({
       headers: this.headers
     });
@@ -45,9 +38,9 @@ export default class ApiService {
     if (err.response) {
       if ([500].includes(err.response.status)) {
         Raven.captureException(JSON.stringify(err.response));
-        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+        swal!('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       } else {
-        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+        swal!('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       }
     } else if (err.request) {
       Raven.captureException(JSON.stringify(err.request));
@@ -56,9 +49,23 @@ export default class ApiService {
     }
   }
 
-  public getUsers(page: number, type: string, search?: string): AxiosPromise {
+  public getProperties(): AxiosPromise {
     return this.instance.get(
-      `/api/admin/users/?type=${type}&page=${page}${search ? `&search=${search}` : ''}`
+      `/api/cars/properties/`
+      , {
+        cancelToken: this.source.token
+      });
+  }
+
+  public getUsers({
+      page, search, type, venue, minified = false, limit = 20
+    }: getUsersParams
+  ): AxiosPromise {
+    const params = queryString.stringify({
+      page, search, type, venue, minified, limit
+    });
+    return this.instance.get(
+      `/api/admin/users/?${params}`
       , {
         cancelToken: this.source.token
       });
@@ -110,11 +117,12 @@ export default class ApiService {
     );
   }
 
-  public getParticipantsPerDate(companies?:string) {
+  public getParticipantsPerDate(onlyControls: Boolean, companies?: string) {
     return this.instance.get(
-      `/api/participants-per-date/${companies?`?companies=${companies}`:""}`
+      `/api/participants-per-date/${ onlyControls ? `?only_controls=1` : `?only_controls=0`}${companies ? `&companies=${companies}` : ''}`
     );
   }
+
   public getParticipant(id: string) {
     return this.instance.get(
       `/api/participant/${id}/`
@@ -126,9 +134,12 @@ export default class ApiService {
       `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
+
   public createCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
@@ -146,6 +157,8 @@ export default class ApiService {
   public updateCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
@@ -160,7 +173,7 @@ export default class ApiService {
     );
   }
 
-   public deleteCompany(id: string): AxiosPromise {
+  public deleteCompany(id: string): AxiosPromise {
     return this.instance.delete(
       `/api/admin/companies/${id}`
     );
@@ -184,9 +197,96 @@ export default class ApiService {
     );
   }
 
-  public getVenues(page: number, pageSize?: number): AxiosPromise {
+  public getVenues({page, pageSize, noPopulate, filted, search}:{ page: number, pageSize?: number, noPopulate?: boolean, filted?: boolean, search?:string }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
+    );
+  }
+  public getCompanyVenues(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/company-venues/`
+    );
+  }
+
+  public createReason(reason: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/reasons/`, reason
+    );
+  }
+
+  public updateReason(reason: IReason): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/reasons/${reason._id}/`, reason
+    );
+  }
+
+  public deleteReason(reason: IReason): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/reasons/${reason._id}/`
+    );
+  }
+
+  public getReasons({ page, pageSize, orderBy, orderType }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createSalesChannel(salesChannel: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/sales-channel/`, salesChannel
+    );
+  }
+
+  public updateSalesChannel(salesChannel: ISalesChannel): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/sales-channel/${salesChannel._id}/`, salesChannel
+    );
+  }
+
+  public deleteSalesChannel(salesChannel: ISalesChannel): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/sales-channel/${salesChannel._id}/`
+    );
+  }
+
+  public getSalesChannel({
+     page,
+     pageSize,
+     orderBy,
+     orderType
+   }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createPaymentMethod(paymentMethod: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/payment-method/`, paymentMethod
+    );
+  }
+
+  public updatePaymentMethod(paymentMethod: IPaymentMethod): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/payment-method/${paymentMethod._id}/`, paymentMethod
+    );
+  }
+
+  public deletePaymentMethod(paymentMethod: IPaymentMethod): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/payment-method/${paymentMethod._id}/`
+    );
+  }
+
+  public getPaymentMethods({
+   page,
+   pageSize,
+   orderBy,
+   orderType
+ }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/payment-method/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 
@@ -211,6 +311,12 @@ export default class ApiService {
   public getCarriers(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/carriers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getDrivers(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/users/drivers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
@@ -244,11 +350,6 @@ export default class ApiService {
     );
   }
 
-  public getForms(page: number, pageSize?: number): AxiosPromise {
-    return this.instance.get(
-      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
-    );
-  }
 
   public getCars(page: number, search?: string): AxiosPromise {
     return this.instance.get(
@@ -258,16 +359,19 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(page: number, search?: string, from?: string, to?: string): AxiosPromise {
-    let query = `?page=${page}`;
-    if(search)
+  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
+    let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
+    if (search)
       query += `&search=${search}`;
 
-    if(from)
+    if (from)
       query += `&from=${from}`;
 
-    if(to)
+    if (to)
       query += `&to=${to}`;
+
+    if (forms)
+      query += `&forms=${forms.join(",")}`;
 
     return this.instance.get(
       `/api/revisions/${query}`, {
@@ -292,6 +396,8 @@ export default class ApiService {
     );
   }
 
+
+
   public sendImportCars(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/import-cars/`, data, {
@@ -300,9 +406,9 @@ export default class ApiService {
     );
   }
 
-  public getInventories(page: number): AxiosPromise  {
+  public getInventories(page: number): AxiosPromise {
     return this.instance.get(
-      `/api/inventory/?page=${page}`,  {
+      `/api/inventory/?page=${page}`, {
         cancelToken: this.source.token
       }
     );
@@ -310,7 +416,7 @@ export default class ApiService {
 
   public getInventory(id: string): AxiosPromise {
     return this.instance.get(
-      `/api/inventory/${id}`,  {
+      `/api/inventory/${id}`, {
         cancelToken: this.source.token
       }
     );
@@ -326,10 +432,11 @@ export default class ApiService {
   }
 
   // public createInventory({carsByVenue: any, name: string, notification: boolean, file: File, backup: File | null}): AxiosPromise {
-  public createInventory({
-    carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
-  }: {
-    carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
+  public createInventory(
+    {
+      carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
+    }: {
+      carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
   }): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByVenue', JSON.stringify(carsByVenue));
@@ -349,9 +456,25 @@ export default class ApiService {
     );
   }
 
-  public importPlanning(data: any): AxiosPromise{
+  public importPlanning(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/planning/`, data, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public updateMassiveRequest(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/update-massive/`, data, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public importRequests(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/import/`, data, {
         cancelToken: this.source.token
       }
     );
@@ -389,6 +512,26 @@ export default class ApiService {
       `/api/admin/alerts/${id}/`
     );
   }
+  public preMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/pre-mass-allocation/`,
+      data
+    );
+  }
+
+  public checkItemMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/check-item-mass-allocation/`,
+      data
+    );
+  }
+
+  public processItemMassAllocation(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/process-item-mass-allocation/`,
+      data
+    );
+  }
 
   public getSource(): CancelTokenSource {
     this.source = this.CancelToken.source();
@@ -402,8 +545,7 @@ export default class ApiService {
         label,
         carID,
         custom
-      }
-    );
+      });
   }
 
   public getInstance(): AxiosInstance {
@@ -443,45 +585,42 @@ export default class ApiService {
   public getDashboardDamagesPerVenue(): AxiosPromise {
     return this.instance.get(
       '/api/dashboard/damages/per-venue/'
-    )
+    );
   }
 
   public getDashboardTiming(from: string, to: string): AxiosPromise {
     return this.instance.get(
       `/api/dashboard/timing/?start=${from}&end=${to}`
-    )
+    );
   }
 
   public getDashboardCleaning(): AxiosPromise {
     return this.instance.get(
       '/api/dashboard/cleaning/'
-    )
+    );
   }
 
   public getVersions(): AxiosPromise {
     return this.instance.get(
       `/api/admin/versions/`, {
         cancelToken: this.source.token
-      }
-    );
+      });
   }
 
-  public loadStock({carsByVenue}: { carsByVenue: any }): AxiosPromise {
+  public loadStock({ carsByVenue }: { carsByVenue: any }): AxiosPromise {
     return this.instance.post(
       `/api/load-stock/`, {
         carsByVenue
       }, {
         cancelToken: this.source.token
-      }
-    );
+      });
   }
 
   public getStock(): AxiosPromise {
     return this.instance.get(
       `/api/current-stock/`, {
         cancelToken: this.source.token
-      }
-    );
+      });
   }
 
   public getPlanning(page: number, pageSize?: number): AxiosPromise {
@@ -503,4 +642,383 @@ export default class ApiService {
     );
   }
 
+  public getRequest(id: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/${id}`
+    );
+  }
+
+  public getRequestsByCar(id: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/by-car/${id}`
+    );
+  }
+
+
+  public getRequests({ page, pageSize, orderBy, orderType }: { page: number, orderBy: string, orderType: string, pageSize?: number }): AxiosPromise {
+    let params = `?page=${page}`;
+    params = pageSize ? `${params}&pageSize=${pageSize}` : params;
+    params = orderBy ? `${params}&orderBy=${orderBy}` : params;
+    params = orderType ? `${params}&orderType=${orderType}` : params;
+    return this.instance.get(
+      `/api/v1/requests/${params}`
+    );
+  }
+
+  public getRequestItems(
+    {
+      page,
+      pageSize,
+      orderBy,
+      orderType,
+      filters
+    }: { page: number, orderBy?: string, orderType?: string, pageSize: number, filters: any }): AxiosPromise {
+    let body: any = {
+      page,
+      filters
+    };
+    body = pageSize ? { ...body, pageSize } : body;
+    body = orderBy ? { ...body, orderBy } : body;
+    body = orderType ? { ...body, orderType } : body;
+    return this.instance.post(
+      `/api/v1/requests-item/`,
+      body
+    );
+  }
+
+  public createRequest(data: any) {
+    return this.instance.post(
+      `/api/v1/requests/`,
+      data
+    );
+  }
+
+  public deleteRequest(id: string) {
+    return this.instance.delete(
+      `/api/v1/requests/${id}/`
+    );
+  }
+
+  public createRequestItem(idRequest: string, car: any) {
+    return this.instance.post(
+      `/api/v1/add-requests-item/`, {
+        idRequest,
+        car
+      });
+  }
+
+  public uppdateRequestItemVin(item: any, vin: string) {
+    return this.instance.patch(
+      `/api/v1/requests-item/${item._id}/change-vin/`, {
+        item,
+        vin
+      });
+  }
+
+  public createRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/request-item-status/`, requestStatus
+    );
+  }
+
+  public updateRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/request-item-status/${requestStatus._id}/`, requestStatus
+    );
+  }
+
+  public deleteRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/request-item-status/${requestStatus._id}/`
+    );
+  }
+
+  public getRequestItemsStatus({
+                                 page,
+                                 pageSize,
+                                 orderBy,
+                                 orderType
+                               }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+
+  public createOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/operation-types/`, operationType
+    );
+  }
+
+  public updateOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/operation-types/${operationType._id}/`, operationType
+    );
+  }
+
+  public deleteOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/operation-types/${operationType._id}/`
+    );
+  }
+
+  public getOperationTypes({
+                             page,
+                             pageSize,
+                             orderBy,
+                             orderType
+                           }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/operation-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public updateRequestItem(id: string, item: IRequestItem) {
+    return this.instance.patch(
+      `/api/v1/requests-item/${id}/`,
+      item
+    );
+  }
+
+  public deleteRequestItem(id: string) {
+    return this.instance.delete(
+      `/api/v1/requests-item/${id}/`
+    );
+  }
+
+  public searchCar(text: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/search-car/?search=${text}`
+    );
+  }
+
+  public getVenuesStats(from: number, to: number): AxiosPromise {
+    return this.instance.get(
+      `/api/revisions/venue/stats/?from=${from}&to=${to}`
+    );
+  }
+
+  public getRevisionsStats(): AxiosPromise {
+    return this.instance.get(
+      `/api/revisions/stats/`
+    );
+  }
+
+  public getTransmittals({
+                           page,
+                           pageSize,
+                           orderBy,
+                           orderType,
+    number
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string }): AxiosPromise {
+    let url = `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'}`;
+    if(number){
+      url = `${url}&number=${number}`;
+    }
+    return this.instance.get(url);
+  }
+
+  public createTransmittals(data: any) {
+    return this.instance.post(
+      `/api/v1/transmittals/`,
+      data
+    );
+  }
+
+  public updateTransmittal(transmittal: Partial<ITransmittal>): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/transmittals/${transmittal._id}/`,
+      transmittal
+    );
+  }
+
+  public addTransmittalItem(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/transmittals/item/`,
+      data
+    );
+  }
+
+  public uploadTransmittalFile(data: any): AxiosPromise{
+    return this.instance.post(
+      `/api/v1/transmittals/upload-file/`, data
+    );
+  }
+
+  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItem>): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/transmittals/item/${transmittalItem._id}/`,
+      transmittalItem
+    );
+  }
+
+  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItem>): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/transmittals/item/${transmittalItem._id}/`
+    );
+  }
+
+  public getTeamSettings(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/team-settings/`
+    );
+  }
+
+  // public createMilestone(milestone: IMilestone): AxiosPromise {
+  //   return this.instance.post(
+  //     `/api/v1/milestones/`, milestone
+  //   );
+  // }
+
+  public updateMilestone(milestone: IMilestone): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/milestones/${milestone._id}/`, milestone
+    );
+  }
+
+  // public deleteMilestone(milestone: IMilestone): AxiosPromise {
+  //   return this.instance.delete(
+  //     `/api/v1/milestones/${milestone._id}/`
+  //   );
+  // }
+
+  public getMilestones({
+    milestoneType,
+    page,
+    pageSize,
+    orderBy,
+    orderType
+  }: { page: number, milestoneType?: string, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${milestoneType ? `&milestoneType=${milestoneType}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/milestone-types/`, operationType
+    );
+  }
+
+  public updateMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/milestone-types/${operationType._id}/`, operationType
+    );
+  }
+
+  public deleteMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/milestone-types/${operationType._id}/`
+    );
+  }
+
+  public getMilestoneTypes({
+    page,
+    pageSize,
+    orderBy,
+    orderType
+  }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/milestone-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public getColors({ page, pageSize }: { page: number, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/colors/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createColor(color: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/colors/`, color
+    );
+  }
+
+  public updateColor(color: any): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/colors/${color._id}/`, color
+    );
+  }
+
+  public deleteColor(color: any): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/colors/${color._id}/`
+    );
+  }
+
+  public getForms(page: number, pageSize?: number, activated?: boolean): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${activated ? `&activated=1` : ''}`
+    );
+  }
+
+  public createForm(form: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/forms/`, form
+    );
+  }
+
+  public updateForm(form: any): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/forms/${form._id}/`, form
+    );
+  }
+
+  public deleteForm(form: any): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/forms/${form._id}/`
+    );
+  }
+
+  public getInventoryCarFiles(inventoryCarId: string): AxiosPromise {
+    return this.instance.get(
+      `/api/inventory-car/files/${inventoryCarId}/`
+    );
+  }
+
+  public deleteInventoryCarFile(inventoryFileId: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/inventory-car/files/${inventoryFileId}/`
+    );
+  }
+
+  public validateContectaID(conectaID: string): AxiosPromise {
+    return this.instance.post(
+      `/requests/vehicles/validate-conecta/`, { conectaID }
+    );
+  }
+
+  public getMyStudiosDashboards(type? : string) : AxiosPromise {
+    return this.instance.get(`/api/stats/my-studio/${type ? `?type=${type}` : ''}`)
+  }
+
+  public getStudiosDashboards(type? : string) : AxiosPromise {
+    return this.instance.get(`/api/stats/studios/${type ? `?type=${type}` : ''}`)
+  }
+
+  public deleteStudio(id: String): AxiosPromise {
+    return this.instance.delete(
+      `/api/stats/studios/${id}/`
+    );
+  }
+
+  public getStudioUsers(): AxiosPromise {
+    return this.instance.get(
+      '/api/stats/users/'
+    )
+  }
+
+  public createStudio(studio: ITempStudio): AxiosPromise {
+    return this.instance.post(
+      `/api/stats/studios/`, {studio}
+    );
+  }
+
+  public updateStudio(studio: ITempStudio): AxiosPromise {
+    return this.instance.patch(
+      `/api/stats/studios/${studio._id}/`, {studio}
+    );
+  }
 }

@@ -2,7 +2,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {changeTempLabelAction, ILabelsState, LabelsReduxAction} from '../../actions/labels.actions';
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';

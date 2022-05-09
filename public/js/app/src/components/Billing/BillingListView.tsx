@@ -1,18 +1,19 @@
-import {RouteComponentProps} from 'react-router';
-import * as React from "react";
-import {connect} from "react-redux";
-import AppContainer from "../../container/AppContainer";
-import ModalView from "../Modal/ModalView";
+import * as moment from 'moment';
+import * as Raven from 'raven-js';
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import {
   BillingReduxAction,
   getBillingAction,
   IBillingState
-} from "../../actions/billing.actions";
-import {Dispatch} from "redux";
-import Paginator from "../Utils/Paginator";
-import {ErrorInfo} from "react";
-import * as Raven from "raven-js";
-import * as moment from "moment";
+} from '../../actions/billing.actions';
+import AppContainer from '../../container/AppContainer';
+import ModalView from '../Modal/ModalView';
+import Paginator from '../Utils/Paginator';
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<BillingReduxAction>;
@@ -25,21 +26,21 @@ interface IStateType {
   error: Error | null;
 }
 
-class BillingListView extends React.Component<IPropsType, IStateType> {
+class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state = {
-    error: null,
+    error: null
   };
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Billing';
     this.changePage = this.changePage.bind(this);
   }
 
   public componentWillMount(): void {
     const {pagination} = this.props.billing;
-    // set the title of the page
-    document.title = 'OSA Andes | Billing';
     this.props.getBillingAction(pagination.page);
   }
 
@@ -57,6 +58,7 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 
@@ -95,10 +97,11 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
                         <th className="middle">Empresa</th>
                         <th className="middle">Unidades en Inventario</th>
                         <th className="middle">Unidades en Checklist</th>
+                        <th className="middle">Unidades en Solicitudes</th>
                         {/*<th className="middle">Valor Inventario</th>*/}
                         {/*<th className="middle">Valor Checklist</th>*/}
                         <th className="middle">Total</th>
-                        <th style={{width: "80px"}} />
+                        <th style={{width: '80px'}} />
                       </tr>
                     </thead>
                     <tbody>
@@ -107,19 +110,20 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
                           <tr key={invoice._id}>
                             <td>
                               {
-                                moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY")
+                                moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY')
                               }
                             </td>
                             <td>{invoice.company.name}</td>
                             <td>{invoice.inventoryCars}</td>
                             <td>{invoice.checklistCars}</td>
+                            <td>{invoice.requestCars}</td>
                             {/*<td>{invoice.inventoryPrice} UF</td>*/}
                             {/*<td>{invoice.checklistPrice} UF</td>*/}
                             <td>{invoice.totalUF.toFixed(2)} UF</td>
                             <td>
                               <button
                                 className="btn btn-xs btn-primary hidden-xs"
-                                onClick={()=> window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
+                                onClick={()=>window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
                               >
                                 <i className="fa fa-fw fa-download" /> Billing
                               </button>
@@ -148,7 +152,7 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
           <ModalView/>
         </section>
       </AppContainer>
-    )
+    );
   }
 
   private changePage(page: number): void {
@@ -166,7 +170,7 @@ const mapStateToProps = (state: { billing: IBillingState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getBillingAction: (page: number) => dispatch(getBillingAction(page)),
+    getBillingAction: (page: number) => dispatch(getBillingAction(page))
   };
 };
 

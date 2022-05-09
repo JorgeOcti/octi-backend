@@ -10,6 +10,9 @@ import {ErrorInfo} from "react";
 import * as Raven from "raven-js";
 import * as moment from "moment";
 import Paginator from "../Utils/Paginator";
+import TrackingBasePage from "../Utils/TrackingBasePage";
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<PlanningReduxAction>;
@@ -24,12 +27,14 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class PlanningListView extends React.Component<IPropsType, IStateType> {
+class PlanningListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de planificación';
     this.changePage = this.changePage.bind(this);
     this.import = this.import.bind(this);
   }
@@ -37,18 +42,17 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {pagination} = this.props.planning;
     // set the title of the page
-    document.title = 'OSA Andes | Listado de planificación';
     this.props.getPlanningAction(pagination.page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `planning-list-${window.user.team}`});
+      this.socket.emit('join', {room: `planning-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (): void => {
         this.props.getPlanningAction(pagination.page);
@@ -69,6 +73,7 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 
@@ -83,7 +88,7 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, plannings, pagination} = this.props.planning;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1">
+      <AppContainer title="" cMenu="4" cSubMenu="4.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

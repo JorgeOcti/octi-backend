@@ -1,4 +1,4 @@
-import {IInvoice} from '../../../../../src/interfaces/invoice.interface';
+import {IInvoice} from '../../../../../src/billing/interfaces/invoice.interface';
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from "axios";
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";

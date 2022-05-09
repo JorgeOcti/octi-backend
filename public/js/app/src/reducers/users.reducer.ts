@@ -3,7 +3,7 @@ import {
   UserReduxAction
 } from '../actions/users.actions';
 
-import {IUser} from '../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../src/app/interfaces/user.interface';
 
 const initialState: IUsersState = {
   users: [],
@@ -12,14 +12,17 @@ const initialState: IUsersState = {
   searchText: '',
   permissions: [],
   forms: [],
+  channels: [],
   loading: true,
   tempUser: {
     _id: '',
     isAdmin: false,
+    isDriver: false,
     firstName: '',
     company: null,
     lastName: '',
     email: '',
+    settings: {},
     userPermissions: [],
     userForms: [],
     venuesAccess: []
@@ -58,6 +61,11 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
       return {
         ...state,
         forms: action.payload.forms
+      };
+    case '/USERS/LOAD_CHANNELS':
+      return {
+        ...state,
+        channels: action.payload.channels
       };
     case '/USERS/LOAD_COMPANIES':
       return {

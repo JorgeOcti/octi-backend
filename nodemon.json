@@ -11,6 +11,7 @@
     "node_modules/**/node_modules",
     "node_modules/*",
     "views/*",
+    "**/*.interface.js",
     "public/*"
   ],
   "ext": "js,json",

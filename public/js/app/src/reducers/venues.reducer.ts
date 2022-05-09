@@ -1,4 +1,4 @@
-import {IVenue} from '../../../../../src/interfaces/venue.interface';
+import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import {IVenuesState, VenueReduxAction} from '../actions/venues.actions';
 
 const initialState: IVenuesState = {
@@ -7,15 +7,19 @@ const initialState: IVenuesState = {
   companies: [],
   carriers: [],
   regions: [],
+  searchText: '',
   loading: true,
   source: null,
+  users: [],
   tempVenue: {
     _id: '',
     lat: 0,
     lng: 0,
     name: '',
+    code: '',
     abbreviation: '',
     type: 'receiver',
+    responsible: [],
     sendToDays: [],
     sendTo: [],
     shippingMaxDays: 5,
@@ -50,6 +54,11 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           page: action.payload.page
         }
       };
+    case '/VENUES/CHANGE_SEARCH':
+      return {
+        ...state,
+        searchText: action.payload.searchText
+      };
     case '/VENUES/LOAD_COMPANIES':
       return {
         ...state,
@@ -76,6 +85,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
         venues: state.venues.map((venue: IVenue) => {
           if (venue._id === action.payload.venue._id) {
             venue.name = action.payload.venue.name;
+            venue.code = action.payload.venue.code;
             venue.abbreviation = action.payload.venue.abbreviation;
             venue.company = action.payload.venue.company;
             venue.type = action.payload.venue.type;
@@ -110,6 +120,11 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           pages: action.payload.pages,
           count: action.payload.count
         }
+      };
+    case "/VENUES/LOAD_USERS":
+      return {
+        ...state,
+        users: action.payload.users
       };
     default:
       return state;

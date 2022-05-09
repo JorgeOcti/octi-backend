@@ -1,6 +1,6 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
-import {ICar} from '../../../../../src/interfaces/car.interface';
+import {ICar} from '../../../../../src/app/interfaces/car.interface';
 import ApiService from '../utils/axios';
 
 export interface ICarsState {

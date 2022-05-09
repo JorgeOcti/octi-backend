@@ -4,20 +4,22 @@ import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
-import AdminRegionsController from './controllers/admin/region.admin.controller';
+import AdminColorsController from './controllers/admin/color.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
-import AdminRegionController from './controllers/admin/region.admin.controller';
+import adminRegionController from './controllers/admin/region.admin.controller';
+import adminSamlCongigController from './controllers/admin/samlConfig.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AdminVersionsController from './controllers/admin/version.admin.controller';
-import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
-import router from "../form/router";
-
+import router from '../form/router';
+import { passport } from '../passportConfig';
+import appController from './controllers/app.controller';
+import StudioController from '../stats/controllers/studio.controller';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -29,21 +31,27 @@ appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/damages/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/timing/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.generalDashboard);
-
+appRouter.get('/dashboard/studio/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
+appRouter.get('/forms/settings/forms/', Middlewares.isLoggedIn, CarController.index);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
+appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDashboard);
 
 // api cars
+appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
 appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiDamagesExport);
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
+appRouter.get('/api/revisions/stats/', Middlewares.isLoggedIn, CarController.apiRevisionStats);
+appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarController.apiVenueRevisionStats);
+
 
 // form detail
-appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);
+appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
@@ -58,11 +66,16 @@ appRouter.post('/api/admin/users/change-password/', Middlewares.isLoggedIn, Admi
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
+
 // api admin integrations
 appRouter.get('/settings/integrations/', Middlewares.isLoggedIn, AdminUsersController.integrations);
 appRouter.post('/api/admin/integrations/', Middlewares.isLoggedIn, AdminUsersController.apiCreateIntegration);
 appRouter.patch('/api/admin/integrations/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateIntegration);
 appRouter.delete('/api/admin/integrations/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteIntegration);
+
+// drivers
+appRouter.get('/api/v1/users/drivers/', Middlewares.isJWTAuthenticated, UserController.apiListDrivers);
+
 
 // admin venues
 appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
@@ -71,6 +84,7 @@ appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVe
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
+appRouter.get('/api/admin/company-venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListCompanyVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
 appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
@@ -86,6 +100,7 @@ appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompan
 
 // api team
 appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);
+appRouter.get('/api/admin/team-settings/', Middlewares.isLoggedIn, AdminTeamsController.teamSetting);
 
 // import cars
 appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);
@@ -107,11 +122,25 @@ appRouter.patch('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierC
 appRouter.delete('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiDelete);
 
 // regions
-appRouter.get('/settings/regions/', Middlewares.isLoggedIn, AdminRegionsController.index);
-appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiList);
-appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiCreate);
-appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiUpdate);
-appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiDelete);
+appRouter.get('/settings/regions/', Middlewares.isLoggedIn, adminRegionController.index);
+appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, adminRegionController.apiList);
+appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, adminRegionController.apiCreate);
+appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, adminRegionController.apiUpdate);
+appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, adminRegionController.apiDelete);
+
+// samlConfig
+appRouter.get('/settings/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.index);
+appRouter.get('/api/admin/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiList);
+appRouter.post('/api/admin/saml-config/', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiCreate);
+appRouter.patch('/api/admin/saml-config/:id', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiUpdate);
+appRouter.delete('/api/admin/saml-config/:id', Middlewares.isJWTAuthenticated, adminSamlCongigController.apiDelete);
+
+// colors
+appRouter.get('/settings/colors/', Middlewares.isLoggedIn, AdminColorsController.index);
+appRouter.get('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiList);
+appRouter.post('/api/admin/colors/', Middlewares.isLoggedIn, AdminColorsController.apiCreate);
+appRouter.patch('/api/admin/colors/:id', Middlewares.isLoggedIn, AdminColorsController.apiUpdate);
+appRouter.delete('/api/admin/colors/:id', Middlewares.isLoggedIn, AdminColorsController.apiDelete);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);
@@ -122,6 +151,10 @@ appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsCon
 
 // versions
 appRouter.get('/settings/versions/', Middlewares.isLoggedIn, AdminAlertsController.index);
+
+//Stats Dashboard
+appRouter.get('/settings/stats/', Middlewares.isLoggedIn, StudioController.index);
+appRouter.get('/api/stats/users/', Middlewares.isJWTAuthenticated, UserController.getStatsAccessUser);
 
 // api versions
 appRouter.get('/api/admin/versions/', Middlewares.isLoggedIn, AdminVersionsController.apiListVersions);
@@ -137,20 +170,31 @@ appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserC
 appRouter.get('/api/v1/venues/', Middlewares.isJWTAuthenticated, UserController.apiListVenues);
 appRouter.put('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserController.apiChangeVenue);
 
+//create cars
+appRouter.post('/api/v1/cars/', Middlewares.isJWTAuthenticated, CarController.createCar);
+
+// Get User Pusher Token
+appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserController.getPusherToken);
+
 // web login
-appRouter.get('/account/login/', csrfProtection, AppController.login);
-appRouter.post('/account/login/', csrfProtection, AppController.processLogin);
+appRouter.get('/account/login/', appController.login);
+appRouter.post('/account/login/', appController.processLogin);
 
-appRouter.get('/account/forgot-password/', csrfProtection, AppController.forgotPassword);
-appRouter.post('/account/forgot-password/', csrfProtection, AppController.processForgotPassword);
+appRouter.get('/account/login/soo/:id', passport.authenticate('multy-saml'));
 
-appRouter.get('/account/recovery/:token', csrfProtection, AppController.recovery);
-appRouter.post('/account/recovery/:token', csrfProtection, AppController.processRecovery);
+appRouter.post('/account/login/soo/callback/', appController.processLoginSoo);
 
-appRouter.get('/account/logout/', AppController.logout);
+
+appRouter.get('/account/forgot-password/', csrfProtection, appController.forgotPassword);
+appRouter.post('/account/forgot-password/', csrfProtection, appController.processForgotPassword);
+
+appRouter.get('/account/recovery/:token', csrfProtection, appController.recovery);
+appRouter.post('/account/recovery/:token', csrfProtection, appController.processRecovery);
+
+appRouter.get('/account/logout/', appController.logout);
 
 // recover files
-router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, AppController.recoverFile);
+router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, appController.recoverFile);
 
 // JWT authentication API
 const jwtRouter = express.Router();

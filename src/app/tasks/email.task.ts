@@ -2,8 +2,10 @@ import {Job, Queue} from 'kue';
 import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
+// import logger from '../../services/logger.service';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
+import * as he from 'he';
 
 class EmailQueue {
   private queue: Queue;
@@ -19,30 +21,31 @@ class EmailQueue {
   }
 
   private generateHTML(view: string, context: any): string {
-    const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
+    const extension = view.includes('.pug', view.length-4) ? '': '.pug';
+    const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
     const pugCompile: compileTemplate = pug.compileFile(templatePath);
     return pugCompile(context);
   }
 
   private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
-    if (job && done) {
+    if (job) {
       job.log('start process');
       // generate email
       const mail: Mail.Options = {
-        from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
+        from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
         // to: job.data.to,
         to: job.data.to,
         bcc: job.data.bcc,
         subject: job.data.subject,
-        text: job.data.text,
+        text: he.encode(job.data.text),
         html: this.generateHTML(job.data.view, job.data.context),
         attachments: job.data.attachments || [],
         headers: {
-          'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
+          // 'Content-Type:': 'text/html; charset="UTF-8"',
+          'Reply-To': 'OSA Andes<soporte@osacontrol.com>',
           'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
           'List-ID': 'mail.osacontrol.com',
-          'X-Report-Abuse-To': 'abuse@osacontrol.com',
-          'X-CSA-Complaints': 'whitelistcomplaints@eco.de'
+          'X-Report-Abuse-To': 'abuse@osacontrol.com'
         }
       };
       job.log('send email');

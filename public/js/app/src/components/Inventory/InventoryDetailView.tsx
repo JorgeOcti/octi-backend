@@ -13,12 +13,13 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {RouterState} from 'react-router-redux';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
-import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
-import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../../src/interfaces/teamSetting.interface';
+import {IInventoryCar} from '../../../../../../src/inventory/interfaces/inventory.interface';
+import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import {IInventorySetting} from '../../../../../../src/app/interfaces/teamSetting.interface';
 import {
   actionSetLabel,
   addCommentAction,
@@ -42,7 +43,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {IFilterCar} from '../../reducers/inventory.reducer';
 import ApiService from '../../utils/axios';
-import {goToSection, hasPermission, maxText} from '../../utils/common';
+import {goToSection, hasPermission, isDercoDercocenter, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
@@ -50,10 +51,12 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import InventoryFileManager from './InventoryFileManager';
 
 declare let window: IWindow;
 
-export type CarStatusType = Extract<keyof IInventorySettting, string>;
+export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
@@ -61,7 +64,7 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   dispatch: Dispatch<InventoryReduxAction>;
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
-  updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
+  updateInventoryCarAction(inventoryCar: IInventoryCar): InventoryReduxAction;
   inventoryDetailChangeFilter(filter: IFilterCar): InventoryReduxAction;
   inventoryDetailChangeFilterText(filter: IFilterCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
@@ -82,7 +85,8 @@ interface IStateType {
   };
 }
 
-class InventoryDetailView extends React.Component<IPropsType, IStateType> {
+class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state = {
     error: null,
@@ -131,7 +135,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'fa-arrow-up',
     missing: 'fa-arrow-down',
     reported: 'fa-exclamation',
-    deleted: 'fa-close',
+    deleted: 'fa-close'
   };
 
   private paginationOption: any = {
@@ -148,7 +152,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     onPageChange: () => {
       setTimeout(() => {
         $('[data-toggle="tooltip"]').tooltip();
-
       }, 200);
     }
   };
@@ -160,10 +163,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private readonly columns: any[] = [];
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Detalle Inventario';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
     this.carComments = this.carComments.bind(this);
@@ -181,6 +185,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.optionsFormatter = this.optionsFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.filesFormatter = this.filesFormatter.bind(this);
+    this.openFileManager = this.openFileManager.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
     this.sendToDetailFilteredByState = this.sendToDetailFilteredByState.bind(this);
@@ -235,6 +241,33 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         width: '15%'
       },
       sort: true
+    }, /* {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'middle hidden-xs text-ellipsis',
+      formatter: this.commentFormatter,
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '15%'
+      },
+      headerStyle: {
+        verticalAlign: 'top'
+      }
+    } */ {
+      dataField: 'labelName',
+      text: 'Etiqueta',
+      sort: true,
+      classes: 'middle hidden-xs',
+      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
+      formatter: this.labelFormatter,
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '18%',
+        maxWidth: '18%'
+      },
+      headerStyle: {
+        verticalAlign: 'top'
+      }
     }, {
       dataField: 'images',
       text: 'Imágenes',
@@ -251,32 +284,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '80px',
         width: '80px'
       }
-    }, /* {
-      dataField: 'countComments',
-      text: 'Comentarios',
-      classes: 'middle hidden-xs text-ellipsis',
-      formatter: this.commentFormatter,
-      headerClasses: 'middle hidden-xs',
-      style: {
-        width: '15%'
-      },
+    }, {
+      dataField: 'files',
+      text: 'Archivos',
+      classes: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'middle hidden-xs hidden-sm hidden-md',
+      formatter: this.filesFormatter,
       headerStyle: {
-        verticalAlign: 'top'
-      }
-    } */{
-      dataField: 'labelName',
-      text: 'Etiqueta',
-      sort: true,
-      classes: 'middle hidden-xs',
-      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
-      formatter: this.labelFormatter,
-      headerClasses: 'middle hidden-xs',
-      style: {
-        width: '18%',
-        maxWidth: '18%'
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       },
-      headerStyle: {
-        verticalAlign: 'top'
+      style: {
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       }
     }, {
       dataField: 'status',
@@ -324,12 +346,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // get data
     const {id} = this.props.match.params;
     this.props.getInventoryDetailAction(id, false);
-    // set the title of the page
-    document.title = 'OSA Andes | Detalle Inventario';
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
@@ -347,7 +367,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             leftover: 'warning',
             reported: 'grey'
           };
-          ($ as any).toast({
+          (($ as any).toast as any)({
             heading: data.title,
             text: data.text,
             position: 'top-right',
@@ -384,6 +404,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $venuesDetail = document.getElementById('chart-venues-detail') as HTMLDivElement;
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
@@ -423,17 +444,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   public imagesFormatter(cell: string, row: any) {
     if (row.images && row.images.length) {
       return (
-        <div className="row">{
+        <div className='row'>{
           row.images.map((image: any, index: number) => (
-            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
+            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{ display: index === 0 ? '' : 'none' }}>
               <a href={decodeURI(image.file.url)}
-                 data-toggle="lightbox"
+                 data-toggle='lightbox'
                  data-gallery={row._id}
                  data-title={`${row.vin} / ${row.brand} ${row.denomination} `}
-                 data-footer={`${row.venueFound ?  `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
+                 data-footer={`${row.venueFound ? `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
               >
-                <button className="btn btn-xs btn-default">
-                  <i className="fa fa-fw fa-image" /> {row.images.length}
+                <button className='btn btn-xs btn-default'>
+                  <i className='fa fa-fw fa-image' /> {row.images.length}
                 </button>
                 {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
               </a>
@@ -441,11 +462,34 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           ))
         }</div>
       );
-    } else {
-      return (
-        '-'
-      );
     }
+    return null;
+  }
+
+  private openFileManager(car: any): void {
+    const {inventories} = this.props;
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Archivos de ${car.vin}`,
+        <InventoryFileManager
+          inventories={inventories}
+          inventoryCardId={car._id}
+          socket={this.socket}
+        />
+      );
+    }, 200);
+  }
+
+  public filesFormatter(cell: string, row: any) {
+    return (
+      <div className='row'>
+        <div className={'col-md-12 images-25 text-center'}>
+          <button className='btn btn-xs btn-default' onClick={() => this.openFileManager(row)}>
+            <i className='fa fa-fw fa-cloud-upload' /> {row.files?.length }
+          </button>
+        </div>
+      </div>
+    );
   }
 
   public brandFormatter(cell: any, row: any) {
@@ -463,14 +507,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </React.Fragment>
             : null
         }
-        {
-          row.patent && row.patent.length ?
             <React.Fragment>
-              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText>&nbsp;
-              <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
-            </React.Fragment> :
-            <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
-        }<br/>
+              {row.patent && row.patent.length ?
+              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText> : null }&nbsp;
+              {row.vin && row.vin.length ?
+                <CopyText value={row.vin} className={row.patent && row.patent.length ? 'text-muted text-sm' : ''}>{row.vin}</CopyText> : null }
+            </React.Fragment>
+        <br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
         {
           row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
@@ -613,15 +656,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <React.Fragment>
                 <p
                   style={{
-                    paddingTop: "5px",
+                    paddingTop: '5px',
                     marginBottom: 0
                   }}
-                  className={"text-sm"}
+                  className={'text-sm'}
                 >
                   <strong>Datos adicionales:</strong>
                 </p>
                 <p
-                  className={"text-sm text-muted"}
+                  className={'text-sm text-muted'}
                 >
                   {row.labelText}
                 </p>
@@ -656,6 +699,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       percentageReported,
       percentageMissing
     } = this.calculateDetails(summary.results);
+
+    const showDownloadFile = isDercoDercocenter(this.props.inventories.detail) || moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
@@ -791,14 +836,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-primary">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle de inventario por sucursal</h3>
-                  <div className="box-tools pull-right">
-                    <button
-                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
-                    >
-                      <i className="fa fa-fw fa-download"/> Exportar Excel
+                  {
+                    showDownloadFile ?
+                      <div className="box-tools pull-right">
+                        <button
+                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                        >
+                          <i className="fa fa-fw fa-download" /> Exportar Excel
                     </button>
-                  </div>
+                      </div> : null
+                  }
                 </div>
                 <div className="box-body">
                   <div id="chart-venues-detail" style={{height: '550px', maxWidth: '100%'}}/>
@@ -882,12 +930,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{carsTable.length}</small>}
                   </h3>
                   <div className="box-tools pull-right">
-                    <button
-                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
-                    >
-                      <i className="fa fa-fw fa-download"/> Exportar Excel
+                    {
+                      showDownloadFile ?
+                        <button
+                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                        >
+                          <i className="fa fa-fw fa-download" /> Exportar Excel
                     </button>
+                        : null
+                    }
                     <div className="btn-group btn-group-sm hidden-xs hidden-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
@@ -911,7 +963,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   <Row style={{margin: '5px 0'}}>
                     <div className="col-md-12">
                       <div className="form-group">
-                        <label htmlFor="cars" className="control-label">Vehículos</label>
+                        <label htmlFor="cars" className="control-label">Unidades</label>
                         <input
                           type="text"
                           className="form-control"
@@ -1013,7 +1065,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         onClick={this.clearFilter}
                         style={{paddingLeft: '5px'}}
                         disabled={
-                          filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length ? false : true}
+                          !(filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length)}
                       >
                         <i className="fa fa-fw fa-eraser"/> Limpiar
                       </button>
@@ -1163,13 +1215,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             type: 'application/zip'
           });
           const fileName = `${summary.name}.zip`;
-          if (typeof window.navigator.msSaveBlob !== 'undefined') {
-            // IE workaround for "HTML7007: One or more blob URLs were
-            // revoked by closing the blob for which they were created.
-            // These URLs will no longer resolve as the data backing
-            // the URL has been freed."
-            window.navigator.msSaveBlob(blob, fileName);
-          } else {
+          // if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          //   // IE workaround for "HTML7007: One or more blob URLs were
+          //   // revoked by closing the blob for which they were created.
+          //   // These URLs will no longer resolve as the data backing
+          //   // the URL has been freed."
+          //   window.navigator.msSaveBlob(blob, fileName);
+          // } else {
             const blobURL = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.style.display = 'none';
@@ -1186,7 +1238,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             tempLink.click();
             document.body.removeChild(tempLink);
             URL.revokeObjectURL(blobURL);
-          }
+          // }
           this.setState({
             downloadImages: {
               ...this.state.downloadImages,
@@ -1203,7 +1255,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               error: JSON.stringify(err),
               ...this.state.downloadImages
             }));
-            swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+            swal!('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
           }
           this.setState({
             downloadImages: {
@@ -1216,9 +1268,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         });
     } else {
       if (all) {
-        swal('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
+        swal!('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
       } else {
-        swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+        swal!('Descargar imágenes', 'No has seleccionado unidades que contengan imágenes.', 'error');
       }
     }
   }
@@ -1371,7 +1423,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private carComments(inventoryCar: IInventoryCar): void {
     const { inventories} = this.props;
-    this.props.updateCommentsAction(inventoryCar);
+    this.props.updateInventoryCarAction(inventoryCar);
     setTimeout(() => {
       this.props.loadDataAction(
         `Comentarios`,
@@ -1386,13 +1438,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private xlsExport(status: string[]) {
+    this.trackClick('Exportar');
     const {detail} = this.props.inventories;
     const data: any = [];
     const {inventorySettings} = this.props.inventories;
     // Order data
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
-        if (status.includes(car.status)) {
+        if (status.includes(car.status) && car.car?.vin) {
           data.push({
             VIN: car.car.vin,
             Patente: car.car.patent && car.car.patent.length ? car.car.patent : '-',
@@ -1496,18 +1549,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         axisLabel: {
           rotate: 60,
           fontSize: 10,
-          formatter: function (value: string) {
-              let text = '';
-              const array = value.split(" ");
-              for (let i = 0; i < array.length; i++) {
-                text += `${array[i]}`;
-                if (i > 0 && i % 2 !== 0){
-                  text += ' \n';
-                } else{
-                  text += ' ';
-                }
+          formatter: (value: string) => {
+            let text = '';
+            const array = value.split(' ');
+            for (let i = 0; i < array.length; i++) {
+              text += `${array[i]}`;
+              if (i > 0 && i % 2 !== 0) {
+                text += ' \n';
+              } else {
+                text += ' ';
               }
-              return text;
+            }
+            return text;
           }
         }
       },
@@ -1548,7 +1601,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesLeftover,
         name: inventorySettings.leftover,
@@ -1561,7 +1614,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesMissing,
         name: inventorySettings.missing,
@@ -1573,7 +1626,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesPending,
         name: inventorySettings.pending,
@@ -1586,7 +1639,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesReported,
         name: inventorySettings.reported,
@@ -1598,7 +1651,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }]
     };
     if (!update) {
@@ -1722,35 +1775,35 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandLeftover,
         name: inventorySettings.leftover,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandMissing,
         name: inventorySettings.missing,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandPending,
         name: inventorySettings.pending,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandReported,
         name: inventorySettings.reported,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }]
     };
     if (!update) {
@@ -1830,7 +1883,7 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
+    updateInventoryCarAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
     inventoryDetailChangeFilter: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilter(filter)),

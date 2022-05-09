@@ -9,7 +9,6 @@
         }
       }
     ],
-    "@babel/react",
-//    "react-optimize"
+    "@babel/react"
   ]
 }

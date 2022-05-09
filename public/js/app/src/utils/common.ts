@@ -1,12 +1,33 @@
-import {IUser} from '../../../../../src/interfaces/user.interface';
-import {IWindow} from '../interfaces/window';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
+import { IWindow } from '../interfaces/window';
+import * as queryString from 'query-string';
 
 declare let window: IWindow;
+
+export function parseReplicableURL(url: string): string {
+  let query = queryString.parse(window.location.search);
+  const hastQueryURL = url.split('?');
+  if (hastQueryURL.length > 1) {
+    let text = window.location.search;
+    if (window.location.search) {
+      if (text?.length) {
+        text = `${text}&${hastQueryURL[hastQueryURL.length - 1]}`;
+      } else {
+        text = `?${hastQueryURL[hastQueryURL.length - 1]}`;
+      }
+    } else {
+      text = `?${hastQueryURL[hastQueryURL.length - 1]}`;
+    }
+    query = queryString.parse(text);
+  }
+  /* process here actions by parameters in query param */
+  return `${url.split('?')[0]}?${queryString.stringify(query)}`;
+}
 
 export function getExtension(name: string): string {
   const descomposition = name.split('.');
   if (descomposition.length) {
-    return descomposition[descomposition.length - 1];
+    return descomposition[descomposition.length - 1].toLowerCase();
   }
   return '';
 }
@@ -47,7 +68,7 @@ export function maxText(text: string, max: number): string {
 }
 
 export function updateTooltip() {
-   $('[data-toggle="tooltip"]').tooltip();
+  $('[data-toggle="tooltip"]').tooltip();
 }
 
 interface IMixpanelProps {
@@ -75,7 +96,7 @@ export function goToSection(id: string) {
 }
 
 export function reactTrackMixpanel(event: string, props: IMixpanelProps): void {
-  if (typeof(window.mixpanel) === 'object') {
+  if (typeof (window.mixpanel) === 'object') {
     mixpanel.register({
       // team: window.user.teamName,
       // team_id: window.user.teamID,
@@ -106,28 +127,28 @@ export function reactTrackMixpanel(event: string, props: IMixpanelProps): void {
 
 // https://stackoverflow.com/questions/19999388/check-if-user-is-using-ie-with-jquery
 export function isIntenertExplorer() {
-    const ua = window.navigator.userAgent;
+  const ua = window.navigator.userAgent;
 
-    const msie = ua.indexOf('MSIE ');
-    if (msie > 0) {
-        // IE 10 or older => return version number
-        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
-    }
+  const msie = ua.indexOf('MSIE ');
+  if (msie > 0) {
+    // IE 10 or older => return version number
+    return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+  }
 
-    const trident = ua.indexOf('Trident/');
-    if (trident > 0) {
-        // IE 11 => return version number
-        const rv = ua.indexOf('rv:');
-        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
-    }
+  const trident = ua.indexOf('Trident/');
+  if (trident > 0) {
+    // IE 11 => return version number
+    const rv = ua.indexOf('rv:');
+    return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+  }
 
-    const edge = ua.indexOf('Edge/');
-    if (edge > 0) {
-        // Edge (IE 12+) => return version number
-        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
-    }
-    // other browser
-    return false;
+  const edge = ua.indexOf('Edge/');
+  if (edge > 0) {
+    // Edge (IE 12+) => return version number
+    return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+  }
+  // other browser
+  return false;
 }
 
 export function hasPermission(user: IUser, permission: string) {
@@ -135,4 +156,11 @@ export function hasPermission(user: IUser, permission: string) {
     return window.user.userPermissions.some((p) => p.codeName === permission);
   }
   return false;
+}
+
+export function isDercoDercocenter(object?: any) {
+  let user: IUser = window.user;
+  const dercocenterID = '5c1a80f84fba86565186a757';
+  return object && object.hasOwnProperty('company') ?
+    object.company === dercocenterID : user.company._id === dercocenterID;
 }

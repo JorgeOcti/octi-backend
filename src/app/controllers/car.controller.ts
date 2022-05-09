@@ -1,63 +1,28 @@
-import * as excel from 'exceljs';
 import * as bluebird from 'bluebird';
-import * as tempfile from 'tempfile';
-import {Response} from 'express';
+import * as excel from 'exceljs';
+import { Response } from 'express';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import app from '../../app';
-import ParticipantModel from '../../form/models/participant.model';
-import {IAnyObject, IRequest} from '../../interfaces/global.interface';
-import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
-import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import * as tempfile from 'tempfile';
+import FormModel, { IFormModel, KindForm, KindQuestion } from '../../form/models/form.model';
+import Kind from '../../form/models/kind.model';
+import Part from '../../form/models/part.model';
+import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
+import Position from '../../form/models/position.model';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { IParticipant } from '../../form/interfaces/participant.interface';
+import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/inventory.model';
+import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
+import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
-import VINService from '../../services/vin.service';
-import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
+import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import {IParticipant} from "../../interfaces/participant.interface";
-import Kind from "../../form/models/kind.model";
-import Part from "../../form/models/part.model";
-import Position from "../../form/models/position.model";
-import {KindQuestion} from "../../form/models/form.model";
-import Planning from "../../planning/models/planning.model";
+import { ObjectID } from 'bson';
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
-  protected carBrands: any = {
-    'VF1': 'RENAULT',
-    'VF2': 'RENAULT',
-    'VF6': 'RENAULT',
-    '8A1': 'RENAULT',
-    '93Y': 'RENAULT',
-    '9FB': 'RENAULT',
-    '3BR': 'RENAULT',
-    'JC1': 'MAZDA',
-    'JMZ': 'MAZDA',
-    'JM6': 'MAZDA',
-    'JM7': 'MAZDA',
-    'PE3': 'MAZDA',
-    'MM8': 'MAZDA',
-    'MM0': 'MAZDA',
-    'MM7': 'MAZDA',
-    '1YV': 'MAZDA',
-    '3MD': 'MAZDA',
-    'JS2': 'SUZUKI',
-    'MMS': 'SUZUKI',
-    'JS3': 'SUZUKI',
-    'IJS': 'SUZUKI',
-    'TSM': 'SUZUKI',
-    'MA3': 'SUZUKI',
-    'MHY': 'SUZUKI',
-    'LJ1': 'JAC',
-    'LS4': 'CHANGAN',
-    'LSC': 'CHANGAN',
-    'LS5': 'CHANGAN',
-    'LPA': 'CHANGAN',
-    'LVR': 'CHANGAN',
-    'LVS': 'CHANGAN',
-    'LGW': 'GREAT WALL'
-  };
 
   constructor() {
     this.generalDashboard = this.generalDashboard.bind(this);
@@ -73,6 +38,14 @@ class CarController {
     this.getCars = this.getCars.bind(this);
     this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
+    this.processParticipant = this.processParticipant.bind(this);
+    this.exportParticipants = this.exportParticipants.bind(this);
+    this.listProperties = this.listProperties.bind(this);
+    this.createCar = this.createCar.bind(this);
+  }
+
+  public async index(req: IRequest, res: Response) {
+    res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
@@ -83,12 +56,98 @@ class CarController {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
+  public async createCar(req: IRequest, res: Response) {
+    try {
+      const car = req.body;
+      const { company, team } = req.user;
+
+      const newCar = await CarModel.findOne({
+        vin: car.vin,
+        team
+      });
+
+      if (newCar) {
+        newCar.vin2 = car.vin2;
+        newCar.color = car.color ? car.color : newCar.color;
+        newCar.denomination = car.denomination ? car.denomination : newCar.denomination;
+        newCar.brand = car.brand ? car.brand : newCar.brand;
+        newCar.patent = car.patent ? car.patent : newCar.patent;
+        newCar.imported = false;
+        newCar.createdBy = req.user;
+        newCar.status = ChoicesStatusCar.active;
+        await newCar.save();
+      } else {
+        await new CarModel({
+          vin: car.vin,
+          vin2: car.vin2,
+          color: car.color ? car.color : '',
+          denomination: car.denomination ? car.denomination : '',
+          brand: car.brand ? car.brand : '',
+          patent: car.patent ? car.patent : '',
+          imported: false,
+          company,
+          team,
+          createdBy: req.user,
+          status: ChoicesStatusCar.active
+        }).save();
+      }
+
+      res.json({
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
+    }
+  }
+
+  public async listProperties(req: IRequest, res: Response) {
+    const { team } = req.user;
+    try {
+      // validate car exist
+      const cars = await CarModel.aggregate([
+        {
+          $match: {
+            team: team._id
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            uniqueValues: {
+              $addToSet: '$property'
+            }
+          }
+        }
+      ]);
+      if (cars.length && cars[0].hasOwnProperty('uniqueValues')) {
+        res.json(
+          cars[0].uniqueValues
+            .filter((v: string) => (v.length > 0))
+            .map((v: string) => ({ _id: v, name: v }))
+            .sort((a: any, b: any) => {
+              const x = a.name;
+              const y = b.name;
+              return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            })
+          );
+      } else {
+        res.json([]);
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        res.status(500).send(e);
+      }
+    }
+  }
+
   public async vinDashboardDetail(req: IRequest, res: Response) {
     const {id} = req.params;
     const {team} = req.user;
     // validate params
     /* istanbul ignore next */
-    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).count()) {
+    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).countDocuments()) {
       return res.redirect('/cars/');
       // return res.status(404).render('404');
     }
@@ -96,19 +155,19 @@ class CarController {
       // validate car exist
       const car = await CarModel.findOne({
         _id: id,
-        lastForm: {
-          $exists: true,
-          $ne: null,
-          $in: await ParticipantModel.find(
-            {
-              venue: {
-                $in: req.user.venuesPermissions()
-              }
-            }, {
-              _id: true
-            })
-        },
-        team
+        // lastForm: {
+        //   $exists: true,
+        //   $ne: null,
+        //   $in: await ParticipantModel.find(
+        //     {
+        //       venue: {
+        //         $in: req.user.venuesPermissions()
+        //       }
+        //     }, {
+        //       _id: true
+        //     })
+        // },
+        team: team._id
       });
       if (!car) {
         return res.status(404).render('404');
@@ -126,22 +185,9 @@ class CarController {
   public async checkVIN(req: IRequest, res: Response) {
     let {vin, vin2} = req.body;
     const {inventory} = req.body;
-    // const {multi} = req.query;
-    const {team, company} = req.user;
+    const team = req.user.team._id;
     logger.info(`checkVIN`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
-    /*
-      {
-        $group: {
-          _id: {
-            vin: {
-              $substr: ["$vin", 0, 3]
-            },
-            brand: "$brand"
-          }
-        }
-      }
-    */
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
@@ -266,126 +312,97 @@ class CarController {
         }
       }
     } else {
-      if (vin) {
-        try {
-          /* istanbul ignore next */
-          if (app.get('env') !== 'testing') {
-            const testDecode = VINService.decode(vin);
-            logger.info(`vin decode ${JSON.stringify(testDecode)}`);
+      try {
+
+        const inventoryQuery: any = {
+          team
+        };
+        if (vin) {
+          inventoryQuery.vin = vin;
+        }
+        if (vin2) {
+          if (vin2[0] === '0') {
+            const vinRegex = new RegExp(`${vin2.substr(vin2.length - 5)}$`, 'i');
+            inventoryQuery.vin2 = {$regex: vinRegex};
+          } else {
+            const patentRegex = new RegExp(vin2, 'i');
+            inventoryQuery.$or = [{vin2}, {patent: patentRegex}];
           }
-          const indexBrand: string = vin.slice(0, 3);
-          vin2 = vin.substr(vin.length - 6);
-          const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
-          const car = await CarModel.findOneOrCreate({
-            vin,
-            team
-          }, {
-            vin,
-            vin2,
-            company,
-            team,
-            brand,
-            createdBy: req.user,
-            status: ChoicesStatusCar.active
-          });
+        }
+
+        const car = await CarModel.find(inventoryQuery, {
+          vin: true,
+          vin2: true,
+          brand: true,
+          color: true,
+          patent: true,
+          denomination: true
+        });
+        if (car && car.length) {
           res.json({
-            data: {
-              _id: car._id,
-              vin: car.vin,
-              vin2: car.vin2,
-              brand: car.brand,
-              patent: car.patent,
-              color: car.color,
-              denomination: car.denomination
-            },
+            data: vin ? car[0] : car,
             status: 200
           });
-        } catch (e) {
-          /* istanbul ignore next */
-          console.log(e);
-          /* istanbul ignore next */
-          if (e) {
-            res.status(500).send(e);
-          }
-        }
-      } else if (vin2) {
-        // vin2 = vin2.replace(/[\W_]+/g, '');
-        try {
-          const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-          const patentRegex = new RegExp(vin2, 'i');
-          const car = await CarModel.find({
-            $or: [{vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2}, {patent: patentRegex}],
-            team
-          }, {
-            vin: true,
-            vin2: true,
-            brand: true,
-            color: true,
-            patent: true,
-            denomination: true
+        } else {
+          logger.error(`checkVIN: VIN no encontrado.`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          res.status(400).json({
+            message: 'VIN no encontrado.',
+            status: 400
           });
-          if (car.length) {
-            res.json({
-              data: car,
-              status: 200
-            });
-          } else {
-            logger.error(`checkVIN: VIN no encontrado.`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            res.status(400).json({
-              message: 'VIN no encontrado.',
-              status: 400
-            });
-          }
-        } catch (e) {
-          /* istanbul ignore next */
-          if (e) {
-            /* istanbul ignore next */
-            logger.error(`checkVIN: Async Error.`);
-            /* istanbul ignore next */
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger.error(e);
-            res.status(500).send(e);
-          }
         }
-      } else {
-        logger.error(`checkVIN: VIN no encontrado.`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        res.status(400).json({
-          message: 'VIN no encontrado.',
-          status: 400
-        });
+      } catch (e) {
+        /* istanbul ignore next */
+        if (e) {
+          /* istanbul ignore next */
+          logger.error(`checkVIN: Async Error.`);
+          /* istanbul ignore next */
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          /* istanbul ignore next */
+          logger.error(e);
+          res.status(500).send(e);
+        }
       }
     }
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
-      const {companies} = req.query;
+      const { companies, only_controls } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
       const query: any = {
-        _id: {$in: venuesPermissions}
-      };
-      if(companies){
-        query["company"] = {
-          $in: [companies]
+        _id: {
+          $in: venuesPermissions
         }
+      };
+      if (companies) {
+        query.company = {
+          $in: [companies]
+        };
       }
+
       const venuesByCompanies = await Venue.find(query);
       const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
+
+      let participantQuery : any = {
+        venue: {
+          $in: venuesPermissionsFilterByCompanies
+        },
+        createdAt: {
+          $gte: moment().subtract(30, 'd').toDate()
+        }
+      };
+      if (only_controls == "1"){
+        participantQuery.kind = {$ne: KindForm.transmittal}
+      }
+
       const participantReceivedPerDay = await ParticipantModel
         .aggregate([
           {
             $match: {
-              venue: {
-                $in: venuesPermissionsFilterByCompanies
-              },
+              ...participantQuery,
               reception: true,
-              createdAt: {
-                $gte: moment().subtract(30, 'd').toDate()
-              }
             }
           }, {
             $project: {
@@ -405,8 +422,8 @@ class CarController {
                 category: {
                   $dateToString: {
                     format: '%Y-%m-%d',
-                    date: '$createdAt'
-                    // timezone: 'America/Santiago'
+                    date: '$createdAt',
+                    timezone: 'America/Santiago'
                   }
                 },
                 user: '$user'
@@ -455,13 +472,8 @@ class CarController {
         .aggregate([
           {
             $match: {
-              venue: {
-                $in: venuesPermissionsFilterByCompanies
-              },
+              ...participantQuery,
               shipping: true,
-              createdAt: {
-                $gte: moment().subtract(30, 'd').toDate()
-              }
             }
           }, {
             $project: {
@@ -485,8 +497,8 @@ class CarController {
                 category: {
                   $dateToString: {
                     format: '%Y-%m-%d',
-                    date: '$createdAt'
-                    // timezone: 'America/Santiago'
+                    date: '$createdAt',
+                    timezone: 'America/Santiago'
                   }
                 },
                 user: '$user'
@@ -552,8 +564,8 @@ class CarController {
               _id: {
                 $dateToString: {
                   format: '%Y-%m-%d',
-                  date: '$createdAt'
-                  // timezone: 'America/Santiago'
+                  date: '$createdAt',
+                  timezone: 'America/Santiago'
                 }
               },
               total: {
@@ -574,7 +586,7 @@ class CarController {
           }, {
             $project: {
               _id: 1,
-              date: 1,
+              date: 1
             }
           }, {
             $group: {
@@ -612,7 +624,7 @@ class CarController {
         if(!planningByProcessingByKey.hasOwnProperty(key)){
           planningByProcessingByKey[key] = {
             total: 0
-          }
+          };
         }
         const isChecked = process.car.participants.filter((participant: any) => moment(participant.createdAt).format('YYYY-MM-DD') === key).length;
         planningByProcessingByKey[key].total = isChecked ? planningByProcessingByKey[key].total + 1 : planningByProcessingByKey[key].total;
@@ -634,7 +646,7 @@ class CarController {
           planningProcess.push({
             _id: key,
             total: 0
-          })
+          });
         } else{
           planningProcess.push({
             id: key,
@@ -743,7 +755,7 @@ class CarController {
         planning,
         planningProcess,
         cars,
-        totalCars: await CarModel.count({team}),
+        totalCars: await CarModel.find({team}).countDocuments(),
         status: 200
       });
     } catch (e) {
@@ -756,41 +768,288 @@ class CarController {
     }
   }
 
+  public getHeadersFromForm(form: IFormModel) {
+    const columns = [];
+    for (const section of form.sections) {
+      for (const question of section.questions) {
+        if (['scale', 'accessory', 'numeric-scale'].includes(question.kind)) {
+          columns.push({
+            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+          });
+        } else if (question.kind === 'damage') {
+          columns.push({
+            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30, style: {
+              numFmt: '0'
+            }
+          });
+        }
+      }
+    }
+    if (form.shippingVenue){
+      columns.push({
+        header: `${form.name} - ${form.shippingVenueText}`, key: `${form._id.toString()}-shipping`, width: 30
+      });
+    }
+    if (form.receptionVenue){
+      columns.push({
+        header: `${form.name} - ${form.receptionVenueText}`, key: `${form._id.toString()}-reception`, width: 30
+      });
+    }
+    return columns;
+  }
+
+  public processAnswer(answer: IParticipantAnswerModel) {
+    let datum = {};
+
+    if (answer.kind === 'scale' || answer.kind === 'accessory') {
+      if (!answer.answer) {
+        return {};
+      }
+      const selectedChoice = answer.scale.choices.find((choice) => {
+        return choice._id.toString() === answer.answer.toString();
+      });
+      if (selectedChoice) {
+        datum = {
+          [answer._id.toString()]: selectedChoice.choice
+        };
+      }
+    } else if (answer.kind === 'numeric-scale') {
+      datum = {
+        [answer._id.toString()]: answer.score
+      };
+    } else if (answer.kind === 'damage') {
+      datum = { [answer._id.toString()]: answer.damagesSelected.length };
+    }
+    return datum;
+  }
+
+  public processParticipant(participant: IParticipant) {
+    const datum = {
+      number: participant.number,
+      created_at: moment(participant.createdAt).toDate(),
+      brand: participant.car?.brand ?? '',
+      denomination: participant.car?.denomination ?? '',
+      color: participant.car?.color ?? '',
+      team: participant.team.name,
+      user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
+      company: participant.company.name,
+      venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
+      vin: participant.car ? participant.car.vin : '',
+      plate: participant.car ? participant.car.patent : '',
+      name: participant.name,
+      conciliation: participant.conciliation ? 'SI' : 'NO',
+      qualification: participant.qualification,
+      reception: participant.reception ? 'SI' : 'NO',
+      shipping: participant.shipping ? 'SI' : 'NO',
+      isReception: participant.receptionText.length > 0 ? 'SI' : 'NO',
+      isShipping: participant.shippingText.length > 0 ? 'SI' : 'NO'
+    };
+
+    let sectionAnswers = {};
+
+    if (["618d1c6e691899fc37247237", "618d2032691899fc3724725f"].includes(participant.form.toString()) ) {
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)};
+          if (["618d2032691899fc37247284", "618d1c6e691899fc3724725c"].includes(answer._id.toString())) {
+            // @ts-ignore
+            sectionAnswers['has_15km'] = parseInt(answer.comment) > 15 ? '1' : '0';
+          }
+        }
+      }
+    } else {
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)};
+        }
+      }
+    }
+
+    if (participant.shippingVenue){
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-shipping`]: participant.sendTo.name };
+    }
+    if (participant.receptionVenue){
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
+    }
+
+    return {
+      ...datum,
+      ...sectionAnswers
+    };
+  }
+
   /* istanbul ignore next */
-  public async apiParticipantCSV(req: IRequest, res: Response) {
+  public async exportParticipants(req: IRequest, res: Response) {
     try {
-      const participants = await ParticipantModel.find({}).populate([{
-        path: 'car'
+      const team = req.user.team._id;
+      const company = req.user.company._id;
+      const { from, to } = req.query;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      // Get filters for Mongo Query
+      const queryFilter: any = {
+        team,
+        venue: {
+          $in: venuesPermissions
+        }
+      };
+      if (from && to){
+        queryFilter.createdAt = {
+          $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+          $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+        };
+      }
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+
+      // Get the forms to create columns/header of excel
+      let forms = await ParticipantModel.find(queryFilter).distinct('form');
+      forms = await FormModel.find({ _id: { $in: forms } });
+
+      // Create columns/headers for excel
+      let columns = [{
+        header: '#', key: 'number', width: 30
+      }, {
+        header: 'Fecha', key: 'created_at', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        }
+      }, {
+        header: 'Marca', key: 'brand', width: 30
+      }, {
+        header: 'Denominación', key: 'denomination', width: 30
+      }, {
+        header: 'Color', key: 'color', width: 30
+      }, {
+        header: 'Team', key: 'team', width: 30
+      }, {
+        header: 'Usuario', key: 'user', width: 30
+      }, {
+        header: 'Compañía', key: 'company', width: 30
+      }, {
+        header: 'Sucursal', key: 'venue', width: 30
+      }, {
+        header: 'VIN', key: 'vin', width: 30
+      }, {
+        header: 'Formulario', key: 'name', width: 30
+      }, {
+        header: 'Tiene conciliación', key: 'conciliation', width: 30
+      }, {
+        header: 'Calificación', key: 'qualification', width: 30, style: {
+          numFmt: '0.000'
+        }
+      }, {
+        header: 'Tipo Recepción', key: 'isReception', width: 30
+      }, {
+        header: 'Recepcionado', key: 'reception', width: 30
+      }, {
+        header: 'Tipo Envío', key: 'isShipping', width: 30
+      }, {
+        header: 'Enviado', key: 'shipping', width: 30
+      }];
+
+      // create additional columns/headers based of form questions
+      for (const form of forms) {
+        columns = columns.concat(this.getHeadersFromForm(form));
+      }
+
+      if (company.toString() === '5bbe39fca9683b82857035b1') {
+        columns.push({
+          header: 'Tiene más de 15 KM.', key: 'has_15km', width: 30
+        })
+      }
+
+      // Create Excel Stream with pipe to response object
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+      const worksheet = workbook.addWorksheet('Rotación de unidades', {
+        pageSetup: {
+          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        }
+      });
+      worksheet.columns = columns;
+
+      // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+      const cursor = ParticipantModel.find(queryFilter, {
+        number: 1,
+        createdAt: 1,
+        car: 1,
+        team: 1,
+        user: 1,
+        company: 1,
+        venue: 1,
+        name: 1,
+        conciliation: 1,
+        qualification: 1,
+        reception: 1,
+        shipping: 1,
+        receptionText: 1,
+        shippingText: 1,
+        sections: 1,
+        form: 1,
+        shippingVenue: 1,
+        receptionVenue: 1,
+        sendTo: 1,
+        receiveFrom: 1
+      }).populate([{
+        path: 'car',
+        select: 'brand denomination color vin patent'
       }, {
         path: 'user',
+        select: 'firstName lastName venue',
         populate: [{
-          path: 'venue'
+          path: 'venue',
+          select: 'name'
         }]
       }, {
-        path: 'form'
+        path: 'venue',
+        select: 'name'
       }, {
-        path: 'company'
-      }]);
-      // const cars = await CarModel.find({}).populate([{
-      //   path: 'company'
-      // }]);
-      const data = [];
-      data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
-      for (const participant of participants) {
-        data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user ? participant.user.fullName() : '-'}|${participant.form.name}|${participant.user ? participant.user.venue.name : '-'}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-      }
-      // for (const car of cars) {
-      //   data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-      // }
-      res.send(data.join('\n'));
+        path: 'company',
+        select: 'name'
+      }, {
+        path: 'team',
+        select: 'name'
+      }, {
+        path: 'sendTo',
+        select: 'name'
+      }, {
+        path: 'receiveFrom',
+        select: 'name'
+      }]).batchSize(100).cursor();
+
+
+      cursor.on('data', async (participant) => {
+        const row = await this.processParticipant(participant);
+        worksheet.addRow(row).commit();
+      });
+
+      // code to handle connection abort or finish query read process
+      cursor.on('end', async ()  => {
+        workbook.commit();
+        res.status(200);
+      });
+
+      cursor.on('error', (error) => logger.error(error.message));
+
+      // code to handle connection abort or finish of data send
+      req.connection.on('close', async () => {
+        await cursor.close();
+        res.status(200);
+      });
+
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     }
   }
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const team = req.user.team._id;
     try {
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await ParticipantModel
@@ -877,7 +1136,7 @@ class CarController {
   }
 
   public async apiCarDetail(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     try {
       const venuesPermissions = req.user.venuesPermissions();
@@ -892,7 +1151,7 @@ class CarController {
           createdAt: true,
           patent: true,
           denomination: true,
-          color: true
+          color: true,
         })
         .populate([{
           path: 'inventories',
@@ -953,7 +1212,7 @@ class CarController {
         }, {
           // reverse populate
           path: 'participants',
-          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
+          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages', 'kind'],
           match: {
             $or: [{
               venue: {
@@ -1004,11 +1263,12 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response) {
-    const {page, pageSize, search, from, to} = req.query as {
+    const { page, pageSize, search, from, to, forms } = req.query as {
       page: string, pageSize: string, search: string,
-      from: string, to: string
+      from: string, to: string, forms: string
     };
-    const {team} = req.user;
+    const team = req.user.team._id;
+    const { only_controls } = req.query;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1017,16 +1277,17 @@ class CarController {
         car: true,
         venue: true,
         user: true,
-        sections: true,
+        hasDamages: true,
         qualification: true,
+        name: true
       },
       populate: [{
         path: 'car',
-        select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
-        populate: {
-          path: 'lastForm',
-          select: ['createdAt']
-        }
+        select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
+        // populate: {
+        //   path: 'lastForm',
+        //   select: ['createdAt']
+        // }
       }, {
         path: 'user',
         select: ['firstName', 'lastName']
@@ -1037,8 +1298,8 @@ class CarController {
       sort: {
         _id: -1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
 
     try {
@@ -1051,17 +1312,26 @@ class CarController {
         }]
       };
 
+      if (forms) {
+        const formArray = forms.split(",")
+        participantFilter.form = {$in: formArray.map(f => new ObjectID(f))}
+      }
+
+      if (only_controls == "1"){
+        participantFilter.kind = {$ne: KindForm.transmittal}
+      }
+
       if (search && search.length) {
         const searchText = new RegExp(search, 'i');
         const searchUser = await User.find({
           $and: [{
             $or: [{
-              firstName: {$regex: searchText}
+              firstName: { $regex: searchText }
             }, {
-              lastName: {$regex: searchText}
+              lastName: { $regex: searchText }
             }]
-          }, {team}]
-        }, {_id: true});
+          }, { team }]
+        }, { _id: true });
         const searchVenue = await Venue.find({
           _id: {
             $in: req.user.venuesPermissions()
@@ -1070,7 +1340,7 @@ class CarController {
             $regex: searchText
           },
           team
-        }, {_id: true});
+        }, { _id: true });
         if (searchUser.length) {
           participantFilter.$and.push({
             user: {
@@ -1090,17 +1360,21 @@ class CarController {
                 $regex: searchText
               }
             }, {
+              patent: {
+                $regex: searchText
+              }
+            }, {
               brand: {
                 $regex: searchText
               }
             }],
             team
-          }, {_id: true});
+          }, { _id: true });
           participantFilter.$and.push({
             car: {
               $in: searchCar
             }
-          })
+          });
         }
       }
 
@@ -1118,7 +1392,6 @@ class CarController {
           createdAt: createdAtFilter
         });
       }
-
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page
@@ -1159,31 +1432,31 @@ class CarController {
               extraColums.keys.push(answerID);
               extraColums.data.push({
                 header: answer.question, key: answerID, width: 50
-              })
+              });
             }
             extraRow = {
               ...extraRow,
               [answerID]: answer.comment
-            }
+            };
           }
           for (const damage of answer.damagesSelected) {
             const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
               ? cache.kinds[damage.kind.toString()]
               : answer.damages.kinds
                 .find((d) =>
-                  Boolean(d._id && damage.kind && d._id.toString() == damage.kind.toString())
+                  Boolean(d._id && damage.kind && d._id.toString() === damage.kind.toString())
                 );
             const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString())
               ? cache.parts[damage.part.toString()]
               : answer.damages.parts
                 .find((d) =>
-                  Boolean(d._id && damage.part && d._id.toString() == damage.part.toString())
+                  Boolean(d._id && damage.part && d._id.toString() === damage.part.toString())
                 );
             const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString())
               ? cache.positions[damage.position.toString()]
               : answer.damages.positions
                 .find((d) =>
-                  Boolean(d._id && damage.position && d._id.toString() == damage.position.toString())
+                  Boolean(d._id && damage.position && d._id.toString() === damage.position.toString())
                 );
             if (kind && part){
             damages.push({kind, part, position});
@@ -1192,8 +1465,9 @@ class CarController {
         }
       }
       if(damages.length){
+        // tslint:disable-next-line: forin
         for (const d in damages) {
-          const idx = parseInt(d) + 1;
+          const idx = parseInt(d, 10) + 1;
           const row = {
             vin: participant.car.vin,
             denomination: participant.car.denomination,
@@ -1205,7 +1479,7 @@ class CarController {
             damages: `${damages.length}`,
             has_damages: damages.length > 0 ? 'Sí' : 'No',
             damage: idx,
-            position: damages[d].position ? damages[d].position.name : "-",
+            position: damages[d].position ? damages[d].position.name : '-',
             kind: damages[d].kind.name,
             part: damages[d].part.name,
             ...extraRow
@@ -1223,10 +1497,10 @@ class CarController {
           user: `${participant.user.firstName} ${participant.user.lastName}`,
           damages: `${damages.length}`,
           has_damages: damages.length > 0 ? 'Sí' : 'No',
-          damage: "-",
-          position: "-",
-          kind: "-",
-          part: "-",
+          damage: '-',
+          position: '-',
+          kind: '-',
+          part: '-',
           ...extraRow
         };
         rows.push(row);
@@ -1235,7 +1509,7 @@ class CarController {
     });
   }
 
-  public addRevisions(user: any, period: number, damagesCache: any, extraColums: any) {
+  public addRevisions(user: any, period: number, damagesCache: any, extraColums: any): Promise<any[]> {
     return new Promise(async (resolve) => {
       const revisionsToProcess = [];
       const t0 = moment().subtract(period, 'weeks').startOf('week');
@@ -1246,11 +1520,11 @@ class CarController {
             {
               venue: {
                 $in: user.venuesPermissions()
-              },
+              }
             }, {
               createdAt: {
                 $gte: t0.toDate(),
-                $lte: t1.toDate(),
+                $lte: t1.toDate()
               }
             }/*,{
               'sections.answers.kind': 'damage'
@@ -1309,10 +1583,10 @@ class CarController {
         ];
       }
       resolve(results);
-    })
+    });
   }
 
-  public async apiDamagesExport(req: IRequest, res: Response) {
+  public async apiDamagesExport(req: IRequest, res: Response): Promise<any> {
     if (!req.user.hasPermission('exportDamages')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -1320,11 +1594,18 @@ class CarController {
     }
 
     try {
-      const {team} = req.user;
-      const workbook = new excel.Workbook();
+      const team = req.user.team._id;
+      const { changeperiods } = req.query as { changeperiods: string };
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=daños-${moment().format('YYYY-MM-DD')}.xlsx`);
+      const workbook = new excel.stream.xlsx.WorkbookWriter({
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      });
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -1361,9 +1642,9 @@ class CarController {
       columns.push({header: 'Posición', key: 'position', width: 30});
 
       /* headers */
-      const periods = 6;
-      const kinds = await Kind.find({team}, {name: true});
-      const parts = await Part.find({team}, {name: true});
+      const periods: number = changeperiods ? parseInt(changeperiods, 10) : 8;
+      const kinds = await Kind.find({ team }, { name: true });
+      const parts = await Part.find({ team }, { name: true });
       const positions = await Position.find({team}, {name: true});
       const damagesCache = {
         kinds: kinds.reduce((acc: any, cur: any) => {
@@ -1377,14 +1658,13 @@ class CarController {
         positions: positions.reduce((acc: any, cur: any) => {
           acc[cur._id.toString()] = cur;
           return acc;
-        }, {}),
+        }, {})
       };
 
       const periodToProcess = [];
       for (let i = periods; i >= 0; i--) {
         periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
       }
-      const rows = await bluebird.all(periodToProcess);
 
       // create titles of the table with filters
       const newColumns = [...columns, ...extraColums.data];
@@ -1392,25 +1672,14 @@ class CarController {
       worksheet.autoFilter = {from: 'A1', to: {row: 1, column: newColumns.length}};
 
       // add data in excel
-      const dataRow = [].concat.apply([], rows);
-      worksheet.addRows(dataRow);
-
-      /* formats */
-      worksheet.getRow(1).eachCell((cell) => {
-        cell.font = {
-          bold: true
-        };
-      });
-
-      // const idCol = worksheet.getColumn('id');
-      // idCol.eachCell({includeEmpty: true}, (cell) => {
-      //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-      // });
-      const tempFilePath = tempfile('.xlsx');
-      await workbook.xlsx.writeFile(tempFilePath);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
-      return res.sendFile(tempFilePath);
+      while (periodToProcess.length) {
+        const rows: any[] = await periodToProcess.splice(0, 1)[0];
+        for(const row of rows){
+          worksheet.addRow(row).commit();
+        }
+      }
+      await workbook.commit();
+      res.status(200);
 
     } catch (e) {
       /* istanbul ignore next */
@@ -1431,13 +1700,13 @@ class CarController {
 
     try {
 
-      const {team} = req.user;
+      const team = req.user.team._id;
 
 
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -1471,8 +1740,8 @@ class CarController {
       while (--i > 0) {
         const ti = moment().subtract(i * 15, 'day');
         const tf = moment().subtract((i - 1) * 15, 'day');
-        console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
-        let cars = await CarModel.find({
+        console.log(ti.format('YYYY-MM-DD'), tf.format('YYYY-MM-DD'));
+        const cars = await CarModel.find({
           team,
           isExhibition: false,
           lastForm: {
@@ -1480,13 +1749,13 @@ class CarController {
           },
           createdAt: {
             $gte: ti,
-            $lte: tf,
+            $lte: tf
           }
         }, {
           vin: true,
           denomination: true,
           color: true,
-          brand: true,
+          brand: true
         }).populate({
           path: 'inventories',
           select: ['name', 'createdAt', 'venueFound', 'status'],
@@ -1525,9 +1794,9 @@ class CarController {
             color: car.color,
             brand: car.brand,
             v0: inv0.venueFound ? inv0.venueFound.name : inv0.venue.name,
-            t0: t0,
+            t0,
             v1: inv1.venueFound ? inv1.venueFound.name : inv1.venue.name,
-            t1: t1,
+            t1,
             inventories: n,
             rotation: moment(t1).diff(moment(t0), 'days', true)
           };
@@ -1576,8 +1845,8 @@ class CarController {
       sort: {
         updatedAt: -1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
       const cars = await this.getCars({
@@ -1619,7 +1888,7 @@ class CarController {
 
   private getRevisions(filters: any, options: PaginateOptions): Promise<PaginateResult<IParticipant>> {
     return new Promise((resolve, reject) => {
-      !ParticipantModel.paginate(filters, options, (err, result) => {
+      ParticipantModel.paginate(filters, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           reject(err);
@@ -1651,7 +1920,7 @@ class CarController {
     }
 
     return new Promise((resolve, reject) => {
-      !CarModel.paginate(filter, options, (err, result) => {
+      CarModel.paginate!(filter, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);
@@ -1660,6 +1929,168 @@ class CarController {
       });
     });
   }
+
+  public async apiVenueRevisionStats(req: IRequest, res: Response){
+    try {
+      const team = req.user.team._id;
+      const { from, to } = req.query;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      // Get filters for Mongo Query
+      const queryFilter: any = {
+        team,
+        venue: {
+          $in: venuesPermissions
+        },
+        kind: {$ne: KindForm.transmittal}
+      };
+
+      if (from && to){
+        queryFilter.createdAt = {
+          $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+          $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+        };
+      }
+
+      const activeVenues : any[] = await ParticipantModel.aggregate([
+        {
+          $match: queryFilter
+        }, {
+          $lookup: {
+            from: 'venues',
+            localField: 'venue',
+            foreignField: '_id',
+            as: '_venue',
+          }
+        }, {
+          $unwind: "$_venue"
+        }, {
+          $group :
+            {
+              _id : "$_venue._id",
+              name: { $first: "$_venue.name" },
+              total: { $sum: 1 }
+            }
+        }]);
+      const inactiveVenues : any[] = await Venue.find({
+        team,
+        _id: {
+          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+        }
+      }, {name: 1, _id: 1});
+      const allVenues : any[] = activeVenues.concat(inactiveVenues);
+
+      res.status(200).json(allVenues);
+    } catch (e) {
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiRevisionStats(req: IRequest, res: Response){
+    try {
+      const team = req.user.team._id;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      // Get filters for Mongo Query
+      const queryFilter: any = {
+        team,
+        venue: {
+          $in: venuesPermissions
+        },
+        kind: {$ne: KindForm.transmittal}
+      };
+
+      const todayParticipants: number = await ParticipantModel.find({...queryFilter,
+        createdAt: {
+          $gte: moment().hour(0).minute(0).toDate(),
+          $lt: moment().hour(23).minute(59).toDate()
+        }}).countDocuments();
+      const yesterdayParticipants: number = await ParticipantModel.find({...queryFilter,
+        createdAt: {
+          $gte: moment().subtract(1, "day").startOf("day").toDate(),
+          $lt: moment().subtract(1, "day").endOf("day").toDate()
+        }}).countDocuments();
+
+      const lastMonthParticipants: number  = await ParticipantModel.find({...queryFilter,
+        createdAt: {
+          $gte: moment().subtract(1,"month").startOf("month").toDate(),
+          $lt: moment().subtract(1,"month").endOf("month").toDate(),
+        }}).countDocuments();
+      const currentMonthParticipants: number = await ParticipantModel.find({...queryFilter,
+        createdAt: {
+          $gte: moment().startOf("month").toDate(),
+          $lt: moment().endOf("month").toDate(),
+        }}).countDocuments();
+
+      const totalParticipants: number = await ParticipantModel.find(queryFilter).countDocuments();
+      const sentStats: any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, shipping: true}
+        }, {
+          $group :
+            {
+              _id : 1,
+              accepted: {$sum: {$cond: [{$eq:["$shippingConfirmation", true]}, 1, 0]}},
+              rejected: {$sum: {$cond: [{$eq:["$shippingConfirmation", false]}, 1, 0]}},
+            }
+        }
+      ]);
+      const receivedStats: any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, reception: true}
+        }, {
+          $group :
+            {
+              _id : 1,
+              accepted: {$sum: {$cond: [{$eq:["$receptionConfirmation", true]}, 1, 0]}},
+              rejected: {$sum: {$cond: [{$eq:["$receptionConfirmation", false]}, 1, 0]}},
+            }
+        }
+      ]);
+
+      const activeVenues : any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, createdAt: {
+              $gte: moment().startOf("month").toDate(),
+              $lt: moment().endOf("month").toDate()
+            }}
+        }, {
+          $group :
+            {
+              _id : "$venue",
+              total: { $sum: 1 }
+            }
+        }]);
+      const inactiveVenues : any[] = await Venue.find({
+        team,
+        _id: {
+          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+        }
+      }, {name: 1, _id: 1});
+
+
+      res.status(200).json({
+        revisions: {
+          today: todayParticipants,
+          yesterday: yesterdayParticipants,
+          lastMonthTotal: lastMonthParticipants,
+          currentMonthTotal: currentMonthParticipants,
+          totalRevisions: totalParticipants,
+          sentStats: sentStats[0],
+          receivedStats: receivedStats[0]
+          },
+        venues: {
+          activeVenues: activeVenues.length,
+          inactiveVenues: inactiveVenues.length
+        }
+      });
+    } catch (e) {
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
 }
 
 export default new CarController();

@@ -1,15 +1,15 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import {IRequest} from '../../../interfaces/global.interface';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { IRequest } from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
-import {io} from '../../../server';
+import { io } from '../../../server';
 import * as moment from 'moment';
 import User from '../../models/user.model';
-import Venue, {IVenueModel} from '../../models/venue.model';
-import * as excel from "exceljs";
-import * as tempfile from "tempfile";
-import {Alignment} from "exceljs";
-import {IVenueDay} from "../../../interfaces/venueDay.interface";
+import Venue, { IVenueModel } from '../../models/venue.model';
+import * as excel from 'exceljs';
+import * as tempfile from 'tempfile';
+import { Alignment } from 'exceljs';
+import { IVenueDay } from '../../interfaces/venueDay.interface';
 
 class AdminVenueController {
 
@@ -17,6 +17,7 @@ class AdminVenueController {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
     this.apiListVenues = this.apiListVenues.bind(this);
+    this.apiListCompanyVenues = this.apiListCompanyVenues.bind(this);
     this.apiCreateVenue = this.apiCreateVenue.bind(this);
     this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
     this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
@@ -25,18 +26,18 @@ class AdminVenueController {
   public async index(req: IRequest, res: Response) {
     /* istanbul ignore else  */
     if (req.user.hasPermission('viewVenue')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.status(403).render('403');
     }
   }
 
   public async accessByVenue(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const workbook = new excel.Workbook();
     const worksheetSend = workbook.addWorksheet('Sucursales', {
       properties: {
-        defaultRowHeight: 30
+        // defaultRowHeight: 30
       },
       pageSetup: {
         fitToPage: true, fitToHeight: 100, fitToWidth: 1
@@ -50,8 +51,8 @@ class AdminVenueController {
       activeCell: 'A1'
     }];
     const sendColumns: any[] = [{
-      header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)",
-      key: "sucursal",
+      header: 'Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)',
+      key: 'sucursal',
       width: 30,
       alignment: {
         wrapText: true
@@ -59,20 +60,20 @@ class AdminVenueController {
     }];
     const sendRows = [];
 
-    const venues = await Venue.find({deleted: false, team}).sort('name');
+    const venues = await Venue.find({ deleted: false, team }).sort('name');
     for (const venue of venues) {
       sendColumns.push({
         header: venue.name, key: venue._id.toString(), width: 5,
         style: {
           alignment: {
-          vertical: 'middle',
-          horizontal: 'center'
+            vertical: 'middle',
+            horizontal: 'center'
           }
         }
       });
-      let dataSend:any = {};
-      for(const to of venue.sendTo){
-        dataSend[to as any] = "X";
+      let dataSend: any = {};
+      for (const to of venue.sendTo) {
+        dataSend[to as any] = 'X';
       }
       sendRows.push({
         sucursal: venue.name,
@@ -96,22 +97,22 @@ class AdminVenueController {
         wrapText: true
       };
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
     worksheetSend.getRow(1).eachCell((cell) => {
-      const alignment:Partial<Alignment> = {
+      const alignment: Partial<Alignment> = {
         vertical: 'middle',
         horizontal: 'center',
         textRotation: 0,
         wrapText: true
       };
-      if(parseInt(cell.col, 10) !== 1){
-        alignment.textRotation=  90
+      if (parseInt(cell.col, 10) !== 1) {
+        alignment.textRotation = 90;
       }
       cell.alignment = alignment;
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
 
@@ -126,13 +127,36 @@ class AdminVenueController {
   }
 
   public async apiListVenues(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
-    const {page, pageSize} = req.query as {page: string, pageSize: string};
+    const team = req.user.team._id;
+    const {
+      page,
+      pageSize,
+      noPopulate,
+      filted,
+      search
+    } = req.query as { page: string, pageSize: string, noPopulate: any, filted: any, search: string };
     // paginate options
     const options: PaginateOptions = {
-      select: {
+      sort: {
+        name: 1
+      },
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    if (noPopulate) {
+      options['select'] = {
         _id: true,
         name: true,
+        code: true,
+        abbreviation: true,
+        updatedAt: true,
+        createdAt: true
+      };
+    } else {
+      options['select'] = {
+        _id: true,
+        name: true,
+        code: true,
         abbreviation: true,
         lat: true,
         lng: true,
@@ -145,8 +169,8 @@ class AdminVenueController {
         type: true,
         updatedAt: true,
         createdAt: true
-      },
-      populate: [{
+      };
+      options['populate'] = [{
         path: 'receptionCarriers',
         select: ['_id', 'name']
       }, {
@@ -155,7 +179,7 @@ class AdminVenueController {
       }, {
         path: 'sendToDays.venue',
         select: ['_id', 'name']
-      },{
+      }, {
         path: 'sendTo',
         select: ['_id', 'name']
       }, {
@@ -165,27 +189,33 @@ class AdminVenueController {
         path: 'users',
         select: ['_id']
       }, {
-        path: 'participants',
-        select: ['_id']
+        path: 'responsible',
+        select: ['_id', 'firstName', 'lastName']
       }, {
         path: 'region',
         select: ['name']
       }, {
         path: 'company',
-        select: ['name', "marker"]
-      }],
-      lean: true,
-      sort: {
-        name: 1
-      },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+        select: ['name', 'marker']
+      }];
+    }
+    // if(false){
+    //    (options['populate'] as any[]).push({
+    //     path: 'participants',
+    //     select: ['_id']
+    //   })
+    // }
+    const filter: any = {
+      deleted: false,
+      team
     };
+    if (filted) {
+      filter._id = {
+        $in: req.user.venuesPermissions()
+      };
+    }
     try {
-      const venues = await this.getVenues({
-        deleted: false,
-        team
-      }, options);
+      const venues = await this.getVenues(filter, options, search);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {
         res.status(400).json({
@@ -210,6 +240,24 @@ class AdminVenueController {
     }
   }
 
+  public async apiListCompanyVenues(req: IRequest, res: Response): Promise<any> {
+    const { team, company } = req.user;
+    try {
+      const venues = await Venue
+        .find({ team, company }, { name: true })
+        .sort({ 'name': 1 });
+      res.json({
+        results: venues,
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next  */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
   public async apiCreateVenue(req: IRequest, res: Response): Promise<any> {
     if (!req.user.hasPermission('addVenue')) {
       return res.status(403).json({
@@ -218,10 +266,10 @@ class AdminVenueController {
     }
     const {
       name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
-      shippingMaxDays, receptionCarriers, shippingCarriers, region
+      shippingMaxDays, receptionCarriers, shippingCarriers, region, responsible
     } = req.body;
-    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
-    const {team} = req.user;
+    const sendTo = sendToDays.map((venueDay: IVenueDay) => venueDay.venue._id);
+    const team = req.user.team._id;
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
@@ -253,14 +301,15 @@ class AdminVenueController {
           receiveFrom,
           receptionCarriers,
           shippingCarriers,
+          responsible,
           type
         }).save();
         // reverse assing send to and reveive from
         const id = newVenue._id;
-        await Venue.update({_id: {$in: receiveFrom}, team, sendTo: {$ne: id}}, {$push: {sendTo: id}}, {multi: true});
-        await Venue.update({_id: {$nin: receiveFrom}, team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
-        await Venue.update({_id: {$in: sendTo}, team, receiveFrom: {$ne: id}}, {$push: {receiveFrom: id}}, {multi: true});
-        await Venue.update({_id: {$nin: sendTo}, team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
+        await Venue.update({ _id: { $in: receiveFrom }, team, sendTo: { $ne: id } }, { $push: { sendTo: id } }, { multi: true });
+        await Venue.update({ _id: { $nin: receiveFrom }, team, sendTo: id }, { $pull: { sendTo: id } }, { multi: true });
+        await Venue.update({ _id: { $in: sendTo }, team, receiveFrom: { $ne: id } }, { $push: { receiveFrom: id } }, { multi: true });
+        await Venue.update({ _id: { $nin: sendTo }, team, receiveFrom: id }, { $pull: { receiveFrom: id } }, { multi: true });
         io.to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
@@ -285,6 +334,9 @@ class AdminVenueController {
           }, {
             path: 'shippingCarriers',
             select: ['_id', 'name']
+          }, {
+            path: 'responsible',
+            select: ['_id', 'firstName', 'lastName']
           }])
         });
       }
@@ -303,13 +355,13 @@ class AdminVenueController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const team = req.user.team._id;
     const {
-      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
-      receptionCarriers, shippingCarriers, region, shippingMaxDays
+      name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
+      receptionCarriers, shippingCarriers, region, shippingMaxDays, responsible
     } = req.body;
-    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
+    const sendTo = sendToDays.map((venueDay: IVenueDay) => venueDay.venue._id);
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -322,6 +374,7 @@ class AdminVenueController {
         team
       }, {
         name,
+        code,
         abbreviation,
         lat,
         lng,
@@ -333,6 +386,7 @@ class AdminVenueController {
         receiveFrom,
         shippingCarriers,
         receptionCarriers,
+        responsible,
         type
       }, {
         new: true
@@ -354,15 +408,18 @@ class AdminVenueController {
       }, {
         path: 'shippingCarriers',
         select: ['_id', 'name']
+      }, {
+        path: 'responsible',
+        select: ['_id', 'firstName', 'lastName']
       }]);
       if (venue) {
         // fix the "company" to users in this venue
-        await User.update({venue: id}, {company: venue.company._id}, {multi: true});
+        await User.update({ venue: id }, { company: venue.company._id }, { multi: true });
         // reverse assing send to and reveive from
-        await Venue.update({_id: {$in: receiveFrom}, team, sendTo: {$ne: id}}, {$push: {sendTo: id}}, {multi: true});
-        await Venue.update({_id: {$nin: receiveFrom}, team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
-        await Venue.update({_id: {$in: sendTo}, team, receiveFrom: {$ne: id}}, {$push: {receiveFrom: id}}, {multi: true});
-        await Venue.update({_id: {$nin: sendTo}, team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
+        await Venue.update({ _id: { $in: receiveFrom }, team, sendTo: { $ne: id } }, { $push: { sendTo: id } }, { multi: true });
+        await Venue.update({ _id: { $nin: receiveFrom }, team, sendTo: id }, { $pull: { sendTo: id } }, { multi: true });
+        await Venue.update({ _id: { $in: sendTo }, team, receiveFrom: { $ne: id } }, { $push: { receiveFrom: id } }, { multi: true });
+        await Venue.update({ _id: { $nin: sendTo }, team, receiveFrom: id }, { $pull: { receiveFrom: id } }, { multi: true });
         const response = {
           message: 'Sucursal editada satisfactoriamente.',
           venue
@@ -393,8 +450,9 @@ class AdminVenueController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
-    const {company, team} = req.user;
+    const { id } = req.params;
+    const { company } = req.user;
+    const team = req.user.team._id;
     try {
       const inventories = await Inventory.find({
         $or: [{
@@ -435,8 +493,8 @@ class AdminVenueController {
           } else {
             await venue.remove();
             // clear venues
-            await Venue.update({team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
-            await Venue.update({team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
+            await Venue.update({ team, sendTo: id }, { $pull: { sendTo: id } }, { multi: true });
+            await Venue.update({ team, receiveFrom: id }, { $pull: { receiveFrom: id } }, { multi: true });
             const response = {
               message: 'Sucursal eliminada satisfactoriamente.',
               id: venue._id
@@ -461,9 +519,17 @@ class AdminVenueController {
     }
   }
 
-  private getVenues(filter: any, options: PaginateOptions): Promise<PaginateResult<IVenueModel>> {
+  private getVenues(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<IVenueModel>> {
+    if (search && search.length) {
+      const searchText = new RegExp(search, 'i');
+      filter = {
+        $and: [{
+          name: { $regex: searchText }
+        }, filter]
+      };
+    }
     return new Promise((resolve, reject) => {
-      Venue.paginate(filter, options, (err, result) => {
+      Venue.paginate!(filter, options, (err, result) => {
         /* istanbul ignore next  */
         if (err) {
           return reject(err);

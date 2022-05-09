@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IPosition} from '../../interfaces/position.interface';
+import {IPosition} from '../interfaces/position.interface';
 
 export interface IPositionModel extends IPosition, mongoose.Document {}
 export const positionSchema = new mongoose.Schema({

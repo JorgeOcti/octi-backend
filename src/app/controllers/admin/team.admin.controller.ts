@@ -2,6 +2,9 @@ import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Team, {ITeamModel} from '../../models/team.model';
+import TeamSetting from "../../models/teamSetting.model";
+import logger from "../../../services/logger.service";
+import User from '../../models/user.model';
 
 class AdminsTeamController {
 
@@ -50,6 +53,58 @@ class AdminsTeamController {
         });
       }
 
+  }
+
+  public async teamSetting(req: IRequest, res: Response) {
+    const {team} = req.user;
+    try {
+      const user = await User.findById(req.user._id);
+      const teamSetting = await TeamSetting.findOneOrCreate({
+        team: team._id
+      }, {
+        team: team._id,
+        inventory: {
+          leftoverDifferentVenue: true,
+          pending: "Pendientes",
+          pendingClass: "aqua",
+          pendingColor: "#00c2f4",
+          found: "Encontrados",
+          foundClass: "green",
+          foundColor: "#00aa51",
+          missing: "Faltantes",
+          missingClass: "red",
+          missingColor: "#f1392c",
+          leftover: "Encontrados*",
+          leftoverClass: "yellow",
+          leftoverColor: "#ff9600",
+          reported: "Reportados",
+          reportedClass: "gray-dark",
+          reportedColor: "#96a4b3"
+        },
+        request: {
+          color: true,
+          colorRequired: true,
+          denomination: true,
+          denominationRequired: true,
+          internalNumber: true,
+          internalNumberRequired: false,
+          internalNumberText: "Número interno",
+          material: true,
+          materialRequired: true
+        }
+      });
+      res.status(200).json({
+        ...teamSetting.toObject(),
+        user: user?.settings ?? {}
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
+      logger.error(`RequestController.apiCreateItem: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   private getTeams(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ITeamModel>> {

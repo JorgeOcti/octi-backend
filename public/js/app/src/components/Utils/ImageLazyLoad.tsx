@@ -53,8 +53,8 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { loading, inViewPort} = this.state;
-    const { url, height, small, style, replaceLoading} = this.props;
+    const { loading, inViewPort } = this.state;
+    const { url, height, small, style, replaceLoading } = this.props;
 
     let imageStyle: CSSProperties = {};
     if (loading) {
@@ -78,17 +78,25 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
           loading ?
             replaceLoading ?
               <span ref={this.element}>{replaceLoading}</span> :
-                <div
-                  style={{
-                    height,
-                    display: 'table-cell',
-                    verticalAlign: 'middle'
-                  }}
-                  className={'text-center'}
-                  ref={this.element}
-                >
-                  {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
-                </div> : null
+              <div
+                style={{
+                  height,
+                  display: 'table-cell',
+                  verticalAlign: 'middle'
+                }}
+                className={'text-center'}
+                ref={this.element}
+              >
+                {
+                  small
+                    ? (
+                      <i className={'fa fa-circle-o-notch fa-spin'} />
+                    )
+                    : (
+                      <i className={'fa fa-circle-o-notch fa-spin fa-2x'} />
+                    )
+                }
+              </div> : null
         }
 
       </React.Fragment>
@@ -100,8 +108,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       error: true
     });
   }
+
   private handleImageLoaded() {
-    const { url} = this.props;
+    const { url } = this.props;
     sessionStorage.setItem(url, 'true');
     this.setState({
       loading: false
@@ -120,15 +129,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
         bounding.left >= 0 &&
         (bounding.bottom - distance) <= height
       );
-      // this.setState({
-      //   bounding: {
-      //     top: bounding.top,
-      //     left: bounding.left,
-      //     right: bounding.right,
-      //     bottom: bounding.bottom
-      //   },
-      //   height
-      // });
+
       if (isInViewPort) {
         this.removeEventListener();
         this.setState({
@@ -174,4 +175,5 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     }
   }
 }
+
 export default ImageLazyLoad;

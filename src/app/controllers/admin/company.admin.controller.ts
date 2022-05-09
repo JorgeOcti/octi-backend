@@ -28,7 +28,7 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {page, pageSize, search} = req.query as {page: string, pageSize: string, search: string};
     // paginate options
     const options: PaginateOptions = {
@@ -72,8 +72,8 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name, billing, notifications} = req.body;
-    const {team} = req.user;
+    const {name, businessName, rut, billing, notifications} = req.body;
+    const team = req.user.team;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
     if (!name || !name.trim().length) {
@@ -85,6 +85,8 @@ class AdminCompaniesController {
     try {
       const existCompany = await Company.find({
         name,
+        businessName,
+        rut,
         team,
         deleted: false
       });
@@ -134,9 +136,9 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
-    const {team} = req.user;
-    const {name, billing, notifications} = req.body;
+    const { id } = req.params;
+    const team = req.user.team;
+    const { name, businessName, rut, billing, notifications } = req.body;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
     if (!name || !name.length) {
@@ -151,6 +153,8 @@ class AdminCompaniesController {
         , team
       });
       if (company) {
+        company.businessName = businessName;
+        company.rut = rut;
         company.name = name;
         company.billing = JSON.parse(billing);
         company.notifications = JSON.parse(notifications);
@@ -199,7 +203,7 @@ class AdminCompaniesController {
       });
     }
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const company = await Company.findOneAndUpdate({
         _id: id

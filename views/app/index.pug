@@ -18,8 +18,24 @@ block js
   //- daterangepicker
   script(src=`/static${getVersionedPath('/js/vendor/daterangepicker/daterangepicker.js')}`)
   link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/daterangepicker/daterangepicker.css')}`)
+  //- bootstrap-datepicker
+  script(src=`/static${getVersionedPath('/js/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js')}`)
+  script(src=`/static${getVersionedPath('/js/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.js')}`)
+  link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap-datepicker/bootstrap-datepicker.min.css')}`)
   script.
-    window.user = {_id: '!{`${user.id}`}', isAdmin: !{`${user.isAdmin === true}`}, firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company._id}`}', venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`}, team: '!{`${user.team}`}', userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`}, token: '!{`${token}`}'};
+    window.user = {
+      _id: '!{`${user.id}`}',
+      isAdmin: !{`${user.isAdmin === true}`},
+      firstName: '!{`${user.firstName}`}',
+      lastName: '!{`${user.lastName}`}',
+      email: '!{`${user.email}`}',
+      venue: !{`${JSON.stringify(user.venue)}`},
+      company: !{`${JSON.stringify(user.company)}`},
+      venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`},
+      team:  !{`${JSON.stringify(user.team)}`},
+      userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`},
+      token: '!{`${token}`}'
+    };
     window.MAPBOX="!{`${MAPBOX}`}";
     window.MIXPANEL="!{`${MIXPANEL}`}";
   //- React App
@@ -28,6 +44,6 @@ block js
   //- bootstrap-select
   link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap-select/bootstrap-select.min.css')}`)
   script(src = `/static${getVersionedPath('/js/app/dist/main.bundle.js')}`)
-  script(src = `/static${getVersionedPath('/js/app/dist/vendors~main.bundle.js')}`)
+  script(src = `/static${getVersionedPath('/js/app/dist/vendors.bundle.js')}`)
 
 

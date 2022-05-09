@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IDamages} from '../../interfaces/damage.interface';
+import { IDamages } from '../interfaces/damage.interface';
 
 export interface IDamagesModel extends IDamages, mongoose.Document {}
 export const damagesSchema = new mongoose.Schema({
@@ -24,12 +25,22 @@ export const damagesSchema = new mongoose.Schema({
   positions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Position'
-  }]
+  }],
+  partFallback: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Part'
+  },
+  kindFallback: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Kind'
+  }
 }, {
   timestamps: true
 });
 
 damagesSchema.plugin(mongoosePaginate);
 
-const Damages = mongoose.model<IDamagesModel>('Damages', damagesSchema);
+export type DamagesSchema = mongoose.Model<IDamagesModel> & PaginateModel<IDamagesModel>;
+
+const Damages = mongoose.model<IDamagesModel, DamagesSchema>('Damages', damagesSchema);
 export default Damages;

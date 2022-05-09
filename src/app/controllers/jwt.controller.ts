@@ -10,6 +10,7 @@ import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
+import TeamSetting from '../models/teamSetting.model';
 
 
 class JWTController {
@@ -55,14 +56,15 @@ class JWTController {
           company: true,
           userForms: true,
           userPermissions: true,
-          active: true
+          active: true,
+          isDriver: true
         })
         .populate([{
           path: 'venue',
           select: ['name', 'lat', 'lng']
         }, {
           path: 'team',
-          select: ['name']
+          select: ['name'],
         }, {
           path: 'company',
           select: ['name']
@@ -99,14 +101,16 @@ class JWTController {
               } else {
                 const today = moment().startOf('day');
                 const tomorrow = moment(today).add(1, 'days');
-                ParticipantModel.count({
+                ParticipantModel.find({
                   user,
                   createdAt: {
                     $gte: today.toDate(),
                     $lt: tomorrow.toDate()
                   }
-                }, (err, count) => {
+                }).countDocuments(async (err, count) => {
                   user = user.toObject();
+                  const teamSettings = await TeamSetting.findOne({ team: user.team });
+                  logger.debug(JSON.stringify(teamSettings))
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
@@ -115,6 +119,7 @@ class JWTController {
                     preferred: user.preferred,
                     userPermissions: user.userPermissions,
                     userForms: user.userForms,
+                    isDriver: user.isDriver || false,
                     venue: {
                       _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
                       name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
@@ -127,21 +132,32 @@ class JWTController {
                     },
                     team: {
                       _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                      settings: {
+                        form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                          vinMinCharacters: 17,
+                          vinMaxCharacters: 17
+                        }),
+                        helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                          transmittal: ""
+                        }),
+                        inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
+                        vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
+                      }
+                      // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                     },
                     count
                   };
-
                   res.json({
                     data: {
-                      token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                        expiresIn: '7 days'
+                      token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                        expiresIn: '7 days',
                       }),
                       // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                       //   expiresIn: '60 seconds'
                       // }),
-                      refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                        expiresIn: '30 days'
+                      refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                        expiresIn: '30 days',
                       }),
                       iosVersion: version!.ios,
                       androidVersion: version!.android,
@@ -189,7 +205,8 @@ class JWTController {
               team: true,
               userForms: true,
               userPermissions: true,
-              active: true
+              active: true,
+              isDriver: true,
             })
             .populate([{
               path: 'venue',
@@ -233,14 +250,16 @@ class JWTController {
                   } else {
                     const today = moment().startOf('day');
                     const tomorrow = moment(today).add(1, 'days');
-                    ParticipantModel.count({
+                    ParticipantModel.find({
                       user,
                       createdAt: {
                         $gte: today.toDate(),
                         $lt: tomorrow.toDate()
                       }
-                    }, (err, count) => {
+                    }).countDocuments(async (err, count) => {
                       user = user.toObject();
+                      const teamSettings = await TeamSetting.findOne({ team: user.team });
+                      logger.debug(JSON.stringify(teamSettings));
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -249,6 +268,7 @@ class JWTController {
                         preferred: user.preferred,
                         userPermissions: user.userPermissions,
                         userForms: user.userForms,
+                        isDriver: user.isDriver || false,
                         venue: {
                           _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
                           name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
@@ -259,17 +279,29 @@ class JWTController {
                         },
                         team: {
                           _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                          name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                          settings: {
+                            form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                              vinMinCharacters: 17,
+                              vinMaxCharacters: 17
+                            }),
+                            helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                              transmittal: ""
+                            }),
+                            inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
+                            vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
+                          }
+                          // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                         },
                         count
                       };
                       res.json({
                         data: {
-                          token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                            expiresIn: '7 days'
+                          token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                            expiresIn: '7 days',
                           }),
-                          refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                            expiresIn: '30 days'
+                          refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                            expiresIn: '30 days',
                           }),
                           iosVersion: this.iosVersion,
                           androidVersion: this.androidVersion,
@@ -310,7 +342,7 @@ class JWTController {
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
 
-            © 2020 OSA SpA. Todos los derechos reservados.`,
+            © 2021 OSA SpA. Todos los derechos reservados.`,
           view: 'account/forgotPassword',
           context: {
             fullname,

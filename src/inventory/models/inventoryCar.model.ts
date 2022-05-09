@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import {
   IInventoryCar
-} from '../../interfaces/inventory.interface';
-import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
+} from '../interfaces/inventory.interface';
+import {IInventoryComment} from '../interfaces/inventoryComment.interface';
 
 export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
 
@@ -26,8 +26,9 @@ export enum ChoicesStatusCarInventory {
   missing = 'missing',
   leftover = 'leftover',
   reported = 'reported',
-  deleted = 'deleted',
+  deleted = 'deleted'
 }
+
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
   ChoicesStatusCarInventory.found,
@@ -60,6 +61,10 @@ const inventoryCarSchema = new mongoose.Schema({
     ref: 'User'
   },
   images: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryFile'
+  }],
+  files: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryFile'
   }],

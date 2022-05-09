@@ -32,6 +32,10 @@ export interface IRequest extends Request {
   files: Express.Multer.File[];
 }
 
+export interface IStringKeyObject<T> {
+  [key: string]: T;
+}
+
 export interface IAnyObject {
   [key: string]: any;
 

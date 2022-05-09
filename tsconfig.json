@@ -3,9 +3,9 @@
     "incremental": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "esnext",
     "baseUrl": "src",
     "sourceMap": true,
+    "skipLibCheck": true,
     "inlineSources": true,
     "outDir": "dist",
     "tsBuildInfoFile": "./buildcache/buildcache",
@@ -14,6 +14,11 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "lib": [
+      "es6",
+      "es7",
+      "ES2020"
+    ],
     "typeRoots": [
       "./node_modules/@types",
       "../node_modules/@types/",
@@ -34,6 +39,7 @@
     "node_modules",
     "dist",
     "public",
-    "email-templates"
+    "email-templates",
+    "**/*.spec.ts"
   ]
 }

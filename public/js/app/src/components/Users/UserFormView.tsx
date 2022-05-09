@@ -2,14 +2,15 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-import {ICompany} from '../../../../../../src/interfaces/company.interface';
-import {IForm} from '../../../../../../src/interfaces/form.interface';
-import {IPermission} from '../../../../../../src/interfaces/permision.interface';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {IVenue} from '../../../../../../src/interfaces/venue.interface';
+import {ICompany} from '../../../../../../src/app/interfaces/company.interface';
+import {IForm} from '../../../../../../src/form/interfaces/form.interface';
+import {IPermission} from '../../../../../../src/app/interfaces/permission.interface';
+import {IUser} from '../../../../../../src/app/interfaces/user.interface';
+import {IVenue} from '../../../../../../src/app/interfaces/venue.interface';
 import {IUsersState} from '../../actions/users.actions';
-import {IWindow} from "../../interfaces/window";
-import Checkbox from "../Utils/CheckBox";
+import {IWindow} from '../../interfaces/window';
+import Checkbox from '../Utils/CheckBox';
+import {hasPermission} from '../../utils/common';
 
 interface IPropsType {
   users: IUsersState;
@@ -29,11 +30,6 @@ interface IStateType {
 
 class UserFormView extends React.Component<IPropsType, IStateType> {
 
-  // static propTypes = {
-  //   venues: PropTypes.array.isRequired,
-  //   changeTempUser: PropTypes.func.isRequired
-  // };
-
   readonly state = {
     error: null
   };
@@ -45,12 +41,14 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.addVenueAccess = this.addVenueAccess.bind(this);
     this.deleteVenueAccess = this.deleteVenueAccess.bind(this);
     this.changeIsAdmin = this.changeIsAdmin.bind(this);
+    this.changeIsDriver = this.changeIsDriver.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
   }
 
   public componentDidMount() {
     const {changeTempUser, companies} = this.props;
+    const {tempUser} = this.props.users;
     const chosenOptions = {
       no_results_text: 'Sin resultados para:'
     };
@@ -72,6 +70,15 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
           company: companies.find((company) => (
             company._id === e.target.value
           ))
+        });
+      });
+    ($('#id-channel') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        changeTempUser({
+          settings: {
+            ...tempUser.settings,
+            defaultChannel: e.target.value
+          }
         });
       });
     ($('#id-permissions') as any).chosen(chosenOptions)
@@ -98,12 +105,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     $('#id-venue').trigger('chosen:updated');
     $('#id-permissions').trigger('chosen:updated');
     $('#id-company').trigger('chosen:updated');
+    $('#id-channel').trigger('chosen:updated');
     $('#id-venues-access').trigger('chosen:updated');
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {changeTempUser, venues, permissions, forms, create, companies} = this.props;
-    const {tempUser} = this.props.users;
+    const {tempUser, channels} = this.props.users;
     const userPermissions: IPermission[] = [];
     const selectPermissions: IPermission[] = [];
     const userForms: IForm[] = [];
@@ -130,11 +138,12 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
           <li className="active"><a data-toggle="tab" href="#general">General</a></li>
           {
-            window.user.isAdmin ?
+            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin)  ?
               <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
               : null
           }
           <li><a data-toggle="tab" href="#access">Accesos</a></li>
+          <li ><a data-toggle="tab" href="#request">Solicitudes</a></li>
         </ul>
         <div className="tab-content">
           <div id="general" className="tab-pane fade in active">
@@ -188,7 +197,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     name="venue"
                     defaultValue={tempUser && tempUser.company ? tempUser.company._id : undefined}
                     onChange={undefined}
-                    data-placeholder={'Seleccione empresa'}
+                    data-placeholder={'Seleccione...'}
                   >
                     <option value="" />
                     {
@@ -208,7 +217,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     name="venue"
                     defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
                     onChange={undefined}
-                    data-placeholder={'Seleccione sucursal'}
+                    data-placeholder={'Seleccione...'}
                   >
                     <option value="" />
                     {
@@ -231,7 +240,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="chosen-select form-control"
                     style={{minWidth: '200px'}}
                     onChange={undefined}
-                    data-placeholder={'Seleccione formularios'}
+                    data-placeholder={'Seleccione...'}
                   >
                     <option value="" />
                     {
@@ -283,7 +292,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     style={{minWidth: '200px'}}
                     defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
                     onChange={undefined}
-                    data-placeholder={'Seleccione formularios'}
+                    data-placeholder={'Seleccione...'}
                   >
                     <option value="" />
                     {
@@ -294,6 +303,17 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                       })
                     }
                   </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="checkbox">
+                  <Checkbox
+                    active={tempUser && tempUser.isDriver}
+                    action={this.changeIsDriver}
+                    classes="icheck-in-checkbox"
+                    style={{marginTop: '-4px', marginRight: '5px'}}
+                  />
+                  Es Conductor
                 </div>
               </div>
               {
@@ -314,7 +334,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
           {
-            window.user.isAdmin ?
+            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin) ?
               <div id="permissions" className="tab-pane fade">
                 <div className="row">
                   <div className="col-md-12">
@@ -324,7 +344,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                         id="id-permissions"
                         className="chosen-select form-control"
                         style={{minWidth: '200px'}}
-                        data-placeholder={'Seleccione permiso'}
+                        data-placeholder={'Seleccione...'}
                       >
                         <option value=""/>
                         {
@@ -381,7 +401,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="chosen-select form-control"
                     style={{minWidth: '200px'}}
                     onChange={undefined}
-                    data-placeholder={'Seleccione sucursal'}
+                    data-placeholder={'Seleccione...'}
                   >
                     <option value="" />
                     {
@@ -442,6 +462,30 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
+          <div id="request" className="tab-pane fade">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label htmlFor="id-channel">Canal</label>
+                  <select
+                    className="chosen-select form-control"
+                    id="id-channel"
+                    name="channel"
+                    defaultValue={tempUser?.settings?.defaultChannel}
+                    onChange={undefined}
+                    data-placeholder={'Seleccione...'}
+                  >
+                    <option value="" />
+                    {
+                      channels.map((channel) => (
+                        <option key={channel._id} value={channel._id}>{channel.name}</option>
+                      ))
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </React.Fragment>
     );
@@ -449,7 +493,12 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   private changeIsAdmin() {
     const {isAdmin} = this.props.users.tempUser;
-    this.props.changeTempUser({isAdmin: !isAdmin})
+    this.props.changeTempUser({isAdmin: !isAdmin});
+  }
+
+  private changeIsDriver() {
+    const {isDriver} = this.props.users.tempUser;
+    this.props.changeTempUser({isDriver: !isDriver});
   }
 
   private addVenueAccess(id: string) {
@@ -519,7 +568,6 @@ const mapStateToProps = (state: { users: IUsersState }) => {
   };
 };
 
-// const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch

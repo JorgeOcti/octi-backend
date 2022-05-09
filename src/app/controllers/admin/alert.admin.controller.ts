@@ -17,7 +17,7 @@ class AdminAlertController {
   }
 
   public async apiListAlerts(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const alerts = await Alert
         .find({
@@ -56,18 +56,18 @@ class AdminAlertController {
 
   public async apiCreateAlert(req: IRequest, res: Response) {
     const {name, gte, lte, users} = req.body;
-    const {team, company} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     try {
       if (name && users && users.length) {
-        const alert = await Alert
-          .create({
+        const alert = await new Alert({
             name,
             gte,
             lte,
             users,
             company,
             team
-          });
+          }).save();
         res.status(201).json({
           message: 'Alerta agregada satisfactoriamente',
           alert: await Alert
@@ -103,7 +103,7 @@ class AdminAlertController {
 
   public async apiDeleteAlert(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const alert = await Alert.findOneAndRemove({_id: id, team});
       if (alert) {

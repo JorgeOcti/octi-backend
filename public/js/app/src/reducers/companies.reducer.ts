@@ -1,10 +1,12 @@
-import {ICompany} from '../../../../../src/interfaces/company.interface';
+import {ICompany} from '../../../../../src/app/interfaces/company.interface';
 import {CompaniesReduxAction, ICompaniesState} from '../actions/companies.actions';
 
 const initialState: ICompaniesState = {
   companies: [],
   tempCompany: {
     name: '',
+    businessName: '',
+    rut: '',
     imageURI: null,
     image: null,
     markerURI: null,
@@ -12,7 +14,8 @@ const initialState: ICompaniesState = {
     billing: {
       active: false,
       inventoryPrice: 0.0,
-      checklistPrice: 0.0
+      checklistPrice: 0.0,
+      requestPrice: 0.0
     },
     notifications:[]
   },
@@ -56,6 +59,8 @@ export function companiesReducer(state = initialState, action: CompaniesReduxAct
         companies: state.companies.map((company: ICompany) => {
           if (company._id === action.payload.company._id) {
             company.name = action.payload.company.name;
+            company.businessName = action.payload.company.businessName;
+            company.rut = action.payload.company.rut;
             company.billing = action.payload.company.billing;
             company.notifications = action.payload.company.notifications;
             company.image = action.payload.company.image;

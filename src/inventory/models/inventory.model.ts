@@ -3,9 +3,9 @@ import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
-import {IInventory} from '../../interfaces/inventory.interface';
-import * as mongoosePaginate from "mongoose-paginate";
-import {PaginateModel} from "mongoose";
+import {IInventory} from '../interfaces/inventory.interface';
+import * as mongoosePaginate from 'mongoose-paginate';
+import {PaginateModel} from 'mongoose';
 
 const fileSchema = new mongoose.Schema({
   url: {
@@ -46,16 +46,19 @@ const settingSchema = new mongoose.Schema({
 export interface IInventoryModel extends IInventory, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
+
 export enum ChoicesStatusInventory {
   pending = 'pending',
   inProcess = 'inProcess',
   finalized = 'finalized'
 }
+
 export const choicesStatusInventory = [
   ChoicesStatusInventory.pending,
   ChoicesStatusInventory.inProcess,
   ChoicesStatusInventory.finalized
 ];
+
 const inventorySchema = new mongoose.Schema({
   name: {
     type: String
@@ -147,6 +150,10 @@ inventorySchema.virtual('cars', {
   foreignField: 'inventory', // is equal to field in another model
   justOne: false
 });
+
+
+inventorySchema.set('toObject', {virtuals: true});
+inventorySchema.set('toJSON', {virtuals: true});
 
 inventorySchema.index({team: 1});
 inventorySchema.index({team: 1, status: 1, venues: 1});

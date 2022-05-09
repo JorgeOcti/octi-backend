@@ -8,7 +8,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {
   IBaseCarrier, ICarrier
-} from '../../../../../../src/interfaces/carrier.interface';
+} from '../../../../../../src/app/interfaces/carrier.interface';
 import {
   CarrierReduxAction,
   changeTempCarrierAction,
@@ -24,6 +24,7 @@ import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import CarriersFormView from './CarriersFormView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ carrier: string }> {
   dispatch: Dispatch<CarrierReduxAction>;
@@ -44,10 +45,12 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class CarriersListView extends React.Component<IPropsType, IStateType> {
+class CarriersListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de transportistas';
     this.createCarrier = this.createCarrier.bind(this);
     this.processCreateCarrier = this.processCreateCarrier.bind(this);
     this.updateCarrier = this.updateCarrier.bind(this);
@@ -55,10 +58,12 @@ class CarriersListView extends React.Component<IPropsType, IStateType> {
     this.deleteCarrier = this.deleteCarrier.bind(this);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const {pagination} = this.props.carriers;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de transportistas';
     this.props.getCarriersAction(pagination.page);
   }
 
@@ -86,7 +91,7 @@ class CarriersListView extends React.Component<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCarrier') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}><i className="fa fa-plus" /> Agregar</button>
                   </div>
                   : null
               }

@@ -1,14 +1,16 @@
 import * as moment from 'moment';
 import * as React from 'react';
 import {connect} from 'react-redux';
-import {IInventoryComment} from '../../../../../../src/interfaces/inventoryComment.interface';
+import {IInventoryComment} from '../../../../../../src/inventory/interfaces/inventoryComment.interface';
 import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
 import {IWindow} from '../../interfaces/window';
 import Row from '../Utils/Row';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 
 interface IPropsType {
   inventories: IInventoryState;
-  socket: SocketIOClient.Socket;
+  socket: Socket;
   addCommentAction(inventoryComment: IInventoryComment): void;
   sendCommentAction(carId: string, comment: string): void;
 }

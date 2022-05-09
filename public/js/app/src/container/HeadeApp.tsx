@@ -93,7 +93,7 @@ class HeaderApp extends React.Component<{}, {}> {
                 <ul className="dropdown-menu">
                   <li className="user-header">
                     <img className="img-circle" src="/static/images/icon_circular.png" alt="User Image"/>
-                    <p>{`${window.user.firstName || ''} ${window.user.firstName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}
+                    <p>{`${window.user.firstName || ''} ${window.user.lastName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}
                       <small>{window.user.email || ''}</small>
                     </p>
                   </li>
@@ -106,7 +106,15 @@ class HeaderApp extends React.Component<{}, {}> {
                   {/*</li>*/}
                   <li className="user-footer">
                     {/*<div className="pull-left"><a className="btn btn-default btn-flat" href="#">Profile</a></div>*/}
-                    <div className="pull-right"><a className="btn btn-default btn-flat" href="/account/logout/" onClick={this.closeSesion}>Cerrar sesión</a></div>
+                    <div className="pull-right">
+                      <a
+                        className="btn btn-sm btn-default btn-flat"
+                        href="/account/logout/"
+                        onClick={this.closeSesion}
+                      >
+                        Cerrar sesión
+                      </a>
+                    </div>
                   </li>
                 </ul>
               </li>

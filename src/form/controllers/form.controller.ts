@@ -1,7 +1,7 @@
 import * as excel from 'exceljs';
 import * as tempfile from 'tempfile';
-import {ObjectID} from 'bson';
-import {Response} from 'express';
+import { ObjectID } from 'bson';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
@@ -10,27 +10,35 @@ import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
 import * as Raven from 'raven';
-import {queue} from '../../app';
+import { queue } from '../../app';
 import Alert from '../../app/models/alert.model';
-import CarModel, {ICarModel} from '../../app/models/car.model';
-import Team, {ITeamModel} from '../../app/models/team.model';
+import CarModel from '../../app/models/car.model';
+import Car, { ICarModel } from '../../app/models/car.model';
+import Team, { ITeamModel } from '../../app/models/team.model';
 import User from '../../app/models/user.model';
-import UserModel, {IUserModel} from '../../app/models/user.model';
-import Venue, {IVenueModel} from '../../app/models/venue.model';
+import UserModel, { IUserModel } from '../../app/models/user.model';
+import Venue, { IVenueModel } from '../../app/models/venue.model';
 import GPSPosition from '../models/gpsPosition.model';
-import {IAnyObject, IRequest} from '../../interfaces/global.interface';
-import {io} from '../../server';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
+import FormModel, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
-import ScaleModel, {IScaleModel} from '../models/scale.model';
+import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import {IParticipant} from "../../interfaces/participant.interface";
-import {IVenueDay} from "../../interfaces/venueDay.interface";
-import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
+import { IParticipant } from '../interfaces/participant.interface';
+import { IVenueDay } from '../../app/interfaces/venueDay.interface';
+import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import TriggerHandler from './triggers/triggerHandler';
+import TransmittalItem from '../../distribution/models/transmittalItem.model';
+import TransmittalController from '../../distribution/controllers/transmittal.controller';
+import RequestController from '../../request/controllers/request.controller';
+import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
+import RequestItem from '../../request/models/requestItem.model';
+import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 
 
 // import * as puppeteer from 'puppeteer';
@@ -51,9 +59,9 @@ class FormController {
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const {debug, timezone} = req.query as { debug: string, timezone: string };
-    const {id} = req.params;
-    const {team} = req.user;
+    const { debug, timezone } = req.query as { debug: string, timezone: string };
+    const { id } = req.params;
+    const team = req.user.team._id;
     try {
       const config: HtmlPdf.CreateOptions = {
         directory: '/tmp',
@@ -262,13 +270,13 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
   }
 
   public async list(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`list forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
@@ -295,7 +303,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`Async Error.`);
       res.status(400).json({
@@ -306,12 +314,12 @@ class FormController {
   }
 
   public async detail(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const team = req.user.team._id;
     logger.info(`detail forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
     try {
-      if (await User.find({_id: req.user._id, userForms: id}).count() < 1) {
+      if (await User.find({ _id: req.user._id, userForms: id }).countDocuments() < 1) {
         return res.status(403).json({
           message: 'No tienes permisos para esta operación'
         });
@@ -545,7 +553,9 @@ class FormController {
         conciliation: false,
         kind: '',
         weight: 0,
-        order: 0
+        order: 0,
+        optional: false,
+        hint: ''
       };
       // get scales from db
       res.json({
@@ -577,7 +587,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
@@ -585,7 +595,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       res.status(500).json({
         message: 'No se encontro formularío',
@@ -595,10 +605,9 @@ class FormController {
   }
 
   public async complete(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
-    let {vin} = req.body;
-    const {answers} = req.body;
-    const {team, venue, company} = req.user;
+    const { id } = req.params;
+    let { vin, answers, transmittalItem, transmittal } = req.body;
+    const { company, venue, team } = req.user;
     logger.info(`complete`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     // validate answers in body
@@ -609,26 +618,31 @@ class FormController {
       });
     }
     // validate vin in body
-    if (!vin) {
+    if (!vin && !transmittal) {
       return res.status(400).json({
-        message: 'Debes enviar el vin',
+        message: 'Debes enviar el vin o OT',
         status: 400
       });
     }
-    vin = vin.replace(/[\W_]+/g, '');
+    const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: 'No se ha encontrado el formulario solicitado.',
+        status: 404
+      });
+    }
+
     try {
-      const updatedUser = await User.findById(req.user._id);
-      if (!updatedUser) {
-        return res.status(404).json({
-          message: 'No se ha encontrado el formulario solicitado.',
-          status: 404
+      let car : any = null;
+      if (vin) {
+        vin = vin.replace(/[\W_]+/g, '');
+        car = await CarModel.findOne({
+          $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
+          team
         });
       }
-      const car = await CarModel.findOne({
-        $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
-        team
-      });
-      if (car) {
+
+      if (car || transmittal) {
         const form = await this.getFormWithScale({
           _id: id,
           team
@@ -641,10 +655,12 @@ class FormController {
             company,
             form: form._id,
             car,
+            transmittal: transmittal,
             description: form.description,
             user: req.user._id,
             venue: updatedUser.venue,
-            active: form.active
+            active: form.active,
+            kind: transmittal ? KindForm.transmittal : form.kind
           };
 
           if (form.reception) {
@@ -653,15 +669,22 @@ class FormController {
             participantObject.receptionVenue = form.receptionVenue;
             participantObject.receptionVenueText = form.receptionVenueText;
             if ('reception' in answers) {
-              const {reception} = answers;
+              const { reception } = answers;
               participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
               if (reception.images) {
                 participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
               }
             }
             if ('receptionVenue' in answers) {
-              const {receptionVenue} = answers;
+              const { receptionVenue } = answers;
               participantObject.receiveFrom = receptionVenue.value;
+            }
+            // add meta to car
+            if (car?._id) {
+              await Car.updateOne({ _id: car._id }, {
+                'meta.location.venue': updatedUser.venue,
+                'meta.location.checkedDate': new Date()
+              });
             }
           }
 
@@ -671,14 +694,14 @@ class FormController {
             participantObject.shippingVenue = form.shippingVenue;
             participantObject.shippingVenueText = form.shippingVenueText;
             if ('shipping' in answers) {
-              const {shipping} = answers;
+              const { shipping } = answers;
               participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
               if (shipping.images) {
                 participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
               }
             }
             if ('shippingVenue' in answers) {
-              const {shippingVenue} = answers;
+              const { shippingVenue } = answers;
               participantObject.sendTo = shippingVenue.value;
             }
           }
@@ -687,7 +710,7 @@ class FormController {
             participantObject.carrier = form.carrier;
             participantObject.carrierText = form.carrierText;
             if ('carrier' in answers) {
-              const {carrier} = answers;
+              const { carrier } = answers;
               participantObject.carrierBy = carrier.value;
             }
           }
@@ -776,7 +799,12 @@ class FormController {
                 na,
                 weight: question.weight,
                 kind: question.kind,
-                order: question.order
+                order: question.order,
+                hint: question.hint,
+                optional: question.optional,
+                minValue: question.minValue,
+                maxValue: question.maxValue,
+                score: answer && answer.score ? answer.score : -1
               });
             }
             // calculate section qualification
@@ -797,45 +825,224 @@ class FormController {
           // calculate participant qualification
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
+
+          newParticipant.hasDamages = newParticipant.sections.some((section: any) => {
+            return section.answers.some((answer: any) => {
+              return answer.damagesSelected.length > 0;
+            });
+          });
+
           try {
-            const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+            const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { new: true });
+
             if (updateTeam) {
               newParticipant.number = updateTeam.formsNumber;
             }
             // save the participant
             await newParticipant.save();
 
-            // associate file to participant
-            if (allImages.length) {
-              await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, {multi: true});
+            // associate transmittalItem to participant
+            if (transmittalItem?.length) {
+              newParticipant.transmittalItem = transmittalItem;
+              await newParticipant.save();
+
+              let transmittalItemData = await TransmittalItem
+                .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
+                .populate(TransmittalController.itemPopulate);
+
+              let transmittalObject = await Transmittal.findOne({ _id: transmittalItemData!!.transmittal });
+
+              // update request when check item
+              const milestone = await Milestone.findOne({
+                step: ChoicesStepMilestone.checkItem,
+                team,
+                type: transmittalObject!!.type,
+              });
+
+              if (milestone?.requestItemStatus) {
+                const requestItem = await RequestItem
+                  .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
+                  .populate(RequestController.itemPopulate);
+                if (requestItem) {
+                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                }
+              }
+              // end update request when check item
+
+
+              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+                transmittalItem: transmittalItemData
+              });
             }
 
-            car.lastForm = newParticipant;
-            await car.save();
+            if (transmittal && transmittal?.length) {
+              // update request when check item
+              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal });
+              const milestone = await Milestone.findOne({
+                step: ChoicesStepMilestone.finishTransmittal,
+                team,
+                type:  updatedTransmittal?.type,
+              });
+              let requestItems: any[] = [];
+
+              await TransmittalItem
+                .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
+              requestItems = await RequestItem
+                .find({ transmittal, team })
+                .populate(RequestController.itemPopulate)
+                .lean();
+
+
+              if (milestone && milestone?.requestItemStatus) {
+                await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
+                requestItems = await RequestItem
+                  .find({ transmittal, team })
+                  .populate(RequestController.itemPopulate)
+                  .lean();
+              }
+              const newTransmittal = await Transmittal
+                .findOneAndUpdate({
+                  _id: transmittal
+                }, {
+                  $set: {
+                    status: ChoicesStatusTransmittal.completed
+                  }
+                }, {
+                  new: true
+                })
+                .populate([{
+                  path: 'revision',
+                  select: ['_id', 'hasDamages']
+                }, {
+                  path: 'transporter.carrier',
+                  select: ['name']
+                }, {
+                  path: 'type',
+                  select: ['name']
+                }, {
+                  path: 'evidenceFullLoad',
+                  select: ['file', 'thumbnail', 'milestone']
+                }, {
+                  path: 'transporter.driver',
+                  select: ['firstName', 'lastName']
+                }, {
+                  path: 'items',
+                  select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
+                  populate: TransmittalController.itemPopulate
+                }, {
+                  path: 'files',
+                  select: ['file', 'thumbnail']
+                }, {
+                  path: 'createdBy',
+                  select: ['firstName', 'lastName']
+                }]);
+
+              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+                transmittal: newTransmittal
+              });
+
+              if(requestItems.length){
+                for (const requestItem of requestItems) {
+                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                }
+              }
+
+
+              // end update request when finish transmittal
+
+            }
+
+            // associate file to participant
+            if (allImages.length) {
+              await ParticipantFile.update({
+                _id: { $in: allImages }
+              }, {
+                participant: newParticipant
+              }, {
+                multi: true
+              });
+            }
+
+            if (car){
+              car.lastForm = newParticipant;
+              await car.save();
+
+              // send refresh with websocket to dashboard list
+              io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
+                update: true,
+                car: newParticipant._id,
+                notification: {
+                  title: 'Vehículo revisado',
+                  text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                }
+              });
+
+              // send refresh with websocket to dashboard detail
+              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
+                .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                .populate([{
+                  path: 'user',
+                  select: ['firstName', 'lastName']
+                }, {
+                  path: 'venue',
+                  select: ['name']
+                }])
+              );
+
+              await new ActivityHistory({
+                team,
+                company,
+                user: req.user._id,
+                type: ChoicesTypeActivity.checklist,
+                car: {
+                  _id: car._id,
+                  vin: car.vin
+                }
+              }).save();
+            }
             const today = moment().startOf('day');
             const tomorrow = moment(today).add(1, 'days');
-            const count = await ParticipantModel.count({
+            const count = await ParticipantModel.find({
               user: req.user,
               createdAt: {
                 $gte: today.toDate(),
                 $lt: tomorrow.toDate()
               }
-            });
+            }).countDocuments();
+
+            if (form.triggers && form.triggers.length) {
+              let triggersHandler = new TriggerHandler(form, newParticipant);
+              await triggersHandler.execute({});
+            }
 
             /* Search alerts */
             const alerts = await Alert
               .find({
                 team,
                 $or: [
-                  {$and: [{lte: {$gte: formQualification}}, {lte: {$gt: 0}}]},
-                  {$and: [{gte: {$lte: formQualification}}, {gte: {$gt: 0}}]}
+                  { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
+                  { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
                 ]
               }).populate([{
                 path: 'users',
                 select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
               }]);
             /* Send alerts if exist */
-            if (alerts.length) {
+            if (alerts.length && car) {
               alerts.forEach((alert) => {
                 alert.users.forEach((user: IUserModel) => {
                   const userName = `${user.firstName} ${user.lastName}`;
@@ -855,7 +1062,7 @@ class FormController {
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
 
-                        © 2020 OSA SpA. Todos los derechos reservados.`,
+                        © 2021 OSA SpA. Todos los derechos reservados.`,
                       view: 'alerts/lowQualification',
                       context: {
                         userName,
@@ -869,34 +1076,7 @@ class FormController {
                 });
               });
             }
-            // send refresh with websocket to dashboard list
-            io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
-              update: true,
-              car: car._id
-            });
 
-            // send refresh with websocket to dashboard detail
-            io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, {number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
-              .populate([{
-                path: 'user',
-                select: ['firstName', 'lastName']
-              }, {
-                path: 'venue',
-                select: ['name']
-              }])
-            );
-
-            await ActivityHistory.create({
-              team,
-              company,
-              user: req.user._id,
-              type: ChoicesTypeActivity.checklist,
-              car: {
-                _id: car._id,
-                vin: car.vin
-              }
-            });
 
             return res.json({
               data: {
@@ -931,9 +1111,10 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       console.log(e);
+      console.log(e.stack);
       /* istanbul ignore next */
       return res.status(400).json({
         message: e,
@@ -943,8 +1124,8 @@ class FormController {
   }
 
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
-    const company = req.user.company;
+    const { id } = req.params;
+    const { company } = req.user;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
@@ -991,7 +1172,7 @@ class FormController {
           }
         });
       } catch (e) {
-        Raven.captureException(e, {req});
+        Raven.captureException(e, { req });
         /* istanbul ignore next */
         logger.error(`async error:`);
         /* istanbul ignore next */
@@ -1010,15 +1191,15 @@ class FormController {
   }
 
   public async changePreferred(req: IRequest, res: Response): Promise<any> {
-    let {form} = req.body;
-    const {team} = req.user;
+    let { form } = req.body;
+    const team = req.user.team._id;
     logger.info(`changePreferred`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
-      const user = await UserModel.findOne({_id: req.user._id, team, active: true});
+      const user = await UserModel.findOne({ _id: req.user._id, team, active: true });
       // validate exist user
       if (user) {
-        form = await FormModel.findOne({_id: form, team});
+        form = await FormModel.findOne({ _id: form, team });
         // validate exist form
         if (form) {
           user.preferred = form;
@@ -1044,7 +1225,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
@@ -1061,7 +1242,7 @@ class FormController {
   public async damagesDashboard(req: IRequest, res: Response): Promise<any> {
     try {
 
-      const {team} = req.user;
+      const team = req.user.team._id;
       const damaged = await ParticipantModel.aggregate([{
         $match: {
           team,
@@ -1069,14 +1250,14 @@ class FormController {
             $in: req.user.venuesPermissions()
           },
           'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': {$exists: true}
+          'sections.answers.damagesSelected._id': { $exists: true }
         }
       }, {
         $group: {
           _id: {
-            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
           },
-          count: {$sum: 1}
+          count: { $sum: 1 }
         }
       }]);
 
@@ -1087,14 +1268,14 @@ class FormController {
             $in: req.user.venuesPermissions()
           },
           'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': {$exists: false}
+          'sections.answers.damagesSelected._id': { $exists: false }
         }
       }, {
         $group: {
           _id: {
-            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
           },
-          count: {$sum: 1}
+          count: { $sum: 1 }
         }
       }]);
 
@@ -1121,7 +1302,7 @@ class FormController {
       });
 
       const damagesData: any = {};
-      venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0});
+      venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
 
       damaged.forEach((item) => {
         if (item._id.venue in damagesData) {
@@ -1143,7 +1324,7 @@ class FormController {
       res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1165,7 +1346,7 @@ class FormController {
           return answer.damagesSelected.length > 0;
         });
       });
-      resolve(participant)
+      resolve(participant);
     });
   }
 
@@ -1180,7 +1361,8 @@ class FormController {
         },
         createdAt: {
           $gte: moment().endOf('day').subtract(days, 'd').toDate()
-        }
+        },
+        kind: { $ne: KindForm.transmittal }
       }, {
         _id: true,
         venue: true,
@@ -1215,7 +1397,7 @@ class FormController {
         participantsWithDamages = [
           ...participantsWithDamages,
           ...await bluebird.all(promises.splice(0, 500))
-        ]
+        ];
       }
       for (const participant of participantsWithDamages) {
         const venueId = participant.venue._id.toString();
@@ -1247,7 +1429,7 @@ class FormController {
       }
       res.json(data);
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1265,8 +1447,8 @@ class FormController {
 
     try {
 
-      const {team} = req.user;
-      let userObject = await User.findOne({_id: req.user._id});
+      const team = req.user.team._id;
+      const userObject = await User.findOne({ _id: req.user._id });
 
       // Derco
       if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
@@ -1276,14 +1458,14 @@ class FormController {
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        let reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"});
-        let cars = await CarModel.find({
+        const reception = await FormModel.findOne({ _id: '5b0487db835536612bab1b61' });
+        const cars = await CarModel.find({
           team,
-          lastForm: {$ne: null},
+          lastForm: { $ne: null }
         });
 
-        let carsDict: any = {};
-        for (const car of cars){
+        const carsDict: any = {};
+        for (const car of cars) {
           carsDict[car._id.toString()] = car;
         }
 
@@ -1307,7 +1489,7 @@ class FormController {
         const workbook = new excel.Workbook();
         const worksheet = workbook.addWorksheet('Revisiones', {
           properties: {
-            defaultRowHeight: 30
+            // defaultRowHeight: 30
           }, pageSetup: {
             fitToPage: true, fitToHeight: 100, fitToWidth: 1
           }
@@ -1333,7 +1515,7 @@ class FormController {
         ];
 
         for (const reception of receptions) {
-          let carID = reception.car.toString();
+          const carID = reception.car.toString();
 
           if (carID in carsDict) {
             const car = carsDict[carID];
@@ -1341,7 +1523,7 @@ class FormController {
             const t0 = moment(car.createdAt).subtract(4, 'hours');
             const t1 = moment(reception.createdAt).subtract(4, 'hours');
 
-            const hour = parseInt(t0.format('HH'));
+            const hour = parseInt(t0.format('HH'), 10);
             if (hour >= 20 || hour <= 2)
               continue;
 
@@ -1358,7 +1540,7 @@ class FormController {
                 checkedAt: t1.format('YYYY-MM-DD HH:mm:ss'),
                 checkedAtMonth: t1.format('MM'),
                 leadtime: dm,
-                ontime: ontime
+                ontime
               });
             }
 
@@ -1373,7 +1555,7 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing derco: Async Error.`);
       /* istanbul ignore next */
@@ -1389,16 +1571,16 @@ class FormController {
 
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    let receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
+    const receptionForm = await FormModel.findOne({ _id: '5b1ae5799ebea419025b3e41' });
     return ParticipantModel.aggregate([
       {
         $match: {
-          team: team,
+          team,
           form: receptionForm!._id,
           createdAt: {
             $gte: from,
             $lte: to
-          },
+          }
         }
       },
       {
@@ -1407,22 +1589,22 @@ class FormController {
           venue: 1,
           receiveFrom: 1,
           form: 1,
-          createdAt: 1,
+          createdAt: 1
         }
       },
       {
         $lookup: {
-          from: "cars",
-          localField: "car",
-          foreignField: "_id",
-          as: "related_car",
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'related_car'
         }
       },
-      {$unwind: '$related_car'},
+      { $unwind: '$related_car' },
       {
         $match: {
           'related_car.team': team,
-          'related_car.lastForm': {$ne: null},
+          'related_car.lastForm': { $ne: null },
           'related_car.createdAt': {
             $gte: from,
             $lte: to
@@ -1431,28 +1613,28 @@ class FormController {
       },
       {
         $lookup: {
-          from: "venues",
-          localField: "venue",
-          foreignField: "_id",
-          as: "to",
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'to'
         }
       },
-      {$unwind: '$to'},
+      { $unwind: '$to' }
     ]);
 
   }
 
-  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment) : Promise<IParticipant[]>{
-    const distributors = await Venue.find({team, type: 'distributor'});
-    const receivers = await Venue.find({team, type: 'receiver'});
+  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
+    const distributors = await Venue.find({ team, type: 'distributor' });
+    const receivers = await Venue.find({ team, type: 'receiver' });
 
-    let receptions = await ParticipantModel.aggregate([
+    const receptions = await ParticipantModel.aggregate([
       {
         $lookup: {
-          from: "participants",
-          localField: "car",
-          foreignField: "car",
-          as: "recived_participants",
+          from: 'participants',
+          localField: 'car',
+          foreignField: 'car',
+          as: 'recived_participants'
         }
       },
       {
@@ -1460,15 +1642,15 @@ class FormController {
       },
       {
         $match: {
-          team: team,
-          venue: {$in: receivers.map((v) => v._id)},
-          receiveFrom: {$in: distributors.map((v) => v._id)},
+          team,
+          venue: { $in: receivers.map((v) => v._id) },
+          receiveFrom: { $in: distributors.map((v) => v._id) },
           reception: true,
           createdAt: {
             $gte: from,
             $lte: to
           },
-          'recived_participants.venue': {$in: distributors.map((v) => v._id)},
+          'recived_participants.venue': { $in: distributors.map((v) => v._id) },
           'recived_participants.reception': false,
           'recived_participants.createdAt': {
             $gte: from,
@@ -1485,37 +1667,37 @@ class FormController {
           'recived_participants.car': 1,
           'recived_participants.team': 1,
           'recived_participants.venue': 1,
-          'recived_participants._id': 1,
+          'recived_participants._id': 1
         }
       },
       {
-        $sort: {'recived_participants.createdAt': -1}
+        $sort: { 'recived_participants.createdAt': -1 }
       },
-      {
-        $lookup: {
-          from: "venues",
-          localField: "venue",
-          foreignField: "_id",
-          as: "venue",
-        }
-      },
-      {$unwind: "$venue"},
       {
         $lookup: {
-          from: "venues",
-          localField: "recived_participants.venue",
-          foreignField: "_id",
-          as: "recived_participants.venue",
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue'
         }
       },
-      {$unwind: "$recived_participants.venue"},
+      { $unwind: '$venue' },
+      {
+        $lookup: {
+          from: 'venues',
+          localField: 'recived_participants.venue',
+          foreignField: '_id',
+          as: 'recived_participants.venue'
+        }
+      },
+      { $unwind: '$recived_participants.venue' },
       {
         $group: {
-          _id: "$_id",
-          car: {$first: '$car'},
-          venue: {$first: '$venue'},
-          createdAt: {$first: '$createdAt'},
-          recived_participants: {$push: "$recived_participants"}
+          _id: '$_id',
+          car: { $first: '$car' },
+          venue: { $first: '$venue' },
+          createdAt: { $first: '$createdAt' },
+          recived_participants: { $push: '$recived_participants' }
         }
       },
       {
@@ -1523,7 +1705,7 @@ class FormController {
           car: 1,
           venue: 1,
           createdAt: 1,
-          "recived_participants": {"$arrayElemAt": ["$recived_participants", 0]}
+          'recived_participants': { '$arrayElemAt': ['$recived_participants', 0] }
         }
       }
     ]);
@@ -1535,16 +1717,16 @@ class FormController {
     });
   }
 
-  private static isDercoUser(user: IUserModel) : boolean{
+  private static isDercoUser(user: IUserModel): boolean {
     return user && user.team.toString() === DERCO_TEAM;
   }
 
-  private static parseReception(reception : IParticipant, distributorTable : any) : any {
+  private static parseReception(reception: IParticipant, distributorTable: any): any {
 
-    const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
-    const sendingVenue : IVenueModel = recivedparticipant.venue;
+    const recivedparticipant: IParticipant = (reception as any).recived_participants as IParticipant;
+    const sendingVenue: IVenueModel = recivedparticipant.venue;
 
-    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
     distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
       5;
@@ -1561,18 +1743,18 @@ class FormController {
       from: sendingVenue.abbreviation || sendingVenue.name,
       to: reception.venue.abbreviation || reception.venue.name,
       atTime: dm <= threshold,
-      daysLimit: daysLimit
-    }
+      daysLimit
+    };
   }
 
-  private static parseDercoReception(reception: IParticipant, distributorTable : any, dercoDistributionVenue: IVenueModel) : any {
+  private static parseDercoReception(reception: IParticipant, distributorTable: any, dercoDistributionVenue: IVenueModel): any {
     const car: ICarModel = (reception as any).related_car as ICarModel;
     // TODO: Get The real origin Venue
     const sendingVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
-    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
-      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
@@ -1587,59 +1769,58 @@ class FormController {
       from: sendingVenue!.abbreviation || sendingVenue!.name,
       to: venue.abbreviation || venue.name,
       atTime: dm <= threshold,
-      daysLimit: daysLimit
-    }
+      daysLimit
+    };
   }
 
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
     try {
-      const {team} = req.user as {team: ITeamModel};
-      let userObject = await User.findOne({_id: req.user._id});
-      let distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
+      const { team } = req.user as { team: ITeamModel };
+      const userObject = await User.findOne({ _id: req.user._id });
+      const distributors = await Venue.find({ team, type: 'distributor' }, {}).populate({
         path: 'sendToDays.venue',
         select: ['_id']
       });
 
-      let start: any = req.query.start;
-      let to: any = req.query.end;
+      const start: any = req.query.start;
+      const to: any = req.query.end;
 
-      let startDate: any = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, "months").startOf('month').startOf('day');
+      let startDate: any = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, 'months').startOf('month').startOf('day');
 
-      let toDate: any = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+      const toDate: any = to && to !== '' ? moment(to, 'YYYY-MM-DD') :
         moment().endOf('month').endOf('day');
 
 
-
-      let distributorTable : any = {};
+      const distributorTable: any = {};
       distributors.map((distributor: IVenueModel) => {
-        let distributorId = distributor._id.toString();
+        const distributorId = distributor._id.toString();
         if (!(distributorId in distributors))
           distributorTable[distributorId] = {};
 
-        distributor.sendToDays.map((venueDay : IVenueDay) => {
-          let venueId = venueDay.venue._id.toString();
+        distributor.sendToDays.map((venueDay: IVenueDay) => {
+          const venueId = venueDay.venue._id.toString();
           distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
         });
       });
 
-      let data : any = {};
+      const data: any = {};
 
-      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, "month") ) {
+      for (let i: moment.Moment = startDate; i <= toDate; i = i.add(1, 'month')) {
         const month = i.format('MM-YYYY');
         data[month] = [];
       }
 
-      startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, "months").startOf('month').startOf('day');
+      startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, 'months').startOf('month').startOf('day');
 
-      const isDercoUser : boolean = FormController.isDercoUser(userObject!);
-      const receptions : IParticipant[] = isDercoUser ?
+      const isDercoUser: boolean = FormController.isDercoUser(userObject!);
+      const receptions: IParticipant[] = isDercoUser ?
         await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
         await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
 
       for (const reception of receptions) {
-        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
+        const value: any = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
           FormController.parseReception(reception, distributorTable);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
@@ -1648,7 +1829,7 @@ class FormController {
       return res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -1675,12 +1856,12 @@ class FormController {
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
-      worksheet.autoFilter = {from: 'A1', to: 'F1'};
+      worksheet.autoFilter = { from: 'A1', to: 'F1' };
 
       worksheet.columns = [{
         header: 'VIN', key: 'vin', width: 30
@@ -1714,20 +1895,20 @@ class FormController {
         header: 'Lata recepción', key: 'p1SheetMetal', width: 30
       }];
 
-      const {team} = req.user;
+      const team = req.user.team._id;
 
-      let periods = 6;
-      for(let i = 0; i < periods; i++) {
+      const periods = 6;
+      for (let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
 
-        let cars = await CarModel.find({
+        const cars = await CarModel.find({
           team,
-          lastForm: {$exists: true},
+          lastForm: { $exists: true },
           createdAt: {
             $gte: t0,
-            $lte: t1,
+            $lte: t1
           }
         }).populate({
           path: 'participants',
@@ -1737,21 +1918,21 @@ class FormController {
           }
         });
 
-        let f0 = '5b0487db835536612bab1b61';
-        let f1 = '5b1ae5799ebea419025b3e41';
+        const f0 = '5b0487db835536612bab1b61';
+        const f1 = '5b1ae5799ebea419025b3e41';
 
-        let gasQuestion = '5b64b543cee543c2afda41bd';
-        let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
-        let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
+        const gasQuestion = '5b64b543cee543c2afda41bd';
+        const paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+        const sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
 
         for (const car of cars) {
 
           if (car.participants!.length > 0) {
 
-            let participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
+            const participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
-            let p0:any = null;
-            let p1:any = null;
+            let p0: any = null;
+            let p1: any = null;
 
             // only one form
             if (participants.length < 2) {
@@ -1761,11 +1942,10 @@ class FormController {
               else if (participants[0].form.toString() == f1)
                 p1 = participants[0];
 
-            }
-            else {
+            } else {
               const length = participants.length;
               p0 = participants[0];
-              p1 = participants[length-1];
+              p1 = participants[length - 1];
             }
 
             let choice0Gas = null;
@@ -1773,13 +1953,13 @@ class FormController {
             if (p0) {
               const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString())
+                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString());
             }
 
             if (p1) {
               const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString())
+                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString());
             }
 
             let choice0Paint = null;
@@ -1787,28 +1967,28 @@ class FormController {
             if (p0) {
               const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString())
+                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString());
             }
 
             if (p1) {
               const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString())
+                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString());
             }
 
             // lata
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString())
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString());
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString())
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString());
             }
 
             const row = {
@@ -1827,7 +2007,7 @@ class FormController {
               p1Qualification: p1 ? p1.qualification : '-',
               p1Gas: choice1Gas ? choice1Gas.choice : '-',
               p1Paint: choice1Paint ? choice1Paint.choice : '-',
-              p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
+              p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-'
             };
 
             worksheet.addRow(row);
@@ -1871,13 +2051,13 @@ class FormController {
 
   public async cleaningDashboard(req: IRequest, res: Response): Promise<any> {
     try {
-      const {team} = req.user;
+      const team = req.user.team._id;
 
-      let form = await FormModel.findById("5b0487db835536612bab1b61");
-      let answer = new ObjectID("5b64b2e8de5557c85fa14fa0");
+      const form = await FormModel.findById('5b0487db835536612bab1b61');
+      const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
 
-      let days: string[] = [];
-      let daysDict: any = {};
+      const days: string[] = [];
+      const daysDict: any = {};
       if (form) {
 
         const total = 30 * 6;
@@ -1888,7 +2068,7 @@ class FormController {
             'clean': 0,
             'notClean': 0
           };
-          days.push(day)
+          days.push(day);
         }
 
 
@@ -1897,25 +2077,24 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              "sections.answers.answer": answer,
-              createdAt: {$gt: t0.toDate()}
+              'sections.answers.answer': answer,
+              createdAt: { $gt: t0.toDate() }
             }
           },
           {
             $group: {
               _id: {
-                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
               },
-              count: {$sum: 1}
+              count: { $sum: 1 }
             }
           }
         ]);
 
-        for (let datum of cleanDispatch) {
+        for (const datum of cleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
-          console.log(datum);
-          daysDict[day].clean = sum
+          daysDict[day].clean = sum;
         }
 
         const notCleanDispatch = await ParticipantModel.aggregate([
@@ -1923,34 +2102,33 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              "sections.answers.answer": {$ne: answer},
-              createdAt: {$gt: t0.toDate()}
+              'sections.answers.answer': { $ne: answer },
+              createdAt: { $gt: t0.toDate() }
             }
           },
           {
             $group: {
               _id: {
-                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
               },
-              count: {$sum: 1}
+              count: { $sum: 1 }
             }
           }
         ]);
 
-        for (let datum of notCleanDispatch) {
+        for (const datum of notCleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
-          console.log(day);
-          daysDict[day].notClean = sum
+          daysDict[day].notClean = sum;
         }
       }
       res.json({
-        days: days,
+        days,
         clean: days.map((d) => daysDict[d].clean),
-        notClean: days.map((d) => daysDict[d].notClean),
+        notClean: days.map((d) => daysDict[d].notClean)
       });
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -1965,7 +2143,7 @@ class FormController {
 
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
      brew install imagemagick
@@ -1979,7 +2157,7 @@ class FormController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve({});
           }
         });
     });
@@ -2025,7 +2203,7 @@ class FormController {
             })
             .populate([{
               path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts'],
+              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
               populate: [{
                 path: 'positions',
                 select: ['name'],
@@ -2050,6 +2228,22 @@ class FormController {
                     name: 1
                   }
                 }
+              }, {
+                path: 'kindFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'partFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
               }]
             }])
             .lean()
@@ -2059,7 +2253,7 @@ class FormController {
                 return reject(err);
               }
               if (form) {
-                redisClient.set(keyCache, JSON.stringify(form), "ex", 60);
+                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -2070,17 +2264,17 @@ class FormController {
   }
 
   private async processAccesoryItems(accesories: any[]) {
-    const accesorySchema: Joi.ObjectSchema = Joi.object({
+    const accesorySchema = Joi.object({
       item: Joi.string(),
       amount: Joi.number()
     });
     const newAccesories: any[] = [];
-    accesories.map(async (accesory: any) => {
+    accesories.map((accesory: any) => {
       try {
-        const newAccesory = await accesorySchema.validate(accesory);
+        const newAccesory: any = accesorySchema.validate(accesory);
         newAccesories.push({
-          item: newAccesory.item,
-          amount: newAccesory.amount
+          item: newAccesory.value.item,
+          amount: newAccesory.value.amount
         });
       } catch (e) {
         newAccesories.push({
@@ -2112,7 +2306,7 @@ class FormController {
             select: ['name']
           }]
         }])
-        .exec((err, form) => {
+        .exec!((err, form) => {
           if (err) {
             /* istanbul ignore next */
             return reject(err);
@@ -2150,7 +2344,7 @@ class FormController {
                 /* istanbul ignore next */
                 return reject(err);
               }
-              redisClient.set(keyCache, JSON.stringify(scales), "ex", 30);
+              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
               return resolve(scales);
             });
         }
@@ -2161,12 +2355,13 @@ class FormController {
   public async createPosition(req: IRequest, res: Response): Promise<any> {
 
     try {
-      const {team, company, venue} = req.user;
-      const {lat, lng, accuracy, provider} = req.body;
+      const { company, venue } = req.user;
+      const team = req.user.team._id;
+      const { lat, lng, accuracy, provider } = req.body;
 
-      let os = "user-agent" in req.headers ? req.headers["user-agent"] : "";
+      const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
 
-      let gpsPosition = new GPSPosition({
+      const gpsPosition = new GPSPosition({
         lat,
         lng,
         user: req.user,
@@ -2186,7 +2381,7 @@ class FormController {
 
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`position create. Error`);
       /* istanbul ignore next */

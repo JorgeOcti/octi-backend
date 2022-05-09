@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IInvoice} from "../../interfaces/invoice.interface";
+import {IInvoice} from '../interfaces/invoice.interface';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import * as s3Config from "../../../s3-config.json";
-import * as uuid from "uuid";
+import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+import { PaginateModel } from 'mongoose';
 
 export interface IInvoiceModel extends IInvoice, mongoose.Document {
   attach(condition: string, file: any, error: (err: any) => void): void;
@@ -34,6 +35,9 @@ const invoiceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
   },
+  period: {
+    type: String
+  },
   inventoryCars: {
     type: Number,
     default: 0
@@ -42,11 +46,19 @@ const invoiceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  requestCars: {
+    type: Number,
+    default: 0
+  },
   inventoryPrice: {
     type: Number,
     default: 0
   },
   checklistPrice: {
+    type: Number,
+    default: 0
+  },
+  requestPrice: {
     type: Number,
     default: 0
   },
@@ -86,7 +98,7 @@ invoiceSchema.plugin(mongooseCrate, {
     acl: 'public-read', // defaults to public-read
     region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
-    path: (attachment) => {
+    path: (attachment: any) => {
       /* attachment params:
       destination:"/tmp/"
       encoding:"7bit"
@@ -99,6 +111,7 @@ invoiceSchema.plugin(mongooseCrate, {
       size:966
       type:"image/svg"
       * */
+
       return `/invoices/${attachment.team}/${attachment.createdAt}/${attachment.company}/${uuid.v1()}-${attachment.originalname}`;
       // console.log('invoice-attachment', attachment);
       // return `/invoices/${uuid.v1()}-${attachment.originalname}`;
@@ -111,6 +124,8 @@ invoiceSchema.plugin(mongooseCrate, {
 
 invoiceSchema.plugin(mongoosePaginate);
 
-const Invoice = mongoose.model<IInvoiceModel>('Invoice', invoiceSchema);
+export type InvoiceSchema = mongoose.Model<IInvoiceModel> & PaginateModel<IInvoiceModel>;
+
+const Invoice = mongoose.model<IInvoiceModel, InvoiceSchema>('Invoice', invoiceSchema);
 
 export default Invoice;

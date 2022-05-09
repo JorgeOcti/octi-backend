@@ -2,7 +2,7 @@ doctype html
 html
   head
     meta(charset='utf-8')
-    link(rel='shortcut icon', href='https://www.osa-app.cl/img-osa/logo/favicon-osa.ico')
+    link(rel='shortcut icon', href='/static/images/favicon-osa.ico')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     //- Tell the browser to be responsive to screen width
     meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
@@ -32,8 +32,8 @@ html
               img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
             if error
               p.text-center.text-red=error
-            form(role='form', action='/account/login/', method="post")
-              input(type='hidden', name='_csrf', value=csrfToken)
+            form(role='form', action=`/account/login/`, method="post")
+              //input(type='hidden', name='_csrf', value=csrfToken)
               .form-group
                 .input-group
                   .input-group-addon
@@ -50,7 +50,7 @@ html
                 button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Iniciar sesión'
         .col-md-4
     #login-footer.text-center
-      | Copyright (c) 2020 OSA SPA. Todos los derechos reservados.
+      | Copyright (c) #{moment().format('YYYY')} OSA SPA. Todos los derechos reservados.
     .js
       //- polyfill.io
       script(src='https://cdn.polyfill.io/v2/polyfill.min.js')

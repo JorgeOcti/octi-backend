@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IAlert} from '../../interfaces/alert.interface';
+import { IAlert } from '../interfaces';
 
 export interface IAlertModel extends IAlert, mongoose.Document {}
 

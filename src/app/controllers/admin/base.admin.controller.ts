@@ -1,7 +1,8 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as Raven from 'raven';
-import {IAnyObject, IRequest} from '../../../interfaces/global.interface';
+import { IAnyObject, IRequest } from '../../../interfaces/global.interface';
+import { io } from '../../../server';
 
 export default abstract class BaseAdminController<T> {
 
@@ -21,7 +22,7 @@ export default abstract class BaseAdminController<T> {
     if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
       res.status(403).render('403');
     }
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
@@ -40,6 +41,12 @@ export default abstract class BaseAdminController<T> {
       } else {
         const result = new this.instanceModel(req.context.data);
         await result.save();
+        if (req.context?.socketName) {
+          io.to(req.context.socketName).emit('REFRESH', {
+            update: true,
+            updatedBy: req.user._id
+          });
+        }
         res.status(201).json({
           message: `${req.context.name} creado/a satisfactoriamente.`,
           result
@@ -58,7 +65,7 @@ export default abstract class BaseAdminController<T> {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
+    const { id } = req.params;
     try {
       const result = await this.instanceModel
         .findOneAndUpdate(
@@ -68,6 +75,12 @@ export default abstract class BaseAdminController<T> {
             new: true
           });
       if (result) {
+        if(req.context?.socketName){
+          io.to(req.context.socketName).emit('REFRESH', {
+            update: true,
+            updatedBy: req.user._id
+          });
+        }
         res.status(200).json({
           message: `${req.context.name} editado/a satisfactoriamente.`,
           result
@@ -91,7 +104,7 @@ export default abstract class BaseAdminController<T> {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
+    const { id } = req.params;
     try {
       const existInstance = await this.instanceModel.findOne(req.context.filter);
       if (!existInstance) {
@@ -101,6 +114,12 @@ export default abstract class BaseAdminController<T> {
         });
       } else {
         await existInstance.remove();
+        if(req.context?.socketName){
+          io.to(req.context.socketName).emit('REFRESH', {
+            update: true,
+            updatedBy: req.user._id
+          });
+        }
         res.status(200).json({
           id,
           message: `${req.context.name} eliminado/a satisfactoriamente.`
@@ -119,12 +138,12 @@ export default abstract class BaseAdminController<T> {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize} = req.query as { page: string, pageSize: string };
+    const { page, pageSize } = req.query as { page: string, pageSize: string };
     // paginate options
     this.paginateOptions = {
       ...this.paginateOptions,
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
       const data = await this.getDataPaginated({
@@ -154,7 +173,7 @@ export default abstract class BaseAdminController<T> {
     }
   }
 
-  private getDataPaginated({filter}: { filter: IAnyObject }): Promise<PaginateResult<T>> {
+  private getDataPaginated({ filter }: { filter: IAnyObject }): Promise<PaginateResult<T>> {
     return new Promise(async (resolve, reject) => {
       try {
         resolve(await this.instanceModel.paginate(filter, this.paginateOptions));

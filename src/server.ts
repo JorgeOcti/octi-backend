@@ -1,8 +1,10 @@
 import * as bluebird from 'bluebird';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
-import * as socketIO from 'socket.io';
-import * as socketRedis from 'socket.io-redis';
+// @ts-ignore
+import { Server, Socket } from 'socket.io';
+// @ts-ignore
+import { createAdapter } from "@socket.io/redis-adapter";
 import app from './app';
 import logger from './services/logger.service';
 import redisClient, {createRedisClient} from './services/redis.service';
@@ -23,14 +25,16 @@ mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true}
     console.log('Mongoose Successfully connected');
   }
 });
-mongoose.set('debug', app.get('env') === 'development');
+// mongoose.set('debug', app.get('env') === 'development');
+mongoose.set('debug', false);
 const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
 const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}------------------------${logger.colors.reset}`);
-    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v2.1.3 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
+    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v2.1.3 ${logger.colors.red}RELEASE ${logger.colors.brighGreen}NODE ${logger.colors.white}${process.version}${logger.colors.reset}`);
     console.log(`${logger.colors.magenta}------------------------${logger.colors.reset}`);
+    console.log(`process.env.ENV ${process.env.ENV}`);
     console.log(
       'is running at http://localhost:%s in %s mode',
       app.get('port'),
@@ -40,16 +44,14 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   }
 });
 
-export const io = socketIO(server);
-io.adapter(socketRedis({
-  pubClient: createRedisClient(),
-  subClient: createRedisClient()
-}));
+// @ts-ignore
+export const io = new Server(server);
+io.adapter(createAdapter(createRedisClient(), createRedisClient()));
 
 /* istanbul ignore next */
-io.use( async (socket, next) => {
+io.use( async (socket: Socket, next: any) => {
   // validate token to use socket
-  const token = socket.handshake.query.token;
+  const token = socket.handshake.query.token as string;
   const msgErrorAuthentication: string = 'authentication error';
   if (token) {
     try {
@@ -79,7 +81,7 @@ io.use( async (socket, next) => {
 });
 
 /* istanbul ignore next */
-io.on( 'connection', async ( socket ) => {
+io.on( 'connection', async ( socket: Socket) => {
   // logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
   socket.on('join', (data) => {
     const {room} = data;
@@ -95,7 +97,7 @@ io.on( 'connection', async ( socket ) => {
               lastName: (socket as any).user.lastName
             }
           };
-          redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+          redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
         }
       } else {
         data = {
@@ -104,15 +106,16 @@ io.on( 'connection', async ( socket ) => {
             lastName: (socket as any).user.lastName
           }
         };
-        redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+        redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
       }
       // logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.join(room);
       io.to(room).emit('USERS_IN_CHANNEL', data);
     });
+    return socket.id;
   });
 
-  socket.on('leave', (data) => {
+  socket.on('leave', (data: any ) => {
     const {room} = data;
     redisClient.get(room, async (error, result) => {
       let data: any;
@@ -121,7 +124,7 @@ io.on( 'connection', async ( socket ) => {
         const key = (socket as any).user._id;
         if (data.hasOwnProperty(key)) {
           delete data[key];
-          redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+          redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
         }
       }
       io.to(room).emit('USERS_IN_CHANNEL', data);

@@ -8,7 +8,7 @@ import TeamSetting from "../../app/models/teamSetting.model";
 class LabelController {
   constructor() {
     this.index = this.index.bind(this);
-    this.apilist = this.apilist.bind(this);
+    this.apiList = this.apiList.bind(this);
     this.apiUpdateLabel = this.apiUpdateLabel.bind(this);
   }
 
@@ -16,8 +16,8 @@ class LabelController {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
-  public async apilist(req: IRequest, res: Response) {
-    const {team} = req.user;
+  public async apiList(req: IRequest, res: Response) {
+    const team = req.user.team._id;
     const {page, pageSize} = req.query as {page: string; pageSize: string};
     // paginate options
     const options: PaginateOptions = {
@@ -51,14 +51,12 @@ class LabelController {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      if (e) {
-        res.status(500).json(e);
-      }
+      res.status(500).json(e);
     }
   }
 
   public async apiCreateLabel(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {body} = req;
     try {
       const inventoryLabel = new InventoryLabel({
@@ -92,7 +90,7 @@ class LabelController {
 
   public async apiUpdateLabel(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {body} = req;
     try {
       const inventoryLabel = await InventoryLabel.findOneAndUpdate({
@@ -138,7 +136,7 @@ class LabelController {
 
   public async apiDeleteLabel(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const inventoryLabel = await InventoryLabel.findOneAndRemove({
         _id: id,

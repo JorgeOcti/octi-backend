@@ -1,8 +1,9 @@
-import {NextFunction, Response} from 'express';
+import {NextFunction, Response, Request} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
 import logger from '../services/logger.service';
-import User from "../app/models/user.model";
+import User, {IUserModel} from "../app/models/user.model";
+import BaseSchema from "yup/lib/schema";
 
 class Middlewares {
 
@@ -11,7 +12,8 @@ class Middlewares {
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
   }
 
-  public async isLoggedIn(req: IRequest, res: Response, next: NextFunction) {
+  public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
+    logger.info(`Middlewares.isLoggedIn`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     if (req.isAuthenticated()) {
@@ -24,7 +26,13 @@ class Middlewares {
       return next();
     } else {
       // if they aren't redirect them to the login page
-      res.redirect('/account/login/');
+      console.log('isLoggedIn');
+      logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
+      logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
+      console.log('req.url', req.url);
+      req.logout();
+      (req.session as any).redirectTo = req.url;
+      res.redirect(`/account/login/`);
     }
   }
 
@@ -34,30 +42,32 @@ class Middlewares {
   }
 
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
+    const { headers, app } = req;
+    let { user } = req;
     if (req.isAuthenticated()) {
       /* istanbul ignore else */
-      if (req.user) {
-        res.locals.user = req.user;
+      if (user) {
+        res.locals.user = user;
       } else {
         res.locals.user = null;
       }
       return next();
-    } else if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-      jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, async (err: any, decode: any) => {
+    } else if (headers && headers.authorization && headers.authorization.split(' ')[0] === 'JWT') {
+      jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey, async (err: any, decode: any) => {
         /* istanbul ignore if */
         if (err) {
-          logger.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(req.headers)}`);
+          logger.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(headers)}`);
           res.status(401).json({
             error: err.message,
             status: 401
           });
         } else {
-          req.user = await Middlewares.userInfo(decode);
+          await this.addUserToRequest(req, decode._id);
           next();
         }
       });
     } else {
-      logger.error(`isJWTAuthenticated error: Debes estar autenticado para este recurso. ${JSON.stringify(req.headers)}`);
+      logger.error(`isJWTAuthenticated error: Debes estar autenticado para este recurso. ${JSON.stringify(headers)}`);
       /* istanbul ignore next */
       res.status(401).json({
         error: 'Debes estar autenticado para este recurso.',
@@ -66,44 +76,53 @@ class Middlewares {
     }
   }
 
-  public static async userInfo(data: { _id: string }) : Promise<any> {
-    try {
-      const user = await User.findById(data._id, {
-        firstName: 1,
-        lastName: 1,
-        email: 1,
-        preferred: 1,
-        userPermissions: 1,
-        userForms: 1
-      })
-        .populate([{
-          path: 'venue',
-          select: ['name', 'lat', 'lng']
-        }, {
-          path: 'team',
-          select: ['name']
-        }, {
-          path: 'company',
-          select: ['name']
-        }, {
-          path: 'userPermissions',
-          select: ['codeName']
-        }, {
-          path: 'userForms',
-          select: ['name']
-        }]).lean();
-      return {
-        ...user
-      };
-    } catch (e){
-      logger.error(`userInfo error:e. ${e}`);
-    }
+  public async addUserToRequest(req: IRequest, userId: string): Promise<void> {
+    req.user = await User.findById(userId, {
+      _id: true,
+      firstName: true,
+      lastName: true,
+      isAdmin: true,
+      email: true,
+      preferred: true,
+      venuesAccess: true
+    }).populate([{
+      path: 'userPermissions',
+      select: ['codeName']
+    }, {
+      path: 'userForms',
+      select: ['name']
+    }, {
+      path: 'venue',
+      select: ['name']
+    }, {
+      path: 'company',
+      select: ['name', "iFrameURL"]
+    }, {
+      path: 'team',
+      select: ['name']
+    }]) as IUserModel;
   }
 
   public cleanStaticFiles(req: IRequest, res: Response, next: NextFunction) {
     req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg|ico)$/, '/$1.$2');
     next();
   }
+
+  public validateBody(resourceSchema: BaseSchema) {
+    return async (req: IRequest, res: Response, next: NextFunction) => {
+      const resource = req.body;
+      try {
+        req.body = await resourceSchema.validate(resource, {
+          stripUnknown: true
+        });
+        next();
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({error: e.errors.join(', ')});
+      }
+    }
+  }
+
 }
 
 export default new Middlewares();

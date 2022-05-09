@@ -1,16 +1,18 @@
 import * as excel from 'exceljs';
-import {Alignment} from 'exceljs';
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
+import { Alignment } from 'exceljs';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import {queue} from '../../../app';
-import {IForm} from '../../../interfaces/form.interface';
-import {IRequest} from '../../../interfaces/global.interface';
-import {IPermission} from '../../../interfaces/permision.interface';
-import {io} from '../../../server';
-import User, {IUserModel, UserTypes} from '../../models/user.model';
+import { queue } from '../../../app';
 import * as uuid from "uuid";
-import Venue from "../../models/venue.model";
+import { IForm } from '../../../form/interfaces/form.interface';
+import { IRequest } from '../../../interfaces/global.interface';
+import { IPermission } from '../../interfaces/permission.interface';
+import { io } from '../../../server';
+import User, {IUserModel} from '../../models/user.model';
+import{ UserTypes } from '../../models/user.model.types';
+import Venue from '../../models/venue.model';
+import { IBaseVenue } from '../../interfaces';
 import * as jwt from "jsonwebtoken";
 
 class AdminUsersController {
@@ -53,13 +55,13 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       /* generate file */
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Usuarios', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -67,7 +69,7 @@ class AdminUsersController {
       worksheet.autoFilter = {from: 'A1', to: 'F1'};
       const worksheetAccess = workbook.addWorksheet('Accesos', {
         properties: {
-          defaultRowHeight: 30
+          // defaultRowHeight: 30
         }, pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
@@ -80,8 +82,8 @@ class AdminUsersController {
         activeCell: 'A1'
       }];
       const accessColumns: any[] = [{
-        header: "Usuario",
-        key: "usuario",
+        header: 'Usuario',
+        key: 'usuario',
         width: 30,
         alignment: {
           wrapText: true
@@ -115,7 +117,7 @@ class AdminUsersController {
           wrapText: true
         };
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
       worksheetAccess.getRow(1).eachCell((cell) => {
@@ -126,11 +128,11 @@ class AdminUsersController {
           wrapText: true
         };
         if (parseInt(cell.col, 10) !== 1) {
-          alignment.textRotation = 90
+          alignment.textRotation = 90;
         }
         cell.alignment = alignment;
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
 
@@ -185,12 +187,17 @@ class AdminUsersController {
         });
         const dataVenues: any = {};
         user.venuesPermissions(true).forEach((venue: string) => {
-          dataVenues[venue] = "X";
+          dataVenues[venue] = 'X';
+          // worksheet.addRow({
+          //   ...detailUser,
+          //   venue: venue.name,
+          //   company: venue.company.name
+          // });
         });
         accessRow.push({
           usuario: user.fullName(),
           ...dataVenues
-        })
+        });
       });
       worksheetAccess.addRows(accessRow);
       /* formats */
@@ -258,7 +265,7 @@ class AdminUsersController {
         user: newUser
       });
     } catch (e) {
-      /* istanbul ignore next  */
+      console.error(e);
       res.status(500).json(e);
     }
   }
@@ -382,13 +389,20 @@ class AdminUsersController {
   }
 
   public async apiUsers(req: IRequest, res: Response): Promise<any> {
-    if (!req.user.hasPermission('viewUser')) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta operación'
-      });
-    }
-    const {page, pageSize, search, type} = req.query as { page: string, pageSize: string, search: string, type: string};
-    const {team} = req.user;
+    // if (!req.user.hasPermission('viewUser')) {
+    //   return res.status(403).json({
+    //     message: 'No tienes permisos para esta operación'
+    //   });
+    // }
+    const {
+      page,
+      pageSize,
+      search,
+      venue,
+      minified,
+      type
+    } = req.query as { page: string, pageSize: string, search: string, type: string, venue?: string, minified?: string };
+    const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -397,10 +411,20 @@ class AdminUsersController {
         token: true,
         preferred: true,
         email: true,
+        settings: true,
         isAdmin: true,
+        isDriver: true,
         updatedAt: true
       },
-      populate: [{
+      sort: {
+        firstName: 1,
+        lastName: 1
+      },
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    if (minified === '0'){
+      options.populate = [{
         path: 'venue',
         select: ['name', 'active']
       }, {
@@ -424,24 +448,21 @@ class AdminUsersController {
           path: 'company',
           select: ['name']
         }]
-      }],
-      sort: {
-        firstName: 1,
-        lastName: 1
-      },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      }]
+    }
+
+    let filter : any ={
+      team,
+      type
     };
+
+    if (type === UserTypes.common) {
+      filter = venue ?
+      {...filter,  $or: [{venue}, {venuesAccess: venue}]} :
+      {...filter, venue: {$in: req.user.venuesPermissions()}};
+    }
+
     try {
-      let filter: any = {
-        team,
-        type
-      };
-      if(type === UserTypes.common){
-        filter.venue = {
-          $in: req.user.venuesPermissions()
-        }
-      }
       const users = await this.getUsers(filter, options, search);
       // validate exist page
       /* istanbul ignore if  */
@@ -475,8 +496,8 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess} = req.body;
-    const {team} = req.user;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
+    const team = req.user.team._id;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -496,14 +517,15 @@ class AdminUsersController {
         // generate password
         const password = Math.random().toString(36).slice(-8);
         // create user
-        let newUser = await new User({
+        const updateItems: any = {
           firstName,
           lastName,
           username: email,
           venue,
           venuesAccess,
+          settings,
+          isDriver,
           preferred,
-          userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           company,
           team,
@@ -511,7 +533,13 @@ class AdminUsersController {
           email,
           type: UserTypes.common,
           active: true
-        }).save();
+        };
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
+          updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
+          updateItems.isAdmin = isAdmin;
+        }
+
+        let newUser = await new User(updateItems).save();
 
         // const errors = await newUser.validate();
         // console.log(errors);
@@ -531,7 +559,7 @@ class AdminUsersController {
           Contraseña ${password}
           En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
 
-          © 2020 OSA SpA. All rights reserved.`,
+          © 2021 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
           context: {
             fullname,
@@ -560,14 +588,14 @@ class AdminUsersController {
 
   public async apiUpdateUser(req: IRequest, res: Response): Promise<any> {
     /* istanbul ignore next  */
-    if (!req.user.hasPermission('changeUser')) {
+    if (!req.user.hasPermission('changeUser') && !req.user.isAdmin) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     const {id} = req.params;
-    const {team} = req.user;
-    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin} = req.body;
+    const team = req.user.team._id;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -577,23 +605,25 @@ class AdminUsersController {
     }
     try {
       // validate email not duplicate
-      const countUser = await User.count({email, _id: {$ne: id}});
+      const countUser = await User.find({email, _id: {$ne: id}}).countDocuments();
       if (countUser) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
           status: 400
         });
       } else {
-        let updateItems: any = {
+        const updateItems: any = {
           firstName,
           lastName,
           company,
           preferred,
+          settings,
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           venue,
-          venuesAccess
+          venuesAccess,
+          isDriver
         };
-        if (req.user.isAdmin && [true, false].includes(isAdmin)) {
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }
@@ -635,6 +665,10 @@ class AdminUsersController {
             delete user.password;
           }
 
+          // Delete user from responsible where has not access
+          let user_venues = user?.venuesAccess.map((v : IBaseVenue) => v._id).concat([user.venue._id]);
+          await Venue.update({responsible: user?._id, _id: {$nin: user_venues}}, { $pull: { 'responsible': user?._id }});
+
           const response = {
             message: 'Usuario editado satisfactoriamente.',
             user
@@ -666,12 +700,16 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     // const company = req.user.company;
     try {
       const user = await User.findOneAndRemove({_id: id, team, type: UserTypes.common});
       if (user) {
+
+        // Delete user from venue responsible where has not access
+        await Venue.update({responsible: user?._id}, { $pull: { 'responsible': user?._id }});
+
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',
           id: user._id
@@ -696,7 +734,7 @@ class AdminUsersController {
 
   public async apiChangePasswordUser(req: IRequest, res: Response): Promise<any> {
     const {user, password} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     if (!req.user.hasPermission('changeUser')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -744,7 +782,7 @@ class AdminUsersController {
       };
     }
     return new Promise((resolve, reject) => {
-      User.paginate(filter, options, (err, result) => {
+      User.paginate!(filter, options, (err, result) => {
         /* istanbul ignore next  */
         if (err) {
           return reject(err);

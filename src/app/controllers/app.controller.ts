@@ -1,17 +1,18 @@
-import {NextFunction, Request, Response} from 'express';
+import { NextFunction, Request, Response } from 'express';
+import * as GraphicsMagick from 'gm';
 import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
-import * as passport from 'passport';
-import * as uuid from 'uuid';
 import * as Raven from 'raven';
-import * as GraphicsMagick from 'gm';
-import {queue} from '../../app';
+import * as uuid from 'uuid';
+import { queue } from '../../app';
+import { passport } from '../../passportConfig';
+
+import { IRequest } from '../../interfaces/global.interface';
+import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
+import GeneralUtils from '../../utils/general.utils';
+import RecoverFile from '../models/recoverFile.model';
 import UserModel from '../models/user.model';
-import GeneralUtils from "../../utils/general.utils";
-import {IRequest} from "../../interfaces/global.interface";
-import RecoverFile from "../models/recoverFile.model";
-import logger from "../../services/logger.service";
 
 class AppController {
 
@@ -22,6 +23,8 @@ class AppController {
 
     this.login = this.login.bind(this);
     this.processLogin = this.processLogin.bind(this);
+
+    this.processLoginSoo = this.processLoginSoo.bind(this);
 
     this.forgotPassword = this.forgotPassword.bind(this);
     this.processForgotPassword = this.processForgotPassword.bind(this);
@@ -39,48 +42,100 @@ class AppController {
   }
 
   public healthCheck(req: Request, res: Response): void {
-    res.json({status: 'success'});
+    res.json({ status: 'success' });
   }
 
   public robots(req: Request, res: Response): void {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
-    res.send(`User-Agent: *\nDisallow: /`);
+    res.send(`User-agent: *\nAllow: /`);
   }
 
   public login(req: Request, res: Response): void {
     if (req.user) {
       return res.redirect('/');
     } else {
-      return res.render('app/login', {csrfToken: req.csrfToken()});
+      return res.render('app/login');
     }
+  }
+
+  public processLoginSoo(req: IRequest, res: Response, next: NextFunction): void {
+    passport.authenticate('multy-saml', (err, user) => {
+      /* istanbul ignore if */
+      if (err) {
+        console.log(err);
+        return next(err); // will generate a 500 error
+      }
+      req.logIn(user, (loginErr) => {
+        const redirectTo = (req.session as any).redirectTo;
+        /* istanbul ignore if */
+        if (loginErr) {
+          return next(loginErr);
+        } else {
+          user.lastLogin = new Date();
+          user.save(async (err: any) => {
+            /* istanbul ignore if */
+            if (err) {
+              console.log(err); // handle errors!
+            } else {
+              try {
+                user = await UserModel.findById(user._id).populate({
+                  path: 'userPermissions',
+                  select: ['codeName']
+                });
+                return res.redirect(redirectTo ?? '/');
+              } catch (e) {
+                console.log(err); // handle errors!
+              }
+            }
+          });
+        }
+      });
+    })(req, res, next);
   }
 
   public processLogin(req: Request, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
+    // const {next: nextPage} = req.query as {next: string};
+    const redirectTo = (req.session as any).redirectTo;
+    logger.info(`AppController.processLogin`);
+    logger.info(`${JSON.stringify(req.session)}`);
     if (req.user) {
-      return res.redirect('/');
+      logger.info(`AppController.processLogin req.user`);
+      console.log(`AppController.processLogin redirectTo=${redirectTo}`);
+       if (redirectTo?.length) {
+        delete (req.session as any).redirectTo;
+        return res.redirect(redirectTo);
+      } else {
+        return res.redirect('/');
+      }
     } else {
-      const {username} = req.body;
+      const { username } = req.body;
       passport.authenticate('local', (err, user) => {
         /* istanbul ignore if */
         if (err) {
+          logger.error(err);
+          console.log(err);
           return next(err); // will generate a 500 error
         }
         /* istanbul ignore if */
         if (!user) {
+          logger.error(`AppController.processLogin.authenticate: Usuario o contraseña incorrecta`);
           return res.render('app/login', {
-            username, error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()
+            username, error: 'Usuario o contraseña incorrecta.'
           });
         }
         req.login(user, (loginErr) => {
           /* istanbul ignore if */
           if (loginErr) {
+            logger.error(loginErr);
+            console.log(loginErr);
             return next(loginErr);
           } else {
             user.lastLogin = new Date();
             user.save(async (err: any) => {
               /* istanbul ignore if */
               if (err) {
+                logger.error(err);
                 console.log(err); // handle errors!
               } else {
                 try {
@@ -88,8 +143,14 @@ class AppController {
                     path: 'userPermissions',
                     select: ['codeName']
                   });
+                  if (redirectTo?.length) {
+                    logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
+                    delete (req.session as any).redirectTo;
+                    return res.redirect(redirectTo);
+                  }
                   return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
                 } catch (e) {
+                  logger.error(e);
                   console.log(err); // handle errors!
                 }
               }
@@ -100,17 +161,18 @@ class AppController {
     }
   }
 
+
   public forgotPassword(req: Request, res: Response) {
     /* istanbul ignore if */
     if (req.user) {
       return res.redirect('/');
     } else {
-      return res.render('app/forgotPassword', {csrfToken: req.csrfToken()});
+      return res.render('app/forgotPassword', { csrfToken: req.csrfToken() });
     }
   }
 
   public async processForgotPassword(req: Request, res: Response) {
-    const {username, _csrf} = req.body;
+    const { username, _csrf } = req.body;
     /* istanbul ignore if */
     if (req.user) {
       return res.redirect('/');
@@ -122,9 +184,9 @@ class AppController {
       if (csrfUsed) {
         return res.redirect('/account/forgot-password/');
       }
-      redisClient.set(_csrf, 'forgot-password', "ex", 60*10);
+      redisClient.set(_csrf, 'forgot-password', 'ex', 60 * 10);
 
-      const user = await UserModel.findOne({email: username});
+      const user = await UserModel.findOne({ email: username });
       if (user) {
         const token = uuid.v4();
         const fullname = user.fullName();
@@ -143,7 +205,7 @@ class AppController {
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
 
-            © 2020 OSA SpA. Todos los derechos reservados.`,
+            © 2021 OSA SpA. Todos los derechos reservados.`,
           view: 'account/forgotPassword',
           context: {
             fullname,
@@ -165,7 +227,7 @@ class AppController {
   }
 
   public async recovery(req: Request, res: Response) {
-    const {token} = req.params;
+    const { token } = req.params;
     /* istanbul ignore next */
     if (!isuuid.anyNonNil(token)) {
       return res.status(404).render('404');
@@ -189,21 +251,21 @@ class AppController {
   }
 
   public async processRecovery(req: Request, res: Response, next: NextFunction) {
-    const {token} = req.params;
-    const {password, password2} = req.body;
+    const { token } = req.params;
+    const { password, password2 } = req.body;
     /* istanbul ignore next */
     if (!isuuid.anyNonNil(token)) {
       return res.status(404).render('404');
     }
     if (req.user) {
-      return res.redirect( `/`);
+      return res.redirect(`/`);
     }
     /* istanbul ignore next */
     if (!password.trim().length || !password2.trim().length || password !== password2) {
       return res.redirect(`/account/recovery/${token}`);
     }
     try {
-      const user = await UserModel.findOne({passwordResetToken: token});
+      const user = await UserModel.findOne({ passwordResetToken: token });
       /* istanbul ignore else */
       if (user && user.active) {
         user.password = password;
@@ -239,8 +301,7 @@ class AppController {
   }
 
   public async recoverFile(req: IRequest, res: Response): Promise<any> {
-    const company = req.user.company;
-    const team = req.user.team;
+    const { company, team } = req.user;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, file: ${JSON.stringify(file)}}}`);
@@ -286,7 +347,7 @@ class AppController {
           }
         });
       } catch (e) {
-        Raven.captureException(e, {req});
+        Raven.captureException(e, { req });
         /* istanbul ignore next */
         console.log(e);
         logger.error(`recover file error:`);
@@ -305,7 +366,7 @@ class AppController {
     }
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
      brew install imagemagick
@@ -319,11 +380,13 @@ class AppController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve({});
           }
         });
     });
   }
 }
 
-export default new AppController();
+const appController = new AppController();
+export default appController;
+

@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
-import {ICompany} from '../../interfaces/company.interface';
+import { ICompany } from '../interfaces';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
@@ -36,6 +37,10 @@ const billingSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  requestPrice: {
+    type: Number,
+    default: 0
+  },
   active: {
     type: Boolean,
     default: false
@@ -47,11 +52,11 @@ const billingSchema = new mongoose.Schema({
 const billingNotificationsSchema = new mongoose.Schema({
   name: {
     type: String,
-    default: ""
+    default: ''
   },
   email: {
     type: String,
-    default: ""
+    default: ''
   },
   active: {
     type: Boolean,
@@ -66,6 +71,14 @@ const companySchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true
+  },
+  businessName: {
+    type: String,
+    trim: true
+  },
+  rut: {
+    type: String,
+    trim: true
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
@@ -98,6 +111,12 @@ const companySchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
+  },
+  iFrameURL: {
+    type: String
+  },
+  iFrameURLInventory: {
+    type: String
   }
 }, {
   timestamps: true
@@ -132,7 +151,7 @@ companySchema.plugin(mongooseCrate, {
   }),
   fields: {
     image: {},
-    marker: {},
+    marker: {}
   }
 });
 
@@ -143,6 +162,8 @@ companySchema.virtual('users', {
   justOne: false
 });
 
-const Company = mongoose.model<ICompanyModel>('Company', companySchema);
+export type CompanySchema = mongoose.Model<ICompanyModel> & PaginateModel<ICompanyModel>;
+
+const Company = mongoose.model<ICompanyModel, CompanySchema>('Company', companySchema);
 
 export default Company;

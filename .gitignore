@@ -35,6 +35,7 @@ jspm_packages/
 
 # Dependency package
 package-lock.json
+yarn.lock
 
 # Optional npm cache directory
 .npm
@@ -49,4 +50,6 @@ secrets.yaml
 
 buildcache
 
+.scannerwork/
 
+/dist/

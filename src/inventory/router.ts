@@ -7,6 +7,7 @@ const inventoryRouter = express.Router();
 
 // Inventories List
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/studio/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
@@ -25,9 +26,11 @@ inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, Inven
 inventoryRouter.post('/api/inventory/:id/set-label/', Middlewares.isLoggedIn, InventoryController.setLabel);
 inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detaill);
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
+inventoryRouter.get('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.listInventoryCarFiles);
+inventoryRouter.delete('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.removeInventoryCarFile);
 
 // Labels API Web
-inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apilist);
+inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiList);
 inventoryRouter.post('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiCreateLabel);
 inventoryRouter.put('/api/admin/labels/:id', Middlewares.isLoggedIn, LabelController.apiUpdateLabel);
 inventoryRouter.delete('/api/admin/labels/:id', Middlewares.isLoggedIn, LabelController.apiDeleteLabel);

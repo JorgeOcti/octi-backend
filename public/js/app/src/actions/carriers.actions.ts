@@ -11,7 +11,7 @@ import * as swal from 'sweetalert';
 import {
   IBaseCarrier,
   ICarrier
-} from '../../../../../src/interfaces/carrier.interface';
+} from '../../../../../src/app/interfaces/carrier.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 

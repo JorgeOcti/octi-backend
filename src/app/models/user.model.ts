@@ -1,11 +1,14 @@
 import * as bcrypt from 'bcrypt';
-import {ObjectID} from 'bson';
+import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
+import { HookNextFunction, PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
-import {IUser} from '../../interfaces/user.interface';
-import {IPermissionModel} from './permision.model';
+import { IUser } from '../interfaces';
+import { IPermissionModel } from './permission.model';
+import usersHooks from './user.hooks';
+import { UserTypes, userTypes } from './user.model.types';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
@@ -16,17 +19,14 @@ export interface IUserModel extends IUser, mongoose.Document {
   venuesPermissions: (inString?: boolean) => string[];
 }
 
-export enum UserTypes {
-  common = 'common',
-  integration = 'integration',
-}
+const userSettingsSchema = new mongoose.Schema({
+  defaultChannel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SalesChannel'
+  }
+});
 
-export const userTypes = [
-  UserTypes.common,
-  UserTypes.integration,
-];
-
-const userSchema = new mongoose.Schema({
+export const baseUserSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true
@@ -51,6 +51,17 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue',
   },
+  email: {
+    type: String,
+    trim: true,
+    required: [true, 'El email es requerido'],
+    unique: true,
+    index: true
+  },
+});
+
+export const userSchema = new mongoose.Schema({
+  ...baseUserSchema.obj,
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
@@ -59,13 +70,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
     default: null
-  },
-  email: {
-    type: String,
-    trim: true,
-    required: [true, 'El email es requerido'],
-    unique: true,
-    index: true
   },
   group: {
     type: mongoose.Schema.Types.ObjectId,
@@ -92,6 +96,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  settings: {
+    type: userSettingsSchema,
+    default: {}
+  },
   password: String,
   hash_password: String,
 
@@ -99,6 +107,11 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
 
   lastLogin: Date,
+
+  isDriver: {
+    type: Boolean,
+    default: false
+  },
 
   active: {
     type: Boolean,
@@ -124,7 +137,11 @@ userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
 userSchema.plugin(mongoosePaginate);
 
-userSchema.methods.fullName = function (): string {
+userSchema.post<IUserModel>('findOneAndUpdate', async (doc: any) => {
+  await usersHooks.postFindOneAndUpdateHandler(doc);
+});
+
+userSchema.methods.fullName = function(): string {
   return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
 
@@ -179,16 +196,16 @@ userSchema.methods.venuesPermissions = function (inString?: boolean) {
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function (this: IUserModel, next) {
+userSchema.pre('save', function(this: IUserModel, next: HookNextFunction) {
   const user = this;
   if (!user.isModified('password')) {
     return next();
   }
-  bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.genSalt!(10, (err, salt) => {
     if (err) {
       return next(err);
     }
-    bcrypt.hash(user.password, salt, (err: mongoose.Error, hash) => {
+    bcrypt.hash!(user.password, salt, (err: mongoose.Error, hash) => {
       if (err) {
         return next(err);
       }
@@ -198,8 +215,9 @@ userSchema.pre('save', function (this: IUserModel, next) {
   });
 });
 
-userSchema.methods.comparePassword = function (candidatePassword: string, cb: (err: any, isMatch: any) => {}) {
-  bcrypt.compare(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
+
+userSchema.methods.comparePassword = function(candidatePassword: string, cb: (err: any, isMatch: any) => {}) {
+  bcrypt.compare!(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
     cb(err, isMatch);
   });
 };
@@ -208,6 +226,8 @@ userSchema.methods.comparePasswordSync = function (candidatePassword: string) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 
-const User = mongoose.model<IUserModel>('User', userSchema);
+export type UserSchema = mongoose.Model<IUserModel> & PaginateModel<IUserModel>;
+
+export const User = mongoose.model<IUserModel, UserSchema>('User', userSchema);
 
 export default User;

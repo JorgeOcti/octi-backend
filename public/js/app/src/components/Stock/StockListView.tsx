@@ -2,7 +2,8 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import * as moment from 'moment-timezone';
-import * as io from 'socket.io-client';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -25,6 +26,8 @@ import {IFilterStock} from "../../reducers/stock.reducer";
 import ShowIf from "../Utils/ShowIf";
 import ImageLazyLoad from "../Utils/ImageLazyLoad";
 import {IWindow} from "../../interfaces/window";
+import {hasPermission} from "../../utils/common";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -44,13 +47,16 @@ interface IStateType {
 }
 
 
-class StockView extends React.Component<IPropsType, IStateType> {
+class StockView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private paginationOption: any = {
     paginationSize: 4,
     showTotal: true,
     paginationTotalRenderer: this.customTotal,
     sizePerPageList: [{
+      text: '20', value: 20
+    },{
       text: '50', value: 50
     }, {
       text: '100', value: 100
@@ -65,7 +71,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
     }
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   readonly columns: any[] = [];
 
@@ -76,7 +82,10 @@ class StockView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Stock Actual';
     this.xlsExport = this.xlsExport.bind(this);
+    this.daysInVenue = this.daysInVenue.bind(this);
+    this.repcetionVenue = this.repcetionVenue.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
     this.filterAllBrands = this.filterAllBrands.bind(this);
@@ -98,34 +107,48 @@ class StockView extends React.Component<IPropsType, IStateType> {
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'internalNumber',
       text: 'Nº Interno',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'brand',
       text: 'Marca',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'denomination',
       text: 'Modelo',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'color',
       text: 'Color',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
-    },{
+    }, {
       dataField: 'venueFound',
       text: 'Sucursal',
       formatter: this.venueFormatter,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'receptionVenue',
+      text: 'Fecha Recepción',
+      formatter: this.repcetionVenue,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'daysInVenue',
+      text: 'Días en Sucursal',
+      formatter: this.daysInVenue,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
@@ -133,18 +156,16 @@ class StockView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Stock Actual';
     this.props.getStockAction();
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `stock-${window.user.team}`});
+      this.socket.emit('join', {room: `stock-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
@@ -198,14 +219,17 @@ class StockView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Stock Actual</h3>
               <ShowIf condition={!loading && message.length < 1}>
-                <div className="box-tools pull-right">
-                  <button
-                      className="btn btn-sm btn-primary  hidden-xs"
-                      onClick={() => this.props.history.push(`/stock/import/`)}
-                    >
-                    <i className="fa fa-fw fa-cloud-upload" /> Importar
-                  </button>
-                </div>
+                {
+                  hasPermission(window.user, 'importStock') ?
+                    <div className="box-tools pull-right">
+                      <button
+                        className="btn btn-sm btn-primary  hidden-xs"
+                        onClick={() => this.props.history.push(`/stock/import/`)}
+                      >
+                        <i className="fa fa-fw fa-cloud-upload"/> Importar
+                      </button>
+                    </div> : null
+                }
               </ShowIf>
             </div>
             <div className="box-body no-padding">
@@ -541,6 +565,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
   }
 
   private xlsExport(): void {
+    this.trackClick("Exportar");
     const {cars} = this.props.stock;
     const data: any = [];
     // order data
@@ -574,6 +599,14 @@ class StockView extends React.Component<IPropsType, IStateType> {
         &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
+  }
+
+  private daysInVenue(cell: string, row: any) {
+    return row.daysInVenue ?? '-'
+  }
+
+  private repcetionVenue(cell: string, row: any) {
+    return row.receptionVenue ? moment(row.receptionVenue).format('L')  : '-'
   }
 
   private venueFormatter(cell: string, row: any) {

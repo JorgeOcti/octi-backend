@@ -2,19 +2,25 @@ import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'ax
 import * as moment from 'moment';
 import * as React from 'react';
 import {Dispatch} from 'redux';
-import {ICar} from '../../../../../src/interfaces/car.interface';
+import {ICar} from '../../../../../src/app/interfaces/car.interface';
 import {
   IParticipant,
   IParticipantSection
-} from '../../../../../src/interfaces/participant.interface';
+} from '../../../../../src/form/interfaces/participant.interface';
 import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
+import ShowIf from '../components/Utils/ShowIf';
+import {IForm} from "../../../../../src/form/interfaces/form.interface";
+import { loadDashboardCleaningAction } from './dashboardDerco.actions';
 
 export interface IDashboardState {
+  forms: IForm[];
+  searchForms: string[],
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  requests: any[];
   companies: any[];
   car: ICar | null;
   carEvents: any;
@@ -30,6 +36,8 @@ export interface IDashboardState {
   participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
+  venueStats: any[] | null;
+  revisionStats: any;
   pagination: {
     count: number;
     page: number;
@@ -96,11 +104,27 @@ interface ILoadParticipantInCar {
   };
 }
 
+interface ILoadRequestsInCar {
+  type: '/DASHBOARD/LOAD_REQUESTS_IN_CAR';
+  payload: {
+    requests: any;
+  };
+}
+
 export function loadParticipantInCarAction(participant: IParticipant): ILoadParticipantInCar {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR',
     payload: {
       participant
+    }
+  };
+}
+
+export function loadRequestsInCarAction(requests: any): ILoadRequestsInCar {
+  return {
+    type: '/DASHBOARD/LOAD_REQUESTS_IN_CAR',
+    payload: {
+      requests
     }
   };
 }
@@ -147,7 +171,8 @@ interface IChangeSearchDashboard {
 export function changeSearchDashboardAction(searchText: string): IChangeSearchDashboard {
   return {
     type: '/DASHBOARD/CHANGE_SEARCH',
-    payload: {
+    payload:
+      {
       searchText
     }
   };
@@ -172,7 +197,39 @@ export function changeRangeDashboardAction(from: string, to: string): IChangeRan
   }
 }
 
-export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string) {
+interface IChangeFormsSearchDashboard {
+  type: '/DASHBOARD/CHANGE_FORM_SEARCH';
+  payload: {
+    searchForms: string[];
+  };
+}
+
+export function changeFormsSearchDashboardAction(searchForms: string[]): IChangeFormsSearchDashboard {
+  return {
+    type: '/DASHBOARD/CHANGE_FORM_SEARCH',
+    payload: {
+      searchForms
+    }
+  };
+}
+
+interface ILoadingForms {
+  type: '/DASHBOARD/LOAD_FORMS';
+  payload: {
+    forms: IForm[];
+  };
+}
+
+export function loadForms(forms: IForm[]): ILoadingForms {
+  return {
+    type: '/DASHBOARD/LOAD_FORMS',
+    payload: {
+      forms
+    }
+  };
+}
+
+export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true, activated_forms? : boolean) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -184,8 +241,50 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    const { searchText, searchFrom, searchTo } = state.dashboard;
-    api.getRevisions(page, searchText, searchFrom, searchTo)
+    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+    Axios
+      .all([
+        api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms),
+        api.getForms(1, 100, activated_forms)
+      ])
+      .then(Axios.spread((response, forms) => {
+        dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
+        dispatch(loadForms(forms.data.results));
+        if (loading) {
+          dispatch(isLoadingAction(false));
+        }
+      }))
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          if (loading) {
+            dispatch(isLoadingAction(true));
+          }
+        } else {
+          if (loading) {
+            dispatch(isLoadingAction(false));
+          }
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+
+export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true) {
+  return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
+    const api: ApiService = new ApiService();
+    const state = getState();
+    dispatch(cancelRequestAction(api.getSource()));
+    if (loading) {
+      dispatch(isLoadingAction(true));
+    }
+    const page = nextPage ? nextPage : state.dashboard.pagination.page;
+    if (nextPage) {
+      dispatch(changePageAction(nextPage));
+    }
+    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {
@@ -245,10 +344,10 @@ export function getParticipant(id: string) {
                 <td style={{width: '40%'}}><strong>Fecha</strong></td>
                 <td>{moment(data.createdAt).format('LLL')}</td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td style={{width: '40%'}}><strong>Calificación</strong></td>
                 <td>{Math.round(data.qualification)}%</td>
-              </tr>
+              </tr> */}
               {
                 data.receptionText && data.receptionText.length ?
                   <tr>
@@ -411,10 +510,11 @@ export function getParticipant(id: string) {
                           const items = answer.accessories ? answer.accessories.items.filter((item:any) => accesorySeletedIds.includes(item._id)) : [];
                           return (
                             <div className="question" key={answer._id}>
-                              <p><strong>{answer.order} {answer.question}</strong></p>
+                              <p><strong>{answer.order} {answer.question} {!answer.optional ? <span className="red text-bold">*</span> : null }</strong>
+                              {answer.hint && answer.hint !== "" ? <small><br/>{answer.hint}</small> : null}</p>
                               {
                                 answer.scale ?
-                                  <div className="btn-group btn-group-justified" role="group" aria-label="...">
+                                  <div className="flex" role="group" aria-label="..." key={answer._id}>
                                     {
                                       answer.scale.choices.map((choice: any) => {
                                         const btnDefault = 'btn-default';
@@ -426,13 +526,13 @@ export function getParticipant(id: string) {
                                         };
                                         const btnClass = optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
                                         return (
-                                          <div className="btn-group" role="group" key={choice._id}>
-                                            <button
-                                              type="button"
-                                              className={`btn ${choice._id === answer.answer ? btnClass : btnDefault}`}
-                                              disabled={true}
-                                            >{choice.choice}</button>
-                                          </div>
+                                          <button
+                                            key={choice._id}
+                                            type="button"
+                                            className={`btn flex-row-item text-wrap ${choice._id === answer.answer ? btnClass : btnDefault}`}
+                                            style={{margin: '2px'}}
+                                            disabled={true}
+                                          >{choice.choice}</button>
                                         );
                                       })
                                     }
@@ -452,35 +552,51 @@ export function getParticipant(id: string) {
                                               <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
                                             </p>
-                                            <div className="row images">
-                                              {
-                                                ds.images.map((image: any) => {
-                                                  return (
-                                                    <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                                      <a
-                                                        href={image.file.url}
-                                                        data-toggle="lightbox"
-                                                        className="zoom-in"
-                                                        data-gallery={ds._id}
-                                                        data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
-                                                      >
-                                                        <ImageLazyLoad
-                                                          url={image.file.url}
-                                                          height={'100px'}
-                                                        />
-                                                      </a>
-                                                      <p
-                                                        className={'text-ellipsis'}
-                                                        data-toggle="tooltip"
-                                                        data-placement="top"
-                                                        title={image.file.name}>
-                                                        {image.file.name}
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                })
+                                            <ShowIf
+                                              condition={!!ds.images.length}
+                                              alternative={
+                                                <p style={{ padding: '0 5px' }} className="text-muted">
+                                                  No se reportaron imágenes.
+                                                </p>
                                               }
-                                            </div>
+                                            >
+                                              <div className='row images'>
+                                                {
+                                                  ds.images.map((image: any) => {
+                                                    return (
+                                                      <div
+                                                        className='col-md-3 col-sm-4 col-xs-4 text-center'
+                                                        key={image._id}
+                                                        data-toggle='tooltip'
+                                                        data-placement='bottom'
+                                                        title={image.file.name}
+                                                      >
+                                                        <a
+                                                          href={image.file.url}
+                                                          data-toggle='lightbox'
+                                                          className='zoom-in'
+                                                          data-gallery={ds._id}
+                                                          data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
+                                                        >
+                                                          <ImageLazyLoad
+                                                            url={image.file.url}
+                                                            height={'100px'}
+                                                          />
+                                                        </a>
+                                                        {/*<p*/}
+                                                        {/*  className={'text-ellipsis'}*/}
+                                                        {/*  data-toggle='tooltip'*/}
+                                                        {/*  data-placement='top'*/}
+                                                        {/*  title={image.file.name}*/}
+                                                        {/*>*/}
+                                                        {/*  {image.file.name}*/}
+                                                        {/*</p>*/}
+                                                      </div>
+                                                    );
+                                                  })
+                                                }
+                                              </div>
+                                            </ShowIf>
                                           </div>
                                         </div>
                                       ))
@@ -515,7 +631,7 @@ export function getParticipant(id: string) {
                                   : null
                               }
                               {
-                                selectChoice && selectChoice.requireImage && answer.images && answer.images.length ?
+                                ((selectChoice && selectChoice.requireImage) || answer.kind === 'image') && answer.images && answer.images.length ?
                                   <div className="row images">
                                     {
                                       answer.images.map((image: any) => {
@@ -556,6 +672,16 @@ export function getParticipant(id: string) {
                                   </div>
                                 : null
                               }
+
+                              {
+                                (answer.kind === 'numeric-scale') && answer.score != -1  ?
+                                  <div className="row" style={{marginTop: '10px'}}>
+                                    <div className="col-md-12">
+                                      <p><strong>Evaluación</strong>: <span className="text-muted">{answer.score} (Del {answer.minValue} al {answer.maxValue})</span></p>
+                                    </div>
+                                  </div>
+                                  : null
+                              }
                             </div>
                           );
                         })
@@ -564,6 +690,7 @@ export function getParticipant(id: string) {
                 );
               })
             }
+            <small>Las preguntas marcadas con <span className="red text-bold">*</span> son obligatorias.</small>
           </div>
           ) as any);
         dispatch(loadingParticipantAction(null));
@@ -612,12 +739,12 @@ export function loadParticipantsPerDateAction(companies: any[], participantsRece
   };
 }
 
-export function getParticipantsPerDateAction(companies?:string) {
+export function getParticipantsPerDateAction(companies?:string, onlyControls: boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getParticipantsPerDate(companies)
+    api.getParticipantsPerDate(onlyControls, companies)
       .then((response: AxiosResponse) => {
         dispatch(loadParticipantsPerDateAction(response.data.companies, response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.planning, response.data.planningProcess, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
@@ -639,10 +766,86 @@ export function getCarAction(id: string) {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getCar(id)
+    Axios.all([
+      api.getCar(id),
+      api.getRequestsByCar(id)
+    ]).then(Axios.spread((car, requests) => {
+      // dispatch(loadDashboardCleaningAction(dashboard.data));
+      document.title = `OSA Andes | Detalle VIN ${car.data.data.vin}`;
+      dispatch(loadCarAction(car.data.data));
+      dispatch(loadRequestsInCarAction(requests.data));
+      dispatch(isLoadingAction(false));
+    }))
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(true));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+interface ILoadingVenuesStats {
+  type: '/DASHBOARD/LOAD_VENUES_STATS';
+  payload: {
+    venuesStats: any[];
+  };
+}
+
+export function loadVenuesStats(venuesStats: any[]): ILoadingVenuesStats {
+  return {
+    type: '/DASHBOARD/LOAD_VENUES_STATS',
+    payload: {
+      venuesStats
+    }
+  };
+}
+
+export function getVenuesStats(from: number, to: number){
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    api.getVenuesStats(from, to)
       .then((response: AxiosResponse) => {
-        document.title = `OSA Andes | Detalle VIN ${response.data.data.vin}`;
-        dispatch(loadCarAction(response.data.data));
+        dispatch(loadVenuesStats(response.data as any[]));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+        } else {
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+interface ILoadingRevisionsStats {
+  type: '/DASHBOARD/LOAD_REVISION_STATS';
+  payload: {
+    revisionStats: any;
+  };
+}
+
+export function loadRevisionsStats(revisionStats: any[]): ILoadingRevisionsStats {
+  return {
+    type: '/DASHBOARD/LOAD_REVISION_STATS',
+    payload: {
+      revisionStats
+    }
+  };
+}
+
+export function getRevisionStats(){
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.getRevisionsStats()
+      .then((response: AxiosResponse) => {
+        dispatch(loadRevisionsStats(response.data));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
@@ -657,6 +860,7 @@ export function getCarAction(id: string) {
   };
 }
 
+
 export type DashboardReduxAction =
   IIsLoading |
   ICancelRequest |
@@ -667,4 +871,9 @@ export type DashboardReduxAction =
   ILoadParticipantsPerDate |
   ILoadingParticipant |
   IChangePage |
-  ILoadParticipantInCar;
+  ILoadParticipantInCar |
+  ILoadRequestsInCar |
+  ILoadingVenuesStats |
+  ILoadingRevisionsStats |
+  ILoadingForms |
+  IChangeFormsSearchDashboard;

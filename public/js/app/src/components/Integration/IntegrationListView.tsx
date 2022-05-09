@@ -15,13 +15,15 @@ import {connect} from "react-redux";
 import * as Raven from "raven-js";
 import AppContainer from "../../container/AppContainer";
 import {loadDataAction, ModalReduxAction} from "../../actions/modal.actions";
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../../src/app/interfaces/user.interface';
 import IntegrationFormView from "./IntegrationFormView";
 import {submit} from 'redux-form'
 import ModalView from "../Modal/ModalView";
 import Paginator from "../Utils/Paginator";
 import * as swal from "sweetalert";
 import CopyText from "../Utils/CopyText";
+import { Socket } from 'socket.io-client/build/esm/socket';
+import { io } from "socket.io-client";
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<UserReduxAction>;
@@ -44,7 +46,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
     error: null
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -62,11 +64,13 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
     this.props.getUsersAction(1, UserTypes.integration);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: {
+        token: (window.user as any).token
+      }
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `integration-list-${window.user.team}`});
@@ -88,7 +92,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {users, loading, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.10" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.11" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -130,7 +134,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
                           className={'background-transition'}
                         >
                           <td className="middle">{user.firstName}</td>
-                          <td className="middle">{user.company.name}</td>
+                          <td className="middle">{user.company?.name}</td>
                           <td className="middle">••••••••••••••••••••• <button
                             onClick={()=> this.showToken(user)}
                             className={"btn btn-xs btn-default"}
@@ -221,7 +225,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
         initialValues={{
           _id: user._id,
           firstName: user.firstName,
-          company: user.company._id
+          company: user.company?._id
         }}
       />,
       <React.Fragment>

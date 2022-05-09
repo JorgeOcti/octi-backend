@@ -1,15 +1,14 @@
-import {AxiosError, default as Axios} from 'axios';
+import { AxiosError, default as Axios } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import {debounce} from 'throttle-debounce';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
-
+import { debounce } from 'throttle-debounce';
+import { IUser } from '../../../../../../src/app/interfaces/user.interface';
 import {
   loadDataAction,
   ModalReduxAction
@@ -23,11 +22,10 @@ import {
   ITempUser,
   IUsersState,
   updateUserAction,
-  UserReduxAction,
-  UserTypes
+  UserReduxAction
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
+import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import {
   hasPermission,
@@ -38,23 +36,20 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket';
 
-interface IPropsType extends RouteComponentProps<{ }> {
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(nextPage: number, type: string, search?: string): UserReduxAction;
-
+  getUsersAction(page: number, search?: string): UserReduxAction;
   createUserAction(): UserReduxAction;
-
   updateUserAction(): UserReduxAction;
-
   deleteUserAction(id?: string): UserReduxAction;
-
   changeTempUserAction(user: ITempUser): UserReduxAction;
-
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-
   changeSearchUserAction(searchText: string): UserReduxAction;
 }
 
@@ -66,23 +61,20 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class UserListView extends React.Component<IPropsType, IStateType> {
+class UserListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
-  // static propTypes = {
-  //   users: PropTypes.object.isRequired,
-  //   dispatch: PropTypes.func.isRequired,
-  //   getUsersAction: PropTypes.func.isRequired
-  // };
   readonly state = {
     error: null,
     searchText: '',
     exporing: false
   };
 
-  private socket: SocketIOClient.Socket;
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de usuarios';
     this.createUser = this.createUser.bind(this);
     this.processCreateUser = this.processCreateUser.bind(this);
     this.updateUser = this.updateUser.bind(this);
@@ -91,31 +83,34 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.changeTempUser = this.changeTempUser.bind(this);
     this.changePassword = this.changePassword.bind(this);
     this.processChangePassword = this.processChangePassword.bind(this);
-    this.onChangeSearch = this.onChangeSearch.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.cloneUser = this.cloneUser.bind(this);
+    this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
-    const {pagination} = this.props.users;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction(1, UserTypes.common);
+    const { pagination } = this.props.users;
+    this.props.getUsersAction(pagination.page);
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `user-list-${window.user.team}`});
+      this.socket.emit('join', {room: `user-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.users;
-        this.props.getUsersAction(pagination.page, UserTypes.common);
+        this.props.getUsersAction(pagination.page);
       }
     });
   }
@@ -142,6 +137,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   public exportExcel() {
+    this.trackClick('Exportar');
     this.setState({
       exporing: true
     });
@@ -155,13 +151,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         const fileName = `${moment().format('YYYYMMDD')}-usuarios.xlsx`;
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          // IE workaround for "HTML7007: One or more blob URLs were
-          // revoked by closing the blob for which they were created.
-          // These URLs will no longer resolve as the data backing
-          // the URL has been freed."
-          window.navigator.msSaveBlob(blob, fileName);
-        } else {
+        // if (typeof window.navigator.msSaveBlob !== 'undefined') {
+        //   // IE workaround for "HTML7007: One or more blob URLs were
+        //   // revoked by closing the blob for which they were created.
+        //   // These URLs will no longer resolve as the data backing
+        //   // the URL has been freed."
+        //   window.navigator.msSaveBlob(blob, fileName);
+        // } else {
           const blobURL = URL.createObjectURL(blob);
           const tempLink = document.createElement('a');
           tempLink.style.display = 'none';
@@ -181,14 +177,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           tempLink.click();
           document.body.removeChild(tempLink);
           URL.revokeObjectURL(blobURL);
-        }
+        // }
       })
       .catch((err) => {
         this.setState({
           exporing: false
         });
         if (!Axios.isCancel(err)) {
-          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+          swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
         }
       });
   }
@@ -207,11 +203,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addUser') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createUser}><i className="fa fa-plus" /> Agregar</button>
                     : null
                 }
                 <button
-                  className="btn btn-sm btn-primary  hidden-xs"
+                  className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}
                   disabled={exporing}
                   style={{marginLeft: '5px'}}
@@ -248,24 +244,28 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               </div>
               <table className="table table-andes table-striped">
                 <thead>
-                  <tr>
-                    <th style={{width: '24%'}}>Usuario</th>
-                    <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
-                    <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
-                    {
-                      hasPermission(window.user, 'changeUser') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                    {
-                      hasPermission(window.user, 'changeUser') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                    {
-                      hasPermission(window.user, 'deleteUser') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                  </tr>
+                <tr>
+                  <th style={{width: '24%'}}>Usuario</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
+                  {
+                    hasPermission(window.user, 'changeUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                  {
+                    hasPermission(window.user, 'addUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                  {
+                    window.user.isAdmin || (hasPermission(window.user, 'changeUser')) ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                  {
+                    hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                </tr>
                 </thead>
                 <tbody>
                 {
@@ -289,16 +289,16 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                               className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
                           </div>
                         </td>
-                        <td className="hidden-xs middle">{user.venue ? user.venue.name : ''}<br/>
+                        <td className="middle hidden-xs">{user.venue ? user.venue.name : ''}<br/>
                           <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                         </td>
-                        <td className="hidden-xs">
+                        <td className="middle hidden-xs">
                           {forms.map((form, index) => {
                             return <React.Fragment key={`${form._id}-${index}`}>
                               {index > 0 ?
                                 <br/> : null}
                               <span>{form.name}</span>
-                            </React.Fragment>
+                            </React.Fragment>;
                           })}
                         </td>
                         <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
@@ -308,15 +308,19 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                               <i className="fa fa-lock"/></td> : null
                         }
                         {
-                          hasPermission(window.user, 'changeUser') ?
-                            <td className="middle-center pointer" onClick={() => this.updateUser(user)}>
-                              <i className="fa fa-pencil text-blue"/></td> : null
+                          hasPermission(window.user, 'addUser') ?
+                            <td className="middle-center text-blue pointer" onClick={() => this.cloneUser(user)}>
+                              <i className="fa fa-clone"/></td> : null
+                        }
+                        {
+                          window.user.isAdmin || (hasPermission(window.user, 'changeUser') && !user.isAdmin) ?
+                            <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
+                              className="fa fa-pencil"/></td> : <td></td>
                         }
                         {
                           hasPermission(window.user, 'deleteUser') ?
-                            <td className="middle-center pointer" onClick={() => this.deleteUser(user)}>
-                              <i className="fa fa-minus-circle text-red"/>
-                            </td> : null
+                            <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i
+                              className="fa fa-minus-circle"/></td> : null
                         }
                       </tr>
                     );
@@ -344,6 +348,39 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private cloneUser(user: IUser): void {
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
+    const tmpUser = {
+      ...user,
+      _id: '',
+      firstName: '',
+      lastName: '',
+      email: ''
+    };
+    tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
+    this.props.changeTempUserAction(tmpUser);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Clonando usuario`,
+        <UserFormView
+          create={true}
+          changeTempUser={changeTempUser}
+          companies={companies}
+          venues={venues}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+          user={tmpUser}
+        />,
+        <React.Fragment>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Crear</button>
+        </React.Fragment>
+      );
+    }, 400);
+  }
+
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
@@ -352,12 +389,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    this.props.getUsersAction(1, UserTypes.common);
+    this.props.getUsersAction(1);
   }
 
   private createUser(): void {
-    const {changeTempUser} = this;
-    const {venues, permissions, forms, companies} = this.props.users;
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
@@ -365,19 +402,28 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       company: null,
       email: '',
       isAdmin: false,
+      isDriver: false,
       venue: '',
       userPermissions: [],
       venuesAccess: [],
-      userForms: []
+      userForms: [],
+      settings: {}
     });
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies}
-                      users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView
+          create={true}
+          changeTempUser={changeTempUser}
+          venues={venues}
+          companies={companies}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+        />,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Crear</button>
         </React.Fragment>
       );
     }, 400);
@@ -386,13 +432,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   private processCreateUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El nombres es requerido', 'error');
+      swal!('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El apellidos es requerido', 'error');
+      swal!('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El email es requerido', 'error');
+      swal!('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El sucursal es requerido', 'error');
+      swal!('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.createUserAction();
@@ -411,7 +457,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
         <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user}/>,
         <React.Fragment>
-          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal"
+          >
+            Cancelar
+          </button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processChangePassword}>Cambiar</button>
         </React.Fragment>
       );
@@ -427,7 +479,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         .then((response) => {
           statusFooterButttonsModal(false);
           showModal(false);
-          swal(response.data.message, {
+          swal!(response.data.message, {
             icon: 'success'
           });
         })
@@ -436,7 +488,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           api.errorHandler(err);
         });
     } else {
-      swal('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+      swal!('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
       statusFooterButttonsModal(false);
     }
   }
@@ -450,8 +502,16 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         `Editando a ${user.firstName} ${user.lastName}`,
-        <UserFormView create={false} changeTempUser={changeTempUser} companies={companies} venues={venues}
-                      users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <UserFormView
+          create={false}
+          changeTempUser={changeTempUser}
+          companies={companies}
+          venues={venues}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+          user={user}
+        />,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateUser}>Editar</button>
@@ -463,26 +523,28 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   private processUpdateUser() {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El nombres es requerido', 'error');
+      swal!('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El apellidos es requerido', 'error');
+      swal!('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El email es requerido', 'error');
+      swal!('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El sucursal es requerido', 'error');
+      swal!('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.updateUserAction();
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin, isDriver, settings}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      isAdmin: typeof isAdmin === "boolean" ? isAdmin : this.props.users.tempUser.isAdmin,
+      isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
+      isDriver: typeof isDriver === 'boolean' ? isDriver : this.props.users.tempUser.isDriver,
       password: password ? password : '',
+      settings: settings ?? this.props.users.tempUser.settings,
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
@@ -516,7 +578,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     // change the page
-    this.props.getUsersAction(page, UserTypes.common);
+    this.props.getUsersAction(page);
   }
 }
 

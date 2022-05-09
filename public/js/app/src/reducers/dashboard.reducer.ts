@@ -4,9 +4,12 @@ const initialState: IDashboardState = {
   loading: true,
   source: null,
   participants: [],
+  requests: [],
   companies:[],
   car: null,
   carEvents: {} ,
+  forms: [],
+  searchForms: [],
   participantsReceivedPerDate: [],
   participantsSentPerDate: [],
   participantPerRange: [],
@@ -19,6 +22,8 @@ const initialState: IDashboardState = {
   carsByVenue: [],
   totalCars: 0,
   loadingParticipant: null,
+  revisionStats: null,
+  venueStats: null,
   pagination: {
     count: 0,
     page: 1,
@@ -77,6 +82,11 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
         ...state,
         car: action.payload.car,
       };
+    case '/DASHBOARD/LOAD_REQUESTS_IN_CAR':
+      return {
+        ...state,
+        requests: action.payload.requests
+      };
     case '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR':
       if (state.car && state.car.participants) {
         return {
@@ -101,6 +111,26 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
           ...state.pagination,
           page: action.payload.page
         }
+      };
+    case '/DASHBOARD/LOAD_VENUES_STATS':
+      return {
+        ...state,
+        venueStats: action.payload.venuesStats
+      };
+    case '/DASHBOARD/LOAD_REVISION_STATS':
+      return {
+        ...state,
+        revisionStats: action.payload.revisionStats
+      };
+    case '/DASHBOARD/LOAD_FORMS':
+      return {
+        ...state,
+        forms: action.payload.forms
+      };
+    case '/DASHBOARD/CHANGE_FORM_SEARCH':
+      return {
+        ...state,
+        searchForms: action.payload.searchForms
       };
     default:
       return state;

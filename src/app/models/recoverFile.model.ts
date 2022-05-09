@@ -1,8 +1,8 @@
-import * as mongoose from "mongoose";
-import * as mongooseCrate from "mongoose-crate";
+import * as mongoose from 'mongoose';
+import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as s3Config from '../../../s3-config.json';
-import {IRecoverFile} from "../../interfaces/recoverFile.interface";
+import { IRecoverFile } from '../interfaces';
 
 const fileSchema = new mongoose.Schema({
   url: {

@@ -1,15 +1,17 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {
   IParticipant,
-  IparticipantAccesory,
+  IParticipantAccesory,
   IParticipantAnswer,
   IParticipantChoices,
-  IparticipantItems,
+  IParticipantItems,
   IParticipantScale,
   IParticipantSection
-} from '../../interfaces/participant.interface';
-import {KindQuestion, kindQuestion} from './form.model';
-import {choiceBackgroundColors} from './scale.model';
+} from '../interfaces/participant.interface';
+import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
+import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
@@ -50,7 +52,15 @@ const participantChoiceSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
-  }
+  },
+  optional: {
+    type: Boolean,
+    default: true
+  },
+  hint: {
+    type: String,
+    trim: true
+  },
 });
 
 export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {}
@@ -71,7 +81,7 @@ export const scaleSchema = new mongoose.Schema({
   }
 });
 
-export interface IParticipantItemModel extends IparticipantItems, mongoose.Types.Subdocument {}
+export interface IParticipantItemModel extends IParticipantItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
   item: {
     type: String,
@@ -98,7 +108,7 @@ const accesorySchema = new mongoose.Schema({
   _id: false
 });
 
-export interface IParticipantAccesoryModel extends IparticipantAccesory, mongoose.Types.Subdocument {}
+export interface IParticipantAccesoryModel extends IParticipantAccesory, mongoose.Types.Subdocument {}
 const accessorySchema = new mongoose.Schema({
   question: {
     type: String,
@@ -150,6 +160,7 @@ const damagesSelectedSchema = new mongoose.Schema({
 });
 
 export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {}
+
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
@@ -208,7 +219,22 @@ const participantAnswersSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
-  }
+  },
+  optional: {
+    type: Boolean,
+    default: false
+  },
+
+  hint: {
+    type: String,
+    trim: true
+  },
+
+  minValue: Number,
+  maxValue: Number,
+  colors: [String],
+  score: Number,
+
 });
 
 export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}
@@ -290,6 +316,11 @@ const participantSchema = new mongoose.Schema({
   },
   sections: [participantSectionsSchema],
 
+  hasDamages: {
+    type: Boolean,
+    default: false
+  },
+
   qualification: {
     type: Number,
     default: 0
@@ -347,6 +378,12 @@ const participantSchema = new mongoose.Schema({
     ref: 'Venue'
   },
 
+  kind: {
+    type: String,
+    enum: kindForm,
+    default: KindForm.control
+  },
+
   carrier: {
     type: Boolean,
     default: false
@@ -373,6 +410,20 @@ const participantSchema = new mongoose.Schema({
     ref: 'ParticipantFile'
   }],
 
+  transmittalItem: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TransmittalItem'
+  },
+  transmittal: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Transmittal'
+  },
+
+  milestone: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Milestone'
+  },
+
   active: {
     type: Boolean,
     default: true
@@ -381,15 +432,26 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({createdAt: 1});
-participantSchema.index({createdAt: -1});
-participantSchema.index({team: 1, createdAt: 1});
-participantSchema.index({venue: 1});
-participantSchema.index({survey: 1, completed: 1});
-participantSchema.index({form: 1, user: 1 });
-participantSchema.index({company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ createdAt: 1 });
+participantSchema.index({ createdAt: -1 });
+participantSchema.index({ team: 1, createdAt: 1 });
+participantSchema.index({ venue: 1 });
+participantSchema.index({ survey: 1, completed: 1 });
+participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ venue: 1, team: 1, kind: 1 });
+participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1 });
+participantSchema.index({ venue: 1, team: 1, kind: 1, form: 1 });
+participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1, form: 1 });
+participantSchema.index({ _id: 1, venue: 1, team: 1, kind: 1 });
 
-const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
+participantSchema.plugin(mongoosePaginate);
+
+export type ParticipantSchema =
+  mongoose.Model<IParticipantModel>
+  & PaginateModel<IParticipantModel>;
+
+const Participant = mongoose.model<IParticipantModel, ParticipantSchema>('Participant', participantSchema);
 
 export default Participant;

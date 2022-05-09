@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import 'mocha';
 import * as path from 'path';
 import {SuperTest, Test} from 'supertest';
-import {IInventory} from '../../interfaces/inventory.interface';
+import {IInventory} from '../interfaces/inventory.interface';
 import server from '../../server';
 import Inventory from '../models/inventory.model';
 import {IInventoryCarModel} from '../models/inventoryCar.model';
