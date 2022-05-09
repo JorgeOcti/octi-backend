@@ -3,10 +3,10 @@ import {Field, InjectedFormProps, reduxForm} from 'redux-form'
 import {RouteComponentProps} from "react-router";
 import {IUsersState, UserReduxAction} from "../../actions/users.actions";
 import {connect} from "react-redux";
-import InputField from "../../formComponents/InputField";
+import InputField from "../Utils/forms/InputField";
 import {Dispatch} from "redux";
 import {inputStringRequired} from "../../utils/formValidations";
-import BootstrapSelectField from "../../formComponents/BootstrapSelectFields";
+import BootstrapSelectField from "../Utils/forms/BootstrapSelectField";
 
 interface IPropsType extends InjectedFormProps, RouteComponentProps<{}> {
   dispatch: Dispatch<UserReduxAction>;
@@ -47,14 +47,24 @@ class Form extends React.Component<IPropsType, IStateType> {
                 <Field
                   name={`company`}
                   label="Empresa"
-                  options={companies.map((company: any) => ({
-                    value: company._id,
-                    text: company.name
-                  }))}
-                  autoClouse={true}
-                  search={true}
-                  multi={false}
-                  noneSelectedText={"Seleccione una empresa."}
+                  props={{
+                    noneSelectedText: 'Seleccione...',
+                    displayItems: 2,
+                    selectedText: 'empresas seleccionadas.',
+                    autoClouse: true,
+                    sm: true,
+                    allOption: false,
+                    search: true,
+                    options: [
+                      ...companies.map((company) => ({
+                        value: company._id,
+                        text: company.name
+                      }))
+                    ],
+                    onClick: (value: string) => {
+                      this.props.autofill('company', value);
+                    }
+                  }}
                   component={BootstrapSelectField}
                   validate={[inputStringRequired]}
                  />

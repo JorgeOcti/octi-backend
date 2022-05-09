@@ -1,12 +1,11 @@
-import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
-import {Dispatch} from 'redux';
+import { AxiosError, AxiosResponse } from 'axios';
+import { Dispatch } from 'redux';
 import ApiService from '../utils/axios';
-import {StatsDashboardTypes} from '../../../../../src/stats/models/studio.types';
-import {IStudio} from '../../../../../src/stats/interfaces/studio.interface';
-import {ITeam, IUser} from '../../../../../src/app/interfaces';
+import { StatsDashboardTypes } from '../../../../../src/stats/models/studio.types';
+import { IStudio } from '../../../../../src/stats/interfaces/studio.interface';
+import { ITeam, IUser } from '../../../../../src/app/interfaces';
 import * as swal from 'sweetalert';
-import {showModal, statusFooterButttonsModal} from "../utils/common";
-import {changeUserAction, getUsersAction, IUsersState, UserReduxAction} from "./users.actions";
+import { showModal, statusFooterButttonsModal } from '../utils/common';
 
 export interface ITempStudio {
   _id?: string;
