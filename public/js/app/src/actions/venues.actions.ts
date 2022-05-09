@@ -8,6 +8,7 @@ import { IBaseVenue, IVenue } from '../../../../../src/app/interfaces/venue.inte
 import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
 import {IUser} from "../../../../../src/app/interfaces";
+import { UserTypes } from './users.actions';
 
 export interface IVenuesState {
   venues: IVenue[];
@@ -376,6 +377,7 @@ export function getVenueUsersAction(page: number, venue: IVenue){
     api.getSource();
     api.getUsers({
       page,
+      type:  UserTypes.common,
       search: '',
       venue: venue._id,
       minified: true,

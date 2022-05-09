@@ -33,7 +33,7 @@ interface IPropsType extends RouteComponentProps<{}> {
   createIntegrationAction(user: any): UserReduxAction;
   deleteIntegrationAction(id: string): UserReduxAction;
   updateIntegrationAction(user: any): UserReduxAction;
-  getUsersAction(nextPage: number, type: string, search?: string): UserReduxAction;
+  getUsersAction(nextPage: number, type: UserTypes, search?: string): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 interface IStateType {
@@ -281,7 +281,7 @@ const mapDispatchToProps = (dispatch: any) => {
     deleteIntegrationAction: (id: string) => dispatch(deleteIntegrationAction(id)),
     updateIntegrationAction: (user: IUser) => dispatch(updateIntegrationAction(user)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    getUsersAction: (nextPage: number, type: string, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
+    getUsersAction: (nextPage: number, type: UserTypes, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
   };
 };
 

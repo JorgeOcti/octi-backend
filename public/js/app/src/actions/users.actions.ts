@@ -357,7 +357,7 @@ export function loadChannelsUserAction(channels: ISalesChannel[]): ILoadChannels
   };
 }
 
-export function getUsersAction(nextPage: number, type: string, search?: string) {
+export function getUsersAction(nextPage: number, type: UserTypes, search?: string) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
     const state = getState();

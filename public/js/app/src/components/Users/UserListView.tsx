@@ -39,12 +39,13 @@ import UserFormView from './UserFormView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { io } from "socket.io-client";
 import { Socket } from 'socket.io-client/build/esm/socket';
+import { UserTypes } from '../../../../../../src/app/models/user.model.types';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(page: number, search?: string): UserReduxAction;
+  getUsersAction(page: number, type: UserTypes, search?: string): UserReduxAction;
   createUserAction(): UserReduxAction;
   updateUserAction(): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
@@ -95,7 +96,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const { pagination } = this.props.users;
-    this.props.getUsersAction(pagination.page);
+    this.props.getUsersAction(pagination.page, UserTypes.common);
 
     // socket
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -110,7 +111,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.users;
-        this.props.getUsersAction(pagination.page);
+        this.props.getUsersAction(pagination.page, UserTypes.common);
       }
     });
   }
@@ -389,7 +390,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    this.props.getUsersAction(1);
+    this.props.getUsersAction(1, UserTypes.common);
   }
 
   private createUser(): void {
@@ -578,7 +579,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     // change the page
-    this.props.getUsersAction(page);
+    this.props.getUsersAction(page, UserTypes.common );
   }
 }
 
@@ -592,7 +593,7 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getUsersAction: (nextPage: number, type: string, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
+    getUsersAction: (nextPage: number, type: UserTypes, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),

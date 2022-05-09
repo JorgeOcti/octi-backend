@@ -423,7 +423,8 @@ class AdminUsersController {
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
-    if (minified === '0'){
+
+    if (minified === 'false'){
       options.populate = [{
         path: 'venue',
         select: ['name', 'active']
@@ -461,6 +462,7 @@ class AdminUsersController {
       {...filter,  $or: [{venue}, {venuesAccess: venue}]} :
       {...filter, venue: {$in: req.user.venuesPermissions()}};
     }
+
 
     try {
       const users = await this.getUsers(filter, options, search);
