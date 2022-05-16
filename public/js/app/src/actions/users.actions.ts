@@ -9,11 +9,7 @@ import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 import { ISalesChannel } from '../../../../../src/request/interfaces';
-
-export enum UserTypes {
-  common = 'common',
-  integration = 'integration',
-}
+import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
 export interface IUsersState {
   users: IUser[];

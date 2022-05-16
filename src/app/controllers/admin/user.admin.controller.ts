@@ -219,17 +219,17 @@ class AdminUsersController {
     }
   }
 
-   public async apiCreateIntegration(req: IRequest, res: Response): Promise<any> {
+  public async apiCreateIntegration(req: IRequest, res: Response): Promise<any> {
     /* istanbul ignore next  */
     // if (!req.user.hasPermission('addIntegration')) {
     //   return res.status(403).json({
     //     message: 'No tienes permisos para esta operación'
     //   });
     // }
-    const {firstName, company} = req.body;
-    const {team} = req.user;
+    const { firstName, company } = req.body;
+    const { team } = req.user;
     // validate fields required
-    if (!firstName || !firstName.length) {
+    if (!firstName?.length) {
       res.status(400).json({
         message: 'Name are required',
         status: 400
@@ -241,7 +241,7 @@ class AdminUsersController {
       let newUser = await new User({
         firstName,
         username: randomText,
-        venuesAccess : [],
+        venuesAccess: [],
         userPermissions: [],
         company,
         team,
@@ -251,7 +251,7 @@ class AdminUsersController {
         active: true
       }).save();
       // this token no expire
-      newUser.token = jwt.sign({_id: newUser._id.toString()}, req.app.locals.secretKey);
+      newUser.token = jwt.sign({ _id: newUser._id.toString() }, req.app.locals.secretKey);
       newUser.save();
 
       // const errors = await newUser.validate();
@@ -277,9 +277,9 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
-    const {team} = req.user;
-    const {firstName, company} = req.body;
+    const { id } = req.params;
+    const { team } = req.user;
+    const { firstName, company } = req.body;
     // validate fields required
     if (!firstName || !firstName.length) {
       res.status(400).json({
@@ -360,11 +360,11 @@ class AdminUsersController {
     //     message: 'No tienes permisos para esta operación'
     //   });
     // }
-    const {team} = req.user;
-    const {id} = req.params;
+    const { team } = req.user;
+    const { id } = req.params;
     // const company = req.user.company;
     try {
-      const user = await User.findOneAndRemove({_id: id, team, type: UserTypes.integration});
+      const user = await User.findOneAndRemove({ _id: id, team, type: UserTypes.integration });
       if (user) {
         const response = {
           message: 'Integración eliminada satisfactoriamente.',

@@ -31,7 +31,6 @@ export interface IUser {
   type: string;
   token: string;
   active: boolean;
-  token?: string;
   updatedAt: Date;
   createdAt: Date;
   group: IGroup;

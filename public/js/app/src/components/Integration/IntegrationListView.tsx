@@ -1,29 +1,30 @@
-import * as React from "react";
-import {ErrorInfo} from "react";
-import {IWindow} from "../../interfaces/window";
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import { IWindow } from '../../interfaces/window';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import {
   createIntegrationAction,
   deleteIntegrationAction,
   getUsersAction,
-  IUsersState, updateIntegrationAction,
-  UserReduxAction,
-  UserTypes
-} from "../../actions/users.actions";
-import {connect} from "react-redux";
-import * as Raven from "raven-js";
-import AppContainer from "../../container/AppContainer";
-import {loadDataAction, ModalReduxAction} from "../../actions/modal.actions";
-import {IUser} from '../../../../../../src/app/interfaces/user.interface';
-import IntegrationFormView from "./IntegrationFormView";
-import {submit} from 'redux-form'
-import ModalView from "../Modal/ModalView";
-import Paginator from "../Utils/Paginator";
-import * as swal from "sweetalert";
-import CopyText from "../Utils/CopyText";
+  IUsersState,
+  updateIntegrationAction,
+  UserReduxAction
+} from '../../actions/users.actions';
+import { connect } from 'react-redux';
+import * as Raven from 'raven-js';
+import AppContainer from '../../container/AppContainer';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
+import { IUser } from '../../../../../../src/app/interfaces/user.interface';
+import IntegrationFormView from './IntegrationFormView';
+import { submit } from 'redux-form';
+import ModalView from '../Modal/ModalView';
+import Paginator from '../Utils/Paginator';
+import * as swal from 'sweetalert';
+import CopyText from '../Utils/CopyText';
 import { Socket } from 'socket.io-client/build/esm/socket';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
+import { UserTypes } from '../../../../../../src/app/models/user.model.types';
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<UserReduxAction>;
@@ -89,10 +90,11 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
       extra: errorInfo
     });
   }
+
   public render(): React.ReactElement<IPropsType> {
     const {users, loading, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.11" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.12" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

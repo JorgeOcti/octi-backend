@@ -16,3 +16,4 @@ export * from './teamSetting.interface';
 export * from './version.interface';
 export * from './color.interface';
 export * from './samlConfig.interface';
+export * from './history.interface';

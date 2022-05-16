@@ -286,15 +286,6 @@ if (hasPermission(window.user, 'viewVenue')) {
 }
 
 
-if (hasPermission(window.user, 'viewCarrier')) {
-  settingItems.push({
-    id: '10.6',
-    icon: 'fa-circle-o',
-    text: 'Transportistas',
-    url: '/settings/carriers/'
-  });
-}
-
 if (hasPermission(window.user, 'viewUser')) {
   settingItems.push({
     id: '10.5',
@@ -304,12 +295,15 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-settingItems.push({
-  id: '10.11',
-  icon: 'fa-circle-o',
-  text: 'Integraciones',
-  url: '/settings/integrations/'
-});
+if (hasPermission(window.user, 'viewCarrier')) {
+  settingItems.push({
+    id: '10.6',
+    icon: 'fa-circle-o',
+    text: 'Transportistas',
+    url: '/settings/carriers/'
+  });
+}
+
 
 if (hasPermission(window.user, 'viewVersion')) {
   settingItems.push({
@@ -344,6 +338,15 @@ if (hasPermission(window.user, 'viewStatsDashboard')) {
     icon: 'fa-circle-o',
     text: 'Estádisticas',
     url: '/settings/stats/'
+  });
+}
+
+if (hasPermission(window.user, 'viewIntegration') || window.user.isAdmin) {
+  settingItems.push({
+    id: '10.12',
+    icon: 'fa-circle-o',
+    text: 'Integraciones',
+    url: '/settings/integrations/'
   });
 }
 

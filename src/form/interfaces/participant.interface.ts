@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
-import {ICarModel} from '../../app/models/car.model';
-import {ICompanyModel} from '../../app/models/company.model';
-import {ITeamModel} from '../../app/models/team.model';
-import {IUserModel} from '../../app/models/user.model';
-import {IVenueModel} from '../../app/models/venue.model';
-import {IFormModel} from '../models/form.model';
+import { ICarModel } from '../../app/models/car.model';
+import { ICompanyModel } from '../../app/models/company.model';
+import { ITeamModel } from '../../app/models/team.model';
+import { IUserModel } from '../../app/models/user.model';
+import { IVenueModel } from '../../app/models/venue.model';
+import { IFormModel } from '../models/form.model';
 import {
   IParticipantAccesoryModel,
   IParticipantAnswerModel,
@@ -13,15 +13,15 @@ import {
   IParticipantSectionModel,
   IScaleParticipantModel
 } from '../models/participant.model';
-import {IDamages, IDamageSelected} from './damage.interface';
-import {IParticipantFile} from './participantFile.interface';
-import {ICarrierModel} from '../../app/models/carrier.model';
-import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.interface";
-import {ITransmittalModel} from "../../distribution/models/transmittal.model";
+import { IDamages, IDamageSelected } from './damage.interface';
+import { IParticipantFile } from './participantFile.interface';
+import { ICarrierModel } from '../../app/models/carrier.model';
+import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
+import { ITransmittalModel } from '../../distribution/models/transmittal.model';
 import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
 import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
-import {IMilestone} from "../../distribution/interfaces";
-import {IMilestoneModel} from "../../distribution/models/milestone.model";
+import { IMilestone } from '../../distribution/interfaces';
+import { IMilestoneModel } from '../../distribution/models/milestone.model';
 
 export interface IParticipantChoices {
   choice: string;

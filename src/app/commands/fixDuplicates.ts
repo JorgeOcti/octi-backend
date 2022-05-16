@@ -24,6 +24,7 @@ async function fixDuplicatesCar() {
     // const team = mongoose.Types.ObjectId("5bf2de34caf8ef7096105cda");
     const teams = await Team.find({});
     for (const team of teams) {
+      console.log('team', team.name);
       const cars = await Car.aggregate([{
         $match: {
           team: team._id
@@ -39,23 +40,24 @@ async function fixDuplicatesCar() {
         }
       }]);
       if (cars) {
+        console.log('cars', cars.length);
         for (const car of cars) {
           if (car._id && car._id.length) {
             const carsByVIN = await Car.find({vin: car._id, team: team._id}, {sort: '-created_at'});
             let firstCar = undefined;
             for (const carByVIN of carsByVIN) {
               console.log('carByVIN', carByVIN);
-
               if (firstCar === undefined) {
                 firstCar = carByVIN;
               } else {
-                await InventoryCar.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
-                await RequestItem.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
-                await Participant.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
-                await StockCar.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
-                await Planning.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
-
-                await Car.findByIdAndDelete(carByVIN._id);
+                await Promise.all([
+                  InventoryCar.update({car: carByVIN._id}, {$set: {car: firstCar._id}}),
+                  RequestItem.update({car: carByVIN._id}, {$set: {car: firstCar._id}}),
+                  Participant.update({car: carByVIN._id}, {$set: {car: firstCar._id}}),
+                  StockCar.update({car: carByVIN._id}, {$set: {car: firstCar._id}}),
+                  Planning.update({car: carByVIN._id}, {$set: {car: firstCar._id}}),
+                  Car.findByIdAndDelete(carByVIN._id),
+                ])
               }
             }
           }
