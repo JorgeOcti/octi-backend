@@ -153,6 +153,7 @@ export interface IParticipant {
   transmittal?: ITransmittal | ITransmittalModel;
   milestone?: IMilestone | IMilestoneModel;
 
+  deliveryToCustomer: boolean;
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

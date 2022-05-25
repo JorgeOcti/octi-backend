@@ -29,7 +29,7 @@ class EmailQueue {
 
   private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
     if (job) {
-      job.log('start process');
+      job.log('start processEmail');
       // generate email
       const mail: Mail.Options = {
         from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,

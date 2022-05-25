@@ -7,12 +7,16 @@ import { statusHistory, modulesHistory } from './history.types';
 export interface IHistoryModel extends IHistory, mongoose.Document {
 }
 
+const historyAlertsSchema = new mongoose.Schema({
+  hasDamages: {
+    type: Boolean
+  }
+}, {
+  _id: false
+});
+
+
 const historySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    trim: true,
-    required: true
-  },
   from: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
@@ -46,6 +50,10 @@ const historySchema = new mongoose.Schema({
     enum: modulesHistory,
     required: true
   },
+  form: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form'
+  },
   participant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Participant'
@@ -54,18 +62,39 @@ const historySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Inventory'
   },
-  inventoryDetail: {
+  inventoryCar: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'
+  },
+  current: {
+    type: Boolean,
+    required: true
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  alert: {
+    type: historyAlertsSchema,
+    default: {}
+  },
+  alerts: {
+    type: [historyAlertsSchema],
+    default: []
+  },
+  executedAt: {
+    type: Date,
+    required: true
   }
 }, {
   timestamps: true
 });
+
+historySchema.index({ team: 1, car: 1 });
+historySchema.index({ team: 1, company: 1, car: 1 });
+historySchema.index({ team: 1, current: 1, car: 1 });
+historySchema.index({ team: 1, company: 1, current: 1, car: 1 });
 
 historySchema.plugin(mongoosePaginate);
 

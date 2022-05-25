@@ -121,5 +121,6 @@ export interface IForm {
   sections: mongoose.Types.Array<IFormSectionModel>;
   triggers: mongoose.Types.Array<IFormTriggerModel>;
   url?: string;
+  deliveryToCustomer: boolean;
   active: boolean;
 }

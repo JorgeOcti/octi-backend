@@ -905,6 +905,9 @@ class InventoryController {
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
+        queue.create('finishInventory', {
+          inventory: inventory._id
+        }).priority('high').attempts(5).save();
         io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });

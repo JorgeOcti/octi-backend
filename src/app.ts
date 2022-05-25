@@ -7,7 +7,7 @@ import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as session from 'express-session';
-import * as fileStreamRotator from 'file-stream-rotator';
+import { CookieOptions } from 'express-session';
 import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
@@ -31,8 +31,9 @@ import { planningRouter } from './planning/router';
 import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { distributionRouter } from './distribution/router';
-import { CookieOptions } from 'express-session';
-import {statsRouter} from "./stats/router";
+import { statsRouter } from './stats/router';
+import { accessLogStream } from './services/logger.service';
+import HistoryQueue from './app/tasks/history.task';
 
 // Create Express server
 const app = express();
@@ -185,15 +186,6 @@ passport.deserializeUser((id, done) => {
 });
 */
 
-// Logger app
-const logDirectory = path.join(__dirname, '../logs');
-export const accessLogStream = fileStreamRotator.getStream({
-  date_format: 'YYYYMMDD',
-  // date_format: 'YYYY/MM/DD',
-  filename: logDirectory + '/access-%DATE%.log',
-  frequency: 'daily',
-  verbose: false
-});
 
 app.use('/robots.txt', AppController.robots);
 app.use('/health-check/', AppController.healthCheck);
@@ -272,6 +264,7 @@ const billingQueue = new Bull('billing', {
 
 new EmailQueue(queue).run();
 new InventoryQueue(queue).run();
+new HistoryQueue(queue).run();
 kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
 // The error handler must be before any other error middleware

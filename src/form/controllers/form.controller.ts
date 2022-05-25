@@ -39,6 +39,7 @@ import RequestController from '../../request/controllers/request.controller';
 import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
+import carTracker from '../../app/controllers/tracker/car.tracker';
 
 
 // import * as puppeteer from 'puppeteer';
@@ -840,7 +841,7 @@ class FormController {
             }
             // save the participant
             await newParticipant.save();
-
+            await carTracker.fromParticipant({ id: newParticipant._id });
             // associate transmittalItem to participant
             if (transmittalItem?.length) {
               newParticipant.transmittalItem = transmittalItem;

@@ -423,7 +423,10 @@ const participantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Milestone'
   },
-
+  deliveryToCustomer: {
+    type: Boolean,
+    default: false
+  },
   active: {
     type: Boolean,
     default: true

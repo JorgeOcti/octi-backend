@@ -299,7 +299,10 @@ const formSchema = new mongoose.Schema({
 
   sections: [formSectionsSchema],
   triggers: [formTriggerSchema],
-
+  deliveryToCustomer: {
+    type: Boolean,
+    default: false
+  },
   active: {
     type: Boolean,
     default: true
