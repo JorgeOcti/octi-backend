@@ -91,7 +91,14 @@ class CarTracker {
             venue: true,
             user: true,
             hasDamages: true,
-            createdAt: true
+            createdAt: true,
+            deliveryToCustomer: true,
+            reception: true,
+            receptionVenue: true,
+            shipping: true,
+            shippingVenue: true,
+            sendTo: true,
+            receiveFrom: true
           })
           .populate([{
             path: 'form',
@@ -119,23 +126,43 @@ class CarTracker {
             createdBy: user
           };
           if (participant.deliveryToCustomer) {
-            history['status'] = StatusHistory.sale;
-            history['from'] = venue;
-            history['to'] = venue;
+            history = {
+              ...history,
+              status: StatusHistory.sale,
+              from: venue,
+              to: venue
+            };
           } else if (participant.reception) {
-            history['status'] = StatusHistory.available;
-            history['from'] = receiveFrom;
-            history['to'] = venue;
+            history = {
+              ...history,
+              status: StatusHistory.available,
+              from: receiveFrom,
+              to: venue
+            };
           } else if (participant.shipping) {
-            history['status'] = StatusHistory.inTransit;
-            history['from'] = venue;
-            history['to'] = sendTo;
-          }
-          if (hasDamages) {
-            history['alert'] = {
-              hasDamages
+            history = {
+              ...history,
+              status: StatusHistory.inTransit,
+              from: venue,
+              to: sendTo
+            };
+          } else {
+            history = {
+              ...history,
+              status: StatusHistory.available,
+              from: venue,
+              to: venue
             };
           }
+          if (hasDamages) {
+            history = {
+              ...history,
+              alert: {
+                hasDamages
+              }
+            };
+          }
+          console.log(`CarTracker.fromParticipant: history: ${JSON.stringify(history)}`);
           await this.createHistory(history);
           resolve({});
         }
@@ -175,9 +202,12 @@ class CarTracker {
       logger.info(`CarTracker.createHistory`);
       console.log(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
       try {
-        const lastHistory = await History.findOne({
+        let lastHistory = await History.findOne({
           car: history.car
-        }, {}, { sort: { 'executedAt': -1 } });
+        }, {
+          _id: true,
+          alerts: true,
+        }, { sort: { 'executedAt': -1 } });
         if (lastHistory && history?.alert?.hasDamages) {
           history['alerts'] = [history.alert, ...lastHistory.alerts];
         } else if (lastHistory && !history?.alert?.hasDamages) {
@@ -187,16 +217,28 @@ class CarTracker {
         } else {
           history['alerts'] = [];
         }
-        await History.updateMany({
+        const data = await new History({
+           current: true,
+          ...history,
+        }).save();
+        lastHistory = await History.findOne({
+          _id: {
+            $nin:[data._id]
+          },
+          car: history.car
+        }, {}, { sort: { 'executedAt': -1 } });
+        if(lastHistory){
+          await History.updateMany({
           car: history.car,
-          current: true
         }, {
           $set: { current: false }
         });
-        const data = await new History({
-          ...history,
-          current: true
-        }).save();
+          await History.updateOne({
+            _id: lastHistory._id,
+          }, {
+            $set: { current: true }
+          });
+        }
         resolve(data);
       } catch (e) {
         /* istanbul ignore next */

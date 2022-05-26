@@ -6,9 +6,7 @@ import InventoryCar from '../../inventory/models/inventoryCar.model';
 import carTracker from '../controllers/tracker/car.tracker';
 import Inventory from '../../inventory/models/inventory.model';
 import Participant from '../../form/models/participant.model';
-import { Car } from '../models';
-import History from '../models/history.model';
-import Form from '../../form/models/form.model';
+// import Form from '../../form/models/form.model';
 
 async function migrateTracker() {
   dotenv.config({
@@ -20,31 +18,11 @@ async function migrateTracker() {
   mongoose.set('debug', true);
   try {
     new Inventory({});
-    const formsDeliveryCustumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
-    await Form.updateMany({ _id: { $in: formsDeliveryCustumer } }, { $set: { deliveryToCustomer: true } });
-    await Form.updateMany({ _id: { $nin: formsDeliveryCustumer } }, { $set: { deliveryToCustomer: false } });
-    await Participant.updateMany({ form: { $in: formsDeliveryCustumer } }, { $set: { deliveryToCustomer: true } });
-    await Participant.updateMany({ form: { $nin: formsDeliveryCustumer } }, { $set: { deliveryToCustomer: false } });
-    if(false){
-      const cars = await Car.find({});
-      for (const car of cars) {
-        const lastHistory = await History.findOne({car: car._id}, {}, { sort: { 'executedAt': -1 } });
-        if (lastHistory) {
-          await History.updateMany({
-            car: car._id,
-            current: true
-          }, {
-            $set: { current: false }
-          });
-          await History.updateOne({
-            _id: lastHistory?._id
-          }, {
-            $set: { current: false }
-          });
-        }
-      }
-      process.exit(1);
-    }
+    // const formsDeliveryCostumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
+    // await Form.updateMany({ _id: { $in: formsDeliveryCostumer } }, { $set: { deliveryToCustomer: true } });
+    // await Form.updateMany({ _id: { $nin: formsDeliveryCostumer } }, { $set: { deliveryToCustomer: false } });
+    // await Participant.updateMany({ form: { $in: formsDeliveryCostumer } }, { $set: { deliveryToCustomer: true } });
+    // await Participant.updateMany({ form: { $nin: formsDeliveryCostumer } }, { $set: { deliveryToCustomer: false } });
 
     const inventoryCarcursor = await InventoryCar
       .find({}, { _id: true })
@@ -68,11 +46,19 @@ async function migrateTracker() {
         console.log('error:', e);
       }
     });
+    let complete = false;
+    const finishProcess = () =>{
+       if(complete){
+        process.exit(1);
+      } else{
+        complete = true
+      }
+    };
     inventoryCarcursor.on('end', async () => {
-      process.exit(1);
+     finishProcess();
     });
     participantCursor.on('end', async () => {
-      process.exit(1);
+      finishProcess();
     });
   } catch (e) {
     console.log('Ha ocurrido un error en migrateTracker');
