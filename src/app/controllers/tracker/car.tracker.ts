@@ -6,14 +6,18 @@ import logger from '../../../services/logger.service';
 import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
 import { IInventory } from '../../../inventory/interfaces/inventory.interface';
 import Participant from '../../../form/models/participant.model';
+import { Car } from '../../models';
 
 class CarTracker {
 
   constructor() {
-    this.importIntoSistem = this.importIntoSistem.bind(this);
+    this.importIntoSystem = this.importIntoSystem.bind(this);
     this.fromParticipant = this.fromParticipant.bind(this);
     this.fromInventoryCar = this.fromInventoryCar.bind(this);
+    this.updateCurrentHistory = this.updateCurrentHistory.bind(this);
+
     this.createHistory = this.createHistory.bind(this);
+    this.updateAlerts = this.updateAlerts.bind(this);
   }
 
   public async fromInventoryCar({ id }: InventoryCarProps) {
@@ -38,7 +42,7 @@ class CarTracker {
               company: true
             }
           }]);
-        console.log(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
+        // logger.info(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
         if (inventoryCar && inventoryCar.inventory && inventoryCar.inventoriedBy) {
           const { inventory, car, venue, venueFound, inventoriedBy, updatedAt, status } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;
@@ -53,21 +57,14 @@ class CarTracker {
             createdBy: inventoriedBy,
             executedAt: updatedAt
           };
-          const executeHistory = [
-            ChoicesStatusCarInventory.found,
-            ChoicesStatusCarInventory.reported
-            // ChoicesStatusCarInventory.leftover
-          ].includes(status as ChoicesStatusCarInventory);
-          if (executeHistory) {
-            const statusDelegates: any = {
-              [ChoicesStatusCarInventory.found]: StatusHistory.available,
-              [ChoicesStatusCarInventory.reported]: StatusHistory.available
-            };
-            history['from'] = venue;
-            history['to'] = venueFound || venue;
-            history['status'] = statusDelegates[status as ChoicesStatusCarInventory];
-            await this.createHistory(history);
-          }
+          const statusDelegates: any = {
+            [ChoicesStatusCarInventory.found]: StatusHistory.available,
+            [ChoicesStatusCarInventory.reported]: StatusHistory.available
+          };
+          history['from'] = venue;
+          history['to'] = venueFound || venue;
+          history['status'] = statusDelegates[status as ChoicesStatusCarInventory];
+          await this.createHistory(history);
           resolve({});
         }
       } catch (e) {
@@ -112,7 +109,7 @@ class CarTracker {
               receiveFrom: true
             }
           }]);
-        console.log(`CarTracker.fromParticipant: participant: ${JSON.stringify(participant)}`);
+        // logger.info(`CarTracker.fromParticipant: participant: ${JSON.stringify(participant)}`);
         if (participant) {
           const { car, team, company, venue, user, createdAt, hasDamages, sendTo, receiveFrom } = participant;
           let history: Partial<IHistory> = {
@@ -162,7 +159,7 @@ class CarTracker {
               }
             };
           }
-          console.log(`CarTracker.fromParticipant: history: ${JSON.stringify(history)}`);
+          // logger.info(`CarTracker.fromParticipant: history: ${JSON.stringify(history)}`);
           await this.createHistory(history);
           resolve({});
         }
@@ -174,7 +171,7 @@ class CarTracker {
     });
   }
 
-  public async importIntoSistem({ car, team, company, createdBy }: importToSistemProps) {
+  public async importIntoSystem({ car, team, company, createdBy }: importToSistemProps) {
     return new Promise(async (resolve, reject) => {
       try {
         logger.info(`CarTracker.importToSistem`);
@@ -186,7 +183,7 @@ class CarTracker {
           company,
           createdBy
         };
-        console.log(`CarTracker.importToSistem: history: ${JSON.stringify(history)}`);
+        // logger.info(`CarTracker.importToSistem: history: ${JSON.stringify(history)}`);
         await this.createHistory(history);
         resolve({});
       } catch (e) {
@@ -200,46 +197,16 @@ class CarTracker {
   private async createHistory(history: Partial<IHistory>) {
     return new Promise(async (resolve, reject) => {
       logger.info(`CarTracker.createHistory`);
-      console.log(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
+      // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
       try {
-        let lastHistory = await History.findOne({
-          car: history.car
-        }, {
-          _id: true,
-          alerts: true,
-        }, { sort: { 'executedAt': -1 } });
-        if (lastHistory && history?.alert?.hasDamages) {
-          history['alerts'] = [history.alert, ...lastHistory.alerts];
-        } else if (lastHistory && !history?.alert?.hasDamages) {
-          history['alerts'] = lastHistory.alerts;
-        } else if (history?.alert?.hasDamages) {
-          history['alerts'] = [history.alert];
-        } else {
-          history['alerts'] = [];
-        }
-        const data = await new History({
-           current: true,
+        history = {
           ...history,
-        }).save();
-        lastHistory = await History.findOne({
-          _id: {
-            $nin:[data._id]
-          },
-          car: history.car
-        }, {}, { sort: { 'executedAt': -1 } });
-        if(lastHistory){
-          await History.updateMany({
-          car: history.car,
-        }, {
-          $set: { current: false }
-        });
-          await History.updateOne({
-            _id: lastHistory._id,
-          }, {
-            $set: { current: true }
-          });
-        }
-        resolve(data);
+          current: true
+        };
+        // this.processAlert(history);
+        await new History(history).save();
+        this.updateCurrentHistory(history.car);
+        resolve(history);
       } catch (e) {
         /* istanbul ignore next */
         logger.error(e);
@@ -247,6 +214,93 @@ class CarTracker {
       }
     });
   }
+
+  public async updateCurrentHistory(car: any) {
+    return new Promise(async (resolve, reject) => {
+      logger.info(`CarTracker.updateCurrentHistory`);
+      try {
+        const lastHistory = await History
+          .findOne({
+            car
+          }, {
+            _id: true
+          }, {
+            sort: {
+              executedAt: -1
+            }
+          });
+        if (lastHistory) {
+          await History.updateMany({
+            car: car
+          }, {
+            $set: { current: false }
+          });
+          await History.updateOne({
+            _id: lastHistory._id
+          }, {
+            $set: { current: true }
+          });
+          await Car.updateOne({
+            _id: car
+          }, {
+            $set: {
+              event: lastHistory._id
+            }
+          });
+        }
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  private async updateAlerts(history: Partial<IHistory>) {
+    return new Promise(async (resolve, reject) => {
+      logger.info(`CarTracker.updateCurrentHistory`);
+      try {
+        let lastHistory = await History.findOne({
+          car: history.car
+        }, {
+          _id: true,
+          alerts: true
+        }, {
+          sort: {
+            executedAt: -1
+          }
+        });
+        if (lastHistory && history?.alert?.hasDamages) {
+          history = {
+            ...history,
+            alerts: [history.alert, ...lastHistory.alerts]
+          };
+        } else if (lastHistory && !history?.alert?.hasDamages) {
+          history = {
+            ...history,
+            alerts: lastHistory.alerts
+          };
+        } else if (history?.alert?.hasDamages) {
+          history = {
+            ...history,
+            alerts: [history.alert]
+          };
+        } else {
+          history = {
+            ...history,
+            alerts: []
+          };
+        }
+        resolve(history);
+      }
+      catch (e) {
+        /* istanbul ignore next */
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
 }
 
 const carTracker = new CarTracker();

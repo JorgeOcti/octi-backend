@@ -4,6 +4,7 @@ import { IParticipant } from '../../form/interfaces/participant.interface';
 import { ITeam } from './team.interface';
 import { IUser } from './user.interface';
 import { IVenue } from './venue.interface';
+import { IHistory } from './history.interface';
 
 export interface ICarLocation {
   venue: IVenue;
@@ -51,6 +52,8 @@ export interface ICar {
   participants?: IParticipant[];
   inventories?: IInventoryCar[];
   status: string;
+  event: IHistory;
+  events: IHistory[];
   createdBy?: IUser;
   updatedAt: Date;
   createdAt: Date;

@@ -182,6 +182,13 @@ export const carSchema = new mongoose.Schema({
     required: true,
     default: ChoicesStatusCar.active
   },
+  event: {
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'History',
+      default: null
+    }
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -211,6 +218,13 @@ carSchema.index({
 
 carSchema.virtual('participants', {
   ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'car', // is equal to field in another model
+  justOne: false
+});
+
+carSchema.virtual('events', {
+  ref: 'History', // The model to use
   localField: '_id', // Find field in this model
   foreignField: 'car', // is equal to field in another model
   justOne: false

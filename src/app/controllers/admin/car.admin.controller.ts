@@ -3,6 +3,7 @@ import { PaginateOptions, PaginateResult, Types } from 'mongoose';
 import { IRequest } from '../../../interfaces/global.interface';
 import { io } from '../../../server';
 import Car, { ChoicesStatusCar, ICarModel } from '../../models/car.model';
+import carTracker from '../tracker/car.tracker';
 
 class AdminCarController {
 
@@ -60,7 +61,7 @@ class AdminCarController {
         if (car.vin && car.vin.length) {
           const vin2 = car.vin.substr(car.vin.length - 6);
           try {
-            const newCar = await Car.findOne({
+            let newCar = await Car.findOne({
               vin: car.vin,
               team
             });
@@ -79,7 +80,7 @@ class AdminCarController {
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
-              await new Car({
+              newCar = await new Car({
                 vin: car.vin,
                 vin2,
                 type: car.tipo ? car.tipo : '',
@@ -97,6 +98,12 @@ class AdminCarController {
                 status: ChoicesStatusCar.active
               }).save();
             }
+            await carTracker.importIntoSystem({
+              car: newCar._id,
+              team,
+              company,
+              createdBy: req.user.toString()
+            })
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           } catch (e) {
             /* istanbul ignore next */

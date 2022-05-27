@@ -2,10 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-
-import Inventory from '../../inventory/models/inventory.model';
-import { Car } from '../models';
-import History from '../models/history.model';
+import { Car } from '../../models';
+import carTracker from '../../controllers/tracker/car.tracker';
+import History from '../../models/history.model';
 
 async function fixTrackerCurrentHistory() {
   dotenv.config({
@@ -14,28 +13,27 @@ async function fixTrackerCurrentHistory() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-  mongoose.set('debug', true);
+  mongoose.set('debug', false);
   try {
-    new Inventory({});
+    // 5bf2de34caf8ef7096105cda = Derco
+    const teams = ['5bf2de34caf8ef7096105cda'];
+    const histories = await History
+      .find({
+        team: { $in: teams }
+      }, {
+        car: true
+      });
     const carCursor = await Car
-      .find({}, { _id: true })
-      .batchSize(20)
+      .find({
+        _id: {
+          $in: histories.map((history)=>(history.car))
+        },
+        team: { $in: teams }
+      }, { _id: true })
+      .batchSize(100)
       .cursor();
     carCursor.on('data', async (car) => {
-      const lastHistory = await History.findOne({ car: car._id }, { _id: true }, { sort: { 'executedAt': -1 } });
-      if (lastHistory) {
-        await History.updateMany({
-          car: car._id,
-          current: true
-        }, {
-          $set: { current: false }
-        });
-        await History.updateOne({
-          _id: lastHistory?._id
-        }, {
-          $set: { current: false }
-        });
-      }
+      await carTracker.updateCurrentHistory(car._id);
     });
     carCursor.on('end', async () => {
       process.exit(1);

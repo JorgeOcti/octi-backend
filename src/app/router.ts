@@ -20,6 +20,7 @@ import router from '../form/router';
 import { passport } from '../passportConfig';
 import appController from './controllers/app.controller';
 import StudioController from '../stats/controllers/studio.controller';
+import historyController from './controllers/history.controller';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -75,6 +76,9 @@ appRouter.delete('/api/admin/integrations/:id/', Middlewares.isLoggedIn, AdminUs
 
 // drivers
 appRouter.get('/api/v1/users/drivers/', Middlewares.isJWTAuthenticated, UserController.apiListDrivers);
+
+// histories
+appRouter.get('/api/v1/histories/:vin/', Middlewares.isJWTAuthenticated, historyController.searchCar);
 
 
 // admin venues
