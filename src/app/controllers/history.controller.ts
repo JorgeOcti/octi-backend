@@ -109,6 +109,10 @@ class HistoryController {
       if (car) {
         logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
         res.json(car);
+      } else{
+        res.status(404).json({
+          message: "Not found"
+        })
       }
     } catch (e) {
       /* istanbul ignore next */

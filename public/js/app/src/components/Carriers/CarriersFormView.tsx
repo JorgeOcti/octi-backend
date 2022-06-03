@@ -39,7 +39,7 @@ class CarriersFormView extends React.Component<IPropsType, IStateType> {
                 onChange={
                   (e: React.ChangeEvent<HTMLInputElement>) => changeTempCarrierAction({
                     ...tempCarrier,
-                    name: e.target.value.trim()
+                    name: e.target.value
                   })
                 }
               />

@@ -1,4 +1,4 @@
-import { UserTypes } from '../actions/users.actions';
+import { UserTypes } from "../../../../../src/app/models/user.model.types";
 
 export interface getUsersParams {
   page: number;
