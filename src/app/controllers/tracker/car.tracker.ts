@@ -71,8 +71,8 @@ class CarTracker {
           history['to'] = venueFound || venue;
           history['status'] = statusDelegate[status];
           await this.createHistory(history);
-          resolve({});
         }
+        resolve({});
       } catch (e) {
         /* istanbul ignore next */
         logger.error(e);
@@ -167,8 +167,8 @@ class CarTracker {
           }
           // logger.info(`CarTracker.fromParticipant: history: ${JSON.stringify(history)}`);
           await this.createHistory(history);
-          resolve({});
         }
+        resolve({});
       } catch (e) {
         /* istanbul ignore next */
         logger.error(e);
@@ -296,8 +296,8 @@ class CarTracker {
               executedAt: car.createdAt
             });
           }
-          resolve({});
         }
+        resolve({});
       } catch (e) {
         /* istanbul ignore next */
         logger.error(e);

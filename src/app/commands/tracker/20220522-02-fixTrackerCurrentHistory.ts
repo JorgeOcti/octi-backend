@@ -16,7 +16,8 @@ async function fixTrackerCurrentHistory() {
   mongoose.set('debug', false);
   try {
     // 5bf2de34caf8ef7096105cda = Derco
-    const teams = ['5bf2de34caf8ef7096105cda'];
+    // const teams = ['5bf2de34caf8ef7096105cda'];
+    const teams: string[] = [];
 
     let extraFilter: any = {};
     if(teams.length){

@@ -18,7 +18,8 @@ async function migrateTracker() {
   mongoose.set('debug', false);
   try {
     // 5bf2de34caf8ef7096105cda = Derco
-    const teams = ['5bf2de34caf8ef7096105cda'];
+    // const teams = ['5bf2de34caf8ef7096105cda'];
+    const teams: string[] = [];
     const formsDeliveryCostumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
 
     let extraFilter: any = {};
@@ -78,7 +79,7 @@ async function migrateTracker() {
           ChoicesStatusCarInventory.reported
         ]
       }, { _id: true })
-      .batchSize(100)
+      .batchSize(20)
       .cursor();
     inventoryCarcursor.on('data', async (inventoryCar) => {
       try {
@@ -92,7 +93,7 @@ async function migrateTracker() {
         .find({
           ...extraFilter
         }, { _id: true })
-        .batchSize(100)
+        .batchSize(20)
         .cursor();
       participantCursor.on('data', async (participant) => {
         try {
