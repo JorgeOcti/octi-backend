@@ -17,19 +17,25 @@ async function fixTrackerCurrentHistory() {
   try {
     // 5bf2de34caf8ef7096105cda = Derco
     const teams = ['5bf2de34caf8ef7096105cda'];
+
+    let extraFilter: any = {};
+    if(teams.length){
+      extraFilter['team'] = { $in: teams };
+    }
+
     const histories = await History
       .find({
-        team: { $in: teams }
+        ...extraFilter,
       }, {
         car: true
       });
     const carCursor = await Car
       .find({
+        ...extraFilter,
         _id: {
           $in: histories.map((history)=>(history.car))
         },
         createdBy: { $exists: true },
-        team: { $in: teams }
       }, {
         _id: true,
         createdBy: true,

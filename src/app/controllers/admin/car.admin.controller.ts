@@ -102,7 +102,8 @@ class AdminCarController {
               car: newCar._id,
               team,
               company,
-              createdBy: req.user.toString()
+              createdBy: req.user.toString(),
+              executedAt: newCar.createdAt
             })
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           } catch (e) {
