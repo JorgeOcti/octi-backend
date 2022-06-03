@@ -15,9 +15,9 @@ async function fixTrackerCurrentHistory() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', false);
   try {
-    // 5bf2de34caf8ef7096105cda = Derco
-    // const teams = ['5bf2de34caf8ef7096105cda'];
-    const teams: string[] = [];
+    // 5bf2de35caf8ef7096105cdd = Salfa
+    const teams = ['5bf2de34caf8ef7096105cda'];
+    // const teams: string[] = [];
 
     let extraFilter: any = {};
     if(teams.length){
@@ -44,7 +44,7 @@ async function fixTrackerCurrentHistory() {
         team: true,
         createdAt: true,
       })
-      .batchSize(40)
+      .batchSize(10)
       .cursor();
     carCursor.on('data', async (car) => {
       await carTracker.createImportHitory(car);
