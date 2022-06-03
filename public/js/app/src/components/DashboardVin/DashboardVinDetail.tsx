@@ -150,7 +150,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Último Checkeo</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.participants && `${moment(car.participants[0].createdAt).format('LLL')}`
+                        car && car.participants && `${moment(car.participants[0]?.createdAt).format('LLL')}`
                       }
                     </td>
                   </tr>
@@ -158,7 +158,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Por</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : '-'
+                        car && car.participants && car.participants[0]?.user ? `${car.participants[0]?.user.firstName} ${car.participants[0].user.lastName}` : '-'
                       }
                     </td>
                   </tr>

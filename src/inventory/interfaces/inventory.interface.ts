@@ -22,7 +22,7 @@ export interface IInventoryCar {
   inventoriedBy?: IUserModel;
   images: IInventoryFile[];
   files: IInventoryFile[];
-  status?: string;
+  status: string;
   updatedAt?: Date;
   createdAt?: Date;
 }

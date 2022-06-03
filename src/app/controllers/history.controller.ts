@@ -1,18 +1,24 @@
 import { IRequest } from '../../interfaces/global.interface';
 import { Response } from 'express';
 import logger from '../../services/logger.service';
-import * as mongoose from 'mongoose'
+import * as mongoose from 'mongoose';
 import { Car } from '../models';
+import History from '../models/history.model';
 
 class HistoryController {
 
+  readonly models: any;
   constructor() {
+    this.models = {
+      history: new History()
+    } ;
     this.searchCar = this.searchCar.bind(this);
   }
 
   public async searchCar(req: IRequest, res: Response) {
     logger.info(`HistoryController.searchCar`);
-    logger.info(`HistoryController {user: {_id: ${req.user._id}, email: ${req.user.email}}} {params: ${JSON.stringify(req.params)}`);
+    const  {params} = req;
+    logger.info(`HistoryController.searchCar {user: {_id: ${req.user._id}, email: ${req.user.email}}} {params: ${JSON.stringify(params ?? {})}`);
     const { team } = req.user;
     const { vin } = req.params;
     try {
@@ -35,6 +41,42 @@ class HistoryController {
         select: { email: true }
       }];
       mongoose.set('debug', true);
+      /*const car = await Car.aggregate([{
+        $match: {
+          vin,
+          team: team._id
+        }
+      }, {
+        $lookup: {
+          from: 'histories',
+          localField: '_id',
+          foreignField: 'car',
+          as: 'events'
+        }
+      }, {
+        $lookup: {
+          from: 'histories',
+          localField: 'event',
+          foreignField: '_id',
+          as: 'data'
+        }
+      }, {
+        $unwind: { path: '$data', preserveNullAndEmptyArrays: true }
+      },{
+        $project: {
+          '_id': true,
+          vin: true,
+          internalNumber: true,
+          vin2: true,
+          brand: true,
+          denomination: true,
+          color: true,
+          property: true,
+          type: true,
+          material: true,
+          event: true
+        }
+      }]);*/
       const car = await Car.findOne({
         vin,
         team
@@ -47,8 +89,13 @@ class HistoryController {
         color: true,
         property: true,
         type: true,
-        material: true
+        material: true,
+        event: true
       }).populate([{
+        path: 'data',
+        select: historySelect,
+        populate: historyPopulate,
+      },{
         path: 'events',
         select: historySelect,
         populate: historyPopulate,
@@ -60,16 +107,8 @@ class HistoryController {
       }]);
       mongoose.set('debug', false);
       if (car) {
-        let response = {
-          ...car.toObject()
-        };
-        if (car.events.length) {
-          response = {
-            ...response,
-            event: car.events[0]
-          };
-        }
-        res.json(response);
+        logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
+        res.json(car);
       }
     } catch (e) {
       /* istanbul ignore next */

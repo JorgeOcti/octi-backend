@@ -28,12 +28,19 @@ async function fixTrackerCurrentHistory() {
         _id: {
           $in: histories.map((history)=>(history.car))
         },
+        createdBy: { $exists: true },
         team: { $in: teams }
-      }, { _id: true })
-      .batchSize(100)
+      }, {
+        _id: true,
+        createdBy: true,
+        company: true,
+        team: true,
+        createdAt: true,
+      })
+      .batchSize(40)
       .cursor();
     carCursor.on('data', async (car) => {
-      await carTracker.updateCurrentHistory(car._id);
+      await carTracker.createImportHitory(car);
     });
     carCursor.on('end', async () => {
       process.exit(1);
@@ -45,4 +52,4 @@ async function fixTrackerCurrentHistory() {
 
 }
 
-fixTrackerCurrentHistory();
+fixTrackerCurrentHistory!();

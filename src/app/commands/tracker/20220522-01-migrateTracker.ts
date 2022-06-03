@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
 import carTracker from '../../controllers/tracker/car.tracker';
-import Inventory from '../../../inventory/models/inventory.model';
+import Inventory, { ChoicesStatusInventory } from '../../../inventory/models/inventory.model';
 import Participant from '../../../form/models/participant.model';
 import Form from '../../../form/models/form.model';
 
@@ -17,47 +17,64 @@ async function migrateTracker() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', false);
   try {
-    new Inventory({});
     // 5bf2de34caf8ef7096105cda = Derco
     const teams = ['5bf2de34caf8ef7096105cda'];
     const formsDeliveryCostumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
+
+    let extraFilter: any = {};
+    if(teams.length){
+      extraFilter['team'] = { $in: teams };
+    }
     await Form.updateMany({
-      _id: { $in: formsDeliveryCostumer }
+      ...extraFilter,
+      _id: { $in: formsDeliveryCostumer },
     }, { $set: { deliveryToCustomer: true } });
     await Form.updateMany({
+      ...extraFilter,
       _id: { $nin: formsDeliveryCostumer },
-      team: { $in: teams }
     }, { $set: { deliveryToCustomer: false } });
     await Participant.updateMany({
-      team: { $in: teams },
+      ...extraFilter,
       form: { $in: formsDeliveryCostumer }
     }, { $set: { deliveryToCustomer: true } });
     await Participant.updateMany({
-      team: { $in: teams },
+      ...extraFilter,
       form: { $nin: formsDeliveryCostumer }
     }, { $set: { deliveryToCustomer: false } });
 
     const receptionForms = await Form.find({
-      team: { $in: teams },
+      ...extraFilter,
       reception: true
     }, { _id: true });
     await Participant.updateMany({
-      team: { $in: teams },
+      ...extraFilter,
       form: { $in: receptionForms.map((form) => (form._id)) }
     }, { $set: { reception: true } });
 
     const shippingForms = await Form.find({
-      team: { $in: teams },
+      ...extraFilter,
       shipping: true
     }, { _id: true });
     await Participant.updateMany({
       form: { $in: shippingForms.map((form) => (form._id)) }
     }, { $set: { shipping: true } });
 
+    const inventories = await Inventory
+      .find({
+        ...extraFilter,
+        status: {
+          $in: [ChoicesStatusInventory.finalized]
+        }
+      }, { _id: true });
     const inventoryCarcursor = await InventoryCar
       .find({
+        inventory: {
+          $in: inventories.map((inventory) => (inventory._id))
+        },
         status: [
           ChoicesStatusCarInventory.found,
+          ChoicesStatusCarInventory.pending,
+          ChoicesStatusCarInventory.leftover,
           ChoicesStatusCarInventory.reported
         ]
       }, { _id: true })
@@ -71,23 +88,22 @@ async function migrateTracker() {
       }
     });
     inventoryCarcursor.on('end', async () => {
-      // const participantCursor = await Participant
-      //   .find({
-      //     team: { $in: teams }
-      //   }, { _id: true })
-      //   .batchSize(100)
-      //   .cursor();
-      // participantCursor.on('data', async (participant) => {
-      //   try {
-      //     await carTracker.fromParticipant({ id: participant._id });
-      //   } catch (e) {
-      //     console.log('error:', e);
-      //   }
-      // });
-      // participantCursor.on('end', async () => {
-      //   process.exit(1);
-      // });
-      process.exit(1);
+      const participantCursor = await Participant
+        .find({
+          ...extraFilter
+        }, { _id: true })
+        .batchSize(100)
+        .cursor();
+      participantCursor.on('data', async (participant) => {
+        try {
+          await carTracker.fromParticipant({ id: participant._id });
+        } catch (e) {
+          console.log('error:', e);
+        }
+      });
+      participantCursor.on('end', async () => {
+        process.exit(1);
+      });
     });
   } catch (e) {
     console.log('Ha ocurrido un error en migrateTracker');
@@ -95,4 +111,4 @@ async function migrateTracker() {
   }
 }
 
-migrateTracker();
+migrateTracker!();

@@ -7,6 +7,9 @@ import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/mode
 import { IInventory } from '../../../inventory/interfaces/inventory.interface';
 import Participant from '../../../form/models/participant.model';
 import { Car } from '../../models';
+import { ICar } from '../../interfaces';
+import * as moment from 'moment-timezone';
+import { IStringKeyObject } from '../../../interfaces/global.interface';
 
 class CarTracker {
 
@@ -18,6 +21,7 @@ class CarTracker {
 
     this.createHistory = this.createHistory.bind(this);
     this.updateAlerts = this.updateAlerts.bind(this);
+    this.createImportHitory = this.createImportHitory.bind(this);
   }
 
   public async fromInventoryCar({ id }: InventoryCarProps) {
@@ -57,13 +61,15 @@ class CarTracker {
             createdBy: inventoriedBy,
             executedAt: updatedAt
           };
-          const statusDelegates: any = {
+          const statusDelegate: IStringKeyObject<StatusHistory> = {
             [ChoicesStatusCarInventory.found]: StatusHistory.available,
+            [ChoicesStatusCarInventory.pending]: StatusHistory.unknown,
+            [ChoicesStatusCarInventory.leftover]: StatusHistory.available,
             [ChoicesStatusCarInventory.reported]: StatusHistory.available
           };
           history['from'] = venue;
           history['to'] = venueFound || venue;
-          history['status'] = statusDelegates[status as ChoicesStatusCarInventory];
+          history['status'] = statusDelegate[status];
           await this.createHistory(history);
           resolve({});
         }
@@ -146,7 +152,7 @@ class CarTracker {
           } else {
             history = {
               ...history,
-              status: StatusHistory.available,
+              status: StatusHistory.unknown,
               from: venue,
               to: venue
             };
@@ -171,42 +177,22 @@ class CarTracker {
     });
   }
 
-  public async importIntoSystem({ car, team, company, createdBy }: importToSistemProps) {
+  public async importIntoSystem({ car, team, company, createdBy, module, executedAt }: importToSistemProps) {
     return new Promise(async (resolve, reject) => {
       try {
         logger.info(`CarTracker.importToSistem`);
         let history: Partial<IHistory> = {
           status: StatusHistory.created,
-          module: ModuleHistory.import,
+          module: module ?? ModuleHistory.import,
           car,
           team,
           company,
-          createdBy
+          createdBy,
+          executedAt: executedAt
         };
         // logger.info(`CarTracker.importToSistem: history: ${JSON.stringify(history)}`);
         await this.createHistory(history);
         resolve({});
-      } catch (e) {
-        /* istanbul ignore next */
-        logger.error(e);
-        reject(e);
-      }
-    });
-  }
-
-  private async createHistory(history: Partial<IHistory>) {
-    return new Promise(async (resolve, reject) => {
-      logger.info(`CarTracker.createHistory`);
-      // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
-      try {
-        history = {
-          ...history,
-          current: true
-        };
-        // this.processAlert(history);
-        await new History(history).save();
-        this.updateCurrentHistory(history.car);
-        resolve(history);
       } catch (e) {
         /* istanbul ignore next */
         logger.error(e);
@@ -248,8 +234,94 @@ class CarTracker {
             }
           });
         }
+        resolve({});
       } catch (e) {
         /* istanbul ignore next */
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async createImportHitory(car: ICar) {
+    return new Promise(async (resolve, reject) => {
+      logger.info(`CarTracker.createImportHitory ${car._id}`);
+      try {
+        const firstHistory = await History
+          .findOne({
+            car: car._id,
+            status: {
+              $nin: [StatusHistory.created]
+            }
+          }, {
+            _id: true,
+            executedAt: true,
+            module: true,
+            team: true,
+            company: true,
+            createdBy: true
+          }, {
+            sort: {
+              executedAt: 1
+            }
+          });
+        const createdHistory = await History
+          .findOne({
+            car: car._id,
+            status: {
+              $in: [StatusHistory.created]
+            }
+          }, {
+            _id: true,
+            executedAt: true
+          });
+        if (createdHistory) {
+          logger.info(`CarTracker: no created history for ${car._id}`);
+        } else {
+          if (firstHistory && moment(firstHistory.executedAt).isSame(car.createdAt, 'hour')) {
+            await this.importIntoSystem({
+              car: car._id,
+              team: firstHistory.team,
+              company: firstHistory.company,
+              createdBy: firstHistory.createdBy,
+              executedAt: firstHistory.executedAt,
+              module: firstHistory.module
+            });
+          } else {
+            await this.importIntoSystem({
+              car: car._id,
+              team: car.team,
+              company: car.company,
+              createdBy: car.createdBy,
+              executedAt: car.createdAt
+            });
+          }
+          resolve({});
+        }
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  private async createHistory(history: Partial<IHistory>) {
+    return new Promise(async (resolve, reject) => {
+      logger.info(`CarTracker.createHistory`);
+      // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
+      try {
+        history = {
+          ...history,
+          current: true
+        };
+        // this.processAlert(history);
+        await new History(history).save();
+        await this.updateCurrentHistory(history.car);
+        resolve(history);
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.info(`CarTracker.createHistory: ${JSON.stringify(history)}`);
         logger.error(e);
         reject(e);
       }
@@ -292,8 +364,7 @@ class CarTracker {
           };
         }
         resolve(history);
-      }
-      catch (e) {
+      } catch (e) {
         /* istanbul ignore next */
         logger.error(e);
         reject(e);

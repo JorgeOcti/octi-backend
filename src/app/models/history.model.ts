@@ -72,8 +72,7 @@ const historySchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   alert: {
     type: historyAlertsSchema,

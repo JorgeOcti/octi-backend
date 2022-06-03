@@ -223,6 +223,13 @@ carSchema.virtual('participants', {
   justOne: false
 });
 
+carSchema.virtual('data', {
+  ref: 'History', // The model to use
+  localField: 'event', // Find field in this model
+  foreignField: '_id', // is equal to field in another model
+  justOne: true
+});
+
 carSchema.virtual('events', {
   ref: 'History', // The model to use
   localField: '_id', // Find field in this model
