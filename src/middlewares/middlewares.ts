@@ -48,11 +48,11 @@ class Middlewares {
       console.log(headers);
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
-        const user = await this.addUserToRequest(req.user._id);
+        const { user } = await this.addUserToRequest(req.user._id);
         if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
           res.locals.user = user;
           req.user = user;
-          next();
+          return next();
         } else {
           res.locals.user = null;
         }
@@ -61,8 +61,9 @@ class Middlewares {
           const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
           const { user } = await this.addUserToRequest(decode._id);
           if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+            res.locals.user = user;
             req.user = user;
-            next();
+            return next();
           } else {
             res.locals.user = null;
             return res.json({
@@ -97,7 +98,7 @@ class Middlewares {
     }
   }
 
-  public async addUserToRequest(userId: string): Promise<any> {
+  public async addUserToRequest(userId: string): Promise<{ user: IUserModel }> {
     return new Promise(async (resolve, reject) => {
       const user = await User.findById(userId, {
         _id: true,
@@ -124,10 +125,8 @@ class Middlewares {
         select: ['name']
       }]) as IUserModel;
       if (user) {
-        console.log('addUserToRequest');
         resolve({ user });
       } else {
-        console.log('error.addUserToRequest');
         reject({  });
       }
     });
