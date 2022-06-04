@@ -11,12 +11,17 @@ import usersHooks from './user.hooks';
 import { UserTypes, userTypes } from './user.model.types';
 
 export interface IUserModel extends IUser, mongoose.Document {
-  comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
-  comparePasswordSync: (candidatePassword: string) => boolean;
-  hasPermission: (permission: string) => boolean;
-  fullName: () => string;
-  generateToken: () => string;
-  venuesPermissions: (inString?: boolean) => string[];
+  comparePassword(candidatePassword: string, cb: (err: any, isMatch: any) => {}): boolean;
+
+  comparePasswordSync(candidatePassword: string): boolean;
+
+  hasPermission(permission: string): boolean;
+
+  generateToken(): string;
+
+  fullName(): string;
+
+  venuesPermissions(inString?: boolean): string[];
 }
 
 const userSettingsSchema = new mongoose.Schema({
@@ -33,11 +38,11 @@ export const baseUserSchema = new mongoose.Schema({
   },
   firstName: {
     type: String,
-    default: ""
+    default: ''
   },
   lastName: {
     type: String,
-    default: ""
+    default: ''
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
@@ -45,11 +50,11 @@ export const baseUserSchema = new mongoose.Schema({
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
+    ref: 'Company'
   },
   venue: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue',
+    ref: 'Venue'
   },
   email: {
     type: String,
@@ -57,10 +62,10 @@ export const baseUserSchema = new mongoose.Schema({
     required: [true, 'El email es requerido'],
     unique: true,
     index: true
-  },
+  }
 });
 
-export const userSchema = new mongoose.Schema({
+export const userSchema = new mongoose.Schema<IUserModel>({
   ...baseUserSchema.obj,
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -146,7 +151,7 @@ userSchema.methods.fullName = function(): string {
 };
 
 // validate user has permissions
-userSchema.methods.hasPermission = function (permission: string): boolean {
+userSchema.methods.hasPermission = function(permission: string): boolean {
   if (permission && permission.length && this.userPermissions && this.userPermissions.length) {
     return this.userPermissions.some((p: IPermissionModel) => p.codeName === permission);
   }
@@ -154,7 +159,7 @@ userSchema.methods.hasPermission = function (permission: string): boolean {
 };
 
 // used by sockets
-userSchema.methods.generateToken = function () {
+userSchema.methods.generateToken = function() {
   const userInfo = {
     _id: this._id,
     firstName: this.firstName,
@@ -167,7 +172,7 @@ userSchema.methods.generateToken = function () {
   });
 };
 
-userSchema.methods.venuesPermissions = function (inString?: boolean) {
+userSchema.methods.venuesPermissions = function(inString?: boolean) {
   let venuesPermissions = [];
   const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
   if (currentVenue) {
@@ -217,12 +222,18 @@ userSchema.pre('save', function(this: IUserModel, next: HookNextFunction) {
 
 
 userSchema.methods.comparePassword = function(candidatePassword: string, cb: (err: any, isMatch: any) => {}) {
-  bcrypt.compare!(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
-    cb(err, isMatch);
-  });
+  try {
+    bcrypt.compare!(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
+      cb(err, isMatch);
+      return isMatch;
+    });
+    return false;
+  } catch (e) {
+    return false;
+  }
 };
 
-userSchema.methods.comparePasswordSync = function (candidatePassword: string) {
+userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 

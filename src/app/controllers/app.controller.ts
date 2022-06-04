@@ -129,7 +129,9 @@ class AppController {
           if (loginErr) {
             logger.error(loginErr);
             console.log(loginErr);
-            return next(loginErr);
+            return res.render('app/login', {
+              username, error: 'Usuario o contraseña incorrecta.'
+            });
           } else {
             user.lastLogin = new Date();
             user.save(async (err: any) => {
@@ -137,22 +139,27 @@ class AppController {
               if (err) {
                 logger.error(err);
                 console.log(err); // handle errors!
-              } else {
-                try {
-                  user = await UserModel.findById(user._id).populate({
-                    path: 'userPermissions',
-                    select: ['codeName']
-                  });
-                  if (redirectTo?.length) {
-                    logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
-                    delete (req.session as any).redirectTo;
-                    return res.redirect(redirectTo);
-                  }
-                  return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
-                } catch (e) {
-                  logger.error(e);
-                  console.log(err); // handle errors!
+                return res.render('app/login', {
+                  username, error: 'Usuario o contraseña incorrecta.'
+                });
+              }
+              try {
+                user = await UserModel.findById(user._id).populate({
+                  path: 'userPermissions',
+                  select: ['codeName']
+                });
+                if (redirectTo?.length) {
+                  logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
+                  delete (req.session as any).redirectTo;
+                  return res.redirect(redirectTo);
                 }
+                return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
+              } catch (e) {
+                logger.error(e);
+                console.log(err); // handle errors!
+                return res.render('app/login', {
+                  username, error: 'Usuario o contraseña incorrecta.'
+                });
               }
             });
           }
@@ -297,7 +304,7 @@ class AppController {
 
   public logout(req: Request, res: Response) {
     req.logout();
-    res.redirect('/account/login/');
+    return res.redirect('/account/login/');
   }
 
   public async recoverFile(req: IRequest, res: Response): Promise<any> {
