@@ -10,6 +10,7 @@ class Middlewares {
   constructor() {
     this.isLoggedIn = this.isLoggedIn.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
+    this.addUserToRequest = this.addUserToRequest.bind(this);
   }
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
@@ -41,66 +42,95 @@ class Middlewares {
     return next();
   }
 
-  public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
-    const { headers, app } = req;
-    let { user } = req;
-    if (req.isAuthenticated()) {
-      /* istanbul ignore else */
-      if (user) {
-        res.locals.user = user;
-      } else {
-        res.locals.user = null;
-      }
-      return next();
-    } else if (headers && headers.authorization && headers.authorization.split(' ')[0] === 'JWT') {
-      jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey, async (err: any, decode: any) => {
-        /* istanbul ignore if */
-        if (err) {
-          logger.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(headers)}`);
-          res.status(401).json({
-            error: err.message,
+  public async isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) : Promise<any> {
+    try {
+      const { headers, app } = req;
+      console.log(headers);
+      if (req.isAuthenticated() && req?.user) {
+        /* istanbul ignore else */
+        const user = await this.addUserToRequest(req.user._id);
+        if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+          res.locals.user = user;
+          req.user = user;
+          next();
+        } else {
+          res.locals.user = null;
+        }
+      } else if (headers && headers.authorization && headers.authorization.split(' ')[0] === 'JWT') {
+        try {
+          const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
+          const { user } = await this.addUserToRequest(decode._id);
+          if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+            req.user = user;
+            next();
+          } else {
+            res.locals.user = null;
+            return res.json({
+              error: 'Debes estar autenticado para este recurso.',
+              status: 401
+            });
+          }
+        } catch (e) {
+          logger.error(`isJWTAuthenticated error: ${e.message} ${JSON.stringify(headers)}`);
+          console.error(e);
+          return res.json({
+            error: e.message,
             status: 401
           });
-        } else {
-          await this.addUserToRequest(req, decode._id);
-          next();
         }
-      });
-    } else {
-      logger.error(`isJWTAuthenticated error: Debes estar autenticado para este recurso. ${JSON.stringify(headers)}`);
+      } else {
+        logger.error(`isJWTAuthenticated error1: Debes estar autenticado para este recurso. ${JSON.stringify(headers)}`);
+        /* istanbul ignore next */
+        return res.json({
+          error: 'Debes estar autenticado para este recurso.',
+          status: 401
+        });
+      }
+    } catch (e) {
+      logger.error(`isJWTAuthenticated error2: Debes estar autenticado para este recurso. ${JSON.stringify(e)}`);
+      console.error(e);
       /* istanbul ignore next */
-      res.status(401).json({
+      return res.json({
         error: 'Debes estar autenticado para este recurso.',
         status: 401
       });
     }
   }
 
-  public async addUserToRequest(req: IRequest, userId: string): Promise<void> {
-    req.user = await User.findById(userId, {
-      _id: true,
-      firstName: true,
-      lastName: true,
-      isAdmin: true,
-      email: true,
-      preferred: true,
-      venuesAccess: true
-    }).populate([{
-      path: 'userPermissions',
-      select: ['codeName']
-    }, {
-      path: 'userForms',
-      select: ['name']
-    }, {
-      path: 'venue',
-      select: ['name']
-    }, {
-      path: 'company',
-      select: ['name', "iFrameURL"]
-    }, {
-      path: 'team',
-      select: ['name']
-    }]) as IUserModel;
+  public async addUserToRequest(userId: string): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const user = await User.findById(userId, {
+        _id: true,
+        firstName: true,
+        lastName: true,
+        isAdmin: true,
+        email: true,
+        preferred: true,
+        venuesAccess: true
+      }).populate([{
+        path: 'userPermissions',
+        select: ['codeName']
+      }, {
+        path: 'userForms',
+        select: ['name']
+      }, {
+        path: 'venue',
+        select: ['name']
+      }, {
+        path: 'company',
+        select: ['name', 'iFrameURL']
+      }, {
+        path: 'team',
+        select: ['name']
+      }]) as IUserModel;
+      if (user) {
+        console.log('addUserToRequest');
+        resolve({ user });
+      } else {
+        console.log('error.addUserToRequest');
+        reject({  });
+      }
+    });
   }
 
   public cleanStaticFiles(req: IRequest, res: Response, next: NextFunction) {
