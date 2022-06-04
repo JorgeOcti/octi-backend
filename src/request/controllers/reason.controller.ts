@@ -39,12 +39,12 @@ class ReasonController {
       const reasons = await this.getReasons({ team }, options);
       /* istanbul ignore if  */
       if (options.page && reasons.pages && reasons.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
-        res.json({
+        return res.json({
           count: reasons.total,
           pages: reasons.pages,
           hasPrevious: options.page && options.page > 1 && reasons.pages && reasons.pages >= options.page,
@@ -58,7 +58,7 @@ class ReasonController {
       logger.error(`ReasonController.apiList: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

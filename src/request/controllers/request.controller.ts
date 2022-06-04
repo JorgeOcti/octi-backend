@@ -209,13 +209,14 @@ class RequestController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', { token: await req.user.generateToken() });
+    return res.render('app/index', { token: await req.user.generateToken() });
   }
+
   public async massAllocation(req: IRequest, res: Response) {
     if (req.user.hasPermission('massAllocation')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      return res.render('app/index', {token: await req.user.generateToken()});
     } else {
-      res.status(403).render('403');
+      return res.status(403).render('403');
     }
   }
 
@@ -766,12 +767,12 @@ class RequestController {
       };
       const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
       if (options.page && requests.pages && requests.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
-        res.json({
+        return res.json({
           count: requests.total,
           pages: requests.pages,
           hasPrevious: requests.hasPrevious,
@@ -790,7 +791,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
@@ -1109,12 +1110,12 @@ class RequestController {
       const requests = await this.getRequets(filter, options);
       /* istanbul ignore if  */
       if (options.page && requests.pages && requests.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
-        res.json({
+        return res.json({
           count: requests.total,
           pages: requests.pages,
           hasPrevious: options.page && options.page > 1 && requests.pages && requests.pages >= options.page,
@@ -1128,7 +1129,7 @@ class RequestController {
       logger.error(`RequestController.apiList: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

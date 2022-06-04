@@ -20,11 +20,12 @@ class Middlewares {
     if (req.isAuthenticated()) {
       /* istanbul ignore else */
       if (req.user) {
-        res.locals.user = await req.user;
+        res.locals.user = req.user;
+        return next();
       } else {
         res.locals.user = null;
+        return res.status(403).render('403');
       }
-      return next();
     } else {
       // if they aren't redirect them to the login page
       console.log('isLoggedIn');
@@ -33,7 +34,7 @@ class Middlewares {
       console.log('req.url', req.url);
       req.logout();
       (req.session as any).redirectTo = req.url;
-      res.redirect(`/account/login/`);
+      return res.redirect(`/account/login/`);
     }
   }
 
@@ -54,7 +55,12 @@ class Middlewares {
           req.user = user;
           return next();
         } else {
+          logger.error(`isJWTAuthenticated error:  ${JSON.stringify(headers)}`);
           res.locals.user = null;
+          return res.json({
+            error: 'Debes estar autenticado para este recurso.',
+            status: 401
+          });
         }
       } else if (headers && headers.authorization && headers.authorization.split(' ')[0] === 'JWT') {
         try {
@@ -73,6 +79,7 @@ class Middlewares {
           }
         } catch (e) {
           logger.error(`isJWTAuthenticated error: ${e.message} ${JSON.stringify(headers)}`);
+          res.locals.user = null;
           console.error(e);
           return res.json({
             error: e.message,
@@ -81,6 +88,7 @@ class Middlewares {
         }
       } else {
         logger.error(`isJWTAuthenticated error1: Debes estar autenticado para este recurso. ${JSON.stringify(headers)}`);
+        res.locals.user = null;
         /* istanbul ignore next */
         return res.json({
           error: 'Debes estar autenticado para este recurso.',
@@ -89,6 +97,7 @@ class Middlewares {
       }
     } catch (e) {
       logger.error(`isJWTAuthenticated error2: Debes estar autenticado para este recurso. ${JSON.stringify(e)}`);
+      res.locals.user = null;
       console.error(e);
       /* istanbul ignore next */
       return res.json({

@@ -8,16 +8,17 @@ import History from '../models/history.model';
 class HistoryController {
 
   readonly models: any;
+
   constructor() {
     this.models = {
       history: new History()
-    } ;
+    };
     this.searchCar = this.searchCar.bind(this);
   }
 
   public async searchCar(req: IRequest, res: Response) {
     logger.info(`HistoryController.searchCar`);
-    const  {params} = req;
+    const { params } = req;
     logger.info(`HistoryController.searchCar {user: {_id: ${req.user._id}, email: ${req.user.email}}} {params: ${JSON.stringify(params ?? {})}`);
     const { team } = req.user;
     const { vin } = req.params;
@@ -94,8 +95,8 @@ class HistoryController {
       }).populate([{
         path: 'data',
         select: historySelect,
-        populate: historyPopulate,
-      },{
+        populate: historyPopulate
+      }, {
         path: 'events',
         select: historySelect,
         populate: historyPopulate,
@@ -108,18 +109,18 @@ class HistoryController {
       mongoose.set('debug', false);
       if (car) {
         logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
-        res.json(car);
-      } else{
-        res.status(404).json({
-          message: "Not found"
-        })
+        return res.json(car);
+      } else {
+        return res.status(404).json({
+          message: 'Not found'
+        });
       }
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`HistoryController.searchCar: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 }

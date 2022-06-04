@@ -93,7 +93,7 @@ class AdminsTeamController {
           materialRequired: true
         }
       });
-      res.status(200).json({
+      return res.status(200).json({
         ...teamSetting.toObject(),
         user: user?.settings ?? {}
       });
@@ -103,7 +103,7 @@ class AdminsTeamController {
       logger.error(`RequestController.apiCreateItem: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

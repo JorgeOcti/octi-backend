@@ -7,7 +7,6 @@ import FormController from './controllers/form.controller';
 const router = express.Router();
 
 // apiListAlerts form avaibles
-router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
 
 // forms API Web
 router.get('/api/dashboard/damages/per-venue/', Middlewares.isLoggedIn, FormController.damagesDashboardPerDay);
@@ -21,10 +20,11 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 
-// detail information of the form
 router.get('/report/forms/pdf/:id.pdf', Middlewares.isJWTAuthenticated, FormController.pdf);
-router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 
+// detail information of the form
+router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
+router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 // answer form
 router.post('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.complete);
 

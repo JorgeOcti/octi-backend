@@ -70,7 +70,7 @@ class InventoryController {
 
   public async index(req: IRequest, res: Response) {
     try {
-      res.render('app/index', {
+      return res.render('app/index', {
         token: await req.user.generateToken()
       });
     } catch (e) {
@@ -117,12 +117,12 @@ class InventoryController {
       if (!inventory) {
         return res.status(404).render('404');
       } else {
-        res.render('app/index', {token: await req.user.generateToken()});
+        return res.render('app/index', {token: await req.user.generateToken()});
       }
     } catch (e) {
       /* istanbul ignore next */
       if (e) {
-        res.status(500).send(e);
+        return res.status(500).send(e);
       }
     }
   }

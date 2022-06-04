@@ -45,15 +45,15 @@ class CarController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async vinDashboard(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async createCar(req: IRequest, res: Response) {
@@ -366,7 +366,7 @@ class CarController {
     }
   }
 
-  public async apiParticipantsPerDate(req: IRequest, res: Response) {
+  public async apiParticipantsPerDate(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
     try {
       const { companies, only_controls } = req.query;
@@ -745,7 +745,7 @@ class CarController {
           companiesIDS.push(companieID);
         }
       }
-      res.json({
+      return res.json({
         planningPerDay,
         carsByVenue: [],
         companies: companiesData,
@@ -763,7 +763,7 @@ class CarController {
       console.log('e', e);
       /* istanbul ignore next */
       if (e) {
-        res.status(500).json(e);
+        return res.status(500).json(e);
       }
     }
   }
@@ -1262,7 +1262,7 @@ class CarController {
     }
   }
 
-  public async apiRevisions(req: IRequest, res: Response) {
+  public async apiRevisions(req: IRequest, res: Response): Promise<any> {
     const { page, pageSize, search, from, to, forms } = req.query as {
       page: string, pageSize: string, search: string,
       from: string, to: string, forms: string
@@ -1396,12 +1396,12 @@ class CarController {
 
       // validate exist page
       if (options.page && revisions.pages && revisions.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-        res.json({
+        return res.json({
           count: revisions.total,
           pages: revisions.pages,
           hasPrevious: options.page && options.page > 1 && revisions.pages && revisions.pages >= options.page,
@@ -1414,7 +1414,7 @@ class CarController {
       /* istanbul ignore next */
       console.log(e);
       if (e) {
-        res.status(500).json(e);
+        return res.status(500).json(e);
       }
     }
   }

@@ -93,14 +93,14 @@ class RequestItemStatusController {
       const requestItemStatus = await this.getRequetsItemStatus(filter, options);
       /* istanbul ignore if  */
       if (options.page && requestItemStatus.pages && requestItemStatus.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
         const min = await RequestItemStatus.findOne({ team }).sort('weigth');
         const max = await RequestItemStatus.findOne({ team }).sort('-weigth');
-        res.json({
+        return res.json({
           count: requestItemStatus.total,
           pages: requestItemStatus.pages,
           min: min ? min.weigth : 0,
@@ -117,7 +117,7 @@ class RequestItemStatusController {
       logger.error(`RequestItemStatusController.apiList: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

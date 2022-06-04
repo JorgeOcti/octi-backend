@@ -292,13 +292,13 @@ class FormController {
           },
           team
         });
-        res.json({
+        return res.json({
           data: forms,
           status: 200
         });
       } else {
         /* istanbul ignore next */
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
@@ -307,7 +307,7 @@ class FormController {
       Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`Async Error.`);
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
       });
@@ -559,7 +559,7 @@ class FormController {
         hint: ''
       };
       // get scales from db
-      res.json({
+      return res.json({
         data: {
           form: {
             _id: form._id,

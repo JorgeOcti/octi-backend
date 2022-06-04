@@ -17,9 +17,11 @@ async function migrateTracker() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', false);
   try {
+    // 5bf2de34caf8ef7096105cda = Derco
     // 5bf2de35caf8ef7096105cdd = Salfa
-    const teams = ['5bf2de34caf8ef7096105cda'];
-    // const teams: string[] = [];
+    // const teams = ['5bf2de34caf8ef7096105cda'];
+    const teams: string[] = [];
+
     const formsDeliveryCostumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
 
     let extraFilter: any = {};

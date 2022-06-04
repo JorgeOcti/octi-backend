@@ -218,12 +218,12 @@ class AdminVenueController {
       const venues = await this.getVenues(filter, options, search);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
-        res.json({
+        return res.json({
           count: venues.total,
           pages: venues.pages,
           hasPrevious: options.page && options.page > 1 && venues.pages && venues.pages >= options.page,
@@ -235,7 +235,7 @@ class AdminVenueController {
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {
-        res.status(500).json(e);
+        return res.status(500).json(e);
       }
     }
   }
@@ -246,14 +246,14 @@ class AdminVenueController {
       const venues = await Venue
         .find({ team, company }, { name: true })
         .sort({ 'name': 1 });
-      res.json({
+      return res.json({
         results: venues,
         status: 200
       });
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {
-        res.status(500).json(e);
+        return res.status(500).json(e);
       }
     }
   }

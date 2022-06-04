@@ -113,12 +113,12 @@ class AdminFormsController {
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {
         /* istanbul ignore next */
-        res.status(400).json({
+        return res.status(400).json({
           error: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-        res.json({
+        return res.json({
           count: forms.total,
           pages: forms.pages,
           hasPrevious: options.page && options.page > 1 && forms.pages && forms.pages >= options.page,
@@ -130,7 +130,7 @@ class AdminFormsController {
     } catch (e) {
       /* istanbul ignore next */
       if (e) {
-        res.status(500).json(e);
+        return res.status(500).json(e);
       }
     }
   }
