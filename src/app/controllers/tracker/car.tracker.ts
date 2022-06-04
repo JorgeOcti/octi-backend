@@ -116,7 +116,7 @@ class CarTracker {
             }
           }]);
         // logger.info(`CarTracker.fromParticipant: participant: ${JSON.stringify(participant)}`);
-        if (participant) {
+        if (participant && participant.car) {
           const { car, team, company, venue, user, createdAt, hasDamages, sendTo, receiveFrom } = participant;
           let history: Partial<IHistory> = {
             status: StatusHistory.available,

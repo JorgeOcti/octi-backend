@@ -231,7 +231,7 @@ class FormController {
         }
       });
       if (debug) {
-        res.send(html);
+        return res.send(html);
       } else {
         /*const browser = await puppeteer.launch();
         const page = await browser.newPage();
@@ -249,10 +249,10 @@ class FormController {
         res.send(buffer);
         browser.close();
         */
-        HtmlPdf.create(html, config).toStream((err, pdfStream) => {
+        HtmlPdf.create(html, config).toStream((err, pdfStream): any => {
           if (err) {
             console.log(err);
-            res.sendStatus(500);
+            return res.sendStatus(500);
           } else {
             // set header
             res.setHeader('Content-Type', 'application/pdf');
@@ -263,7 +263,7 @@ class FormController {
             // once we are done reading end the response
             pdfStream.on('end', () => {
               // done reading
-              res.end();
+              return res.end();
             });
             // pipe the contents of the PDF directly to the response
             pdfStream.pipe(res);
