@@ -20,7 +20,6 @@ class Middlewares {
   }
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
-    logger.debug(`Middlewares.isLoggedIn: ${req.originalUrl}`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     try {
@@ -28,6 +27,7 @@ class Middlewares {
         /* istanbul ignore else */
         const { user } = await this.addUserToRequest(req.user._id, req);
         if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+          logger.debug(`Middlewares.checkIsLoggedIn: ${req.user.email} from ${req.originalUrl}`);
           req.user = user;
           res.locals.user = user;
           return next();
@@ -37,6 +37,7 @@ class Middlewares {
         }
       } else {
         // if they aren't redirect them to the login page
+        logger.error(`Middlewares.isLoggedIn errorr: no exist user`);
         req.logout();
         (req.session as any).redirectTo = req.url;
         return res.redirect(`/account/login/`);
@@ -56,7 +57,7 @@ class Middlewares {
   public async isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction): Promise<any> {
     try {
       const { headers, app } = req;
-      logger.debug(`Middlewares.isJWTAuthenticated ${JSON.stringify(headers)}`);
+      logger.debug(`Middlewares.isJWTAuthenticated ${JSON.stringify(headers)} from from ${req.originalUrl}`);
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
         const { user } = await this.addUserToRequest(req.user._id, req);

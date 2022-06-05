@@ -34,6 +34,7 @@ import { distributionRouter } from './distribution/router';
 import { statsRouter } from './stats/router';
 import { accessLogStream } from './services/logger.service';
 import HistoryQueue from './app/tasks/history.task';
+import logger from './services/logger.service';
 
 // Create Express server
 const app = express();
@@ -155,7 +156,9 @@ let cookieSetting: CookieOptions = {
 if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
-console.log('cookieSetting', cookieSetting);
+
+logger.info(`Setting cookies ${JSON.stringify(cookieSetting)}`);
+
 app.use(session({
   resave: false,
   saveUninitialized: false,
