@@ -80,7 +80,7 @@ class HistoryController {
       }]);*/
       const car = await Car.findOne({
         vin,
-        team
+        team: team._id
       }, {
         vin: true,
         internalNumber: true,
@@ -108,7 +108,7 @@ class HistoryController {
       }]);
       mongoose.set('debug', false);
       if (car) {
-        logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
+        // logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
         return res.json(car);
       } else {
         return res.status(404).json({

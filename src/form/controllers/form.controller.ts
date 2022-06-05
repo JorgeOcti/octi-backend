@@ -1125,67 +1125,81 @@ class FormController {
   }
 
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
-    const { id } = req.params;
-    const { company } = req.user;
-    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
-    logger.info(`uploadFile`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
-    if (file) {
-      try {
-        const participantFile = new ParticipantFile();
-        /*
-          {
-            fieldname: 'file',
-            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-            encoding: '7bit',
-            mimetype: 'image/png',
-            destination: '/tmp/',
-            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-            size: 794429
+    try {
+      const { id } = req.params;
+      const { company } = req.user;
+      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+      logger.info(`uploadFile`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
+      if (file) {
+        try {
+          const participantFile = new ParticipantFile();
+          /*
+            {
+              fieldname: 'file',
+              originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+              encoding: '7bit',
+              mimetype: 'image/png',
+              destination: '/tmp/',
+              filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+              path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+              size: 794429
+            }
+          */
+          // fix exif
+          if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+            await this.autoRotate(file.path);
           }
-        */
-        // fix exif
-        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
-          await this.autoRotate(file.path);
+          file.headers = {
+            'Content-Type': file.mimetype
+          };
+          file.company = company._id;
+          file.form = id;
+
+          participantFile.user = req.user._id;
+          participantFile.company = company._id;
+          participantFile.attach('file', file, async (error: any) => {
+            if (error) {
+              /* istanbul ignore next */
+              return res.status(400).json(error);
+            } else {
+              await participantFile.save();
+              return res.status(201).json({
+                data: {
+                  _id: participantFile._id,
+                  file: participantFile.file
+                },
+                status: 201
+              });
+            }
+          });
+        } catch (e) {
+          Raven.captureException(e, { req });
+          /* istanbul ignore next */
+          logger.error(`async error:`);
+          /* istanbul ignore next */
+          logger.error(e);
+          /* istanbul ignore next */
+          return res.status(400).json(e);
         }
-        file.headers = {
-          'Content-Type': file.mimetype
-        };
-        file.company = company._id;
-        file.form = id;
 
-        participantFile.user = req.user._id;
-        participantFile.company = company._id;
-        participantFile.attach('file', file, async (error: any) => {
-          if (error) {
-            /* istanbul ignore next */
-            res.status(400).json(error);
-          } else {
-            await participantFile.save();
-            res.status(201).json({
-              data: {
-                _id: participantFile._id,
-                file: participantFile.file
-              },
-              status: 201
-            });
-          }
+      } else {
+        logger.error(`uploadFile: La imagen es obligatoria.`);
+        return res.status(400).json({
+          message: 'La imagen es obligatoria.',
+          status: 400
         });
-      } catch (e) {
-        Raven.captureException(e, { req });
-        /* istanbul ignore next */
-        logger.error(`async error:`);
-        /* istanbul ignore next */
-        logger.error(e);
-        /* istanbul ignore next */
-        res.status(400).json(e);
       }
-
-    } else {
-      logger.error(`uploadFile: La imagen es obligatoria.`);
-      res.status(400).json({
-        message: 'La imagen es obligatoria.',
+    } catch (e) {
+      Raven.captureException(e, { req, user: req.user });
+      /* istanbul ignore next */
+      logger.error(`changePreferred: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      return res.status(400).json({
+        message: 'Ha ocurrido un error',
         status: 400
       });
     }
