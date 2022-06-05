@@ -327,6 +327,7 @@ class AdminUsersController {
         // prevent return password
         user = user.toObject();
         if (user && user.password) {
+          // @ts-ignore
           delete user.password;
         }
 
@@ -572,6 +573,7 @@ class AdminUsersController {
 
         // prevent return password
         newUser = newUser.toObject();
+        // @ts-ignore
         delete newUser.password;
         io.to(`user-list-${team}`).emit('REFRESH', {
           update: true,
@@ -664,6 +666,7 @@ class AdminUsersController {
           // prevent return password
           user = user.toObject();
           if (user && user.password) {
+            // @ts-ignore
             delete user.password;
           }
 
