@@ -12,7 +12,7 @@ import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import RecoverFile from '../models/recoverFile.model';
-import UserModel from '../models/user.model';
+import UserModel, { User } from '../models/user.model';
 
 class AppController {
 
@@ -99,7 +99,7 @@ class AppController {
     const redirectTo = (req.session as any).redirectTo;
     logger.info(`AppController.processLogin`);
     logger.info(`${JSON.stringify(req.session)}`);
-    if (req.user) {
+    if (req.isAuthenticated() && req?.user) {
       logger.info(`AppController.processLogin req.user`);
       console.log(`AppController.processLogin redirectTo=${redirectTo}`);
        if (redirectTo?.length) {
@@ -110,7 +110,7 @@ class AppController {
       }
     } else {
       const { username } = req.body;
-      passport.authenticate('local', (err, user) => {
+      passport.authenticate('local', async (err, user) => {
         /* istanbul ignore if */
         if (err) {
           logger.error(err);
@@ -124,7 +124,7 @@ class AppController {
             username, error: 'Usuario o contraseña incorrecta.'
           });
         }
-        req.login(user, (loginErr) => {
+        req.login(user, async (loginErr) => {
           /* istanbul ignore if */
           if (loginErr) {
             logger.error(loginErr);
@@ -133,35 +133,25 @@ class AppController {
               username, error: 'Usuario o contraseña incorrecta.'
             });
           } else {
-            user.lastLogin = new Date();
-            user.save(async (err: any) => {
-              /* istanbul ignore if */
-              if (err) {
-                logger.error(err);
-                console.log(err); // handle errors!
-                return res.render('app/login', {
-                  username, error: 'Usuario o contraseña incorrecta.'
-                });
+            await User.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
+            try {
+              user = await UserModel.findById(user._id).populate({
+                path: 'userPermissions',
+                select: ['codeName']
+              });
+              if (redirectTo?.length) {
+                logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
+                delete (req.session as any).redirectTo;
+                return res.redirect(redirectTo);
               }
-              try {
-                user = await UserModel.findById(user._id).populate({
-                  path: 'userPermissions',
-                  select: ['codeName']
-                });
-                if (redirectTo?.length) {
-                  logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
-                  delete (req.session as any).redirectTo;
-                  return res.redirect(redirectTo);
-                }
-                return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
-              } catch (e) {
-                logger.error(e);
-                console.log(err); // handle errors!
-                return res.render('app/login', {
-                  username, error: 'Usuario o contraseña incorrecta.'
-                });
-              }
-            });
+              return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
+            } catch (e) {
+              logger.error(e);
+              console.log(err); // handle errors!
+              return res.render('app/login', {
+                username, error: 'Usuario o contraseña incorrecta.'
+              });
+            }
           }
         });
       })(req, res, next);

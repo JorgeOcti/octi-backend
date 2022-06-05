@@ -17,11 +17,11 @@ import Milestone  from "../models/milestone.model";
 import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model";
 import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
 import redisClient from "../../services/redis.service";
-import {IUserModel} from "../../app/models/user.model";
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as fs from 'fs';
 import * as https from 'https';
+import { IUser } from '../../app/interfaces';
 
 
 class TransmittalController {
@@ -520,7 +520,7 @@ private getForm(filter: any): Promise<IFormModel> {
   });
 }
 
-  public async fillFormSections(formID : String, user: IUserModel){
+  public async fillFormSections(formID : String, user: IUser){
     try {
       if (!formID){
         return {};

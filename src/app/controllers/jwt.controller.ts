@@ -65,7 +65,7 @@ class JWTController {
             select: ['name']
           }]);
 
-        if (!user || !user.comparePasswordSync(req.body.password)) {
+        if (!user || !user.comparePassword(req.body.password)) {
           logger.error(`login: Authentication failed. Invalid user or password.`);
           return res.status(401).json({
             message: 'Authentication failed. Invalid user or password.',

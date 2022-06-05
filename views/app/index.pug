@@ -33,7 +33,7 @@ block js
       company: !{`${JSON.stringify(user.company)}`},
       venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`},
       team:  !{`${JSON.stringify(user.team)}`},
-      userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`},
+      userPermissions: !{`${JSON.stringify(user.userPermissions)}`},
       token: '!{`${token}`}'
     };
     window.MAPBOX="!{`${MAPBOX}`}";

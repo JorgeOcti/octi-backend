@@ -12,6 +12,16 @@ export interface IUserSettings {
 }
 
 export interface IUser {
+  comparePassword(candidatePassword: string): Promise<boolean>;
+
+  generateToken(): string;
+
+  hasPermission(permission: string): boolean;
+
+  fullName(): string;
+
+  venuesPermissions(inString?: boolean): any[];
+
   _id: any;
   username: string;
   firstName: string;
@@ -23,7 +33,7 @@ export interface IUser {
   venuesAccess: IVenue | any;
   preferred: IForm | any;
   email: string;
-  password?: string;
+  password: string;
   hash_password: string;
   passwordResetToken: string | undefined;
   passwordResetExpires: Date | undefined;
@@ -38,5 +48,4 @@ export interface IUser {
   userForms: IForm[];
   isAdmin: boolean;
   isDriver: boolean;
-  generateToken: () => string;
 }

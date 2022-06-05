@@ -1304,6 +1304,9 @@ class CarController {
 
     try {
       const participantFilter: IAnyObject = {
+        car: {
+          $ne: null
+        },
         $and: [{
           venue: {
             $in: req.user.venuesPermissions()

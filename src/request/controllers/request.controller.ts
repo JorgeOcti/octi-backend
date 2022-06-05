@@ -27,6 +27,7 @@ import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
+import * as mongoose from 'mongoose';
 // import * as mongoose from 'mongoose'
 
 class RequestController {
@@ -653,7 +654,7 @@ class RequestController {
     try {
       const baseAggregate: any[] = [{
         $match: {
-          team,
+          team: mongoose.Types.ObjectId(team),
           $or: [{
             destination: {
               $in: venuesIds

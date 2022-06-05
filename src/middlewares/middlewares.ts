@@ -1,39 +1,53 @@
-import {NextFunction, Response, Request} from 'express';
+import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import {IRequest} from '../interfaces/global.interface';
+import { IRequest } from '../interfaces/global.interface';
 import logger from '../services/logger.service';
-import User, {IUserModel} from "../app/models/user.model";
-import BaseSchema from "yup/lib/schema";
+import User, { IUserModel } from '../app/models/user.model';
+import BaseSchema from 'yup/lib/schema';
+import redisClient from '../services/redis.service';
+import UserServices from '../app/models/user.services';
+import { IUser } from '../app/interfaces';
 
 class Middlewares {
 
   constructor() {
     this.isLoggedIn = this.isLoggedIn.bind(this);
+    this.context = this.context.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.addUserToRequest = this.addUserToRequest.bind(this);
+    this.cleanStaticFiles = this.cleanStaticFiles.bind(this);
+    this.validateBody = this.validateBody.bind(this);
   }
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
     logger.info(`Middlewares.isLoggedIn`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
-    if (req.isAuthenticated()) {
-      /* istanbul ignore else */
-      if (req.user) {
-        res.locals.user = req.user;
-        return next();
+    try {
+      if (req.isAuthenticated() && req?.user) {
+        /* istanbul ignore else */
+        const { user } = await this.addUserToRequest(req.user._id);
+        if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+          req.user = user;
+          res.locals.user = user;
+          return next();
+        } else {
+          res.locals.user = null;
+          return res.status(403).render('403');
+        }
       } else {
-        res.locals.user = null;
-        return res.status(403).render('403');
+        // if they aren't redirect them to the login page
+        console.log('isLoggedIn');
+        logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
+        logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
+        console.log('req.url', req.url);
+        req.logout();
+        (req.session as any).redirectTo = req.url;
+        return res.redirect(`/account/login/`);
       }
-    } else {
-      // if they aren't redirect them to the login page
-      console.log('isLoggedIn');
-      logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
-      logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
-      console.log('req.url', req.url);
-      req.logout();
-      (req.session as any).redirectTo = req.url;
+    } catch (e) {
+      logger.error(`Middlewares.isLoggedIn errorr: ${JSON.stringify(e)}`);
+      console.error(e);
       return res.redirect(`/account/login/`);
     }
   }
@@ -43,10 +57,10 @@ class Middlewares {
     return next();
   }
 
-  public async isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) : Promise<any> {
+  public async isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction): Promise<any> {
     try {
       const { headers, app } = req;
-      console.log(headers);
+      logger.info(`Middlewares.isJWTAuthenticated ${JSON.stringify(headers)}`);
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
         const { user } = await this.addUserToRequest(req.user._id);
@@ -62,11 +76,11 @@ class Middlewares {
             status: 401
           });
         }
-      } else if (headers && headers.authorization && headers.authorization.split(' ')[0] === 'JWT') {
+      } else if ( headers?.authorization && headers.authorization.split(' ')[0] === 'JWT') {
         try {
           const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
           const { user } = await this.addUserToRequest(decode._id);
-          if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
+          if (user && user?.team && user?.company) {
             res.locals.user = user;
             req.user = user;
             return next();
@@ -107,36 +121,70 @@ class Middlewares {
     }
   }
 
-  public async addUserToRequest(userId: string): Promise<{ user: IUserModel }> {
+  public async addUserToRequest(userId: string): Promise<{ user: IUser | IUserModel }> {
     return new Promise(async (resolve, reject) => {
-      const user = await User.findById(userId, {
-        _id: true,
-        firstName: true,
-        lastName: true,
-        isAdmin: true,
-        email: true,
-        preferred: true,
-        venuesAccess: true
-      }).populate([{
-        path: 'userPermissions',
-        select: ['codeName']
-      }, {
-        path: 'userForms',
-        select: ['name']
-      }, {
-        path: 'venue',
-        select: ['name']
-      }, {
-        path: 'company',
-        select: ['name', 'iFrameURL']
-      }, {
-        path: 'team',
-        select: ['name']
-      }]) as IUserModel;
-      if (user) {
-        resolve({ user });
-      } else {
-        reject({  });
+      logger.info(`Middlewares.addUserToRequest`);
+      let user: IUserModel | null;
+      try {
+        // try {
+        const sessionCache = await redisClient.get(userId);
+        if (sessionCache) {
+          logger.debug(`USER FROM CACHE ${userId}`);
+          // logger.debug(`sessionCache ${sessionCache}`);
+          resolve({
+            user: new UserServices(JSON.parse(sessionCache)).middleware()
+          });
+        } else {
+          logger.debug(`FOUND USER`);
+          user = await User
+            .findById(userId, {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              preferred: true,
+              isAdmin: true,
+              venuesAccess: true
+            })
+            .populate([{
+              path: 'userPermissions',
+              select: ['codeName']
+            }, {
+              path: 'userForms',
+              select: ['name']
+            }, {
+              path: 'venue',
+              select: ['name']
+            }, {
+              path: 'company',
+              select: ['name', 'iFrameURL', 'iFrameURLInventory']
+            }, {
+              path: 'team',
+              select: ['name']
+            }]);
+          if (user) {
+            logger.debug(`GENERATE USER CACHE ${userId}`);
+            const userCache = JSON.stringify(user);
+            await redisClient.set(userId, userCache, 'ex', 60);
+            resolve({
+              user: new UserServices(JSON.parse(userCache)).middleware()
+            });
+          } else {
+            reject({
+              user
+            });
+          }
+        }
+        // } catch (e) {
+        //   console.error(e);
+        //   reject({});
+        // }
+      } catch (e) {
+        logger.error(`Middlewares.addUserToRequest error: ${JSON.stringify(e)}`);
+        console.error(e);
+        reject({
+          user: null
+        });
       }
     });
   }
@@ -156,9 +204,9 @@ class Middlewares {
         next();
       } catch (e) {
         console.error(e);
-        res.status(400).json({error: e.errors.join(', ')});
+        res.status(400).json({ error: e.errors.join(', ') });
       }
-    }
+    };
   }
 
 }

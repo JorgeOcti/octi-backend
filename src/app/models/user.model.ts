@@ -1,27 +1,25 @@
 import * as bcrypt from 'bcrypt';
-import { ObjectID } from 'bson';
-import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
 import { HookNextFunction, PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import { IUser } from '../interfaces';
-import { IPermissionModel } from './permission.model';
 import usersHooks from './user.hooks';
 import { UserTypes, userTypes } from './user.model.types';
+import UserServices from './user.services';
 
 export interface IUserModel extends IUser, mongoose.Document {
-  comparePassword(candidatePassword: string, cb: (err: any, isMatch: any) => {}): boolean;
-
-  comparePasswordSync(candidatePassword: string): boolean;
-
-  hasPermission(permission: string): boolean;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 
   generateToken(): string;
 
+  hasPermission(permission: string): boolean;
+
   fullName(): string;
 
-  venuesPermissions(inString?: boolean): string[];
+  venuesPermissions(inString?: boolean): any[];
+
+
 }
 
 const userSettingsSchema = new mongoose.Schema({
@@ -147,55 +145,25 @@ userSchema.post<IUserModel>('findOneAndUpdate', async (doc: any) => {
 });
 
 userSchema.methods.fullName = function(): string {
-  return (this.firstName.trim() + ' ' + this.lastName.trim());
+  return new UserServices(this).fullName();
 };
 
 // validate user has permissions
 userSchema.methods.hasPermission = function(permission: string): boolean {
-  if (permission && permission.length && this.userPermissions && this.userPermissions.length) {
-    return this.userPermissions.some((p: IPermissionModel) => p.codeName === permission);
-  }
-  return false;
+  return new UserServices(this).hasPermission(permission);
 };
 
 // used by sockets
-userSchema.methods.generateToken = function() {
-  const userInfo = {
-    _id: this._id,
-    firstName: this.firstName,
-    lastName: this.lastName,
-    company: this.company,
-    venue: this.venue
-  };
-  return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {
-    expiresIn: '7 days'
-  });
+userSchema.methods.generateToken = function(): string {
+  return new UserServices(this).generateToken();
 };
 
-userSchema.methods.venuesPermissions = function(inString?: boolean) {
-  let venuesPermissions = [];
-  const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
-  if (currentVenue) {
-    venuesPermissions.push(currentVenue);
-  }
-  if (this.venuesAccess && this.venuesAccess.length) {
-    venuesPermissions = Array.from(
-      new Set([
-        ...venuesPermissions,
-        ...this.venuesAccess.map((venue: any) => (venue && venue._id ? venue._id : venue))
-      ])
-    );
-  }
-  venuesPermissions = venuesPermissions
-    .map((id) => id.toString())
-    .filter((elem, pos, arr) => {
-      return arr.indexOf(elem) === pos;
-    });
-  if (inString) {
-    return venuesPermissions;
-  } else {
-    return venuesPermissions.map((id) => new ObjectID(id));
-  }
+userSchema.methods.venuesPermissions = function(inString?: boolean): any[] {
+  return new UserServices(this).venuesPermissions(inString);
+};
+
+userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  return await new UserServices(this).comparePassword(candidatePassword);
 };
 
 /**
@@ -220,22 +188,6 @@ userSchema.pre('save', function(this: IUserModel, next: HookNextFunction) {
   });
 });
 
-
-userSchema.methods.comparePassword = function(candidatePassword: string, cb: (err: any, isMatch: any) => {}) {
-  try {
-    bcrypt.compare!(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
-      cb(err, isMatch);
-      return isMatch;
-    });
-    return false;
-  } catch (e) {
-    return false;
-  }
-};
-
-userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
-  return bcrypt.compareSync(candidatePassword, this.password);
-};
 
 export type UserSchema = mongoose.Model<IUserModel> & PaginateModel<IUserModel>;
 

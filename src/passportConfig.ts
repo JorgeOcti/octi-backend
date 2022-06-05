@@ -2,54 +2,29 @@ import User from './app/models/user.model';
 import { MultiSamlStrategy } from 'passport-saml';
 import * as passportLocal from 'passport-local';
 import * as passport from 'passport';
+import middleware from './middlewares/middlewares';
+import logger from './services/logger.service';
 
 const LocalStrategy = passportLocal.Strategy;
 
 passport.serializeUser((user: any, done) => {
-  console.log('serializeUser.user');
-  console.log('serializeUser.user', JSON.stringify({
+  logger.info(`Passport.serializeUser ${JSON.stringify({
     firstName: user?.firstName,
     lastName: user?.lastName,
     email: user?.email
-  }, null, 1));
+  })}`);
   done(null, user);
 });
 
-passport.deserializeUser((user: any, done: any) => {
-  // console.log('deserializeUser.user');
+passport.deserializeUser(async (user: any, done: any) => {
+  logger.info(`Passport.deserializeUser ${JSON.stringify({
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    email: user?.email
+  })}`);
   try {
-    User.findOne({ email: user.email ?? user }, {
-      _id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      preferred: true,
-      isAdmin: true,
-      venuesAccess: true
-    }).populate([{
-      path: 'userPermissions',
-      select: ['codeName']
-    }, {
-      path: 'userForms',
-      select: ['name']
-    }, {
-      path: 'venue',
-      select: ['name']
-    }, {
-      path: 'company',
-      select: ['name', 'iFrameURL', 'iFrameURLInventory']
-    }, {
-      path: 'team',
-      select: ['name']
-    }]).exec!((err, user) => {
-      if (user) {
-        done(null, user);
-      } else {
-        done(new Error('User not found'));
-      }
-    });
+    done(null, user);
   } catch (e) {
-    /* istanbul ignore next */
     done(e);
   }
 });
@@ -58,33 +33,26 @@ passport.deserializeUser((user: any, done: any) => {
  * Sign in using Email and Password.
  */
 // passport.use(new LocalStrategy(User.authenticate()));
-passport.use('local', new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  console.log('passport.LocalStrategy.verify()');
-  console.log('passport.LocalStrategy.username', username);
-  User.findOne({
-    username: username.toLowerCase(),
-    active: true
-  }, (err: any, user: any) => {
-    if (err) {
-      console.log('passport.LocalStrategy.findOne.error', err);
-      return done(err);
-    }
-    if (!user) {
+passport.use('local', new LocalStrategy({ usernameField: 'username' }, async (username, password, done) => {
+  logger.info(`Passport.verify( ${JSON.stringify({
+    username
+  })}`);
+  try{
+    const checkUser = await User.findOne({
+      username: username.toLowerCase(),
+      active: true
+    }, { _id: true, active: true, password: true });
+    if(checkUser && checkUser.active && await checkUser.comparePassword(password)){
+      const { user } = await middleware.addUserToRequest(checkUser._id);
+      done(undefined, user);
+    } else {
       console.log('passport.LocalStrategy.findOne.!user', { message: `username ${username} not found.` });
-      return done(undefined, false, { message: `username ${username} not found.` });
+      done(undefined, false, { message: `username ${username} not found.` });
     }
-    user.comparePassword(password, (err: Error, isMatch: boolean) => {
-      if (err) {
-        console.log('passport.LocalStrategy.comparePassword.error', err);
-        return done(err);
-      }
-      if (isMatch) {
-        return done(undefined, user);
-      }
-      console.log('passport.LocalStrategy.comparePassword.!isMatch', { message: 'Invalid email or password.' });
-      return done(undefined, false, { message: 'Invalid email or password.' });
-    });
-  });
+  } catch (e) {
+    console.log('passport local error');
+    console.error(e);
+  }
 }));
 
 passport.use('local-without-password', new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
@@ -93,7 +61,9 @@ passport.use('local-without-password', new LocalStrategy({ usernameField: 'usern
     username: username.toLowerCase(),
     active: true
   }, (err: any, user: any) => {
-    if (err) { return done(err); }
+    if (err) {
+      return done(err);
+    }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });
     }
@@ -117,7 +87,7 @@ const fetchSamlConfig = (request: any, done: any) => {
   return done(null, {
     entryPoint: 'https://osacontrolcom-dev.onelogin.com/trust/saml2/http-post/sso/6e86090a-7440-445b-9d8e-c38e6c74ac86',
     issuer: 'andes',
-    authnContext: ["urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"],
+    authnContext: ['urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'],
     callbackUrl: 'http://localhost:3030/sso/callback',
     cert: '-----BEGIN CERTIFICATE-----\n' +
       'MIIDzzCCAregAwIBAgIUZm9qQPacIWTsaLcw1Uij7w0e1S8wDQYJKoZIhvcNAQEF\n' +
@@ -163,7 +133,7 @@ passport.use('multy-saml', new MultiSamlStrategy({
       if (err) {
         return done(err);
       }
-     return done(null, user);
+      return done(null, user);
     });
   }
 ));

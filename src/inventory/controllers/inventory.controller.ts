@@ -1438,7 +1438,7 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team,
+              team: mongoose.Types.ObjectId(team),
               _id: { $in: [mongoose.Types.ObjectId(id)] }
             }
           }, {
@@ -1541,7 +1541,7 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team,
+              team: mongoose.Types.ObjectId(team),
               _id: { $in: [mongoose.Types.ObjectId(id)] }
             }
           }, {
@@ -1617,7 +1617,7 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team,
+              team: mongoose.Types.ObjectId(team),
               _id: { $in: [mongoose.Types.ObjectId(id)] }
             }
           }, {

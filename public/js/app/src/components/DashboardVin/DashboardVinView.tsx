@@ -357,15 +357,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                             >
                               <td className="middle hidden-xs">{participant.number}</td>
                               <td className="middle">
-                                {participant.car.vin}
+                                {participant.car?.vin}
                                 <div className='visible-xs'>
-                                  <ShowIf condition={!!participant.car.patent?.length}>
-                                    <br />{participant.car.patent}
+                                  <ShowIf condition={!!participant.car?.patent?.length}>
+                                    <br />{participant.car?.patent}
                                   </ShowIf>
                                 </div>
                               </td>
-                              <td className="middle hidden-xs">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
-                              <td className="middle hidden-xs">{participant.car.brand}</td>
+                              <td className="middle hidden-xs">{participant.car?.patent && participant.car?.patent.length ? participant.car?.patent : '-'}</td>
+                              <td className="middle hidden-xs">{participant.car?.brand}</td>
                               <td className="middle hidden-xs">
                                 {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
                               </td>
@@ -395,8 +395,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               </td>
                               <td className="middle hidden-xs">
                                 {participant.name}
-                                {/* {participant.car.lastForm && participant.car.lastForm.createdAt ?
-                                  moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
+                                {/* {participant.car?.lastForm && participant.car?.lastForm.createdAt ?
+                                  moment(participant.car?.lastForm.createdAt).format('L HH:mm:ss')
                                   :
                                   '-'
                                 } */}
@@ -411,7 +411,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="text-primary middle-center">
                                 <button
                                   className="btn btn-xs btn-primary"
-                                  onClick={() => this.props.history.push(`/cars/${participant.car._id}`)}
+                                  onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
                                 ><i className="fa fa-bars"/></button>
                               </td>
                             </tr>
