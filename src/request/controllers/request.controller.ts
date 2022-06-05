@@ -904,7 +904,7 @@ class RequestController {
 
       const cursor = RequestItem.aggregate<IRequestItemModel>([{
         $match: {
-          team,
+          team: mongoose.Types.ObjectId(team),
           'destination': {
             $in: req.user.venuesPermissions()
           }
