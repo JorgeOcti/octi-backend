@@ -340,6 +340,7 @@ class InventoryController {
     const { page, pageSize } = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     try {
+      logger.info(`InventoryController.list {email: ${req.user.email} }`);
       // paginate options
       const options: PaginateOptions = {
         select: {
@@ -1385,8 +1386,7 @@ class InventoryController {
   public async apiList(req: IRequest, res: Response) {
     try {
       const team = req.user.team._id;
-      logger.info(`apiList`);
-      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
       if (updatedUser) {
         const inventories = await InventoryModel.find({
@@ -1430,9 +1430,12 @@ class InventoryController {
 
   public async detaill(req: IRequest, res: Response) {
     try {
+
       const {id} = req.params;
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
+
+      logger.info(`InventoryController.detail {email: ${req.user.email}, inventory: ${id} }`);
 
       const [inventory, detailByVenues, detailByBrands, teamSettings, labels, detailInventory] = await Promise.all([
         InventoryModel.aggregate([

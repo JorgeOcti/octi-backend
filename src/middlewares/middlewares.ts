@@ -20,13 +20,13 @@ class Middlewares {
   }
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
-    logger.info(`Middlewares.isLoggedIn`);
+    logger.debug(`Middlewares.isLoggedIn: ${req.originalUrl}`);
     // if user is authenticated in the session, carry on
     /* istanbul ignore else */
     try {
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
-        const { user } = await this.addUserToRequest(req.user._id);
+        const { user } = await this.addUserToRequest(req.user._id, req);
         if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
           req.user = user;
           res.locals.user = user;
@@ -37,10 +37,6 @@ class Middlewares {
         }
       } else {
         // if they aren't redirect them to the login page
-        console.log('isLoggedIn');
-        logger.info(`isLoggedIn ${JSON.stringify(req.session)}`);
-        logger.info(`isLoggedIn ${JSON.stringify(req.user)}`);
-        console.log('req.url', req.url);
         req.logout();
         (req.session as any).redirectTo = req.url;
         return res.redirect(`/account/login/`);
@@ -60,10 +56,10 @@ class Middlewares {
   public async isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction): Promise<any> {
     try {
       const { headers, app } = req;
-      logger.info(`Middlewares.isJWTAuthenticated ${JSON.stringify(headers)}`);
+      logger.debug(`Middlewares.isJWTAuthenticated ${JSON.stringify(headers)}`);
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
-        const { user } = await this.addUserToRequest(req.user._id);
+        const { user } = await this.addUserToRequest(req.user._id, req);
         if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
           res.locals.user = user;
           req.user = user;
@@ -79,7 +75,7 @@ class Middlewares {
       } else if ( headers?.authorization && headers.authorization.split(' ')[0] === 'JWT') {
         try {
           const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
-          const { user } = await this.addUserToRequest(decode._id);
+          const { user } = await this.addUserToRequest(decode._id, req);
           if (user && user?.team && user?.company) {
             res.locals.user = user;
             req.user = user;
@@ -121,21 +117,21 @@ class Middlewares {
     }
   }
 
-  public async addUserToRequest(userId: string): Promise<{ user: IUser | IUserModel }> {
+  public async addUserToRequest(userId: string, req?: IRequest): Promise<{ user: IUser | IUserModel }> {
     return new Promise(async (resolve, reject) => {
-      logger.info(`Middlewares.addUserToRequest`);
+      logger.debug(`Middlewares.addUserToRequest ${userId} from: ${req?.originalUrl ?? 'system'}`);
       let user: IUserModel | null;
       try {
         // try {
         const sessionCache = await redisClient.get(userId);
         if (sessionCache) {
-          logger.debug(`USER FROM CACHE ${userId}`);
+          logger.debug(`use user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           // logger.debug(`sessionCache ${sessionCache}`);
           resolve({
             user: new UserServices(JSON.parse(sessionCache)).middleware()
           });
         } else {
-          logger.debug(`FOUND USER`);
+          logger.debug(`found user: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           user = await User
             .findById(userId, {
               _id: true,
@@ -163,7 +159,7 @@ class Middlewares {
               select: ['name']
             }]);
           if (user) {
-            logger.debug(`GENERATE USER CACHE ${userId}`);
+            logger.debug(`generate user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
             const userCache = JSON.stringify(user);
             await redisClient.set(userId, userCache, 'ex', 60);
             resolve({

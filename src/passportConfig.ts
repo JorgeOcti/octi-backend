@@ -8,7 +8,7 @@ import logger from './services/logger.service';
 const LocalStrategy = passportLocal.Strategy;
 
 passport.serializeUser((user: any, done) => {
-  logger.info(`Passport.serializeUser ${JSON.stringify({
+  logger.debug(`Passport.serializeUser ${JSON.stringify({
     firstName: user?.firstName,
     lastName: user?.lastName,
     email: user?.email
@@ -17,7 +17,7 @@ passport.serializeUser((user: any, done) => {
 });
 
 passport.deserializeUser(async (user: any, done: any) => {
-  logger.info(`Passport.deserializeUser ${JSON.stringify({
+  logger.debug(`Passport.deserializeUser ${JSON.stringify({
     firstName: user?.firstName,
     lastName: user?.lastName,
     email: user?.email

@@ -195,7 +195,7 @@ appRouter.post('/account/forgot-password/', csrfProtection, appController.proces
 appRouter.get('/account/recovery/:token', csrfProtection, appController.recovery);
 appRouter.post('/account/recovery/:token', csrfProtection, appController.processRecovery);
 
-appRouter.get('/account/logout/', appController.logout);
+appRouter.get('/account/logout/', Middlewares.isLoggedIn, appController.logout);
 
 // recover files
 router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, appController.recoverFile);

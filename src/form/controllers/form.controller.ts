@@ -278,8 +278,7 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    logger.info(`list forms`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`FormController.list {email: ${req.user.email}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'userForms',
@@ -317,8 +316,7 @@ class FormController {
   public async detail(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
     const team = req.user.team._id;
-    logger.info(`detail forms`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
+    logger.info(`FormController.detail {email: ${req.user.email}, form: ${id} }`);
     try {
       if (await User.find({ _id: req.user._id, userForms: id }).countDocuments() < 1) {
         return res.status(403).json({

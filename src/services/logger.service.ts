@@ -56,7 +56,8 @@ class LoggerService {
 
   /* istanbul ignore next */
   public debug(message: string): void {
-    this.logger('DEBUG', 'development', message, this.colors.brighGreen, this.colors.brightBlack);
+    this.logger('DEBUG', 'production', message, this.colors.brightBlack, this.colors.brightBlack);
+    this.logger('DEBUG', 'development', message, this.colors.brightBlack, this.colors.brightBlack);
   }
 
   /* istanbul ignore next */
@@ -71,7 +72,12 @@ class LoggerService {
   /* istanbul ignore next */
   private now(): string {
     // return moment();
-    return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+    // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+    if (process.env.ENV === 'production') {
+      return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+    } else {
+       return moment().format('DD/MM/YYYY:HH:mm:ss.x')
+    }
   }
 
   /* istanbul ignore next */

@@ -292,7 +292,8 @@ class AppController {
     }
   }
 
-  public logout(req: Request, res: Response) {
+  public logout(req: IRequest, res: Response) {
+    logger.info(`AppController.logout ${req?.user?`${req.user.email} `: ''}from: ${req.header('Referrer') ?? 'system'}`);
     req.logout();
     return res.redirect('/account/login/');
   }
