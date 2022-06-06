@@ -62,6 +62,9 @@ const reasonSchema = new mongoose.Schema({
   }
 });
 
+reasonSchema.set<any>('redisCache', process.env.ENV === 'production');
+reasonSchema.set<any>('expires', 30);
+
 reasonSchema.plugin(mongoosePaginate);
 
 export type ReasonSchema = mongoose.Model<IReasonModel> & PaginateModel<IReasonModel>;

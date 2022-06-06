@@ -135,7 +135,16 @@ export const userSchema = new mongoose.Schema<IUserModel>({
   },
   timestamps: true
 });
+
+userSchema.set<any>('redisCache', process.env.ENV === 'production');
 userSchema.set<any>('expires', 30);
+
+userSchema.index({ company: 1 });
+userSchema.index({ venue: 1 });
+userSchema.index({ userPermissions: 1 });
+userSchema.index({ userForms: 1 });
+userSchema.index({ venuesAccess: 1 });
+
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
 userSchema.plugin(mongoosePaginate);
