@@ -549,7 +549,7 @@ class RequestController {
 
   public async apiListItems(req: IRequest, res: Response) {
     logger.info(`RequestController.apiListItems`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
     const team = req.user.team._id;
     const {
       page,

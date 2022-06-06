@@ -80,18 +80,13 @@ io.use( async (socket: Socket, next: any) => {
     socket.disconnect();
     return next(new Error(msgErrorAuthentication));
   }
-  // console.log('token', token);
-  // if (isValid(token)) {
-  //   return next();
-  // }
-  // return next(new Error('authentication error'));
 });
 
 /* istanbul ignore next */
 io.on( 'connection', async ( socket: Socket) => {
   // logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
   socket.on('join', (data) => {
-    const {room} = data;
+    const { room } = data;
     redisClient.get(room, async (error, result) => {
       let data: any;
       if (result) {

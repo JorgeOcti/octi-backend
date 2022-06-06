@@ -2366,15 +2366,15 @@ class FormController {
   }
 
   public async createPosition(req: IRequest, res: Response): Promise<any> {
-
+    logger.info(`FormController.createPosition`);
     try {
+      logger.info(`FormController.createPosition: email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
       const { company, venue } = req.user;
       const team = req.user.team._id;
       const { lat, lng, accuracy, provider } = req.body;
-
       const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
 
-      const gpsPosition = new GPSPosition({
+      await new GPSPosition({
         lat,
         lng,
         user: req.user,
@@ -2384,21 +2384,17 @@ class FormController {
         os,
         accuracy,
         provider
-      });
-
-      await gpsPosition.save();
+      }).save();
 
       res.json({
         status: 200
       });
-
-
     } catch (e) {
       Raven.captureException(e, { req });
       /* istanbul ignore next */
-      logger.error(`position create. Error`);
+      logger.error(`FormController.createPosition: Error`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2406,9 +2402,7 @@ class FormController {
         status: 400
       });
     }
-
   }
-
 }
 
 export default new FormController();

@@ -1303,6 +1303,8 @@ class CarController {
     };
 
     try {
+      logger.info(`CarController.apiRevisions`);
+      logger.info(`CarController.apiRevisions: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
       const participantFilter: IAnyObject = {
         car: {
           $ne: null

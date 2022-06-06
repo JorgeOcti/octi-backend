@@ -361,7 +361,7 @@ if (settingItems.length) {
 }
 
 /* *****************
-* 3. Planning
+* 100. Información
 *****************/
 const accountItems = [{
   id: '100.1',
@@ -379,5 +379,26 @@ if (process.env.NODE_ENV === 'development' && accountItems.length) {
     items: planningItems
   });
 }
+
+/* *****************
+* 1001. Información
+*****************/
+const AdminItems = [{
+  id: '101.1',
+  icon: 'fa-circle-o',
+  text: 'Admin',
+  url: '/my-account/'
+}];
+
+if (process.env.NODE_ENV === 'development' && AdminItems.length) {
+  menus.push({
+    id: '101.1',
+    text: 'Mi Cuenta',
+    icon: 'fa-user',
+    url: '/my-account/',
+    items: AdminItems
+  });
+}
+
 
 export default menus;

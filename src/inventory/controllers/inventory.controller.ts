@@ -716,7 +716,7 @@ class InventoryController {
           }
           console.log('**************', inventoryCardId);
         }
-        res.status(201).json({
+        return res.status(201).json({
           data: {
             _id: inventoryFile._id,
             file: inventoryFile.file
@@ -731,13 +731,13 @@ class InventoryController {
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
-        res.status(400).json(e);
+        return res.status(400).json(e);
       }
     } else {
       logger.error(`uploadFile: La imagen es obligatoria.`);
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: 'La imagen es obligatoria.',
         status: 400
       });

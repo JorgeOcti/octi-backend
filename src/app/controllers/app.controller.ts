@@ -333,10 +333,10 @@ class AppController {
         recoverFile.attach('file', file, async (error: any) => {
           if (error) {
             /* istanbul ignore next */
-            res.status(400).json(error);
+            return res.status(400).json(error);
           } else {
             await recoverFile.save();
-            res.status(201).json({
+            return res.status(201).json({
               data: {
                 _id: recoverFile._id,
                 file: recoverFile.file
