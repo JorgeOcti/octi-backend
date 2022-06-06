@@ -1304,8 +1304,8 @@ class CarController {
     };
 
     try {
-      logger.info(`CarController.apiRevisions`);
       logger.info(`CarController.apiRevisions: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} options: ${JSON.stringify(options)}`);
       const participantFilter: IAnyObject = {
         car: {
           $ne: null
@@ -1398,6 +1398,7 @@ class CarController {
           createdAt: createdAtFilter
         });
       }
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} participantFilter: ${JSON.stringify(participantFilter)}`);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

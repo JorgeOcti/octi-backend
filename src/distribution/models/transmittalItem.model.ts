@@ -67,6 +67,11 @@ const transmittalItemSchema = new mongoose.Schema({
   timestamps: true
 });
 
+transmittalItemSchema.index({ transmittal: 1 });
+
+transmittalItemSchema.set<any>('redisCache', process.env.ENV === 'production');
+transmittalItemSchema.set<any>('expires', 30);
+
 transmittalItemSchema.plugin(mongoosePaginate);
 transmittalItemSchema.plugin(mongooseAggregatePaginate);
 

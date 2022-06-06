@@ -104,7 +104,7 @@ class RequestController {
     populate: this.itemPopulate
   }];
 
-  private aggregateCustomLabels: CustomLabels = {
+  readonly aggregateCustomLabels: CustomLabels = {
     totalDocs: 'total',
     docs: 'docs',
     limit: 'perPage',
@@ -1061,8 +1061,6 @@ class RequestController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    logger.info(`RequestController.apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
     const {
       page,
@@ -1110,6 +1108,9 @@ class RequestController {
       // add here conditions tu search
     }
     try {
+      logger.info(`RequestController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
+      logger.debug(`RequestController.apiList filter: ${req.user.email}, body: ${JSON.stringify(filter)}`);
+      logger.debug(`RequestController.apiList options: ${req.user.email}, body: ${JSON.stringify(options)}`);
       const requests = await this.getRequets(filter, options);
       /* istanbul ignore if  */
       if (options.page && requests.pages && requests.pages < options.page) {
@@ -1147,7 +1148,7 @@ class RequestController {
           _id: id,
           team
         })
-        .populate(this.requestPopulate)
+        .populate(this.requestPopulate);
       if (request) {
         res.json(request);
       } else {

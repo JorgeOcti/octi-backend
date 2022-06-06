@@ -31,7 +31,7 @@ const teamSchema = new mongoose.Schema({
   timestamps: true
 });
 
-teamSchema.set<any>('redisCache', true);
+teamSchema.set<any>('redisCache', process.env.ENV === 'production');
 teamSchema.set<any>('expires', 30);
 
 teamSchema.virtual('companies', {

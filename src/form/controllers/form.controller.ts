@@ -64,6 +64,7 @@ class FormController {
     const { id } = req.params;
     const team = req.user.team._id;
     try {
+      logger.info(`FormController.pdf email: ${req.user.email}, participant: ${id}`);
       const config: HtmlPdf.CreateOptions = {
         directory: '/tmp',
         format: 'Letter',
@@ -278,8 +279,8 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    logger.info(`FormController.list {email: ${req.user.email}}`);
     try {
+      logger.info(`FormController.list email: ${req.user.email}`);
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'userForms',
         select: ['_id']
@@ -316,8 +317,8 @@ class FormController {
   public async detail(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
     const team = req.user.team._id;
-    logger.info(`FormController.detail {email: ${req.user.email}, form: ${id} }`);
     try {
+      logger.info(`FormController.detail email: ${req.user.email}, form: ${id}`);
       if (await User.find({ _id: req.user._id, userForms: id }).countDocuments() < 1) {
         return res.status(403).json({
           message: 'No tienes permisos para esta operación'
@@ -1127,8 +1128,7 @@ class FormController {
       const { id } = req.params;
       const { company } = req.user;
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
-      logger.info(`uploadFile`);
-      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
+      logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id}`);
       if (file) {
         try {
           const participantFile = new ParticipantFile();
@@ -1206,9 +1206,8 @@ class FormController {
   public async changePreferred(req: IRequest, res: Response): Promise<any> {
     let { form } = req.body;
     const team = req.user.team._id;
-    logger.info(`changePreferred`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
+      logger.info(`FormController.changePreferred email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
       const user = await UserModel.findOne({ _id: req.user._id, team, active: true });
       // validate exist user
       if (user) {

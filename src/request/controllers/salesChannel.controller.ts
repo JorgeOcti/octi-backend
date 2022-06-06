@@ -22,6 +22,7 @@ class SalesChannelController {
     const { team } = req.user;
     const object = req.body;
     try {
+      logger.info(`SalesChannelController.apiCreate email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       const reason = await new SalesChannel({ ...object, team }).save();
       io.to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
@@ -31,9 +32,8 @@ class SalesChannelController {
       });
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`SalesChannelController.apiCreate: Async Error.`);
+      logger.error(`SalesChannelController.apiCreate: Async Error. email: ${req.user.email}`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       res.status(500).json(e);
     }
   }
@@ -43,6 +43,7 @@ class SalesChannelController {
     const { id } = req.params;
     const update = req.body;
     try {
+      logger.info(`SalesChannelController.apiUpdate email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       const reason = await SalesChannel.findOneAndUpdate({ _id: id }, { $set: { ...update } });
       io.to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
@@ -52,9 +53,7 @@ class SalesChannelController {
       });
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`SalesChannelController.apiUpdate: Async Error.`);
-      /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`SalesChannelController.apiUpdate: Async Error. email: ${req.user.email}`);
       res.status(500).json(e);
     }
   }
@@ -63,6 +62,7 @@ class SalesChannelController {
     const { team } = req.user;
     const { id } = req.params;
     try {
+      logger.info(`SalesChannelController.apiUpdate email: ${req.user.email}, params: ${JSON.stringify(req.params)}`);
       const reason = await SalesChannel.findOneAndDelete({ _id: id, team });
       io.to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
@@ -72,16 +72,12 @@ class SalesChannelController {
       });
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`SalesChannelController.apiDelete: Async Error.`);
-      /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`SalesChannelController.apiDelete: Async Error. email: ${req.user.email}`);
       res.status(500).json(e);
     }
   }
 
   public async apiList(req: IRequest, res: Response) {
-    logger.info(`SalesChannelController.apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string; pageSize: string };
     // paginate options
@@ -98,6 +94,7 @@ class SalesChannelController {
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
+      logger.info(`SalesChannelController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)} `);
       const channels = await this.getChannels({ team }, options);
       /* istanbul ignore if  */
       if (options.page && channels.pages && channels.pages < options.page) {

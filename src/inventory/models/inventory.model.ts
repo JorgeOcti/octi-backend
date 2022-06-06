@@ -114,7 +114,7 @@ const inventorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-inventorySchema.set<any>('redisCache', true);
+inventorySchema.set<any>('redisCache', process.env.ENV === 'production');
 inventorySchema.set<any>('expires', 10);
 
 inventorySchema.plugin(mongooseCrate, {

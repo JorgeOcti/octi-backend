@@ -101,7 +101,7 @@ transmittalSchema.index({ 'team': 1, number: 1 });
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
 
-transmittalSchema.set<any>('redisCache', true);
+transmittalSchema.set<any>('redisCache', process.env.ENV === 'production');
 transmittalSchema.set<any>('expires', 30);
 
 

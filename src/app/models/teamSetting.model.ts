@@ -227,7 +227,7 @@ const teamSettingSchema = new mongoose.Schema({
 });
 
 
-teamSettingSchema.set<any>('redisCache', true);
+teamSettingSchema.set<any>('redisCache', process.env.ENV === 'production');
 teamSettingSchema.set<any>('expires', 30);
 
 teamSettingSchema.index({ 'team': 1 });

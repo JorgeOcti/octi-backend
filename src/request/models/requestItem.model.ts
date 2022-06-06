@@ -157,10 +157,17 @@ const requestItemSchema = new mongoose.Schema({
   timestamps: true
 });
 
-requestItemSchema.set<any>('redisCache', true);
+requestItemSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestItemSchema.set<any>('expires', 30);
 
 requestItemSchema.index({ 'meta.request.number': 1 });
+requestItemSchema.index({ 'origin': 1 });
+requestItemSchema.index({ 'destination': 1 });
+requestItemSchema.index({ 'channel': 1 });
+requestItemSchema.index({ 'createdBy': 1 });
+requestItemSchema.index({ 'advancePaymentInformation.files': 1 });
+requestItemSchema.index({ 'advancePaymentInformation.letters': 1 });
+requestItemSchema.index({ 'items': 1 });
 requestItemSchema.index({ 'destination': 1, 'origin': 1, 'team': 1 });
 requestItemSchema.index({ 'destination': 1, 'origin': 1, 'createdAt': 1 });
 

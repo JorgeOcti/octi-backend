@@ -91,6 +91,9 @@ const historySchema = new mongoose.Schema({
 });
 
 historySchema.index({ team: 1, car: 1 });
+historySchema.index({ createdBy: 1 });
+historySchema.index({ from: 1 });
+historySchema.index({ to: 1 });
 // historySchema.index({ firstName: 1, lastName: 1}, { unique: true });
 historySchema.index({ team: 1, company: 1, car: 1 });
 historySchema.index({ team: 1, current: 1, car: 1 });

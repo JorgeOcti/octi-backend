@@ -23,7 +23,7 @@ const permissionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-permissionSchema.set<any>('redisCache', true);
+permissionSchema.set<any>('redisCache', process.env.ENV === 'production');
 permissionSchema.set<any>('expires', 30);
 
 permissionSchema.plugin(mongoosePaginate);

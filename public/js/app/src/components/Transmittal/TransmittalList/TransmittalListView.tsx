@@ -180,7 +180,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       pagination, loading, data, options: { orderBy, orderType }, milestones, milestoneTypes
     } = this.props.transmittal;
 
-    let longestMilestones : IMilestone[] = []
+    let longestMilestones : IMilestone[] = [];
 
     for(let mType of milestoneTypes){
       let tmp = milestones
@@ -244,52 +244,54 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               <div className='table-responsive'>
                 <ShowIf condition={data.length > 0}>
-                <div className='row transmittal bg-primary'>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
-                       onClick={() => this.changeOrder('_id')}
-                  >
-                    <strong>ID</strong> <i
-                    className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Placa</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Chofer</strong>
-                  </div>
-                  <div className='flex-45 col-sm-2 col-xs-2 col-md-1 col-lg-1'>
-                    <strong>Transportista</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Nº Unidades</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Tipo</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Documentos</strong>
-                  </div>
-                  {
-                    longestMilestones.map((milestone: IMilestone) =>
-                      (<div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={milestone._id}>
-                        <strong>{milestone.name}</strong>
-                      </div>))
-                  }
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Evidencia descarga</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' />
-                </div>
-                {
-                  data.map((item: any) => (
-                    <TransmitalListDetail
-                      item={item}
-                      evidenceMilestones={longestMilestones}
-                      key={item._id}
-                    />
-                  ))
-                }
-              </ShowIf>
+                  <>
+                    <div className='row transmittal bg-primary'>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
+                           onClick={() => this.changeOrder('_id')}
+                      >
+                        <strong>ID</strong> <i
+                        className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Placa</strong>
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Chofer</strong>
+                      </div>
+                      <div className='flex-45 col-sm-2 col-xs-2 col-md-1 col-lg-1'>
+                        <strong>Transportista</strong>
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Nº Unidades</strong>
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Tipo</strong>
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Documentos</strong>
+                      </div>
+                      {
+                        longestMilestones.map((milestone: IMilestone, index) =>
+                          (<div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${index}${milestone._id}`}>
+                            <strong>{milestone.name}</strong>
+                          </div>))
+                      }
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                        <strong>Evidencia descarga</strong>
+                      </div>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' />
+                    </div>
+                    {
+                      data.map((item: any, index) => (
+                        <TransmitalListDetail
+                          item={item}
+                          evidenceMilestones={longestMilestones}
+                          key={`${index}${item._id}`}
+                        />
+                      ))
+                    }
+                  </>
+                </ShowIf>
                 <ShowIf condition={!loading && data.length === 0}>
                 <div className='row'>
                   <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>

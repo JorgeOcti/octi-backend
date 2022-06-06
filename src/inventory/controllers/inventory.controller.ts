@@ -339,151 +339,153 @@ class InventoryController {
     const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        _id: true
+      },
+      sort: {
+        createdAt: -1
+      },
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '10', 10)
+    };
     try {
-      logger.info(`InventoryController.list {email: ${req.user.email} }`);
-      // paginate options
-      const options: PaginateOptions = {
-        select: {
-          _id: true
-        },
-        sort: {
-          createdAt: -1
-        },
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10)
-      };
-
       const paginatedInventories = await InventoryModel.paginate({
         team,
         venues: {
           $in: venuesPermissions
         }
       }, options);
+      const aggregate = [{
+        $match: {
+          _id: {
+            $in: paginatedInventories.docs.map(v => v._id)
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'inventorycars',
+          localField: '_id',
+          foreignField: 'inventory',
+          as: 'cars'
+        }
+      }, {
+        $unwind: '$cars'
+      }, {
+        $match: {
+          'cars.venue': {
+            $in: venuesPermissions
+          },
+          'cars.status': {
+            $in: [
+              ChoicesStatusCarInventory.pending,
+              ChoicesStatusCarInventory.found,
+              ChoicesStatusCarInventory.missing,
+              ChoicesStatusCarInventory.leftover,
+              ChoicesStatusCarInventory.reported
+            ]
+          }
+        }
+      }, {
+        $group: {
+          _id: {
+            category: '$_id',
+            status: '$status',
+            carStatus: '$cars.status',
+            name: '$name',
+            file: '$file',
+            backup: '$backup',
+            createdBy: '$createdBy',
+            createdAt: '$createdAt',
+            finalizedBy: '$finalizedBy',
+            finalizedAt: '$finalizedAt'
+          },
+          total: {
+            $sum: 1
+          }
+        }
+      }, {
+        $group: {
+          _id: '$_id.category',
+          name: {
+            $first: '$_id.name'
+          },
+          createdAt: {
+            $first: '$_id.createdAt'
+          },
+          file: {
+            $first: '$_id.file'
+          },
+          backup: {
+            $first: '$_id.backup'
+          },
+          finalizedAt: {
+            $first: '$_id.finalizedAt'
+          },
+          createdBy: {
+            $first: '$_id.createdBy'
+          },
+          finalizedBy: {
+            $first: '$_id.finalizedBy'
+          },
+          results: {
+            $push: {
+              status: '$_id.carStatus',
+              total: '$total'
+            }
+          },
+          status: {
+            $first: '$_id.status'
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'createdBy',
+          foreignField: '_id',
+          as: 'createdBy'
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'finalizedBy',
+          foreignField: '_id',
+          as: 'finalizedBy'
+        }
+      }, {
+        $project: {
+          '_id': 1,
+          'name': 1,
+          'results': 1,
+          'file': 1,
+          'backup': 1,
+          'createdBy.firstName': 1,
+          'createdBy.lastName': 1,
+          'finalizedBy.firstName': 1,
+          'finalizedBy.lastName': 1,
+          'status': 1,
+          'createdAt': 1,
+          'finalizedAt': 1
+        }
+      }, {
+        $sort: {
+          createdAt: -1
+        }
+      }];
 
       if (options.page && paginatedInventories.pages && paginatedInventories.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
+        logger.info(`InventoryController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
+        logger.debug(`InventoryController.apiList email: ${req.user.email}, aggregate: ${JSON.stringify(aggregate)}`);
+        logger.debug(`InventoryController.apiList email: ${req.user.email}, options: ${JSON.stringify(options)}`);
         const response: any[] = [];
         const [inventories, teamSettings] = await Promise.all([
-          InventoryModel.aggregate([{
-            $match: {
-              _id: {
-                $in: paginatedInventories.docs.map(v => v._id)
-              }
-            }
-          }, {
-            $lookup: {
-              from: 'inventorycars',
-              localField: '_id',
-              foreignField: 'inventory',
-              as: 'cars'
-            }
-          }, {
-            $unwind: '$cars'
-          }, {
-            $match: {
-              'cars.venue': {
-                $in: venuesPermissions
-              },
-              'cars.status': {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
-                ]
-              }
-            }
-          }, {
-            $group: {
-              _id: {
-                category: '$_id',
-                status: '$status',
-                carStatus: '$cars.status',
-                name: '$name',
-                file: '$file',
-                backup: '$backup',
-                createdBy: '$createdBy',
-                createdAt: '$createdAt',
-                finalizedBy: '$finalizedBy',
-                finalizedAt: '$finalizedAt'
-              },
-              total: {
-                $sum: 1
-              }
-            }
-          }, {
-            $group: {
-              _id: '$_id.category',
-              name: {
-                $first: '$_id.name'
-              },
-              createdAt: {
-                $first: '$_id.createdAt'
-              },
-              file: {
-                $first: '$_id.file'
-              },
-              backup: {
-                $first: '$_id.backup'
-              },
-              finalizedAt: {
-                $first: '$_id.finalizedAt'
-              },
-              createdBy: {
-                $first: '$_id.createdBy'
-              },
-              finalizedBy: {
-                $first: '$_id.finalizedBy'
-              },
-              results: {
-                $push: {
-                  status: '$_id.carStatus',
-                  total: '$total'
-                }
-              },
-              status: {
-                $first: '$_id.status'
-              }
-            }
-          }, {
-            $lookup: {
-              from: 'users',
-              localField: 'createdBy',
-              foreignField: '_id',
-              as: 'createdBy'
-            }
-          }, {
-            $lookup: {
-              from: 'users',
-              localField: 'finalizedBy',
-              foreignField: '_id',
-              as: 'finalizedBy'
-            }
-          }, {
-            $project: {
-              '_id': 1,
-              'name': 1,
-              'results': 1,
-              'file': 1,
-              'backup': 1,
-              'createdBy.firstName': 1,
-              'createdBy.lastName': 1,
-              'finalizedBy.firstName': 1,
-              'finalizedBy.lastName': 1,
-              'status': 1,
-              'createdAt': 1,
-              'finalizedAt': 1
-            }
-          }, {
-            $sort: {
-              createdAt: -1
-            }
-          }]),
+          InventoryModel.aggregate(aggregate),
           TeamSetting.findOne({ team })
         ]);
         for (const inventory of inventories) {
@@ -516,8 +518,7 @@ class InventoryController {
             finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
           });
         }
-
-        res.json({
+        return res.json({
           inventories: response,
           inventorySettings: teamSettings!.inventory,
           count: paginatedInventories.total,
@@ -535,7 +536,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(500).json({
+      return res.status(500).json({
         message: e,
         status: 500
       });

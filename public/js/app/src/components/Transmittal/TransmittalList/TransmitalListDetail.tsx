@@ -251,38 +251,37 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               </button>
             </ShowIf>
           </div>
-
-          {
-            evidenceMilestones.map((milestone: IMilestone, index: number) => {
-              let tmp = transmittal.evidenceFullLoad.filter(e => {
-                if (e.milestone != undefined) {
-                  let is_in: Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0;
-                  return is_in ? e.milestone == milestone._id : index == 0;
-                } else
-                  return index == 0;
-              });
-              return (
-                <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
-                  {
-                    tmp.map((image: any, index: number) => (
-                      <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
-                        <a href={decodeURI(image.file.url)}
-                           data-toggle='lightbox'
-                           data-gallery={`${transmittal._id}-${milestone._id}`}
-                           data-title={`#${this.padNumber(transmittal.number)}`}
-                           data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
-                        >
-                          <button className='btn btn-xs btn-default'>
-                            <i className='fa fa-fw fa-image' /> {tmp.length}
-                          </button>
-                        </a>
-                      </div>
-                    ))
-                  }
-                </div>
-              );
-            })
-          }
+            {
+              evidenceMilestones.map((milestone: IMilestone, index: number) => {
+                let tmp = transmittal.evidenceFullLoad.filter(e => {
+                  if (e.milestone != undefined) {
+                    let is_in: Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0;
+                    return is_in ? e.milestone == milestone._id : index == 0;
+                  } else
+                    return index == 0;
+                });
+                return (
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
+                    {
+                      tmp.map((image: any, index: number) => (
+                        <div key={`${transmittal._id}-${index}${image._id}`} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
+                          <a href={decodeURI(image.file.url)}
+                             data-toggle='lightbox'
+                             data-gallery={`${transmittal._id}-${milestone._id}`}
+                             data-title={`#${this.padNumber(transmittal.number)}`}
+                             data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
+                          >
+                            <button className='btn btn-xs btn-default'>
+                              <i className='fa fa-fw fa-image' /> {tmp.length}
+                            </button>
+                          </a>
+                        </div>
+                      ))
+                    }
+                  </div>
+                );
+              })
+            }
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
               transmittal?.revision ?
@@ -301,82 +300,82 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         </div>
         <ShowIf condition={open}>
           <div className='table-transmittal'>
-          <table className='table table-hover m-0'>
-            <thead>
-            <tr style={{ backgroundColor: '#f9f9f9' }}>
-              <th className='middle' style={{ width: '28px' }}>Solicitud</th>
-              <th className='middle' style={{ width: '100px' }}>VIN</th>
-              <th className='middle' style={{ width: '160px' }}>Modelo</th>
-              <th className='middle' style={{ width: '80px' }}>Factura</th>
-              <th className='middle' style={{ width: '80px' }}>Partida</th>
-              <th className='middle' style={{ width: '80px' }}>BL</th>
-              <th className='middle' style={{ minWidth: '100px' }}>Origen</th>
-              <th className='middle' style={{ minWidth: '100px' }}>Destino</th>
-              <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
-              <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
-              <th className='middle' style={{ width: '120px' }}>Observación</th>
-              <th className='middle' style={{ width: '40px' }}>Carga</th>
-              <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
-                <th className='middle' style={{ width: '30px' }} />
-              </ShowIf>
-            </tr>
-            </thead>
-            <tbody>
-            {
-              transmittal.items.map((transmittalItem) => (
-                <TransmitalListItem
-                  item={transmittal}
-                  transmittalItem={transmittalItem}
-                  key={transmittalItem._id}
-                />
-              ))
-            }
-            <ShowIf condition={transmittal.items.length > 1}>
-              <tr className='no-striped'>
-                <td colSpan={8} className='middle text-right'>
-                  {/*Masivo*/}
-                </td>
-                <td className='middle'>
-                  <DateRangePicker
-                    className={'input-sm'}
-                    value={''}
-                    format={'DD-MM-YY'}
-                    onChange={(e) => {
-                      this.props.transmittalActions.updateTransmittalThunkAction({
-                        _id: transmittal._id,
-                        allLoadingDate: e?.toDate() ?? ''
-                      });
-                    }}
-                  />
-                </td>
-                <td className='middle'>
-                  <DateRangePicker
-                    className={'input-sm'}
-                    value={''}
-                    format={'DD-MM-YY'}
-                    onChange={(e) => {
-                      // allArrivalDate
-                      this.props.transmittalActions.updateTransmittalThunkAction({
-                        _id: transmittal._id,
-                        allArrivalDate: e?.toDate() ?? ''
-                      });
-                    }}
-                  />
-                </td>
+            <table className='table table-hover m-0'>
+              <thead>
+              <tr style={{ backgroundColor: '#f9f9f9' }}>
+                <th className='middle' style={{ width: '28px' }}>Solicitud</th>
+                <th className='middle' style={{ width: '100px' }}>VIN</th>
+                <th className='middle' style={{ width: '160px' }}>Modelo</th>
+                <th className='middle' style={{ width: '80px' }}>Factura</th>
+                <th className='middle' style={{ width: '80px' }}>Partida</th>
+                <th className='middle' style={{ width: '80px' }}>BL</th>
+                <th className='middle' style={{ minWidth: '100px' }}>Origen</th>
+                <th className='middle' style={{ minWidth: '100px' }}>Destino</th>
+                <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
+                <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
+                <th className='middle' style={{ width: '120px' }}>Observación</th>
+                <th className='middle' style={{ width: '40px' }}>Carga</th>
+                <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
+                  <th className='middle' style={{ width: '30px' }} />
+                </ShowIf>
               </tr>
-            </ShowIf>
-            </tbody>
-          </table>
-          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
-            <div className='row'>
-              <div className='col-md-12 text-right m-b-10 m-t-10'>
-                <button className='btn btn-sm btn-success' onClick={this.openDialogAddCar}>
-                  <i className='fa fa-fw fa-plus' /> Agregar vehículo
-                </button>
+              </thead>
+              <tbody>
+              {
+                transmittal.items.map((transmittalItem, index) => (
+                  <TransmitalListItem
+                    item={transmittal}
+                    transmittalItem={transmittalItem}
+                    key={`${index}${transmittalItem._id}`}
+                  />
+                ))
+              }
+              <ShowIf condition={transmittal.items.length > 1}>
+                <tr className='no-striped'>
+                  <td colSpan={8} className='middle text-right'>
+                    {/*Masivo*/}
+                  </td>
+                  <td className='middle'>
+                    <DateRangePicker
+                      className={'input-sm'}
+                      value={''}
+                      format={'DD-MM-YY'}
+                      onChange={(e) => {
+                        this.props.transmittalActions.updateTransmittalThunkAction({
+                          _id: transmittal._id,
+                          allLoadingDate: e?.toDate() ?? ''
+                        });
+                      }}
+                    />
+                  </td>
+                  <td className='middle'>
+                    <DateRangePicker
+                      className={'input-sm'}
+                      value={''}
+                      format={'DD-MM-YY'}
+                      onChange={(e) => {
+                        // allArrivalDate
+                        this.props.transmittalActions.updateTransmittalThunkAction({
+                          _id: transmittal._id,
+                          allArrivalDate: e?.toDate() ?? ''
+                        });
+                      }}
+                    />
+                  </td>
+                </tr>
+              </ShowIf>
+              </tbody>
+            </table>
+            <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
+              <div className='row'>
+                <div className='col-md-12 text-right m-b-10 m-t-10'>
+                  <button className='btn btn-sm btn-success' onClick={this.openDialogAddCar}>
+                    <i className='fa fa-fw fa-plus' /> Agregar vehículo
+                  </button>
+                </div>
               </div>
-            </div>
-          </ShowIf>
-        </div>
+            </ShowIf>
+          </div>
         </ShowIf>
       </React.Fragment>
     );

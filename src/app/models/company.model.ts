@@ -123,7 +123,7 @@ const companySchema = new mongoose.Schema({
 });
 // {billing:{ active: true, checklistPrice: 0.07 , inventoryPrice: 0.022}, notifications:[]}
 
-companySchema.set<any>('redisCache', true);
+companySchema.set<any>('redisCache', process.env.ENV === 'production');
 companySchema.set<any>('expires', 30);
 
 companySchema.plugin(mongoosePaginate);
