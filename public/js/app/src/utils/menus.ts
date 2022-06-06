@@ -253,7 +253,7 @@ if (hasPermission(window.user, 'viewCar')) {
   settingItems.push({
     id: '10.2',
     icon: 'fa-circle-o',
-    text: 'Autos',
+    text: 'Vehículos',
     url: '/settings/cars/'
   });
 }

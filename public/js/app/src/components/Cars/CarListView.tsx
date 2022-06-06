@@ -87,7 +87,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">
-                Autos <small>{pagination.count}</small>
+                Vehículos <small>{pagination.count}</small>
               </h3>
               <div className="box-tools">
                 {
