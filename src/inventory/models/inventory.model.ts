@@ -114,6 +114,15 @@ const inventorySchema = new mongoose.Schema({
   timestamps: true
 });
 
+inventorySchema.set('toObject', {virtuals: true});
+inventorySchema.set('toJSON', {virtuals: true});
+
+inventorySchema.index({ team: 1 });
+inventorySchema.index({ users: 1 });
+inventorySchema.index({ createdBy: 1 });
+inventorySchema.index({ finalizedBy: 1 });
+inventorySchema.index({team: 1, status: 1, venues: 1});
+
 inventorySchema.set<any>('redisCache', process.env.ENV === 'production');
 inventorySchema.set<any>('expires', 10);
 
@@ -153,13 +162,6 @@ inventorySchema.virtual('cars', {
   foreignField: 'inventory', // is equal to field in another model
   justOne: false
 });
-
-
-inventorySchema.set('toObject', {virtuals: true});
-inventorySchema.set('toJSON', {virtuals: true});
-
-inventorySchema.index({team: 1});
-inventorySchema.index({team: 1, status: 1, venues: 1});
 
 inventorySchema.plugin(mongoosePaginate);
 
