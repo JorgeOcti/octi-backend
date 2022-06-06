@@ -623,7 +623,7 @@ class FormController {
         status: 400
       });
     }
-    const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
+    const updatedUser = await User.findById(req.user._id).populate([{ path: 'venue' }]);
     if (!updatedUser) {
       return res.status(404).json({
         message: 'No se ha encontrado el formulario solicitado.',
@@ -632,11 +632,11 @@ class FormController {
     }
 
     try {
-      let car : any = null;
+      let car: any = null;
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
         car = await CarModel.findOne({
-          $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
+          $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
           team
         });
       }
@@ -855,7 +855,7 @@ class FormController {
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.checkItem,
                 team,
-                type: transmittalObject!!.type,
+                type: transmittalObject!!.type
               });
 
               if (milestone?.requestItemStatus) {
@@ -887,7 +887,7 @@ class FormController {
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
-                type:  updatedTransmittal?.type,
+                type: updatedTransmittal?.type
               });
               let requestItems: any[] = [];
 
@@ -947,7 +947,7 @@ class FormController {
                 transmittal: newTransmittal
               });
 
-              if(requestItems.length){
+              if (requestItems.length) {
                 for (const requestItem of requestItems) {
                   io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
@@ -976,7 +976,7 @@ class FormController {
               });
             }
 
-            if (car){
+            if (car) {
               car.lastForm = newParticipant;
               await car.save();
 
@@ -2320,15 +2320,15 @@ class FormController {
           }]
         }])
         .exec!((err, form) => {
-          if (err) {
-            /* istanbul ignore next */
-            return reject(err);
-          }
-          if (form) {
-            return resolve(form);
-          }
-          return reject('No se encontro formularío');
-        });
+        if (err) {
+          /* istanbul ignore next */
+          return reject(err);
+        }
+        if (form) {
+          return resolve(form);
+        }
+        return reject('No se encontro formularío');
+      });
     });
   }
 

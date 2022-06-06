@@ -4,6 +4,7 @@ import { IRequest } from '../../../interfaces/global.interface';
 import { io } from '../../../server';
 import Car, { ChoicesStatusCar, ICarModel } from '../../models/car.model';
 import carTracker from '../tracker/car.tracker';
+import logger from '../../../services/logger.service';
 
 class AdminCarController {
 
@@ -18,18 +19,18 @@ class AdminCarController {
   public async index(req: IRequest, res: Response) {
     /* istanbul ignore else */
     if (req.user.hasPermission('viewCar')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.status(403).render('403');
     }
   }
 
   public async indexDetail(req: IRequest, res: Response) {
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
     /* istanbul ignore else */
-    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({_id: id, team}).countDocuments()) {
-      res.render('app/index', {token: await req.user.generateToken()});
+    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({ _id: id, team }).countDocuments()) {
+      res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.redirect('/settings/cars/');
     }
@@ -55,6 +56,7 @@ class AdminCarController {
     }
     const { company } = req.user;
     const team = req.user.team._id;
+    logger.info(`CarController.apiListCars email: ${req.user.email}`);
     const { cars } = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
@@ -104,7 +106,7 @@ class AdminCarController {
               company,
               createdBy: req.user.toString(),
               executedAt: newCar.createdAt
-            })
+            });
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           } catch (e) {
             /* istanbul ignore next */
@@ -126,7 +128,7 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -152,17 +154,18 @@ class AdminCarController {
       sort: {
         createdAt: -1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10),
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10),
       lean: true
     };
     try {
+      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${req.query}`);
       const cars = await this.getCars({
         vin: {
           $exists: true,
-          $ne: ""
+          $ne: ''
         },
-        team,
+        team
         // status: {
         //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
         // }
@@ -199,13 +202,13 @@ class AdminCarController {
       filter = {
         $and: [{
           $or: [{
-            vin: {$regex: searchText}
+            vin: { $regex: searchText }
           }, {
-            brand: {$regex: searchText}
+            brand: { $regex: searchText }
           }, {
-            denomination: {$regex: searchText}
+            denomination: { $regex: searchText }
           }, {
-            color: {$regex: searchText}
+            color: { $regex: searchText }
           }]
         }, filter]
       };

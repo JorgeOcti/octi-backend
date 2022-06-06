@@ -22,6 +22,7 @@ import Venue from '../models/venue.model';
 import { ObjectID } from 'bson';
 
 moment.tz.setDefault('America/Santiago');
+
 class CarController {
 
   constructor() {
@@ -45,15 +46,15 @@ class CarController {
   }
 
   public async index(req: IRequest, res: Response) {
-    return res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
-    return res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async vinDashboard(req: IRequest, res: Response) {
-    return res.render('app/index', {token: await req.user.generateToken()});
+    return res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async createCar(req: IRequest, res: Response) {
@@ -130,7 +131,7 @@ class CarController {
               const y = b.name;
               return ((x < y) ? -1 : ((x > y) ? 1 : 0));
             })
-          );
+        );
       } else {
         res.json([]);
       }
@@ -143,11 +144,11 @@ class CarController {
   }
 
   public async vinDashboardDetail(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const { team } = req.user;
     // validate params
     /* istanbul ignore next */
-    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).countDocuments()) {
+    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({ _id: id, team }).countDocuments()) {
       return res.redirect('/cars/');
       // return res.status(404).render('404');
     }
@@ -172,7 +173,7 @@ class CarController {
       if (!car) {
         return res.status(404).render('404');
       } else {
-        res.render('app/index', {token: await req.user.generateToken()});
+        res.render('app/index', { token: await req.user.generateToken() });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -183,8 +184,8 @@ class CarController {
   }
 
   public async checkVIN(req: IRequest, res: Response) {
-    let {vin, vin2} = req.body;
-    const {inventory} = req.body;
+    let { vin, vin2 } = req.body;
+    const { inventory } = req.body;
     const team = req.user.team._id;
     logger.info(`checkVIN`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -196,7 +197,7 @@ class CarController {
       try {
         const inventoryStatus = await InventoryModel.findOne({
           _id: inventory
-        }, {status: true});
+        }, { status: true });
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
           logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
           logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
@@ -214,10 +215,10 @@ class CarController {
           if (vin2) {
             if (vin2[0] === '0') {
               const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
-              inventoryQuery.vin2 = {$regex: vinRegex};
+              inventoryQuery.vin2 = { $regex: vinRegex };
             } else {
               const patentRegex = new RegExp(vin2, 'i');
-              inventoryQuery.$or = [{vin2}, {patent: patentRegex}];
+              inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
             }
           }
           const cars = await CarModel.find(inventoryQuery, {
@@ -323,10 +324,10 @@ class CarController {
         if (vin2) {
           if (vin2[0] === '0') {
             const vinRegex = new RegExp(`${vin2.substr(vin2.length - 5)}$`, 'i');
-            inventoryQuery.vin2 = {$regex: vinRegex};
+            inventoryQuery.vin2 = { $regex: vinRegex };
           } else {
             const patentRegex = new RegExp(vin2, 'i');
-            inventoryQuery.$or = [{vin2}, {patent: patentRegex}];
+            inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
           }
         }
 
@@ -385,7 +386,7 @@ class CarController {
       const venuesByCompanies = await Venue.find(query);
       const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
 
-      let participantQuery : any = {
+      let participantQuery: any = {
         venue: {
           $in: venuesPermissionsFilterByCompanies
         },
@@ -393,8 +394,8 @@ class CarController {
           $gte: moment().subtract(30, 'd').toDate()
         }
       };
-      if (only_controls == "1"){
-        participantQuery.kind = {$ne: KindForm.transmittal}
+      if (only_controls == '1') {
+        participantQuery.kind = { $ne: KindForm.transmittal };
       }
 
       const participantReceivedPerDay = await ParticipantModel
@@ -402,7 +403,7 @@ class CarController {
           {
             $match: {
               ...participantQuery,
-              reception: true,
+              reception: true
             }
           }, {
             $project: {
@@ -460,7 +461,7 @@ class CarController {
                   total: '$total'
                 }
               },
-              total: {$sum: '$total'}
+              total: { $sum: '$total' }
             }
           }, {
             $sort: {
@@ -473,7 +474,7 @@ class CarController {
           {
             $match: {
               ...participantQuery,
-              shipping: true,
+              shipping: true
             }
           }, {
             $project: {
@@ -535,7 +536,7 @@ class CarController {
                   total: '$total'
                 }
               },
-              total: {$sum: '$total'}
+              total: { $sum: '$total' }
             }
           }, {
             $sort: {
@@ -548,7 +549,7 @@ class CarController {
           {
             $match: {
               team,
-              destination: {$ne: ''},
+              destination: { $ne: '' },
               createdAt: {
                 $gte: moment().subtract(30, 'd').toDate()
               }
@@ -608,7 +609,7 @@ class CarController {
           date: {
             $gte: moment().subtract(30, 'd').toDate()
           }
-        }, {car: 1, date: 1})
+        }, { car: 1, date: 1 })
         .populate([{
           path: 'car',
           select: ['vin', 'participants'],
@@ -618,10 +619,10 @@ class CarController {
           }]
         }]).lean();
 
-      const planningByProcessingByKey:any = {};
+      const planningByProcessingByKey: any = {};
       for (const process of planningByProcessing) {
         const key = moment(process.date).format('YYYY-MM-DD');
-        if(!planningByProcessingByKey.hasOwnProperty(key)){
+        if (!planningByProcessingByKey.hasOwnProperty(key)) {
           planningByProcessingByKey[key] = {
             total: 0
           };
@@ -642,12 +643,12 @@ class CarController {
         const existInParticipantReceivedPerDay = participantReceivedPerDay.find((day) => day._id.toString() === key);
         const existInParticipantSentPerDay = participantSentPerDay.find((day) => day._id.toString() === key);
         const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
-        if(!planningByProcessingByKey.hasOwnProperty(key)){
+        if (!planningByProcessingByKey.hasOwnProperty(key)) {
           planningProcess.push({
             _id: key,
             total: 0
           });
-        } else{
+        } else {
           planningProcess.push({
             id: key,
             total: planningByProcessingByKey[key].total
@@ -696,11 +697,11 @@ class CarController {
         const max = i + proyectionInterval;
         if (i === 0) {
           proyection.push({
-            $cond: [{$and: [{$gte: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']
+            $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, '']
           });
         } else {
           proyection.push({
-            $cond: [{$and: [{$gt: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']
+            $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, '']
           });
         }
       }
@@ -719,7 +720,7 @@ class CarController {
             $project: {
               range: {
                 $concat: [
-                  {$cond: [{$lt: ['$qualification', 0]}, 'Unknown', '']},
+                  { $cond: [{ $lt: ['$qualification', 0] }, 'Unknown', ''] },
                   ...proyection
                 ]
               }
@@ -732,7 +733,7 @@ class CarController {
               }
             }
           }]);
-      const venues = await Venue.find({_id: {$in: venuesPermissions}}).populate([{
+      const venues = await Venue.find({ _id: { $in: venuesPermissions } }).populate([{
         path: 'company',
         select: ['id', 'name']
       }]);
@@ -755,7 +756,7 @@ class CarController {
         planning,
         planningProcess,
         cars,
-        totalCars: await CarModel.find({team}).countDocuments(),
+        totalCars: await CarModel.find({ team }).countDocuments(),
         status: 200
       });
     } catch (e) {
@@ -785,12 +786,12 @@ class CarController {
         }
       }
     }
-    if (form.shippingVenue){
+    if (form.shippingVenue) {
       columns.push({
         header: `${form.name} - ${form.shippingVenueText}`, key: `${form._id.toString()}-shipping`, width: 30
       });
     }
-    if (form.receptionVenue){
+    if (form.receptionVenue) {
       columns.push({
         header: `${form.name} - ${form.receptionVenueText}`, key: `${form._id.toString()}-reception`, width: 30
       });
@@ -847,11 +848,11 @@ class CarController {
 
     let sectionAnswers = {};
 
-    if (["618d1c6e691899fc37247237", "618d2032691899fc3724725f"].includes(participant.form.toString()) ) {
+    if (['618d1c6e691899fc37247237', '618d2032691899fc3724725f'].includes(participant.form.toString())) {
       for (const section of participant.sections) {
         for (const answer of section.answers) {
-          sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)};
-          if (["618d2032691899fc37247284", "618d1c6e691899fc3724725c"].includes(answer._id.toString())) {
+          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
+          if (['618d2032691899fc37247284', '618d1c6e691899fc3724725c'].includes(answer._id.toString())) {
             // @ts-ignore
             sectionAnswers['has_15km'] = parseInt(answer.comment) > 15 ? '1' : '0';
           }
@@ -860,15 +861,15 @@ class CarController {
     } else {
       for (const section of participant.sections) {
         for (const answer of section.answers) {
-          sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)};
+          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
         }
       }
     }
 
-    if (participant.shippingVenue){
+    if (participant.shippingVenue) {
       sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-shipping`]: participant.sendTo.name };
     }
-    if (participant.receptionVenue){
+    if (participant.receptionVenue) {
       sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
     }
 
@@ -893,7 +894,7 @@ class CarController {
           $in: venuesPermissions
         }
       };
-      if (from && to){
+      if (from && to) {
         queryFilter.createdAt = {
           $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
@@ -956,7 +957,7 @@ class CarController {
       if (company.toString() === '5bbe39fca9683b82857035b1') {
         columns.push({
           header: 'Tiene más de 15 KM.', key: 'has_15km', width: 30
-        })
+        });
       }
 
       // Create Excel Stream with pipe to response object
@@ -1029,7 +1030,7 @@ class CarController {
       });
 
       // code to handle connection abort or finish query read process
-      cursor.on('end', async ()  => {
+      cursor.on('end', async () => {
         workbook.commit();
         res.status(200);
       });
@@ -1137,7 +1138,7 @@ class CarController {
 
   public async apiCarDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     try {
       const venuesPermissions = req.user.venuesPermissions();
       const car = await CarModel
@@ -1151,7 +1152,7 @@ class CarController {
           createdAt: true,
           patent: true,
           denomination: true,
-          color: true,
+          color: true
         })
         .populate([{
           path: 'inventories',
@@ -1283,7 +1284,7 @@ class CarController {
       },
       populate: [{
         path: 'car',
-        select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
+        select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm']
         // populate: {
         //   path: 'lastForm',
         //   select: ['createdAt']
@@ -1318,12 +1319,12 @@ class CarController {
       };
 
       if (forms) {
-        const formArray = forms.split(",")
-        participantFilter.form = {$in: formArray.map(f => new ObjectID(f))}
+        const formArray = forms.split(',');
+        participantFilter.form = { $in: formArray.map(f => new ObjectID(f)) };
       }
 
-      if (only_controls == "1"){
-        participantFilter.kind = {$ne: KindForm.transmittal}
+      if (only_controls == '1') {
+        participantFilter.kind = { $ne: KindForm.transmittal };
       }
 
       if (search && search.length) {
@@ -1386,10 +1387,10 @@ class CarController {
       if (from || to) {
         const createdAtFilter: any = {};
 
-        if (from){
+        if (from) {
           createdAtFilter.$gte = moment(from, 'YYYY-MM-DD').startOf('day');
         }
-        if (to){
+        if (to) {
           createdAtFilter.$lte = moment(to, 'YYYY-MM-DD').endOf('day');
         }
 
@@ -1433,7 +1434,7 @@ class CarController {
         for (const answer of section.answers) {
           if (answer.kind === KindQuestion.text || (answer.comment && answer.comment.length)) {
             const answerID = answer._id.toString();
-            if(!extraColums.keys.includes(answerID)){
+            if (!extraColums.keys.includes(answerID)) {
               extraColums.keys.push(answerID);
               extraColums.data.push({
                 header: answer.question, key: answerID, width: 50
@@ -1463,13 +1464,13 @@ class CarController {
                 .find((d) =>
                   Boolean(d._id && damage.position && d._id.toString() === damage.position.toString())
                 );
-            if (kind && part){
-            damages.push({kind, part, position});
+            if (kind && part) {
+              damages.push({ kind, part, position });
             }
           }
         }
       }
-      if(damages.length){
+      if (damages.length) {
         // tslint:disable-next-line: forin
         for (const d in damages) {
           const idx = parseInt(d, 10) + 1;
@@ -1641,16 +1642,16 @@ class CarController {
         header: 'Daños reportados', key: 'damages', width: 30
       }];
 
-      columns.push({header: 'Daño', key: 'damage', width: 30});
-      columns.push({header: 'Parte', key: 'part', width: 30});
-      columns.push({header: 'Tipo', key: 'kind', width: 30});
-      columns.push({header: 'Posición', key: 'position', width: 30});
+      columns.push({ header: 'Daño', key: 'damage', width: 30 });
+      columns.push({ header: 'Parte', key: 'part', width: 30 });
+      columns.push({ header: 'Tipo', key: 'kind', width: 30 });
+      columns.push({ header: 'Posición', key: 'position', width: 30 });
 
       /* headers */
       const periods: number = changeperiods ? parseInt(changeperiods, 10) : 8;
       const kinds = await Kind.find({ team }, { name: true });
       const parts = await Part.find({ team }, { name: true });
-      const positions = await Position.find({team}, {name: true});
+      const positions = await Position.find({ team }, { name: true });
       const damagesCache = {
         kinds: kinds.reduce((acc: any, cur: any) => {
           acc[cur._id.toString()] = cur;
@@ -1674,12 +1675,12 @@ class CarController {
       // create titles of the table with filters
       const newColumns = [...columns, ...extraColums.data];
       worksheet.columns = newColumns;
-      worksheet.autoFilter = {from: 'A1', to: {row: 1, column: newColumns.length}};
+      worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
 
       // add data in excel
       while (periodToProcess.length) {
         const rows: any[] = await periodToProcess.splice(0, 1)[0];
-        for(const row of rows){
+        for (const row of rows) {
           worksheet.addRow(row).commit();
         }
       }
@@ -1716,7 +1717,7 @@ class CarController {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
-      worksheet.autoFilter = {from: 'A1', to: 'F1'};
+      worksheet.autoFilter = { from: 'A1', to: 'F1' };
 
       worksheet.columns = [{
         header: 'VIN', key: 'vin', width: 30
@@ -1783,13 +1784,13 @@ class CarController {
         for (const car of cars) {
           const inventories = car.inventories!;
 
-          if (inventories.length === 0){
+          if (inventories.length === 0) {
             continue;
           }
 
           const n = inventories.length;
           const inv0 = inventories[0];
-          const inv1 = inventories[n-1];
+          const inv1 = inventories[n - 1];
           const t0 = inv0.createdAt;
           const t1 = inv1.createdAt;
 
@@ -1827,7 +1828,7 @@ class CarController {
   }
 
   public async apiCars(req: IRequest, res: Response) {
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1863,7 +1864,7 @@ class CarController {
               venue: {
                 $in: req.user.venuesPermissions()
               }
-            }, {_id: true})
+            }, { _id: true })
         }
       }, options, search);
 
@@ -1904,7 +1905,7 @@ class CarController {
   }
 
   private getCars(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
-    let filter: any = {...filters};
+    let filter: any = { ...filters };
 
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
@@ -1935,7 +1936,7 @@ class CarController {
     });
   }
 
-  public async apiVenueRevisionStats(req: IRequest, res: Response){
+  public async apiVenueRevisionStats(req: IRequest, res: Response) {
     try {
       const team = req.user.team._id;
       const { from, to } = req.query;
@@ -1947,17 +1948,17 @@ class CarController {
         venue: {
           $in: venuesPermissions
         },
-        kind: {$ne: KindForm.transmittal}
+        kind: { $ne: KindForm.transmittal }
       };
 
-      if (from && to){
+      if (from && to) {
         queryFilter.createdAt = {
           $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
         };
       }
 
-      const activeVenues : any[] = await ParticipantModel.aggregate([
+      const activeVenues: any[] = await ParticipantModel.aggregate([
         {
           $match: queryFilter
         }, {
@@ -1965,25 +1966,25 @@ class CarController {
             from: 'venues',
             localField: 'venue',
             foreignField: '_id',
-            as: '_venue',
+            as: '_venue'
           }
         }, {
-          $unwind: "$_venue"
+          $unwind: '$_venue'
         }, {
-          $group :
+          $group:
             {
-              _id : "$_venue._id",
-              name: { $first: "$_venue.name" },
+              _id: '$_venue._id',
+              name: { $first: '$_venue.name' },
               total: { $sum: 1 }
             }
         }]);
-      const inactiveVenues : any[] = await Venue.find({
+      const inactiveVenues: any[] = await Venue.find({
         team,
         _id: {
-          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+          $in: venuesPermissions.filter(vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
         }
-      }, {name: 1, _id: 1});
-      const allVenues : any[] = activeVenues.concat(inactiveVenues);
+      }, { name: 1, _id: 1 });
+      const allVenues: any[] = activeVenues.concat(inactiveVenues);
 
       res.status(200).json(allVenues);
     } catch (e) {
@@ -1992,7 +1993,7 @@ class CarController {
     }
   }
 
-  public async apiRevisionStats(req: IRequest, res: Response){
+  public async apiRevisionStats(req: IRequest, res: Response) {
     try {
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
@@ -2003,76 +2004,86 @@ class CarController {
         venue: {
           $in: venuesPermissions
         },
-        kind: {$ne: KindForm.transmittal}
+        kind: { $ne: KindForm.transmittal }
       };
 
-      const todayParticipants: number = await ParticipantModel.find({...queryFilter,
+      const todayParticipants: number = await ParticipantModel.find({
+        ...queryFilter,
         createdAt: {
           $gte: moment().hour(0).minute(0).toDate(),
           $lt: moment().hour(23).minute(59).toDate()
-        }}).countDocuments();
-      const yesterdayParticipants: number = await ParticipantModel.find({...queryFilter,
+        }
+      }).countDocuments();
+      const yesterdayParticipants: number = await ParticipantModel.find({
+        ...queryFilter,
         createdAt: {
-          $gte: moment().subtract(1, "day").startOf("day").toDate(),
-          $lt: moment().subtract(1, "day").endOf("day").toDate()
-        }}).countDocuments();
+          $gte: moment().subtract(1, 'day').startOf('day').toDate(),
+          $lt: moment().subtract(1, 'day').endOf('day').toDate()
+        }
+      }).countDocuments();
 
-      const lastMonthParticipants: number  = await ParticipantModel.find({...queryFilter,
+      const lastMonthParticipants: number = await ParticipantModel.find({
+        ...queryFilter,
         createdAt: {
-          $gte: moment().subtract(1,"month").startOf("month").toDate(),
-          $lt: moment().subtract(1,"month").endOf("month").toDate(),
-        }}).countDocuments();
-      const currentMonthParticipants: number = await ParticipantModel.find({...queryFilter,
+          $gte: moment().subtract(1, 'month').startOf('month').toDate(),
+          $lt: moment().subtract(1, 'month').endOf('month').toDate()
+        }
+      }).countDocuments();
+      const currentMonthParticipants: number = await ParticipantModel.find({
+        ...queryFilter,
         createdAt: {
-          $gte: moment().startOf("month").toDate(),
-          $lt: moment().endOf("month").toDate(),
-        }}).countDocuments();
+          $gte: moment().startOf('month').toDate(),
+          $lt: moment().endOf('month').toDate()
+        }
+      }).countDocuments();
 
       const totalParticipants: number = await ParticipantModel.find(queryFilter).countDocuments();
       const sentStats: any[] = await ParticipantModel.aggregate([
         {
-          $match: {...queryFilter, shipping: true}
+          $match: { ...queryFilter, shipping: true }
         }, {
-          $group :
+          $group:
             {
-              _id : 1,
-              accepted: {$sum: {$cond: [{$eq:["$shippingConfirmation", true]}, 1, 0]}},
-              rejected: {$sum: {$cond: [{$eq:["$shippingConfirmation", false]}, 1, 0]}},
+              _id: 1,
+              accepted: { $sum: { $cond: [{ $eq: ['$shippingConfirmation', true] }, 1, 0] } },
+              rejected: { $sum: { $cond: [{ $eq: ['$shippingConfirmation', false] }, 1, 0] } }
             }
         }
       ]);
       const receivedStats: any[] = await ParticipantModel.aggregate([
         {
-          $match: {...queryFilter, reception: true}
+          $match: { ...queryFilter, reception: true }
         }, {
-          $group :
+          $group:
             {
-              _id : 1,
-              accepted: {$sum: {$cond: [{$eq:["$receptionConfirmation", true]}, 1, 0]}},
-              rejected: {$sum: {$cond: [{$eq:["$receptionConfirmation", false]}, 1, 0]}},
+              _id: 1,
+              accepted: { $sum: { $cond: [{ $eq: ['$receptionConfirmation', true] }, 1, 0] } },
+              rejected: { $sum: { $cond: [{ $eq: ['$receptionConfirmation', false] }, 1, 0] } }
             }
         }
       ]);
 
-      const activeVenues : any[] = await ParticipantModel.aggregate([
+      const activeVenues: any[] = await ParticipantModel.aggregate([
         {
-          $match: {...queryFilter, createdAt: {
-              $gte: moment().startOf("month").toDate(),
-              $lt: moment().endOf("month").toDate()
-            }}
+          $match: {
+            ...queryFilter, createdAt: {
+              $gte: moment().startOf('month').toDate(),
+              $lt: moment().endOf('month').toDate()
+            }
+          }
         }, {
-          $group :
+          $group:
             {
-              _id : "$venue",
+              _id: '$venue',
               total: { $sum: 1 }
             }
         }]);
-      const inactiveVenues : any[] = await Venue.find({
+      const inactiveVenues: any[] = await Venue.find({
         team,
         _id: {
-          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+          $in: venuesPermissions.filter(vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
         }
-      }, {name: 1, _id: 1});
+      }, { name: 1, _id: 1 });
 
 
       res.status(200).json({
@@ -2084,7 +2095,7 @@ class CarController {
           totalRevisions: totalParticipants,
           sentStats: sentStats[0],
           receivedStats: receivedStats[0]
-          },
+        },
         venues: {
           activeVenues: activeVenues.length,
           inactiveVenues: inactiveVenues.length
