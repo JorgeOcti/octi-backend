@@ -109,6 +109,8 @@ class AdminFormsController {
     }
 
     try {
+      logger.info(`FormController.apiList: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`FormController.apiList: email: ${req.user.email}} filter: ${JSON.stringify(filter)}`);
       const forms = await this.getForms(filter, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {

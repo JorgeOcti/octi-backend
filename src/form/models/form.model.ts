@@ -311,6 +311,13 @@ const formSchema = new mongoose.Schema({
   timestamps: true
 });
 
+formSchema.set<any>('redisCache', process.env.ENV === 'production');
+formSchema.set<any>('expires', 30);
+
+formSchema.index({ team: 1 });
+formSchema.index({ createdAt: -1 });
+formSchema.index({ team: 1, status: 1, createdAt: -1 });
+
 formSchema.plugin(mongoosePaginate);
 
 formSchema.virtual('participants', {

@@ -280,29 +280,19 @@ class FormController {
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
     try {
-      logger.info(`FormController.list email: ${req.user.email}`);
-      const updatedUser = await User.findById(req.user._id).populate([{
-        path: 'userForms',
-        select: ['_id']
-      }]);
-      if (updatedUser) {
-        const forms = await this.getForms({
-          _id: {
-            $in: updatedUser.userForms.map((form) => form._id)
-          },
-          team
-        });
-        return res.json({
-          data: forms,
-          status: 200
-        });
-      } else {
-        /* istanbul ignore next */
-        return res.status(400).json({
-          message: 'Usuario no encontrado',
-          status: 400
-        });
-      }
+      const filter = {
+        _id: {
+          $in: req.user.userForms.map((form) => form._id)
+        },
+        team
+      };
+      logger.info(`FormController.list: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`FormController.list: email: ${req.user.email}} filter: ${JSON.stringify(filter)}`);
+      const forms = await this.getForms(filter);
+      return res.json({
+        data: forms,
+        status: 200
+      });
     } catch (e) {
       Raven.captureException(e, { req });
       /* istanbul ignore next */
