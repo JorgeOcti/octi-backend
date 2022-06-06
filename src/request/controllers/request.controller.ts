@@ -190,22 +190,20 @@ class RequestController {
       if (conectaID?.length) {
         const existConectId = await Request.findOne({ team, conectaID });
         if (existConectId) {
-          res.json({
+          return res.json({
             error: `connectID used in another request ${existConectId.number}`,
             number: existConectId.number
           });
         } else {
-          res.json({});
+          return res.json({});
         }
       } else {
-        res.json({});
+        return res.json({});
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        console.log(e);
-        res.status(500).json(e);
-      }
+      console.log(e);
+      return res.status(500).json(e);
     }
   }
 
