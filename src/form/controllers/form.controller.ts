@@ -607,8 +607,8 @@ class FormController {
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal } = req.body;
     const { company, venue, team } = req.user;
-    logger.info(`complete`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`FormController.complete { email: ${req.user.email} }`);
+    logger.info(`FormController.complete { email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
     // validate answers in body
     if (!answers) {
       return res.status(400).json({

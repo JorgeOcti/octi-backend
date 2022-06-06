@@ -96,7 +96,7 @@ app.use(responseTime());
 // template engine
 const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
-app.set('view cache', false);
+app.set('view cache', process.env.ENV === 'production');
 app.set('views', viewDirectory);
 
 // Set environment variables
