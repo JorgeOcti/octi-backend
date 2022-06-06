@@ -2365,7 +2365,6 @@ class FormController {
   }
 
   public async createPosition(req: IRequest, res: Response): Promise<any> {
-    logger.info(`FormController.createPosition`);
     try {
       logger.info(`FormController.createPosition: email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
       const { company, venue } = req.user;

@@ -10,6 +10,7 @@ import * as excel from 'exceljs';
 import * as tempfile from 'tempfile';
 import { Alignment } from 'exceljs';
 import { IVenueDay } from '../../interfaces/venueDay.interface';
+import logger from '../../../services/logger.service';
 
 class AdminVenueController {
 
@@ -216,6 +217,7 @@ class AdminVenueController {
       };
     }
     try {
+      logger.info(`VenueController.apiListVenues: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
       const venues = await this.getVenues(filter, options, search);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {

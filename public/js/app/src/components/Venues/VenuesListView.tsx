@@ -157,11 +157,13 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private onChangeTab() {
 
-    const {venues} = this.props.venues;
+    const {allVenues: venues} = this.props.venues;
 
     const geojson = {
       type: 'FeatureCollection',
-      features: venues.map((venue: any) => {
+      features: venues
+        .filter((venue)=>(venue.lng && venue.lat))
+        .map((venue: any) => {
         return {
           type: 'Feature',
           geometry: {
@@ -394,7 +396,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                       style={{
                         position: 'relative',
                         width: '100%',
-                        height: '60vh'
+                        height: '80vh'
                       }}
                     />
                   </div>

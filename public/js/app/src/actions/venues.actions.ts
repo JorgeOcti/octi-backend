@@ -7,7 +7,7 @@ import { IRegion } from '../../../../../src/app/interfaces/region.interface';
 import { IBaseVenue, IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
-import {IUser} from "../../../../../src/app/interfaces";
+import { IUser } from '../../../../../src/app/interfaces';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
 export interface IVenuesState {
@@ -218,7 +218,7 @@ export function getVenuesAction(nextPage: number) {
     }
     Axios.all([
       api.getCompanies(1, 200),
-      api.getVenues({ page: 1, pageSize: 200, search: searchText }),
+      api.getVenues({ page: 1, pageSize: 200 }),
       api.getCarriers(1, 200),
       api.getRegions(1, 200)
     ])
@@ -340,7 +340,7 @@ interface ILoadUsers {
   };
 }
 
-export function loadUsers(users: IUser[]) : ILoadUsers {
+export function loadUsers(users: IUser[]): ILoadUsers {
   return {
     type: '/VENUES/LOAD_USERS',
     payload: {
@@ -371,25 +371,25 @@ export function deleteVenueAction(id: string) {
   };
 }
 
-export function getVenueUsersAction(page: number, venue: IVenue){
+export function getVenueUsersAction(page: number, venue: IVenue) {
   return (dispatch: Dispatch<VenueReduxAction>) => {
-    const api : ApiService = new ApiService();
+    const api: ApiService = new ApiService();
     api.getSource();
     api.getUsers({
       page,
-      type:  UserTypes.common,
+      type: UserTypes.common,
       search: '',
       venue: venue._id,
       minified: true,
       limit: 100
     })
-      .then((response: AxiosResponse) : void => {
+      .then((response: AxiosResponse): void => {
         dispatch(loadUsers(response.data.results));
       })
       .catch((err: any) => {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
-      })
+      });
   };
 }
 
