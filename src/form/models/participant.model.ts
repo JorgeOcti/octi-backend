@@ -443,6 +443,8 @@ participantSchema.index({ team: 1, createdAt: 1 });
 participantSchema.index({ venue: 1 });
 participantSchema.index({ user: 1 });
 participantSchema.index({ car: 1 });
+participantSchema.index({ team: 1, venue: 1 });
+participantSchema.index({ car: 1, team: 1, venue: 1, kind: 1 });
 participantSchema.index({ transmittal: 1 });
 participantSchema.index({ survey: 1, completed: 1 });
 participantSchema.index({ form: 1, user: 1 });

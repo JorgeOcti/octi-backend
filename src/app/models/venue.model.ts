@@ -112,6 +112,15 @@ venueSchema.set<any>('redisCache', process.env.ENV === 'production');
 venueSchema.set<any>('expires', 30);
 
 venueSchema.index({ 'team': 1 });
+venueSchema.index({ 'receptionCarriers': 1 });
+venueSchema.index({ 'shippingCarriers': 1 });
+venueSchema.index({ 'sendToDays.venue': 1 });
+venueSchema.index({ 'sendTo': 1 });
+venueSchema.index({ 'receiveFrom': 1 });
+venueSchema.index({ 'users': 1 });
+venueSchema.index({ 'responsible': 1 });
+venueSchema.index({ 'region': 1 });
+venueSchema.index({ 'company': 1 });
 venueSchema.index({ 'team': 1, deleted: 1 });
 
 
