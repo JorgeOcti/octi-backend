@@ -1855,7 +1855,7 @@ class RequestController {
         });
       }*/
     }
-    res.json({
+    return res.json({
       errors,
       conectaData
     });
@@ -2005,7 +2005,7 @@ class RequestController {
         item: requestItem
       });
     }
-    res.status(200).json({
+    return res.status(200).json({
       ...requestItem
     });
   }
@@ -2013,11 +2013,10 @@ class RequestController {
   public async uploadFile(req: IRequest, res: Response) {
     const { company } = req.user;
     const team = req.user.team._id;
-    logger.info(`RequestController.uploadFile`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
+        logger.info(`RequestController.uploadFile email: ${req.user.email} file: ${JSON.stringify(file)}`);
         const requestFile = new RequestFile();
         /*
           {
@@ -2057,7 +2056,7 @@ class RequestController {
         }
 
         await requestFile.save();
-        res.status(201).json({
+        return res.status(201).json({
           data: {
             _id: requestFile._id,
             file: requestFile.file
@@ -2072,13 +2071,13 @@ class RequestController {
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
-        res.status(400).json(e);
+        return res.status(400).json(e);
       }
     } else {
       logger.error(`RequestController.uploadFile: The file are required.`);
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: 'La imagen es obligatoria.',
         status: 400
       });
