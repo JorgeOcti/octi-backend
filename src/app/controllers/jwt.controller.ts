@@ -50,19 +50,19 @@ class JWTController {
           })
           .populate([{
             path: 'venue',
-            select: ['name', 'lat', 'lng']
+            select: ['_id','name', 'lat', 'lng']
           }, {
             path: 'team',
-            select: ['name']
+            select: ['_id', 'name']
           }, {
             path: 'company',
-            select: ['name']
+            select: ['_id','name']
           }, {
             path: 'userPermissions',
-            select: ['codeName']
+            select: ['_id','codeName']
           }, {
             path: 'userForms',
-            select: ['name']
+            select: ['_id','name']
           }]);
 
         if (!user || !user.comparePassword(req.body.password)) {
@@ -96,6 +96,7 @@ class JWTController {
                 createdAt: -1
               }
             });
+            console.log(user);
             const userInfo = {
               _id: user._id,
               firstName: user.firstName,
@@ -105,19 +106,11 @@ class JWTController {
               userPermissions: user.userPermissions,
               userForms: user.userForms,
               isDriver: user.isDriver || false,
-              venue: {
-                _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
-                name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
-                lat: GeneralUtils.getObjectProperty(user.venue, 'lat', 0),
-                lng: GeneralUtils.getObjectProperty(user.venue, 'lng', 0)
-              },
-              company: {
-                _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
-                name: GeneralUtils.getObjectProperty(user.company, 'name', null)
-              },
+              venue: user.venue,
+              company: user.company,
               team: {
-                _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                _id: user.team._id,
+                name: user.team.name,
                 settings: {
                   form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
                     vinMinCharacters: 17,
