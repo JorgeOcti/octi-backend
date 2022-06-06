@@ -294,6 +294,7 @@ class AppController {
 
   public logout(req: IRequest, res: Response) {
     logger.info(`AppController.logout ${req?.user?`${req.user.email} `: ''}from: ${req.header('Referrer') ?? 'system'}`);
+    // (req.session as any).redirectTo = req.url;
     req.logout();
     return res.redirect('/account/login/');
   }

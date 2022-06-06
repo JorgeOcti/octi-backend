@@ -88,7 +88,7 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCompany') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addCompany}><i className="fa fa-plus" /> Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.addCompany}><i className="fa fa-plus" /> Crear empresa</button>
                   </div>
                   : null
               }

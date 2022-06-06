@@ -278,7 +278,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   onClick={this.downloadReport}
                   disabled={downloading}
                 >
-                  <i className="fa fa-fw fa-download" /> Exportar Excel
+                  <i className="fa fa-fw fa-download" /> Exportar
                 </button>
               </div>
             </div>

@@ -260,7 +260,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addVenue') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createVenue}><i className="fa fa-plus" />  Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createVenue}><i className="fa fa-plus" />  Crear sucursal</button>
                     : null
                 }
                 <button

@@ -161,7 +161,7 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                       hasPermission(window.user, 'addVenue') ?
                         <button className='btn btn-sm btn-success'
                                 onClick={this.createOperationType}
-                        ><i className='fa fa-plus' /> Agregar</button>
+                        ><i className='fa fa-plus' /> Crear tipo de operación</button>
                         : null
                     }
                   </div>

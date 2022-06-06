@@ -161,7 +161,7 @@ class MilestoneTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                       hasPermission(window.user, 'addVenue') ?
                         <button className='btn btn-sm btn-success'
                                 onClick={this.createMilestoneType}
-                        ><i className='fa fa-plus' /> Agregar</button>
+                        ><i className='fa fa-plus' /> Crear tipo de hito</button>
                         : null
                     }
                   </div>

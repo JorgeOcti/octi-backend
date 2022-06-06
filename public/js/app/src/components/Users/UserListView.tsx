@@ -204,7 +204,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addUser') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createUser}><i className="fa fa-plus" /> Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createUser}><i className="fa fa-plus" /> Crear usuario</button>
                     : null
                 }
                 <button

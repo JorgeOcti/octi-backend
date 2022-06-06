@@ -124,7 +124,7 @@ class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 canCreate ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.createColor}><i className="fa fa-plus" /> Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createColor}><i className="fa fa-plus" /> Crear color</button>
                   </div>
                   : null
               }

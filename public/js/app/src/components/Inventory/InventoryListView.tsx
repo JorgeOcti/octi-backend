@@ -121,7 +121,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="pull-right box-tools">
                 {
                   hasPermission(window.user, 'createInventory') ?
-                    <button className="btn btn-sm btn-success" onClick={this.create}>Nuevo</button>
+                    <button className="btn btn-sm btn-success" onClick={this.create}><i className="fa fa-plus" /> Crear inventario</button>
                     : null
                 }
               </div>

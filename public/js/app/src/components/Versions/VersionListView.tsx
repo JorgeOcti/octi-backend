@@ -108,7 +108,7 @@ class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Versiones <small>{versions.length}</small></h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success" onClick={this.addVersion}>Agregar</button>
+                <button className="btn btn-sm btn-success" onClick={this.addVersion}><i className='fa fa-plus' /> Crear versión</button>
               </div>
             </div>
             <div className="box-body no-padding">

@@ -91,7 +91,7 @@ class CarriersListView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCarrier') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}><i className="fa fa-plus" /> Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}><i className="fa fa-plus" /> Crear transportista</button>
                   </div>
                   : null
               }
