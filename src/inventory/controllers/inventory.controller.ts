@@ -662,11 +662,10 @@ class InventoryController {
     const {id} = req.params;
     const { company, venue, team } = req.user;
     const { inventoryCardId } = req.body;
-    logger.info(`uploadFile`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
+        logger.info(`InventoryController.uploadFile email: ${req.user.email} inventory: ${id}`);
         const inventoryFile = new InventoryFileModel();
         /*
           {
