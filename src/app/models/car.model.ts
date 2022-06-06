@@ -198,6 +198,8 @@ export const carSchema = new mongoose.Schema({
   timestamps: true
 });
 
+carSchema.set<any>('expires', 30);
+
 // text search
 carSchema.index({
   team: 1, denomination: 'text', material: 'text', brand: 'text'

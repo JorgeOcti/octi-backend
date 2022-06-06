@@ -23,6 +23,8 @@ const permissionSchema = new mongoose.Schema({
   timestamps: true
 });
 
+permissionSchema.set<any>('expires', 30);
+
 permissionSchema.plugin(mongoosePaginate);
 
 export type PermissionSchema = mongoose.Model<IPermissionModel> & PaginateModel<IPermissionModel> & {};

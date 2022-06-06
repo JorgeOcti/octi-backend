@@ -31,6 +31,8 @@ const teamSchema = new mongoose.Schema({
   timestamps: true
 });
 
+teamSchema.set<any>('expires', 30);
+
 teamSchema.virtual('companies', {
   ref: 'Company', // The model to use
   localField: '_id', // Find field in this model

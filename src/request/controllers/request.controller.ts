@@ -764,7 +764,8 @@ class RequestController {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10),
         customLabels: this.aggregateCustomLabels,
-        sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+        sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 },
+        lean: true
       };
       const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
       if (options.page && requests.pages && requests.pages < options.page) {
@@ -1096,7 +1097,8 @@ class RequestController {
       }],
       select: {meta: false},
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
+      limit: parseInt(pageSize ? pageSize : '20', 10),
+      lean: true
     };
     const filter: any = {
       team,
@@ -1145,7 +1147,7 @@ class RequestController {
           _id: id,
           team
         })
-        .populate(this.requestPopulate);
+        .populate(this.requestPopulate)
       if (request) {
         res.json(request);
       } else {

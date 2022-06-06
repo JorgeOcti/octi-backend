@@ -99,7 +99,7 @@ class TransmittalController {
     try {
       logger.info(`TransmittalController.apiDetail`);
       const { id } = req.params;
-      const transmittal = await Transmittal.findById(id).populate(this.populate);
+      const transmittal = await Transmittal.findById(id).populate(this.populate)
       res.json({
         data: transmittal
       });
@@ -295,7 +295,8 @@ class TransmittalController {
         select: ['firstName', 'lastName']
       }],
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
+      limit: parseInt(pageSize ? pageSize : '20', 10),
+      lean: true
     };
     const filter: any = {
       team

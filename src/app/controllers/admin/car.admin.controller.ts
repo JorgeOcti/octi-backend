@@ -153,7 +153,8 @@ class AdminCarController {
         createdAt: -1
       },
       page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      limit: parseInt(pageSize ? pageSize : "20", 10),
+      lean: true
     };
     try {
       const cars = await this.getCars({

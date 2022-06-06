@@ -157,6 +157,8 @@ const requestItemSchema = new mongoose.Schema({
   timestamps: true
 });
 
+requestItemSchema.set<any>('expires', 30);
+
 requestItemSchema.index({ 'meta.request.number': 1 });
 requestItemSchema.index({ 'destination': 1, 'origin': 1, 'team': 1 });
 requestItemSchema.index({ 'destination': 1, 'origin': 1, 'createdAt': 1 });

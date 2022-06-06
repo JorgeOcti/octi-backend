@@ -135,7 +135,7 @@ export const userSchema = new mongoose.Schema<IUserModel>({
   },
   timestamps: true
 });
-
+userSchema.set<any>('expires', 30);
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
 userSchema.plugin(mongoosePaginate);
