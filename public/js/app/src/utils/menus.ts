@@ -150,14 +150,6 @@ if (hasPermission(window.user, 'currentStock')) {
   });
 }
 
-if (hasPermission(window.user, 'viewInventoryDashboard')) {
-  inventoryItems.push({
-    id: '2.3',
-    icon: 'fa-circle-o',
-    text: 'Dashboard',
-    url: '/inventory/dashboard/'
-  });
-}
 
 if (hasPermission(window.user, 'viewInventory')) {
   inventoryItems.push({
@@ -168,12 +160,30 @@ if (hasPermission(window.user, 'viewInventory')) {
   });
 }
 
+if (hasPermission(window.user, 'viewCar')) {
+  inventoryItems.push({
+    id: '2.0',
+    icon: 'fa-circle-o',
+    text: 'Vehículos',
+    url: '/settings/cars/'
+  });
+}
+
 if (hasPermission(window.user, 'viewLabel')) {
   inventoryItems.push({
     id: '2.2',
     icon: 'fa-circle-o',
     text: 'Etiquetas',
     url: '/settings/labels/'
+  });
+}
+
+if (hasPermission(window.user, 'viewInventoryDashboard')) {
+  inventoryItems.push({
+    id: '2.3',
+    icon: 'fa-circle-o',
+    text: 'Dashboard',
+    url: '/inventory/dashboard/'
   });
 }
 
@@ -219,14 +229,14 @@ if (hasPermission(window.user, 'viewPlanning')) {
   });
 }
 
-if (hasPermission(window.user, 'viewPlanificationStudio')) {
-  planningItems.push({
-    id: '4.3',
-    icon: 'fa-circle-o',
-    text: 'Análisis',
-    url: '/planning/studio/'
-  });
-}
+// if (hasPermission(window.user, 'viewPlanificationStudio')) {
+//   planningItems.push({
+//     id: '4.3',
+//     icon: 'fa-circle-o',
+//     text: 'Análisis',
+//     url: '/planning/studio/'
+//   });
+// }
 
 
 if (planningItems.length) {
@@ -248,22 +258,12 @@ const settingItems = [/*{
   text: 'Alertas',
   url: '/settings/alerts/'
 }*/];
-
-if (hasPermission(window.user, 'viewCar')) {
+if (hasPermission(window.user, 'viewUser')) {
   settingItems.push({
-    id: '10.2',
+    id: '10.5',
     icon: 'fa-circle-o',
-    text: 'Vehículos',
-    url: '/settings/cars/'
-  });
-}
-
-if (hasPermission(window.user, 'viewCompany')) {
-  settingItems.push({
-    id: '10.3',
-    icon: 'fa-circle-o',
-    text: 'Empresas',
-    url: '/settings/companies/'
+    text: 'Usuarios',
+    url: '/settings/users/'
   });
 }
 
@@ -276,25 +276,6 @@ if (hasPermission(window.user, 'viewVenue')) {
   });
 }
 
-if (hasPermission(window.user, 'viewVenue')) {
-  settingItems.push({
-    id: '10.9',
-    icon: 'fa-circle-o',
-    text: 'Regiones',
-    url: '/settings/regions/'
-  });
-}
-
-
-if (hasPermission(window.user, 'viewUser')) {
-  settingItems.push({
-    id: '10.5',
-    icon: 'fa-circle-o',
-    text: 'Usuarios',
-    url: '/settings/users/'
-  });
-}
-
 if (hasPermission(window.user, 'viewCarrier')) {
   settingItems.push({
     id: '10.6',
@@ -303,23 +284,12 @@ if (hasPermission(window.user, 'viewCarrier')) {
     url: '/settings/carriers/'
   });
 }
-
-
-if (hasPermission(window.user, 'viewVersion')) {
+if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
-    id: '10.7',
+    id: '10.9',
     icon: 'fa-circle-o',
-    text: 'Versiones',
-    url: '/settings/versions/'
-  });
-}
-
-if (hasPermission(window.user, 'viewBilling')) {
-  settingItems.push({
-    id: '10.8',
-    icon: 'fa-circle-o',
-    text: 'Billing',
-    url: '/settings/billing/'
+    text: 'Regiones',
+    url: '/settings/regions/'
   });
 }
 
@@ -332,24 +302,6 @@ if (hasPermission(window.user, 'viewColor')) {
   });
 }
 
-if (hasPermission(window.user, 'viewStatsDashboard')) {
-  settingItems.push({
-    id: '10.11',
-    icon: 'fa-circle-o',
-    text: 'Estádisticas',
-    url: '/settings/stats/'
-  });
-}
-
-if (hasPermission(window.user, 'viewIntegration') || window.user.isAdmin) {
-  settingItems.push({
-    id: '10.12',
-    icon: 'fa-circle-o',
-    text: 'Integraciones',
-    url: '/settings/integrations/'
-  });
-}
-
 if (settingItems.length) {
   menus.push({
     id: '10',
@@ -357,6 +309,65 @@ if (settingItems.length) {
     icon: 'fa-cog',
     url: settingItems[0].url,
     items: settingItems
+  });
+}
+
+/* *****************
+* 1001. Información
+*****************/
+const AdminItems: any[] = [];
+
+if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.0',
+    icon: 'fa-circle-o',
+    text: 'Empresas',
+    url: '/settings/companies/'
+  });
+}
+if (hasPermission(window.user, 'viewIntegration') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.1',
+    icon: 'fa-circle-o',
+    text: 'Integraciones',
+    url: '/settings/integrations/'
+  });
+}
+
+if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.2',
+    icon: 'fa-circle-o',
+    text: 'Billing',
+    url: '/settings/billing/'
+  });
+}
+
+if (hasPermission(window.user, 'viewStatsDashboard') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.3',
+    icon: 'fa-circle-o',
+    text: 'Estádisticas',
+    url: '/settings/stats/'
+  });
+}
+
+if (hasPermission(window.user, 'viewVersion') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.100',
+    icon: 'fa-circle-o',
+    text: 'Versiones',
+    url: '/settings/versions/'
+  });
+}
+
+if (AdminItems.length && window.user.isAdmin) {
+  menus.push({
+    id: '200',
+    text: 'Administrador',
+    icon: 'fa-check-square',
+    url: '/settings/integrations/',
+    items: AdminItems
   });
 }
 
@@ -377,26 +388,6 @@ if (process.env.NODE_ENV === 'development' && accountItems.length) {
     icon: 'fa-user',
     url: '/my-account/',
     items: planningItems
-  });
-}
-
-/* *****************
-* 1001. Información
-*****************/
-const AdminItems = [{
-  id: '101.1',
-  icon: 'fa-circle-o',
-  text: 'Admin',
-  url: '/my-account/'
-}];
-
-if (process.env.NODE_ENV === 'development' && AdminItems.length) {
-  menus.push({
-    id: '101.1',
-    text: 'Mi Cuenta',
-    icon: 'fa-user',
-    url: '/my-account/',
-    items: AdminItems
   });
 }
 

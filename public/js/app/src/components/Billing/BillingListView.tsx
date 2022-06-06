@@ -72,7 +72,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
   public render() {
     const {pagination, loading, invoices} = this.props.billing;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.8" cAction="Detalle">
+      <AppContainer title="" cMenu="200" cSubMenu="200.2" cAction="Detalle">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

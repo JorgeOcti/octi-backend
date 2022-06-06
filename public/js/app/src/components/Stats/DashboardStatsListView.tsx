@@ -158,7 +158,7 @@ class DashboardStatsListView extends TrackingBasePage<IPropsType, IStateType> {
     const {studios, loading, pagination} = this.props.dashboard;
 
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.11" cAction="Listado">
+      <AppContainer title="" cMenu="200" cSubMenu="200.3" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

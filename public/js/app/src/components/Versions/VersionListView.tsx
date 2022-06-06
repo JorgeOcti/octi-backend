@@ -102,7 +102,7 @@ class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
     const {versions, loading} = this.props.versions;
 
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.7">
+      <AppContainer title="" cMenu="200" cSubMenu="200.100">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

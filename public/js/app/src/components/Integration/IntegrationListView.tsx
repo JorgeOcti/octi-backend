@@ -94,7 +94,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {users, loading, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.12" cAction="Listado">
+      <AppContainer title="" cMenu="200" cSubMenu="200.1" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

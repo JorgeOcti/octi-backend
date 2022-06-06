@@ -21,8 +21,6 @@ class UserController {
   }
 
   public async apiListDrivers(req: IRequest, res: Response) {
-    logger.info(`UserController.apiListDrivers`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
     const {
       page,
@@ -54,6 +52,9 @@ class UserController {
       isDriver: true
     };
     try {
+      logger.info(`UserController.apiListDrivers email: ${req.user.email}`);
+      logger.debug(`UserController.apiListDrivers email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`UserController.apiListDrivers email: ${req.user.email} options: ${JSON.stringify(options)}`);
       const drivers = await this.getUsers(filter, options);
       /* istanbul ignore if  */
       if (options.page && drivers.pages && drivers.pages < options.page) {
@@ -82,7 +83,8 @@ class UserController {
 
   public async apiChangePassword(req: IRequest, res: Response) {
     const user = req.user;
-    const {password, newPassword} = req.body;
+    const { password, newPassword } = req.body;
+    logger.info(`UserController.apiChangePassword email: ${req.user.email} password: ***-***, newPassword: ***-***`);
     if (password && password.trim().length && newPassword && newPassword.trim().length) {
       try {
         const User = await UserModel.findById(user._id);
@@ -120,8 +122,7 @@ class UserController {
 
   public async apiListVenues(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    logger.info(`apiListVenues`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`UserController.apiListVenues email: ${req.user.email}`);
     try {
       const currentUser = await UserModel.findById(req.user._id);
       if (currentUser) {
@@ -159,23 +160,22 @@ class UserController {
   public async apiChangeVenue(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const {venue} = req.body;
-    logger.info(`apiChangeVenue`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
+      logger.info(`UserController.apiChangeVenue { email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
       const currentUser = await UserModel.findById(req.user._id);
       const currentVenue = await Venue.findOne({_id: venue, team});
       if (currentUser && currentVenue && currentUser.venuesPermissions(true).includes(venue)) {
         currentUser.venue = currentVenue;
         currentUser.company = currentVenue.company;
         await currentUser.save();
-        res.status(200).json({
+        return res.status(200).json({
           message: 'Usuario editado satisfactoriamente.',
           status: 200
         });
       } else {
         /* istanbul ignore next */
         logger.error(`apiChangeVenue: Ha ocurrido un error.`);
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Operación no permitida',
           status: 400
         });
@@ -184,7 +184,7 @@ class UserController {
       logger.error(`apiChangeVenue: Async Error.`);
       logger.error(e);
       /* istanbul ignore next */
-      res.status(500).json({
+      return res.status(500).json({
         message: 'Ha ocurrido un error',
         status: 500
       });
