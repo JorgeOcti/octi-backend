@@ -304,7 +304,7 @@ class AppController {
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
-        logger.info(`AppController.uploadFile email: ${req.user.email}`);
+        logger.info(`AppController.recoverFile email: ${req.user.email}`);
         const recoverFile = new RecoverFile();
         /*
           {
