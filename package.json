@@ -67,6 +67,7 @@
     "mongoose-crate": "git+https://github.com/gmunozc/mongoose-crate.git#master",
     "mongoose-crate-s3": "~1.2.0",
     "mongoose-paginate": "~5.0.3",
+    "mongoose-redis-cache": "^0.0.3",
     "morgan": "~1.10.0",
     "multer": "~1.4.3",
     "nodemailer": "~6.6.3",

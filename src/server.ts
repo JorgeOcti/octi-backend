@@ -8,19 +8,26 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import app from './app';
 import logger from './services/logger.service';
 import redisClient, {createRedisClient} from './services/redis.service';
+import GeneralUtils from './utils/general.utils';
+
+const mongooseRedisCache = require("mongoose-redis-cache");
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
 
 // Mongoose connect
 (mongoose as any).Promise = bluebird;
-mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true}, (err: any) => {
+mongoose.connect!(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true}, (err: any) => {
   if (err) {
     /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
     throw err;
   }
   /* istanbul ignore if */
+  mongooseRedisCache(mongoose, {
+    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+    port: 6379
+  });
   if (app.get('env') !== 'testing') {
     console.log('Mongoose Successfully connected');
   }

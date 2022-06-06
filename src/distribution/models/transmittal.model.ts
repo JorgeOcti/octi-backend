@@ -101,6 +101,8 @@ transmittalSchema.index({ 'team': 1, number: 1 });
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
 
+transmittalSchema.set<any>('expires', 30);
+
 
 export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>& AggregatePaginateModel<ITransmittalModel>;
 

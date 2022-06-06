@@ -108,8 +108,11 @@ export const venueSchema = new mongoose.Schema({
   timestamps: true
 });
 
+venueSchema.set<any>('expires', 30);
+
 venueSchema.index({ 'team': 1 });
 venueSchema.index({ 'team': 1, deleted: 1 });
+
 
 mongoose.plugin(mongoosePaginate);
 
