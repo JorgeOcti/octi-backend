@@ -22,7 +22,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission, parseReplicableURL } from '../../../utils/common';
+import { disabledTView, hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import RequestItem from './RequestItem';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
@@ -309,7 +309,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       </tbody>
                     </table>
                     {
-                      canChangeRequest ?
+                      canChangeRequest && disabledTView ?
                         <div className='row' style={{ minWidth: '900px' }}>
                           <div className='col-md-10 col-md-offset-2' style={{ paddingRight: '5px' }}>
                             <div className='container-table-add-car' style={{ padding: '5px', marginTop: '20px', marginBottom: '20px' }}>

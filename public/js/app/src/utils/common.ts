@@ -164,3 +164,5 @@ export function isDercoDercocenter(object?: any) {
   return object && object.hasOwnProperty('company') ?
     object.company === dercocenterID : user.company._id === dercocenterID;
 }
+
+export const disabledTView = false;

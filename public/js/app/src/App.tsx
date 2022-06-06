@@ -47,7 +47,6 @@ import { isIntenertExplorer } from './utils/common';
 import CustomDashboardComponent from './components/CustomDashboard/CustomDashboardComponent';
 import TransmittalListView from './components/Transmittal/TransmittalList/TransmittalListView';
 import TransmittalCreateView from './components/Transmittal/TransmittalCreateView';
-import CustomInventoryAnalysis from './components/CustomDashboard/CustomInventoryAnalysis';
 import OperationTypeListView from './components/RequestSettings/OperationTypeListView';
 import RequestImportView from './components/Request/RequestImportView';
 import RequestImportVINSView from './components/Request/RequestImportVINSView';
@@ -56,7 +55,7 @@ import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeLis
 import FormsSettingsListView from './components/FormsSettings/FormListView';
 import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
 import ColorListView from './components/Colors/ColorsListView';
-import DashboardStatsView, {
+import {
   VDistributionDashboardStatsView, VInventoryDashboardStatsView, VPlanificationDashboardStatsView,
   VUnitControlDashboardStatsView
 } from "./components/Stats/DashboardStatsView";
@@ -181,7 +180,7 @@ $(() => {
     event.stopPropagation();
   });
   // prevenet show modal addons when is open and user change page
-  window.addEventListener('popstate', function(e) {
+  window.addEventListener('popstate', function() {
     $('.modal-backdrop').remove();
     $body.removeClass('modal-open');
     // ($('#andesModal') as any).modal('hide');
