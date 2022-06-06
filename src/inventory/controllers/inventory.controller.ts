@@ -1430,12 +1430,10 @@ class InventoryController {
 
   public async detaill(req: IRequest, res: Response) {
     try {
-
-      const {id} = req.params;
+      const { id } = req.params;
+      logger.info(`InventoryController.detail {email: ${req.user.email}, inventory: ${id} }`);
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
-
-      logger.info(`InventoryController.detail {email: ${req.user.email}, inventory: ${id} }`);
 
       const [inventory, detailByVenues, detailByBrands, teamSettings, labels, detailInventory] = await Promise.all([
         InventoryModel.aggregate([
@@ -1692,7 +1690,7 @@ class InventoryController {
               as: 'info'
             }
           }]),
-        TeamSetting.findOne({ team }),
+        TeamSetting.findOne({ team }).lean(true),
         InventoryLabel.find({
           team,
           active: true

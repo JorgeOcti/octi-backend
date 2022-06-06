@@ -157,6 +157,7 @@ const requestItemSchema = new mongoose.Schema({
   timestamps: true
 });
 
+requestItemSchema.set<any>('redisCache', true);
 requestItemSchema.set<any>('expires', 30);
 
 requestItemSchema.index({ 'meta.request.number': 1 });

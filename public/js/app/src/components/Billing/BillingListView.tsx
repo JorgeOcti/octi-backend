@@ -95,9 +95,9 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                       <tr>
                         <th className="middle">Período</th>
                         <th className="middle">Empresa</th>
-                        <th className="middle hidden-xs">Unidades en Inventario</th>
-                        <th className="middle hidden-xs">Unidades en Checklist</th>
-                        <th className="middle hidden-xs">Unidades en Solicitudes</th>
+                        <th className="middle hidden-xs">Inventario</th>
+                        <th className="middle hidden-xs">Checklist</th>
+                        <th className="middle hidden-xs">Solicitudes</th>
                         {/*<th className="middle">Valor Inventario</th>*/}
                         {/*<th className="middle">Valor Checklist</th>*/}
                         <th className="middle">Total</th>
@@ -110,7 +110,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                           <tr key={invoice._id}>
                             <td className="middle">
                               {
-                                moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY')
+                                moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY').toUpperCase()
                               }
                             </td>
                             <td className="middle">{invoice.company.name}</td>

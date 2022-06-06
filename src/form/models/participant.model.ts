@@ -435,7 +435,9 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({ createdAt: 1 });
+participantSchema.set<any>('redisCache', true);
+participantSchema.set<any>('expires', 10);
+
 participantSchema.index({ createdAt: -1 });
 participantSchema.index({ team: 1, createdAt: 1 });
 participantSchema.index({ venue: 1 });

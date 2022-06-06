@@ -114,6 +114,9 @@ const inventorySchema = new mongoose.Schema({
   timestamps: true
 });
 
+inventorySchema.set<any>('redisCache', true);
+inventorySchema.set<any>('expires', 10);
+
 inventorySchema.plugin(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,

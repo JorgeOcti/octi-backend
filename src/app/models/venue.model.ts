@@ -108,6 +108,7 @@ export const venueSchema = new mongoose.Schema({
   timestamps: true
 });
 
+venueSchema.set<any>('redisCache', true);
 venueSchema.set<any>('expires', 30);
 
 venueSchema.index({ 'team': 1 });

@@ -198,6 +198,7 @@ export const carSchema = new mongoose.Schema({
   timestamps: true
 });
 
+carSchema.set<any>('redisCache', true);
 carSchema.set<any>('expires', 30);
 
 // text search

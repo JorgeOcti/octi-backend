@@ -227,6 +227,9 @@ const teamSettingSchema = new mongoose.Schema({
 });
 
 
+teamSettingSchema.set<any>('redisCache', true);
+teamSettingSchema.set<any>('expires', 30);
+
 teamSettingSchema.index({ 'team': 1 });
 
 teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
