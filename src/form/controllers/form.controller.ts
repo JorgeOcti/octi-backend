@@ -1128,8 +1128,8 @@ class FormController {
       const { id } = req.params;
       const { company } = req.user;
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
-      logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id}`);
       if (file) {
+      logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id} file: ${JSON.stringify(file)}`);
         try {
           const participantFile = new ParticipantFile();
           /*

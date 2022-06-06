@@ -665,7 +665,7 @@ class InventoryController {
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
-        logger.info(`InventoryController.uploadFile email: ${req.user.email} inventory: ${id}`);
+        logger.info(`InventoryController.uploadFile email: ${req.user.email} inventory: ${id} file: ${JSON.stringify(file)}`);
         const inventoryFile = new InventoryFileModel();
         /*
           {
