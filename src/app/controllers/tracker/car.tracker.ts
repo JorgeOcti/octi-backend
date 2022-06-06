@@ -27,7 +27,6 @@ class CarTracker {
   public async fromInventoryCar({ id }: InventoryCarProps) {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info(`CarTracker.fromInventoryCar`);
         const inventoryCar = await InventoryCar
           .findById(id, {
             venue: true,
@@ -70,6 +69,8 @@ class CarTracker {
           history['from'] = venue;
           history['to'] = venueFound || venue;
           history['status'] = statusDelegate[status];
+          logger.info(`CarTracker.fromInventoryCar ${JSON.stringify(inventory)} history: ${JSON.stringify(history)}`);
+          logger.debug(`CarTracker.fromInventoryCar ${JSON.stringify(inventory)} inventoryCar: ${JSON.stringify(inventoryCar)} }`);
           await this.createHistory(history);
         }
         resolve({});
@@ -84,7 +85,6 @@ class CarTracker {
   public async fromParticipant({ id }: fromParticipantProps) {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info(`CarTracker.fromParticipant`);
         const participant = await Participant
           .findById(id, {
             _id: true,
@@ -165,7 +165,7 @@ class CarTracker {
               }
             };
           }
-          // logger.info(`CarTracker.fromParticipant: history: ${JSON.stringify(history)}`);
+          logger.info(`CarTracker.fromParticipant participant: ${participant._id} history: ${JSON.stringify(history)}`);
           await this.createHistory(history);
         }
         resolve({});
@@ -180,7 +180,6 @@ class CarTracker {
   public async importIntoSystem({ car, team, company, createdBy, module, executedAt }: importToSistemProps) {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info(`CarTracker.importToSistem`);
         let history: Partial<IHistory> = {
           status: StatusHistory.created,
           module: module ?? ModuleHistory.import,
@@ -190,7 +189,7 @@ class CarTracker {
           createdBy,
           executedAt: executedAt
         };
-        // logger.info(`CarTracker.importToSistem: history: ${JSON.stringify(history)}`);
+        logger.info(`CarTracker.importIntoSystem history: ${JSON.stringify(history)}`);
         await this.createHistory(history);
         resolve({});
       } catch (e) {
@@ -203,8 +202,8 @@ class CarTracker {
 
   public async updateCurrentHistory(car: any) {
     return new Promise(async (resolve, reject) => {
-      logger.info(`CarTracker.updateCurrentHistory`);
       try {
+        logger.debug(`CarTracker.updateCurrentHistory ${JSON.stringify(car)}`);
         const lastHistory = await History
           .findOne({
             car
@@ -245,8 +244,8 @@ class CarTracker {
 
   public async createImportHitory(car: ICar) {
     return new Promise(async (resolve, reject) => {
-      logger.info(`CarTracker.createImportHitory ${car._id}`);
       try {
+        logger.info(`CarTracker.createImportHitory ${JSON.stringify(car)}`);
         const firstHistory = await History
           .findOne({
             car: car._id,
@@ -308,7 +307,6 @@ class CarTracker {
 
   private async createHistory(history: Partial<IHistory>) {
     return new Promise(async (resolve, reject) => {
-      logger.info(`CarTracker.createHistory`);
       // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
       try {
         history = {
@@ -316,6 +314,7 @@ class CarTracker {
           current: true
         };
         // this.processAlert(history);
+        logger.debug(`CarTracker.createHistory history: ${JSON.stringify(history)}`);
         await new History(history).save();
         await this.updateCurrentHistory(history.car);
         resolve(history);
@@ -330,7 +329,7 @@ class CarTracker {
 
   private async updateAlerts(history: Partial<IHistory>) {
     return new Promise(async (resolve, reject) => {
-      logger.info(`CarTracker.updateCurrentHistory`);
+      logger.debug(`CarTracker.updateAlerts history: ${JSON.stringify(history)}`);
       try {
         let lastHistory = await History.findOne({
           car: history.car
