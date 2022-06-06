@@ -95,9 +95,9 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                       <tr>
                         <th className="middle">Período</th>
                         <th className="middle">Empresa</th>
-                        <th className="middle">Unidades en Inventario</th>
-                        <th className="middle">Unidades en Checklist</th>
-                        <th className="middle">Unidades en Solicitudes</th>
+                        <th className="middle hidden-xs">Unidades en Inventario</th>
+                        <th className="middle hidden-xs">Unidades en Checklist</th>
+                        <th className="middle hidden-xs">Unidades en Solicitudes</th>
                         {/*<th className="middle">Valor Inventario</th>*/}
                         {/*<th className="middle">Valor Checklist</th>*/}
                         <th className="middle">Total</th>
@@ -108,21 +108,21 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                       {
                         invoices.map((invoice)=>(
                           <tr key={invoice._id}>
-                            <td>
+                            <td className="middle">
                               {
                                 moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY')
                               }
                             </td>
-                            <td>{invoice.company.name}</td>
-                            <td>{invoice.inventoryCars}</td>
-                            <td>{invoice.checklistCars}</td>
-                            <td>{invoice.requestCars}</td>
+                            <td className="middle">{invoice.company.name}</td>
+                            <td className="middle hidden-xs">{invoice.inventoryCars}</td>
+                            <td className="middle hidden-xs">{invoice.checklistCars}</td>
+                            <td className="middle hidden-xs">{invoice.requestCars}</td>
                             {/*<td>{invoice.inventoryPrice} UF</td>*/}
                             {/*<td>{invoice.checklistPrice} UF</td>*/}
-                            <td>{invoice.totalUF.toFixed(2)} UF</td>
-                            <td>
+                            <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>
+                            <td className="middle">
                               <button
-                                className="btn btn-xs btn-primary hidden-xs"
+                                className="btn btn-sm btn-primary"
                                 onClick={()=>window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
                               >
                                 <i className="fa fa-fw fa-download" /> Ver detalle
