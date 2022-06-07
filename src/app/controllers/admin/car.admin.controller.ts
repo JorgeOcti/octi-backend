@@ -104,7 +104,7 @@ class AdminCarController {
               car: newCar._id,
               team,
               company,
-              createdBy: req.user.toString(),
+              createdBy: req.user._id,
               executedAt: newCar.createdAt
             });
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
@@ -159,7 +159,7 @@ class AdminCarController {
       lean: true
     };
     try {
-      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${req.query}`);
+      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
       const cars = await this.getCars({
         vin: {
           $exists: true,
