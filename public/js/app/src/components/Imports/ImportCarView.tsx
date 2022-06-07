@@ -99,7 +99,7 @@ class ImportCarsView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {cars, loadFile} = this.state;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.2"  cAction="Importar">
+      <AppContainer title="" cMenu="1" cSubMenu="1.0"  cAction="Importar">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

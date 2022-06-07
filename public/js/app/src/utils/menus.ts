@@ -18,12 +18,23 @@ const dashboardItems = [{
   icon: 'fa-circle-o',
   text: 'Revisiones',
   url: '/cars/'
-}, {
+}];
+
+if (hasPermission(window.user, 'viewCar')) {
+  dashboardItems.push({
+    id: '1.0',
+    icon: 'fa-circle-o',
+    text: 'Unidades',
+    url: '/settings/cars/'
+  });
+}
+
+dashboardItems.push({
   id: '1.3',
   icon: 'fa-circle-o',
   text: 'Reporte revisiones',
   url: '/revision-report/'
-}];
+});
 
 if (hasPermission(window.user, 'viewDashboardDamages')) {
   dashboardItems.push({
@@ -157,15 +168,6 @@ if (hasPermission(window.user, 'viewInventory')) {
     icon: 'fa-circle-o',
     text: 'Gestión',
     url: '/inventory/'
-  });
-}
-
-if (hasPermission(window.user, 'viewCar')) {
-  inventoryItems.push({
-    id: '2.0',
-    icon: 'fa-circle-o',
-    text: 'Vehículos',
-    url: '/settings/cars/'
   });
 }
 

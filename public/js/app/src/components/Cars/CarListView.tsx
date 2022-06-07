@@ -82,12 +82,12 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
     const {loading, cars, pagination} = this.props.cars;
     const {searchText} = this.state;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.0" cAction="Listado">
+      <AppContainer title="" cMenu="1" cSubMenu="1.0" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">
-                Vehículos <small>{pagination.count}</small>
+                Unidades <small>{pagination.count}</small>
               </h3>
               <div className="box-tools">
                 {

@@ -10,14 +10,11 @@ import {IParticipant} from '../../../../../../src/form/interfaces/participant.in
 import {CarReduxAction, getCarAction, ICarsState} from '../../actions/cars.actions';
 import {getParticipant, IDashboardState, loadParticipantInCarAction} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
 import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-
-declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<CarReduxAction>;
@@ -78,7 +75,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const {loadingParticipant} = this.props.dashboard;
     const {getParticipant} = this.props;
     return (
-      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="10" cSubMenu="10.2"  cAction="Detalle Vehículo">
+      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="1" cSubMenu="1.0"  cAction="Detalle">
         <section className="content">
           <Row>
             <div className="col col-md-3">
