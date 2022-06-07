@@ -21,7 +21,7 @@ class CopyText extends React.Component<IPropsType, {}> {
     }
     const div = document.createElement('div');
     div.id = 'center-message';
-    div.textContent = `${value} copiado a clipboard.`;
+    div.textContent = `${value} copiado al portapapeles.`;
     document.body.appendChild(div);
     $('#center-message').fadeIn();
     setTimeout(() => {
@@ -54,11 +54,11 @@ class CopyText extends React.Component<IPropsType, {}> {
       <span className={className ? className : ''} ref={this.element}>
         {this.props.children}{' '}
         <i
-          className="fa fa-copy pointer hidden-xs hidden-sm"
+          className="fa text-muted fa-copy pointer hidden-xs hidden-sm"
           onClick={this.copyToClipboard}
           data-toggle="tooltip"
           data-placement="top"
-          title="Copiar a clipboard"
+          title="Copiar al portapapeles"
           style={{
             fontSize: '80%'
           }}

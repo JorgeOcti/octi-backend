@@ -246,10 +246,10 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
               <table className="table table-andes table-striped">
                 <thead>
                 <tr>
-                  <th style={{width: '24%'}}>Usuario</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
+                  <th style={{width: '26%'}}>Usuario</th>
+                  <th style={{width: '30%'}} className="hidden-xs">Sucursal</th>
+                  <th style={{width: '20%'}} className="hidden-xs">Formularios</th>
+                  <th style={{width: '20%'}} className="hidden-xs">Último login</th>
                   {
                     hasPermission(window.user, 'changeUser') ?
                       <th style={{width: '1%'}} className="width-10"/> : null
@@ -283,26 +283,32 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                         id={`user-${user._id}`}
                         className={'background-transition'}
                       >
-                        <td className="middle">{user.firstName} {user.lastName}<br/>
-                          <span className="text-sm text-muted">{user.email}</span>
+                        <td className="middle text-muted"><strong>{user.firstName} {user.lastName}</strong><br/>
+                          <span className="text-muted text-sm"><i className='fa fa-email'></i>{user.email}</span>
                           <div className="hidden-lg hidden-md hidden-sm text-sm">
                             <span
                               className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
                           </div>
                         </td>
-                        <td className="middle hidden-xs">{user.venue ? user.venue.name : ''}<br/>
+                        <td className="middle hidden-xs  text-muted">{user.venue ? user.venue.name : ''}<br/>
                           <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                         </td>
-                        <td className="middle hidden-xs">
-                          {forms.map((form, index) => {
-                            return <React.Fragment key={`${form._id}-${index}`}>
-                              {index > 0 ?
-                                <br/> : null}
-                              <span>{form.name}</span>
-                            </React.Fragment>;
-                          })}
+                        <td className="middle hidden-xs text-muted text-sm">
+                          <ul style={{marginBottom: 0, paddingLeft: 0}}>
+                          {
+                            forms.map((form, index) => {
+                              return (
+                                <React.Fragment key={`${form._id}-${index}`}>
+                                  {/*{index > 0 ?*/}
+                                  {/*  <br /> : null}*/}
+                                  <li>{form.name}</li>
+                                </React.Fragment>
+                              );
+                          })
+                          }
+                          </ul>
                         </td>
-                        <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
+                        <td className='middle hidden-xs text-muted text-sm'>{user.lastLogin ? moment(user.lastLogin).format('LLL') : '-'}</td>
                         {
                           hasPermission(window.user, 'changeUser') ?
                             <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}>

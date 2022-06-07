@@ -5,7 +5,7 @@ import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
@@ -24,20 +24,27 @@ import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import DateRangeInput from '../Utils/DateRangeInput';
-import BootstrapSelect from "../Utils/BootstrapSelect";
-import {IForm} from "../../../../../../src/form/interfaces/form.interface";
+import BootstrapSelect from '../Utils/BootstrapSelect';
+import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import ShowIf from '../Utils/ShowIf';
+import CopyText from '../Utils/CopyText';
+import { parseReplicableURL } from '../../utils/common';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
-  getRevisionsThunkAction(page: number, loading: boolean, search?: string) : void;
+
+  getRevisionsThunkAction(page: number, loading: boolean, search?: string): void;
+
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
+
   changeSearchFormsDashboardAction(forms: string[]): DashboardReduxAction;
+
   changeSearchDashboardAction(searchText: string): DashboardReduxAction;
-  changeRangeDashboardAction(from: string, to: string): DashboardReduxAction;
+
+  changeRangeDashboardAction(from: Date, to: Date): DashboardReduxAction;
 }
 
 interface IStateType {
@@ -60,7 +67,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     searchText: '',
     carLoading: '',
     selectedForms: [],
-    from: moment().subtract(30, 'days').toDate(),
+    from: moment().startOf('month').subtract(6, 'months').startOf('month').toDate(),
     to: moment().toDate(),
     downloading: false
   };
@@ -83,7 +90,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public printPdf(url: string, carLoading: string) {
-    this.setState({carLoading});
+    this.setState({ carLoading });
     let iframe: any = this.printIframe;
     const timezone = moment.tz.guess();
     if (!this.printIframe) {
@@ -94,7 +101,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         setTimeout(() => {
           iframe.focus();
           iframe.contentWindow.print();
-          this.setState({carLoading: ''});
+          this.setState({ carLoading: '' });
           // document.body.removeChild(iframe)
         }, 1);
       };
@@ -104,7 +111,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     // set the title of the page
-    const {page} = this.props.dashboard.pagination;
+    const { page } = this.props.dashboard.pagination;
     this.props.getRevisionsThunkAction(page, true);
 
     // socket
@@ -117,10 +124,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team._id}`});
+      this.socket.emit('join', { room: `dashboard-vin-view-${window.user.team._id}` });
     });
     this.socket.on('REFRESH', (data: any): void => {
-      const {page} = this.props.dashboard.pagination;
+      const { page } = this.props.dashboard.pagination;
       if (data.update) {
         ($ as any).toast({
           heading: data.notification.title,
@@ -130,7 +137,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
           icon: 'success',
           hideAfter: 5000,
           stack: 6
-        });
+        } as any);
         this.props.getRevisionsAction(page, false);
         if (!this.state.highlight.includes(data.car)) {
           this.setState({
@@ -163,22 +170,38 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   getDateRangeOptions(): daterangepicker.Options {
     return {
-      maxDate: moment(),
+      // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
+      // endDate: moment().toDate(),
+      maxDate: moment().toDate(),
+      locale: {
+        format: 'DD/MM/YYYY',
+        customRangeLabel: 'Período personalizado',
+        applyLabel: 'Aplicar',
+        cancelLabel: 'Cancelar'
+      },
+      ranges: {
+        "Este mes": [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
+        "Últimos 3 meses": [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        "Últimos 6 meses": [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        "Último año": [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
+      },
       opens: 'left'
     };
-}
+  }
 
-  onDateRangeChange(from: Date, to: Date){
+  onDateRangeChange(from: Date, to: Date) {
     this.setState({
       from,
       to
     });
-    this.props.changeRangeDashboardAction(moment(from).format('YYYY-MM-DD'), moment(to).format('YYYY-MM-DD'));
+    this.props.changeRangeDashboardAction(
+      moment(from).toDate(), moment(to).toDate()
+    );
     this.debounceOnChangeSearch();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -194,20 +217,20 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if(this.props.dashboard.pagination !== prevProps.dashboard.pagination){
+    if (this.props.dashboard.pagination !== prevProps.dashboard.pagination) {
       window.scrollTo(0, 0);
     }
     $('[data-toggle="tooltip"]').tooltip();
   }
 
-  public downloadReport(){
-    const {from, to} = this.state;
+  public downloadReport() {
+    const { from, to } = this.state;
     const monthsDiff = moment(to).diff(moment(from), 'months');
     this.trackClick('Descargar reporte', {
       from,
       to
     });
-    if(monthsDiff > 3){
+    if (monthsDiff > 3) {
       swal('Revisiones', 'Selecciona un rango de 3 meses para dercargar la información', 'error');
     } else {
       window.open(`/api/participant/export/?from=${moment(from).unix()}&to=${moment(to).unix()}`, '_blank');
@@ -265,59 +288,53 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participants, pagination, searchText, forms} = this.props.dashboard;
-    const {highlight, carLoading, downloading, from, to, selectedForms} = this.state;
+    const { loading, participants, pagination, searchText, forms } = this.props.dashboard;
+    const { highlight, carLoading, downloading, from, to, selectedForms } = this.state;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.2">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Revisiones <small>{pagination.count}</small></h3>
-              <div className="box-tools pull-right">
+      <AppContainer title='Revisiones' cMenu='1' cSubMenu='1.2'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'><h3 className='box-title'>Controles <small>{pagination.count}</small></h3>
+              <div className='box-tools pull-right'>
                 <button
-                  className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                  className='btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm'
                   onClick={this.downloadReport}
                   disabled={downloading}
                 >
-                  <i className="fa fa-fw fa-download" /> Exportar
+                  <i className='fa fa-fw fa-download' /> Exportar
                 </button>
               </div>
             </div>
             <div className={`box-body no-padding`}>
-              <div className="row">
-                <div className="col-md-offset-2 col-md-4">
-                  <DateRangeInput
-                    options={this.getDateRangeOptions()}
-                    onChange={this.onDateRangeChange}
-                    startDate={from}
-                    endDate={to} />
-                </div>
-                <div className="col-md-3">
+              <div className='row no-margin'>
+                <div className='col-md-12 no-padding'>
                   <div
                     className='input-group input-group-sm'
                     style={{ padding: '10px' }}
                   >
                     <input
-                      type="text"
-                      className="form-control pull-right"
+                      type='text'
+                      className='form-control pull-right'
                       onChange={this.onChangeSearch}
                       value={searchText}
-                      placeholder="Buscar VIN, marca, supervisor o sucursal"/>
-                    <div className="input-group-btn">
-                      <button className="btn btn-default"><i className="fa fa-search"/></button>
+                      placeholder='Buscar VIN, marca, supervisor o sucursal' />
+                    <div className='input-group-btn'>
+                      <button className='btn btn-default'><i className='fa fa-search' /></button>
                     </div>
                   </div>
                 </div>
-                {/*<div className='col-md-3' style={{ paddingTop: '10px', paddingRight: '28px' }}>*/}
-                <div className='col-md-3'>
-                  <div style={{padding: "10px"}}>
+                <div className='col-md-6 no-padding'>
+                  <div style={{ padding: '10px' }}>
                     <BootstrapSelect
-                      noneSelectedText="Filtrar por checklist"
-                      displayItems={2}
+                      noneSelectedText='Todos los controles'
+                      displayItems={4}
                       sm={true}
-                      selectedText="Formularios seleccionadas."
+                      autoClouse={true}
+                      selectedText='formularios seleccionadas.'
                       selected={selectedForms}
                       allOption={true}
                       selectAll={this.filterAllForms}
+                      separator=" - "
                       options={forms.map((form: IForm) => ({
                         value: form._id,
                         text: form.name
@@ -327,27 +344,35 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
+                <div className='col-md-6 no-padding'>
+                  <DateRangeInput
+                    options={this.getDateRangeOptions()}
+                    onChange={this.onDateRangeChange}
+                    startDate={from}
+                    endDate={to}
+                  />
+                </div>
+
               </div>
               {
                 participants.length ?
-                  <div className='table-responsive'>
-                    <table className="table table-andes table-striped">
-                    <thead>
+                  <div className='table-responsive' style={{border: 0}}>
+                    <table className='table table-andes table-striped'>
+                      <thead>
                       <tr>
-                        <th style={{width: '5%'}} className="middle hidden-xs">Nº</th>
-                        <th style={{width: '12%'}} className="middle">VIN</th>
-                        <th style={{width: '8%'}} className="middle hidden-xs">Patente</th>
-                        <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
-                        <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
-                        <th style={{width: '13%'}} className="middle">Sucursal</th>
-                        <th style={{width: '10%'}} className="middle-center hidden-xs">Calificación</th>
-                        <th style={{width: '15%'}} className="hidden-xs">Fecha</th>
-                        <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
-                        <th className="width-10 hidden-xs"/>
-                        <th className="width-10"/>
+                        {/*<th style={{ width: '3%' }} className='middle hidden-xs hidden-sm'>Nº</th>*/}
+                        <th style={{ width: '18%' }} className='middle'>Detalle</th>
+                        {/*<th style={{width: '18%'}} className="middle hidden-xs hidden-sm">Unidad</th>*/}
+                        {/*<th style={{width: '13%'}} className="middle hidden-xs hidden-sm">Supervisor</th>*/}
+                        <th style={{ width: '15%' }} className='middle hidden-xs hidden-sm'>Control</th>
+                        <th style={{ width: '20%' }} className='middle hidden-xs hidden-sm'>Realizado en</th>
+                        <th style={{ width: '10%' }} className='middle hidden-xs hidden-sm'></th>
+                        <th style={{ width: '1%' }} className='middle-center hidden-xs hidden-sm'></th>
+                        {/*<th style={{width: '15%'}} className="hidden-xs hidden-sm">Fecha</th>*/}
+                        <th style={{ width: '1%' }}  />
                       </tr>
-                    </thead>
-                    <tbody>
+                      </thead>
+                      <tbody>
                       {
                         participants.map((participant: IParticipant) => {
                           return (
@@ -355,86 +380,163 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               key={participant._id} id={`car-${participant._id}`}
                               className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}
                             >
-                              <td className="middle hidden-xs">{participant.number}</td>
-                              <td className="middle">
-                                {participant.car?.vin}
-                                <div className='visible-xs'>
+                              <td
+                                className='middle'
+                                style={{
+                                  paddingTop: '10px',
+                                  paddingBottom: '10px'
+                                }}
+                              >
+                                <div
+                                  className='visible-xs visible-sm'
+                                >
+                                  <strong className='text-primary'>
+                                    {participant.car?.vin}
+                                  </strong> <strong className='text-muted'>#{participant.number}</strong><br />
+                                  <strong className={'text-muted'}>{participant.name}</strong>
+                                </div>
+                                <div
+                                  className='hidden-xs hidden-sm'
+                                >
+                                  <CopyText value={participant.car?.vin}>
+                                    <strong
+                                      className='text-primary pointer text-underline'
+                                      onClick={() => this.props.history.push(parseReplicableURL(`/cars/${participant.car?._id}`))}
+                                    >
+                                      {participant.car?.vin}
+                                    </strong>
+                                  </CopyText> <strong className='text-sm text-muted'>
+                                  #{participant.number}
+                                </strong>
+                                </div>
+                                <span className='visible-xs visible-sm'>
+                                  <strong
+                                    className={'text-muted'}>{participant.car?.brand}</strong><br /> {participant.car?.denomination}<br />{participant.car?.color}<br />
+                                </span>
+                                <span className='text-muted text-sm hidden-xs hidden-sm'>
+                                  <strong>{participant.car?.brand}</strong> {participant.car?.denomination}<br /> {participant.car?.color}
                                   <ShowIf condition={!!participant.car?.patent?.length}>
-                                    <br />{participant.car?.patent}
+                                    <div>
+                                      <i
+                                        className='fa fa-fw fa-id-card-o' /> {participant.car?.patent && participant.car?.patent.length ? participant.car?.patent : '-'}
+                                    </div>
+                                  </ShowIf>
+                                </span>
+                                <div className='visible-xs visible-sm text-muted text-sm'>
+                                  <span><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
+                                    condition={participant.hasDamages}
+                                  >
+                                    <React.Fragment>
+                                      {' '}<i
+                                      className='fa fa-warning text-red'
+                                      data-toggle='tooltip'
+                                      data-placement='top'
+                                      title='Daños encontrados en esta revisión.'
+                                    />
+                                    </React.Fragment>
+                                  </ShowIf></span><br />
+                                  <span><i
+                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</span><br />
+                                  <div>
+                                    <i className='fa fa-clock-o fa-fw' /> {moment(participant.createdAt).fromNow()} ({moment(participant.createdAt).format('LLL')})
+                                  </div>
+                                  <ShowIf condition={!!participant.car?.patent?.length}>
+                                    <span>
+                                      <i
+                                        className='fa fa-fw fa-id-card-o' /> {participant.car?.patent && participant.car?.patent.length ? participant.car?.patent : '-'}
+                                    </span>
                                   </ShowIf>
                                 </div>
                               </td>
-                              <td className="middle hidden-xs">{participant.car?.patent && participant.car?.patent.length ? participant.car?.patent : '-'}</td>
-                              <td className="middle hidden-xs">{participant.car?.brand}</td>
-                              <td className="middle hidden-xs">
-                                {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
+                              <td className='middle hidden-xs hidden-sm'>
+                                <strong className='text-muted text-sm'>{participant.name}</strong>
                               </td>
-                              <td className="middle">
-                                {`${participant.venue ? `${participant.venue.name}` : '-'}`}
+                              <td className='middle hidden-xs hidden-sm text-ellipsis' style={{
+                                paddingTop: '15px',
+                                paddingBottom: '15px'
+                              }}>
+                                <strong className='text-muted'>{`${participant.venue ? `${participant.venue.name}` : '-'}`}</strong> <ShowIf
+                                condition={participant.hasDamages}
+                              >
+                                <React.Fragment>
+                                  {' '}<i
+                                  className='fa fa-warning text-red'
+                                  data-toggle='tooltip'
+                                  data-placement='top'
+                                  title='Daños encontrados en esta revisión.'
+                                />
+                                </React.Fragment>
+                              </ShowIf>
+                                <div className='text-muted text-sm'>
+                                  <i
+                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}<br />
+                                  <i className='fa fa-fw fa-flag-o' /> {`${participant.company ? `${participant.company.name}` : '-'}`}
+                                </div>
                               </td>
-                              <td className="middle-center">
+                              <td className='middle-center hidden-xs hidden-sm'>
+                                <div
+                                  className='text-muted text-sm' data-toggle='tooltip'
+                                  data-placement='top'
+                                  title={moment(participant.createdAt).format('LLL')}
+                                >
+                                  <i className='fa fa-fw fa-clock-o' /> {moment(participant.createdAt).fromNow()}
+                                </div>
+                              </td>
+                              <td className='middle-center hidden-xs hidden-sm text-muted text-sm'>
                                 {
                                   `${participant.hasOwnProperty('qualification') ?
-                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '-' : '' : ''}`
-                                }
-                                {
-                                  participant.hasDamages ?
-                                    <React.Fragment>
-                                      {' '}<i
-                                        className="fa fa-warning text-red"
-                                        data-toggle="tooltip"
-                                        data-placement="top"
-                                        title="Daños encontrados en esta revisión."
-                                      />
-                                    </React.Fragment>
-                                    : null
+                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '' : '' : ''}`
                                 }
                               </td>
-                              <td className="middle hidden-xs">
-                                {moment(participant.createdAt).format('L HH:mm:ss')}
+                              <td className='text-primary middle-center text-ellipsis'>
+                                <div
+                                  className='hidden-xs hidden-sm'
+                                >
+                                  <div className='btn-group' style={{ width: '70px' }}>
+                                    <button
+                                      className='btn btn-sm btn-default hidden-xs hidden-sm'
+                                      disabled={carLoading === participant._id}
+                                      onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
+                                    ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'} /></button>
+                                    <button
+                                      className='btn btn-sm btn-primary'
+                                      onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
+                                    ><i className='fa fa-bars' /></button>
+                                  </div>
+                                </div>
+                                <div
+                                  className='visible-xs visible-sm'
+                                >
+                                  <button
+                                      className='btn btn-sm btn-primary'
+                                      onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
+                                    ><i className='fa fa-bars' /></button>
+                                </div>
                               </td>
-                              <td className="middle hidden-xs">
-                                {participant.name}
-                                {/* {participant.car?.lastForm && participant.car?.lastForm.createdAt ?
-                                  moment(participant.car?.lastForm.createdAt).format('L HH:mm:ss')
-                                  :
-                                  '-'
-                                } */}
-                              </td>
-                              <td className="text-primary middle-center hidden-xs">
-                                <button
-                                  className="btn btn-xs btn-default"
-                                  disabled={carLoading === participant._id}
-                                  onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
-                                ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
-                              </td>
-                              <td className="text-primary middle-center">
-                                <button
-                                  className="btn btn-xs btn-primary"
-                                  onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
-                                ><i className="fa fa-bars"/></button>
-                              </td>
+                              {/*<td className='text-primary middle-center'>*/}
+                              {/*  */}
+                              {/*</td>*/}
                             </tr>
                           );
                         })
                       }
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
                   </div>
-                  : !loading ? <p style={{padding: '10px'}}><strong>No se han encontrado revisiones.</strong></p> : null
+                  : !loading ? <p style={{ padding: '10px' }}><strong>No se han encontrado revisiones.</strong></p> : null
               }
             </div>
             {
               pagination.pages > 1 &&
-              <div className="box-footer">
-                <div className="row">
-                  <div className="col-md-6" style={{ padding: '20px 15px' }}>
-                    <span className="react-bootstrap-table-pagination-total text-ellipsis">
+              <div className='box-footer'>
+                <div className='row'>
+                  <div className='col-md-6' style={{ padding: '20px 15px' }}>
+                    <span className='react-bootstrap-table-pagination-total text-ellipsis'>
                       &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
                       </span>
                   </div>
-                  <div className="col-md-6">
-                    <div className="text-right" style={{ marginRight: '15px' }}>
+                  <div className='col-md-6'>
+                    <div className='text-right' style={{ marginRight: '15px' }}>
                       <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
                     </div>
                   </div>
@@ -443,9 +545,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             }
             {
               loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
+              </div>
             }
           </div>
         </section>
@@ -454,31 +556,31 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterForms(value: any) {
-    let {selectedForms} = this.state;
+    let { selectedForms } = this.state;
     let sForms = selectedForms;
 
     sForms = sForms.includes(value)
-        ? sForms.filter((form) => form !== value)
-        : [value, ...selectedForms]
+      ? sForms.filter((form) => form !== value)
+      : [value, ...selectedForms];
 
     this.setState({
       selectedForms: sForms
     }, () => {
       this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
-      this.props.getRevisionsAction(1, true);
+      this.props.getRevisionsAction(1, false);
     });
   }
 
   private filterAllForms(value: boolean) {
-    let {forms} = this.props.dashboard;
-    let sForms = value ? forms.map( (f: IForm) => f._id) : [];
+    let { forms } = this.props.dashboard;
+    let sForms = value ? forms.map((f: IForm) => f._id) : [];
 
 
     this.setState({
       selectedForms: sForms
     }, () => {
       this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
-      this.props.getRevisionsAction(1, true);
+      this.props.getRevisionsAction(1, false);
     });
   }
 
@@ -490,11 +592,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    const {searchText} = this.state;
+    const { searchText } = this.state;
     if (searchText && searchText.length) {
-      this.props.getRevisionsAction(1, true, searchText);
+      this.props.getRevisionsAction(1, false, searchText);
     } else {
-      this.props.getRevisionsAction(1, true);
+      this.props.getRevisionsAction(1, false);
     }
   }
 
@@ -514,9 +616,9 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search, undefined, undefined, undefined, true)),
-    changeSearchFormsDashboardAction : (forms : string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
+    changeSearchFormsDashboardAction: (forms: string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
-    changeRangeDashboardAction: (from: string, to: string) => dispatch(changeRangeDashboardAction(from, to)),
+    changeRangeDashboardAction: (from: Date, to: Date) => dispatch(changeRangeDashboardAction(from, to)),
     getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search))
   };
 };

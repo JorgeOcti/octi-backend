@@ -359,16 +359,16 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
+  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: Date, to?: Date, forms?: String[]): AxiosPromise {
     let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;
 
     if (from)
-      query += `&from=${from}`;
+      query += `&from=${from.toISOString()}`;
 
     if (to)
-      query += `&to=${to}`;
+      query += `&to=${to.toISOString()}`;
 
     if (forms)
       query += `&forms=${forms.join(",")}`;

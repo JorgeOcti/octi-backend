@@ -1,9 +1,9 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import {IRequest} from '../../../interfaces/global.interface';
-import Team, {ITeamModel} from '../../models/team.model';
-import TeamSetting from "../../models/teamSetting.model";
-import logger from "../../../services/logger.service";
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { IRequest } from '../../../interfaces/global.interface';
+import Team, { ITeamModel } from '../../models/team.model';
+import TeamSetting from '../../models/teamSetting.model';
+import logger from '../../../services/logger.service';
 import User from '../../models/user.model';
 
 class AdminsTeamController {
@@ -15,14 +15,14 @@ class AdminsTeamController {
 
   public async index(req: IRequest, res: Response) {
     // if (req.user.hasPermission('viewCompanies')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
     // } else {
     //   res.status(403).render('403');
     // }
   }
 
   public async apiListTeams(req: IRequest, res: Response) {
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -33,30 +33,41 @@ class AdminsTeamController {
       sort: {
         name: 1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     const teams = await this.getTeams({}, options, search);
     if (options.page && teams.pages && teams.pages < options.page) {
-        res.status(400).json({
-          error: 'La página solicitada no existe.',
-          status: 200
-        });
-      } else {
-        res.json({
-          count: teams.total,
-          pages: teams.pages,
-          hasPrevious: options.page && options.page > 1 && teams.pages && teams.pages >= options.page,
-          hasNext: options.page && teams.pages && teams.pages > options.page,
-          results: teams.docs,
-          status: 200
-        });
-      }
-
+      return res.status(400).json({
+        error: 'La página solicitada no existe.',
+        status: 200
+      });
+    } else {
+      return res.json({
+        count: teams.total,
+        pages: teams.pages,
+        hasPrevious: teams.hasPrevious,
+        hasNextPage: teams.hasNextPage,
+        results: teams.docs,
+        status: 200
+      });
+    }
   }
 
   public async teamSetting(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const { team } = req.user;
     try {
       const user = await User.findById(req.user._id);
       const teamSetting = await TeamSetting.findOneOrCreate({
@@ -65,21 +76,21 @@ class AdminsTeamController {
         team: team._id,
         inventory: {
           leftoverDifferentVenue: true,
-          pending: "Pendientes",
-          pendingClass: "aqua",
-          pendingColor: "#00c2f4",
-          found: "Encontrados",
-          foundClass: "green",
-          foundColor: "#00aa51",
-          missing: "Faltantes",
-          missingClass: "red",
-          missingColor: "#f1392c",
-          leftover: "Encontrados*",
-          leftoverClass: "yellow",
-          leftoverColor: "#ff9600",
-          reported: "Reportados",
-          reportedClass: "gray-dark",
-          reportedColor: "#96a4b3"
+          pending: 'Pendientes',
+          pendingClass: 'aqua',
+          pendingColor: '#00c2f4',
+          found: 'Encontrados',
+          foundClass: 'green',
+          foundColor: '#00aa51',
+          missing: 'Faltantes',
+          missingClass: 'red',
+          missingColor: '#f1392c',
+          leftover: 'Encontrados*',
+          leftoverClass: 'yellow',
+          leftoverColor: '#ff9600',
+          reported: 'Reportados',
+          reportedClass: 'gray-dark',
+          reportedColor: '#96a4b3'
         },
         request: {
           color: true,
@@ -88,7 +99,7 @@ class AdminsTeamController {
           denominationRequired: true,
           internalNumber: true,
           internalNumberRequired: false,
-          internalNumberText: "Número interno",
+          internalNumberText: 'Número interno',
           material: true,
           materialRequired: true
         }

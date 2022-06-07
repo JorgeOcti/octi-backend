@@ -1,8 +1,8 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import {IRequest} from '../../../interfaces/global.interface';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { IRequest } from '../../../interfaces/global.interface';
 import GeneralUtils from '../../../utils/general.utils';
-import Company, {ICompanyModel} from '../../models/company.model';
+import Company, { ICompanyModel } from '../../models/company.model';
 
 class AdminCompaniesController {
   constructor() {
@@ -16,7 +16,7 @@ class AdminCompaniesController {
 
   public async index(req: IRequest, res: Response) {
     if (req.user.hasPermission('viewCompany')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.status(403).render('403');
     }
@@ -29,7 +29,7 @@ class AdminCompaniesController {
       });
     }
     const team = req.user.team._id;
-    const {page, pageSize, search} = req.query as {page: string, pageSize: string, search: string};
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
     // paginate options
     const options: PaginateOptions = {
       // select: {
@@ -41,9 +41,20 @@ class AdminCompaniesController {
       sort: {
         name: 1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10),
-      lean: true
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     const companies = await this.getCompanies({
       deleted: false,
@@ -51,16 +62,16 @@ class AdminCompaniesController {
     }, options, search);
     /* istanbul ignore if  */
     if (options.page && companies.pages && companies.pages < options.page) {
-      res.status(400).json({
+      return res.status(400).json({
         error: 'La página solicitada no existe.',
         status: 200
       });
     } else {
-      res.json({
+      return res.json({
         count: companies.total,
         pages: companies.pages,
-        hasPrevious: options.page && options.page > 1 && companies.pages && companies.pages >= options.page,
-        hasNext: options.page && companies.pages && companies.pages > options.page,
+        hasPrevious: companies.hasPrevious,
+        hasNextPage: companies.hasNextPage,
         results: companies.docs,
         status: 200
       });
@@ -73,7 +84,7 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name, businessName, rut, billing, notifications} = req.body;
+    const { name, businessName, rut, billing, notifications } = req.body;
     const team = req.user.team;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
@@ -165,7 +176,7 @@ class AdminCompaniesController {
           };
           image.team = team._id;
           await company.attach('image', image);
-          await company.update({image: company.image})
+          await company.update({ image: company.image });
         }
         if (marker) {
           marker.headers = {
@@ -173,7 +184,7 @@ class AdminCompaniesController {
           };
           marker.team = team._id;
           await company.attach('marker', marker);
-          await company.update({marker: company.marker})
+          await company.update({ marker: company.marker });
         }
         await company.save();
 
@@ -203,7 +214,7 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
     try {
       const company = await Company.findOneAndUpdate({
@@ -219,17 +230,17 @@ class AdminCompaniesController {
           message: 'Empresa eliminada satisfactoriamente.',
           company
         };
-        res.status(200).json(response);
+        return res.status(200).json(response);
       } else {
         const response = {
           id,
           message: 'Empresa no encontrada'
         };
-        res.status(200).json(response);
+        return res.status(200).json(response);
       }
     } catch (e) {
       /* istanbul ignore next  */
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

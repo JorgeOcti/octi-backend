@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
 import { HookNextFunction, PaginateModel } from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import { IUser } from '../interfaces';
 import usersHooks from './user.hooks';
@@ -18,8 +18,6 @@ export interface IUserModel extends IUser, mongoose.Document {
   fullName(): string;
 
   venuesPermissions(inString?: boolean): any[];
-
-
 }
 
 const userSettingsSchema = new mongoose.Schema({

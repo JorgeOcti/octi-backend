@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import {AggregatePaginateModel, PaginateModel} from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {ITransmittal} from '../interfaces/transmittal.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 

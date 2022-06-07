@@ -222,11 +222,21 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle',
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      headerStyle: {
+        maxWidth: '250px',
+        minWidth: '250px',
+        width: '250px'
+      },
+      style: {
+        maxWidth: '250px',
+        minWidth: '250px',
+        width: '250px'
+      }
     }, {
       dataField: 'venue',
       text: 'Sucursal',
-      classes: 'middle hidden-xs hidden-sm',
+      classes: 'middle hidden-xs hidden-sm text-muted text-sm',
       headerClasses: 'middle hidden-xs hidden-sm pointer',
       style: {
         width: '15%'
@@ -235,7 +245,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
-      classes: 'middle hidden-xs hidden-sm hidden-md',
+      classes: 'middle hidden-xs hidden-sm text-muted text-sm',
       headerClasses: 'middle hidden-xs hidden-sm hidden-md pointer',
       style: {
         width: '15%'
@@ -966,7 +976,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <label htmlFor="cars" className="control-label">Unidades</label>
                         <input
                           type="text"
-                          className="form-control"
+                          className='form-control input-sm'
                           id="cars"
                           placeholder="Busca por VIN, patente, marca o modelo."
                           onChange={this.handleChangeSearchText}
@@ -979,6 +989,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <BootstrapSelect
                           noneSelectedText="Todas"
                           displayItems={2}
+                          sm={true}
                           selectedText="sucursales seleccionadas."
                           selected={filter.venues}
                           allOption={true}
@@ -997,6 +1008,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <BootstrapSelect
                           noneSelectedText="Todos"
                           displayItems={4}
+                          sm={true}
                           selectedText="estados seleccionados."
                           separator=" - "
                           options={Object
@@ -1019,6 +1031,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             <BootstrapSelect
                               noneSelectedText="Todos"
                               displayItems={4}
+                              sm={true}
                               selectedText="estados seleccionados."
                               separator=" - "
                               options={cardTypes
@@ -1042,6 +1055,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             <BootstrapSelect
                               noneSelectedText="Todos"
                               displayItems={4}
+                              sm={true}
                               selectedText="estados seleccionados."
                               separator=" - "
                               options={cardProperties

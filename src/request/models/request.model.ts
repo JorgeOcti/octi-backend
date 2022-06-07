@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import { IRequest } from '../interfaces/request.interface';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
@@ -126,6 +126,18 @@ export const requestSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+requestSchema.set<any>('redisCache', process.env.ENV === 'production');
+requestSchema.set<any>('expires', 30);
+
+requestSchema.index({ team: 1 });
+requestSchema.index({ origin: 1 });
+requestSchema.index({ destination: 1 });
+requestSchema.index({ channel: 1 });
+requestSchema.index({ createdBy: 1 });
+requestSchema.index({ 'advancePaymentInformation.files': 1 });
+requestSchema.index({ 'advancePaymentInformation.letters': 1 });
+requestSchema.index({ request: 1 });
 
 requestSchema.virtual('items', {
   ref: 'RequestItem', // The model to use

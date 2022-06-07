@@ -141,9 +141,20 @@ class AdminVenueController {
       sort: {
         name: 1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10),
-      lean: true
     };
     if (noPopulate) {
       options['select'] = {

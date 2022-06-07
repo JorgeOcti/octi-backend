@@ -394,7 +394,7 @@ class CarController {
           $gte: moment().subtract(30, 'd').toDate()
         }
       };
-      if (only_controls == '1') {
+      if (only_controls === '1') {
         participantQuery.kind = { $ne: KindForm.transmittal };
       }
 
@@ -1148,6 +1148,7 @@ class CarController {
         }, {
           vin: true,
           brand: true,
+          material: true,
           internalNumber: true,
           createdAt: true,
           patent: true,
@@ -1188,6 +1189,9 @@ class CarController {
             }]
           },
           populate: [{
+            path: 'company',
+            select: ['name']
+          }, {
             path: 'venue',
             select: ['name']
           }, {
@@ -1234,6 +1238,9 @@ class CarController {
           },
           // deep populate user
           populate: [{
+            path: 'company',
+            select: ['name']
+          }, {
             path: 'venue',
             select: ['name']
           }, {
@@ -1295,10 +1302,24 @@ class CarController {
       }, {
         path: 'venue',
         select: ['name']
+      }, {
+        path: 'company',
+        select: ['name']
       }],
       sort: {
         _id: -1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
@@ -1323,7 +1344,7 @@ class CarController {
         participantFilter.form = { $in: formArray.map(f => new ObjectID(f)) };
       }
 
-      if (only_controls == '1') {
+      if (only_controls === '1') {
         participantFilter.kind = { $ne: KindForm.transmittal };
       }
 
@@ -1411,8 +1432,8 @@ class CarController {
         return res.json({
           count: revisions.total,
           pages: revisions.pages,
-          hasPrevious: options.page && options.page > 1 && revisions.pages && revisions.pages >= options.page,
-          hasNext: options.page && revisions.pages && revisions.pages > options.page,
+          hasPrevious: revisions.hasPrevious,
+          hasNextPage: revisions.hasNextPage,
           results: revisions.docs,
           status: 200
         });
@@ -1852,6 +1873,18 @@ class CarController {
       sort: {
         updatedAt: -1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
@@ -1879,8 +1912,8 @@ class CarController {
         res.json({
           count: cars.total,
           pages: cars.pages,
-          hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
-          hasNext: options.page && cars.pages && cars.pages > options.page,
+          hasPrevious: cars.hasPrevious,
+          hasNextPage: cars.hasNextPage,
           results: cars.docs,
           status: 200
         });

@@ -1,4 +1,5 @@
 import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.actions';
+import * as moment from 'moment-timezone';
 
 const initialState: IDashboardState = {
   loading: true,
@@ -17,8 +18,8 @@ const initialState: IDashboardState = {
   planningPerDate: [],
   planningProcessPerDate: [],
   searchText: '',
-  searchFrom: '',
-  searchTo: '',
+  searchFrom: moment().startOf('month').subtract(6, 'months').startOf('month').toDate(),
+  searchTo: moment().toDate(),
   carsByVenue: [],
   totalCars: 0,
   loadingParticipant: null,

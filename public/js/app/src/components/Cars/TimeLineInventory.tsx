@@ -61,7 +61,7 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
       <li style={{ marginRight: '0' }}>
         <i className={`fa ${this.iconStatus[inventory.status]} ${this.classStatus[inventory.status]}`} />
         <div className='timeline-item'>
-          <span className='time' style={{
+          <span className='time text-sm' style={{
             color: '#888',
             fontSize: '13px'
           }}>
@@ -109,28 +109,28 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
           <div className='timeline-footer'>
             <Row>
               <div
-                className='col col-md-6'
+                className='col col-md-5 col-sm-5 col-xs-5'
                 style={{
-                  padding: '5px 15px'
+                  height: '60px',
+                  padding: '15px 5px 15px 15px'
                 }}>
                 {this.status(inventory.status)}{' '}
                 {this.label(inventory.label, inventory.labelText)}
               </div>
               <div
-                className='col col-md-6 text-right'
+                className='col col-md-7 col-sm-7 col-xs-7 text-right text-muted text-sm'
                 style={{
                   color: '#888',
-                  fontSize: '12px',
-                  padding: '5px 15px'
+                  padding: '15px 15px 15px 5px'
                 }}>
                 {
                   ['leftover', 'missing'].includes(inventory.status) && inventory.labelBy ?
                     <React.Fragment>
-                      <i className='fa fa-user' /> {inventory.labelBy.firstName} {inventory.labelBy.lastName}
+                      <i className='fa fa-user-o' /> {inventory.labelBy.firstName} {inventory.labelBy.lastName}
                     </React.Fragment>
                     : inventory.inventoriedBy ?
                       <React.Fragment>
-                        <i className='fa fa-user' /> {inventory.inventoriedBy.firstName} {inventory.inventoriedBy.lastName}
+                        <i className='fa fa-user-o' /> {inventory.inventoriedBy.firstName} {inventory.inventoriedBy.lastName}
                       </React.Fragment> : null
                 }
               </div>

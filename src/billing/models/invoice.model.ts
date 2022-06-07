@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {IInvoice} from '../interfaces/invoice.interface';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';

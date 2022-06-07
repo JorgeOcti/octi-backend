@@ -35,9 +35,8 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
       <li style={{ marginRight: '0' }}>
         <i className={`fa ${this.getIconDamage(form.hasDamages)} $ ${this.getColorByDamage(form.hasDamages)}`} />
         <div className='timeline-item'>
-          <span className='time' style={{
+          <span className='time text-sm' style={{
             color: '#888',
-            fontSize: '13px'
           }}>
             <i className='fa fa-fw fa-calendar-o' /> {form.createdAt.format('LL')}
           </span>
@@ -74,35 +73,39 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
           <div className='timeline-footer'>
             <Row>
               <div
-                className='col col-md-6'
+                className='col col-md-5 col-sm-5 col-xs-5'
                 style={{
-                  padding: '5px 15px'
+                  height: '60px',
+                  padding: '15px 5px 15px 15px'
                 }}>
                 <button
-                  className='btn btn-primary btn-flat btn-xs'
+                  className='btn btn-primary btn-flat btn-sm'
                   disabled={loadingParticipant && loadingParticipant === form._id ? true : false}
                   onClick={() => this.props.getParticipant(form._id)}
                 >
                   {
-                    loadingParticipant && loadingParticipant === form._id ?
-                      <React.Fragment><i className='fa fa-spin fa-spinner' /> Cargando...</React.Fragment>
-                      : `Ver detalle`
+                    loadingParticipant && loadingParticipant === form._id
+                      ?
+                        <><i className='fa fa-spin fa-spinner' /> Cargando...</>
+                      :
+                        <><i className='fa fa-fw fa-bar-chart' /> Detalle</>
                   }
                 </button>
               </div>
               <div
-                className='col col-md-6 text-right'
+                className='col col-md-7 col-sm-7 col-xs-7 text-right text-muted text-sm'
                 style={{
-                  color: '#888',
-                  fontSize: '12px',
-                  padding: '5px 15px'
+                  height: '60px',
+                  padding: '22px 15px 15px 5px'
                 }}>
-                {
-                  form.user ?
-                    <React.Fragment>
-                      <i className='fa fa-user' /> {form.user.firstName} {form.user.lastName}
-                    </React.Fragment> : null
-                }
+                  <div>
+                  {
+                    form.user ?
+                      <React.Fragment>
+                        <i className='fa fa-user-o' /> {form.user.firstName} {form.user.lastName}
+                      </React.Fragment> : null
+                  }
+                </div>
               </div>
             </Row>
           </div>

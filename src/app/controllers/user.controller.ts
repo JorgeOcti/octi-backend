@@ -44,6 +44,18 @@ class UserController {
         path: 'venue',
         select: ['name']
       }],
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      lean: true,
+      // allowDiskUse: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '200', 10)
     };
@@ -66,8 +78,8 @@ class UserController {
         res.json({
           count: drivers.total,
           pages: drivers.pages,
-          hasPrevious: options.page && options.page > 1 && drivers.pages && drivers.pages >= options.page,
-          hasNext: options.page && drivers.pages && drivers.pages > options.page,
+          hasPrevious: drivers.hasPrevious,
+          hasNextPage: drivers.hasNextPage,
           results: drivers.docs,
           status: 200
         });

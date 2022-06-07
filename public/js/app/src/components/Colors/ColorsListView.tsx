@@ -133,8 +133,8 @@ class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
               <table className="table table-andes table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                    <th style={{width: '82%'}} className="middle">Nombre</th>
+                    <th style={{width: '18%'}} className="middle hidden-xs">Modificado</th>
                     {
                       canUpdate ?
                         <th style={{width: '1%'}} className="width-10"/> : null
@@ -166,7 +166,7 @@ class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
                           className={'background-transition'}
                         >
                         <td className="middle">{color.name}</td>
-                        <td className='middle hidden-xs'>{moment(color.updatedAt).format('LLL')}</td>
+                        <td className='middle hidden-xs text-sm text-muted'>{moment(color.updatedAt).format('LLL')}</td>
                         {
                           canUpdate ?
                             <td

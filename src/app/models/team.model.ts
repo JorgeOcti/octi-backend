@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import { ITeam } from '../interfaces';
 
 export interface ITeamModel extends ITeam, mongoose.Document {}

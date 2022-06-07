@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import { IRequestItem } from '../interfaces/requestItem.interface';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import requestItemsHooks from './requestItem.hooks';
 import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
 import { requestSchema } from './request.model';

@@ -990,7 +990,11 @@ class FormController {
                 }, {
                   path: 'venue',
                   select: ['name']
+                }, {
+                  path: 'company',
+                  select: ['name']
                 }])
+                .lean(true)
               );
 
               await new ActivityHistory({

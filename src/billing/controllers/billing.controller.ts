@@ -160,7 +160,6 @@ class BillingController {
         message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
       });
     }
-
   }
 
   public async apiList(req: IRequest, res: Response) {
@@ -170,11 +169,23 @@ class BillingController {
     const options: PaginateOptions = {
       populate: [{
         path: 'company',
-        select: ['_id', 'name']
+        select: ['_id', 'name', 'businessName', 'rut']
       }],
       sort: {
         _id: -1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
@@ -182,25 +193,23 @@ class BillingController {
       const filter = req.user.isAdmin ? {team} : {company};
       const invoices = await this.getInvoices(filter, options);
       if (options.page && invoices.pages && invoices.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
-        res.json({
+        return res.json({
           count: invoices.total,
           pages: invoices.pages,
-          hasPrevious: options.page && options.page > 1 && invoices.pages && invoices.pages >= options.page,
-          hasNext: options.page && invoices.pages && invoices.pages > options.page,
+          hasPrevious: invoices.hasPrevious,
+          hasNextPage: invoices.hasNextPage,
           results: invoices.docs,
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next  */
-      if (e) {
-        res.status(500).json(e);
-      }
+      return res.status(500).json(e);
     }
   }
 

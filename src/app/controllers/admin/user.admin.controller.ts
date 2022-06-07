@@ -415,15 +415,27 @@ class AdminUsersController {
         settings: true,
         isAdmin: true,
         isDriver: true,
+        lastLogin: true,
         updatedAt: true
       },
       sort: {
         firstName: 1,
         lastName: 1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10),
-      lean: true
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
 
     if (minified === 'false'){
@@ -479,8 +491,8 @@ class AdminUsersController {
         res.json({
           count: users.total,
           pages: users.pages,
-          hasPrevious: options.page && options.page > 1 && users.pages && users.pages >= options.page,
-          hasNext: options.page && users.pages && users.pages > options.page,
+          hasPrevious: users.hasPrevious,
+          hasNextPage: users.hasNextPage,
           results: users.docs,
           status: 200
         });

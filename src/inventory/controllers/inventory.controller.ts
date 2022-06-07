@@ -347,6 +347,18 @@ class InventoryController {
       sort: {
         createdAt: -1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '10', 10)
     };
@@ -523,8 +535,8 @@ class InventoryController {
           inventorySettings: teamSettings!.inventory,
           count: paginatedInventories.total,
           pages: paginatedInventories.pages,
-          hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
-          hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
+          hasPrevious: paginatedInventories.hasPrevious,
+          hasNextPage: paginatedInventories.hasNextPage,
           status: 200
         });
       }

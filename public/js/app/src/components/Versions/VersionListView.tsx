@@ -116,10 +116,10 @@ class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Descripción</th>
-                    <th className="middle text-center">iOS Version</th>
-                    <th className="middle text-center">Android Version</th>
+                    <th className="middle text-center">iOS</th>
+                    <th className="middle text-center">Android</th>
+                    <th className="middle">Creada</th>
                     <th className="middle">Creada por</th>
-                    <th className="middle">Fecha creación</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -135,12 +135,12 @@ class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
                           <td className="middle">{version.description}</td>
                           <td className="middle text-center">{version.ios}</td>
                           <td className="middle text-center">{version.android}</td>
+                          <td className="middle text-sm text-muted">{moment(version.createdAt).format('LLL')}</td>
                           <td className="middle">
                             {
                               version.createdBy ? version.createdBy.firstName + ' ' + version.createdBy.lastName : '-'
                             }
                           </td>
-                          <td className="middle">{moment(version.createdAt).format('LLL')}</td>
                         </tr>
                       );
                     }) : <tr>

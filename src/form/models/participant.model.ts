@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {
   IParticipant,
   IParticipantAccesory,
@@ -441,6 +441,7 @@ participantSchema.set<any>('expires', 10);
 participantSchema.index({ createdAt: -1 });
 participantSchema.index({ team: 1, createdAt: 1 });
 participantSchema.index({ venue: 1 });
+participantSchema.index({ company: 1 });
 participantSchema.index({ user: 1 });
 participantSchema.index({ car: 1 });
 participantSchema.index({ shipping: 1 });

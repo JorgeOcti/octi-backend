@@ -98,7 +98,19 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                    {/*<th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>*/}
+                    {
+                      window.user.isAdmin ?
+                        <th style={{width: '1%'}} className="width-10 hidden-xs">Inventario</th> : null
+                    }
+                    {
+                      window.user.isAdmin ?
+                        <th style={{width: '1%'}} className="width-10 hidden-xs">Checklist</th> : null
+                    }
+                    {
+                      window.user.isAdmin ?
+                        <th style={{width: '1%'}} className="width-10 hidden-xs">Solicitudes</th> : null
+                    }
                     {
                       window.user.isAdmin ?
                         <th style={{width: '1%'}} className="width-10">Billing</th> : null
@@ -122,8 +134,38 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                           id={`company-${company._id}`}
                           className={'background-transition'}
                         >
-                          <td className="middle">{company.name}</td>
-                          <td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>
+                          <td className="middle">
+                            {company.name} <br/>
+                            <span className="text-sm text-muted">
+                              {company?.businessName ?? ''} - {company?.rut ?? ''}
+                            </span>
+                          </td>
+                          {/*<td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>*/}
+                          {
+                            window.user.isAdmin ?
+                              <td className="middle text-center hidden-xs">
+                                {
+                                  company.billing.inventoryPrice ? `${company.billing.inventoryPrice?.toFixed(4)} UF` : '-'
+                                }
+                              </td> : null
+                          }
+                          {
+                            window.user.isAdmin ?
+                              <td className="middle text-center hidden-xs">
+                                {
+                                  company.billing.checklistPrice ? `${company.billing.checklistPrice?.toFixed(4)} UF` : '-'
+                                }
+                              </td> : null
+                          }
+                          {
+                            window.user.isAdmin ?
+                              <td className="middle text-center hidden-xs">
+                                {
+                                  company.billing.requestPrice ? `${company.billing.requestPrice?.toFixed(4)} UF` : '-'
+                                }
+                              </td> : null
+                          }
+
                           {
                             window.user.isAdmin ?
                               <td className="middle text-center">

@@ -284,19 +284,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding">
-              <div className="nav-tabs-custom">
-                <ul className="nav nav-tabs">
-                  <li className="active">
-                    <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
-                  </li>
-                  <li>
-                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
-                  </li>
-                </ul>
-                <div className="tab-content">
-                  <div className='tab-pane active' id='tab_1'>
-                    <div className='box-body table-responsive no-padding'>
-                      <div className='row'>
+              <div className='row'>
                         <div className='col-md-offset-8 col-md-4'>
                           <div className='input-group input-group-sm'
                                style={{ padding: '10px' }}
@@ -313,15 +301,27 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                       </div>
+              <div className="nav-tabs-custom">
+                <ul className="nav nav-tabs">
+                  <li className="active">
+                    <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
+                  </li>
+                  <li>
+                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
+                  </li>
+                </ul>
+                <div className="tab-content">
+                  <div className='tab-pane active' id='tab_1'>
+                    <div className='box-body table-responsive no-padding'>
                       <table className='table table-andes table-striped'>
                         <thead>
                         <tr>
                           <th style={{width: '40%'}} className="middle">Nombre</th>
                           <th style={{width: '10%'}} className="middle">Código</th>
-                          <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
                           <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
                           <th style={{width: '10%'}} className="middle">Asignaciones</th>
-                          <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                          <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
+                          <th style={{width: '15%'}} className="middle hidden-xs">Modificado</th>
                           {
                             hasPermission(window.user, 'changeVenue') ?
                               <th style={{width: '1%'}} className="width-10"/> : null
@@ -347,20 +347,21 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                                     venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
                                   }
                                 </td>
-                                <td className="middle-center">{venue.code}</td>
-                                <td className="middle-center">{venue.lat}, {venue.lng}</td>
-                                <td className="middle-center  hidden-xs">
+                                <td className="middle text-sm text-muted">{venue.code}</td>
+                                <td className="middle-center hidden-xs">
                                   {
                                     venue.type === 'distributor' ?
                                       <i className="fa fa-check-circle text-green"/>
                                       : <i className="fa fa-times-circle text-blue"/>
                                   }
                                 </td>
-                                <td className="text-sm">
+                                <td className="middle text-sm text-muted">
                                   Usuarios: {venue.users ? venue.users.length : 0}<br/>
                                   Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
                                 </td>
-                                <td className="middle hidden-xs">
+                                <td className="middle  text-sm text-muted">
+                                  lat: {venue.lat}<br />lng: {venue.lng}</td>
+                                <td className="middle hidden-xs text-sm text-muted">
                                   {
                                     moment(venue.updatedAt).format('LLL')
                                   }

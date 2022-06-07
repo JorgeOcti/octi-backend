@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import { IOperationType } from '../interfaces/operationType.interface';
 import { ICarModel } from '../../app/models/car.model';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IOperationTypeModel extends IOperationType, mongoose.Document {
 }

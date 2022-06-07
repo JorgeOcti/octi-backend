@@ -31,8 +31,8 @@ export interface IDashboardState {
   planningProcessPerDate: any[];
   carsByVenue: any[];
   searchText: string;
-  searchFrom: string,
-  searchTo: string,
+  searchFrom: Date,
+  searchTo: Date,
   participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
@@ -181,13 +181,12 @@ export function changeSearchDashboardAction(searchText: string): IChangeSearchDa
 interface IChangeRangeDashboard {
   type: '/DASHBOARD/CHANGE_RANGE';
   payload: {
-    from: string,
-    to: string,
+    from: Date,
+    to: Date,
   };
 }
 
-export function changeRangeDashboardAction(from: string, to: string): IChangeRangeDashboard
-{
+export function changeRangeDashboardAction(from: Date, to: Date): IChangeRangeDashboard {
   return {
     type: '/DASHBOARD/CHANGE_RANGE',
     payload: {
@@ -775,6 +774,7 @@ export function getCarAction(id: string) {
       dispatch(loadCarAction(car.data.data));
       dispatch(loadRequestsInCarAction(requests.data));
       dispatch(isLoadingAction(false));
+      window.scrollTo(0, 0);
     }))
       .catch((err: AxiosError) => {
         // if the request is canceled

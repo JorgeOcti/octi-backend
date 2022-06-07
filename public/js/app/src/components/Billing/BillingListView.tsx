@@ -98,8 +98,6 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                         <th className="middle hidden-xs">Inventario</th>
                         <th className="middle hidden-xs">Checklist</th>
                         <th className="middle hidden-xs">Solicitudes</th>
-                        {/*<th className="middle">Valor Inventario</th>*/}
-                        {/*<th className="middle">Valor Checklist</th>*/}
                         <th className="middle">Total</th>
                         <th style={{width: '80px'}} />
                       </tr>
@@ -113,12 +111,15 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                                 moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY').toUpperCase()
                               }
                             </td>
-                            <td className="middle">{invoice.company.name}</td>
+                            <td className="middle">
+                              {invoice.company.name} <br />
+                              <span className='text-sm text-muted'>
+                              {invoice.company?.businessName ?? ''} - {invoice.company?.rut ?? ''}
+                            </span>
+                            </td>
                             <td className="middle hidden-xs">{invoice.inventoryCars}</td>
                             <td className="middle hidden-xs">{invoice.checklistCars}</td>
                             <td className="middle hidden-xs">{invoice.requestCars}</td>
-                            {/*<td>{invoice.inventoryPrice} UF</td>*/}
-                            {/*<td>{invoice.checklistPrice} UF</td>*/}
                             <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>
                             <td className="middle">
                               <button

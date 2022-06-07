@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import * as mongoosePaginate from 'mongoose-paginate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
 import { ICompany } from '../interfaces';

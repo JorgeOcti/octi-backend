@@ -16,6 +16,8 @@ import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import CopyText from '../Utils/CopyText';
+import { parseReplicableURL } from '../../utils/common';
 
 declare let window: IWindow;
 
@@ -78,81 +80,99 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const {loadingParticipant} = this.props.dashboard;
     const {getParticipant} = this.props;
     return (
-      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="10" cSubMenu="10.2"  cAction="Detalle Vehículo">
+      <AppContainer title={`Detalle ${car ? car.vin : null}`} cMenu="2" cSubMenu="2.0"  cAction="Detalle Vehículo">
         <section className="content">
           <Row>
-            <div className="col col-md-3">
-              <div className="box box-primary">
-                <div className="box-body box-profile">
+            <div className='col-md-3 col-lg-3'>
+              <div className='box box-primary'>
+                <div className='box-body box-profile'>
                   {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
                   {/*<img*/}
-                    {/*className="profile-user-img img-responsive img-circle"*/}
-                    {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
-                    {/*alt="User profile picture"*/}
-                    {/*style={{*/}
-                      {/*fontFamily: 'object-fit:cover',*/}
-                      {/*objectFit: 'cover',*/}
-                      {/*width: '100px',*/}
-                      {/*height: '100px'*/}
-                    {/*}}*/}
+                  {/*className="profile-user-img img-responsive img-circle"*/}
+                  {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
+                  {/*alt="User profile picture"*/}
+                  {/*style={{*/}
+                  {/*fontFamily: 'object-fit:cover',*/}
+                  {/*objectFit: 'cover',*/}
+                  {/*width: '100px',*/}
+                  {/*height: '100px'*/}
+                  {/*}}*/}
                   {/*/>*/}
-                  <h3 className="profile-username text-center">{car && car.brand ? car.brand : '-'}</h3>
-                  <p className="text-muted text-center">{car && car.denomination ? car.denomination : '-'}</p>
-                  <ul className="list-group list-group-unbordered">
-                    <li className="list-group-item">
+                  <h3 className='profile-username text-center text-black'>{car && car.brand ? car.brand : '-'}</h3>
+                  <p className='text-muted text-center text-black'>{car && car.denomination ? car.denomination : '-'}</p>
+                  <ul className='list-group list-group-unbordered no-margin text-muted'>
+                    <li className='list-group-item'>
                       <strong>VIN</strong>
-                      <a className="pull-right">
-                        {
-                          car && car.vin ? car.vin : '-'
-                        }
-                      </a>
+                      <span className='pull-right text-primary'>
+                        <CopyText value={car?.vin ?? ''}>
+                          <strong>{
+                            car && car.vin ? car.vin : '-'
+                          }</strong>
+                        </CopyText>
+                      </span>
                     </li>
-                    <li className="list-group-item">
-                      <strong>Nº Interno</strong>
-                      <a className="pull-right">
-                        {
-                          car && car.internalNumber ? car.internalNumber : '-'
-                        }
-                      </a>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Patente</strong>
-                      <a className="pull-right">
-                        {
-                          car && car.patent ? car.patent : '-'
-                        }
-                      </a>
-                    </li>
-                    <li className="list-group-item">
+                    <li className='list-group-item'>
                       <strong>Color</strong>
-                      <a className="pull-right">
+                      <strong className='pull-right'>
                         {
                           car && car.color ? car.color : '-'
                         }
-                      </a>
+                      </strong>
                     </li>
-                    <li className="list-group-item">
-                      <strong>Revisiones</strong>
-                      <a className="pull-right">
+                    <li className='list-group-item'>
+                      <strong>Material</strong>
+                      <strong className='pull-right'>
                         {
-                          car && car.participants ? car.participants.length : 0
+                          car && car.material ? car.material : '-'
                         }
-                      </a>
+                      </strong>
                     </li>
-                    <li className="list-group-item">
-                      <strong>Inventarios</strong>
-                      <a className="pull-right">
+                    <li className='list-group-item'>
+                      <strong>Patente</strong>
+                      <strong className='pull-right'>
                         {
-                          car && car.inventories ? car.inventories.length : 0
+                          car && car.patent ? car.patent : '-'
                         }
-                      </a>
+                      </strong>
                     </li>
+                    <li className='list-group-item'>
+                      <strong>Nº Interno</strong>
+                      <strong className='pull-right'>
+                        {
+                          car && car.internalNumber ? car.internalNumber : '-'
+                        }
+                      </strong>
+                    </li>
+
+                    {/*<li className='list-group-item'>*/}
+                    {/*  <strong>Revisiones</strong>*/}
+                    {/*  <span className='pull-right'>*/}
+                    {/*    {*/}
+                    {/*      car && car.participants ? car.participants.length : 0*/}
+                    {/*    }*/}
+                    {/*  </span>*/}
+                    {/*</li>*/}
+                    {/*<li className='list-group-item'>*/}
+                    {/*  <strong>Inventarios</strong>*/}
+                    {/*  <span className='pull-right'>*/}
+                    {/*    {*/}
+                    {/*      car && car.inventories ? car.inventories.length : 0*/}
+                    {/*    }*/}
+                    {/*  </span>*/}
+                    {/*</li>*/}
                   </ul>
-                    {/*<a href="#" className="btn btn-primary btn-block"><b>Follow</b></a>*/}
+                  <button
+                    className="btn btn-primary btn-block"
+                    onClick={()=>{
+                      this.props.history.push(parseReplicableURL(`/cars/${car?._id}`));
+                    }}
+                  >
+                    <strong>Detalle</strong>
+                  </button>
                 </div>
               </div>
             </div>
-            <div className="col col-md-9">
+            <div className='col-md-9 col-lg-9'>
               {
                 loading ?
                   <div className="box">

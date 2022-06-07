@@ -154,6 +154,17 @@ class AdminCarController {
       sort: {
         createdAt: -1
       },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10),
       lean: true
@@ -181,8 +192,8 @@ class AdminCarController {
         res.json({
           count: cars.total,
           pages: cars.pages,
-          hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
-          hasNext: options.page && cars.pages && cars.pages > options.page,
+          hasPrevious: cars.hasPrevious,
+          hasNextPage: cars.hasNextPage,
           results: cars.docs,
           status: 200
         });

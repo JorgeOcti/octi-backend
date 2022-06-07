@@ -100,8 +100,8 @@ class CarriersListView extends TrackingBasePage<IPropsType, IStateType> {
               <table className="table table-andes table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                    <th style={{width: '80%'}} className="middle">Nombre</th>
+                    <th style={{width: '18%'}} className="middle hidden-xs">Modificado</th>
                     {
                       hasPermission(window.user, 'changeCarrier') ?
                         <th style={{width: '1%'}} className="width-10"/> : null
@@ -122,7 +122,7 @@ class CarriersListView extends TrackingBasePage<IPropsType, IStateType> {
                           className={'background-transition'}
                         >
                           <td className="middle">{carrier.name}</td>
-                          <td className="middle hidden-xs">{moment(carrier.updatedAt).format('LLL')}</td>
+                          <td className="middle hidden-xs text-sm text-muted">{moment(carrier.updatedAt).format('LLL')}</td>
                           {
                             hasPermission(window.user, 'changeCarrier') ?
                               <td

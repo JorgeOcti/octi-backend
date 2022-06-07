@@ -303,9 +303,20 @@ class TransmittalController {
         path: 'createdBy',
         select: ['firstName', 'lastName']
       }],
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10),
-      lean: true
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     const filter: any = {
       team
@@ -412,8 +423,8 @@ class TransmittalController {
         return res.json({
           count: transmittals.total,
           pages: transmittals.pages,
-          hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
-          hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
+          hasPrevious: transmittals.hasPrevious,
+          hasNextPage: transmittals.hasNextPage,
           results: transmittals.docs,
           status: 200
         });

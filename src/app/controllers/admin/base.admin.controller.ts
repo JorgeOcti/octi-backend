@@ -142,6 +142,18 @@ export default abstract class BaseAdminController<T> {
     // paginate options
     this.paginateOptions = {
       ...this.paginateOptions,
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
@@ -160,8 +172,8 @@ export default abstract class BaseAdminController<T> {
         res.json({
           count: data.total,
           pages: data.pages,
-          hasPrevious: this.paginateOptions.page && this.paginateOptions.page > 1 && data.pages && data.pages >= this.paginateOptions.page,
-          hasNext: this.paginateOptions.page && data.pages && data.pages > this.paginateOptions.page,
+          hasPrevious: data.hasPrevious,
+          hasNextPage: data.hasNextPage,
           results: data.docs,
           status: 200
         });

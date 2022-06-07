@@ -72,6 +72,18 @@ class AdminDamagesController {
           }
         }
       }],
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : "1", 10),
       limit: parseInt(pageSize ? pageSize : "20", 10)
     };
@@ -90,8 +102,8 @@ class AdminDamagesController {
         res.json({
           count: forms.total,
           pages: forms.pages,
-          hasPrevious: options.page && options.page > 1 && forms.pages && forms.pages >= options.page,
-          hasNext: options.page && forms.pages && forms.pages > options.page,
+          hasPrevious: forms.hasPrevious,
+          hasNextPage: forms.hasNextPage,
           results: forms.docs,
           status: 200
         });

@@ -101,13 +101,6 @@ class PlanningController {
       populate: [{
         path: 'car',
         select: ['vin', 'brand', 'denomination', 'color'],
-        // populate: [{
-        //   path: 'user',
-        //   select: ['firstName', 'lastName']
-        // }, {
-        //   path: 'venue',
-        //   select: ['name']
-        // }]
       },{
         path: 'createdBy',
         select: ['vin', 'brand', 'denomination', 'color']
@@ -115,7 +108,18 @@ class PlanningController {
       sort: {
         date: -1
       },
-
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : "1", 10),
       limit: parseInt(pageSize ? pageSize : "20", 10)
     };
@@ -125,26 +129,24 @@ class PlanningController {
       }, options);
       // validate exist page
       if (options.page && planning.pages && planning.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-        res.json({
+        return res.json({
           count: planning.total,
           pages: planning.pages,
-          hasPrevious: options.page && options.page > 1 && planning.pages && planning.pages >= options.page,
-          hasNext: options.page && planning.pages && planning.pages > options.page,
+          hasPrevious: planning.hasPrevious,
+          hasNextPage: planning.hasNextPage,
           results: planning.docs,
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        console.log(e);
-        res.status(500).json(e);
-      }
+      console.log(e);
+      return res.status(500).json(e);
     }
   }
 
