@@ -55,19 +55,20 @@ class AdminCarController {
       });
     }
     const { company } = req.user;
-    const team = req.user.team._id;
-    logger.info(`CarController.apiListCars email: ${req.user.email}`);
+    const { team } = req.user;
+    logger.info(`CarController.importCars email: ${req.user.email}`);
     const { cars } = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
         if (car.vin && car.vin.length) {
-          const vin2 = car.vin.substr(car.vin.length - 6);
           try {
+            const vin2 = car.vin.toUpperCase().trim().substr(car.vin.length - 6);
             let newCar = await Car.findOne({
-              vin: car.vin,
-              team
+              vin: car.vin.toUpperCase().trim(),
+              team: team._id
             });
             if (newCar) {
+              logger.info(`CarController.importCars updated: ${JSON.stringify(cars)}`);
               newCar.vin2 = vin2;
               newCar.type = car.tipo ? car.tipo : newCar.type;
               newCar.color = car.color ? car.color : newCar.color;
@@ -82,6 +83,7 @@ class AdminCarController {
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
+              logger.info(`CarController.importCars created: ${JSON.stringify(cars)}`);
               newCar = await new Car({
                 vin: car.vin,
                 vin2,
@@ -94,17 +96,17 @@ class AdminCarController {
                 // engineNumber: car.motor ? car.motor : car.engineNumber,
                 internalNumber: car.NInterno ? car.NInterno : '',
                 // destination: car.destino ? car.destino : '',
-                company,
-                team,
+                company: company._id,
+                team: team._id,
                 createdBy: req.user,
                 status: ChoicesStatusCar.active
               }).save();
             }
             await carTracker.importIntoSystem({
               car: newCar._id,
-              team,
-              company,
-              createdBy: req.user.toString(),
+              team: team._id,
+              company: company._id,
+              createdBy: req.user._id,
               executedAt: newCar.createdAt
             });
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
@@ -170,7 +172,7 @@ class AdminCarController {
       lean: true
     };
     try {
-      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${req.query}`);
+      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
       const cars = await this.getCars({
         vin: {
           $exists: true,

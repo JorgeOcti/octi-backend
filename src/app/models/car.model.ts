@@ -37,6 +37,7 @@ export interface ICarModel extends ICar, mongoose.Document {}
 export const baseCarSchema = new mongoose.Schema({
   vin: {
     type: String,
+    uppercase: true,
     trim: true
   },
   vin2: {
