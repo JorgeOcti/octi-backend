@@ -204,9 +204,9 @@ if (app.get('env') !== 'testing') {
   // }));
   if (process.env.ENV === 'production') {
     // app.use(morgan('\x1b[90m[:date[clf]] [INFO]:\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
-    app.use(morgan('\x1b[90m[INFO]: \x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(morgan('\x1b[0mINFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
   } else {
-    app.use(morgan('\x1b[90m\x1b[36m:method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(morgan('\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
   }
 
 }

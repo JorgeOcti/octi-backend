@@ -90,9 +90,9 @@ class LoggerService {
       }
       if (process.env.ENV === 'production') {
         // console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
-        console.log(`${color}${this.now()} [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+        console.log(`${color}[${type}] ${textColor}${this.message} ${this.now()}${this.colors.reset}`);
       } else {
-        console.log(`${color}${this.now()} [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+        console.log(`${color}[${type}] ${textColor}${this.message} ${this.now()}${this.colors.reset}`);
       }
       // this.writeLog(type);
     }
