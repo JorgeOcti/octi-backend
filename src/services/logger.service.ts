@@ -76,7 +76,7 @@ class LoggerService {
     if (process.env.ENV === 'production') {
       return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
     } else {
-       return moment().format('DD/MM/YYYY:HH:mm:ss.x')
+       return moment().format('x')
     }
   }
 
