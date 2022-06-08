@@ -74,7 +74,8 @@ class LoggerService {
     // return moment();
     // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
     if (process.env.ENV === 'production') {
-      return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+      // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+      return moment().format('x')
     } else {
        return moment().format('x')
     }
@@ -88,11 +89,11 @@ class LoggerService {
         textColor = this.colors.reset;
       }
       if (process.env.ENV === 'production') {
-        console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+        // console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+        console.log(`${color}${this.now()} [${type}]:${textColor} ${this.message}${this.colors.reset}`);
       } else {
         console.log(`${color}${this.now()} [${type}]:${textColor} ${this.message}${this.colors.reset}`);
       }
-
       // this.writeLog(type);
     }
   }
