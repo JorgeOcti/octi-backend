@@ -139,7 +139,7 @@ class AppController {
                 path: 'userPermissions',
                 select: ['codeName']
               });
-              if (redirectTo?.length) {
+              if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
                 logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
                 delete (req.session as any).redirectTo;
                 return res.redirect(redirectTo);
