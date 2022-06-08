@@ -32,18 +32,19 @@ class Middlewares {
           res.locals.user = user;
           return next();
         } else {
+          logger.error(`Middlewares.checkIsLoggedIn: user not found in the system. URL made safe, user was sent at login!`);
           res.locals.user = null;
-          return res.status(403).render('403');
+          return res.redirect(`/account/login/`);
         }
       } else {
-        // if they aren't redirect them to the login page
-        logger.error(`Middlewares.isLoggedIn errorr: no exist user`);
+        logger.error(`Middlewares.processLogin: session: ${JSON.stringify(req.session)}`);
+        logger.error(`Middlewares.isLoggedIn. Attempt to access ${req.url} without credentials. URL made safe, user was sent at login!`);
         req.logout();
         (req.session as any).redirectTo = req.url;
         return res.redirect(`/account/login/`);
       }
     } catch (e) {
-      logger.error(`Middlewares.isLoggedIn errorr: ${JSON.stringify(e)}`);
+      logger.error(`Middlewares.checkIsLoggedIn: oops an error occurred in your code!. URL made safe, user was sent at login!`);
       console.error(e);
       return res.redirect(`/account/login/`);
     }

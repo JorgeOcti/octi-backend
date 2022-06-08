@@ -15,8 +15,7 @@ class ReasonController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    logger.info(`ReasonController.apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.info(`ReasonController.apiList email: ${req.user.email}`);
     const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string; pageSize: string };
 

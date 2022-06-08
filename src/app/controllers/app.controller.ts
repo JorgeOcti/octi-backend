@@ -93,16 +93,13 @@ class AppController {
     })(req, res, next);
   }
 
-  public processLogin(req: Request, res: Response, next: NextFunction): void {
+  public processLogin(req: IRequest, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
-    // const {next: nextPage} = req.query as {next: string};
+    logger.info(`AppController.processLogin: session: ${JSON.stringify(req.session)}`);
     const redirectTo = (req.session as any).redirectTo;
-    logger.info(`AppController.processLogin`);
-    logger.info(`${JSON.stringify(req.session)}`);
     if (req.isAuthenticated() && req?.user) {
-      logger.info(`AppController.processLogin req.user`);
-      console.log(`AppController.processLogin redirectTo=${redirectTo}`);
-       if (redirectTo?.length) {
+      logger.debug(`AppController.processLogin: user: ${JSON.stringify(req.user)} redirectTo: ${redirectTo}`);
+       if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
         delete (req.session as any).redirectTo;
         return res.redirect(redirectTo);
       } else {
@@ -113,13 +110,16 @@ class AppController {
       passport.authenticate('local', async (err, user) => {
         /* istanbul ignore if */
         if (err) {
+          logger.debug(`AppController.processLogin.authenticate: Wrong username or password.`);
           logger.error(err);
-          console.log(err);
-          return next(err); // will generate a 500 error
+          // return next(err); // will generate a 500 error
+          return res.render('app/login', {
+            username, error: 'Ha ocurrido un error.'
+          });
         }
         /* istanbul ignore if */
         if (!user) {
-          logger.error(`AppController.processLogin.authenticate: Usuario o contraseña incorrecta`);
+          logger.debug(`AppController.processLogin.authenticate: User not found.`);
           return res.render('app/login', {
             username, error: 'Usuario o contraseña incorrecta.'
           });
@@ -127,8 +127,8 @@ class AppController {
         req.login(user, async (loginErr) => {
           /* istanbul ignore if */
           if (loginErr) {
+            logger.debug(`AppController.processLogin.authenticate: We could not authenticate.`);
             logger.error(loginErr);
-            console.log(loginErr);
             return res.render('app/login', {
               username, error: 'Usuario o contraseña incorrecta.'
             });
@@ -140,14 +140,22 @@ class AppController {
                 select: ['codeName']
               });
               if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
-                logger.error(`AppController.processLogin.login.redirectTo ${redirectTo}`);
+                logger.debug(`AppController.processLogin.login.redirectTo ${redirectTo}`);
                 delete (req.session as any).redirectTo;
                 return res.redirect(redirectTo);
+              } else if (user.hasPermission('viewRequest')) {
+                logger.debug(`AppController.processLogin.login.redirectTo /requests/vehicles/`);
+                return res.redirect('/requests/vehicles/');
+              } else if (user.hasPermission('viewInventory')) {
+                logger.debug(`AppController.processLogin.login.redirectTo /inventory/`);
+                return res.redirect('/inventory/');
+              } else {
+                logger.debug(`AppController.processLogin.login.redirectTo /cars/`);
+                return res.redirect('/cars/');
               }
-              return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
             } catch (e) {
+              logger.debug(`AppController.processLogin.authenticate: Wrong username or password`);
               logger.error(e);
-              console.log(err); // handle errors!
               return res.render('app/login', {
                 username, error: 'Usuario o contraseña incorrecta.'
               });
