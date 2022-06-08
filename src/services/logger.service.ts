@@ -50,8 +50,8 @@ class LoggerService {
   }
 
   public info(message: string): void {
-    this.logger('INFO', 'production', message, this.colors.brightBlack);
-    this.logger('INFO', 'development', message, this.colors.brightBlack);
+    this.logger('INFO', 'production', message, this.colors.reset);
+    this.logger('INFO', 'development', message, this.colors.reset);
   }
 
   /* istanbul ignore next */
