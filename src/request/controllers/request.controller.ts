@@ -546,8 +546,8 @@ class RequestController {
   }
 
   public async apiListItems(req: IRequest, res: Response) {
-    logger.info(`RequestController.apiListItems`);
-    logger.info(`email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
+    logger.info(`RequestController.apiListItems email ${req.user.email}`);
+    logger.debug(`RequestController.apiListItems: ${JSON.stringify(req.body)}`);
     const team = req.user.team._id;
     const {
       page,
@@ -1136,8 +1136,7 @@ class RequestController {
   }
 
   public async apiDetail(req: IRequest, res: Response) {
-    logger.info(`RequestController.apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.info(`RequestController.apiDetail email ${req.user.email}`);
     const team = req.user.team._id;
     const { id } = req.params;
     try {

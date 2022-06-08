@@ -127,13 +127,13 @@ class Middlewares {
         // try {
         const sessionCache = await redisClient.get(userId);
         if (sessionCache) {
-          logger.debug(`use user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
+          logger.debug(`From user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           // logger.debug(`sessionCache ${sessionCache}`);
           resolve({
             user: new UserServices(JSON.parse(sessionCache)).middleware()
           });
         } else {
-          logger.debug(`found user: ${userId} from: ${req?.originalUrl ?? 'system'}`);
+          logger.debug(`Create user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           user = await User
             .findById(userId, {
               _id: true,
@@ -161,7 +161,7 @@ class Middlewares {
               select: ['name']
             }]);
           if (user) {
-            logger.debug(`generate user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
+            logger.debug(`Generate user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
             const userCache = JSON.stringify(user);
             await redisClient.set(userId, userCache, 'ex', 60);
             resolve({

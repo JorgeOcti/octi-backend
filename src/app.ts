@@ -32,7 +32,7 @@ import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { distributionRouter } from './distribution/router';
 import { statsRouter } from './stats/router';
-import { accessLogStream } from './services/logger.service';
+// import { accessLogStream } from './services/logger.service';
 import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
 
@@ -199,9 +199,9 @@ if (app.get('env') !== 'testing') {
     return (req.headers['x-real-ip'] as string) || (req.headers['x-forwarded-for'] as string) || req.connection.remoteAddress || '';
   });
 
-  app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
-    stream: accessLogStream
-  }));
+  // app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
+  //   stream: accessLogStream
+  // }));
   if (process.env.ENV === 'production') {
     app.use(morgan('\x1b[90m[:date[clf]] [INFO]:\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
   } else {

@@ -1,23 +1,23 @@
 import * as moment from 'moment';
 import * as Raven from 'raven';
 import GeneralUtils from '../utils/general.utils';
-import * as fileStreamRotator from 'file-stream-rotator';
-import * as path from 'path';
+// import * as fileStreamRotator from 'file-stream-rotator';
+// import * as path from 'path';
 
 export interface Icolors {
   [key: string]: any;
 }
 
 // Logger app
-export const logDirectory = path.join(__dirname, '../logs');
+// export const logDirectory = path.join(__dirname, '../logs');
 
-export const accessLogStream = fileStreamRotator.getStream({
-  date_format: 'YYYYMMDD',
-  // date_format: 'YYYY/MM/DD',
-  filename: logDirectory + '/access-%DATE%.log',
-  frequency: 'daily',
-  verbose: false
-});
+// export const accessLogStream = fileStreamRotator.getStream({
+//   date_format: 'YYYYMMDD',
+//   // date_format: 'YYYY/MM/DD',
+//   filename: logDirectory + '/access-%DATE%.log',
+//   frequency: 'daily',
+//   verbose: false
+// });
 
 class LoggerService {
 
@@ -87,15 +87,20 @@ class LoggerService {
       if (!textColor) {
         textColor = this.colors.reset;
       }
-      console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
-      this.writeLog(type);
+      if (process.env.ENV === 'production') {
+        console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+      } else {
+        console.log(`${color}${this.now()} [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+      }
+
+      // this.writeLog(type);
     }
   }
 
   /* istanbul ignore next */
-  private writeLog(type: string) {
-    accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
-  }
+  // private writeLog(type: string) {
+    // accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
+  // }
 }
 
 export default new LoggerService();
