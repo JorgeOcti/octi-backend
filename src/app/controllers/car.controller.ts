@@ -188,7 +188,7 @@ class CarController {
     const { inventory } = req.body;
     const team = req.user.team._id;
     logger.info(`checkVIN`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
@@ -200,7 +200,7 @@ class CarController {
         }, { status: true });
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
           logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(404).json({
             message: 'Este inventario ya no se encuentra disponible.',
             status: 404
@@ -277,7 +277,7 @@ class CarController {
                 });
               } else {
                 logger.error(`checkVIN: VIN no válido 1.`);
-                logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
                 res.status(400).json({
                   message: 'VIN no válido.',
                   status: 400
@@ -285,7 +285,7 @@ class CarController {
               }
             } else {
               logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
-              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
               res.status(404).json({
                 message: 'Este inventario ya no se encuentra disponible.',
                 status: 404
@@ -293,7 +293,7 @@ class CarController {
             }
           } else {
             logger.error(`checkVIN: VIN no válido 2.`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
             res.status(400).json({
               message: 'VIN no válido.',
               status: 400
@@ -306,7 +306,7 @@ class CarController {
           /* istanbul ignore next */
           logger.error(`checkVIN: Async Error.`);
           /* istanbul ignore next */
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           /* istanbul ignore next */
           logger.error(e);
           res.status(500).json(e);
@@ -346,7 +346,7 @@ class CarController {
           });
         } else {
           logger.error(`checkVIN: VIN no encontrado.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(400).json({
             message: 'VIN no encontrado.',
             status: 400
@@ -358,7 +358,7 @@ class CarController {
           /* istanbul ignore next */
           logger.error(`checkVIN: Async Error.`);
           /* istanbul ignore next */
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           /* istanbul ignore next */
           logger.error(e);
           res.status(500).send(e);
@@ -1304,8 +1304,8 @@ class CarController {
     };
 
     try {
-      logger.info(`CarController.apiRevisions: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} options: ${JSON.stringify(options)}`);
+      logger.info(`CarController.apiRevisions: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email} options: ${JSON.stringify(options)}`);
       const participantFilter: IAnyObject = {
         car: {
           $ne: null
@@ -1327,7 +1327,7 @@ class CarController {
         participantFilter.kind = { $ne: KindForm.transmittal };
       }
 
-      if (search && search.length) {
+      if (search?.length) {
         const searchText = new RegExp(search.trim(), 'i');
         const searchTextArray = search.trim().split(" ");
         const filterUser: any = {
@@ -1358,8 +1358,8 @@ class CarController {
             });
           }
         }
-        logger.info(`CarController.apiRevisions: email: ${req.user.email}} searchTextArray: ${searchTextArray}}`);
-        logger.debug(`CarController.apiRevisions: email: ${req.user.email}} filterUser: ${JSON.stringify(filterUser)}`);
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} searchTextArray: ${searchTextArray}}`);
+        logger.debug(`CarController.apiRevisions: email: ${req.user.email} filterUser: ${JSON.stringify(filterUser)}`);
         const searchUser = await User.find(filterUser, { _id: true });
         const searchVenue = searchUser.length ? [] : await Venue.find({
           _id: {
@@ -1421,7 +1421,7 @@ class CarController {
           createdAt: createdAtFilter
         });
       }
-      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} participantFilter: ${JSON.stringify(participantFilter)}`);
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email} participantFilter: ${JSON.stringify(participantFilter)}`);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

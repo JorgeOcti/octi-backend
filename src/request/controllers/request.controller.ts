@@ -434,7 +434,7 @@ class RequestController {
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     logger.info(`RequestController.apiCreate`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
     const {
       cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation
@@ -539,7 +539,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -547,7 +547,7 @@ class RequestController {
 
   public async apiListItems(req: IRequest, res: Response) {
     logger.info(`RequestController.apiListItems`);
-    logger.info(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+    logger.info(`email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
     const team = req.user.team._id;
     const {
       page,
@@ -789,7 +789,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiListItems: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       return res.status(500).json(e);
     }
@@ -1052,7 +1052,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.exportExcel: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1130,14 +1130,14 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }
 
   public async apiDetail(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const { id } = req.params;
     try {
@@ -1159,7 +1159,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1167,7 +1167,7 @@ class RequestController {
 
   public async apiByVin(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const { id } = req.params;
     try {
@@ -1186,7 +1186,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1225,7 +1225,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequest: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1277,7 +1277,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequestItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1343,7 +1343,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.searhCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1351,7 +1351,7 @@ class RequestController {
 
   public async apiCreateItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreateItem`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
     const { company } = req.user;
     const team = req.user.team._id;
     const { car, idRequest } = req.body;
@@ -1407,7 +1407,7 @@ class RequestController {
       console.log(e);
       logger.error(`RequestController.apiCreateItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1541,7 +1541,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiPatchItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1551,7 +1551,7 @@ class RequestController {
     const { team, company } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(updateObject)} }`);
     try {
       let cancelRequest = false;
        req.on('close', function() {
@@ -1607,7 +1607,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiPatchItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1695,7 +1695,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.downloadItemFiles: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -2065,7 +2065,7 @@ class RequestController {
         /* istanbul ignore next */
         logger.error(`RequestController.uploadFile: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
@@ -2073,7 +2073,7 @@ class RequestController {
       }
     } else {
       logger.error(`RequestController.uploadFile: The file are required.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       return res.status(400).json({
         message: 'La imagen es obligatoria.',

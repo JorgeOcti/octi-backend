@@ -29,7 +29,7 @@ class RequestItemStatusController {
       /* istanbul ignore next */
       logger.error(`RequestItemStatusController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -53,7 +53,7 @@ class RequestItemStatusController {
       /* istanbul ignore next */
       logger.error(`RequestItemStatusController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -73,7 +73,7 @@ class RequestItemStatusController {
       /* istanbul ignore next */
       logger.error(`RequestItemStatusController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -116,7 +116,7 @@ class RequestItemStatusController {
       /* istanbul ignore next */
       logger.error(`RequestItemStatusController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }

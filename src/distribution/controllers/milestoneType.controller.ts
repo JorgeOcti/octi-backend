@@ -30,7 +30,7 @@ class MilestoneTypeController {
       /* istanbul ignore next */
       logger.error(`MilestoneTypeController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -49,7 +49,7 @@ class MilestoneTypeController {
       /* istanbul ignore next */
       logger.error(`MilestoneTypeController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -67,7 +67,7 @@ class MilestoneTypeController {
       /* istanbul ignore next */
       logger.error(`MilestoneTypeController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -108,7 +108,7 @@ class MilestoneTypeController {
       /* istanbul ignore next */
       logger.error(`MilestoneTypeController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

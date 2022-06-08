@@ -61,7 +61,7 @@ class TransmittalItemController {
       /* istanbul ignore next */
       logger.error(`TransmittalItemController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -101,7 +101,7 @@ class TransmittalItemController {
       /* istanbul ignore next */
       logger.error(`TransmittalItemController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -145,7 +145,7 @@ class TransmittalItemController {
       /* istanbul ignore next */
       logger.error(`TransmittalItemController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

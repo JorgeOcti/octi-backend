@@ -286,8 +286,8 @@ class FormController {
         },
         team
       };
-      logger.info(`FormController.list: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`FormController.list: email: ${req.user.email}} filter: ${JSON.stringify(filter)}`);
+      logger.info(`FormController.list: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`FormController.list: email: ${req.user.email} filter: ${JSON.stringify(filter)}`);
       const forms = await this.getForms(filter);
       return res.json({
         data: forms,
@@ -581,7 +581,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1183,7 +1183,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       return res.status(400).json({
@@ -1212,7 +1212,7 @@ class FormController {
           });
         } else {
           logger.error(`changePreferred: Formulario no encontrado`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(400).json({
             message: 'Formulario no encontrado',
             status: 400
@@ -1220,7 +1220,7 @@ class FormController {
         }
       } else {
         logger.error(`changePreferred: Usuario no encontrado`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
@@ -1231,7 +1231,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1330,7 +1330,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1435,7 +1435,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1561,7 +1561,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard timing derco: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1835,7 +1835,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2041,7 +2041,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard revisiones: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2134,7 +2134,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2356,7 +2356,7 @@ class FormController {
 
   public async createPosition(req: IRequest, res: Response): Promise<any> {
     try {
-      logger.info(`FormController.createPosition: email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+      logger.info(`FormController.createPosition: email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
       const { company, venue } = req.user;
       const team = req.user.team._id;
       const { lat, lng, accuracy, provider } = req.body;
@@ -2382,7 +2382,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`FormController.createPosition: Error`);
       /* istanbul ignore next */
-      logger.error(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+      logger.error(`email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({

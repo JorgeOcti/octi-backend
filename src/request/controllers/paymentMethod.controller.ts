@@ -30,7 +30,7 @@ class PaymentMethodController {
       /* istanbul ignore next */
       logger.error(`PaymentMethodController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -51,7 +51,7 @@ class PaymentMethodController {
       /* istanbul ignore next */
       logger.error(`PaymentMethodController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -71,14 +71,14 @@ class PaymentMethodController {
       /* istanbul ignore next */
       logger.error(`PaymentMethodController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
 
   public async apiList(req: IRequest, res: Response) {
     logger.info(`PaymentMethodController.apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string; pageSize: string };
     // paginate options
@@ -116,7 +116,7 @@ class PaymentMethodController {
       /* istanbul ignore next */
       logger.error(`PaymentMethodController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

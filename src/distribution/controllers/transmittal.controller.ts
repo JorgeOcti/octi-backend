@@ -189,7 +189,7 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -206,7 +206,7 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
 
@@ -250,7 +250,7 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -423,14 +423,14 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }
 
   public async apiOnlyMe(req: IRequest, res: Response) {
     logger.info(`TransmittalController.apiOnlyMe`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const {
       page,
@@ -528,7 +528,7 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiOnlyMe:`, e.toString());
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -889,7 +889,7 @@ private getForm(filter: any): Promise<IFormModel> {
     const { user } = req;
     const { files, transmittal } = req.body;
     logger.info(`TransmittalController.attachEvidence`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     try {
       if (files) {
         const transmittalData = await Transmittal
@@ -914,7 +914,7 @@ private getForm(filter: any): Promise<IFormModel> {
       /* istanbul ignore next */
       logger.error(`TransmittalController.uploadFile: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -924,7 +924,7 @@ private getForm(filter: any): Promise<IFormModel> {
 
   public async xlsExport(req: IRequest, res: Response) {
     logger.info(`TransmittalController.xlsExport`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     try {
       // Create columns/headers for excel
@@ -1024,7 +1024,7 @@ private getForm(filter: any): Promise<IFormModel> {
       /* istanbul ignore next */
       logger.error(`TransmittalController.xlsExport: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1047,7 +1047,7 @@ private getForm(filter: any): Promise<IFormModel> {
     const { user } = req;
     let { transmittal, milestone } = req.body;
     logger.info(`TransmittalController.uploadFile`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
@@ -1125,7 +1125,7 @@ private getForm(filter: any): Promise<IFormModel> {
         /* istanbul ignore next */
         logger.error(`TransmittalController.uploadFile: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
@@ -1133,7 +1133,7 @@ private getForm(filter: any): Promise<IFormModel> {
       }
     } else {
       logger.error(`TransmittalController.uploadFile: The file are required.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       res.status(400).json({
         message: 'La imagen es obligatoria.',
@@ -1217,7 +1217,7 @@ private getForm(filter: any): Promise<IFormModel> {
       /* istanbul ignore next */
       logger.error(`TransmittalController.downloadItemFiles: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

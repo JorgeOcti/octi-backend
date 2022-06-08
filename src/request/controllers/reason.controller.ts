@@ -16,7 +16,7 @@ class ReasonController {
 
   public async apiList(req: IRequest, res: Response) {
     logger.info(`ReasonController.apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string; pageSize: string };
 
@@ -58,7 +58,7 @@ class ReasonController {
       /* istanbul ignore next */
       logger.error(`ReasonController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }
@@ -78,7 +78,7 @@ class ReasonController {
       /* istanbul ignore next */
       logger.error(`ReasonController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -99,7 +99,7 @@ class ReasonController {
       /* istanbul ignore next */
       logger.error(`ReasonController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -119,7 +119,7 @@ class ReasonController {
       /* istanbul ignore next */
       logger.error(`ReasonController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
