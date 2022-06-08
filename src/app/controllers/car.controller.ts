@@ -1328,17 +1328,40 @@ class CarController {
       }
 
       if (search && search.length) {
-        const searchText = new RegExp(search, 'i');
-        const searchUser = await User.find({
+        const searchText = new RegExp(search.trim(), 'i');
+        const searchTextArray = search.trim().split(" ");
+        const filterUser: any = {
           $and: [{
-            $or: [{
-              firstName: { $regex: searchText }
-            }, {
-              lastName: { $regex: searchText }
-            }]
-          }, { team }]
-        }, { _id: true });
-        const searchVenue = await Venue.find({
+            team
+          }],
+        };
+        if (searchTextArray.length > 3) {
+          filterUser['$or'] = [{
+            firstName: {
+              $regex: new RegExp(`${searchTextArray[0]} ${searchTextArray[1]}`, 'i')
+            },
+            lastName: {
+              $regex: new RegExp(`${searchTextArray[2]} ${searchTextArray[3]}`, 'i')
+            }
+          }];
+        } else {
+          filterUser['$and'].push({
+            firstName: {
+              $regex: new RegExp(searchTextArray[0], 'i')
+            }
+          });
+          if (searchTextArray.length > 1) {
+            filterUser['$and'].push({
+              lastName: {
+                $regex: new RegExp(searchTextArray[1], 'i')
+              }
+            });
+          }
+        }
+        logger.info(`CarController.apiRevisions: email: ${req.user.email}} searchTextArray: ${searchTextArray}}`);
+        logger.debug(`CarController.apiRevisions: email: ${req.user.email}} filterUser: ${JSON.stringify(filterUser)}`);
+        const searchUser = await User.find(filterUser, { _id: true });
+        const searchVenue = searchUser.length ? [] : await Venue.find({
           _id: {
             $in: req.user.venuesPermissions()
           },
@@ -1350,13 +1373,13 @@ class CarController {
         if (searchUser.length) {
           participantFilter.$and.push({
             user: {
-              $in: searchUser
+              $in: searchUser.map((user) => user._id)
             }
           });
         } else if (searchVenue.length) {
           participantFilter.$and.push({
             venue: {
-              $in: searchVenue
+              $in: searchVenue.map((venue) => venue._id)
             }
           });
         } else {
@@ -1378,7 +1401,7 @@ class CarController {
           }, { _id: true });
           participantFilter.$and.push({
             car: {
-              $in: searchCar
+              $in: searchCar.map((car) => car._id)
             }
           });
         }
