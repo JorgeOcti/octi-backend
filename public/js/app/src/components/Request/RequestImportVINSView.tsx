@@ -180,8 +180,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.vinFormatter,
       headerClasses: 'middle pointer',
       style: {
-        width: '24%',
-        miWidth: '24%'
+        width: '18%',
+        miWidth: '18%'
       },
       sort: true
     }, {
@@ -191,8 +191,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.requestedVehicle,
       headerClasses: 'middle pointer',
       style: {
-        width: '24%',
-        miWidth: '24%'
+        width: '27%',
+        miWidth: '27%'
       }
       // sort: true
     }, {
@@ -202,8 +202,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.assignVehicle,
       headerClasses: 'middle pointer',
       style: {
-        width: '24%',
-        miWidth: '24%'
+        width: '27%',
+        miWidth: '27%'
       }
       // sort: true
     }, {

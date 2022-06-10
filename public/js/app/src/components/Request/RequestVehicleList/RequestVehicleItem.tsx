@@ -473,7 +473,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     this.$subjectRecommends.next(text)
   }
 
-
   private deleteRequestItem(item: IRequestItem) {
     swal({
       title: '¿Estás seguro?',
@@ -497,7 +496,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     window.open(decodeURI(url), '_blank');
   }
 }
-
 
 const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
   return {

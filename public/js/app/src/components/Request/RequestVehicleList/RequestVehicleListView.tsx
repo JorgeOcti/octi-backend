@@ -533,159 +533,161 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                 <div className='table-responsive'>
                   <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
-                    <tr className='bg-primary' style={{ height: '45px' }}>
-                      <ShowIf condition={requestSettings.priority}>
-                        <th className='middle' style={{ width: '28px' }} />
-                      </ShowIf>
-                      <th
-                        className='middle-center pointer'
-                        style={{ minWidth: '60px' }}
-                        onClick={() => this.changeOrder('meta.request.number')}
-                      >
-                        Solic.
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '40px' }}
-                        // onClick={() => this.changeOrder('request.number')}
-                      >
-                        OT
-                        {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('meta.origin.name')}
-                      >
-                        Creada
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('meta.destination.name')}
-                      >
-                        Destino
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      {/*<th*/}
-                      {/*  className='middle pointer'*/}
-                      {/*  // style={{ width: '100px' }}*/}
-                      {/*  onClick={() => this.changeOrder('car.property')}*/}
-                      {/*>*/}
-                      {/*  Prop.*/}
-                      {/*  <span style={{ float: 'right' }}><i*/}
-                      {/*    className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                      {/*</th>*/}
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '100px' }}
-                        onClick={() => this.changeOrder('meta.car.brand')}
-                      >
-                        Marca
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th className='middle' style={{ minWidth: '200px', width: '200px' }}>VIN</th>
-                      <ShowIf condition={requestSettings.entry}>
-                        <th className='middle' style={{ width: '80px' }}>Partida</th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.denomination}>
+                      <tr className='bg-primary' style={{ height: '45px' }}>
+                        <ShowIf condition={requestSettings.priority}>
+                          <th className='middle' style={{ width: '28px' }} />
+                        </ShowIf>
+                        <th
+                          className='middle-center pointer'
+                          style={{ minWidth: '60px' }}
+                          onClick={() => this.changeOrder('meta.request.number')}
+                        >
+                          SOL
+                          <span style={{ float: 'right' }}>
+                            <i
+                              className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                          </span>
+                        </th>
                         <th
                           className='middle pointer'
-                          style={{ minWidth: '120px' }}
-                          onClick={() => this.changeOrder('meta.car.denomination')}
+                          style={{ minWidth: '40px' }}
+                          // onClick={() => this.changeOrder('request.number')}
                         >
-                          Modelo
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          OT
+                          {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
                         </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.material}>
                         <th
                           className='middle pointer'
                           style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('meta.car.material')}
+                          onClick={() => this.changeOrder('meta.origin.name')}
                         >
-                          Material
+                          Creada
                           <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                            className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.color}>
-                        <th className='middle' style={{ minWidth: '80px' }}>Color</th>
-                      </ShowIf>
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '120px', maxWidth: '160px' }}
-                        onClick={() => this.changeOrder('meta.status.weigth')}
-                      >
-                        Estado
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <ShowIf condition={requestSettings.internalNumber}>
-                        <th className='middle' style={{ width: '60px' }}>CDO</th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.reason}>
+                        <th
+                          className='middle pointer'
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('meta.destination.name')}
+                        >
+                          Destino
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        {/*<th*/}
+                        {/*  className='middle pointer'*/}
+                        {/*  // style={{ width: '100px' }}*/}
+                        {/*  onClick={() => this.changeOrder('car.property')}*/}
+                        {/*>*/}
+                        {/*  Prop.*/}
+                        {/*  <span style={{ float: 'right' }}><i*/}
+                        {/*    className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                        {/*</th>*/}
                         <th
                           className='middle pointer'
                           style={{ minWidth: '100px' }}
-                          onClick={() => this.changeOrder('reason.name')}
+                          onClick={() => this.changeOrder('meta.car.brand')}
                         >
-                          Motivo
-                          <span
-                            style={{ float: 'right' }}
+                          Marca
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <th className='middle' style={{ minWidth: '200px', width: '200px' }}>VIN</th>
+                        <ShowIf condition={requestSettings.entry}>
+                          <th className='middle' style={{ width: '80px' }}>Partida</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.denomination')}
                           >
-                            <i
-                              className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                          </span>
-                        </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.ticket}>
-                        <th className='middle pointer'>
-                          Ticket
-                        </th>
-                        <th className='middle pointer'>
-                          Nº Ticket
-                        </th>
-                      </ShowIf>
-                      {/* <th className="middle">Carrocería</th>
-                        <th className="middle">Pre-Entrega</th> */}
-                      <th className='middle-center' style={{ width: '40px' }}>Adj</th>
-                      <th className='middle-center' style={{ width: '20px' }}>Obs</th>
-                      {/* <th
-                          className="middle pointer"
-                          style={{ width: '100px' }}
-                          onClick={() => this.changeOrder('carrier.name')}
-                        >
-                          Transporte
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
+                            Modelo
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.material}>
+                          <th
+                            className='middle pointer'
+                            style={{ width: '80px' }}
+                            onClick={() => this.changeOrder('meta.car.material')}
+                          >
+                            Material
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.color}>
+                          <th className='middle' style={{ minWidth: '80px' }}>Color</th>
+                        </ShowIf>
                         <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('uploadDate')}
+                          className='middle pointer'
+                          style={{ minWidth: '120px', maxWidth: '160px' }}
+                          onClick={() => this.changeOrder('meta.status.weigth')}
                         >
-                          F. carga
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          Estado
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('estimatedArrival')}
-                        >
-                          F. llegada
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th> */}
-                      <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                        <th className='middle' style={{ width: '30px' }} />
-                      </ShowIf>
-                    </tr>
+                        <ShowIf condition={requestSettings.internalNumber}>
+                          <th className='middle' style={{ width: '60px' }}>CDO</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.reason}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '100px' }}
+                            onClick={() => this.changeOrder('reason.name')}
+                          >
+                            Motivo
+                            <span
+                              style={{ float: 'right' }}
+                            >
+                              <i
+                                className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.ticket}>
+                          <th className='middle pointer'>
+                            Ticket
+                          </th>
+                          <th className='middle pointer'>
+                            Nº Ticket
+                          </th>
+                        </ShowIf>
+                        {/* <th className="middle">Carrocería</th>
+                          <th className="middle">Pre-Entrega</th> */}
+                        <th className='middle-center' style={{ width: '40px' }}>Adj</th>
+                        <th className='middle-center' style={{ width: '20px' }}>Obs</th>
+                        {/* <th
+                            className="middle pointer"
+                            style={{ width: '100px' }}
+                            onClick={() => this.changeOrder('carrier.name')}
+                          >
+                            Transporte
+                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                          <th
+                            className="middle pointer"
+                            style={{ width: '80px' }}
+                            onClick={() => this.changeOrder('uploadDate')}
+                          >
+                            F. carga
+                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                          <th
+                            className="middle pointer"
+                            style={{ width: '80px' }}
+                            onClick={() => this.changeOrder('estimatedArrival')}
+                          >
+                            F. llegada
+                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th> */}
+                        <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+                          <th className='middle' style={{ width: '30px' }} />
+                        </ShowIf>
+                      </tr>
                     </thead>
                     <tbody>
                     {
