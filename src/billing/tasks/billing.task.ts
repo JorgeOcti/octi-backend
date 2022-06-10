@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as request from 'request';
 import { queue } from '../../app';
 import Company from '../../app/models/company.model';
@@ -218,7 +218,7 @@ class BillingQueue {
           });
       }
     } catch (e) {
-      Raven.captureException(e);
+      // Raven.captureException(e);
       console.log(e.message);
     }
   }

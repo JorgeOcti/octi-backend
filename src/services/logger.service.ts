@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import GeneralUtils from '../utils/general.utils';
 // import * as fileStreamRotator from 'file-stream-rotator';
 // import * as path from 'path';
@@ -65,7 +65,7 @@ class LoggerService {
     this.logger('ERROR', 'production', message, this.colors.brighRed);
     this.logger('ERROR', 'development', message, this.colors.brighRed);
     if (propagate) {
-      Raven.captureException(new Error(message));
+      // Raven.captureException(new Error(message));
     }
   }
 

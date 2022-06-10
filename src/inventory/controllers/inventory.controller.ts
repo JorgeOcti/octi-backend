@@ -10,7 +10,7 @@ import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import { PaginateOptions } from 'mongoose';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as tempfile from 'tempfile';
 import { queue } from '../../app';
 import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
@@ -1935,7 +1935,7 @@ class InventoryController {
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
-      Raven.captureException(e, {req});
+      // Raven.captureException(e, {req});
       /* istanbul ignore next */
       res.status(500).json({
         message: JSON.stringify(e),
@@ -2323,7 +2323,7 @@ class InventoryController {
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
-      Raven.captureException(e, {req});
+      // Raven.captureException(e, {req});
       /* istanbul ignore next */
       res.status(500).json({
         message: JSON.stringify(e),

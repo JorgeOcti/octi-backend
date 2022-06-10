@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import * as GraphicsMagick from 'gm';
 import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as uuid from 'uuid';
 import { queue } from '../../app';
 import { passport } from '../../passportConfig';
@@ -353,7 +353,7 @@ class AppController {
           }
         });
       } catch (e) {
-        Raven.captureException(e, { req });
+        // Raven.captureException(e, { req });
         /* istanbul ignore next */
         console.log(e);
         logger.error(`recover file error:`);

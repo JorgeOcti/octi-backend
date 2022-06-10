@@ -9,7 +9,7 @@ import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import { queue } from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
@@ -272,7 +272,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
   }
@@ -294,7 +294,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`Async Error.`);
       return res.status(400).json({
@@ -577,7 +577,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
@@ -585,7 +585,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       res.status(500).json({
         message: 'No se encontro formularío',
@@ -1101,7 +1101,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       console.log(e);
       console.log(e.stack);
@@ -1162,7 +1162,7 @@ class FormController {
             }
           });
         } catch (e) {
-          Raven.captureException(e, { req });
+          // Raven.captureException(e, { req });
           /* istanbul ignore next */
           logger.error(`async error:`);
           /* istanbul ignore next */
@@ -1179,7 +1179,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req, user: req.user });
+      // Raven.captureException(e, { req, user: req.user });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
@@ -1227,7 +1227,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
@@ -1326,7 +1326,7 @@ class FormController {
       res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1431,7 +1431,7 @@ class FormController {
       }
       res.json(data);
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1557,7 +1557,7 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing derco: Async Error.`);
       /* istanbul ignore next */
@@ -1831,7 +1831,7 @@ class FormController {
       return res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -2037,7 +2037,7 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard revisiones: Async Error.`);
       /* istanbul ignore next */
@@ -2130,7 +2130,7 @@ class FormController {
         notClean: days.map((d) => daysDict[d].notClean)
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -2378,7 +2378,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`FormController.createPosition: Error`);
       /* istanbul ignore next */

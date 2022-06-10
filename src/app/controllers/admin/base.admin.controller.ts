@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import { IAnyObject, IRequest } from '../../../interfaces/global.interface';
 import { io } from '../../../server';
 
@@ -54,7 +54,7 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      Raven.captureException(e);
+      // Raven.captureException(e);
       res.status(500).json(e);
     }
   }
@@ -93,7 +93,7 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      Raven.captureException(e);
+      // Raven.captureException(e);
       res.status(500).json(e);
     }
   }
@@ -127,7 +127,7 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      Raven.captureException(e);
+      // Raven.captureException(e);
       res.status(500).json(e);
     }
   }
@@ -168,7 +168,7 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      Raven.captureException(e);
+      // Raven.captureException(e);
       res.status(500).json(e);
     }
   }

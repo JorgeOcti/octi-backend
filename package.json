@@ -20,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@pusher/push-notifications-server": "~1.2.0",
+    "@sentry/node": "5.5.0",
     "@socket.io/redis-adapter": "~7.1.0",
     "@types/cors": "~2.8.12",
     "@types/xml2js": "~0.4.9",
@@ -54,7 +55,6 @@
     "is-uuid": "~1.0.2",
     "joi": "~14.3.1",
     "jquery": "~3.6.0",
-    "json-colorizer": "^2.2.2",
     "jsonwebtoken": "~8.5.1",
     "kue": "~0.11.6",
     "kue-scheduler": "~0.10.6",

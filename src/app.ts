@@ -15,7 +15,7 @@ import * as moment from 'moment-timezone';
 import { passport } from './passportConfig';
 // const passportSaml = require('passport-saml');
 import * as path from 'path';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
 import AppController from './app/controllers/app.controller';
@@ -42,8 +42,8 @@ const app = express();
 // Configure sentry
 // Load environment variables from .env file, where API keys and passwords are configured
 
-(global as any).__rootdir__ = __dirname || process.cwd();
-const root = (global as any).__rootdir__;
+// (global as any).__rootdir__ = __dirname || process.cwd();
+// const root = (global as any).__rootdir__;
 // const gitCommit = git.long();
 const redisStore = connectRedis(session);
 
@@ -52,40 +52,43 @@ dotenv.config({
 });
 
 /* istanbul ignore next */
-Raven.config(process.env.SENTRY_DNS, {
-  // release: gitCommit,
-  tags: {
-    // git_commit: gitCommit,
-    environment: process.env.ENV || 'development'
-  },
-  environment: process.env.ENV,
-  parseUser: (req) => {
-    // custom user parsing logic
-    const username = req.user ? req.user : {
-      id: 0,
-      email: 'anonymous'
-    };
-    return {
-      email: username.email,
-      name: `${username.firstName} ${username.lastName}`,
-      id: username._id
-    };
-  },
-  dataCallback: (data) => {
-    const stacktrace = data.exception && data.exception[0].stacktrace;
+const Sentry = require('@sentry/node');
 
-    if (stacktrace) {
-      if (stacktrace.frames) {
-        stacktrace.frames.forEach((frame: any) => {
-          if (frame.filename.startsWith('/')) {
-            frame.filename = 'app:///' + path.relative(root, frame.filename);
-          }
-        });
-      }
-    }
-
-    return data;
-  }}).install();
+Sentry.init({ dsn: process.env.SENTRY_DNS });
+// Raven.config(process.env.SENTRY_DNS, {
+//   // release: gitCommit,
+//   tags: {
+//     // git_commit: gitCommit,
+//     environment: process.env.ENV || 'development'
+//   },
+//   environment: process.env.ENV,
+//   parseUser: (req) => {
+//     // custom user parsing logic
+//     const username = req.user ? req.user : {
+//       id: 0,
+//       email: 'anonymous'
+//     };
+//     return {
+//       email: username.email,
+//       name: `${username.firstName} ${username.lastName}`,
+//       id: username._id
+//     };
+//   },
+//   dataCallback: (data) => {
+//     const stacktrace = data.exception && data.exception[0].stacktrace;
+//
+//     if (stacktrace) {
+//       if (stacktrace.frames) {
+//         stacktrace.frames.forEach((frame: any) => {
+//           if (frame.filename.startsWith('/')) {
+//             frame.filename = 'app:///' + path.relative(root, frame.filename);
+//           }
+//         });
+//       }
+//     }
+//
+//     return data;
+//   }}).install();
 
 // Middlewares
 app.use(compression());
@@ -212,7 +215,17 @@ if (app.get('env') !== 'testing') {
 }
 
 // The request handler must be the first middleware on the app
-app.use(Raven.requestHandler());
+app.use(Sentry.Handlers.requestHandler({
+  user: ['id', 'username', 'email'],
+  request: true,
+  // generate transaction name
+  //   path == request.path (eg. "/foo")
+  //   methodPath == request.method + request.path (eg. "GET|/foo")
+  //   handler == function name (eg. "fooHandler")
+  transaction: 'fooHandler',
+  // timeout for fatal route errors to be delivered
+  flushTimeout: 4000 // default: 2000
+}));
 app.use(Middlewares.context);
 
 // Routes
@@ -276,8 +289,16 @@ new InventoryQueue(queue).run();
 new HistoryQueue(queue).run();
 kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
-// The error handler must be before any other error middleware
-app.use(Raven.errorHandler());
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
+
+// Optional fallthrough error handler
+/*app.use(function onError(err, req, res, next) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + "\n");
+});*/
 
 // Error handlers
 interface IResponseError {
