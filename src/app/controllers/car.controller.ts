@@ -1332,7 +1332,7 @@ class CarController {
         participantFilter.kind = { $ne: KindForm.transmittal };
       }
 
-      if (search?.length) {
+      if (search?.length > 2) {
         search = search.replace(/[^a-z A-ZÀ-ú]+/g, '').trim();
         logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
         const searchText = new RegExp(search, 'i');
