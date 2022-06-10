@@ -767,7 +767,14 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
   private requestedVehicle(_: string, row: IRequestItemStore) {
     return (
       <div className='text-muted text-sm'>
-        <div><strong>VIN </strong> <strong className={'text-primary'}>{row.andesData.car.vin}</strong></div>
+        <div><strong>VIN </strong>
+          <ShowIf
+            condition={!!row.excelData?.material?.length}
+            alternative={<strong className={'text-primary'}>{row.andesData.car.vin}</strong>}
+          >
+             <strong className={'text-primary'}>{row.excelData.vin}</strong>
+          </ShowIf>
+        </div>
         <div><strong>MATERIAL </strong>
           <ShowIf
             condition={!!row.excelData?.material?.length}
