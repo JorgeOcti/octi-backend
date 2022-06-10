@@ -59,6 +59,7 @@ class AdminCarController {
     logger.info(`CarController.importCars email: ${req.user.email}`);
     const { cars } = req.body;
     if (cars && cars.length) {
+      logger.info(`CarController.importCars cars: ${JSON.stringify(cars)}`);
       for (const car of cars) {
         if (car.vin && car.vin.length) {
           try {
@@ -66,24 +67,35 @@ class AdminCarController {
             let newCar = await Car.findOne({
               vin: car.vin.toUpperCase().trim(),
               team: team._id
+            }, {
+              _id: true,
+              type: true,
+              NInterno: true,
+              property: true,
+              color: true,
+              denomination: true,
+              brand: true,
+              patent: true,
+              internalNumber: true,
+              createdBy: true,
+              createdAt: true,
+              status: true
             });
             if (newCar) {
-              logger.info(`CarController.importCars updated: ${JSON.stringify(cars)}`);
+              logger.info(`CarController.importCars updated: ${JSON.stringify(car)}`);
               newCar.vin2 = vin2;
               newCar.type = car.tipo ? car.tipo : newCar.type;
-              newCar.color = car.color ? car.color : newCar.color;
               newCar.property = car.propiedad ? car.propiedad : newCar.property;
+              newCar.color = car.color ? car.color : newCar.color;
               newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
               newCar.brand = car.marca ? car.marca : newCar.brand;
               newCar.patent = car.patente ? car.patente : newCar.patent;
-              // newCar.engineNumber = car.motor ? car.motor : newCar.engineNumber;
               newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
-              // newCar.destination = car.destino ? car.destino : newCar.destination;
               newCar.createdBy = req.user;
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
-              logger.info(`CarController.importCars created: ${JSON.stringify(cars)}`);
+              logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
               newCar = await new Car({
                 vin: car.vin,
                 vin2,
@@ -93,9 +105,7 @@ class AdminCarController {
                 denomination: car.denominacion ? car.denominacion : '',
                 brand: car.marca ? car.marca : '',
                 patent: car.patente ? car.patente : '',
-                // engineNumber: car.motor ? car.motor : car.engineNumber,
                 internalNumber: car.NInterno ? car.NInterno : '',
-                // destination: car.destino ? car.destino : '',
                 company: company._id,
                 team: team._id,
                 createdBy: req.user,

@@ -15,12 +15,11 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
 import Axios, { AxiosError, AxiosResponse } from 'axios';
 import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-import { IRequestItem } from '../../../../../../src/request/interfaces/requestItem.interface';
-import { submit } from 'redux-form';
 import { requestSettings } from './defaults';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
+import { ICar } from '../../../../../../src/app/interfaces';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -28,16 +27,46 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 enum itemStatus {
-  PENDING,
-  IN_PROCESS,
-  READY,
-  ERROR,
-  UPDATED
+  PENDING = 'PENDING',
+  IN_PROCESS = 'IN_PROCESS',
+  READY = 'READY',
+  ERROR = 'ERROR',
+  UPDATED = 'UPDATED'
 }
 
-interface IRequestItemMassAllocation extends IRequestItem {
+interface IExcelData {
+  code: string | null;
+  vin: string | null;
+  material: string | null;
+  count: number;
+}
+
+interface IIntegrationData {
+  brand: string;
+  color: string;
+  denomination: string;
+  material: string;
+  vin: string;
+}
+
+interface IAndesData {
+  _id: string;
+  code: string;
+  car: Partial<ICar>;
+}
+
+interface preMassAllocationResponse {
+  results: IAndesData[];
+}
+
+interface IRequestItemStore {
+  _id: string;
   processStatus: itemStatus;
-  errors: string[]
+  andesData: IAndesData;
+  excelData: IExcelData;
+  integrationData?: IIntegrationData;
+  errors: string[];
+  checked: boolean;
 }
 
 interface IStateType {
@@ -45,9 +74,9 @@ interface IStateType {
   canDrop: boolean;
   loading: boolean;
   sending: boolean;
-  requestItems: IRequestItemMassAllocation[];
+  requestItems: IRequestItemStore[];
   requestSettings: IRequestSetting;
-  countItemsByStatus: any
+  countItemsByStatus: any;
 }
 
 declare let window: IWindow;
@@ -63,13 +92,13 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     paginationTotalRenderer: this.customTotal,
     sizePerPageList: [{
       text: '20', value: 20
-    },{
+    }, {
       text: '50', value: 50
     }, {
       text: '100', value: 100
     }, {
       text: '200', value: 200
-    }],
+    }]
     // onPageChange: () => {
     //   window.scrollTo(0, 0);
     //   setTimeout(() => {
@@ -95,7 +124,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       [itemStatus.PENDING]: 0,
       [itemStatus.IN_PROCESS]: 0,
       [itemStatus.READY]: 0,
-      [itemStatus.ERROR]: 0,
+      [itemStatus.ERROR]: 0
     },
     requestSettings
   };
@@ -118,6 +147,9 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     this.updateItemStatusByID = this.updateItemStatusByID.bind(this);
     this.statusFormatter = this.statusFormatter.bind(this);
     this.vinFormatter = this.vinFormatter.bind(this);
+    this.codeFormatter = this.codeFormatter.bind(this);
+    this.requestedVehicle = this.requestedVehicle.bind(this);
+    this.assignVehicle = this.assignVehicle.bind(this);
     this.processItems = this.processItems.bind(this);
     this.answerProcessitems = this.answerProcessitems.bind(this);
     this.apiService = new ApiService();
@@ -126,44 +158,64 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       text: '',
       formatter: this.statusFormatter,
       classes: 'middle-center',
-      headerClasses: 'middle-center pointer'
-    },{
-      dataField: 'code',
+      headerClasses: 'middle-center pointer',
+      style: {
+        width: '40px'
+      }
+    }, {
+      dataField: 'andesData.code',
       text: 'CODIGO',
-      classes: 'middle',
-      headerClasses: 'middle pointer',
+      classes: 'middle-center',
+      formatter: this.codeFormatter,
+      headerClasses: 'middle-center pointer',
+      style: {
+        width: '90px',
+        miWidth: '90px'
+      },
       sort: true
     }, {
-      dataField: 'vin',
+      dataField: 'excelData.vin',
       text: 'VIN',
       classes: 'middle',
       formatter: this.vinFormatter,
       headerClasses: 'middle pointer',
+      style: {
+        width: '24%',
+        miWidth: '24%'
+      },
       sort: true
     }, {
-      dataField: 'car.brand',
-      text: 'Marca',
+      dataField: 'andesData.car.brand',
+      text: 'Solicitud',
       classes: 'middle',
+      formatter: this.requestedVehicle,
       headerClasses: 'middle pointer',
-      sort: true
+      style: {
+        width: '24%',
+        miWidth: '24%'
+      }
+      // sort: true
     }, {
       dataField: 'car.denomination',
-      text: 'Modelo',
+      text: 'Asignación',
       classes: 'middle',
+      formatter: this.assignVehicle,
       headerClasses: 'middle pointer',
-      sort: true
-    }, {
-      dataField: 'car.material',
-      text: 'Material',
-      classes: 'middle',
-      headerClasses: 'middle pointer',
-      sort: true
+      style: {
+        width: '24%',
+        miWidth: '24%'
+      }
+      // sort: true
     }, {
       dataField: 'errors.length',
       text: 'Problemas',
       formatter: this.errorsFormatter,
       classes: 'middle',
       headerClasses: 'middle pointer',
+      // style: {
+      //   width: '100px',
+      //   miWidth: '100px'
+      // },
       sort: true
     }];
   }
@@ -198,11 +250,11 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     $('.react-bootstrap-table-pagination')
-      .css({padding: '3px 15px'});
+      .css({ padding: '3px 15px' });
     $('.react-bootstrap-table-pagination div')
       .removeClass('col-xs-6')
       .addClass('col-xs-12')
-      .css({padding: '3px 15px'});
+      .css({ padding: '3px 15px' });
     $('.react-bootstrap-table-pagination div:last-child')
       .removeClass('text-right')
       .addClass('text-right');
@@ -215,7 +267,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     $('.pagination')
       .removeClass('pagination-sm')
       .addClass('pagination-sm')
-      .css({margin: 0});
+      .css({ margin: 0 });
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -224,11 +276,11 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     } = this.state;
     const pendings = this.itemsByStatus(itemStatus.PENDING);
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignador masivo de unidades'>
+      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignación masiva de unidades'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Asignador masivo de unidades</h3>
+              <h3 className='box-title'>Asignación masiva de unidades</h3>
               <div className='pull-right box-tools'>
                 <ShowIf condition={!requestItems.length}>
                   <button
@@ -239,25 +291,29 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                   </button>
                 </ShowIf>
                 <ShowIf condition={!!requestItems.length}>
-                  <button
-                    className='btn btn-sm btn-default'
-                    onClick={!sending?this.clickUploadFile: undefined}
-                    disabled={sending}
-                  >
-                    <i className='fa fa-fw fa-cogs' /> Cambiar archivo
-                  </button>
-                  <button
-                    className='btn btn-sm btn-primary'
-                    style={{ marginLeft: '5px' }}
-                    disabled={!!pendings.length || sending}
-                    onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
-                  >
-                    <ShowIf condition={sending} alternative={<><i className='fa fa-fw fa-play' /> Asignar</>}>
-                      <>
-                        <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
+                  <div className='btn-group btn-group-sm'>
+                    <button
+                      className='btn btn-sm btn-default'
+                      onClick={!sending ? this.clickUploadFile : undefined}
+                      disabled={sending}
+                    >
+                      <i className='fa fa-fw fa-cogs' /> Cambiar archivo
+                    </button>
+                    <button
+                      className='btn btn-sm btn-success'
+                      disabled={!!pendings.length || sending}
+                      onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
+                    >
+                      <ShowIf condition={sending} alternative={<>
+                        {pendings.length || sending?<i className='fa fa-fw fa-spinner fa-spin ' />:<i className='fa fa-fw fa-check-circle-o' />} Confirmar asignación
                       </>
-                    </ShowIf>
-                  </button>
+                      }>
+                        <>
+                          <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
+                        </>
+                      </ShowIf>
+                    </button>
+                  </div>
                 </ShowIf>
               </div>
             </div>
@@ -317,26 +373,29 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
               />
             </div>
             <div className='box-footer text-right'>
-              <button
-                className='btn btn-sm btn-default'
-                onClick={() => this.props.history.push('/requests/vehicles/')}
-              >
-                Volver
-              </button>
-              <ShowIf condition={!!requestItems.length}>
+              <div className='btn-group btn-group-sm'>
                 <button
-                  className='btn btn-sm btn-primary'
-                  style={{ marginLeft: '5px' }}
-                  disabled={!!pendings.length || sending}
-                  onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
+                  className='btn btn-sm btn-default'
+                  onClick={() => this.props.history.push('/requests/vehicles/')}
                 >
-                  <ShowIf condition={sending} alternative={<><i className='fa fa-fw fa-play' /> Asignar</>}>
-                    <>
-                      <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
-                    </>
-                  </ShowIf>
+                  Cancelar
                 </button>
-              </ShowIf>
+                <ShowIf condition={!!requestItems.length}>
+                  <button
+                    className='btn btn-sm btn-success'
+                    disabled={!!pendings.length || sending}
+                    onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
+                  >
+                    <ShowIf condition={sending} alternative={<>
+                      {pendings.length || sending?<i className='fa fa-fw fa-spinner fa-spin ' />:<i className='fa fa-fw fa-check-circle-o' />} Confirmar asignación</>}
+                    >
+                      <>
+                        <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
+                      </>
+                    </ShowIf>
+                  </button>
+                </ShowIf>
+              </div>
             </div>
             <ShowIf condition={loading}>
               <div className='overlay'>
@@ -411,7 +470,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet([{
       ['CODIGO']: '',
-      ['VIN/ID']: ''
+      ['VIN/ID']: '',
+      ['MATERIAL']: ''
     }]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
@@ -440,26 +500,31 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           ? XLSX.utils.sheet_to_json(workbook.Sheets.Solicitudes)
           : [];
         if (excelData.length >= 1) {
-          const data: any[] = [];
-          const vinByCode: any = {};
+          const items: any[] = [];
+          const excelDataItemByCode: Dictionary<IExcelData> = {};
           for (const item of excelData) {
-            const code = item.hasOwnProperty('CODIGO') ? item['CODIGO'] : null;
-            const vin = item.hasOwnProperty('VIN/ID') ? item['VIN/ID'] : null;
-            if(code?.length){
-              vinByCode[code] = {
-                vin,
-                count: vinByCode[code]?.count ? vinByCode[code].count + 1 : 1
-              };
-              data.push({
+            const code = item.hasOwnProperty('CODIGO') ? item['CODIGO'].trim().toUpperCase() : null;
+            const vin = item.hasOwnProperty('VIN/ID') ? item['VIN/ID'].trim().toUpperCase() : null;
+            const material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'].trim().toUpperCase() : null;
+            if (code?.length) {
+              excelDataItemByCode[code] = {
                 code,
+                vin,
+                material,
+                count: excelDataItemByCode[code]?.count ? excelDataItemByCode[code].count + 1 : 1
+              };
+              items.push({
+                code,
+                material,
                 vin
               });
             }
           }
           this.apiService
-            .preMassAllocation({ items: data })
-            .then((response: any) => {
-              if (!response.data.results.length) {
+            .preMassAllocation({ items })
+            .then((response: AxiosResponse<preMassAllocationResponse>) => {
+              const { results } = response.data;
+              if (!results.length) {
                 this.setState({
                   loading: false
                 });
@@ -469,24 +534,31 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                   'error'
                 );
               } else {
+                const requestItems: IRequestItemStore[] = results.map((item) => {
+                  return {
+                    _id: item._id,
+                    processStatus: itemStatus.PENDING,
+                    andesData: item,
+                    excelData: {
+                      vin: excelDataItemByCode[item.code].vin,
+                      material: excelDataItemByCode[item.code].material,
+                      code: excelDataItemByCode[item.code].code,
+                      count: 0
+                    },
+                    errors: [],
+                    checked: false
+                  };
+                });
                 this.setState({
-                  requestItems: response.data.results.map((item: any) => {
-                    return {
-                      ...item,
-                      processStatus: itemStatus.PENDING,
-                      errors: [],
-                      vin: vinByCode[item.code].vin,
-                      checked: false
-                    };
-                  }),
+                  requestItems,
                   countItemsByStatus: {
-                    [itemStatus.PENDING]: response.data.results.length,
+                    [itemStatus.PENDING]: results.length,
                     [itemStatus.IN_PROCESS]: 0,
                     [itemStatus.READY]: 0,
                     [itemStatus.ERROR]: 0
                   },
                   loading: false
-                }, ()=>{
+                }, () => {
                   this.checkItems();
                 });
               }
@@ -513,46 +585,48 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
-  private customTotal(from: any, to: any, size: any) {
-    return(
-      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '14px'}}>
-        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
-      </span>
-    );
-  }
-
-  private checkItems(){
+  private checkItems() {
     const pendings = this.itemsByStatus(itemStatus.PENDING);
     if (pendings.length) {
-      let item =  pendings[0];
+      let item = pendings[0];
       item = this.updateItemStatusByID(item, itemStatus.IN_PROCESS);
       this.apiService
-        .checkItemMassAllocation({ item })
+        .checkItemMassAllocation(item)
         .then((response: AxiosResponse) => {
+          const { data: integrationData, errors } = response.data;
           this.updateItemStatusByID({
               ...item,
-              errors: response.data.errors
+              integrationData,
+              errors
             },
             response.data.errors.length ? itemStatus.ERROR : itemStatus.READY,
             this.checkItems
           );
         })
         .catch((error) => {
-        if (error.status === 400) {
-          swal!('Asignador masivo de unidades', error.data.message, 'error');
-        } else {
-          this.apiService.errorHandler(error);
-        }
-      });
+          if (error.status === 400) {
+            swal!('Asignador masivo de unidades', error.data.message, 'error');
+          } else {
+            this.apiService.errorHandler(error);
+          }
+        });
     }
   }
 
+  private customTotal(from: any, to: any, size: any) {
+    return (
+      <span className='react-bootstrap-table-pagination-total text-ellipsis' style={{ fontSize: '14px' }}>
+        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
+      </span>
+    );
+  }
+
   private answerProcessitems() {
-    const withErrors = this.itemsByStatus(itemStatus.ERROR);
-    if(withErrors.length){
+    const hasErrors = this.itemsByStatus(itemStatus.ERROR);
+    if (hasErrors.length) {
       swal({
         title: '¿Estás seguro que deseas continuar?',
-        text: `Hay ${withErrors.length} unidades con errores, solo se procesarán los que no tienen ningún problema. `,
+        text: `Hay ${hasErrors.length} unidades con errores, solo se procesarán los que no tienen ningún problema. `,
         icon: 'warning',
         dangerMode: true,
         buttons: {
@@ -566,7 +640,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           this.processItems();
         }
       });
-    } else{
+    } else {
       this.processItems();
     }
   }
@@ -581,7 +655,8 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       // item = this.updateItemStatusByID(item, itemStatus.IN_PROCESS);
       this.apiService
         .processItemMassAllocation({ item })
-        .then((response: AxiosResponse) => {
+        // .then((response: AxiosResponse) => {
+        .then(() => {
           this.updateItemStatusByID({
               ...item
             },
@@ -629,7 +704,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
-  private updateItemStatusByID(item: IRequestItemMassAllocation, processStatus: itemStatus, callback?: () => void): any {
+  private updateItemStatusByID(item: IRequestItemStore, processStatus: itemStatus, callback?: () => void): any {
     const { requestItems, countItemsByStatus } = this.state;
     this.setState({
       countItemsByStatus: {
@@ -653,28 +728,28 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
   private itemsByStatus(processStatus: itemStatus) {
     const { requestItems } = this.state;
     return requestItems
-      .filter((item)=> item.processStatus === processStatus);
+      .filter((item) => item.processStatus === processStatus);
   }
 
   private errorsFormatter(_: string, row: any) {
     if ([itemStatus.UPDATED].includes(row.processStatus)) {
-      return  <div className={"text-green"} style={{ fontSize: '12px' }}>
+      return <div className={'text-green'} style={{ fontSize: '12px' }}>
         Asignación procesada.
-      </div>
+      </div>;
     }
     return row.errors.length > 0
       ?
       <div> {
         row.errors.map((error: any, index: any) => (
           <div key={index} className={'text-red'} style={{ fontSize: '12px' }}>
-            <i className='fa fa-fw fa-angle-right' /> {error.message}
+            {error.message}
           </div>
         ))
       }</div>
-      : <div className={"text-green"} style={{ fontSize: '12px' }}>
+      : <div className={'text-green'} style={{ fontSize: '12px' }}>
         {
-        [itemStatus.READY].includes(row.processStatus) ? <><i className='fa fa-fw fa-angle-right' /> {'Sin errores.'}</> : ''
-      }</div>;
+          [itemStatus.READY].includes(row.processStatus) ? <>{'Sin errores.'}</> : ''
+        }</div>;
   }
 
   private statusFormatter(_: string, row: any) {
@@ -684,25 +759,75 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         : <i className={'fa fa-circle text-green'} />;
     }
     if ([itemStatus.UPDATED].includes(row.processStatus)) {
-      return <i className={'fa fa-check-circle text-green'} />
+      return <i className={'fa fa-check-circle text-green'} />;
     }
     return '';
   }
 
-  private vinFormatter(_: string, row: any) {
+  private requestedVehicle(_: string, row: IRequestItemStore) {
+    return (
+      <div className='text-muted text-sm'>
+        <div><strong>VIN </strong> <strong className={'text-primary'}>{row.andesData.car.vin}</strong></div>
+        <div><strong>MATERIAL </strong>
+          <ShowIf
+            condition={!!row.excelData?.material?.length}
+            alternative={<strong className={'text-primary'}>{row.andesData.car.material}</strong>}
+          >
+            {row.andesData.car.material} <i className={'fa fa-fw fa-angle-double-right'} /> <strong
+            className={'text-primary'}>{row.excelData?.material}</strong>
+          </ShowIf>
+        </div>
+        <div><strong>MARCA </strong>{row.andesData.car.brand}</div>
+        <div><strong>MODELO </strong>{row.andesData.car.denomination}</div>
+      </div>
+    );
+  }
+
+  private assignVehicle(_: string, row: IRequestItemStore) {
+    return (
+      <div className='text-muted text-sm'>
+        <div><strong>VIN </strong>
+          <ShowIf condition={!!row.excelData.vin?.length}>
+            <strong className={'text-primary'}>
+              {row.integrationData?.vin ?? row.andesData.car.vin}
+            </strong>
+          </ShowIf>
+        </div>
+        <div>
+          <strong>MATERIAL </strong>
+          <strong className={'text-primary'}>{row.integrationData?.material ?? row.andesData.car.material}</strong>
+        </div>
+        <div><strong>MARCA </strong>{row.integrationData?.brand ?? row.andesData.car.brand}</div>
+        <div><strong>MODELO </strong>{row.integrationData?.denomination ?? row.andesData.car.denomination}</div>
+      </div>
+    );
+  }
+
+  private codeFormatter(_: string, row: IRequestItemStore) {
+    return (
+      <div className={`${row.errors.length ? 'text-red' : 'text-muted'}`}>
+        <strong>
+          {row.excelData.code}
+        </strong>
+      </div>
+    );
+  }
+
+  private vinFormatter(_: string, row: IRequestItemStore) {
+    // console.log(row);
     if (row.errors.length) {
       return (
         <div>
-          <span className={'text-red'}>{row.vin}</span>
+          <span className={'text-red'}>{row.andesData.car.vin?.length ? row.andesData.car.vin : '-'}</span>
           <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> No se realizará ningun cambio</div>
         </div>
-      )
+      );
     }
-    if (row.car?.vin) {
-      if (!row.vin?.length) {
+    if (row.andesData.car?.vin) {
+      if (!row.excelData.vin?.length) {
         return (
           <div>
-            <span className={'text-red'} style={{ textDecoration: 'line-through' }}>{row.car.vin}</span>
+            <span className={'text-red'} style={{ textDecoration: 'line-through' }}>{row.andesData.car.vin}</span>
             <ShowIf condition={!row.errors.length}>
               <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> Elimina VIN de la unidad</div>
             </ShowIf>
@@ -711,25 +836,30 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       }
       return (
         <div>
-          <span className={row.vin === row.car.vin && !row.errors.length ? 'text-muted' : 'text-red'}>{row.car.vin}</span> <i
-          className={'fa fa-fw fa-angle-double-right'} /> <span className={!row.errors.length ? 'text-green' : 'text-red'}>{row.vin}</span>
+          <span
+            className={row.excelData.vin === row.andesData.car.vin && !row.errors.length ? 'text-muted' : 'text-red'}>{row.andesData.car.vin}</span>
+          <i
+            className={'fa fa-fw fa-angle-double-right'} /> <span
+          className={!row.errors.length ? 'text-green' : 'text-red'}>{row.excelData.vin}</span>
           <ShowIf condition={!row.errors.length}>
-            <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> {row.vin === row.car.vin ? 'No se detectaron cambios' : 'Cambia VIN de la unidad'}</div>
+            <div className='text-sm text-muted'><i
+              className='fa fa-fw fa-info-circle' /> {row.excelData.vin === row.andesData.car.vin ? 'No se detectaron cambios' : 'Cambia VIN de la unidad'}
+            </div>
           </ShowIf>
         </div>
       );
     }
-    if (!row.vin?.length) {
+    if (!row.excelData.vin?.length) {
       return (
         <div>
-          <span className={'text-muted'}>{row.vin?.length ? row.vin : '-'}&nbsp;</span>
+          <span className={'text-muted'}>{row.excelData.vin?.length ? row.excelData.vin : '-'}&nbsp;</span>
           <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> No se ingreso VIN</div>
         </div>
-      )
+      );
     }
     return (
       <div className={!row.errors.length ? 'text-green' : 'text-red'}>
-        {row.vin}
+        {row.excelData.vin}
         <ShowIf condition={!row.errors.length}>
           <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> Asigna VIN de la unidad</div>
         </ShowIf>

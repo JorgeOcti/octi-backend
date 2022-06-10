@@ -882,9 +882,20 @@ class CarController {
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
     try {
+      logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       const team = req.user.team._id;
       const company = req.user.company._id;
       const { from, to } = req.query;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+       // Create Excel Stream with pipe to response object
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+
       const venuesPermissions = req.user.venuesPermissions();
 
       // Get filters for Mongo Query
@@ -900,10 +911,6 @@ class CarController {
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
         };
       }
-
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
-
       // Get the forms to create columns/header of excel
       let forms = await ParticipantModel.find(queryFilter).distinct('form');
       forms = await FormModel.find({ _id: { $in: forms } });
@@ -960,13 +967,6 @@ class CarController {
         });
       }
 
-      // Create Excel Stream with pipe to response object
-      const options = {
-        stream: res,
-        useStyles: true,
-        useSharedStrings: true
-      };
-      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
@@ -975,54 +975,57 @@ class CarController {
       worksheet.columns = columns;
 
       // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
-      const cursor = ParticipantModel.find(queryFilter, {
-        number: 1,
-        createdAt: 1,
-        car: 1,
-        team: 1,
-        user: 1,
-        company: 1,
-        venue: 1,
-        name: 1,
-        conciliation: 1,
-        qualification: 1,
-        reception: 1,
-        shipping: 1,
-        receptionText: 1,
-        shippingText: 1,
-        sections: 1,
-        form: 1,
-        shippingVenue: 1,
-        receptionVenue: 1,
-        sendTo: 1,
-        receiveFrom: 1
-      }).populate([{
-        path: 'car',
-        select: 'brand denomination color vin patent'
-      }, {
-        path: 'user',
-        select: 'firstName lastName venue',
-        populate: [{
+      const cursor = ParticipantModel
+        .find(queryFilter, {
+          number: 1,
+          createdAt: 1,
+          car: 1,
+          team: 1,
+          user: 1,
+          company: 1,
+          venue: 1,
+          name: 1,
+          conciliation: 1,
+          qualification: 1,
+          reception: 1,
+          shipping: 1,
+          receptionText: 1,
+          shippingText: 1,
+          sections: 1,
+          form: 1,
+          shippingVenue: 1,
+          receptionVenue: 1,
+          sendTo: 1,
+          receiveFrom: 1
+        })
+        .populate([{
+          path: 'car',
+          select: 'brand denomination color vin patent'
+        }, {
+          path: 'user',
+          select: 'firstName lastName venue',
+          populate: [{
+            path: 'venue',
+            select: 'name'
+          }]
+        }, {
           path: 'venue',
           select: 'name'
-        }]
-      }, {
-        path: 'venue',
-        select: 'name'
-      }, {
-        path: 'company',
-        select: 'name'
-      }, {
-        path: 'team',
-        select: 'name'
-      }, {
-        path: 'sendTo',
-        select: 'name'
-      }, {
-        path: 'receiveFrom',
-        select: 'name'
-      }]).batchSize(100).cursor();
-
+        }, {
+          path: 'company',
+          select: 'name'
+        }, {
+          path: 'team',
+          select: 'name'
+        }, {
+          path: 'sendTo',
+          select: 'name'
+        }, {
+          path: 'receiveFrom',
+          select: 'name'
+        }])
+        .batchSize(50)
+        .cursor();
 
       cursor.on('data', async (participant) => {
         const row = await this.processParticipant(participant);
@@ -1031,16 +1034,21 @@ class CarController {
 
       // code to handle connection abort or finish query read process
       cursor.on('end', async () => {
+        cursor.close();
         workbook.commit();
-        res.status(200);
+        return res.status(200);
       });
 
-      cursor.on('error', (error) => logger.error(error.message));
+      cursor.on('error', (error: any) => {
+        cursor.close();
+        logger.error(error.message);
+        return res.status(500).json(error);
+      });
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
-        await cursor.close();
-        res.status(200);
+        cursor.close();
+        return res.status(200);
       });
 
     } catch (e) {
@@ -1130,9 +1138,7 @@ class CarController {
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).json(e);
-      }
+      res.status(500).json(e);
     }
   }
 
@@ -1245,21 +1251,20 @@ class CarController {
           }]
         }]).lean();
       if (!car) {
-        res.status(404).json({
+        return res.status(404).json({
           messsage: 'Auto no encontrado.',
           status: 404
         });
       } else {
-        res.json({
+        return res.json({
           data: car,
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).json(e);
-      }
+      logger.error(e);
+      return res.status(500).json(e);
     }
   }
 

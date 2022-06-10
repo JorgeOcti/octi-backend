@@ -121,19 +121,18 @@ class Middlewares {
 
   public async addUserToRequest(userId: string, req?: IRequest): Promise<{ user: IUser | IUserModel }> {
     return new Promise(async (resolve, reject) => {
-      logger.debug(`Middlewares.addUserToRequest ${userId} from: ${req?.originalUrl ?? 'system'}`);
-      let user: IUserModel | null;
+      let user: IUser | null;
       try {
         // try {
         const sessionCache = await redisClient.get(userId);
         if (sessionCache) {
-          logger.debug(`From user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
+          user = new UserServices(JSON.parse(sessionCache)).middleware();
+          logger.debug(`Middlewares.refreshSession: ${user.email} with key ${userId} ${req?.originalUrl ?? 'system'}`);
           // logger.debug(`sessionCache ${sessionCache}`);
           resolve({
-            user: new UserServices(JSON.parse(sessionCache)).middleware()
+            user
           });
         } else {
-          logger.debug(`Create user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           user = await User
             .findById(userId, {
               _id: true,
@@ -160,8 +159,8 @@ class Middlewares {
               path: 'team',
               select: ['name']
             }]);
+          logger.debug(`Middlewares.refreshSession: ${user?.email} create key ${userId} ${req?.originalUrl ?? 'system'}`);
           if (user) {
-            logger.debug(`Generate user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
             const userCache = JSON.stringify(user);
             await redisClient.set(userId, userCache, 'ex', 60);
             resolve({

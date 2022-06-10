@@ -9,14 +9,14 @@ import { io } from '../../../../server';
 
 export default class RequestDelegate extends NullTriggerDelegate {
 
-  public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<any> {
+  public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<IAnyObject> {
     try {
-      logger.info(`Kind Trigger: ${trigger.kind} performing`);
+      logger.info(`RequestDelegate.trigger: ${trigger.kind} performing`);
 
       const context = this.processTrigerConfig(trigger, {
         ...answers
       });
-      logger.info(`Kind Trigger: context =>${JSON.stringify(context)}`);
+      logger.debug(`RequestDelegate.trigger context => ${JSON.stringify(context)}`);
 
       const { participant, user } = payload;
       const { car } = participant;
@@ -40,10 +40,10 @@ export default class RequestDelegate extends NullTriggerDelegate {
           item: requestItem
         });
       }
-
       return payload;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
+      return payload;
     }
   }
 }

@@ -54,6 +54,7 @@
     "is-uuid": "~1.0.2",
     "joi": "~14.3.1",
     "jquery": "~3.6.0",
+    "json-colorizer": "^2.2.2",
     "jsonwebtoken": "~8.5.1",
     "kue": "~0.11.6",
     "kue-scheduler": "~0.10.6",

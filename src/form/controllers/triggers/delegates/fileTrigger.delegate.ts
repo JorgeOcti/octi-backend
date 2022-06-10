@@ -26,9 +26,9 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
     quality: '75'
   };
 
-  public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<any> {
+  public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<IAnyObject> {
     try {
-      logger.info(`Kind Trigger: ${trigger.kind} performing`);
+      logger.info(`FileTriggerDelegate.trigger: ${trigger.kind} performing`);
       let context = this.processTrigerConfig(trigger, answers);
       let filename = `${moment().unix()}_${context.filename}`;
       let { participant } = payload;
@@ -108,11 +108,12 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
       } else {
         payload['files'] = [{ filename, path: url }];
       }
-      logger.info(`Trigger: files ${JSON.stringify(payload['files'])}`);
-      logger.info(`Kind Trigger: ${trigger.kind} executed`);
+      logger.info(`FileTriggerDelegate.trigger: files ${JSON.stringify(payload['files'])}`);
+      logger.info(`FileTriggerDelegate.trigger: ${trigger.kind} executed`);
       return payload;
     } catch (e) {
-      console.error(e)
+      logger.error(e);
+      return payload;
     }
   }
 

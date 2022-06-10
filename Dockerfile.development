@@ -50,9 +50,5 @@ RUN npm --unsafe-perm install && \
     touch /srv/ses-config.json && \
     echo "{}" >> /srv/ses-config.json
 
-
-COPY ./public /srv/public
-COPY ./views /srv/views
-
 EXPOSE 3000
 

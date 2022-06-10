@@ -17,10 +17,6 @@ import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/tra
 import TransmitalListDetail from './TransmitalListDetail';
 import { Dispatch } from 'redux';
 import ModalView from '../../Modal/ModalView';
-import ApiService from '../../../utils/axios';
-import * as moment from 'moment';
-import Axios from 'axios';
-import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import {IMilestone} from "../../../../../../../src/distribution/interfaces";
 
@@ -184,7 +180,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
     for(let mType of milestoneTypes){
       let tmp = milestones
-        .filter(m => m.type == mType._id && m.step == "loadEvidence");
+        .filter(m => m.type === mType._id && m.step === "loadEvidence");
       if (tmp.length > longestMilestones.length)
         longestMilestones = tmp.sort((a,b) => a.order - b.order);
     }
@@ -246,8 +242,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 <ShowIf condition={data.length > 0}>
                   <>
                     <div className='row transmittal bg-primary'>
-                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
-                           onClick={() => this.changeOrder('_id')}
+                      <div
+                        className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
+                        onClick={() => this.changeOrder('_id')}
                       >
                         <strong>ID</strong> <i
                         className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
@@ -380,57 +377,57 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public exportExcel(): void {
     this.trackClick('Exportar');
-    this.setState({
-      exporing: true
-    });
-    const api: ApiService = new ApiService();
-    const instance = api.getInstance();
-    instance.defaults.responseType = 'blob';
-    instance
-      .get(`/transmittals/export-xls/`)
-      .then((response) => {
-        const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const fileName = `${moment().format('YYYYMMDD')}-distribución.xlsx`;
-        // if (typeof window.navigator.msSaveBlob !== 'undefined') {
-        //   // IE workaround for "HTML7007: One or more blob URLs were
-        //   // revoked by closing the blob for which they were created.
-        //   // These URLs will no longer resolve as the data backing
-        //   // the URL has been freed."
-        //   window.navigator.msSaveBlob(blob, fileName);
-        // } else {
-          const blobURL = URL.createObjectURL(blob);
-          const tempLink = document.createElement('a');
-          tempLink.style.display = 'none';
-          tempLink.href = blobURL;
-          tempLink.setAttribute('download', fileName);
-          // Safari thinks _blank anchor are pop ups. We only want to set _blank
-          // target if the browser does not support the HTML5 download attribute.
-          // This allows you to download files in desktop safari if pop up blocking
-          // is enabled.
-          if (typeof tempLink.download === 'undefined') {
-            tempLink.setAttribute('target', '_blank');
-          }
-          this.setState({
-            exporing: false
-          });
-          document.body.appendChild(tempLink);
-          tempLink.click();
-          document.body.removeChild(tempLink);
-          URL.revokeObjectURL(blobURL);
-        // }
-      })
-      .catch((err) => {
-        this.setState({
-          exporing: false
-        });
-        if (!Axios.isCancel(err)) {
-          swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
-        }
-      });
+    window.open(`/transmittals/export-xls/`, '_blank');
+    // this.setState({
+    //   exporing: true
+    // });
+    // const api: ApiService = new ApiService();
+    // const instance = api.getInstance();
+    // instance.defaults.responseType = 'blob';
+    // instance
+    //   .get(`/transmittals/export-xls/`)
+    //   .then((response) => {
+    //     const blob = new Blob([response.data], {
+    //       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    //     });
+    //     const fileName = `${moment().format('YYYYMMDD')}-distribución.xlsx`;
+    //     // if (typeof window.navigator.msSaveBlob !== 'undefined') {
+    //     //   // IE workaround for "HTML7007: One or more blob URLs were
+    //     //   // revoked by closing the blob for which they were created.
+    //     //   // These URLs will no longer resolve as the data backing
+    //     //   // the URL has been freed."
+    //     //   window.navigator.msSaveBlob(blob, fileName);
+    //     // } else {
+    //       const blobURL = URL.createObjectURL(blob);
+    //       const tempLink = document.createElement('a');
+    //       tempLink.style.display = 'none';
+    //       tempLink.href = blobURL;
+    //       tempLink.setAttribute('download', fileName);
+    //       // Safari thinks _blank anchor are pop ups. We only want to set _blank
+    //       // target if the browser does not support the HTML5 download attribute.
+    //       // This allows you to download files in desktop safari if pop up blocking
+    //       // is enabled.
+    //       if (typeof tempLink.download === 'undefined') {
+    //         tempLink.setAttribute('target', '_blank');
+    //       }
+    //       this.setState({
+    //         exporing: false
+    //       });
+    //       document.body.appendChild(tempLink);
+    //       tempLink.click();
+    //       document.body.removeChild(tempLink);
+    //       URL.revokeObjectURL(blobURL);
+    //     // }
+    //   })
+    //   .catch((err) => {
+    //     this.setState({
+    //       exporing: false
+    //     });
+    //     if (!Axios.isCancel(err)) {
+    //       swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+    //     }
+    //   });
   }
-
 }
 
 const mapStateToProps = (state: { transmittal: ITransmittalState, router: any }) => {

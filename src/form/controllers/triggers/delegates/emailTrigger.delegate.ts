@@ -12,43 +12,53 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
   }
 
   public trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): IAnyObject {
-    logger.info(`Kind Trigger: ${trigger.kind} performing`);
+    try {
+      logger.info(`EmailTriggerDelegate.trigger: ${trigger.kind} performing`);
 
-    let context = this.processTrigerConfig(trigger, {
-      ...answers,
-      ...payload.user
-    });
-    logger.info(`Kind Trigger: context =>${JSON.stringify(context)}`);
+      let context = this.processTrigerConfig(trigger, {
+        ...answers,
+        ...payload.user
+      });
+      logger.debug(`EmailTriggerDelegate.trigger context => ${JSON.stringify(context)}`);
+      // logger.debug(`EmailTriggerDelegate.trigger payload => ${JSON.stringify(payload)}`);
 
-    if ((trigger.config.responsible && !payload.responsible?.length) || (!trigger.config.responsible && !this.validateEmail(context.email))) {
+      if (
+        (trigger.config.responsible && !payload.responsible?.length) ||
+        (!trigger.config.responsible && !this.validateEmail(context.email))
+      ) {
+          logger.debug(`EmailTriggerDelegate.trigger emai no cumple requisitos.`);
+        return payload;
+      }
+
+      let recipients: string | string[];
+
+      if (trigger.config.responsible) {
+        recipients = payload.responsible.map((obj: any) => `"${obj.firstName} ${obj.lastName}"<${obj.email}>`);
+      } else {
+        recipients = `"${context.fullname}"<${context.email}>`;
+      }
+
+      queue.create('email', {
+        from: '',
+        title: `"${context.subject} | ${context.fullname}`,
+        to: recipients,
+        subject: `${trigger.config.subject}`,
+        text: ``,
+        attachments: payload.files || [],
+        view: trigger.config.template,
+        context: {
+          ...payload,
+          ...context,
+          ...answers
+        }
+      }).priority('high').attempts(5).save();
+
+      logger.info(`EmailTriggerDelegate.trigger ${trigger.kind} executed`);
+
+      return payload;
+    } catch (e) {
+      logger.error(e);
       return payload;
     }
-
-    let recipients: string | string[];
-
-    if (trigger.config.responsible) {
-      recipients = payload.responsible.map((obj: any) => `"${obj.firstName} ${obj.lastName}"<${obj.email}>`);
-    } else {
-      recipients = `"${context.fullname}"<${context.email}>`;
-    }
-
-    queue.create('email', {
-      from: '',
-      title: `"${context.subject} | ${context.fullname}`,
-      to: recipients,
-      subject: `${trigger.config.subject}`,
-      text: ``,
-      attachments: payload.files || [],
-      view: trigger.config.template,
-      context: {
-        ...payload,
-        ...context,
-        ...answers
-      }
-    }).priority('high').attempts(5).save();
-
-    logger.info(`Kind Trigger: ${trigger.kind} executed`);
-
-    return payload;
   }
 }

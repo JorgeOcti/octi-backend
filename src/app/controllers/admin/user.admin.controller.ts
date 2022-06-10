@@ -4,16 +4,16 @@ import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
 import { queue } from '../../../app';
-import * as uuid from "uuid";
+import * as uuid from 'uuid';
 import { IForm } from '../../../form/interfaces/form.interface';
 import { IRequest } from '../../../interfaces/global.interface';
 import { IPermission } from '../../interfaces/permission.interface';
 import { io } from '../../../server';
-import User, {IUserModel} from '../../models/user.model';
-import{ UserTypes } from '../../models/user.model.types';
+import User, { IUserModel } from '../../models/user.model';
+import { UserTypes } from '../../models/user.model.types';
 import Venue from '../../models/venue.model';
 import { IBaseVenue } from '../../interfaces';
-import * as jwt from "jsonwebtoken";
+import * as jwt from 'jsonwebtoken';
 
 class AdminUsersController {
 
@@ -34,7 +34,7 @@ class AdminUsersController {
   public async index(req: IRequest, res: Response) {
     /* istanbul ignore else  */
     if (req.user.hasPermission('viewUser')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.status(403).render('403');
     }
@@ -43,7 +43,7 @@ class AdminUsersController {
   public async integrations(req: IRequest, res: Response) {
     /* istanbul ignore else  */
     // if (req.user.hasPermission('viewUser')) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
     // } else {
     //   res.status(403).render('403');
     // }
@@ -66,7 +66,7 @@ class AdminUsersController {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
-      worksheet.autoFilter = {from: 'A1', to: 'F1'};
+      worksheet.autoFilter = { from: 'A1', to: 'F1' };
       const worksheetAccess = workbook.addWorksheet('Accesos', {
         properties: {
           // defaultRowHeight: 30
@@ -90,7 +90,7 @@ class AdminUsersController {
         }
       }];
       const accessRow: any[] = [];
-      const venues = await Venue.find({team, deleted: false}).sort('name');
+      const venues = await Venue.find({ team, deleted: false }).sort('name');
       for (const venue of venues) {
         accessColumns.push({
           header: venue.name, key: venue._id.toString(), width: 5,
@@ -146,9 +146,9 @@ class AdminUsersController {
       }, {
         header: 'Empresa', key: 'company', width: 20
       }, {
-        header: 'Creado', key: 'created', width: 21, style: {numFmt: 'dd/mm/yyyy hh:mm'}
+        header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: {numFmt: 'dd/mm/yyyy hh:mm'}
+        header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }];
 
       /* body */
@@ -401,8 +401,9 @@ class AdminUsersController {
       search,
       venue,
       minified,
+      limit,
       type
-    } = req.query as { page: string, pageSize: string, search: string, type: string, venue?: string, minified?: string };
+    } = req.query as { page: string, pageSize: string, limit: string, search: string, type: string, venue?: string, minified?: string };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -422,11 +423,11 @@ class AdminUsersController {
         lastName: 1
       },
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10),
+      limit: parseInt(pageSize || limit || '20', 10),
       lean: true
     };
 
-    if (minified === 'false'){
+    if (minified === 'false') {
       options.populate = [{
         path: 'venue',
         select: ['name', 'active']
@@ -451,18 +452,18 @@ class AdminUsersController {
           path: 'company',
           select: ['name']
         }]
-      }]
+      }];
     }
 
-    let filter : any ={
+    let filter: any = {
       team,
       type
     };
 
     if (type === UserTypes.common) {
-      filter = venue ?
-      {...filter,  $or: [{venue}, {venuesAccess: venue}]} :
-      {...filter, venue: {$in: req.user.venuesPermissions()}};
+      filter = venue
+        ? { ...filter, $or: [{ venue }, { venuesAccess: venue }] }
+        : { ...filter, venue: { $in: req.user.venuesPermissions() } };
     }
 
 
@@ -500,7 +501,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
+    const { firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings } = req.body;
     const team = req.user.team._id;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -511,7 +512,7 @@ class AdminUsersController {
     }
     try {
       // validate existe user
-      const existUser = await User.find({$or: [{email}, {username: email}]});
+      const existUser = await User.find({ $or: [{ email }, { username: email }] });
       if (existUser.length) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
@@ -538,7 +539,7 @@ class AdminUsersController {
           type: UserTypes.common,
           active: true
         };
-        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission('changeTeamPermissions')) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }
@@ -598,9 +599,9 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings} = req.body;
+    const { firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess, isAdmin, isDriver, settings } = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -610,7 +611,7 @@ class AdminUsersController {
     }
     try {
       // validate email not duplicate
-      const countUser = await User.find({email, _id: {$ne: id}}).countDocuments();
+      const countUser = await User.find({ email, _id: { $ne: id } }).countDocuments();
       if (countUser) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
@@ -628,7 +629,7 @@ class AdminUsersController {
           venuesAccess,
           isDriver
         };
-        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission('changeTeamPermissions')) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }
@@ -672,8 +673,8 @@ class AdminUsersController {
           }
 
           // Delete user from responsible where has not access
-          let user_venues = user?.venuesAccess.map((v : IBaseVenue) => v._id).concat([user.venue._id]);
-          await Venue.update({responsible: user?._id, _id: {$nin: user_venues}}, { $pull: { 'responsible': user?._id }});
+          let user_venues = user?.venuesAccess.map((v: IBaseVenue) => v._id).concat([user.venue._id]);
+          await Venue.update({ responsible: user?._id, _id: { $nin: user_venues } }, { $pull: { 'responsible': user?._id } });
 
           const response = {
             message: 'Usuario editado satisfactoriamente.',
@@ -707,14 +708,14 @@ class AdminUsersController {
       });
     }
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     // const company = req.user.company;
     try {
-      const user = await User.findOneAndRemove({_id: id, team, type: UserTypes.common});
+      const user = await User.findOneAndRemove({ _id: id, team, type: UserTypes.common });
       if (user) {
 
         // Delete user from venue responsible where has not access
-        await Venue.update({responsible: user?._id}, { $pull: { 'responsible': user?._id }});
+        await Venue.update({ responsible: user?._id }, { $pull: { 'responsible': user?._id } });
 
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',
@@ -739,7 +740,7 @@ class AdminUsersController {
   }
 
   public async apiChangePasswordUser(req: IRequest, res: Response): Promise<any> {
-    const {user, password} = req.body;
+    const { user, password } = req.body;
     const team = req.user.team._id;
     if (!req.user.hasPermission('changeUser')) {
       return res.status(403).json({
@@ -748,7 +749,7 @@ class AdminUsersController {
     }
     try {
       if (password && password.length >= 6) {
-        const affectedUser = await User.findOne({_id: user, team});
+        const affectedUser = await User.findOne({ _id: user, team });
         if (affectedUser) {
           affectedUser.password = password;
           affectedUser.save();
@@ -780,9 +781,9 @@ class AdminUsersController {
       filter = {
         $and: [{
           $or: [{
-            firstName: {$regex: searchText}
+            firstName: { $regex: searchText }
           }, {
-            lastName: {$regex: searchText}
+            lastName: { $regex: searchText }
           }]
         }, filter]
       };

@@ -6,6 +6,7 @@ import * as pug from 'pug';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
 import * as he from 'he';
+import logger from '../../services/logger.service';
 
 class EmailQueue {
   private queue: Queue;
@@ -48,6 +49,7 @@ class EmailQueue {
           'X-Report-Abuse-To': 'abuse@osacontrol.com'
         }
       };
+      logger.info(`EmailQueue.processEmail: ${JSON.stringify(mail)}`);
       job.log('send email');
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {

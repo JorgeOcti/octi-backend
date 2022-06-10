@@ -41,7 +41,7 @@ interface IStateType {
 declare let window: IWindow;
 
 class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   readonly state = {
     error: null,
@@ -60,8 +60,8 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    const {orderBy, orderType} = this.props.requests.options;
-    const {page} = this.props.requests.pagination;
+    const { orderBy, orderType } = this.props.requests.options;
+    const { page } = this.props.requests.pagination;
     window.scrollTo(0, 0);
 
     this.props.getRequestsThunkAction(page, orderBy, orderType);
@@ -77,7 +77,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `request-list-${window.user.team._id}`});
+      this.socket.emit('join', { room: `request-list-${window.user.team._id}` });
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
@@ -119,13 +119,13 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
 
     this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
       this.props.createRequestItemActionInList(data.idRequest, data.item);
-        const $item = $(`#request-item-${data.item._id}`);
-        if ($item) {
-          $item.addClass('bg-green-active');
-        }
-        setTimeout(() => {
-          $item.removeClass('bg-green-active');
-        }, 300);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-green-active');
+      }
+      setTimeout(() => {
+        $item.removeClass('bg-green-active');
+      }, 300);
     });
   }
 
@@ -143,12 +143,12 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.props.requests.source) {
       this.props.requests.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `request-list-${window.user.team._id}`});
+    this.socket.emit('leave', { room: `request-list-${window.user.team._id}` });
     this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -158,65 +158,67 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     const {
       pagination, loading, requests, reasons, requestItemStatus, carriers
     } = this.props.requests;
-    const {orderBy, orderType} = this.props.requests.options;
-    const {exporing} = this.state;
+    const { orderBy, orderType } = this.props.requests.options;
+    const { exporing } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Solicitudes <small>{pagination.count}</small></h3>
-              <div className="pull-right box-tools">
-                {
-                  hasPermission(window.user, 'createRequest') ?
-                    <button className="btn btn-sm btn-success" onClick={this.create}>
-                      <i className="fa fa-fw fa-plus" /> Crear solicitud
+      <AppContainer title='' cMenu='3' cSubMenu='3.1'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Solicitudes <small>{pagination.count}</small></h3>
+              <div className='pull-right box-tools'>
+                <div className='btn-group btn-group-sm'>
+                  <ShowIf condition={hasPermission(window.user, 'createRequest')}>
+                    <button className='btn btn-sm btn-success' onClick={this.create}>
+                      <i className='fa fa-fw fa-plus' /> Crear solicitud
                     </button>
-                    : null
-                }
-                <ShowIf condition={requests.length > 0}>
-                  <button
-                    className="btn btn-sm btn-primary hidden-xs"
-                    onClick={this.exportExcel}
-                    disabled={exporing}
-                    style={{ marginLeft: '5px' }}
-                  >
-                    {
-                      exporing ? <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment>
-                        : <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
-                    }
-                  </button>
-                </ShowIf>
+                  </ShowIf>
+                  <ShowIf condition={requests.length > 0}>
+                    <button
+                      className='btn btn-sm btn-primary hidden-xs'
+                      onClick={this.exportExcel}
+                      disabled={exporing}
+                    >
+                      {
+                        exporing ? <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment>
+                          : <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
+                      }
+                    </button>
+                  </ShowIf>
+                </div>
               </div>
             </div>
-            <div className="box-body table-responsive request-list">
+            <div className='box-body table-responsive request-list'>
               <ShowIf condition={requests.length > 0}>
-                <div className="row request bg-primary">
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
-                    <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                <div className='row request bg-primary'>
+                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted' onClick={() => this.changeOrder('_id')}>
+                    <strong>ID</strong> <i
+                    className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Canal</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Vendedor</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Destino</strong>
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Nº Unidades</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
-                    <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted' onClick={() => this.changeOrder('createdAt')}>
+                    <strong>Fecha Creación</strong> <i
+                    className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
-                    <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted' onClick={() => this.changeOrder('updatedAt')}>
+                    <strong>Última Actualización</strong> <i
+                    className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
-                    {/* <strong><i className="fa fa-comment" /></strong> */}
+                  {/* <strong><i className="fa fa-comment" /></strong> */}
                   {/* </div> */}
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
+                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1' />
                 </div>
                 {
                   requests.map((request: any) => (
@@ -232,22 +234,22 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                 }
               </ShowIf>
               <ShowIf condition={!loading && requests.length === 0}>
-                <div className="row">
-                  <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
-                      <ImageLazyLoad
-                        url="/images/not_found.png"
-                        height={'200px'}
-                        style={{
-                          opacity: 0.5,
-                          maxHeight: '200px',
-                          marginBottom: '10px'
-                        }}
-                        replaceLoading={<i
-                          className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
-                          style={{ padding: '30px' }}
-                        />}
-                      /><br />
-                      <strong>No hay información para mostrar</strong>
+                <div className='row'>
+                  <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+                    <ImageLazyLoad
+                      url='/images/not_found.png'
+                      height={'200px'}
+                      style={{
+                        opacity: 0.5,
+                        maxHeight: '200px',
+                        marginBottom: '10px'
+                      }}
+                      replaceLoading={<i
+                        className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                        style={{ padding: '30px' }}
+                      />}
+                    /><br />
+                    <strong>No hay información para mostrar</strong>
                   </div>
                 </div>
               </ShowIf>
@@ -301,12 +303,12 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
-    const {orderBy, orderType} = this.props.requests.options;
+    const { orderBy, orderType } = this.props.requests.options;
     this.props.getRequestsThunkAction(page, orderBy, orderType);
   }
 
   public exportExcel() {
-    this.trackClick("Exportar");
+    this.trackClick('Exportar');
     window.open(`/requests/export/`, '_blank');
     // this.setState({
     //   exporing: true

@@ -16,8 +16,6 @@ class InventoryQueue {
 
   private async updateCar(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
-      logger.info('updateCar');
-      logger.info(JSON.stringify(job.data));
       const {car} = job.data;
       try {
         const carToUpdate = await CarModel.findById(job.data.currentCar);
@@ -49,11 +47,11 @@ class InventoryQueue {
           }
           if (update) {
             await carToUpdate.save();
-            logger.info('car updated');
-            job.log('car updated');
+            logger.info(`InventoryQueue.updateCar ${job.data.currentCar} updated.`);
+            job.log(`InventoryQueue.updateCar.job ${job.data.currentCar} updated.`);
           } else {
-            logger.info('car no updated');
-            job.log('car no updated');
+            logger.info(`InventoryQueue.updateCar ${job.data.currentCar} no updated`);
+            job.log(`InventoryQueue.updateCar.${job.data.currentCar} car updated.`);
           }
         }
         done(null, {});

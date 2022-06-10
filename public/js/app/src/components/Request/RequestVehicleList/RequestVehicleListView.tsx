@@ -116,13 +116,13 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     // this.socket.on('DELETE_REQUEST', (data: any): void => {
-      // const $item = $(`#request-${data.idRequest}`);
-      // if ($item) {
-      //   $item.addClass('bg-red-active');
-      // }
-      // setTimeout(() => {
-      //   this.props.deleteRequestActionInList(data.idRequest);
-      // }, 300);
+    // const $item = $(`#request-${data.idRequest}`);
+    // if ($item) {
+    //   $item.addClass('bg-red-active');
+    // }
+    // setTimeout(() => {
+    //   this.props.deleteRequestActionInList(data.idRequest);
+    // }, 300);
     // });
 
     this.socket.on('CREATE_REQUEST', (data: any): void => {
@@ -185,61 +185,80 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-header with-border'>
               <h3 className='box-title'>Unidades <small>{pagination.count}</small></h3>
               <div className='pull-right box-tools'>
-                <ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>
-                  <button
-                    className='btn btn-sm btn-success'
-                    onClick={this.update}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Actualizador
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
-                  <button
-                    style={{ marginLeft: '5px' }}
-                    className='btn btn-sm btn-success'
-                    onClick={this.asignar}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Asignar
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'importRequest')}>
-                  <button
-                    style={{ marginLeft: '5px' }}
-                    className='btn btn-sm btn-success'
-                    onClick={this.import}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Importar
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                  <button
-                    className='btn btn-sm btn-success'
-                    onClick={this.create}
-                    style={{ marginLeft: '5px' }}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Crear solicitud
-                  </button>
-                </ShowIf>
-                <ShowIf condition={requestItems.length > 0}>
-                  <button
-                    className='btn btn-sm btn-primary hidden-xs'
-                    onClick={this.exportExcel}
-                    disabled={exporing}
-                    style={{ marginLeft: '5px' }}
-                  >
-                    {
-                      exporing ?
-                        <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment> :
-                        <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
-                    }
-                  </button>
-                </ShowIf>
+                <div className='btn-group btn-group-sm'>
+                  <ShowIf condition={
+                    !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                    hasPermission(window.user, 'createRequest')}>
+                    <button
+                      onClick={this.create}
+                      className='btn btn-success hidden-xs'
+                    >
+                      <i className='fa fa-fw fa-plus' /> Crear solicitud
+                    </button>
+                  </ShowIf>
+                  <ShowIf condition={requestItems.length > 0}>
+                    <button
+                      className='btn btn-primary'
+                      onClick={this.exportExcel}
+                      disabled={exporing}
+                    >
+                      {
+                        exporing ?
+                          <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment> :
+                          <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
+                      }
+                    </button>
+                  </ShowIf>
+                  <div className='btn-group btn-group-sm'>
+                    <ShowIf condition={
+                      requestItems.length > 0 && (
+                        hasPermission(window.user, 'updateMassiveRequest') ||
+                        hasPermission(window.user, 'massAllocation') ||
+                        hasPermission(window.user, 'importRequest')
+                      )
+                    }>
+                      <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='true'>
+                        <span className='caret'></span>
+                      </button>
+                      <ul className='dropdown-menu' style={{paddingRight: '10px'}}>
+                        <ShowIf condition={hasPermission(window.user, 'createRequest')}>
+                          <li className="visible-xs">
+                            <a href='#' onClick={this.create} className="text-muted">
+                             <i className='fa fa-fw fa-plus' /> Crear nueva solicitud
+                            </a>
+                          </li>
+                        </ShowIf>
+                        <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
+                          <li>
+                            <a href='#' onClick={this.asignar} className="text-muted">
+                              <i className='fa fa-fw fa-upload' /> Asignación masiva de unidades
+                            </a>
+                          </li>
+                        </ShowIf>
+                        <ShowIf condition={hasPermission(window.user, 'importRequest')}>
+                          <li>
+                            <a href='#' onClick={this.import} className="text-muted">
+                              <i className='fa fa-fw fa-upload' /> Importar solicitudes por lote
+                            </a>
+                          </li>
+                        </ShowIf>
+                        {/*<ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>*/}
+                        {/*  <li>*/}
+                        {/*    <a href='#' onClick={this.update}>*/}
+                        {/*      <i className='fa fa-fw fa-plus' /> Actualizador*/}
+                        {/*    </a>*/}
+                        {/*  </li>*/}
+                        {/*</ShowIf>*/}
+                      </ul>
+                    </ShowIf>
+                  </div>
+                </div>
               </div>
             </div>
             <div className='box-body no-padding'>
               <div style={{ padding: '10px 5px' }}>
                 <div className='row' style={{ margin: 0 }}>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vehículo
@@ -255,26 +274,8 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <ShowIf condition={requestSettings.entry}>
-                    <div className='col-md-3' style={{padding: '0 5px'}}>
-                      <div className='form-group'>
-                        <label className='control-label'>
-                          Partida
-                        </label>
-                        <input
-                          type='text'
-                          className='form-control input-sm'
-                          placeholder='Nº de partida: S14795'
-                          defaultValue={filters.entry}
-                          onChange={(e) => {
-                            this.changeFilterDebounced('entry', e.target.value);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </ShowIf>
                   <ShowIf condition={requestSettings.conectaID}>
-                    <div className='col-md-3' style={{padding: '0 5px'}}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
                       <div className='form-group'>
                         <label className='control-label'>
                           Conecta ID
@@ -291,7 +292,25 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <ShowIf condition={requestSettings.entry}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
+                      <div className='form-group'>
+                        <label className='control-label'>
+                          Partida
+                        </label>
+                        <input
+                          type='text'
+                          className='form-control input-sm'
+                          placeholder='Nº de partida: S14795'
+                          defaultValue={filters.entry}
+                          onChange={(e) => {
+                            this.changeFilterDebounced('entry', e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </ShowIf>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Nº Solicitudes
@@ -307,7 +326,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vendedor
@@ -361,41 +380,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   {/*  </div>*/}
                   {/*</div>*/}
                   {/*</ShowIf>*/}
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
-                    <div className='form-group'>
-                      <label htmlFor='venues' className='control-label'>Propiedad</label>
-                      <BootstrapSelect
-                        noneSelectedText='Todas'
-                        search={true}
-                        displayItems={2}
-                        selectedText='propiedades seleccionadas.'
-                        selected={filters.properties}
-                        sm={true}
-                        allOption={true}
-                        selectAll={
-                          (all: boolean) => {
-                            if (all) {
-                              this.changeFilter('properties', properties.map((property) => property._id));
-                            } else {
-                              this.changeFilter('properties', []);
-                            }
-                          }
-                        }
-                        options={properties.map((property) => ({
-                          value: property._id,
-                          text: property.name
-                        }))}
-                        onClick={(selected: any) => {
-                          if (filters.properties.includes(selected)) {
-                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
-                          } else {
-                            this.changeFilter('properties', [...filters.properties, selected]);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
                       <BootstrapSelect
@@ -429,7 +414,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Estados</label>
                       <BootstrapSelect
@@ -462,6 +447,40 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
+                    <div className='form-group'>
+                      <label htmlFor='venues' className='control-label'>Propiedad</label>
+                      <BootstrapSelect
+                        noneSelectedText='Todas'
+                        search={true}
+                        displayItems={2}
+                        selectedText='propiedades seleccionadas.'
+                        selected={filters.properties}
+                        sm={true}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('properties', properties.map((property) => property._id));
+                            } else {
+                              this.changeFilter('properties', []);
+                            }
+                          }
+                        }
+                        options={properties.map((property) => ({
+                          value: property._id,
+                          text: property.name
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.properties.includes(selected)) {
+                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
+                          } else {
+                            this.changeFilter('properties', [...filters.properties, selected]);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                   {
                     /* <div className="col-md-3">
                     <div className="form-group">
@@ -482,7 +501,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   }
                   <div className='col-md-3'>
                     <div className='row'>
-                      <div className='col-md-6' style={{padding: '0 5px'}}>
+                      <div className='col-md-6' style={{ padding: '0 5px' }}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Desde</label>
                           <DateRangePicker
@@ -494,7 +513,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           />
                         </div>
                       </div>
-                      <div className='col-md-6' style={{padding: '0 5px'}}>
+                      <div className='col-md-6' style={{ padding: '0 5px' }}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Hasta</label>
                           <DateRangePicker
@@ -527,7 +546,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
-                       <th
+                      <th
                         className='middle pointer'
                         style={{ minWidth: '40px' }}
                         // onClick={() => this.changeOrder('request.number')}
@@ -746,7 +765,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push(parseReplicableURL('/requests/import/'));
   }
 
-  private asignar(){
+  private asignar() {
     this.props.history.push(parseReplicableURL('/requests/mass-allocation/'));
   }
 

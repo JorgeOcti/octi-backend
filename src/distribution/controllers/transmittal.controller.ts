@@ -922,12 +922,17 @@ private getForm(filter: any): Promise<IFormModel> {
     }
   }
 
-  public async xlsExport(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.xlsExport`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+  public async xlsExport(req: IRequest, res: Response): Promise<any> {
+    logger.info(`TransmittalController.xlsExport email: ${req.user.email}`);
     const team = req.user.team._id;
     try {
-      // Create columns/headers for excel
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=distribution-${moment().format('YYYY-MM-DD')}.xlsx`);
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
       let columns = [{
         header: '# Orden transporte', key: 'transmittalNumber', width: 30
       }, {
@@ -951,13 +956,6 @@ private getForm(filter: any): Promise<IFormModel> {
           numFmt: 'dd/mm/yyyy hh:mm'
         }
       }];
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=distribution-${moment().format('YYYY-MM-DD')}.xlsx`);
-      const options = {
-        stream: res,
-        useStyles: true,
-        useSharedStrings: true
-      };
       const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         pageSetup: {
@@ -966,8 +964,17 @@ private getForm(filter: any): Promise<IFormModel> {
       });
       worksheet.columns = columns;
 
-      const cursor = await Transmittal
-        .find({ team })
+      const cursor = Transmittal
+        .find({
+          team
+        }, {
+          number: true,
+          transporter: true,
+          items: true,
+          files: true,
+          createdBy: true,
+          createdAt: 1,
+        })
         .populate([{
           path: 'transporter.carrier',
           select: ['name']
@@ -986,7 +993,7 @@ private getForm(filter: any): Promise<IFormModel> {
           select: ['firstName', 'lastName']
         }])
         // .allowDiskUse(true)
-        .batchSize(100)
+        .batchSize(40)
         .cursor();
 
       cursor.on('data', async (transmittal) => {
@@ -1009,16 +1016,21 @@ private getForm(filter: any): Promise<IFormModel> {
 
       // code to handle connection abort or finish query read process
       cursor.on('end', async () => {
-        await workbook.commit();
-        res.status(200);
+        cursor.close();
+        workbook.commit();
+        return res.status(200);
       });
 
-      cursor.on('error', (error) => logger.error(error.message));
+      cursor.on('error', (error) => {
+        cursor.close();
+        logger.error(error.message);
+        return res.status(500).json(error);
+      });
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
-        await cursor.close();
-        res.status(200);
+        cursor.close();
+        return res.status(200);
       });
     } catch (e) {
       /* istanbul ignore next */
@@ -1028,7 +1040,7 @@ private getForm(filter: any): Promise<IFormModel> {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
