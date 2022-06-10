@@ -209,35 +209,35 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       }
                     </button>
                   </ShowIf>
-                  <div className='btn-group btn-group-sm'>
-                    <ShowIf condition={
-                      requestItems.length > 0 && (
-                        hasPermission(window.user, 'updateMassiveRequest') ||
-                        hasPermission(window.user, 'massAllocation') ||
-                        hasPermission(window.user, 'importRequest')
-                      )
-                    }>
+                  <ShowIf condition={
+                    requestItems.length > 0 && (
+                      hasPermission(window.user, 'updateMassiveRequest') ||
+                      hasPermission(window.user, 'massAllocation') ||
+                      hasPermission(window.user, 'importRequest')
+                    )
+                  }>
+                    <div className='btn-group btn-group-sm'>
                       <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='true'>
                         <span className='caret'></span>
                       </button>
-                      <ul className='dropdown-menu' style={{paddingRight: '10px'}}>
+                      <ul className='dropdown-menu' style={{ paddingRight: '10px' }}>
                         <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                          <li className="visible-xs">
-                            <a href='#' onClick={this.create} className="text-muted">
-                             <i className='fa fa-fw fa-plus' /> Crear nueva solicitud
+                          <li className='visible-xs'>
+                            <a href='#' onClick={this.create} className='text-muted'>
+                              <i className='fa fa-fw fa-plus' /> Crear nueva solicitud
                             </a>
                           </li>
                         </ShowIf>
                         <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
                           <li>
-                            <a href='#' onClick={this.asignar} className="text-muted">
+                            <a href='#' onClick={this.asignar} className='text-muted'>
                               <i className='fa fa-fw fa-upload' /> Asignación masiva de unidades
                             </a>
                           </li>
                         </ShowIf>
                         <ShowIf condition={hasPermission(window.user, 'importRequest')}>
                           <li>
-                            <a href='#' onClick={this.import} className="text-muted">
+                            <a href='#' onClick={this.import} className='text-muted'>
                               <i className='fa fa-fw fa-upload' /> Importar solicitudes por lote
                             </a>
                           </li>
@@ -250,8 +250,8 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         {/*  </li>*/}
                         {/*</ShowIf>*/}
                       </ul>
-                    </ShowIf>
-                  </div>
+                    </div>
+                  </ShowIf>
                 </div>
               </div>
             </div>
