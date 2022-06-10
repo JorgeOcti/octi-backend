@@ -1269,7 +1269,7 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response): Promise<any> {
-    const { page, pageSize, search, from, to, forms } = req.query as {
+    let { page, pageSize, search, from, to, forms } = req.query as {
       page: string, pageSize: string, search: string,
       from: string, to: string, forms: string
     };
@@ -1333,8 +1333,10 @@ class CarController {
       }
 
       if (search?.length) {
-        const searchText = new RegExp(search.trim(), 'i');
-        const searchTextArray = search.trim().split(" ");
+        search = search.replace(/[^a-z A-ZÀ-ú]+/g, '').trim();
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
+        const searchText = new RegExp(search, 'i');
+        const searchTextArray = search.split(" ");
         const filterUser: any = {
           $and: [{
             team
@@ -1363,7 +1365,7 @@ class CarController {
             });
           }
         }
-        logger.info(`CarController.apiRevisions: email: ${req.user.email} searchTextArray: ${searchTextArray}}`);
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} searchTextArray: ${searchTextArray}`);
         logger.debug(`CarController.apiRevisions: email: ${req.user.email} filterUser: ${JSON.stringify(filterUser)}`);
         const searchUser = await User.find(filterUser, { _id: true });
         const searchVenue = searchUser.length ? [] : await Venue.find({
