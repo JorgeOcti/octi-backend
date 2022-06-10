@@ -119,7 +119,7 @@ app.set('strict routing', true);
 app.use(cookieParser());
 
 // For parsing application/json
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json({ limit: '50mb' }));
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -242,16 +242,12 @@ app.use('/api/v1', jwtRouter);
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    createClientFactory: () => {
-      return createRedisClient();
-    }
+    createClientFactory: createRedisClient
   }
 });
 
 const billingQueue = new Bull('billing', {
-  createClient: () => {
-    return createRedisClient();
-  },
+  createClient: createRedisClient,
   prefix: '{andes}'
 });
 
@@ -324,9 +320,13 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
-  console.log('app.showError');
-  console.log('req.url', req.url);
-  console.log('err', err);
+  logger.error(`Server.processError: session: ${JSON.stringify(req.session)}`);
+  logger.error(`Server.processError: ${JSON.stringify({
+    url: req.url,
+    status: err.status,
+    statusCode,
+    error: err
+  })}`);
   res.status(statusCode).render(statusCode.toString());
   // res.json({
   //   status: err.status,

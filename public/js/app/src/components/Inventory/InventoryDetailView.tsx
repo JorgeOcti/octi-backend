@@ -222,6 +222,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle',
       headerClasses: 'middle pointer',
+      style: {
+        width: '20%'
+      },
       sort: true
     }, {
       dataField: 'venue',
@@ -260,14 +263,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle hidden-xs',
       filterValue: (cell: any) => `${cell ? cell.name : ''}`,
       formatter: this.labelFormatter,
-      headerClasses: 'middle hidden-xs',
-      style: {
-        width: '18%',
-        maxWidth: '18%'
-      },
-      headerStyle: {
-        verticalAlign: 'top'
-      }
+      headerClasses: 'middle hidden-xs'
     }, {
       dataField: 'images',
       text: 'Imágenes',
@@ -330,14 +326,14 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         return `middle-center hidden-xs hidden-sm`;
       },
       headerStyle: {
-        maxWidth: '150px',
-        minWidth: '150px',
-        width: '150px'
+        maxWidth: '140px',
+        minWidth: '140px',
+        width: '140px'
       },
       style: {
-        maxWidth: '150px',
-        minWidth: '150px',
-        width: '150px'
+        maxWidth: '140px',
+        minWidth: '140px',
+        width: '140px'
       }
     }];
   }
