@@ -10,14 +10,16 @@ import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 import * as swal from 'sweetalert';
 import ApiService from '../../../utils/axios';
+import CopyText from '../../Utils/CopyText';
 import { ITransmittal } from '../../../../../../../src/distribution/interfaces/transmittal.interface';
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
-import { hasPermission } from '../../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  router: any;
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   item: ITransmittal;
@@ -58,15 +60,32 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     const { transmittalItem, transmittal: { venues } } = this.props;
     return (
       <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
-        <td className={'middle'}>
-          <strong>
+        <td
+          className={'middle-center pointer'}
+          onClick={transmittalItem.request?._id ? () => {
+            this.props.history.push(`/requests/vehicles/${transmittalItem.request._id}/`);
+          } : undefined}
+        >
+          <strong className="text-underline">
             <ShowIf condition={!!transmittalItem?.request?.number}>
               #{transmittalItem.request?.number}
             </ShowIf>
           </strong>
         </td>
-        <td className={'middle'}>{transmittalItem.car.vin}</td>
-        <td className={'middle'}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
+        <td
+          className={'middle text-primary'}
+
+        >
+          <CopyText value={transmittalItem.car.vin}>
+            <strong
+              className={'text-underline pointer'}
+              onClick={()=>{this.props.history.push(`/settings/cars/${transmittalItem.car._id}/`)}}
+            >
+              {transmittalItem.car.vin}
+            </strong>
+          </CopyText>
+        </td>
+        <td className={'middle'}><strong className={"text-muted"}>{transmittalItem.car.brand}</strong><br /><span className={"text-muted"}>{transmittalItem.car.denomination}</span></td>
         <td className={'middle-center'}>
           <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.car.invoice}>
             <input
@@ -136,34 +155,12 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                 });
               }}
             >
-              {/*<option value='' disabled={true}>-</option>*/}
               {
                 venues.map((venue) => (
                   <option key={venue._id} value={venue._id}>{`${venue.name}`}</option>
                 ))
               }
             </select>
-            {/*<BootstrapSelect
-              noneSelectedText='Selecciona una sucursal'
-              displayItems={2}
-              sm={true}
-              selectedText='sucursales seleccionadas.'
-              selected={transmittalItem.origin ? [transmittalItem.origin._id] : []}
-              autoClouse={true}
-              allOption={false}
-              search={true}
-              options={venues.map((venue: any) => ({
-                value: venue._id,
-                text: venue.name
-              }))}
-              onClick={(e: string) => {
-                this.props.transmittalActions.updateTransmittalItemThunkAction({
-                  _id: transmittalItem._id,
-                  transmittal: transmittalItem.transmittal,
-                  origin: e
-                });
-              }}
-            />*/}
           </ShowIf>
         </td>
         <td className={'middle'}>
@@ -178,34 +175,12 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                 });
               }}
             >
-              {/*<option value='' disabled={true}>-</option>*/}
               {
                 venues.map((venue) => (
                   <option key={venue._id} value={venue._id}>{`${venue.name}`}</option>
                 ))
               }
             </select>
-            {/*<BootstrapSelect
-              noneSelectedText='Selecciona una sucursal'
-              displayItems={2}
-              sm={true}
-              selectedText='sucursales seleccionadas.'
-              selected={transmittalItem.destination ? [transmittalItem.destination._id] : []}
-              autoClouse={true}
-              allOption={false}
-              search={true}
-              options={venues.map((venue: any) => ({
-                value: venue._id,
-                text: venue.name
-              }))}
-              onClick={(e: string) => {
-                this.props.transmittalActions.updateTransmittalItemThunkAction({
-                  _id: transmittalItem._id,
-                  transmittal: transmittalItem.transmittal,
-                  destination: e
-                });
-              }}
-            />*/}
           </ShowIf>
         </td>
         <td className={'middle'}>
@@ -217,13 +192,14 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
               className={'input-sm'}
               value={transmittalItem.loadingDate}
               format={'DD-MM-YY'}
-              onChange={(e) => {
-                this.props.transmittalActions.updateTransmittalItemThunkAction({
-                  _id: transmittalItem._id,
-                  transmittal: transmittalItem.transmittal,
-                  loadingDate: e?.toDate() ?? ''
-                });
-              }}
+              disabled={true}
+              // onChange={(e) => {
+              //   this.props.transmittalActions.updateTransmittalItemThunkAction({
+              //     _id: transmittalItem._id,
+              //     transmittal: transmittalItem.transmittal,
+              //     loadingDate: e?.toDate() ?? ''
+              //   });
+              // }}
             />
           </ShowIf>
         </td>
@@ -236,33 +212,34 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
               className={'input-sm'}
               value={transmittalItem.arrivalDate}
               format={'DD-MM-YY'}
-              onChange={(e) => {
-                this.props.transmittalActions.updateTransmittalItemThunkAction({
-                  _id: transmittalItem._id,
-                  transmittal: transmittalItem.transmittal,
-                  arrivalDate: e?.toDate() ?? ''
-                });
-              }}
+              disabled={true}
+              // onChange={(e) => {
+              //   this.props.transmittalActions.updateTransmittalItemThunkAction({
+              //     _id: transmittalItem._id,
+              //     transmittal: transmittalItem.transmittal,
+              //     arrivalDate: e?.toDate() ?? ''
+              //   });
+              // }}
             />
           </ShowIf>
         </td>
         <td className={'middle'}>
-          <ShowIf
-            condition={hasPermission(window.user, 'changeTransmittal')}
-            alternative={transmittalItem.observation ?? '-'}
-          >
-            <input
-              className='form-control input-sm'
-              defaultValue={transmittalItem.observation}
-              onChange={(e) => {
-                this.debounceUpdateTransmittalItem({
-                  _id: transmittalItem._id,
-                  transmittal: transmittalItem.transmittal,
-                  observation: e.target.value
-                });
-              }}
-            />
-          </ShowIf>
+          {/*<ShowIf*/}
+          {/*  condition={hasPermission(window.user, 'changeTransmittal')}*/}
+          {/*  alternative={transmittalItem.observation ?? '-'}*/}
+          {/*>*/}
+          {/*  <input*/}
+          {/*    className='form-control input-sm'*/}
+          {/*    defaultValue={transmittalItem.observation}*/}
+          {/*    onChange={(e) => {*/}
+          {/*      this.debounceUpdateTransmittalItem({*/}
+          {/*        _id: transmittalItem._id,*/}
+          {/*        transmittal: transmittalItem.transmittal,*/}
+          {/*        observation: e.target.value*/}
+          {/*      });*/}
+          {/*    }}*/}
+          {/*  />*/}
+          {/*</ShowIf>*/}
         </td>
         {
           transmittalItem.revisions.length ?
@@ -285,19 +262,19 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   private statusIcon(revision: IParticipant) {
     if (revision.hasDamages) {
       return (
-        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+        <td className={'middle-center pointer'} onClick={() => this.props.getParticipant(revision._id)}>
           <i className='fa fa-warning text-red' />
         </td>
       );
     } else if (revision.receptionConfirmation) {
       return (
-        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+        <td className={'middle-center pointer'} onClick={() => this.props.getParticipant(revision._id)}>
           <i className='fa fa-check-circle text-primary' />
         </td>
       );
     } else if (!revision.receptionConfirmation) {
       return (
-        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+        <td className={'middle-center pointer'} onClick={() => this.props.getParticipant(revision._id)}>
           <i className='fa fa-close text-danger' />
         </td>
       );

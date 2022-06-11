@@ -5,15 +5,16 @@ import { ajax } from 'rxjs/ajax';
 import { IRequestItem } from '../../../../../../src/request/interfaces';
 import ApiService from '../../utils/axios';
 import { AxiosError, AxiosResponse } from 'axios';
-import { parseReplicableURL } from '../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../utils/common';
 import ShowIf from './ShowIf';
 import { Subject } from 'rxjs/internal/Subject';
+import { IWindow } from '../../interfaces/window';
 
 interface IPropsType {
   defaultValue: string;
   inputClass?: string;
   item: IRequestItem;
-
+  history: any;
   renderItem(item: any, index: any): React.ReactElement<any>;
 }
 
@@ -24,6 +25,8 @@ interface IStateType {
   value: string;
   VINRecommends: any[];
 }
+
+declare let window: IWindow;
 
 class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
   readonly $subjectVINRecommends = new Subject<any>();
@@ -91,9 +94,9 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
         >
           {
             !canEdit ?
-              <ShowIf condition={item.car.vin?.length > 0}>
+              <ShowIf condition={hasPermission(window.user, 'viewCar') && item.car.vin?.length > 0}>
               <span
-                className='input-group-addon pointer'
+                className='input-group-addon pointer bg-primary'
                 style={{ padding: '5px' }}
                 onClick={this.openVehicle}
               >
@@ -206,7 +209,8 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
 
   openVehicle() {
     const { item } = this.props;
-    window.open(parseReplicableURL(`/settings/cars/${item.car._id}/`), '_blank');
+    this.props.history.push(parseReplicableURL(`/settings/cars/${item.car._id}`));
+    // window.open(parseReplicableURL(`/settings/cars/${item.car._id}/`), '_blank');
   }
 
 

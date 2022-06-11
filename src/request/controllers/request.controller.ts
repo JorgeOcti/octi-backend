@@ -95,7 +95,7 @@ class RequestController {
   }, {
     path: 'items',
     select: [
-      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy'
+      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy', 'order', 'code'
     ],
     options: {
       sort: {
@@ -729,6 +729,8 @@ class RequestController {
       }, {
         $addFields: { requestNumber: { $toString: '$request.number' } }
       }, {
+        $addFields: { transmittalNumber: { $toString: '$transmittal.number' } }
+      }, {
         $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }, {
         $project: {
@@ -773,6 +775,7 @@ class RequestController {
           'reason._id': 1,
           'reason.name': 1,
           'uploadDate': 1,
+          'code': 1,
           'estimatedArrival': 1,
           'createdAt': 1,
           'updatedAt': 1

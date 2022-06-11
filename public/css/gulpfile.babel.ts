@@ -1,9 +1,11 @@
-import gulp from 'gulp';
-import sass from 'gulp-sass';
-import autoprefixer from 'autoprefixer';
-import postcss from 'gulp-postcss';
-import sourcemaps from 'gulp-sourcemaps';
-import objectFitImages from 'postcss-object-fit-images';
+const gulp = require('gulp');
+const dartSass =require('sass');
+const gulpSass =require('gulp-sass');
+const sass = gulpSass(dartSass)
+const autoprefixer = require('autoprefixer');
+const postcss = require('gulp-postcss');
+const sourcemaps = require('gulp-sourcemaps');
+const objectFitImages = require('postcss-object-fit-images');
 
 const dirs = {
   src: './styles',
@@ -34,7 +36,8 @@ gulp.task('css', function () {
     .pipe(sourcemaps.init())
     .pipe(sass({
       outputStyle: 'compressed'
-    }).on('error', sass.logError))
+    })
+      .on('error', sass.logError))
     .pipe(postcss(pluginsPostCss))
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(sassPaths.dest));

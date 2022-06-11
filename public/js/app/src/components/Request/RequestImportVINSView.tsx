@@ -293,13 +293,6 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                 <ShowIf condition={!!requestItems.length}>
                   <div className='btn-group btn-group-sm'>
                     <button
-                      className='btn btn-sm btn-default'
-                      onClick={!sending ? this.clickUploadFile : undefined}
-                      disabled={sending}
-                    >
-                      <i className='fa fa-fw fa-cogs' /> Cambiar archivo
-                    </button>
-                    <button
                       className='btn btn-sm btn-success'
                       disabled={!!pendings.length || sending}
                       onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
@@ -313,6 +306,28 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                         </>
                       </ShowIf>
                     </button>
+                    <div className='btn-group btn-group-sm'>
+                      <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='true'>
+                        <span className='caret'></span>
+                      </button>
+                      <ul className='dropdown-menu' style={{ paddingRight: '10px' }}>
+                        <li>
+                          <a href='#' onClick={this.downloadTemplate} className='text-muted'>
+                            <i className='fa fa-fw fa-download' /> Descargar Formato v1.0
+                          </a>
+                        </li>
+                        <li>
+                          <a href='#' onClick={this.clickUploadFile} className='text-muted'>
+                            <i className='fa fa-fw fa-upload' /> Cambiar archivo de importación
+                          </a>
+                        </li>
+                        <li>
+                          <a href='#' onClick={() => this.props.history.push('/requests/vehicles/')} className='text-muted'>
+                            <i className='fa fa-fw fa-stop-circle-o' /> Cancelar
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </ShowIf>
               </div>
@@ -381,19 +396,44 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                   Cancelar
                 </button>
                 <ShowIf condition={!!requestItems.length}>
-                  <button
-                    className='btn btn-sm btn-success'
-                    disabled={!!pendings.length || sending}
-                    onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
-                  >
-                    <ShowIf condition={sending} alternative={<>
-                      {pendings.length || sending?<i className='fa fa-fw fa-spinner fa-spin ' />:<i className='fa fa-fw fa-check-circle-o' />} Confirmar asignación</>}
-                    >
-                      <>
-                        <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
-                      </>
-                    </ShowIf>
-                  </button>
+                  <div className='btn-group btn-group-sm'>
+                    <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='true'>
+                      <span className='caret'></span>
+                    </button>
+                    <ul className='dropdown-menu  dropdown-menu-right' style={{ paddingRight: '10px' }}>
+                      <li>
+                        <a
+                          href='#'
+                          // disabled={!!pendings.length || sending}
+                          onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
+                          className='text-muted'
+                        >
+                          <ShowIf condition={sending} alternative={<>
+                            {pendings.length || sending ? <i className='fa fa-fw fa-spinner fa-spin ' /> :
+                              <i className='fa fa-fw fa-check-circle-o' />} Confirmar asignación</>}
+                          >
+                            <>
+                              <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
+                            </>
+                          </ShowIf>
+                        </a>
+                        {/*<button
+                        className='btn btn-sm btn-success'
+                        disabled={!!pendings.length || sending}
+                        onClick={!!pendings.length || sending ? undefined : this.answerProcessitems}
+                      >
+                        <ShowIf condition={sending} alternative={<>
+                          {pendings.length || sending ? <i className='fa fa-fw fa-spinner fa-spin ' /> :
+                            <i className='fa fa-fw fa-check-circle-o' />} Confirmar asignación</>}
+                        >
+                          <>
+                            <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
+                          </>
+                        </ShowIf>
+                      </button>*/}
+                      </li>
+                    </ul>
+                  </div>
                 </ShowIf>
               </div>
             </div>
@@ -843,11 +883,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
       }
       return (
         <div>
-          <span
-            className={row.excelData.vin === row.andesData.car.vin && !row.errors.length ? 'text-muted' : 'text-red'}>{row.andesData.car.vin}</span>
-          <i
-            className={'fa fa-fw fa-angle-double-right'} /> <span
-          className={!row.errors.length ? 'text-green' : 'text-red'}>{row.excelData.vin}</span>
+          {row.excelData.vin}
           <ShowIf condition={!row.errors.length}>
             <div className='text-sm text-muted'><i
               className='fa fa-fw fa-info-circle' /> {row.excelData.vin === row.andesData.car.vin ? 'No se detectaron cambios' : 'Cambia VIN de la unidad'}

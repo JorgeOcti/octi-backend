@@ -12,6 +12,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import ShowIf from '../../Utils/ShowIf';
+import CopyText from '../../Utils/CopyText';
 
 declare let window: IWindow;
 
@@ -119,29 +120,39 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '28px' }} />
                 <th className='middle' style={{ width: '100px' }}>Progreso</th>
-                <th className='middle' style={{ width: '120px' }}>Estado</th>
-                <th className='middle' style={{ width: '220px' }}>Modelo</th>
-                <th className='middle' style={{ width: '120px' }}>Color</th>
                 <th className='middle' style={{ width: '160px' }}>VIN</th>
+                <ShowIf condition={requestSettings.entry}>
+                  <th>Partida</th>
+                </ShowIf>
+                <ShowIf
+                  condition={
+                    ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                    requestSettings.material
+                  }
+                >
+                  <th
+                    className='middler pointer'
+                    style={{ width: '70px' }}
+                  >
+                    Material
+                  </th>
+                </ShowIf>
+                <th className='middle' style={{ width: '180px' }}>Descripción</th>
+                <th className='middle' style={{ width: '120px' }}>Color</th>
                 <ShowIf condition={requestSettings.ticket}>
                   <th className='middle-center pointer' style={{ width: '60px' }}>
                     Ticket
                   </th>
-                  <th className='middle pointer' style={{ width: '80px' }}>
-                    Nº Ticket
-                  </th>
                 </ShowIf>
-                <ShowIf condition={requestSettings.entry}>
-                  <th>Partida</th>
-                </ShowIf>
+                <th className='middle' style={{ width: '110px' }}>Estado</th>
                 <th>OT</th>
                 <th>F. emisión</th>
                 <th>F. carga</th>
                 <th>F. arribo</th>
-                <th className='middle-center' style={{ width: '20px' }}>Adj</th>
-                <th className='middle'>Obs</th>
+                <th className='middle-center' style={{ width: '20px' }}></th>
+                <th className='middle' />
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
-                <ShowIf condition={requestSettings.reason}>
+                <ShowIf condition={false && false && requestSettings.reason}>
                   <th className='middle' style={{ width: '150px' }}>Motivo</th>
                 </ShowIf>
                 {/* <th className="middle" >Transporte</th>
@@ -170,6 +181,62 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </td>
+                    <td className={`middle`}>
+                      <ShowIf condition={item.car.vin?.length}>
+                        <CopyText value={item.car.vin}>
+                          <strong
+                            className={'text-underline text-primary pointer'}
+                            onClick={() => {
+                              this.props.history.push(parseReplicableURL(`/settings/cars/${item.car._id}/`));
+                            }}
+                          >
+                            {item.car.vin}
+                          </strong>
+                        </CopyText>
+                      </ShowIf>
+                    </td>
+                    <ShowIf condition={requestSettings.entry}>
+                      <td className='middle'>
+                        {
+                          item.car.entry && item.car.entry.length ? item.car.entry : null
+                        }
+                      </td>
+                    </ShowIf>
+                    <ShowIf
+                  condition={
+                    ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                    requestSettings.material
+                  }
+                >
+                      <td className='middle text-muted'>
+                        {
+                          item.car.material?.length ? item.car.material : null
+                        }
+                      </td>
+                    </ShowIf>
+                    <td className='middle text-muted'>
+                      <strong>{item.car.brand}</strong><br />{`${item.car.denomination}`}
+                    </td>
+                    <td className='middle text-muted'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
+                    <ShowIf condition={requestSettings.ticket}>
+                      <td className='middle-center'>
+                        <div
+                          data-toggle='tooltip'
+                          data-placement='top'
+                          className={`${request?.advancePaymentInformation?.files?.length ? 'pointer' : ''}`}
+                          title={request?.advancePaymentInformation?.number ?? '-'}
+                          onClick={() => this.openBlank(request.advancePaymentInformation.files[0].file.url)}
+                        >
+                          {
+                            //request.advancePaymentInformation.files[0].file.url
+                            request?.advancePaymentInformation?.files?.length ?
+                              <i
+                                className='fa fa-check-circle text-green'
+                              /> : ''
+                          }
+                        </div>
+                      </td>
+                    </ShowIf>
                     {
                       canChangeRequest ?
                         <td className='middle'>
@@ -192,50 +259,17 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         </td> :
                         <td className='middle'>{item.status?.name}</td>
                     }
-                    <td className='middle'>
-                      {`${item.car.brand} ${item.car.denomination} ${item.car.material ?? ''}`}
-                    </td>
-                    <td className='middle'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
-                    <td className={`middle`}>
-                      <ShowIf condition={item.car.vin?.length}>
-                        <a
-                          href={parseReplicableURL(`/settings/cars/${item.car._id}/`)}
-                          target='_blank'
-                          style={{
-                            textDecoration: 'underline'
-                          }}
-                        >
-                          {item.car.vin} <i className='fa fa-fw fa-share-alt-square' />
-                        </a>
-                      </ShowIf>
-                    </td>
-                    <ShowIf condition={requestSettings.ticket}>
-                      <td className='middle-center'>
-                        {
-                          //request.advancePaymentInformation.files[0].file.url
-                          request.advancePaymentInformation?.files?.length ?
-                            <i
-                              className='fa fa-check-circle text-green pointer'
-                              onClick={() => this.openBlank(request.advancePaymentInformation.files[0].file.url)}
-                            /> : ''
-                        }
-                      </td>
-                      <td className='middle'>{request.advancePaymentInformation?.number}</td>
-                    </ShowIf>
-                    <ShowIf condition={requestSettings.entry}>
-                      <td className='middle'>
-                        {
-                          item.car.entry && item.car.entry.length ? item.car.entry : null
-                        }
-                      </td>
-                    </ShowIf>
                     <td
                       className={`middle ${item.transmittal?.number ? 'pointer' : ''}`}
                       onClick={item.transmittal?.number ? () => this.openOT(item.transmittal.number.toString()) : undefined}
-                    ><strong>{item?.transmittal?.number ? `#${item?.transmittal?.number}`: '-'}</strong></td>
-                    <td className='middle'>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}</td>
-                    <td className='middle'>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): '-'}</td>
-                    <td className='middle'>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): '-'}</td>
+                    >
+                      <strong className={"text-underline"}>
+                        {item?.transmittal?.number ? `#${item?.transmittal?.number}`: ''}
+                      </strong>
+                    </td>
+                    <td className='middle text-muted'>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YY') : ''}</td>
+                    <td className='middle text-muted'>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): ''}</td>
+                    <td className='middle text-muted'>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): ''}</td>
                     {/*<td>{item.transmittalItem?.arrivalDate ? moment(item.transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}</td>*/}
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
@@ -298,7 +332,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         </div>
                       </div>
                     </td> */}
-                    <ShowIf condition={requestSettings.reason}>
+                    <ShowIf condition={false && requestSettings.reason}>
                       {
                         canChangeRequest ?
                           <td className='middle'>
@@ -391,7 +425,8 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   private openOT(number: string) {
-    window.open(parseReplicableURL(`/transmittals/?number=${number}`), '_blank');
+    this.props.history.push(parseReplicableURL(`/transmittals/?number=${number}`))
+    // window.open(parseReplicableURL(`/transmittals/?number=${number}`), '_blank');
   }
 
   private downloadFiles(item: IRequestItem) {

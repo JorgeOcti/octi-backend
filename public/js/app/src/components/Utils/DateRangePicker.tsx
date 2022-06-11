@@ -8,6 +8,8 @@ interface IPropsType {
   format?: string;
   style?: CSSProperties;
   value?: any;
+  disabled?: any;
+
   startDate?: any
   todayHighlight?: boolean
 }
@@ -67,12 +69,13 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { format, value } = this.props;
+    const { format, value, disabled } = this.props;
     return (
       <div className='input-group'>
         <input
           ref={this.input}
           type="text"
+          disabled={disabled}
           value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
           className={`form-control ${this.props.className ?? ''}`}
           onChange={() => {

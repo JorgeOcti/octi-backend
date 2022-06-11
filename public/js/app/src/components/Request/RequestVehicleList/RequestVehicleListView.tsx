@@ -66,111 +66,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.asignar = this.asignar.bind(this);
   }
 
-  componentDidMount() {
-    super.componentDidMount();
-  }
-
-  public componentWillMount(): void {
-    const { orderBy, orderType } = this.props.requestItems.options;
-    const { page } = this.props.requestItems.pagination;
-    window.scrollTo(0, 0);
-
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
-
-    // socket
-    this.socket = io(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      transports: ['websocket'],
-      reconnection: true,
-      query: {
-        token: window.user.token
-      }
-    });
-
-    this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `request-list-${window.user.team._id}` });
-    });
-
-    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
-      this.props.updateRequestItemAction(data.item);
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-aqua-active');
-        setTimeout(() => {
-          $item.removeClass('bg-aqua-active');
-        }, 300);
-      }
-    });
-
-    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-red-active');
-      }
-      setTimeout(() => {
-        const { orderBy, orderType } = this.props.requestItems.options;
-        const { page } = this.props.requestItems.pagination;
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-        // this.props.deleteRequestItemAction(data.item);
-      }, 300);
-    });
-
-    // this.socket.on('DELETE_REQUEST', (data: any): void => {
-    // const $item = $(`#request-${data.idRequest}`);
-    // if ($item) {
-    //   $item.addClass('bg-red-active');
-    // }
-    // setTimeout(() => {
-    //   this.props.deleteRequestActionInList(data.idRequest);
-    // }, 300);
-    // });
-
-    this.socket.on('CREATE_REQUEST', (data: any): void => {
-      const { page } = this.props.requestItems.pagination;
-      const { orderBy, orderType } = this.props.requestItems.options;
-      if (page === 1) {
-        for (const item of data.request.items) {
-          if (window.user.venuesAccess.includes(item.destination._id)) {
-            this.props.createRequestItemAction(item);
-            const $item = $(`#request-item-${item._id}`);
-            if ($item) {
-              $item.addClass('bg-green-active');
-            }
-            setTimeout(() => {
-              $item.removeClass('bg-green-active');
-            }, 300);
-          }
-        }
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-      } else {
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-      }
-    });
-
-    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
-      this.props.createRequestItemAction(data.item);
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-green-active');
-      }
-      setTimeout(() => {
-        $item.removeClass('bg-green-active');
-      }, 300);
-    });
-  }
-
-  public componentDidUpdate(prevProps: IPropsType): void {
-    $('[data-toggle="tooltip"]').tooltip();
-  }
-
-  public componentWillUnmount(): void {
-    // cancel request if component is inmounted
-    if (this.props.requestItems.source) {
-      this.props.requestItems.source.cancel('Operation canceled by the user.');
-    }
-    this.socket.emit('leave', { room: `request-list-${window.user.team._id}` });
-    this.socket.disconnect();
-  }
 
   public render(): React.ReactElement<IPropsType> {
     const {
@@ -185,17 +80,20 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-header with-border'>
               <h3 className='box-title'>Unidades <small>{pagination.count}</small></h3>
               <div className='pull-right box-tools'>
-                <div className='btn-group btn-group-sm'>
-                  <ShowIf condition={
+                <ShowIf
+                  condition={
                     !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
-                    hasPermission(window.user, 'createRequest')}>
-                    <button
-                      onClick={this.create}
-                      className='btn btn-success hidden-xs'
-                    >
-                      <i className='fa fa-fw fa-plus' /> Crear solicitud
-                    </button>
-                  </ShowIf>
+                    hasPermission(window.user, 'createRequest')}
+                >
+                  <button
+                    onClick={this.create}
+                    className='btn btn-sm btn-success hidden-xs'
+                    style={{marginRight: '5px'}}
+                  >
+                    <i className='fa fa-fw fa-plus' /> Crear solicitud
+                  </button>
+                </ShowIf>
+                <div className='btn-group btn-group-sm'>
                   <ShowIf condition={requestItems.length > 0}>
                     <button
                       className='btn btn-primary'
@@ -362,24 +260,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  {/*<ShowIf condition={requestSettings.sellerText}>*/}
-                  {/*<div className='col-md-3' style={{padding: '0 5px'}}>*/}
-                  {/*  <div className='form-group'>*/}
-                  {/*    <label className='control-label'>*/}
-                  {/*      Vendedor*/}
-                  {/*    </label>*/}
-                  {/*    <input*/}
-                  {/*      type='text'*/}
-                  {/*      className='form-control input-sm'*/}
-                  {/*      placeholder='Jhon Doe'*/}
-                  {/*      defaultValue={filters.sellerText}*/}
-                  {/*      onChange={(e) => {*/}
-                  {/*        this.changeFilterDebounced('sellerText', e.target.value);*/}
-                  {/*      }}*/}
-                  {/*    />*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*</ShowIf>*/}
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
@@ -481,24 +361,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  {
-                    /* <div className="col-md-3">
-                    <div className="form-group">
-                      <label htmlFor="venues" className="control-label">Marcas</label>
-                      <BootstrapSelect
-                        noneSelectedText="Todas"
-                        search={true}
-                        displayItems={2}
-                        selectedText="marcas seleccionadas."
-                        selected={[]}
-                        allOption={true}
-                        selectAll={[]}
-                        options={[]}
-                        onClick={() => { }}
-                      />
-                    </div>
-                  </div> */
-                  }
                   <div className='col-md-3'>
                     <div className='row'>
                       <div className='col-md-6' style={{ padding: '0 5px' }}>
@@ -529,88 +391,67 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <ShowIf condition={requestItems.length > 0}>
+              <ShowIf condition={!loading && requestItems.length > 0}>
                 <div className='table-responsive'>
                   <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
                       <tr className='bg-primary' style={{ height: '45px' }}>
-                        <ShowIf condition={requestSettings.priority}>
-                          <th className='middle' style={{ width: '28px' }} />
-                        </ShowIf>
+                        {/*<ShowIf condition={requestSettings.priority}>*/}
+                          <th className='middle' style={{ width: '30px' }} />
+                        {/*</ShowIf>*/}
                         <th
-                          className='middle-center pointer'
-                          style={{ minWidth: '60px' }}
+                          className='middle pointer'
+                          style={{ width: '70px' }}
                           onClick={() => this.changeOrder('meta.request.number')}
                         >
                           SOL
-                          <span style={{ float: 'right' }}>
-                            <i
-                              className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                          </span>
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th
-                          className='middle pointer'
-                          style={{ minWidth: '40px' }}
-                          // onClick={() => this.changeOrder('request.number')}
-                        >
-                          OT
-                          {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                        </th>
-                        <th
-                          className='middle pointer'
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('meta.origin.name')}
-                        >
-                          Creada
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className='middle pointer'
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('meta.destination.name')}
-                        >
-                          Destino
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        {/*<th*/}
-                        {/*  className='middle pointer'*/}
-                        {/*  // style={{ width: '100px' }}*/}
-                        {/*  onClick={() => this.changeOrder('car.property')}*/}
-                        {/*>*/}
-                        {/*  Prop.*/}
-                        {/*  <span style={{ float: 'right' }}><i*/}
-                        {/*    className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                        {/*</th>*/}
-                        <th
-                          className='middle pointer'
-                          style={{ minWidth: '100px' }}
-                          onClick={() => this.changeOrder('meta.car.brand')}
-                        >
-                          Marca
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th className='middle' style={{ minWidth: '200px', width: '200px' }}>VIN</th>
-                        <ShowIf condition={requestSettings.entry}>
-                          <th className='middle' style={{ width: '80px' }}>Partida</th>
-                        </ShowIf>
-                        <ShowIf condition={requestSettings.denomination}>
+                        <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
                           <th
-                            className='middle pointer'
-                            style={{ minWidth: '120px' }}
-                            onClick={() => this.changeOrder('meta.car.denomination')}
+                            className='middle'
+                            style={{ width: '50px' }}
+                            // onClick={() => this.changeOrder('transmittal.transmittalNumber')}
                           >
-                            Modelo
-                            <span style={{ float: 'right' }}><i
-                              className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                            OT
+                            {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'transmittal.transmittalNumber' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
                           </th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.material}>
+                        <ShowIf condition={false}>
                           <th
                             className='middle pointer'
                             style={{ width: '80px' }}
+                            onClick={() => this.changeOrder('meta.origin.name')}
+                          >
+                            Creada
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <th
+                          className='middle pointer'
+                          style={{ width: '150px' }}
+                          onClick={() => this.changeOrder('meta.destination.name')}
+                        >
+                          Destino
+                          <span style={{ float: 'right' }}>
+                            <i
+                              className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`}
+                            />
+                          </span>
+                        </th>
+                        <ShowIf condition={requestSettings.entry}>
+                          <th className='middle' style={{ width: '70px' }}>Partida</th>
+                        </ShowIf>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.material
+                          }
+                        >
+                          <th
+                            className='middle-center pointer'
+                            style={{ width: '70px' }}
                             onClick={() => this.changeOrder('meta.car.material')}
                           >
                             Material
@@ -618,22 +459,67 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                               className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                           </th>
                         </ShowIf>
+                        <th
+                          className='middle pointer'
+                          style={{ minWidth: '200px', width: '200px' }}
+                          onClick={() => this.changeOrder('meta.car.vin')}
+                        >
+                          VIN
+                          <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.vin' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                        </th>
+                        <th
+                          className='middle pointer'
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('meta.car.brand')}
+                        >
+                          Marca
+                          <span style={{ float: 'right' }}>
+                            <i className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                          </span>
+                        </th>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.denomination')}
+                          >
+                            Modelo
+                            <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
+                        </ShowIf>
                         <ShowIf condition={requestSettings.color}>
-                          <th className='middle' style={{ minWidth: '80px' }}>Color</th>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.color')}
+                          >
+                            Color
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.car.color' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
                         </ShowIf>
                         <th
                           className='middle pointer'
-                          style={{ minWidth: '120px', maxWidth: '160px' }}
+                          style={{ width: '120px' }}
                           onClick={() => this.changeOrder('meta.status.weigth')}
                         >
                           Estado
                           <span style={{ float: 'right' }}><i
                             className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <ShowIf condition={requestSettings.internalNumber}>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.internalNumber
+                          }
+                        >
                           <th className='middle' style={{ width: '60px' }}>CDO</th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.reason}>
+                        <ShowIf condition={false && requestSettings.reason}>
                           <th
                             className='middle pointer'
                             style={{ minWidth: '100px' }}
@@ -649,44 +535,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           </th>
                         </ShowIf>
                         <ShowIf condition={requestSettings.ticket}>
-                          <th className='middle pointer'>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '40px', maxWidth: '40px' }}
+                          >
                             Ticket
                           </th>
-                          <th className='middle pointer'>
-                            Nº Ticket
-                          </th>
                         </ShowIf>
-                        {/* <th className="middle">Carrocería</th>
-                          <th className="middle">Pre-Entrega</th> */}
-                        <th className='middle-center' style={{ width: '40px' }}>Adj</th>
-                        <th className='middle-center' style={{ width: '20px' }}>Obs</th>
-                        {/* <th
-                            className="middle pointer"
-                            style={{ width: '100px' }}
-                            onClick={() => this.changeOrder('carrier.name')}
-                          >
-                            Transporte
-                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                          </th>
-                          <th
-                            className="middle pointer"
-                            style={{ width: '80px' }}
-                            onClick={() => this.changeOrder('uploadDate')}
-                          >
-                            F. carga
-                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                          </th>
-                          <th
-                            className="middle pointer"
-                            style={{ width: '80px' }}
-                            onClick={() => this.changeOrder('estimatedArrival')}
-                          >
-                            F. llegada
-                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                          </th> */}
-                        <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                          <th className='middle' style={{ width: '30px' }} />
-                        </ShowIf>
+                        {/*<th className='middle-center' style={{ width: '20px' }}></th>*/}
+                        {/*<th className='middle-center' style={{ width: '20px' }}></th>*/}
                       </tr>
                     </thead>
                     <tbody>
@@ -755,6 +612,112 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+  public componentDidMount() {
+    super.componentDidMount();
+  }
+
+  public componentWillMount(): void {
+    const { orderBy, orderType } = this.props.requestItems.options;
+    const { page } = this.props.requestItems.pagination;
+    window.scrollTo(0, 0);
+
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+
+    // socket
+    this.socket = io(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: window.user.token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      this.socket.emit('join', { room: `request-list-${window.user.team._id}` });
+    });
+
+    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
+      this.props.updateRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        const { orderBy, orderType } = this.props.requestItems.options;
+        const { page } = this.props.requestItems.pagination;
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        // this.props.deleteRequestItemAction(data.item);
+      }, 300);
+    });
+
+    // this.socket.on('DELETE_REQUEST', (data: any): void => {
+    // const $item = $(`#request-${data.idRequest}`);
+    // if ($item) {
+    //   $item.addClass('bg-red-active');
+    // }
+    // setTimeout(() => {
+    //   this.props.deleteRequestActionInList(data.idRequest);
+    // }, 300);
+    // });
+
+    this.socket.on('CREATE_REQUEST', (data: any): void => {
+      const { page } = this.props.requestItems.pagination;
+      const { orderBy, orderType } = this.props.requestItems.options;
+      if (page === 1) {
+        for (const item of data.request.items) {
+          if (window.user.venuesAccess.includes(item.destination._id)) {
+            this.props.createRequestItemAction(item);
+            const $item = $(`#request-item-${item._id}`);
+            if ($item) {
+              $item.addClass('bg-green-active');
+            }
+            setTimeout(() => {
+              $item.removeClass('bg-green-active');
+            }, 300);
+          }
+        }
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+      } else {
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+      }
+    });
+
+    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
+      this.props.createRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-green-active');
+      }
+      setTimeout(() => {
+        $item.removeClass('bg-green-active');
+      }, 300);
+    });
+  }
+
+  public componentDidUpdate(prevProps: IPropsType): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    if (this.props.requestItems.source) {
+      this.props.requestItems.source.cancel('Operation canceled by the user.');
+    }
+    this.socket.emit('leave', { room: `request-list-${window.user.team._id}` });
+    this.socket.disconnect();
+  }
+
   private create(): void {
     this.props.history.push(parseReplicableURL('/requests/vehicles/create/'));
   }
@@ -797,7 +760,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   private changePage(page: number): void {
     window.scrollTo(0, 0);
     const { orderBy, orderType } = this.props.requestItems.options;
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
   }
 
   public exportExcel(): void {

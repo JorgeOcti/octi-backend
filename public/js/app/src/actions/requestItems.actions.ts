@@ -194,7 +194,9 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingRequestItemsAction(!hideLoading));
+    if(!hideLoading){
+      dispatch(isLoadingRequestItemsAction(true));
+    }
     const page = nextPage ? nextPage : state.requestItems.pagination.page;
     dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestItemsAction(api.getSource()));
@@ -216,8 +218,8 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         dispatch(loadUsersRequestItemsAction(users.data.results));
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(loadPropertiesRequestItemsAction(properties.data));
-        dispatch(isLoadingRequestItemsAction(false));
         dispatch(loadRequestSettingsAction(teamsettings.data.request));
+        dispatch(isLoadingRequestItemsAction(false));
       }))
       .catch((err: AxiosError) => {
         dispatch(isLoadingRequestItemsAction(false));

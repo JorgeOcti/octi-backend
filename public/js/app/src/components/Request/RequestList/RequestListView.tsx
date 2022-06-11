@@ -167,9 +167,13 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-header with-border'>
               <h3 className='box-title'>Solicitudes <small>{pagination.count}</small></h3>
               <div className='pull-right box-tools'>
-                <div className='btn-group btn-group-sm'>
+                {/*<div className='btn-group btn-group-sm'>*/}
                   <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                    <button className='btn btn-sm btn-success' onClick={this.create}>
+                    <button
+                      className='btn btn-sm btn-success'
+                      onClick={this.create}
+                      style={{marginRight: '5px' }}
+                    >
                       <i className='fa fa-fw fa-plus' /> Crear solicitud
                     </button>
                   </ShowIf>
@@ -185,7 +189,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                       }
                     </button>
                   </ShowIf>
-                </div>
+                {/*</div>*/}
               </div>
             </div>
             <div className='box-body table-responsive request-list'>
@@ -274,7 +278,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <ShowIf condition={loading}>
+            <ShowIf condition={loading && requests.length === 0}>
               <div className='overlay'>
                 <i className='fa fa-spinner fa-spin text-purple' />
               </div>

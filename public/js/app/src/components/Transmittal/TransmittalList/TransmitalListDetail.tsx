@@ -23,6 +23,7 @@ import { debounce } from 'throttle-debounce';
 import {IMilestone} from "../../../../../../../src/distribution/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  router: any;
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   item: ITransmittalModel;
@@ -68,8 +69,11 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     const open = this.props.transmittal.transmittalOpen.includes(transmittal._id);
     return (
       <React.Fragment>
-        <div id={`transmittal-${transmittal._id}`} className='row transmittal bg-transmittal-title background-transition'>
-          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center head-sorted'>
+        <div id={`transmittal-${transmittal._id}`} className='row transmittal bg-transmittal-title background-transition pointer'>
+          <div
+            onClick={() => transmittalActions.toogleTab(transmittal._id)}
+            className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center head-sorted'
+          >
             <strong className='text-underline'>#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
@@ -159,26 +163,6 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                       ))
                     }
                   </select>
-                  /*<BootstrapSelect
-                    noneSelectedText='Selecciona un transportista'
-                    displayItems={2}
-                    sm={true}
-                    selectedText='transportistas seleccionadas.'
-                    selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
-                    autoClouse={true}
-                    allOption={false}
-                    search={true}
-                    options={carriers.map((carrier: any) => ({
-                      value: carrier._id,
-                      text: carrier.name
-                    }))}
-                    onClick={(e: string) => {
-                      this.props.transmittalActions.updateTransmittalThunkAction({
-                        _id: transmittal._id,
-                        'transporter.carrier': e
-                      });
-                    }}
-                  />*/
                 ) :
                 (
                   `${transmittal.transporter.carrier.name}`
@@ -236,7 +220,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-           <UploadTransmittalFile transmittal={transmittal} />
+            <UploadTransmittalFile transmittal={transmittal} />
             <ShowIf condition={transmittal.files.length >= 1}>
               <button
                 className='btn btn-xs btn-default'
@@ -251,37 +235,40 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               </button>
             </ShowIf>
           </div>
-            {
-              evidenceMilestones.map((milestone: IMilestone, index: number) => {
-                let tmp = transmittal.evidenceFullLoad.filter(e => {
-                  if (e.milestone != undefined) {
-                    let is_in: Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0;
-                    return is_in ? e.milestone == milestone._id : index == 0;
-                  } else
-                    return index == 0;
-                });
-                return (
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
-                    {
-                      tmp.map((image: any, index: number) => (
-                        <div key={`${transmittal._id}-${index}${image._id}`} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
-                          <a href={decodeURI(image.file.url)}
-                             data-toggle='lightbox'
-                             data-gallery={`${transmittal._id}-${milestone._id}`}
-                             data-title={`#${this.padNumber(transmittal.number)}`}
-                             data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
-                          >
-                            <button className='btn btn-xs btn-default'>
-                              <i className='fa fa-fw fa-image' /> {tmp.length}
-                            </button>
-                          </a>
-                        </div>
-                      ))
-                    }
-                  </div>
-                );
-              })
-            }
+          {
+            evidenceMilestones.map((milestone: IMilestone, index: number) => {
+              let tmp = transmittal.evidenceFullLoad.filter(e => {
+                if (e.milestone != undefined) {
+                  let is_in: Boolean = evidenceMilestones.filter(em => em._id == e.milestone).length > 0;
+                  return is_in ? e.milestone == milestone._id : index == 0;
+                } else
+                  return index == 0;
+              });
+              return (
+                <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 text-center' key={`${transmittal._id}-${milestone._id}`}>
+                  {
+                    tmp.map((image: any, index: number) => (
+                      <div
+                        key={`${transmittal._id}-${index}${image._id}`}
+                        className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}
+                      >
+                        <a href={decodeURI(image.file.url)}
+                           data-toggle='lightbox'
+                           data-gallery={`${transmittal._id}-${milestone._id}`}
+                           data-title={`#${this.padNumber(transmittal.number)}`}
+                           data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
+                        >
+                          <button className='btn btn-xs btn-default'>
+                            <i className='fa fa-fw fa-image' /> {tmp.length}
+                          </button>
+                        </a>
+                      </div>
+                    ))
+                  }
+                </div>
+              );
+            })
+          }
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
               transmittal?.revision ?
@@ -303,18 +290,18 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             <table className='table table-hover m-0'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
-                <th className='middle' style={{ width: '28px' }}>Solicitud</th>
-                <th className='middle' style={{ width: '100px' }}>VIN</th>
-                <th className='middle' style={{ width: '160px' }}>Modelo</th>
-                <th className='middle' style={{ width: '80px' }}>Factura</th>
-                <th className='middle' style={{ width: '80px' }}>Partida</th>
-                <th className='middle' style={{ width: '80px' }}>BL</th>
+                <th className='middle' style={{ width: '28px' }}>SOL</th>
+                <th className='middle' style={{ width: '140px' }}>VIN</th>
+                <th className='middle' style={{ width: '160px' }}>Descripción</th>
+                <th className='middle' style={{ width: '70px' }}>Factura</th>
+                <th className='middle' style={{ width: '70px' }}>Partida</th>
+                <th className='middle' style={{ width: '70px' }}>BL</th>
                 <th className='middle' style={{ minWidth: '100px' }}>Origen</th>
                 <th className='middle' style={{ minWidth: '100px' }}>Destino</th>
-                <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
-                <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
-                <th className='middle' style={{ width: '120px' }}>Observación</th>
-                <th className='middle' style={{ width: '40px' }}>Carga</th>
+                <th className='middle' style={{ width: '105px' }}>Fecha emisión</th>
+                <th className='middle' style={{ width: '105px' }}>Fecha arribo</th>
+                <th className='middle' style={{ width: '20px' }}></th>
+                <th className='middle-center' style={{ width: '40px' }}>Cargado</th>
                 <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
                   <th className='middle' style={{ width: '30px' }} />
                 </ShowIf>
@@ -324,13 +311,14 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               {
                 transmittal.items.map((transmittalItem, index) => (
                   <TransmitalListItem
+                    history={this.props.history}
                     item={transmittal}
                     transmittalItem={transmittalItem}
                     key={`${index}${transmittalItem._id}`}
                   />
                 ))
               }
-              <ShowIf condition={transmittal.items.length > 1}>
+              <ShowIf condition={false && transmittal.items.length > 1}>
                 <tr className='no-striped'>
                   <td colSpan={8} className='middle text-right'>
                     {/*Masivo*/}
@@ -370,7 +358,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <div className='row'>
                 <div className='col-md-12 text-right m-b-10 m-t-10'>
                   <button className='btn btn-sm btn-success' onClick={this.openDialogAddCar}>
-                    <i className='fa fa-fw fa-plus' /> Agregar vehículo
+                    <i className='fa fa-fw fa-plus-square' /> Cargar vehículo
                   </button>
                 </div>
               </div>
