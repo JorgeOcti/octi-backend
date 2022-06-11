@@ -1333,7 +1333,8 @@ class CarController {
       }
 
       if (search?.length > 2) {
-        search = search.replace(/[^a-z A-ZÀ-ú]+/g, '').trim();
+        search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
+        // search = search.trim().replace("*", "");
         logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
         const searchText = new RegExp(search, 'i');
         const searchTextArray = search.split(" ");
