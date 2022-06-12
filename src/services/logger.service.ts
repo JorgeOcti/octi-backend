@@ -1,23 +1,23 @@
 import * as moment from 'moment';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import GeneralUtils from '../utils/general.utils';
-import * as fileStreamRotator from 'file-stream-rotator';
-import * as path from 'path';
+// import * as fileStreamRotator from 'file-stream-rotator';
+// import * as path from 'path';
 
 export interface Icolors {
   [key: string]: any;
 }
 
 // Logger app
-export const logDirectory = path.join(__dirname, '../logs');
+// export const logDirectory = path.join(__dirname, '../logs');
 
-export const accessLogStream = fileStreamRotator.getStream({
-  date_format: 'YYYYMMDD',
-  // date_format: 'YYYY/MM/DD',
-  filename: logDirectory + '/access-%DATE%.log',
-  frequency: 'daily',
-  verbose: false
-});
+// export const accessLogStream = fileStreamRotator.getStream({
+//   date_format: 'YYYYMMDD',
+//   // date_format: 'YYYY/MM/DD',
+//   filename: logDirectory + '/access-%DATE%.log',
+//   frequency: 'daily',
+//   verbose: false
+// });
 
 class LoggerService {
 
@@ -50,8 +50,8 @@ class LoggerService {
   }
 
   public info(message: string): void {
-    this.logger('INFO', 'production', message, this.colors.brightBlack);
-    this.logger('INFO', 'development', message, this.colors.brightBlack);
+    this.logger('INFO', 'production', message, this.colors.reset);
+    this.logger('INFO', 'development', message, this.colors.reset);
   }
 
   /* istanbul ignore next */
@@ -65,7 +65,7 @@ class LoggerService {
     this.logger('ERROR', 'production', message, this.colors.brighRed);
     this.logger('ERROR', 'development', message, this.colors.brighRed);
     if (propagate) {
-      Raven.captureException(new Error(message));
+      // Raven.captureException(new Error(message));
     }
   }
 
@@ -74,9 +74,10 @@ class LoggerService {
     // return moment();
     // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
     if (process.env.ENV === 'production') {
-      return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+      // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
+      return moment().format('x')
     } else {
-       return moment().format('DD/MM/YYYY:HH:mm:ss.x')
+       return moment().format('x')
     }
   }
 
@@ -87,15 +88,20 @@ class LoggerService {
       if (!textColor) {
         textColor = this.colors.reset;
       }
-      console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
-      this.writeLog(type);
+      if (process.env.ENV === 'production') {
+        // console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+        console.log(`${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${this.colors.reset}`);
+      } else {
+        console.log(`${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${this.colors.reset}`);
+      }
+      // this.writeLog(type);
     }
   }
 
   /* istanbul ignore next */
-  private writeLog(type: string) {
-    accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
-  }
+  // private writeLog(type: string) {
+    // accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
+  // }
 }
 
 export default new LoggerService();

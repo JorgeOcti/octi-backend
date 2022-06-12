@@ -5,7 +5,7 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
@@ -40,13 +40,13 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   recommends: ICar[];
-  car: Partial<ICar & {reason: string}>;
+  car: Partial<ICar & { reason: string }>;
 }
 
 declare let window: IWindow;
 
 class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   readonly api: ApiService;
   readonly state = {
@@ -76,92 +76,8 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     super.componentDidMount();
   }
 
-  public componentWillMount(): void {
-    const { id } = this.props.match.params;
-    window.scrollTo(0, 0);
-
-    this.props.getRequestAction(id);
-
-    this.socket = io(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      transports: ['websocket'],
-      reconnection: true,
-      query: {
-        token: window.user.token
-      }
-    });
-
-    this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `request-detail-${window.user.team._id}` });
-    });
-
-    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
-      if (data.idRequest === id) {
-        this.props.updateRequestItemActionInDetail(data.item);
-        const $item = $(`#request-item-${data.item._id}`);
-        if ($item) {
-          $item.addClass('bg-aqua-active');
-        }
-        setTimeout(() => {
-          $item.removeClass('bg-aqua-active');
-        }, 300);
-      }
-    });
-
-    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      if (data.idRequest === id) {
-        const $item = $(`#request-item-${data.item._id}`);
-        if ($item) {
-          $item.addClass('bg-red-active');
-        }
-        setTimeout(() => {
-          this.props.deleteRequestItemActionInDetail(data.item);
-        }, 300);
-      }
-    });
-
-    this.socket.on('DELETE_REQUEST', (data: any): void => {
-      if (data.idRequest === id) {
-        const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
-        this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
-      }
-    });
-
-    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
-      if (data.idRequest === id) {
-        this.props.createRequestItemActionInDetail(data.item);
-        const $item = $(`#request-item-${data.item._id}`);
-        if ($item) {
-          $item.addClass('bg-green-active');
-        }
-        setTimeout(() => {
-          $item.removeClass('bg-green-active');
-        }, 300);
-      }
-    });
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({ error });
-    Raven.captureException(error, {
-      extra: errorInfo
-    });
-  }
-
-  public componentDidUpdate(prevProps: IPropsType): void {
-    $('[data-toggle="tooltip"]').tooltip();
-  }
-
-  public componentWillUnmount(): void {
-    // cancel request if component is inmounted
-    if (this.props.requests.source) {
-      this.props.requests.source.cancel('Operation canceled by the user.');
-    }
-    this.socket.disconnect();
-  }
-
   public render(): React.ReactElement<IPropsType> {
-    const { request, loading, reasons, requestSettings} = this.props.requests;
+    const { request, loading, reasons, requestSettings } = this.props.requests;
     const { recommends, car } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
@@ -194,7 +110,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tr>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}>Vendedor</span><br />
-                            <strong><i className='fa fa-fw fa-user' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
+                            <strong><i className='fa fa-fw fa-user-o' /> {request.createdBy?.firstName} {request.createdBy?.lastName}</strong>
                           </td>
                           {/*<td style={{ borderTop: '0' }}>*/}
                           {/*  <span style={{ paddingLeft: '17px' }}> Vendedor</span><br />*/}
@@ -210,7 +126,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           </td>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}> Sucursal</span><br />
-                            <strong><i className='fa fa-fw fa-building' /> {request.origin?.name}</strong>
+                            <strong><i className='fa fa-fw fa-building-o' /> {request.origin?.name}</strong>
                           </td>
                           <td style={{ width: '30%', borderTop: '0' }}>
                             Dirección<br />
@@ -218,7 +134,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           </td>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}> Creada</span><br />
-                            <strong><i className='fa fa-fw fa-calendar' /> {moment(request.createdAt).format('DD-MM-YYYY')}</strong>
+                            <strong><i className='fa fa-fw fa-calendar-o' /> {moment(request.createdAt).format('DD-MM-YYYY')}</strong>
                           </td>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}> Entrega esperada</span><br />
@@ -236,7 +152,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tr>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}>Cliente</span><br />
-                            <strong><i className='fa fa-fw fa-address-book' /> {request.customerInformation?.name} </strong>
+                            <strong><i className='fa fa-fw fa-address-book-o' /> {request.customerInformation?.name} </strong>
                           </td>
                           <td style={{ borderTop: '0' }}>
                             Rut Cliente<br />
@@ -244,7 +160,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           </td>
                           <td style={{ borderTop: '0' }}>
                             <span style={{ paddingLeft: '17px' }}>Correo Cliente</span><br />
-                            <strong><i className='fa fa-fw fa-envelope' /> {
+                            <strong><i className='fa fa-fw fa-envelope-o' /> {
                               request.customerInformation?.email ?
                                 <a href={request.customerInformation.email}>{request.customerInformation.email}</a> : '-'
                             } </strong>
@@ -257,37 +173,51 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     <table className='table table-xs table-hover' style={{ minWidth: '900px' }}>
                       <thead>
                       <tr>
-                        <th className='middle-center' style={{ width: '25px' }}>#</th>
-                        <ShowIf condition={requestSettings.priority}>
+                        {/*<ShowIf condition={requestSettings.priority}>*/}
                           <th className='middle' style={{ width: '28px' }} />
-                        </ShowIf>
-                        <th className='middle' style={{ width: '10px' }}>Propiedad</th>
+                        {/*</ShowIf>*/}
+                        <th className='middle-center' style={{ width: '25px' }}>#</th>
+                        {/*<th className='middle' style={{ width: '10px' }}>Propiedad</th>*/}
                         <ShowIf condition={requestSettings.brand}>
-                          <th className='middle' style={{ minWidth: '100px' }}>Marca</th>
+                          <th className='middle' style={{ width: '100px' }}>Marca</th>
                         </ShowIf>
                         <ShowIf condition={requestSettings.denomination}>
-                          <th className='middle' style={{ minWidth: '160px' }}>Modelo</th>
+                          <th className='middle' style={{ maxWidth: '300px' }}>Modelo</th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.material}>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.material
+                          }
+                        >
                           <th className='middle' style={{ width: '100px' }}>Material</th>
                         </ShowIf>
                         <ShowIf condition={requestSettings.color}>
-                          <th className='middle' style={{ width: '100px' }}>Color</th>
+                          <th className='middle'  style={{ maxWidth: '300px' }}>Color</th>
                         </ShowIf>
                         <th className='middle' style={{ width: '200px' }}>VIN</th>
                         <th className='middle' style={{ minWidth: '100px' }}>Estado</th>
-                        <ShowIf condition={requestSettings.conectaID}>
-                          <th className='middle-center'>Ticket</th>
-                          <th className='middle' style={{ width: '100px' }}>Nº Ticket</th>
+                        <ShowIf condition={requestSettings.ticket}>
+                          <th
+                            className='middle-center pointer'
+                            style={{ minWidth: '40px', maxWidth: '40px' }}
+                          >
+                            Ticket
+                          </th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.internalNumber}>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.internalNumber
+                          }
+                        >
                           <th className='middle' style={{ width: '80px' }}>CDO</th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.reason}>
+                        <ShowIf condition={false && requestSettings.reason}>
                           <th className='middle' style={{ minWidth: '100px' }}>Motivo</th>
                         </ShowIf>
-                        <th className='middle-center' style={{ width: '40px' }}>Adj</th>
-                        <th className='middle' style={{ width: '20px' }}>Obs</th>
+                        <th className='middle-center' style={{ width: '40px' }}></th>
+                        <th className='middle' style={{ width: '20px' }}></th>
                         {
                           hasPermission(window.user, 'deleteRequest') ?
                             <th className='middle' style={{ width: '30px' }} />
@@ -299,6 +229,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       {
                         request!.items!.map((item, index) => (
                           <RequestItem
+                            history={this.props.history}
                             key={item._id}
                             index={index}
                             request={request}
@@ -506,11 +437,11 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-footer text-right'>
               <button className='btn btn-sm btn-default' onClick={() => {
                 this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
-              }}><i className='fa fa-fw fa-rotate-left' /> Volver a unidades
+              }}>Cancelar
               </button>
             </div>
             {
-              loading &&
+              !Object.keys(request).length && loading &&
               <div className='overlay'>
                 <i className='fa fa-spinner fa-spin text-purple' />
               </div>
@@ -519,6 +450,90 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  public componentWillMount(): void {
+    const { id } = this.props.match.params;
+    window.scrollTo(0, 0);
+
+    this.props.getRequestAction(id);
+
+    this.socket = io(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: window.user.token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      this.socket.emit('join', { room: `request-detail-${window.user.team._id}` });
+    });
+
+    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
+      if (data.idRequest === id) {
+        this.props.updateRequestItemActionInDetail(data.item);
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-aqua-active');
+        }
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
+      if (data.idRequest === id) {
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-red-active');
+        }
+        setTimeout(() => {
+          this.props.deleteRequestItemActionInDetail(data.item);
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_REQUEST', (data: any): void => {
+      if (data.idRequest === id) {
+        const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
+        this.props.history.push(parseReplicableURL(vehiclesView ? '/requests/vehicles/' : '/requests/'));
+      }
+    });
+
+    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
+      if (data.idRequest === id) {
+        this.props.createRequestItemActionInDetail(data.item);
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-green-active');
+        }
+        setTimeout(() => {
+          $item.removeClass('bg-green-active');
+        }, 300);
+      }
+    });
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({ error });
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public componentDidUpdate(prevProps: IPropsType): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    if (this.props.requests.source) {
+      this.props.requests.source.cancel('Operation canceled by the user.');
+    }
+    this.socket.disconnect();
   }
 
   private search(text: string): void {
@@ -576,7 +591,6 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
 }
-
 
 const mapStateToProps = (state: { requests: IRequestsState }) => {
   return {

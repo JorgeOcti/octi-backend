@@ -162,7 +162,7 @@ export function createCarrierAction() {
         dispatch(getCarriersAction(state.carriers.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
       })
@@ -187,7 +187,7 @@ export function updateCarrierAction() {
         dispatch(getCarriersAction(state.carriers.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         setTimeout(() => {
@@ -210,7 +210,7 @@ export function deleteCarrierAction(id: string) {
     api.deleteCarrier(id)
       .then((response: AxiosResponse): void => {
         // effect when removing user
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         $(`#carrier-${id}`).addClass('deleted-item');

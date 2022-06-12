@@ -4,18 +4,15 @@ import BreadcrumbApp from './BreadcrumbApp';
 import FooterApp from './FooterApp';
 import HeaderApp from './HeadeApp';
 import MenuApp from './MenuApp';
-import { IInventoryState } from '../actions/inventory.actions';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import moment = require('moment');
-// import {Dispatch} from 'react-redux';
-// import {RouteComponentProps} from "react-router";
+import ShowIf from '../components/Utils/ShowIf';
 
-// interface IPropsType extends RouteComponentProps<{ ticket: number }> {
 interface IPropsType extends RouteComponentProps<{}> {
   children: JSX.Element;
   router: any;
-  title: string;
+  title: any;
   cMenu: string;
   cSubMenu: string;
   cAction?: string;
@@ -28,7 +25,7 @@ interface IStateType {
 class AppContainer extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
-    title: PropTypes.string.isRequired,
+    title: PropTypes.any.isRequired,
     cMenu: PropTypes.string.isRequired,
     cSubMenu: PropTypes.string.isRequired,
     cAction: PropTypes.string
@@ -62,7 +59,9 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
         <div className='content-wrapper' style={{ minHeight: `${window.innerHeight - 51}px` }}>
           <section className='content-header'>
-            <h1>{title ? title : '\u00A0'}</h1>
+            <ShowIf condition={typeof title === 'string'} alternative={title}>
+              <h1>{title ? title: '\u00A0'}</h1>
+            </ShowIf>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction} />
           </section>
           {this.props.children}

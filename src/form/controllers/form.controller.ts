@@ -9,7 +9,7 @@ import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import { queue } from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
@@ -272,7 +272,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
   }
@@ -286,15 +286,15 @@ class FormController {
         },
         team
       };
-      logger.info(`FormController.list: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`FormController.list: email: ${req.user.email}} filter: ${JSON.stringify(filter)}`);
+      logger.info(`FormController.list: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`FormController.list: email: ${req.user.email} filter: ${JSON.stringify(filter)}`);
       const forms = await this.getForms(filter);
       return res.json({
         data: forms,
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`Async Error.`);
       return res.status(400).json({
@@ -577,15 +577,15 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       res.status(500).json({
         message: 'No se encontro formularío',
@@ -1105,7 +1105,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       console.log(e);
       console.log(e.stack);
@@ -1166,7 +1166,7 @@ class FormController {
             }
           });
         } catch (e) {
-          Raven.captureException(e, { req });
+          // Raven.captureException(e, { req });
           /* istanbul ignore next */
           logger.error(`async error:`);
           /* istanbul ignore next */
@@ -1183,11 +1183,11 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req, user: req.user });
+      // Raven.captureException(e, { req, user: req.user });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       return res.status(400).json({
@@ -1216,7 +1216,7 @@ class FormController {
           });
         } else {
           logger.error(`changePreferred: Formulario no encontrado`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(400).json({
             message: 'Formulario no encontrado',
             status: 400
@@ -1224,18 +1224,18 @@ class FormController {
         }
       } else {
         logger.error(`changePreferred: Usuario no encontrado`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1330,11 +1330,11 @@ class FormController {
       res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1435,11 +1435,11 @@ class FormController {
       }
       res.json(data);
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1561,11 +1561,11 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing derco: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -1835,11 +1835,11 @@ class FormController {
       return res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2041,11 +2041,11 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard revisiones: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2134,11 +2134,11 @@ class FormController {
         notClean: days.map((d) => daysDict[d].notClean)
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({
@@ -2360,7 +2360,7 @@ class FormController {
 
   public async createPosition(req: IRequest, res: Response): Promise<any> {
     try {
-      logger.info(`FormController.createPosition: email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+      logger.info(`FormController.createPosition: email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
       const { company, venue } = req.user;
       const team = req.user.team._id;
       const { lat, lng, accuracy, provider } = req.body;
@@ -2382,11 +2382,11 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, { req });
+      // Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`FormController.createPosition: Error`);
       /* istanbul ignore next */
-      logger.error(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+      logger.error(`email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({

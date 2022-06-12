@@ -59,7 +59,7 @@ class UploadTransmittalFile extends React.Component<IPropsType, IStateType> {
                 title={`Cargar archivo`}
               />
             )
-        }&nbsp;Subir
+        }
       </button>
     );
   }

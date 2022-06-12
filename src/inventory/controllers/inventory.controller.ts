@@ -10,7 +10,7 @@ import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import { PaginateOptions } from 'mongoose';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as tempfile from 'tempfile';
 import { queue } from '../../app';
 import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
@@ -324,7 +324,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`create: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -544,7 +544,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`list: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -559,7 +559,7 @@ class InventoryController {
     const team = req.user.team._id;
     const {id} = req.params;
     logger.info(`apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`);
     try {
       const updatedUser = await User.findById(req.user._id, {venue: true});
       if (!updatedUser) {
@@ -614,7 +614,7 @@ class InventoryController {
           });
         } else {
           logger.error(`apiDetail: No se ha encontrado el inventario solicitado.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(404).json({
             message: 'No se ha encontrado el inventario solicitado.',
             status: 404
@@ -625,7 +625,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -739,7 +739,7 @@ class InventoryController {
         /* istanbul ignore next */
         logger.error(`uploadFile: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
@@ -747,7 +747,7 @@ class InventoryController {
       }
     } else {
       logger.error(`uploadFile: La imagen es obligatoria.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       return res.status(400).json({
         message: 'La imagen es obligatoria.',
@@ -769,7 +769,7 @@ class InventoryController {
       res.json({});
     } catch (e) {
       logger.error(`removeInventoryCarFile: La imagen es obligatoria.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       res.status(400).json({
         message: 'La imagen es obligatoria.',
@@ -783,7 +783,7 @@ class InventoryController {
     const {id} = req.params;
     const {vin, images} = req.body;
     logger.info(`apiFoundCar`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'venue',
@@ -817,7 +817,7 @@ class InventoryController {
           });
           if (inventoriedCar) {
             logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
             res.status(200).json({
               message: 'Este vehículo ya ha sido inventariado',
               status: 200
@@ -862,7 +862,7 @@ class InventoryController {
               });
             } else {
               logger.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
               res.status(400).json({
                 message: 'Este vehículo no se encuentra en el inventario.',
                 status: 400
@@ -872,7 +872,7 @@ class InventoryController {
         } else {
           // if car no exist
           logger.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(400).json({
             message: 'Este vehículo no se encuentra en el inventario.',
             status: 400
@@ -881,7 +881,7 @@ class InventoryController {
       } else {
         // if inventory no exist
         logger.error(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
           message: 'Este inventario no existe o ya no se encuentra activo.',
           status: 404
@@ -891,7 +891,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`apiFoundCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, error: ${e}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -933,7 +933,7 @@ class InventoryController {
         });
       } else {
         logger.error(`finishInventory: No se ha encontrado el inventario`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(400).json({
           message: 'No se ha encontrado el inventario',
           status: 400
@@ -944,7 +944,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`finishInventory: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -983,7 +983,7 @@ class InventoryController {
         });
       } else {
         logger.error(`deleteInventory: No se ha encontrado el inventario`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(400).json({
           message: 'No se ha encontrado el inventario',
           status: 400
@@ -994,7 +994,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`deleteInventory: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1043,7 +1043,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`addComment: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1192,7 +1192,7 @@ class InventoryController {
         archive.finalize();
       } else {
         logger.error(`downloadImages: 'No se ha encontrado el inventario.`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
         message: 'No se ha encontrado el inventario.',
         status: 404
@@ -1202,7 +1202,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`downloadImages: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1218,7 +1218,7 @@ class InventoryController {
     const {id} = req.params;
     const {vin, patent, denomination, brand, color, images} = req.body;
     logger.info(`reportCar`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'venue',
@@ -1287,7 +1287,7 @@ class InventoryController {
         });
       } else {
         logger.error(`reportCar: Este inventario ya no se encuentra disponible.`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
           message: 'Este inventario ya no se encuentra disponible.',
           status: 404
@@ -1297,7 +1297,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`reportCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1313,7 +1313,7 @@ class InventoryController {
     const {id} = req.params;
     const {car, label, custom, carID} = req.body;
     logger.info(`setLabel`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
     try {
       if(label === 'deleted'){
         const inventoryCar = await InventoryCar.findById(car, {venue: true});
@@ -1384,7 +1384,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`setLabel: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1418,7 +1418,7 @@ class InventoryController {
         });
       } else {
         logger.error(`apiList: Usuario no encontrado`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
         res.status(400).json({
           message: 'Usuario no encontrado',
@@ -1429,7 +1429,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1858,7 +1858,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`detaill: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -1944,10 +1944,10 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`inventory dashboard: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
-      Raven.captureException(e, {req});
+      // Raven.captureException(e, {req});
       /* istanbul ignore next */
       res.status(500).json({
         message: JSON.stringify(e),
@@ -2178,7 +2178,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`loadStock: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -2332,10 +2332,10 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`inventory currentStock: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
-      Raven.captureException(e, {req});
+      // Raven.captureException(e, {req});
       /* istanbul ignore next */
       res.status(500).json({
         message: JSON.stringify(e),

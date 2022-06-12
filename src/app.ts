@@ -15,7 +15,7 @@ import * as moment from 'moment-timezone';
 import { passport } from './passportConfig';
 // const passportSaml = require('passport-saml');
 import * as path from 'path';
-import * as Raven from 'raven';
+// import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
 import AppController from './app/controllers/app.controller';
@@ -32,7 +32,7 @@ import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { distributionRouter } from './distribution/router';
 import { statsRouter } from './stats/router';
-import { accessLogStream } from './services/logger.service';
+// import { accessLogStream } from './services/logger.service';
 import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
 
@@ -42,8 +42,8 @@ const app = express();
 // Configure sentry
 // Load environment variables from .env file, where API keys and passwords are configured
 
-(global as any).__rootdir__ = __dirname || process.cwd();
-const root = (global as any).__rootdir__;
+// (global as any).__rootdir__ = __dirname || process.cwd();
+// const root = (global as any).__rootdir__;
 // const gitCommit = git.long();
 const redisStore = connectRedis(session);
 
@@ -52,40 +52,43 @@ dotenv.config({
 });
 
 /* istanbul ignore next */
-Raven.config(process.env.SENTRY_DNS, {
-  // release: gitCommit,
-  tags: {
-    // git_commit: gitCommit,
-    environment: process.env.ENV || 'development'
-  },
-  environment: process.env.ENV,
-  parseUser: (req) => {
-    // custom user parsing logic
-    const username = req.user ? req.user : {
-      id: 0,
-      email: 'anonymous'
-    };
-    return {
-      email: username.email,
-      name: `${username.firstName} ${username.lastName}`,
-      id: username._id
-    };
-  },
-  dataCallback: (data) => {
-    const stacktrace = data.exception && data.exception[0].stacktrace;
+const Sentry = require('@sentry/node');
 
-    if (stacktrace) {
-      if (stacktrace.frames) {
-        stacktrace.frames.forEach((frame: any) => {
-          if (frame.filename.startsWith('/')) {
-            frame.filename = 'app:///' + path.relative(root, frame.filename);
-          }
-        });
-      }
-    }
-
-    return data;
-  }}).install();
+Sentry.init({ dsn: process.env.SENTRY_DNS });
+// Raven.config(process.env.SENTRY_DNS, {
+//   // release: gitCommit,
+//   tags: {
+//     // git_commit: gitCommit,
+//     environment: process.env.ENV || 'development'
+//   },
+//   environment: process.env.ENV,
+//   parseUser: (req) => {
+//     // custom user parsing logic
+//     const username = req.user ? req.user : {
+//       id: 0,
+//       email: 'anonymous'
+//     };
+//     return {
+//       email: username.email,
+//       name: `${username.firstName} ${username.lastName}`,
+//       id: username._id
+//     };
+//   },
+//   dataCallback: (data) => {
+//     const stacktrace = data.exception && data.exception[0].stacktrace;
+//
+//     if (stacktrace) {
+//       if (stacktrace.frames) {
+//         stacktrace.frames.forEach((frame: any) => {
+//           if (frame.filename.startsWith('/')) {
+//             frame.filename = 'app:///' + path.relative(root, frame.filename);
+//           }
+//         });
+//       }
+//     }
+//
+//     return data;
+//   }}).install();
 
 // Middlewares
 app.use(compression());
@@ -116,7 +119,7 @@ app.set('strict routing', true);
 app.use(cookieParser());
 
 // For parsing application/json
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json({ limit: '50mb' }));
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -199,19 +202,30 @@ if (app.get('env') !== 'testing') {
     return (req.headers['x-real-ip'] as string) || (req.headers['x-forwarded-for'] as string) || req.connection.remoteAddress || '';
   });
 
-  app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
-    stream: accessLogStream
-  }));
+  // app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
+  //   stream: accessLogStream
+  // }));
   if (process.env.ENV === 'production') {
-    app.use(morgan('\x1b[90m[:date[clf]] [INFO]:\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    // app.use(morgan('\x1b[90m[:date[clf]] [INFO]:\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(morgan('\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
   } else {
-    app.use(morgan('\x1b[90m\x1b[36m:method\x1b[97m :url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(morgan('\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
   }
 
 }
 
 // The request handler must be the first middleware on the app
-app.use(Raven.requestHandler());
+app.use(Sentry.Handlers.requestHandler({
+  user: ['id', 'username', 'email'],
+  request: true,
+  // generate transaction name
+  //   path == request.path (eg. "/foo")
+  //   methodPath == request.method + request.path (eg. "GET|/foo")
+  //   handler == function name (eg. "fooHandler")
+  transaction: 'fooHandler',
+  // timeout for fatal route errors to be delivered
+  flushTimeout: 4000 // default: 2000
+}));
 app.use(Middlewares.context);
 
 // Routes
@@ -228,16 +242,12 @@ app.use('/api/v1', jwtRouter);
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    createClientFactory: () => {
-      return createRedisClient();
-    }
+    createClientFactory: createRedisClient
   }
 });
 
 const billingQueue = new Bull('billing', {
-  createClient: () => {
-    return createRedisClient();
-  },
+  createClient: createRedisClient,
   prefix: '{andes}'
 });
 
@@ -275,8 +285,16 @@ new InventoryQueue(queue).run();
 new HistoryQueue(queue).run();
 kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
-// The error handler must be before any other error middleware
-app.use(Raven.errorHandler());
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
+
+// Optional fallthrough error handler
+/*app.use(function onError(err, req, res, next) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + "\n");
+});*/
 
 // Error handlers
 interface IResponseError {
@@ -302,9 +320,13 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
-  console.log('app.showError');
-  console.log('req.url', req.url);
-  console.log('err', err);
+  logger.error(`Server.processError: session: ${JSON.stringify(req.session)}`);
+  logger.error(`Server.processError: ${JSON.stringify({
+    url: req.url,
+    status: err.status,
+    statusCode,
+    error: err
+  })}`);
   res.status(statusCode).render(statusCode.toString());
   // res.json({
   //   status: err.status,

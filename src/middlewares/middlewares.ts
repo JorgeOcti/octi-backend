@@ -32,18 +32,19 @@ class Middlewares {
           res.locals.user = user;
           return next();
         } else {
+          logger.error(`Middlewares.checkIsLoggedIn: user not found in the system. URL made safe, user was sent at login!`);
           res.locals.user = null;
-          return res.status(403).render('403');
+          return res.redirect(`/account/login/`);
         }
       } else {
-        // if they aren't redirect them to the login page
-        logger.error(`Middlewares.isLoggedIn errorr: no exist user`);
+        logger.error(`Middlewares.processLogin: session: ${JSON.stringify(req.session)}`);
+        logger.error(`Middlewares.isLoggedIn. Attempt to access ${req.url} without credentials. URL made safe, user was sent at login!`);
         req.logout();
         (req.session as any).redirectTo = req.url;
         return res.redirect(`/account/login/`);
       }
     } catch (e) {
-      logger.error(`Middlewares.isLoggedIn errorr: ${JSON.stringify(e)}`);
+      logger.error(`Middlewares.checkIsLoggedIn: oops an error occurred in your code!. URL made safe, user was sent at login!`);
       console.error(e);
       return res.redirect(`/account/login/`);
     }
@@ -120,19 +121,18 @@ class Middlewares {
 
   public async addUserToRequest(userId: string, req?: IRequest): Promise<{ user: IUser | IUserModel }> {
     return new Promise(async (resolve, reject) => {
-      logger.debug(`Middlewares.addUserToRequest ${userId} from: ${req?.originalUrl ?? 'system'}`);
-      let user: IUserModel | null;
+      let user: IUser | null;
       try {
         // try {
         const sessionCache = await redisClient.get(userId);
         if (sessionCache) {
-          logger.debug(`use user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
+          user = new UserServices(JSON.parse(sessionCache)).middleware();
+          logger.debug(`Middlewares.refreshSession: ${user.email} with key ${userId} ${req?.originalUrl ?? 'system'}`);
           // logger.debug(`sessionCache ${sessionCache}`);
           resolve({
-            user: new UserServices(JSON.parse(sessionCache)).middleware()
+            user
           });
         } else {
-          logger.debug(`found user: ${userId} from: ${req?.originalUrl ?? 'system'}`);
           user = await User
             .findById(userId, {
               _id: true,
@@ -159,8 +159,8 @@ class Middlewares {
               path: 'team',
               select: ['name']
             }]);
+          logger.debug(`Middlewares.refreshSession: ${user?.email} create key ${userId} ${req?.originalUrl ?? 'system'}`);
           if (user) {
-            logger.debug(`generate user cache: ${userId} from: ${req?.originalUrl ?? 'system'}`);
             const userCache = JSON.stringify(user);
             await redisClient.set(userId, userCache, 'ex', 60);
             resolve({

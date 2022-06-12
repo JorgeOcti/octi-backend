@@ -28,9 +28,10 @@ export default class TriggerHandler {
     await this.getParticipantFullData();
     for (const trigger of this.form.triggers) {
       if (!trigger.enabled) {
-        logger.info(`Trigger: ${trigger.name} deactivated`);
+        logger.error(`TriggerHandler.execute: kind: ${trigger.kind} name:${trigger.name} deactivated`);
         continue;
       }
+      logger.info(`TriggerHandler.execute: kind: ${trigger.kind} name:${trigger.name}`);
       let triggerDelegate: ITriggerDelegate = this.getTrigger(trigger);
       payload = await triggerDelegate.trigger(trigger, this.answers, {
         ...payload,

@@ -8,13 +8,12 @@ export default class IntegrationDelegate extends NullTriggerDelegate {
 
   public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<any> {
     try {
-      logger.info(`Kind Trigger: ${trigger.kind} performing`);
+      logger.info(`IntegrationDelegate.trigger: ${trigger.kind} performing`);
 
       let context = this.processTrigerConfig(trigger, {
         ...answers
       });
-      logger.info(`Kind Trigger: context =>${JSON.stringify(context)}`);
-      logger.info(`Kind Trigger: integrationType =>${context.integrationType}`);
+      logger.info(`IntegrationDelegate.trigger context => ${JSON.stringify(context)}`);
       const { participant } = payload;
       const apiInstance = Axios.create({
         ...this.parseHeader(context.header)
@@ -23,8 +22,8 @@ export default class IntegrationDelegate extends NullTriggerDelegate {
 
       return payload;
     } catch (e) {
-      console.error('IntegrationDelegate: trigger');
-      console.error(e);
+      logger.error(e);
+      return payload;
     }
   }
 
@@ -43,7 +42,7 @@ export default class IntegrationDelegate extends NullTriggerDelegate {
         return JSON.parse(body);
       } catch (e) {
         console.error('IntegrationDelegate: parseBody');
-        console.error(e);
+        logger.error(e);
         return {};
       }
     } else{

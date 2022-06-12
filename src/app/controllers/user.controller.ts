@@ -88,7 +88,7 @@ class UserController {
       /* istanbul ignore next */
       logger.error(`UserController.apiListDrivers: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -217,7 +217,7 @@ class UserController {
 
   public async getStatsAccessUser(req: IRequest, res: Response) {
     logger.info(`UserController.apiListStatsUser`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
 
     //TODO: Change to dinamic query instead of hardcoded
@@ -253,7 +253,7 @@ class UserController {
       /* istanbul ignore next */
       logger.error(`UserController.apiListDrivers: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

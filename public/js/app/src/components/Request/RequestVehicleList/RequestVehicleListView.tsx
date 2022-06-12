@@ -66,111 +66,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.asignar = this.asignar.bind(this);
   }
 
-  componentDidMount() {
-    super.componentDidMount();
-  }
-
-  public componentWillMount(): void {
-    const { orderBy, orderType } = this.props.requestItems.options;
-    const { page } = this.props.requestItems.pagination;
-    window.scrollTo(0, 0);
-
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
-
-    // socket
-    this.socket = io(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      transports: ['websocket'],
-      reconnection: true,
-      query: {
-        token: window.user.token
-      }
-    });
-
-    this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `request-list-${window.user.team._id}` });
-    });
-
-    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
-      this.props.updateRequestItemAction(data.item);
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-aqua-active');
-        setTimeout(() => {
-          $item.removeClass('bg-aqua-active');
-        }, 300);
-      }
-    });
-
-    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-red-active');
-      }
-      setTimeout(() => {
-        const { orderBy, orderType } = this.props.requestItems.options;
-        const { page } = this.props.requestItems.pagination;
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-        // this.props.deleteRequestItemAction(data.item);
-      }, 300);
-    });
-
-    // this.socket.on('DELETE_REQUEST', (data: any): void => {
-      // const $item = $(`#request-${data.idRequest}`);
-      // if ($item) {
-      //   $item.addClass('bg-red-active');
-      // }
-      // setTimeout(() => {
-      //   this.props.deleteRequestActionInList(data.idRequest);
-      // }, 300);
-    // });
-
-    this.socket.on('CREATE_REQUEST', (data: any): void => {
-      const { page } = this.props.requestItems.pagination;
-      const { orderBy, orderType } = this.props.requestItems.options;
-      if (page === 1) {
-        for (const item of data.request.items) {
-          if (window.user.venuesAccess.includes(item.destination._id)) {
-            this.props.createRequestItemAction(item);
-            const $item = $(`#request-item-${item._id}`);
-            if ($item) {
-              $item.addClass('bg-green-active');
-            }
-            setTimeout(() => {
-              $item.removeClass('bg-green-active');
-            }, 300);
-          }
-        }
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-      } else {
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
-      }
-    });
-
-    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
-      this.props.createRequestItemAction(data.item);
-      const $item = $(`#request-item-${data.item._id}`);
-      if ($item) {
-        $item.addClass('bg-green-active');
-      }
-      setTimeout(() => {
-        $item.removeClass('bg-green-active');
-      }, 300);
-    });
-  }
-
-  public componentDidUpdate(prevProps: IPropsType): void {
-    $('[data-toggle="tooltip"]').tooltip();
-  }
-
-  public componentWillUnmount(): void {
-    // cancel request if component is inmounted
-    if (this.props.requestItems.source) {
-      this.props.requestItems.source.cancel('Operation canceled by the user.');
-    }
-    this.socket.emit('leave', { room: `request-list-${window.user.team._id}` });
-    this.socket.disconnect();
-  }
 
   public render(): React.ReactElement<IPropsType> {
     const {
@@ -185,61 +80,83 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-header with-border'>
               <h3 className='box-title'>Unidades <small>{pagination.count}</small></h3>
               <div className='pull-right box-tools'>
-                <ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>
+                <ShowIf
+                  condition={
+                    !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                    hasPermission(window.user, 'createRequest')}
+                >
                   <button
-                    className='btn btn-sm btn-success'
-                    onClick={this.update}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Actualizador
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
-                  <button
-                    style={{ marginLeft: '5px' }}
-                    className='btn btn-sm btn-success'
-                    onClick={this.asignar}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Asignar
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'importRequest')}>
-                  <button
-                    style={{ marginLeft: '5px' }}
-                    className='btn btn-sm btn-success'
-                    onClick={this.import}
-                  >
-                    <i className='fa fa-fw fa-plus' /> Importar
-                  </button>
-                </ShowIf>
-                <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                  <button
-                    className='btn btn-sm btn-success'
                     onClick={this.create}
-                    style={{ marginLeft: '5px' }}
+                    className='btn btn-sm btn-success hidden-xs'
+                    style={{marginRight: '5px'}}
                   >
                     <i className='fa fa-fw fa-plus' /> Crear solicitud
                   </button>
                 </ShowIf>
-                <ShowIf condition={requestItems.length > 0}>
-                  <button
-                    className='btn btn-sm btn-primary hidden-xs'
-                    onClick={this.exportExcel}
-                    disabled={exporing}
-                    style={{ marginLeft: '5px' }}
-                  >
-                    {
-                      exporing ?
-                        <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment> :
-                        <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
-                    }
-                  </button>
-                </ShowIf>
+                <div className='btn-group btn-group-sm'>
+                  <ShowIf condition={requestItems.length > 0}>
+                    <button
+                      className='btn btn-primary'
+                      onClick={this.exportExcel}
+                      disabled={exporing}
+                    >
+                      {
+                        exporing ?
+                          <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment> :
+                          <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
+                      }
+                    </button>
+                  </ShowIf>
+                  <ShowIf condition={
+                    requestItems.length > 0 && (
+                      hasPermission(window.user, 'updateMassiveRequest') ||
+                      hasPermission(window.user, 'massAllocation') ||
+                      hasPermission(window.user, 'importRequest')
+                    )
+                  }>
+                    <div className='btn-group btn-group-sm'>
+                      <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='true'>
+                        <span className='caret'></span>
+                      </button>
+                      <ul className='dropdown-menu' style={{ paddingRight: '10px' }}>
+                        <ShowIf condition={hasPermission(window.user, 'createRequest')}>
+                          <li className='visible-xs'>
+                            <a href='#' onClick={this.create} className='text-muted'>
+                              <i className='fa fa-fw fa-plus' /> Crear nueva solicitud
+                            </a>
+                          </li>
+                        </ShowIf>
+                        <ShowIf condition={hasPermission(window.user, 'massAllocation')}>
+                          <li>
+                            <a href='#' onClick={this.asignar} className='text-muted'>
+                              <i className='fa fa-fw fa-upload' /> Asignación masiva de unidades
+                            </a>
+                          </li>
+                        </ShowIf>
+                        <ShowIf condition={hasPermission(window.user, 'importRequest')}>
+                          <li>
+                            <a href='#' onClick={this.import} className='text-muted'>
+                              <i className='fa fa-fw fa-upload' /> Importar solicitudes por lote
+                            </a>
+                          </li>
+                        </ShowIf>
+                        {/*<ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>*/}
+                        {/*  <li>*/}
+                        {/*    <a href='#' onClick={this.update}>*/}
+                        {/*      <i className='fa fa-fw fa-plus' /> Actualizador*/}
+                        {/*    </a>*/}
+                        {/*  </li>*/}
+                        {/*</ShowIf>*/}
+                      </ul>
+                    </div>
+                  </ShowIf>
+                </div>
               </div>
             </div>
             <div className='box-body no-padding'>
               <div style={{ padding: '10px 5px' }}>
                 <div className='row' style={{ margin: 0 }}>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vehículo
@@ -255,26 +172,8 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <ShowIf condition={requestSettings.entry}>
-                    <div className='col-md-3' style={{padding: '0 5px'}}>
-                      <div className='form-group'>
-                        <label className='control-label'>
-                          Partida
-                        </label>
-                        <input
-                          type='text'
-                          className='form-control input-sm'
-                          placeholder='Nº de partida: S14795'
-                          defaultValue={filters.entry}
-                          onChange={(e) => {
-                            this.changeFilterDebounced('entry', e.target.value);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </ShowIf>
                   <ShowIf condition={requestSettings.conectaID}>
-                    <div className='col-md-3' style={{padding: '0 5px'}}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
                       <div className='form-group'>
                         <label className='control-label'>
                           Conecta ID
@@ -291,7 +190,25 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <ShowIf condition={requestSettings.entry}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
+                      <div className='form-group'>
+                        <label className='control-label'>
+                          Partida
+                        </label>
+                        <input
+                          type='text'
+                          className='form-control input-sm'
+                          placeholder='Nº de partida: S14795'
+                          defaultValue={filters.entry}
+                          onChange={(e) => {
+                            this.changeFilterDebounced('entry', e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </ShowIf>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Nº Solicitudes
@@ -307,7 +224,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vendedor
@@ -343,59 +260,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  {/*<ShowIf condition={requestSettings.sellerText}>*/}
-                  {/*<div className='col-md-3' style={{padding: '0 5px'}}>*/}
-                  {/*  <div className='form-group'>*/}
-                  {/*    <label className='control-label'>*/}
-                  {/*      Vendedor*/}
-                  {/*    </label>*/}
-                  {/*    <input*/}
-                  {/*      type='text'*/}
-                  {/*      className='form-control input-sm'*/}
-                  {/*      placeholder='Jhon Doe'*/}
-                  {/*      defaultValue={filters.sellerText}*/}
-                  {/*      onChange={(e) => {*/}
-                  {/*        this.changeFilterDebounced('sellerText', e.target.value);*/}
-                  {/*      }}*/}
-                  {/*    />*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*</ShowIf>*/}
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
-                    <div className='form-group'>
-                      <label htmlFor='venues' className='control-label'>Propiedad</label>
-                      <BootstrapSelect
-                        noneSelectedText='Todas'
-                        search={true}
-                        displayItems={2}
-                        selectedText='propiedades seleccionadas.'
-                        selected={filters.properties}
-                        sm={true}
-                        allOption={true}
-                        selectAll={
-                          (all: boolean) => {
-                            if (all) {
-                              this.changeFilter('properties', properties.map((property) => property._id));
-                            } else {
-                              this.changeFilter('properties', []);
-                            }
-                          }
-                        }
-                        options={properties.map((property) => ({
-                          value: property._id,
-                          text: property.name
-                        }))}
-                        onClick={(selected: any) => {
-                          if (filters.properties.includes(selected)) {
-                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
-                          } else {
-                            this.changeFilter('properties', [...filters.properties, selected]);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
                       <BootstrapSelect
@@ -429,7 +294,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{padding: '0 5px'}}>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Estados</label>
                       <BootstrapSelect
@@ -462,27 +327,43 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  {
-                    /* <div className="col-md-3">
-                    <div className="form-group">
-                      <label htmlFor="venues" className="control-label">Marcas</label>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
+                    <div className='form-group'>
+                      <label htmlFor='venues' className='control-label'>Propiedad</label>
                       <BootstrapSelect
-                        noneSelectedText="Todas"
+                        noneSelectedText='Todas'
                         search={true}
                         displayItems={2}
-                        selectedText="marcas seleccionadas."
-                        selected={[]}
+                        selectedText='propiedades seleccionadas.'
+                        selected={filters.properties}
+                        sm={true}
                         allOption={true}
-                        selectAll={[]}
-                        options={[]}
-                        onClick={() => { }}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('properties', properties.map((property) => property._id));
+                            } else {
+                              this.changeFilter('properties', []);
+                            }
+                          }
+                        }
+                        options={properties.map((property) => ({
+                          value: property._id,
+                          text: property.name
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.properties.includes(selected)) {
+                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
+                          } else {
+                            this.changeFilter('properties', [...filters.properties, selected]);
+                          }
+                        }}
                       />
                     </div>
-                  </div> */
-                  }
+                  </div>
                   <div className='col-md-3'>
                     <div className='row'>
-                      <div className='col-md-6' style={{padding: '0 5px'}}>
+                      <div className='col-md-6' style={{ padding: '0 5px' }}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Desde</label>
                           <DateRangePicker
@@ -494,7 +375,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           />
                         </div>
                       </div>
-                      <div className='col-md-6' style={{padding: '0 5px'}}>
+                      <div className='col-md-6' style={{ padding: '0 5px' }}>
                         <div className='form-group'>
                           <label htmlFor='venues' className='control-label'>Hasta</label>
                           <DateRangePicker
@@ -510,163 +391,160 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <ShowIf condition={requestItems.length > 0}>
+              <ShowIf condition={!loading && requestItems.length > 0}>
                 <div className='table-responsive'>
                   <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
-                    <tr className='bg-primary' style={{ height: '45px' }}>
-                      <ShowIf condition={requestSettings.priority}>
-                        <th className='middle' style={{ width: '28px' }} />
-                      </ShowIf>
-                      <th
-                        className='middle-center pointer'
-                        style={{ minWidth: '60px' }}
-                        onClick={() => this.changeOrder('meta.request.number')}
-                      >
-                        Solic.
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                       <th
-                        className='middle pointer'
-                        style={{ minWidth: '40px' }}
-                        // onClick={() => this.changeOrder('request.number')}
-                      >
-                        OT
-                        {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('meta.origin.name')}
-                      >
-                        Creada
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('meta.destination.name')}
-                      >
-                        Destino
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      {/*<th*/}
-                      {/*  className='middle pointer'*/}
-                      {/*  // style={{ width: '100px' }}*/}
-                      {/*  onClick={() => this.changeOrder('car.property')}*/}
-                      {/*>*/}
-                      {/*  Prop.*/}
-                      {/*  <span style={{ float: 'right' }}><i*/}
-                      {/*    className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                      {/*</th>*/}
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '100px' }}
-                        onClick={() => this.changeOrder('meta.car.brand')}
-                      >
-                        Marca
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th className='middle' style={{ minWidth: '200px', width: '200px' }}>VIN</th>
-                      <ShowIf condition={requestSettings.entry}>
-                        <th className='middle' style={{ width: '80px' }}>Partida</th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.denomination}>
+                      <tr className='bg-primary' style={{ height: '45px' }}>
+                        {/*<ShowIf condition={requestSettings.priority}>*/}
+                          <th className='middle' style={{ width: '30px' }} />
+                        {/*</ShowIf>*/}
                         <th
                           className='middle pointer'
-                          style={{ minWidth: '120px' }}
-                          onClick={() => this.changeOrder('meta.car.denomination')}
+                          style={{ width: '70px' }}
+                          onClick={() => this.changeOrder('meta.request.number')}
                         >
-                          Modelo
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          SOL
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.material}>
-                        <th
-                          className='middle pointer'
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('meta.car.material')}
-                        >
-                          Material
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.color}>
-                        <th className='middle' style={{ minWidth: '80px' }}>Color</th>
-                      </ShowIf>
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '120px', maxWidth: '160px' }}
-                        onClick={() => this.changeOrder('meta.status.weigth')}
-                      >
-                        Estado
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <ShowIf condition={requestSettings.internalNumber}>
-                        <th className='middle' style={{ width: '60px' }}>CDO</th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.reason}>
-                        <th
-                          className='middle pointer'
-                          style={{ minWidth: '100px' }}
-                          onClick={() => this.changeOrder('reason.name')}
-                        >
-                          Motivo
-                          <span
-                            style={{ float: 'right' }}
+                        <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
+                          <th
+                            className='middle'
+                            style={{ width: '50px' }}
+                            // onClick={() => this.changeOrder('transmittal.transmittalNumber')}
                           >
+                            OT
+                            {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'transmittal.transmittalNumber' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={false}>
+                          <th
+                            className='middle pointer'
+                            style={{ width: '80px' }}
+                            onClick={() => this.changeOrder('meta.origin.name')}
+                          >
+                            Creada
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <th
+                          className='middle pointer'
+                          style={{ width: '150px' }}
+                          onClick={() => this.changeOrder('meta.destination.name')}
+                        >
+                          Destino
+                          <span style={{ float: 'right' }}>
                             <i
-                              className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                              className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`}
+                            />
                           </span>
                         </th>
-                      </ShowIf>
-                      <ShowIf condition={requestSettings.ticket}>
-                        <th className='middle pointer'>
-                          Ticket
-                        </th>
-                        <th className='middle pointer'>
-                          Nº Ticket
-                        </th>
-                      </ShowIf>
-                      {/* <th className="middle">Carrocería</th>
-                        <th className="middle">Pre-Entrega</th> */}
-                      <th className='middle-center' style={{ width: '40px' }}>Adj</th>
-                      <th className='middle-center' style={{ width: '20px' }}>Obs</th>
-                      {/* <th
-                          className="middle pointer"
-                          style={{ width: '100px' }}
-                          onClick={() => this.changeOrder('carrier.name')}
+                        <ShowIf condition={requestSettings.entry}>
+                          <th className='middle' style={{ width: '70px' }}>Partida</th>
+                        </ShowIf>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.material
+                          }
                         >
-                          Transporte
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <th
+                            className='middle-center pointer'
+                            style={{ width: '70px' }}
+                            onClick={() => this.changeOrder('meta.car.material')}
+                          >
+                            Material
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <th
+                          className='middle pointer'
+                          style={{ minWidth: '200px', width: '200px' }}
+                          onClick={() => this.changeOrder('meta.car.vin')}
+                        >
+                          VIN
+                          <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.vin' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
                         </th>
                         <th
-                          className="middle pointer"
+                          className='middle pointer'
                           style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('uploadDate')}
+                          onClick={() => this.changeOrder('meta.car.brand')}
                         >
-                          F. carga
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          Marca
+                          <span style={{ float: 'right' }}>
+                            <i className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                          </span>
                         </th>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.denomination')}
+                          >
+                            Modelo
+                            <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.color}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.color')}
+                          >
+                            Color
+                            <span style={{ float: 'right' }}><i
+                              className={`fa fa-fw ${orderBy === 'meta.car.color' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
                         <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('estimatedArrival')}
+                          className='middle pointer'
+                          style={{ width: '120px' }}
+                          onClick={() => this.changeOrder('meta.status.weigth')}
                         >
-                          F. llegada
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th> */}
-                      <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                        <th className='middle' style={{ width: '30px' }} />
-                      </ShowIf>
-                    </tr>
+                          Estado
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <ShowIf
+                          condition={
+                            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.internalNumber
+                          }
+                        >
+                          <th className='middle' style={{ width: '60px' }}>CDO</th>
+                        </ShowIf>
+                        <ShowIf condition={false && requestSettings.reason}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '100px' }}
+                            onClick={() => this.changeOrder('reason.name')}
+                          >
+                            Motivo
+                            <span
+                              style={{ float: 'right' }}
+                            >
+                              <i
+                                className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.ticket}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '40px', maxWidth: '40px' }}
+                          >
+                            Ticket
+                          </th>
+                        </ShowIf>
+                        {/*<th className='middle-center' style={{ width: '20px' }}></th>*/}
+                        {/*<th className='middle-center' style={{ width: '20px' }}></th>*/}
+                      </tr>
                     </thead>
                     <tbody>
                     {
@@ -734,6 +612,112 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+  public componentDidMount() {
+    super.componentDidMount();
+  }
+
+  public componentWillMount(): void {
+    const { orderBy, orderType } = this.props.requestItems.options;
+    const { page } = this.props.requestItems.pagination;
+    window.scrollTo(0, 0);
+
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+
+    // socket
+    this.socket = io(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: window.user.token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      this.socket.emit('join', { room: `request-list-${window.user.team._id}` });
+    });
+
+    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
+      this.props.updateRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        const { orderBy, orderType } = this.props.requestItems.options;
+        const { page } = this.props.requestItems.pagination;
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        // this.props.deleteRequestItemAction(data.item);
+      }, 300);
+    });
+
+    // this.socket.on('DELETE_REQUEST', (data: any): void => {
+    // const $item = $(`#request-${data.idRequest}`);
+    // if ($item) {
+    //   $item.addClass('bg-red-active');
+    // }
+    // setTimeout(() => {
+    //   this.props.deleteRequestActionInList(data.idRequest);
+    // }, 300);
+    // });
+
+    this.socket.on('CREATE_REQUEST', (data: any): void => {
+      const { page } = this.props.requestItems.pagination;
+      const { orderBy, orderType } = this.props.requestItems.options;
+      if (page === 1) {
+        for (const item of data.request.items) {
+          if (window.user.venuesAccess.includes(item.destination._id)) {
+            this.props.createRequestItemAction(item);
+            const $item = $(`#request-item-${item._id}`);
+            if ($item) {
+              $item.addClass('bg-green-active');
+            }
+            setTimeout(() => {
+              $item.removeClass('bg-green-active');
+            }, 300);
+          }
+        }
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+      } else {
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+      }
+    });
+
+    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
+      this.props.createRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-green-active');
+      }
+      setTimeout(() => {
+        $item.removeClass('bg-green-active');
+      }, 300);
+    });
+  }
+
+  public componentDidUpdate(prevProps: IPropsType): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    if (this.props.requestItems.source) {
+      this.props.requestItems.source.cancel('Operation canceled by the user.');
+    }
+    this.socket.emit('leave', { room: `request-list-${window.user.team._id}` });
+    this.socket.disconnect();
+  }
+
   private create(): void {
     this.props.history.push(parseReplicableURL('/requests/vehicles/create/'));
   }
@@ -746,7 +730,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push(parseReplicableURL('/requests/import/'));
   }
 
-  private asignar(){
+  private asignar() {
     this.props.history.push(parseReplicableURL('/requests/mass-allocation/'));
   }
 
@@ -776,7 +760,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   private changePage(page: number): void {
     window.scrollTo(0, 0);
     const { orderBy, orderType } = this.props.requestItems.options;
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
   }
 
   public exportExcel(): void {

@@ -19,7 +19,7 @@ class HistoryController {
   public async searchCar(req: IRequest, res: Response) {
     logger.info(`HistoryController.searchCar`);
     const { params } = req;
-    logger.info(`HistoryController.searchCar {user: {_id: ${req.user._id}, email: ${req.user.email}}} {params: ${JSON.stringify(params ?? {})}`);
+    logger.info(`HistoryController.searchCar {user: {_id: ${req.user._id}, email: ${req.user.email}} {params: ${JSON.stringify(params ?? {})}`);
     const { team } = req.user;
     const { vin } = req.params;
     try {
@@ -119,7 +119,7 @@ class HistoryController {
       /* istanbul ignore next */
       logger.error(`HistoryController.searchCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }

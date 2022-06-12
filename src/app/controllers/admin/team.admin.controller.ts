@@ -113,7 +113,7 @@ class AdminsTeamController {
       console.log(e);
       logger.error(`RequestController.apiCreateItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }

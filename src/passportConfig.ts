@@ -34,7 +34,7 @@ passport.deserializeUser(async (user: any, done: any) => {
  */
 // passport.use(new LocalStrategy(User.authenticate()));
 passport.use('local', new LocalStrategy({ usernameField: 'username' }, async (username, password, done) => {
-  logger.info(`Passport.verify( ${JSON.stringify({
+  logger.info(`Passport.verify: ${JSON.stringify({
     username
   })}`);
   try{
@@ -43,14 +43,15 @@ passport.use('local', new LocalStrategy({ usernameField: 'username' }, async (us
       active: true
     }, { _id: true, active: true, password: true });
     if(checkUser && checkUser.active && await checkUser.comparePassword(password)){
+      logger.info(`Passport.verify: ${username} user authenticated successfully!.`);
       const { user } = await middleware.addUserToRequest(checkUser._id);
       done(undefined, user);
     } else {
-      console.log('passport.LocalStrategy.findOne.!user', { message: `username ${username} not found.` });
-      done(undefined, false, { message: `username ${username} not found.` });
+      logger.error(`Passport.verify: ${username} password does not correspond to the user.`);
+      done(undefined, false, { message: `${username} password does not correspond to the user..` });
     }
   } catch (e) {
-    console.log('passport local error');
+    logger.error(`Passport.verify: oops an error occurred in your code!. URL made safe, user was sent at login!`);
     console.error(e);
   }
 }));

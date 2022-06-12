@@ -95,14 +95,20 @@ transmittalSchema.virtual('items', {
 transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 
-transmittalSchema.index({ 'team': 1 });
-transmittalSchema.index({ 'team': 1, number: 1 });
+transmittalSchema.index({ team: 1 });
+transmittalSchema.index({ items: 1 });
+transmittalSchema.index({ files: 1 });
+transmittalSchema.index({ createdBy: 1 });
+transmittalSchema.index({ 'transporter.carrier': 1 });
+transmittalSchema.index({ 'transporter.driver': 1 });
+transmittalSchema.index({ team: 1, number: 1 });
+
+transmittalSchema.set<any>('redisCache', process.env.ENV === 'production');
+transmittalSchema.set<any>('expires', 30);
 
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
 
-transmittalSchema.set<any>('redisCache', process.env.ENV === 'production');
-transmittalSchema.set<any>('expires', 30);
 
 
 export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>& AggregatePaginateModel<ITransmittalModel>;

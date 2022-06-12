@@ -30,7 +30,7 @@ class OperationTypeController {
       /* istanbul ignore next */
       logger.error(`OperationTypeController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -52,7 +52,7 @@ class OperationTypeController {
       /* istanbul ignore next */
       logger.error(`OperationTypeController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -72,7 +72,7 @@ class OperationTypeController {
       /* istanbul ignore next */
       logger.error(`OperationTypeController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -111,7 +111,7 @@ class OperationTypeController {
       /* istanbul ignore next */
       logger.error(`OperationTypeController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

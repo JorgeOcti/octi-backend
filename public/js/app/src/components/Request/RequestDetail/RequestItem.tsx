@@ -1,5 +1,3 @@
-import { AxiosError, AxiosResponse } from 'axios';
-import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import { ErrorInfo } from 'react';
@@ -10,23 +8,17 @@ import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 import { IRequest } from '../../../../../../../src/request/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
-import {
-  deleteRequestItemThunkAction,
-  deleteRequestThunkAction,
-  updateRequestItemInDetailThunkAction
-} from '../../../actions/requests.actions';
+import { deleteRequestItemThunkAction, deleteRequestThunkAction, updateRequestItemInDetailThunkAction } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission, parseReplicableURL } from '../../../utils/common';
+import { hasPermission } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import AutoCompleteVinInput from '../../Utils/AutoCompleteVinInput';
-import DateRangePicker from '../../Utils/DateRangePicker';
 import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 import { Subject } from 'rxjs/internal/Subject';
-// import * as Rx from 'rxjs';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -96,22 +88,14 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({ error });
-    Raven.captureException(error, {
-      extra: errorInfo
-    });
-  }
-
   public render(): React.ReactElement<IPropsType> {
     const { item, index, request } = this.props;
     const { requestItemStatus, reasons, requestSettings } = this.props.requests;
-    const { recommends, VINRecommends } = this.state;
+    const { recommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
-        <td className="middle-center">{index + 1}</td>
-        <ShowIf condition={requestSettings.priority}>
+        {/*<ShowIf condition={requestSettings.priority}>*/}
           <td
             className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
             onClick={canChangeRequest ? () => {
@@ -124,10 +108,11 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               });
             } : undefined}
           >
-            {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-muted' />}
+            {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-gray' />}
           </td>
-        </ShowIf>
-        <td className="middle">{item.car.property ? item.car.property : '-'}</td>
+        {/*</ShowIf>*/}
+        <td className="middle-center"><strong>{item.order}</strong></td>
+        {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         <ShowIf condition={requestSettings.brand}>
           {
             canChangeRequest && !requestSettings.brandReadOnly ?
@@ -172,7 +157,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle">{item.car.brand}</td>
+              : <td className="middle"><strong>{item.car.brand}</strong></td>
           }
         </ShowIf>
         <ShowIf condition={requestSettings.denomination}>
@@ -218,19 +203,24 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                     });
                   }}
                 />
-              </td> : <td className="middle">{item.car.denomination}</td>
+              </td> : <td className="middle text-muted"><strong>{item.car.denomination}</strong></td>
           }
         </ShowIf>
-        <ShowIf condition={requestSettings.material}>
+        <ShowIf
+          condition={
+            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+            requestSettings.material
+          }
+        >
           {
             canChangeRequest && !requestSettings.materialReadOnly ?
-              <td className="middle">
+              <td className='middle'>
                 <AutoCompleteInput
                   value={item.car.material}
                   inputClass={'input-sm'}
                   items={recommends}
                   renderItem={(car, index) => (
-                    <div key={index} className="item">
+                    <div key={index} className='item'>
                       {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                       <strong>{car.brand}</strong>
                     </div>
@@ -265,7 +255,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td> :
-              <td className="middle">{item.car.material}</td>
+              <td className='middle'><strong>{item.car.material}</strong></td>
           }
         </ShowIf>
         <ShowIf condition={requestSettings.color}>
@@ -289,7 +279,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td> :
-              <td className='middle'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
+              <td className='middle text-muted'><strong>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</strong></td>
           }
         </ShowIf>
         {
@@ -299,6 +289,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
              <div className='flex'>
               <AutoCompleteVinInput
+                  history={this.props.history}
                   defaultValue={item.car.vin}
                   item={item}
                   inputClass={'input-sm'}
@@ -315,7 +306,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         }
         {
           canChangeRequest ?
-            <td className="middle">
+            <td className="middle" style={{width: '120px'}}>
               <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                   this.props.updateRequestItemInDetailThunkAction({
@@ -343,18 +334,33 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         }
         <ShowIf condition={requestSettings.ticket}>
           <td className='middle-center'>
-            {
-              //request.advancePaymentInformation.files[0].file.url
-              request.advancePaymentInformation?.files?.length ?
-                <i
-                  className='fa fa-check-circle text-green pointer'
-                  onClick={() => this.openBlank(request.advancePaymentInformation.files[0].file.url)}
-                /> : ''
-            }
+             <div
+              data-toggle='tooltip'
+              data-placement='top'
+              className={`${item.request?.advancePaymentInformation?.files?.length ? 'pointer' : ''}`}
+              title={item.request?.advancePaymentInformation?.number ?? '-'}
+              onClick={
+               request.advancePaymentInformation?.files?.length
+                 ? () => this.openBlank(request.advancePaymentInformation.files[0].file.url)
+                 : undefined
+             }
+            >
+              {
+                //request.advancePaymentInformation.files[0].file.url
+                item.request?.advancePaymentInformation?.files?.length ?
+                  <i
+                    className='fa fa-check-circle text-green'
+                  /> : ''
+              }
+            </div>
           </td>
-          <td className='middle'>{request.advancePaymentInformation?.number}</td>
         </ShowIf>
-        <ShowIf condition={requestSettings.internalNumber}>
+        <ShowIf
+          condition={
+            ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+            requestSettings.internalNumber
+          }
+        >
           {
             canChangeRequest ?
               <td className="middle">
@@ -378,7 +384,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               <td className="middle">{item.car.internalNumber}</td>
           }
         </ShowIf>
-        <ShowIf condition={requestSettings.reason}>
+        <ShowIf condition={false && requestSettings.reason}>
           {
             canChangeRequest ?
               <td className="middle">
@@ -434,150 +440,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               /> : null
           }
         </td>
-        {/* <td className="middle">
-          <div className="flex-wrap">
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.equipment ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Accesorización"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    equipment: !item.equipment
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">library_add</i>
-            </div>
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.body ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Carrocero"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    body: !item.body
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">rv_hookup</i>
-            </div>
-          </div>
-        </td>
-        <td className="middle">
-          <div className="flex-wrap">
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.washed ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Pre-Lavado"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    washed: !item.washed
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">local_car_wash</i>
-            </div>
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.review ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Inspección Pre-entrega"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    review: !item.review
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">build</i>
-            </div>
-          </div>
-        </td> */}
-        {/*
-          canChangeRequest ?
-            <td className="middle">
-              <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  this.props.updateRequestItemInDetailThunkAction({
-                    item: {
-                      ...item,
-                      carrier: !e.target.value.length ? null : {
-                        ...item.carrier,
-                        _id: (e.target.value as any)
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              >
-                <option value="">-</option>
-                {
-                  carriers.map((carrier) => (
-                    <option key={carrier._id} value={carrier._id}>{carrier.name}</option>
-                  ))
-                }
-              </select>
-            </td> :
-            <td className="middle">{item.carrier?.name}</td>
-            */
-        }
-        {/*
-          canChangeRequest ?
-            <td className="middle">
-              <DateRangePicker
-                className={'input-sm'}
-                value={item.uploadDate}
-                onChange={(e) => {
-                  this.props.updateRequestItemInDetailThunkAction({
-                    item: {
-                      ...item,
-                      uploadDate: e as any
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td> :
-            <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
-            */
-        }
-        { /*
-          canChangeRequest ?
-            <td className="middle">
-              <DateRangePicker
-                className={'input-sm'}
-                value={item.estimatedArrival}
-                onChange={(e) => {
-                  this.props.updateRequestItemInDetailThunkAction({
-                    item: {
-                      ...item,
-                      estimatedArrival: e as any
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td>
-            :<td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
-            */
-        }
         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
           <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>
             <i className="fa fa-minus-circle" />
@@ -585,6 +447,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
       </tr>
     );
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({ error });
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
   }
 
   private downloadFiles(item: IRequestItem) {

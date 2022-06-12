@@ -1,5 +1,5 @@
 {
-  "name": "osa-andes-server",
+  "name": "andes-server",
   "script": "dist/server.js",
   "instances": "1",
   "exec_mode": "cluster"

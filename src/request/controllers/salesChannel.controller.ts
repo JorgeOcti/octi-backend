@@ -116,7 +116,7 @@ class SalesChannelController {
       /* istanbul ignore next */
       logger.error(`SalesChannelController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -135,7 +135,7 @@ class SalesChannelController {
       /* istanbul ignore next */
       logger.error(`SalesChannelController.updateFleet: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }

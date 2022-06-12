@@ -108,7 +108,7 @@ textarea
   0%
     background: #d9edf7
   100%
-//background: none
+    background: none
 
 .no-background-hover:hover
   background-color: transparent !important
@@ -118,7 +118,7 @@ textarea
   0%
     background: #d9edf7
   100%
-//background: none
+    background: none
 
 .highlight-info
   animation: info-fade 2s ease-in 1
@@ -274,12 +274,16 @@ textarea
   thead
     tr
       th
+        &:last-of-type
+          padding: 4px 5px 4px 2px
         font-size: 11px
-        padding: 4px 2px
+        padding: 4px 3px
   tbody
     tr
       td
-        padding: 7px 3px
+        &:last-of-type
+          padding: 7px 5px 7px 3px
+        padding: 8px 3px
         font-size: 11px
 
 .select-sm

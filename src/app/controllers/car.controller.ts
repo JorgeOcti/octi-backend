@@ -188,7 +188,7 @@ class CarController {
     const { inventory } = req.body;
     const team = req.user.team._id;
     logger.info(`checkVIN`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
@@ -200,7 +200,7 @@ class CarController {
         }, { status: true });
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
           logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(404).json({
             message: 'Este inventario ya no se encuentra disponible.',
             status: 404
@@ -277,7 +277,7 @@ class CarController {
                 });
               } else {
                 logger.error(`checkVIN: VIN no válido 1.`);
-                logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
                 res.status(400).json({
                   message: 'VIN no válido.',
                   status: 400
@@ -285,7 +285,7 @@ class CarController {
               }
             } else {
               logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
-              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
               res.status(404).json({
                 message: 'Este inventario ya no se encuentra disponible.',
                 status: 404
@@ -293,7 +293,7 @@ class CarController {
             }
           } else {
             logger.error(`checkVIN: VIN no válido 2.`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
             res.status(400).json({
               message: 'VIN no válido.',
               status: 400
@@ -306,7 +306,7 @@ class CarController {
           /* istanbul ignore next */
           logger.error(`checkVIN: Async Error.`);
           /* istanbul ignore next */
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           /* istanbul ignore next */
           logger.error(e);
           res.status(500).json(e);
@@ -346,7 +346,7 @@ class CarController {
           });
         } else {
           logger.error(`checkVIN: VIN no encontrado.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           res.status(400).json({
             message: 'VIN no encontrado.',
             status: 400
@@ -358,7 +358,7 @@ class CarController {
           /* istanbul ignore next */
           logger.error(`checkVIN: Async Error.`);
           /* istanbul ignore next */
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
           /* istanbul ignore next */
           logger.error(e);
           res.status(500).send(e);
@@ -882,9 +882,20 @@ class CarController {
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
     try {
+      logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       const team = req.user.team._id;
       const company = req.user.company._id;
       const { from, to } = req.query;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+       // Create Excel Stream with pipe to response object
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+
       const venuesPermissions = req.user.venuesPermissions();
 
       // Get filters for Mongo Query
@@ -900,10 +911,6 @@ class CarController {
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
         };
       }
-
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
-
       // Get the forms to create columns/header of excel
       let forms = await ParticipantModel.find(queryFilter).distinct('form');
       forms = await FormModel.find({ _id: { $in: forms } });
@@ -960,13 +967,6 @@ class CarController {
         });
       }
 
-      // Create Excel Stream with pipe to response object
-      const options = {
-        stream: res,
-        useStyles: true,
-        useSharedStrings: true
-      };
-      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
@@ -975,54 +975,57 @@ class CarController {
       worksheet.columns = columns;
 
       // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
-      const cursor = ParticipantModel.find(queryFilter, {
-        number: 1,
-        createdAt: 1,
-        car: 1,
-        team: 1,
-        user: 1,
-        company: 1,
-        venue: 1,
-        name: 1,
-        conciliation: 1,
-        qualification: 1,
-        reception: 1,
-        shipping: 1,
-        receptionText: 1,
-        shippingText: 1,
-        sections: 1,
-        form: 1,
-        shippingVenue: 1,
-        receptionVenue: 1,
-        sendTo: 1,
-        receiveFrom: 1
-      }).populate([{
-        path: 'car',
-        select: 'brand denomination color vin patent'
-      }, {
-        path: 'user',
-        select: 'firstName lastName venue',
-        populate: [{
+      const cursor = ParticipantModel
+        .find(queryFilter, {
+          number: 1,
+          createdAt: 1,
+          car: 1,
+          team: 1,
+          user: 1,
+          company: 1,
+          venue: 1,
+          name: 1,
+          conciliation: 1,
+          qualification: 1,
+          reception: 1,
+          shipping: 1,
+          receptionText: 1,
+          shippingText: 1,
+          sections: 1,
+          form: 1,
+          shippingVenue: 1,
+          receptionVenue: 1,
+          sendTo: 1,
+          receiveFrom: 1
+        })
+        .populate([{
+          path: 'car',
+          select: 'brand denomination color vin patent'
+        }, {
+          path: 'user',
+          select: 'firstName lastName venue',
+          populate: [{
+            path: 'venue',
+            select: 'name'
+          }]
+        }, {
           path: 'venue',
           select: 'name'
-        }]
-      }, {
-        path: 'venue',
-        select: 'name'
-      }, {
-        path: 'company',
-        select: 'name'
-      }, {
-        path: 'team',
-        select: 'name'
-      }, {
-        path: 'sendTo',
-        select: 'name'
-      }, {
-        path: 'receiveFrom',
-        select: 'name'
-      }]).batchSize(100).cursor();
-
+        }, {
+          path: 'company',
+          select: 'name'
+        }, {
+          path: 'team',
+          select: 'name'
+        }, {
+          path: 'sendTo',
+          select: 'name'
+        }, {
+          path: 'receiveFrom',
+          select: 'name'
+        }])
+        .batchSize(50)
+        .cursor();
 
       cursor.on('data', async (participant) => {
         const row = await this.processParticipant(participant);
@@ -1031,16 +1034,21 @@ class CarController {
 
       // code to handle connection abort or finish query read process
       cursor.on('end', async () => {
+        cursor.close();
         workbook.commit();
-        res.status(200);
+        return res.status(200);
       });
 
-      cursor.on('error', (error) => logger.error(error.message));
+      cursor.on('error', (error: any) => {
+        cursor.close();
+        logger.error(error.message);
+        return res.status(500).json(error);
+      });
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
-        await cursor.close();
-        res.status(200);
+        cursor.close();
+        return res.status(200);
       });
 
     } catch (e) {
@@ -1130,9 +1138,7 @@ class CarController {
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).json(e);
-      }
+      res.status(500).json(e);
     }
   }
 
@@ -1252,26 +1258,25 @@ class CarController {
           }]
         }]).lean();
       if (!car) {
-        res.status(404).json({
+        return res.status(404).json({
           messsage: 'Auto no encontrado.',
           status: 404
         });
       } else {
-        res.json({
+        return res.json({
           data: car,
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).json(e);
-      }
+      logger.error(e);
+      return res.status(500).json(e);
     }
   }
 
   public async apiRevisions(req: IRequest, res: Response): Promise<any> {
-    const { page, pageSize, search, from, to, forms } = req.query as {
+    let { page, pageSize, search, from, to, forms } = req.query as {
       page: string, pageSize: string, search: string,
       from: string, to: string, forms: string
     };
@@ -1325,8 +1330,8 @@ class CarController {
     };
 
     try {
-      logger.info(`CarController.apiRevisions: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} options: ${JSON.stringify(options)}`);
+      logger.info(`CarController.apiRevisions: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email} options: ${JSON.stringify(options)}`);
       const participantFilter: IAnyObject = {
         car: {
           $ne: null
@@ -1348,18 +1353,44 @@ class CarController {
         participantFilter.kind = { $ne: KindForm.transmittal };
       }
 
-      if (search && search.length) {
+      if (search?.length > 2) {
+        search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
+        // search = search.trim().replace("*", "");
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
         const searchText = new RegExp(search, 'i');
-        const searchUser = await User.find({
+        const searchTextArray = search.split(" ");
+        const filterUser: any = {
           $and: [{
-            $or: [{
-              firstName: { $regex: searchText }
-            }, {
-              lastName: { $regex: searchText }
-            }]
-          }, { team }]
-        }, { _id: true });
-        const searchVenue = await Venue.find({
+            team
+          }],
+        };
+        if (searchTextArray.length > 3) {
+          filterUser['$or'] = [{
+            firstName: {
+              $regex: new RegExp(`${searchTextArray[0]} ${searchTextArray[1]}`, 'i')
+            },
+            lastName: {
+              $regex: new RegExp(`${searchTextArray[2]} ${searchTextArray[3]}`, 'i')
+            }
+          }];
+        } else {
+          filterUser['$and'].push({
+            firstName: {
+              $regex: new RegExp(searchTextArray[0], 'i')
+            }
+          });
+          if (searchTextArray.length > 1) {
+            filterUser['$and'].push({
+              lastName: {
+                $regex: new RegExp(searchTextArray[1], 'i')
+              }
+            });
+          }
+        }
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} searchTextArray: ${searchTextArray}`);
+        logger.debug(`CarController.apiRevisions: email: ${req.user.email} filterUser: ${JSON.stringify(filterUser)}`);
+        const searchUser = await User.find(filterUser, { _id: true });
+        const searchVenue = searchUser.length ? [] : await Venue.find({
           _id: {
             $in: req.user.venuesPermissions()
           },
@@ -1371,13 +1402,13 @@ class CarController {
         if (searchUser.length) {
           participantFilter.$and.push({
             user: {
-              $in: searchUser
+              $in: searchUser.map((user) => user._id)
             }
           });
         } else if (searchVenue.length) {
           participantFilter.$and.push({
             venue: {
-              $in: searchVenue
+              $in: searchVenue.map((venue) => venue._id)
             }
           });
         } else {
@@ -1399,7 +1430,7 @@ class CarController {
           }, { _id: true });
           participantFilter.$and.push({
             car: {
-              $in: searchCar
+              $in: searchCar.map((car) => car._id)
             }
           });
         }
@@ -1419,7 +1450,7 @@ class CarController {
           createdAt: createdAtFilter
         });
       }
-      logger.debug(`CarController.apiRevisions: email: ${req.user.email}} participantFilter: ${JSON.stringify(participantFilter)}`);
+      logger.debug(`CarController.apiRevisions: email: ${req.user.email} participantFilter: ${JSON.stringify(participantFilter)}`);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

@@ -28,6 +28,7 @@ import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
 import * as mongoose from 'mongoose';
+
 // import * as mongoose from 'mongoose'
 
 class RequestController {
@@ -62,14 +63,14 @@ class RequestController {
   }, {
     path: 'transmittalItem',
     select: ['loadingDate', 'arrivalDate', 'revisions'],
-    populate:[{
+    populate: [{
       path: 'revisions',
       select: ['createdAt']
     }]
   }, {
     path: 'transmittal',
-    select:['number', 'revision'],
-    populate:[{
+    select: ['number', 'revision'],
+    populate: [{
       path: 'revision',
       select: ['createdAt']
     }]
@@ -94,7 +95,7 @@ class RequestController {
   }, {
     path: 'items',
     select: [
-      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy'
+      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy', 'order', 'code'
     ],
     options: {
       sort: {
@@ -213,7 +214,7 @@ class RequestController {
 
   public async massAllocation(req: IRequest, res: Response) {
     if (req.user.hasPermission('massAllocation')) {
-      return res.render('app/index', {token: await req.user.generateToken()});
+      return res.render('app/index', { token: await req.user.generateToken() });
     } else {
       return res.status(403).render('403');
     }
@@ -434,18 +435,28 @@ class RequestController {
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     logger.info(`RequestController.apiCreate`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
     const {
-      cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, advancePaymentInformation, customerInformation
-     } = req.body;
+      cars,
+      venue,
+      channel,
+      sellerText,
+      operationType,
+      deliveryVenue,
+      deliveryAddress,
+      deliveryDate,
+      conectaID,
+      advancePaymentInformation,
+      customerInformation
+    } = req.body;
 
     try {
-      const existConectId = await Request.findOne({team, conectaID});
-      if(conectaID?.length && existConectId){
+      const existConectId = await Request.findOne({ team, conectaID });
+      if (conectaID?.length && existConectId) {
         return res.status(400).json({
           message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${existConectId.number}.`
-        })
+        });
       }
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
         team,
@@ -514,7 +525,7 @@ class RequestController {
           meta: requestItemsMeta.processMeta({
             request,
             car: newCar,
-            user: await User.findOne({_id: req.user._id}),
+            user: await User.findOne({ _id: req.user._id }),
             origin,
             destination,
             status
@@ -532,22 +543,22 @@ class RequestController {
         request: newRequest
       });
       res.json({
-        data:newRequest,
+        data: newRequest,
         status: 200
       });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`RequestController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       logger.error(e);
       res.status(500).json(e);
     }
   }
 
   public async apiListItems(req: IRequest, res: Response) {
-    logger.info(`RequestController.apiListItems`);
-    logger.info(`email: ${req.user.email}} body: ${JSON.stringify(req.body)}`);
+    logger.info(`RequestController.apiListItems email ${req.user.email}`);
+    logger.debug(`RequestController.apiListItems: ${JSON.stringify(req.body)}`);
     const team = req.user.team._id;
     const {
       page,
@@ -656,12 +667,12 @@ class RequestController {
           $or: [{
             destination: {
               $in: venuesIds
-            },
+            }
             // ...extraQuery
           }, {
             origin: {
               $in: venuesIds
-            },
+            }
             // ...extraQuery
           }]
         }
@@ -690,9 +701,19 @@ class RequestController {
       }, {
         $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: true }
       }, {
-        $lookup: { from: 'requestfiles', localField: 'request.advancePaymentInformation.files', foreignField: '_id', as: 'request.advancePaymentInformation.files' }
+        $lookup: {
+          from: 'requestfiles',
+          localField: 'request.advancePaymentInformation.files',
+          foreignField: '_id',
+          as: 'request.advancePaymentInformation.files'
+        }
       }, {
-        $lookup: { from: 'requestfiles', localField: 'request.advancePaymentInformation.letters', foreignField: '_id', as: 'request.advancePaymentInformation.letters' }
+        $lookup: {
+          from: 'requestfiles',
+          localField: 'request.advancePaymentInformation.letters',
+          foreignField: '_id',
+          as: 'request.advancePaymentInformation.letters'
+        }
       }, {
         $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
       }, {
@@ -707,6 +728,8 @@ class RequestController {
         $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
       }, {
         $addFields: { requestNumber: { $toString: '$request.number' } }
+      }, {
+        $addFields: { transmittalNumber: { $toString: '$transmittal.number' } }
       }, {
         $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }, {
@@ -752,6 +775,7 @@ class RequestController {
           'reason._id': 1,
           'reason.name': 1,
           'uploadDate': 1,
+          'code': 1,
           'estimatedArrival': 1,
           'createdAt': 1,
           'updatedAt': 1
@@ -789,16 +813,16 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiListItems: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       return res.status(500).json(e);
     }
   }
 
-  public async exportExcel(req: IRequest, res: Response) {
+  public async exportExcel(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
     try {
-
+      logger.info(`RequestController.exportExcel email: ${req.user.email}`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYYMMDD')}-solicitudes.xlsx`);
       const options = {
@@ -818,7 +842,11 @@ class RequestController {
       /* headers */
       const questionColumns: Partial<Column>[] = [];
 
-      for (const reason of await Reason.find({ team })) {
+      const reasons = await Reason.find({ team }, {
+        'questions.name': true,
+        'questions._id': true
+      });
+      for (const reason of reasons) {
         for (const question of reason.questions) {
           questionColumns.push({
             header: question.name, key: question._id, width: 10
@@ -827,7 +855,7 @@ class RequestController {
       }
       worksheet.columns = [{
         header: 'CODIGO', key: 'code', width: 10
-      },{
+      }, {
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
         header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
@@ -945,7 +973,12 @@ class RequestController {
       }, {
         $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
       }, {
-        $lookup: { from: 'paymentmethods', localField: 'request.advancePaymentInformation.method', foreignField: '_id', as: 'request.advancePaymentInformation.method' }
+        $lookup: {
+          from: 'paymentmethods',
+          localField: 'request.advancePaymentInformation.method',
+          foreignField: '_id',
+          as: 'request.advancePaymentInformation.method'
+        }
       }, {
         $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
       }, {
@@ -984,7 +1017,7 @@ class RequestController {
         $sort: { _id: 1 }
       }])
         .allowDiskUse(true)
-        .cursor({ batchSize: 20 })
+        .cursor({ batchSize: 40 })
         .exec();
 
       cursor.on('data', async (item: any) => {
@@ -1031,30 +1064,38 @@ class RequestController {
           paymentMethod: item.request?.advancePaymentInformation?.method?.name ?? '',
           paymentNumber: item.request?.advancePaymentInformation?.number ?? '',
           uploadDate: item.uploadDate,
-          estimatedArrival: item.estimatedArrival,
+          estimatedArrival: item.estimatedArrival
         }).commit();
       });
+
+      // code to handle connection abort or finish query read process
       cursor.on('end', async () => {
+        cursor.close();
         workbook.commit();
-        res.status(200);
+        return res.status(200);
       });
 
-      cursor.on('error', (error: Error) => logger.error(error.message));
+      cursor.on('error', (error: any) => {
+        cursor.close();
+        logger.error(error.message);
+        return res.status(500).json(error);
+      });
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
-        await cursor.close();
-        res.status(200);
+        cursor.close();
+        return res.status(200);
       });
+
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
       logger.error(`RequestController.exportExcel: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
@@ -1141,14 +1182,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiList: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       return res.status(500).json(e);
     }
   }
 
   public async apiDetail(req: IRequest, res: Response) {
-    logger.info(`RequestController.apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`RequestController.apiDetail email ${req.user.email}`);
     const team = req.user.team._id;
     const { id } = req.params;
     try {
@@ -1170,7 +1210,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1178,7 +1218,7 @@ class RequestController {
 
   public async apiByVin(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     const team = req.user.team._id;
     const { id } = req.params;
     try {
@@ -1197,7 +1237,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1236,7 +1276,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequest: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1265,7 +1305,7 @@ class RequestController {
         });
         await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
         const itemsInRequest = await RequestItem.find({ request: item.request._id }).countDocuments();
-        if(!itemsInRequest){
+        if (!itemsInRequest) {
           await Request.deleteOne({ _id: item.request._id });
           io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
             idRequest: item.request._id
@@ -1288,7 +1328,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequestItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1354,7 +1394,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.searhCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1362,7 +1402,7 @@ class RequestController {
 
   public async apiCreateItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreateItem`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
     const { company } = req.user;
     const team = req.user.team._id;
     const { car, idRequest } = req.body;
@@ -1418,7 +1458,7 @@ class RequestController {
       console.log(e);
       logger.error(`RequestController.apiCreateItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1552,7 +1592,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiPatchItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1562,12 +1602,12 @@ class RequestController {
     const { team, company } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(updateObject)} }`);
     try {
       let cancelRequest = false;
-       req.on('close', function() {
-          cancelRequest = true;
-       });
+      req.on('close', function() {
+        cancelRequest = true;
+      });
       const requestItem = await RequestItem.findOneAndUpdate({
         _id: id,
         team
@@ -1618,7 +1658,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiPatchItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1706,7 +1746,7 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.downloadItemFiles: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -1766,257 +1806,329 @@ class RequestController {
   }
 
   private async searchVinContecta(vin: string): Promise<any[]> {
-    return new Promise((resolve) => {
-      const data = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:sap-com:document:sap:rfc:functions"><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
-      const config = {
-        headers: {
-          'Content-Type': 'text/xml',
-          'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-          'Content-Length': `${Buffer.byteLength(data)}`
-        },
-        auth: {
-          username: 'USR_SOA_PI',
-          password: 'Inicio.2130'
-        }
-      };
-      const instance = axios.create(config);
-      instance.post(`${process.env.SALFA_SOAP}/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos`,
-        data
-      )
-        .then(async (response) => {
-          xml2js.parseString(response.data, (error, result) => {
-            const data = [];
-            for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
-              for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
-                const items = detail['EQUIPMENTS_INFO'][0]['item'];
-                for (const item of items) {
-                  const denomination = item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '';
-                  const version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
-                  let material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
-                  material = material.substr(material.length > 6 ? material.length - 6 : 0);
-                  // if (materialSearch === material) {
-                  data.push({
-                    vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                    brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                    denomination: `${denomination}${version ? ` ${version}` : ''}`,
-                    material,
-                    color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                  });
-                  // }
+    logger.debug(`RequestController.searchVinContecta ${vin}`);
+    return new Promise((resolve, reject) => {
+      try {
+        const data = `<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:urn='urn:sap-com:document:sap:rfc:functions'><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
+        const config = {
+          headers: {
+            'Content-Type': 'text/xml',
+            'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
+            'Content-Length': `${Buffer.byteLength(data)}`
+          },
+          auth: {
+            username: 'USR_SOA_PI',
+            password: 'Inicio.2130'
+          }
+        };
+        const instance = axios.create(config);
+        instance.post(`${process.env.SALFA_SOAP}/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos`,
+          data
+        )
+          .then(async (response) => {
+            xml2js.parseString(response.data, (error, result) => {
+              const data = [];
+              for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
+                for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
+                  const items = detail['EQUIPMENTS_INFO'][0]['item'];
+                  for (const item of items) {
+                    const denomination = item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '';
+                    const version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
+                    let material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
+                    material = material.substr(material.length > 6 ? material.length - 6 : 0);
+                    data.push({
+                      vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
+                      brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
+                      denomination: `${denomination}${version ? ` ${version}` : ''}`,
+                      material,
+                      color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
+                    });
+                  }
                 }
               }
-            }
-            resolve(data);
+              logger.info(`RequestController.searchVinContecta\x1b[90m data: ${JSON.stringify(data)}`);
+              resolve(data);
+            });
+          })
+          .catch(function() {
+            resolve([]);
           });
-        })
-        .catch(function(error) {
-          // console.log(error);
-          resolve([])
-        });
+      } catch (e) {
+        logger.error(e);
+        reject(e);
+      }
     });
   }
 
   public async preMassAllocation(req: IRequest, res: Response) {
-    const { team } = req.user;
-    const { items } = req.body;
-    const results = await RequestItem
-      .find({
-        team,
-        $or: items.map((item: any) => ({
-          code: item.code
-        }))
-      }, {
-        meta: false
-      })
-      .populate([{
-        path: 'car'
-      }]);
-    res.json({
-      results,
-      status: 200
-    });
+    try {
+      const { team } = req.user;
+      const { items } = req.body;
+      logger.info(`RequestController.preMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
+      const results = await RequestItem
+        .find({
+          team: team._id,
+          $or: items.map((item: any) => ({
+            code: item.code
+          }))
+        }, {
+          code: true,
+          car: true,
+          createdAt: true
+        })
+        .populate([{
+          path: 'car',
+          select: ['vin', 'brand', 'denomination', 'material', 'color']
+        }]);
+      return res.json({
+        results,
+        status: 200
+      });
+    } catch (e) {
+      logger.error(e);
+      return res.status(500).json(e);
+    }
   }
 
   public async checkItemMassAllocation(req: IRequest, res: Response) {
-    const { team } = req.user;
-    let { vin, _id: id } = req.body.item;
-    const item = await RequestItem.findOne({ _id: id, team }).populate([{
-      path: 'car'
-    }]);
-    const errors = [];
-    let conectaData: any [] = [];
-    if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-      if (vin?.length >= 6) {
-        conectaData = await this.searchVinContecta(vin);
-        const materialCheked = conectaData.filter((car) => car.material === item.car.material);
-        if (!conectaData.length) {
-          errors.push({
-            message: 'Vin no encontrado en conecta.'
-          });
-        } else if (conectaData.length && !materialCheked.length) {
-          errors.push({
-            message: 'Material no corresponde a VIN.'
-          });
+    try {
+      const { team } = req.user;
+      // let { vin, _id: id, material } = req.body;
+      let { andesData, excelData } = req.body;
+      logger.info(`RequestController.checkItemMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
+      const item = await RequestItem
+        .findOne({
+          _id: andesData._id,
+          team
+        })
+        .populate([{
+          path: 'car'
+        }]);
+      const errors = [];
+      let conectaData: any [] = [];
+      if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+        if (excelData.vin?.length >= 6) {
+          conectaData = await this.searchVinContecta(excelData?.vin);
+          const materialsChecked = conectaData
+            .filter((conectaCar) => (
+                excelData?.material?.length
+                  ? conectaCar.material === excelData?.material
+                  : conectaCar.material === item.car.material
+              )
+            );
+          console.log('excelData?.material', excelData?.material);
+          console.log('item.car.material', item.car.material);
+          console.log('materialsChecked', materialsChecked);
+          if (!conectaData.length) {
+            errors.push({
+              message: 'Vin no encontrado en conecta.'
+            });
+          } else if (conectaData.length && !materialsChecked.length) {
+            errors.push({
+              message: 'Material no corresponde a VIN.'
+            });
+          }
         }
-      } /*else{
-        errors.push({
-          message: 'No se ingreso VIN'
-        });
-      }*/
+        /*
+          Note: now clean vins from request without vin
+          else {
+            errors.push({
+              message: 'No se ingreso VIN'
+            });
+          }
+        */
+      }
+      return res.json({
+        errors,
+        data: conectaData.length ? conectaData[0] : {}
+      });
+    } catch (e) {
+      logger.error(e);
+      return res.status(500).json(e);
     }
-    return res.json({
-      errors,
-      conectaData
-    });
   }
 
   public async processItemMassAllocation(req: IRequest, res: Response): Promise<any> {
     const { team, company } = req.user;
-    if (!req.user.hasPermission('massAllocation')) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta operación'
-      });
-    }
-    let { item } = req.body;
-    const errors = [];
-    const vin = item.vin?.trim() ?? '';
-    let requestItem = await RequestItem.findOne({ _id: item._id, team }).populate([{
-      path: 'car'
-    }]);
-    console.log('*****************************');
-    console.log(vin);
-    // si existe la solicitud y el team es salfa
-    if (requestItem) {
-      if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        const conectaData = await this.searchVinContecta(vin);
-        const materialCheked = conectaData.filter((car) => car.material === item.car.material);
-        if (!conectaData.length) {
-          errors.push({
-            message: 'Vin no encontrado en conecta.'
-          });
-        } else if (conectaData.length && !materialCheked.length) {
-          errors.push({
-            message: 'Material no corresponde a VIN.'
-          });
+    try {
+      if (!req.user.hasPermission('massAllocation')) {
+        return res.status(403).json({
+          message: 'No tienes permisos para esta operación'
+        });
+      }
+      logger.debug(`RequestController.processItemMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
+      let { item: { excelData, andesData, integrationData } } = req.body;
+      const errors = [];
+      const vin = excelData?.vin?.length && integrationData?.vin?.length
+        ? integrationData?.vin
+        : excelData.vin?.trim().toUpperCase() ?? '';
+      let requestItem = await RequestItem
+        .findOne({
+          _id: andesData._id,
+          team
+        }).populate([{
+          path: 'car'
+        }]);
+      // si existe la solicitud y el team es salfa
+      if (requestItem) {
+        if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+          const conectaData = await this.searchVinContecta(vin);
+          const materialCheked = conectaData
+            .filter((conectaCar) => (
+                 excelData?.vin?.length && integrationData?.vin?.length
+                  ? conectaCar.material === integrationData?.material
+                  : conectaCar.material === andesData.car.material
+              )
+            );
+          if (!conectaData.length) {
+            logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Vin no encontrado en conecta.`);
+            errors.push({
+              message: 'Vin no encontrado en conecta.'
+            });
+          } else if (conectaData.length && !materialCheked.length) {
+            logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`);
+            errors.push({
+              message: 'Material no corresponde a VIN.'
+            });
+          }
         }
       }
-    }
-    // si existe la solicitud, el vin y no tiene errores
-    if (requestItem && !errors.length) {
-      // mongoose.set('debug', true);
-      console.log(requestItem.code);
-      // previene vehículos sin vin
-      const car = vin.length > 0 ? await Car.findOne({ vin: vin, team }) : false;
-      const existOtherRequestWithCar = car ? await RequestItem.findOne({
-        team,
-        car,
-        _id: { $ne: requestItem._id }
-      }).populate([{
-        path: 'car'
-      }]) : false;
-      // si el vehículo ya existe en otra solicitud
-      if (car && existOtherRequestWithCar) {
-        console.log('1 Vehículo ya en otra solicitud');
-        const newCar = await new Car({
+      // si existe la solicitud, el vin y no tiene errores
+      if (requestItem && !errors.length) {
+        // mongoose.set('debug', true);
+        // logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m code: ${requestItem.code}`);
+        // previene vehículos sin vin
+        const car = vin.length > 0 ? await Car.findOne({ vin: vin, team }) : false;
+        const existOtherRequestWithCar = car ? await RequestItem.findOne({
           team,
-          company,
-          vin: '',
-          vin2: '',
-          brand: existOtherRequestWithCar.car.brand,
-          denomination: existOtherRequestWithCar.car.denomination,
-          material: existOtherRequestWithCar.car.material,
-          color: existOtherRequestWithCar.car.color,
-          secondColorOption: existOtherRequestWithCar.car.secondColorOption,
-          thirdColorOption: existOtherRequestWithCar.car.thirdColorOption,
-          status: ChoicesStatusCar.pending,
-          createdBy: req.user
-        }).save();
-        console.log('1 asigna vehículos');
-        // asigno nuevo vehículo sin vin a la solicitud en la que estaba
-        await RequestItem.updateOne({ _id: existOtherRequestWithCar._id }, { car: newCar._id });
-        // asigno vehículo existente a la solicitud
-        await Car.updateOne({ _id: car._id }, {
-          brand: requestItem.car.brand,
-          denomination: requestItem.car.denomination,
-          material: requestItem.car.material,
-          color: requestItem.car.color,
-          secondColorOption: requestItem.car.secondColorOption,
-          thirdColorOption: requestItem.car.thirdColorOption
-        });
-        await RequestItem.updateOne({ _id: requestItem._id }, {  car: car._id });
-      }
-      // si la solicitud no tenía vin
-      else if (requestItem.car.vin.length === 0) {
-        console.log('2 Vehíulo no tenía VIN');
-        await Car.updateOne({ _id: requestItem.car._id, team }, { vin: vin });
-      }
-      // si la solicitud tenia vin y ahora se elimina
-      else if (requestItem.car.vin.length > 0 && vin.length === 0) {
-        console.log('3 Vehíulo tenía VIN y ahora se le elimina');
-        const newCar = await new Car({
-          team,
-          vin: '',
-          vin2: '',
-          company,
-          brand: requestItem.car.brand,
-          denomination: requestItem.car.denomination,
-          material: requestItem.car.material,
-          color: requestItem.car.color,
-          secondColorOption: requestItem.car.secondColorOption,
-          thirdColorOption: requestItem.car.thirdColorOption,
-          status: ChoicesStatusCar.pending,
-          createdBy: req.user
-        }).save();
-        await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
-      }
-      // si la solicitud tenía VIN y no tenía otra solicitud
-      else if (requestItem.car.vin.length > 0 && vin.length > 0) {
-        console.log('4 Cambio de VIN');
-        const updateItems = {
-          team,
-          company,
-          vin: vin,
-          vin2: vin.substr(vin.length - 6),
-          brand: requestItem.car.brand,
-          denomination: requestItem.car.denomination,
-          material: requestItem.car.material,
-          color: requestItem.car.color,
-          secondColorOption: requestItem.car.secondColorOption,
-          thirdColorOption: requestItem.car.thirdColorOption,
-          status: ChoicesStatusCar.pending,
-          createdBy: req.user
-        };
-        if (car) {
-          console.log('Asigna vehiculo existente');
-          await Car.updateOne({ _id: car._id }, updateItems);
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id  });
-        } else {
-          const newCar = await new Car(updateItems).save();
+          car,
+          _id: { $ne: requestItem._id }
+        }).populate([{
+          path: 'car'
+        }]) : false;
+        // si el vehículo ya existe en otra solicitud
+        if (car && existOtherRequestWithCar) {
+          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo ya existe en otra solicitud. Se asigna vehículo sin vin a solicitud donde existia el vehículo y se asigna vin a solicitud.`);
+          const newCar = await new Car({
+            team,
+            company,
+            vin: '',
+            vin2: '',
+            brand: existOtherRequestWithCar.car.brand,
+            denomination: existOtherRequestWithCar.car.denomination,
+            material: existOtherRequestWithCar.car.material,
+            color: existOtherRequestWithCar.car.color,
+            secondColorOption: existOtherRequestWithCar.car.secondColorOption,
+            thirdColorOption: existOtherRequestWithCar.car.thirdColorOption,
+            status: ChoicesStatusCar.pending,
+            createdBy: req.user
+          }).save();
+          // asigno nuevo vehículo sin vin a la solicitud en la que estaba
+          await RequestItem.updateOne({ _id: existOtherRequestWithCar._id }, { car: newCar._id });
+          // asigno vehículo existente a la solicitud
+          await Car.updateOne({ _id: car._id }, {
+            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+            color: requestItem.car.color,
+            secondColorOption: requestItem.car.secondColorOption,
+            thirdColorOption: requestItem.car.thirdColorOption
+          });
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+        }
+        // si la solicitud no tenía vin
+        else if (requestItem.car.vin.length === 0) {
+          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo no tenía VIN y la solicitud tampoco. Solo se actualiza información del vehículo`);
+          await Car
+            .updateOne({
+              _id: requestItem.car._id,
+              team
+            }, {
+              vin: vin,
+              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material
+            });
+        }
+        // si la solicitud tenia vin y ahora se elimina
+        else if (requestItem.car.vin.length > 0 && vin.length === 0) {
+          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo tenía VIN y ahora se le quita. Se le asigna a la solicitud un vehículo nuevo sin VIN.`);
+          const newCar = await new Car({
+            team,
+            vin: '',
+            vin2: '',
+            company,
+            brand: requestItem.car.brand,
+            denomination: requestItem.car.denomination,
+            material: requestItem.car.material,
+            color: requestItem.car.color,
+            secondColorOption: requestItem.car.secondColorOption,
+            thirdColorOption: requestItem.car.thirdColorOption,
+            status: ChoicesStatusCar.pending,
+            createdBy: req.user
+          }).save();
           await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
         }
-      } else {
-        console.error(`VIN ${vin} no processado.`);
+        // si la solicitud tenía VIN y el vehículo no tenía otra solicitud
+        else if (requestItem.car.vin.length > 0 && vin.length > 0) {
+          logger.info(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m code: ${requestItem.code} Solicitud tenía VIN y el vehículo no tenía estaba en otra solicitud.`);
+          const updateItems = {
+            team,
+            company,
+            vin: vin,
+            vin2: vin.substr(vin.length - 6),
+            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+            color: requestItem.car.color,
+            secondColorOption: requestItem.car.secondColorOption,
+            thirdColorOption: requestItem.car.thirdColorOption,
+            status: ChoicesStatusCar.pending,
+            createdBy: req.user
+          };
+          if (car) {
+            logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Se actualiza vehículo y se asigna en la solicitud.`);
+            await Car.updateOne({ _id: car._id }, updateItems);
+            await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+          } else {
+            logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} No existía vehículo, se crea y se asigna en la solicitud.`);
+            const newCar = await new Car(updateItems).save();
+            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+          }
+        } else {
+          logger.error(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} VIN no pudo ser procesado.`);
+        }
       }
-    }
-    // mongoose.set('debug', false);
-    requestItem = await RequestItem
-      .findOne({ _id: item._id, team })
-      .populate(this.itemPopulate)
-      .lean();
-    if (requestItem) {
-      await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
-      io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-        idRequest: requestItem.request._id,
-        item: requestItem
+      // mongoose.set('debug', false);
+      requestItem = await RequestItem
+        .findOne({
+          _id: andesData._id,
+          team: team._id
+        })
+        .populate(this.itemPopulate)
+        .lean();
+      if (requestItem) {
+        await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment().toDate() } });
+        io
+          .to(`request-list-${team._id}`)
+          .emit('UPDATE_REQUEST_ITEM', {
+            idRequest: requestItem.request._id,
+            item: requestItem
+          });
+        io
+          .to(`request-detail-${team._id}`)
+          .emit('UPDATE_REQUEST_ITEM', {
+            idRequest: requestItem.request._id,
+            item: requestItem
+          });
+      }
+      return res.status(200).json({
+        ...requestItem
       });
-      io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-        idRequest: requestItem.request._id,
-        item: requestItem
-      });
+    } catch (e) {
+      logger.error(e);
+      return res.status(500).json(e);
     }
-    return res.status(200).json({
-      ...requestItem
-    });
   }
 
   public async uploadFile(req: IRequest, res: Response) {
@@ -2076,7 +2188,7 @@ class RequestController {
         /* istanbul ignore next */
         logger.error(`RequestController.uploadFile: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
         logger.error(e);
         /* istanbul ignore next */
@@ -2084,7 +2196,7 @@ class RequestController {
       }
     } else {
       logger.error(`RequestController.uploadFile: The file are required.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       return res.status(400).json({
         message: 'La imagen es obligatoria.',

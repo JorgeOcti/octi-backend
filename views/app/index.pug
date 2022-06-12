@@ -23,21 +23,7 @@ block js
   script(src=`/static${getVersionedPath('/js/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.js')}`)
   link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap-datepicker/bootstrap-datepicker.min.css')}`)
   script.
-    window.user = {
-      _id: '!{`${user._id}`}',
-      isAdmin: !{`${user.isAdmin === true}`},
-      firstName: '!{`${user.firstName}`}',
-      lastName: '!{`${user.lastName}`}',
-      email: '!{`${user.email}`}',
-      venue: !{`${JSON.stringify(user.venue)}`},
-      company: !{`${JSON.stringify(user.company)}`},
-      venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`},
-      team:  !{`${JSON.stringify(user.team)}`},
-      userPermissions: !{`${JSON.stringify(user.userPermissions)}`},
-      token: '!{`${token}`}'
-    };
-    window.MAPBOX="!{`${MAPBOX}`}";
-    window.MIXPANEL="!{`${MIXPANEL}`}";
+    window.user = {_id: '!{`${user._id}`}',isAdmin: !{`${user.isAdmin === true}`},firstName: '!{`${user.firstName}`}',lastName: '!{`${user.lastName}`}',email: '!{`${user.email}`}',venue: !{`${JSON.stringify(user.venue)}`},company: !{`${JSON.stringify(user.company)}`},venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`},team:  !{`${JSON.stringify(user.team)}`},userPermissions: !{`${JSON.stringify(user.userPermissions)}`},token: '!{`${token}`}'}; window.MAPBOX = "!{`${MAPBOX}`}"; window.MIXPANEL="!{`${MIXPANEL}`}";
   //- React App
   //- bostrap-select
   //- script(src=`/static${getVersionedPath('/js/vendor/bootstrap-select/bootstrap-select.min.js')}`)

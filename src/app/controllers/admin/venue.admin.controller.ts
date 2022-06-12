@@ -228,7 +228,7 @@ class AdminVenueController {
       };
     }
     try {
-      logger.info(`VenueController.apiListVenues: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
+      logger.info(`VenueController.apiListVenues: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       const venues = await this.getVenues(filter, options, search);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {

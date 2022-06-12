@@ -36,7 +36,7 @@ class AdminFormsController {
       /* istanbul ignore next */
       logger.error(`AdminFormsController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       console.error(e);
       res.status(500).json(e);
     }
@@ -59,7 +59,7 @@ class AdminFormsController {
       //* istanbul ignore next */
       logger.error(`AdminFormsController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       console.error(e);
       res.status(500).json(e);
     }
@@ -81,7 +81,7 @@ class AdminFormsController {
       /* istanbul ignore next */
       logger.error(`AdminFormsController.apiDelete: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       res.status(500).json(e);
     }
   }
@@ -121,8 +121,8 @@ class AdminFormsController {
     }
 
     try {
-      logger.info(`FormController.apiList: email: ${req.user.email}} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`FormController.apiList: email: ${req.user.email}} filter: ${JSON.stringify(filter)}`);
+      logger.info(`FormController.apiList: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.debug(`FormController.apiList: email: ${req.user.email} filter: ${JSON.stringify(filter)}`);
       const forms = await this.getForms(filter, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {
