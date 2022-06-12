@@ -15,7 +15,7 @@ import {IParticipantModel} from "../../form/models/participant.model";
 
 export interface ITransmittalItem {
   _id: any;
-  transmittal: ITransmittal | ITransmittalModel;
+  transmittal: ITransmittal | ITransmittalModel | null;
   team: ITeam | ITeamModel;
   request: IRequest | IRequestModel;
   requestItem: IRequestItem | IRequestItemModel;

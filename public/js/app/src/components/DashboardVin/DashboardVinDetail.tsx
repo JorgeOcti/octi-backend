@@ -230,7 +230,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       this.props.history.push(parseReplicableURL(`/settings/cars/${car?._id}`));
                     }}
                   >
-                    <strong>Resumen</strong>
+                    <strong>Detalle</strong>
                   </button>
                 </div>
               </div>
@@ -241,7 +241,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                   <li className='active'><a href='#checklist' data-toggle='tab' aria-expanded='false'>Controles
                     ({car?.participants?.length ?? '0'})</a>
                   </li>
-                  <li className=''><a href='#distribution' data-toggle='tab' aria-expanded='true'>Distribución ({requests?.length ?? '0'})</a></li>
+                  {/*<li className=''><a href='#distribution' data-toggle='tab' aria-expanded='true'>Distribución ({requests?.length ?? '0'})</a></li>*/}
                   {/*<li className="dropdown">
                         <a className="dropdown-toggle" data-toggle="dropdown" href="#">
                           Dropdown <span className="caret"></span>
@@ -293,7 +293,10 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                               </div>
                               <div className='text-muted text-sm'>
                                 <div className='visible-xs visible-sm'>
-                                  <strong>{participant.venue ? participant.venue.name : '-'}</strong> <ShowIf
+                                  <strong>
+                                    <i className='fa fa-fw fa-user-o' /> {participant.user?.firstName ?? ''} {participant.user?.lastName ?? ''}
+                                  </strong>
+                                    <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'}</div> <ShowIf
                                   condition={participant.hasDamages}
                                 >
                                   <React.Fragment>
@@ -305,10 +308,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                   />
                                   </React.Fragment>
                                 </ShowIf>
-                                  <div>
-                                    <i className='fa fa-fw fa-user-o' /> {participant.user?.firstName ?? ''} {participant.user?.lastName ?? ''}
-                                  </div>
-                                  <div><i className='fa fa-fw fa-flag-o' /> {participant.company?.name}</div>
+                                  <div>{participant.company?.name}</div>
                                   <div>
                                     <i
                                       className='fa fa-clock-o fa-fw' /> {moment(participant.createdAt).fromNow()} ({moment(participant.createdAt).format('LLL')})
@@ -321,7 +321,11 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                               paddingTop: '10px',
                               paddingBottom: '10px'
                             }}>
-                              <strong>{participant.venue ? participant.venue.name : '-'}</strong> <ShowIf
+                              <strong className='text-muted'>
+                                <i
+                                  className='fa fa-fw fa-user-o' /> {participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}
+                              </strong>
+                              <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'}</div> <ShowIf
                               condition={participant.hasDamages}
                             >
                               <React.Fragment>
@@ -333,11 +337,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                               />
                               </React.Fragment>
                             </ShowIf>
-                              <div className='text-muted'>
-                                <i
-                                  className='fa fa-fw fa-user-o' /> {participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}
-                              </div>
-                              <i className='fa fa-fw fa-flag-o' /> {participant.company?.name}
+                              {participant.company?.name}
                             </td>
                             <td className='middle-center hidden-xs text-muted text-sm text-ellipsis'>
                               <div

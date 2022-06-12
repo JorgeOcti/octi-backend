@@ -307,22 +307,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className='row no-margin'>
-                <div className='col-md-12 no-padding'>
-                  <div
-                    className='input-group input-group-sm'
-                    style={{ padding: '10px' }}
-                  >
-                    <input
-                      type='text'
-                      className='form-control pull-right'
-                      onChange={this.onChangeSearch}
-                      value={searchText}
-                      placeholder='Buscar VIN, marca, supervisor o sucursal' />
-                    <div className='input-group-btn'>
-                      <button className='btn btn-default'><i className='fa fa-search' /></button>
-                    </div>
-                  </div>
-                </div>
                 <div className='col-md-6 no-padding'>
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
@@ -352,7 +336,22 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     endDate={to}
                   />
                 </div>
-
+                <div className='col-md-12 no-padding'>
+                  <div
+                    className='input-group input-group-sm'
+                    style={{ padding: '10px' }}
+                  >
+                    <input
+                      type='text'
+                      className='form-control pull-right'
+                      onChange={this.onChangeSearch}
+                      value={searchText}
+                      placeholder='Buscar VIN, marca, supervisor o sucursal' />
+                    <div className='input-group-btn'>
+                      <button className='btn btn-default'><i className='fa fa-search' /></button>
+                    </div>
+                  </div>
+                </div>
               </div>
               {
                 participants.length ?
@@ -423,6 +422,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   </ShowIf>
                                 </span>
                                 <div className='visible-xs visible-sm text-muted text-sm'>
+                                  <span><i
+                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</span><br />
                                   <span><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
                                     condition={participant.hasDamages}
                                   >
@@ -435,8 +436,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     />
                                     </React.Fragment>
                                   </ShowIf></span><br />
-                                  <span><i
-                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</span><br />
                                   <div>
                                     <i className='fa fa-clock-o fa-fw' /> {moment(participant.createdAt).fromNow()} ({moment(participant.createdAt).format('LLL')})
                                   </div>
@@ -455,7 +454,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 paddingTop: '15px',
                                 paddingBottom: '15px'
                               }}>
-                                <strong className='text-muted'>{`${participant.venue ? `${participant.venue.name}` : '-'}`}</strong> <ShowIf
+                                <div className='text-muted'>
+                                  <strong><i
+                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</strong><br />
+                                </div>
+                                <div className='text-muted'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`}</div> <ShowIf
                                 condition={participant.hasDamages}
                               >
                                 <React.Fragment>
@@ -468,9 +471,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 </React.Fragment>
                               </ShowIf>
                                 <div className='text-muted text-sm'>
-                                  <i
-                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}<br />
-                                  <i className='fa fa-fw fa-flag-o' /> {`${participant.company ? `${participant.company.name}` : '-'}`}
+                                {`${participant.company ? `${participant.company.name}` : '-'}`}
                                 </div>
                               </td>
                               <td className='middle-center hidden-xs hidden-sm'>

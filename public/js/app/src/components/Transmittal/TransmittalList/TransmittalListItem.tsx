@@ -15,7 +15,7 @@ import { ITransmittal } from '../../../../../../../src/distribution/interfaces/t
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
-import { hasPermission, parseReplicableURL } from '../../../utils/common';
+import { hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -255,7 +255,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private debounceUpdateTransmittalItem(transmittalItem: RecursivePartial<ITransmittalItem>) {
+  private debounceUpdateTransmittalItem(transmittalItem: any) {
     this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
   }
 

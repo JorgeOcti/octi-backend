@@ -164,7 +164,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       this.props.history.push(parseReplicableURL(`/cars/${car?._id}`));
                     }}
                   >
-                    <strong>Detalle</strong>
+                    <strong>Controles</strong>
                   </button>
                 </div>
               </div>
