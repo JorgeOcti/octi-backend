@@ -458,7 +458,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <strong><i
                                     className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</strong><br />
                                 </div>
-                                <div className='text-muted'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`}</div> <ShowIf
+                                <div className='text-muted'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
                                 condition={participant.hasDamages}
                               >
                                 <React.Fragment>
@@ -470,6 +470,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 />
                                 </React.Fragment>
                               </ShowIf>
+                                  </div>
                                 <div className='text-muted text-sm'>
                                 {`${participant.company ? `${participant.company.name}` : '-'}`}
                                 </div>

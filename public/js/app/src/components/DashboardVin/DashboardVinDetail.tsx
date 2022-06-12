@@ -296,7 +296,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                   <strong>
                                     <i className='fa fa-fw fa-user-o' /> {participant.user?.firstName ?? ''} {participant.user?.lastName ?? ''}
                                   </strong>
-                                    <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'}</div> <ShowIf
+                                    <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'} <ShowIf
                                   condition={participant.hasDamages}
                                 >
                                   <React.Fragment>
@@ -307,7 +307,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                     title='Daños encontrados en esta revisión.'
                                   />
                                   </React.Fragment>
-                                </ShowIf>
+                                </ShowIf></div>
                                   <div>{participant.company?.name}</div>
                                   <div>
                                     <i
@@ -325,7 +325,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                 <i
                                   className='fa fa-fw fa-user-o' /> {participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}
                               </strong>
-                              <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'}</div> <ShowIf
+                              <div><i className='fa fa-fw fa-flag-o' /> {participant.venue ? participant.venue.name : '-'} <ShowIf
                               condition={participant.hasDamages}
                             >
                               <React.Fragment>
@@ -336,7 +336,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                 title='Daños encontrados en esta revisión.'
                               />
                               </React.Fragment>
-                            </ShowIf>
+                            </ShowIf></div>
                               {participant.company?.name}
                             </td>
                             <td className='middle-center hidden-xs text-muted text-sm text-ellipsis'>
