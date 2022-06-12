@@ -22,7 +22,7 @@ import { IWindow } from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
-import { parseReplicableURL } from '../../utils/common';
+import { hasPermission, parseReplicableURL } from '../../utils/common';
 import CopyText from '../Utils/CopyText';
 
 declare let window: IWindow;
@@ -224,14 +224,16 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                     {/*  </span>*/}
                     {/*</li>*/}
                   </ul>
-                  <button
-                    className='btn btn-primary btn-block'
-                    onClick={() => {
-                      this.props.history.push(parseReplicableURL(`/settings/cars/${car?._id}`));
-                    }}
-                  >
-                    <strong>Detalle</strong>
-                  </button>
+                  <ShowIf condition={hasPermission(window.user, 'viewCar')}>
+                    <button
+                      className='btn btn-primary btn-block'
+                      onClick={() => {
+                        this.props.history.push(parseReplicableURL(`/settings/cars/${car?._id}`));
+                      }}
+                    >
+                      <strong>Detalle</strong>
+                    </button>
+                  </ShowIf>
                 </div>
               </div>
             </div>
@@ -264,7 +266,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <tr>
                         <th className='middle' style={{ width: '40%' }}>Control</th>
                         {/*<th className="middle hidden-xs">Supervisor</th>*/}
-                        <th className='middle hidden-xs' style={{ width: '40%' }}>Realizado en</th>
+                        <th className='middle hidden-xs' style={{ width: '40%' }}>Realizado por</th>
                         <th className='middle hidden-xs' style={{ width: '20%' }}></th>
                         <th className='middle-center hidden-xs' style={{ width: '3%' }}></th>
                         <th style={{ width: '1%' }} />

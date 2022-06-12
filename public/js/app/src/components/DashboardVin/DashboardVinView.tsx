@@ -217,9 +217,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if (this.props.dashboard.pagination !== prevProps.dashboard.pagination) {
-      window.scrollTo(0, 0);
-    }
     $('[data-toggle="tooltip"]').tooltip();
   }
 
@@ -364,7 +361,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         {/*<th style={{width: '18%'}} className="middle hidden-xs hidden-sm">Unidad</th>*/}
                         {/*<th style={{width: '13%'}} className="middle hidden-xs hidden-sm">Supervisor</th>*/}
                         <th style={{ width: '15%' }} className='middle hidden-xs hidden-sm'>Control</th>
-                        <th style={{ width: '20%' }} className='middle hidden-xs hidden-sm'>Realizado en</th>
+                        <th style={{ width: '20%' }} className='middle hidden-xs hidden-sm'>Realizado por</th>
                         <th style={{ width: '10%' }} className='middle hidden-xs hidden-sm'></th>
                         <th style={{ width: '1%' }} className='middle-center hidden-xs hidden-sm'></th>
                         {/*<th style={{width: '15%'}} className="hidden-xs hidden-sm">Fecha</th>*/}
@@ -546,7 +543,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             }
             {
-              loading &&
+              !participants.length && loading &&
               <div className='overlay'>
                 <i className='fa fa-spinner fa-spin text-purple' />
               </div>
@@ -604,7 +601,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     // change the page
-    this.props.getRevisionsAction(page, true);
+    this.props.getRevisionsAction(page, false);
+    window.scrollTo(0, 0);
   }
 }
 
