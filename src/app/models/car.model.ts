@@ -164,6 +164,10 @@ export const carSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  shippingDate: {
+    type: Date,
+    default: ''
+  },
   isExhibition: {
     type: Boolean,
     default: false
