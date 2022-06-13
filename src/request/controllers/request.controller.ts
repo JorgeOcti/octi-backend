@@ -1912,6 +1912,7 @@ class RequestController {
             resolve({ data: [] });
           });
       } catch (e) {
+        logger.error(`RequestController.searchVin\x1b[90m: catch error.`);
         logger.error(e);
         resolve({ data: [] });
       }
@@ -1966,39 +1967,46 @@ class RequestController {
           path: 'car'
         }]);
       const errors: { message: string }[] = [];
+      let integrationData: ICar | undefined;
+      const vin = excelData?.vin?.length
+        ? excelData.vin
+        : item?.car.vin ?? '';
       if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        if (excelData.vin?.length >= 6) {
-          let { data: conectaData } = await this.searchVinContecta(excelData?.vin);
-          const foundVin = !!conectaData.length;
-          if (conectaData.length > 1) {
+        if (vin?.length >= 6) {
+          let { data } = await this.searchVinContecta(vin);
+          const foundVin = !!data.length;
+          if (data.length > 1) {
             errors.push({
               message: 'Mas de una coincidencia'
             });
           }
+          const material = excelData?.material?.length && !['undefined'].includes(excelData?.material)
+            ? excelData.material
+            : item.car.material
+            ?? '';
           if (
-            item.car.material?.length && !['undefined'].includes(item.car.material) ||
-            excelData?.material?.length && !['undefined'].includes(excelData?.material)
+            material.length
           ) {
-            conectaData = conectaData
-              .filter((conectaCar) => (
-                excelData?.material?.length
-                  ? conectaCar.material === excelData?.material
-                  : conectaCar.material === item.car.material
+            integrationData = data
+              .find((conectaCar) => (
+                  conectaCar.material === material
                 )
               );
+          } else if (data.length) {
+            integrationData = data[0];
           }
           if (!foundVin) {
             errors.push({
               message: 'Vin no encontrado en conecta.'
             });
-          } else if (foundVin && !conectaData.length) {
+          } else if (!integrationData) {
             errors.push({
-              message: 'Material no corresponde a VIN.'
+              message: `Material ${material} no corresponde a VIN ${vin}.`
             });
           }
           return res.json({
             errors,
-            data: conectaData
+            data: integrationData
           });
         }
         return res.json({
@@ -2069,7 +2077,7 @@ class RequestController {
             errors.push({
               message: 'Vin no encontrado en conecta.'
             });
-          } else if (foundVin && !conectaData.length) {
+          } else if (vin.length && foundVin && !conectaData.length) {
             logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`);
             errors.push({
               message: 'Material no corresponde a VIN.'

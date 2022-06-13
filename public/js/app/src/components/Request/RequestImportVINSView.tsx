@@ -808,12 +808,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     return (
       <div className='text-muted text-sm'>
         <div><strong>VIN </strong>
-          <ShowIf
-            condition={!!row.excelData?.material?.length}
-            alternative={<strong className={'text-primary'}>{row.andesData.car.vin}</strong>}
-          >
-             <strong className={'text-primary'}>{row.excelData.vin}</strong>
-          </ShowIf>
+           <strong className={'text-primary'}>{row.andesData.car.vin?.length?row.andesData.car.vin: '-'}</strong>
         </div>
         <div><strong>MATERIAL </strong>
           <ShowIf
@@ -827,13 +822,19 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         <div><strong>MARCA </strong>{row.andesData.car.brand}</div>
         <div><strong>MODELO </strong>{row.andesData.car.denomination}</div>
         <div><strong>COLOR </strong>
-          <ShowIf
+          <ShowIf condition={!!row.andesData.car.color?.length}>
+            <strong
+              className={'text-primary'}
+            >
+              {row.andesData.car.color}
+            </strong>
+          </ShowIf> <ShowIf
             condition={
               !!(row.andesData.car.firstColorOption?.length ||
               row.andesData.car.secondColorOption?.length ||
               row.andesData.car.thirdColorOption?.length)
             }
-          >
+          >(
             {row.andesData.car.firstColorOption ?? ''}
             {
               row.andesData.car.firstColorOption && row.andesData.car.secondColorOption
@@ -845,6 +846,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
                 ?`, ${row.andesData.car.thirdColorOption}`
                 : row.andesData.car.thirdColorOption ?? ''
             }
+            )
           </ShowIf>
         </div>
       </div>
@@ -855,11 +857,15 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     return (
       <div className='text-muted text-sm'>
         <div><strong>VIN </strong>
-          <ShowIf condition={!!row.excelData.vin?.length}>
-            <strong className={'text-primary'}>
-              {row.integrationData?.vin ?? row.andesData.car.vin}
-            </strong>
-          </ShowIf>
+          <strong className={`text-primary`} style={{ textDecoration: !row.excelData.vin?.length ? 'line-through' : '' }}>
+            {
+              row.integrationData?.vin?.length
+                ? row.integrationData?.vin
+                : row.andesData.car.vin?.length
+                  ? row.andesData.car.vin
+                  : '-'
+            }
+          </strong>
         </div>
         <div>
           <strong>MATERIAL </strong>
@@ -867,7 +873,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         </div>
         <div><strong>MARCA </strong>
           <span className={'text-primary'}>
-            {row.integrationData?.brand ?? row.andesData.car.brand}
+            {row.integrationData?.brand  ?? row.andesData.car.brand}
           </span>
         </div>
         <div><strong>MODELO </strong>
@@ -901,7 +907,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     if (row.errors.length) {
       return (
         <div>
-          <span className={'text-red'}>{row.andesData.car.vin?.length ? row.andesData.car.vin : '-'}</span>
+          <span className={'text-red'}>{row.excelData.vin?.length ? row.excelData.vin : '-'}</span>
           <div className='text-sm text-muted'><i className='fa fa-fw fa-info-circle' /> No se realizará ningun cambio</div>
         </div>
       );
