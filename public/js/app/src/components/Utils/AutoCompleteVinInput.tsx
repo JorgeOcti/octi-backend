@@ -195,8 +195,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
   private updateVin(vin: string) {
     const { item } = this.props;
     this.api.uppdateRequestItemVin(item, vin)
-      .then((response: AxiosResponse) => {
-        console.log('responde', response);
+      .then(() => {
         this.setState({
           canEdit: false
         });

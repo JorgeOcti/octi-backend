@@ -1474,7 +1474,7 @@ class RequestController {
         .findOne({ _id: id, team })
         .populate(this.itemPopulate);
       if (requestItem) {
-        logger.info(`RequestController.apiPatchItemVin ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
+        logger.info(`RequestController.apiPatchItemVin ${req.user.email} \x1b[90m params ${JSON.stringify(req.params)} body ${JSON.stringify(req.body)}`);
         let integrationData: ICar | undefined;
         if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
           if (vin?.length >= 6) {

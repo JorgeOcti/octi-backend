@@ -29,7 +29,6 @@ class RequestItemHooks {
         destination,
         status
       });
-      console.log(meta);
       await RequestItem.updateOne({ _id: doc._id }, {
         $set: { meta }
       });
