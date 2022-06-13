@@ -1,5 +1,6 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
+import * as moment from 'moment-timezone';
 import { ErrorInfo, RefObject } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
@@ -331,7 +332,8 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       ['Gas']: '',
       ['AP']: '',
       ['Pais Origen']: '',
-      ['Observacion']: ''
+      ['Observacion']: '',
+      ['Fecha de embarque']: '',
     }]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
@@ -374,7 +376,9 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       ['gas']: requestItem['Gas'],
       ['ap']: requestItem['AP'],
       ['countryOrigin']: requestItem['Pais Origen'],
-      ['observation']: requestItem['Observacion']
+      ['observation']: requestItem['Observacion'],
+      ['shippingDate'] : requestItem['Fecha de embarque'] ?
+        moment(requestItem['Fecha de embarque']).format() : ''
     };
   }
 

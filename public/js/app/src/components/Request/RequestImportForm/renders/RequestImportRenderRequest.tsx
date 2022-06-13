@@ -153,6 +153,7 @@ class RequestImportRenderRequest extends React.Component<IPropsType, IStateType>
                         <th className='middle'>AP</th>
                         <th className='middle'>Pais Origen</th>
                         <th className='middle'>Observacion</th>
+                        <th className='middle'>Fecha de Carga</th>
                       </tr>
                       </thead>
                       <tbody>
