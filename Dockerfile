@@ -37,7 +37,7 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
-RUN yarn global add typescript ts-node ts-node-dev pm2
+RUN npm i -G typescript ts-node ts-node-dev pm2
 RUN touch /srv/s3-config.json
 RUN echo "{}" >> /srv/s3-config.json
 RUN touch /srv/ses-config.json
@@ -53,7 +53,7 @@ COPY ./tsconfig.json /srv/tsconfig.json
 
 RUN export PYTHON=python3
 # RUN yarn install --prod
-RUN yarn install
+RUN npm install
 
 RUN tsc --project tsconfig.json
 
