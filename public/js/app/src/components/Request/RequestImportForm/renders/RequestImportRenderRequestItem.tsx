@@ -12,6 +12,7 @@ import { Dispatch } from 'redux';
 import { IReason } from '../../../../../../../../src/request/interfaces/reason.interface';
 import { IVenue } from '../../../../../../../../src/app/interfaces/venue.interface';
 import InputField from '../../../Utils/forms/InputField';
+import DateRangePicker from "../../../Utils/DateRangePicker";
 
 export interface IRequestImportRenderItemProps {
   channels: ISalesChannel[];
@@ -337,6 +338,16 @@ class RequestImportRenderRequestItem extends React.Component<IPropsType, IStateT
                     name={`${item}.observation`}
                     type='text'
                     component={InputField}
+                    props={{
+                      labelOff: true
+                    }}
+                  />
+                </td>
+                <td className='form-group-no-margin'>
+                  <Field
+                    name={`${item}.shippingDate`}
+                    type='text'
+                    component={DateRangePicker}
                     props={{
                       labelOff: true
                     }}
