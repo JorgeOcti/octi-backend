@@ -37,15 +37,13 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
-COPY ./package.json /srv/package.json
+RUN yarn global add typescript ts-node ts-node-dev pm2
+RUN touch /srv/s3-config.json
+RUN echo "{}" >> /srv/s3-config.json
+RUN touch /srv/ses-config.json
+RUN echo "{}" >> /srv/ses-config.json
 
-RUN export PYTHON=python3
-RUN npm --unsafe-perm --production install && \
-    npm i -g pm2 typescript && \
-    touch /srv/s3-config.json && \
-    echo "{}" >> /srv/s3-config.json && \
-    touch /srv/ses-config.json && \
-    echo "{}" >> /srv/ses-config.json
+COPY ./package.json /srv/package.json
 
 COPY ./src /srv/src
 COPY ./public /srv/public
@@ -53,7 +51,9 @@ COPY ./views /srv/views
 COPY ./pm2.json /srv/pm2.json
 COPY ./tsconfig.json /srv/tsconfig.json
 
-RUN npm i
+RUN export PYTHON=python3
+# RUN yarn install --prod
+RUN yarn install
 
 RUN tsc --project tsconfig.json
 

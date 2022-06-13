@@ -44,6 +44,7 @@ export interface ICar {
   bl: string;
   client: string;
   color: string;
+  firstColorOption: string;
   secondColorOption: string;
   thirdColorOption: string;
   team: ITeam | any;

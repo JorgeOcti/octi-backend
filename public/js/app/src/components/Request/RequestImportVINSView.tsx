@@ -636,7 +636,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           const { data: integrationData, errors } = response.data;
           this.updateItemStatusByID({
               ...item,
-              integrationData,
+              integrationData: integrationData?.length ? integrationData[0] : integrationData,
               errors
             },
             response.data.errors.length ? itemStatus.ERROR : itemStatus.READY,
@@ -826,6 +826,27 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
         </div>
         <div><strong>MARCA </strong>{row.andesData.car.brand}</div>
         <div><strong>MODELO </strong>{row.andesData.car.denomination}</div>
+        <div><strong>COLOR </strong>
+          <ShowIf
+            condition={
+              !!(row.andesData.car.firstColorOption?.length ||
+              row.andesData.car.secondColorOption?.length ||
+              row.andesData.car.thirdColorOption?.length)
+            }
+          >
+            {row.andesData.car.firstColorOption ?? ''}
+            {
+              row.andesData.car.firstColorOption && row.andesData.car.secondColorOption
+                ?`, ${row.andesData.car.secondColorOption}`
+                : row.andesData.car.secondColorOption ?? ''
+            }
+            {
+              (row.andesData.car.firstColorOption || row.andesData.car.secondColorOption) && row.andesData.car.thirdColorOption
+                ?`, ${row.andesData.car.thirdColorOption}`
+                : row.andesData.car.thirdColorOption ?? ''
+            }
+          </ShowIf>
+        </div>
       </div>
     );
   }
@@ -844,8 +865,23 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
           <strong>MATERIAL </strong>
           <strong className={'text-primary'}>{row.integrationData?.material ?? row.andesData.car.material}</strong>
         </div>
-        <div><strong>MARCA </strong>{row.integrationData?.brand ?? row.andesData.car.brand}</div>
-        <div><strong>MODELO </strong>{row.integrationData?.denomination ?? row.andesData.car.denomination}</div>
+        <div><strong>MARCA </strong>
+          <span className={'text-primary'}>
+            {row.integrationData?.brand ?? row.andesData.car.brand}
+          </span>
+        </div>
+        <div><strong>MODELO </strong>
+          <span className={'text-primary'}>
+            {row.integrationData?.denomination ?? row.andesData.car.denomination}
+          </span>
+        </div>
+        <div><strong>COLOR </strong>
+          <strong
+            className={'text-primary'}
+          >
+            {row.integrationData?.color ?? row.andesData.car.color}
+          </strong>
+        </div>
       </div>
     );
   }

@@ -94,7 +94,7 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
         >
           {
             !canEdit ?
-              <ShowIf condition={hasPermission(window.user, 'viewCar') && item.car.vin?.length > 0}>
+              <ShowIf condition={hasPermission(window.user, 'viewCar') && item.car?.vin?.length > 0}>
               <span
                 className='input-group-addon pointer bg-primary'
                 style={{ padding: '5px' }}

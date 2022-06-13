@@ -8,7 +8,6 @@ import * as https from 'https';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
 import axios from 'axios';
-import * as xml2js from 'xml2js';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
@@ -28,6 +27,9 @@ import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
 import * as mongoose from 'mongoose';
+
+import { XMLParser } from 'fast-xml-parser';
+import { ICar } from '../../app/interfaces';
 
 // import * as mongoose from 'mongoose'
 
@@ -1132,7 +1134,7 @@ class RequestController {
         path: 'items',
         select: ['_id']
       }],
-      select: {meta: false},
+      select: { meta: false },
       customLabels: {
         totalDocs: 'total',
         docs: 'docs',
@@ -1472,20 +1474,35 @@ class RequestController {
         .findOne({ _id: id, team })
         .populate(this.itemPopulate);
       if (requestItem) {
+        logger.info(`RequestController.apiPatchItemVin ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
+        let integrationData: ICar | undefined;
         if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-          let data: any [] = [];
           if (vin?.length >= 6) {
-            data = await this.searchVinContecta(vin);
-            data = data.filter((car) => car.material === requestItem!.car.material);
-            if (!data.length) {
-              return res.status(400).json({
-                message: 'VIN no encontrado en SAP.'
+            let { data } = await this.searchVinContecta(vin);
+            if (data.length > 1) {
+              res.status(400).json({
+                message: 'Hay más de una coincidencia'
               });
             }
-          } else if (vin?.length > 0) {
-            return res.status(400).json({
-              message: 'VIN no encontrado en SAP.'
-            });
+            const foundVin = !!data.length;
+            if (requestItem.car?.material?.length) {
+              integrationData = data
+                .find((conectaCar) => (
+                    conectaCar.material === requestItem!.car.material
+                  )
+                );
+            } else if(data.length) {
+              integrationData = data[0]
+            }
+            if (!foundVin) {
+              return res.status(400).json({
+                message: 'Vin no encontrado en SAP.'
+              });
+            } else if (foundVin && !integrationData) {
+              return res.status(400).json({
+                message: 'Material no corresponde a VIN.'
+              });
+            }
           }
         }
         // previene vehículos sin vin
@@ -1502,17 +1519,29 @@ class RequestController {
               message: 'VIN ya asignado en otra solicitud.'
             });
           }
-          //await Car.updateOne({ _id: car._id, team }, { vin });
+          await Car.updateOne({ _id: car._id, team }, {
+            brand: integrationData?.brand?.length ? integrationData?.brand : car.brand,
+            denomination: integrationData?.denomination?.length ? integrationData?.denomination : car.denomination,
+            material: integrationData?.material?.length ? integrationData?.material : car.material,
+            color: integrationData?.color?.length ? integrationData?.color : car.color
+          });
           await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
         }
         // si la solicitud no tenía vin
         else if (requestItem.car.vin.length === 0) {
           console.log('1 Vehíulo no tenía VIN');
-          await Car.updateOne({ _id: requestItem.car._id, team }, { vin });
+          await Car.updateOne({ _id: requestItem.car._id, team }, {
+            vin,
+            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color
+          });
+          await RequestItem.updateOne({ _id: requestItem._id }, { car: requestItem.car._id });
         }
         // si el vehículo tenia vin y ahora se le elimina
         else if (requestItem.car.vin.length > 0 && vin.length === 0) {
-          console.log('2 Vehíulo tenía VIN y ahora se le elimina');
+          console.log('2 Vehículo tenía VIN y ahora se le elimina');
           console.log(requestItem.car);
           const newCar = await new Car({
             team,
@@ -1535,6 +1564,12 @@ class RequestController {
           console.log('3 Cambio de VIN');
           if (car) {
             console.log('3 vehículo existe');
+            await Car.updateOne({ _id: car._id }, {
+              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color
+            });
             await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
           } else {
             const newCar = await new Car({
@@ -1542,10 +1577,11 @@ class RequestController {
               company,
               vin,
               vin2: vin.trim().substr(vin.length - 6),
-              brand: requestItem.car.brand,
-              denomination: requestItem.car.denomination,
-              material: requestItem.car.material,
-              color: requestItem.car.color,
+              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
+              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+              firstColorOption: requestItem.car.firstColorOption,
               secondColorOption: requestItem.car.secondColorOption,
               thirdColorOption: requestItem.car.thirdColorOption,
               status: ChoicesStatusCar.pending,
@@ -1791,21 +1827,33 @@ class RequestController {
   public async searchVin(req: IRequest, res: Response) {
     const { team } = req.user;
     const { vin, material } = req.query as IStringKeyObject<string>;
-    if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-      // const data = await this.searchVinContecta('014688');
-      let data: any [] = [];
-      if (vin?.length >= 6) {
-        data = await this.searchVinContecta(vin);
-        data = data.filter((car) => car.material === material);
+    try {
+      logger.info(`RequestController.searchVin\x1b[90m query: ${JSON.stringify(req.query)}`);
+      if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
+        // const data = await this.searchVinContecta('014688');
+        if (vin?.length > 5) {
+          let { data } = await this.searchVinContecta(vin);
+          if (material?.length > 4 && !['undefined'].includes(material)) {
+            data = data.filter((car) => car.material.toString() === material);
+          }
+          logger.info(`RequestController.searchVin\x1b[90m data: ${JSON.stringify(data)}`);
+          return res.json({ data });
+        } else {
+          logger.debug(`RequestController.searchVin\x1b[90m: There are no records.`);
+          return res.json({ data: [], meta: { info: 'There are no records.' } });
+        }
+      } else {
+        logger.debug(`RequestController.searchVin\x1b[90m error: team has no integration`);
+        return res.json({ data: [], meta: { info: 'team has no integration.' } });
       }
-      res.json({ data });
-    } else {
-      //defaul other teams
-      res.json({ data: [], a: 2 });
+    } catch (e) {
+      logger.error(`RequestController.searchVin\x1b[90m error: ${JSON.stringify(e)}`);
+      logger.error(e);
+      return res.json({ data: [], meta: { info: e } });
     }
   }
 
-  private async searchVinContecta(vin: string): Promise<any[]> {
+  private async searchVinContecta(vin: string): Promise<{ data: ICar[] }> {
     logger.debug(`RequestController.searchVinContecta ${vin}`);
     return new Promise((resolve, reject) => {
       try {
@@ -1826,36 +1874,46 @@ class RequestController {
           data
         )
           .then(async (response) => {
-            xml2js.parseString(response.data, (error, result) => {
+            try {
+              const parser = new XMLParser({
+                ignoreAttributes: true
+              });
+              let jObj = parser.parse(response.data);
               const data = [];
-              for (const equipment of result['SOAP:Envelope']['SOAP:Body']) {
-                for (const detail of equipment['ns0:ZPM_GET_EQUIPMENTS.Response']) {
-                  const items = detail['EQUIPMENTS_INFO'][0]['item'];
-                  for (const item of items) {
-                    const denomination = item.hasOwnProperty('MODEL') ? item['MODEL'][0] : '';
-                    const version = item.hasOwnProperty('VERSION') ? item['VERSION'][0] : '';
-                    let material = item.hasOwnProperty('MATERIAL') ? item['MATERIAL'][0] : '';
-                    material = material.substr(material.length > 6 ? material.length - 6 : 0);
-                    data.push({
-                      vin: item.hasOwnProperty('EQUIPMENT_NO') ? item['EQUIPMENT_NO'][0] : '',
-                      brand: item.hasOwnProperty('BRAND') ? item['BRAND'][0] : '',
-                      denomination: `${denomination}${version ? ` ${version}` : ''}`,
-                      material,
-                      color: item.hasOwnProperty('COLOR') ? item['COLOR'][0] : ''
-                    });
-                  }
-                }
+              const cars = jObj['SOAP:Envelope']['SOAP:Body']['ns0:ZPM_GET_EQUIPMENTS.Response']['EQUIPMENTS_INFO']['item'];
+              for (const car of cars.length ? cars : [cars]) {
+                let {
+                  EQUIPMENT_NO: vin,
+                  BRAND: brand,
+                  MODEL: denomination,
+                  VERSION: version,
+                  MATERIAL: material,
+                  COLOR: color
+                } = car;
+                data.push({
+                  vin,
+                  brand,
+                  denomination: `${denomination}${version ? ` ${version}` : ''}`,
+                  material: material.toString(),
+                  color
+                } as ICar);
               }
               logger.info(`RequestController.searchVinContecta\x1b[90m data: ${JSON.stringify(data)}`);
-              resolve(data);
-            });
+              resolve({ data });
+
+            } catch (e) {
+              logger.error(`RequestController.parser\x1b[90m error: ${JSON.stringify(e)}`);
+              logger.error(e);
+              resolve({ data: [] });
+            }
           })
-          .catch(function() {
-            resolve([]);
+          .catch(function(e) {
+            logger.debug(`RequestController.searchVin\x1b[90m: There are no records.`);
+            resolve({ data: [] });
           });
       } catch (e) {
         logger.error(e);
-        reject(e);
+        resolve({ data: [] });
       }
     });
   }
@@ -1878,7 +1936,10 @@ class RequestController {
         })
         .populate([{
           path: 'car',
-          select: ['vin', 'brand', 'denomination', 'material', 'color']
+          select: [
+            'vin', 'brand', 'denomination', 'material', 'color',
+            'firstColorOption', 'secondColorOption', 'thirdColorOption'
+          ]
         }]);
       return res.json({
         results,
@@ -1904,43 +1965,50 @@ class RequestController {
         .populate([{
           path: 'car'
         }]);
-      const errors = [];
-      let conectaData: any [] = [];
+      const errors: { message: string }[] = [];
       if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
         if (excelData.vin?.length >= 6) {
-          conectaData = await this.searchVinContecta(excelData?.vin);
-          const materialsChecked = conectaData
-            .filter((conectaCar) => (
+          let { data: conectaData } = await this.searchVinContecta(excelData?.vin);
+          const foundVin = !!conectaData.length;
+          if (conectaData.length > 1) {
+            errors.push({
+              message: 'Mas de una coincidencia'
+            });
+          }
+          if (
+            item.car.material?.length && !['undefined'].includes(item.car.material) ||
+            excelData?.material?.length && !['undefined'].includes(excelData?.material)
+          ) {
+            conectaData = conectaData
+              .filter((conectaCar) => (
                 excelData?.material?.length
                   ? conectaCar.material === excelData?.material
                   : conectaCar.material === item.car.material
-              )
-            );
-          console.log('excelData?.material', excelData?.material);
-          console.log('item.car.material', item.car.material);
-          console.log('materialsChecked', materialsChecked);
-          if (!conectaData.length) {
+                )
+              );
+          }
+          if (!foundVin) {
             errors.push({
               message: 'Vin no encontrado en conecta.'
             });
-          } else if (conectaData.length && !materialsChecked.length) {
+          } else if (foundVin && !conectaData.length) {
             errors.push({
               message: 'Material no corresponde a VIN.'
             });
           }
+          return res.json({
+            errors,
+            data: conectaData
+          });
         }
-        /*
-          Note: now clean vins from request without vin
-          else {
-            errors.push({
-              message: 'No se ingreso VIN'
-            });
-          }
-        */
+        return res.json({
+          errors,
+          data: []
+        });
       }
       return res.json({
         errors,
-        data: conectaData.length ? conectaData[0] : {}
+        data: []
       });
     } catch (e) {
       logger.error(e);
@@ -1972,20 +2040,36 @@ class RequestController {
       // si existe la solicitud y el team es salfa
       if (requestItem) {
         if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-          const conectaData = await this.searchVinContecta(vin);
-          const materialCheked = conectaData
-            .filter((conectaCar) => (
-                 excelData?.vin?.length && integrationData?.vin?.length
+          let { data: conectaData } = await this.searchVinContecta(vin);
+          const foundVin = !!conectaData.length;
+          if (conectaData.length > 1) {
+            errors.push({
+              message: 'Mas de una coincidencia'
+            });
+          }
+          if (
+            andesData.car.material?.length && !['undefined'].includes(andesData.car.material) ||
+            integrationData?.material?.length && !['undefined'].includes(integrationData?.material)
+          ) {
+            conectaData = conectaData
+              .filter((conectaCar) => (
+                excelData?.material?.length
                   ? conectaCar.material === integrationData?.material
                   : conectaCar.material === andesData.car.material
-              )
-            );
+                )
+              );
+          }
+          if (!foundVin) {
+            errors.push({
+              message: 'Vin no encontrado en conecta.'
+            });
+          }
           if (!conectaData.length) {
             logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Vin no encontrado en conecta.`);
             errors.push({
               message: 'Vin no encontrado en conecta.'
             });
-          } else if (conectaData.length && !materialCheked.length) {
+          } else if (foundVin && !conectaData.length) {
             logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`);
             errors.push({
               message: 'Material no corresponde a VIN.'
@@ -2018,6 +2102,7 @@ class RequestController {
             denomination: existOtherRequestWithCar.car.denomination,
             material: existOtherRequestWithCar.car.material,
             color: existOtherRequestWithCar.car.color,
+            firstColorOption: existOtherRequestWithCar.car.firstColorOption,
             secondColorOption: existOtherRequestWithCar.car.secondColorOption,
             thirdColorOption: existOtherRequestWithCar.car.thirdColorOption,
             status: ChoicesStatusCar.pending,
@@ -2030,9 +2115,10 @@ class RequestController {
             brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
             denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
             material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-            color: requestItem.car.color,
-            secondColorOption: requestItem.car.secondColorOption,
-            thirdColorOption: requestItem.car.thirdColorOption
+            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+            firstColorOption: existOtherRequestWithCar.car.firstColorOption,
+            secondColorOption: existOtherRequestWithCar.car.secondColorOption,
+            thirdColorOption: existOtherRequestWithCar.car.thirdColorOption
           });
           await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
         }
@@ -2047,7 +2133,11 @@ class RequestController {
               vin: vin,
               brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
               denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material
+              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
+              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+              firstColorOption: requestItem.car.firstColorOption,
+              secondColorOption:requestItem.car.secondColorOption,
+              thirdColorOption: requestItem.car.thirdColorOption
             });
         }
         // si la solicitud tenia vin y ahora se elimina
@@ -2062,6 +2152,7 @@ class RequestController {
             denomination: requestItem.car.denomination,
             material: requestItem.car.material,
             color: requestItem.car.color,
+            firstColorOption: requestItem.car.firstColorOption,
             secondColorOption: requestItem.car.secondColorOption,
             thirdColorOption: requestItem.car.thirdColorOption,
             status: ChoicesStatusCar.pending,
@@ -2080,7 +2171,8 @@ class RequestController {
             brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
             denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
             material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-            color: requestItem.car.color,
+            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+            firstColorOption: requestItem.car.firstColorOption,
             secondColorOption: requestItem.car.secondColorOption,
             thirdColorOption: requestItem.car.thirdColorOption,
             status: ChoicesStatusCar.pending,

@@ -40,15 +40,16 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
+RUN yarn global add typescript ts-node ts-node-dev
+RUN touch /srv/s3-config.json
+RUN echo "{}" >> /srv/s3-config.json
+RUN touch /srv/ses-config.json
+RUN echo "{}" >> /srv/ses-config.json
+
 COPY ./package.json /srv/package.json
 
 RUN export PYTHON=python3
-RUN npm --unsafe-perm install && \
-    npm i -g nodemon typescript ts-node ts-node-dev  && \
-    touch /srv/s3-config.json && \
-    echo "{}" >> /srv/s3-config.json && \
-    touch /srv/ses-config.json && \
-    echo "{}" >> /srv/ses-config.json
+RUN yarn install
 
 EXPOSE 3000
 

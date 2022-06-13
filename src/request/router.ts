@@ -37,7 +37,7 @@ requestRouter.post('/api/v1/requests/process-item-mass-allocation/', Middlewares
 
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isJWTAuthenticated, RequestController.searhCar);
-requestRouter.get('/api/v1/requests/search-vin', Middlewares.isLoggedIn, RequestController.searchVin);
+requestRouter.get('/api/v1/requests/search-vin', Middlewares.isJWTAuthenticated, RequestController.searchVin);
 requestRouter.post('/api/v1/requests/upload-file/', Middlewares.isJWTAuthenticated, RequestController.uploadFile);
 
 requestRouter.post('/api/v1/requests/update-massive/', Middlewares.isJWTAuthenticated, RequestController.apiUpdateMassive);

@@ -35,6 +35,7 @@ import { statsRouter } from './stats/router';
 // import { accessLogStream } from './services/logger.service';
 import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
+import GeneralUtils from './utils/general.utils';
 
 // Create Express server
 const app = express();
@@ -246,9 +247,11 @@ export const queue = kue.createQueue({
   }
 });
 
-const billingQueue = new Bull('billing', {
-  createClient: createRedisClient,
-  prefix: '{andes}'
+const billingQueue = new Bull('billing',{
+  redis: {
+    host:  GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+    port: 6379
+  }
 });
 
 (async () => {

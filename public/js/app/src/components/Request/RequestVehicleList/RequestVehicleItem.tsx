@@ -116,7 +116,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 <input
                   type="text"
                   className="form-control input-sm"
-                  defaultValue={item.car.entry}
+                  defaultValue={item.car?.entry}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     this.props.updateRequestItemsThunkAction({
                       item: {
@@ -131,7 +131,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle">{item.car.entry}</td>
+              : <td className="middle">{item.car?.entry}</td>
           }
         </ShowIf>
         <ShowIf
@@ -144,7 +144,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             canChangeRequest && !requestSettings.materialReadOnly ?
               <td className="middle">
                 <AutoCompleteInput
-                  value={item.car.material}
+                  value={item.car?.material}
                   inputClass={'input-sm'}
                   items={recommends}
                   renderItem={(car, index) => (
@@ -183,17 +183,17 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle-center"><strong>{item.car.material}</strong></td>
+              : <td className="middle-center"><strong>{item.car?.material}</strong></td>
           }
         </ShowIf>
-        <ShowIf condition={canChangeRequest} alternative={item.car.vin}>
+        <ShowIf condition={canChangeRequest} alternative={item.car?.vin}>
           <td
             className='middle'
           >
             <div className='flex'>
               <AutoCompleteVinInput
                 history={this.props.history}
-                defaultValue={item.car.vin}
+                defaultValue={item.car?.vin}
                 item={item}
                 inputClass={'input-sm'}
                 renderItem={(car, index) => (
@@ -210,7 +210,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           canChangeRequest && !requestSettings.brandReadOnly ?
             <td className="middle">
               <AutoCompleteInput
-                value={item.car.brand}
+                value={item.car?.brand}
                 inputClass={'input-sm'}
                 items={recommends}
                 renderItem={(car, index) => {
@@ -252,7 +252,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle text-muted">
-                <strong>{item.car.brand}</strong>
+                <strong>{item.car?.brand}</strong>
             </td>
         }
         <ShowIf condition={requestSettings.denomination}>
@@ -260,7 +260,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             canChangeRequest && !requestSettings.denominationReadOnly ?
               <td className="middle">
                 <AutoCompleteInput
-                  value={item.car.denomination}
+                  value={item.car?.denomination}
                   inputClass={'input-sm'}
                   items={recommends}
                   renderItem={(car, index) => (
@@ -299,7 +299,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle text-muted"><strong>{item.car.denomination}</strong></td>
+              : <td className="middle text-muted"><strong>{item.car?.denomination}</strong></td>
           }
         </ShowIf>
         <ShowIf condition={requestSettings.color}>
@@ -309,7 +309,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 <td className="middle">
                   <input type="text"
                     className="form-control input-sm"
-                    defaultValue={item.car.color}
+                    defaultValue={item.car?.color}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       this.props.updateRequestItemsThunkAction({
                         item: {
@@ -325,7 +325,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   />
                 </td>
               : <td className='middle text-muted'>
-                <strong>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</strong>
+                <strong>{item.car?.color}{item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption}` : ''}</strong>
               </td>
           }
         </ShowIf>
@@ -367,7 +367,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               <td className="middle">
                 <input type="text"
                   className="form-control input-sm"
-                  defaultValue={item.car.internalNumber}
+                  defaultValue={item.car?.internalNumber}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     this.props.updateRequestItemsThunkAction({
                       item: {
@@ -382,7 +382,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle">{item.car.internalNumber}</td>
+              : <td className="middle">{item.car?.internalNumber}</td>
           }
         </ShowIf>
         <ShowIf condition={false && requestSettings.reason}>

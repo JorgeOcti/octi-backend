@@ -110,6 +110,11 @@ export const baseCarSchema = new mongoose.Schema({
     default: '',
     trim: true
   },
+  firstColorOption: {
+    type: String,
+    default: '',
+    trim: true
+  },
   secondColorOption: {
     type: String,
     default: '',
