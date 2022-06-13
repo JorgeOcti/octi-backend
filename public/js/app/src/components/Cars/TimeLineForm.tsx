@@ -1,6 +1,7 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import Row from '../Utils/Row';
+import * as moment from 'moment-timezone';
 
 interface IPropsType {
   form: any;
@@ -28,6 +29,10 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
   render(): React.ReactElement<IPropsType> {
     const { form, loadingParticipant } = this.props;
     return (
@@ -36,9 +41,15 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
         <i className={`fa ${this.getIconDamage(form.hasDamages)} $ ${this.getColorByDamage(form.hasDamages)}`} />
         <div className='timeline-item'>
           <span className='time text-sm' style={{
-            color: '#888',
+            color: '#888'
           }}>
-            <i className='fa fa-fw fa-calendar-o' /> {form.createdAt.format('LL')}
+            <div
+              className='text-muted text-sm' data-toggle='tooltip'
+              data-placement='top'
+              title={moment(form.createdAt).format('LLL')}
+            >
+                                <i className='fa fa-fw fa-clock-o' /> {moment(form.createdAt).fromNow()}
+                              </div>
           </span>
 
           <h3 className='timeline-header'><a href='javascript:void(0)'>{form.name}</a></h3>
@@ -86,9 +97,9 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
                   {
                     loadingParticipant && loadingParticipant === form._id
                       ?
-                        <><i className='fa fa-spin fa-spinner' /> Cargando...</>
+                      <><i className='fa fa-spin fa-spinner' /> Cargando...</>
                       :
-                        <><i className='fa fa-fw fa-bar-chart' /> Detalle</>
+                      <><i className='fa fa-fw fa-bar-chart' /> Detalle</>
                   }
                 </button>
               </div>
@@ -98,7 +109,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
                   height: '60px',
                   padding: '22px 15px 15px 5px'
                 }}>
-                  <div>
+                <div>
                   {
                     form.user ?
                       <React.Fragment>

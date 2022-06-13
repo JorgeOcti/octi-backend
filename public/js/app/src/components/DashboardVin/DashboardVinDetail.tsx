@@ -228,7 +228,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                     <button
                       className='btn btn-primary btn-block'
                       onClick={() => {
-                        this.props.history.push(parseReplicableURL(`/settings/cars/${car?._id}`));
+                        this.props.history.replace(parseReplicableURL(`/settings/cars/${car?._id}`));
                       }}
                     >
                       <strong>Detalle</strong>

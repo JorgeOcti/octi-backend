@@ -1,14 +1,14 @@
 // import * as PropTypes from 'prop-types';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
+import { ErrorInfo } from 'react';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {IParticipant} from '../../../../../../src/form/interfaces/participant.interface';
-import {CarReduxAction, getCarAction, ICarsState} from '../../actions/cars.actions';
-import {getParticipant, IDashboardState, loadParticipantInCarAction} from '../../actions/dashboard.actions';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
+import { CarReduxAction, getCarAction, ICarsState } from '../../actions/cars.actions';
+import { getParticipant, IDashboardState, loadParticipantInCarAction } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
 import Row from '../Utils/Row';
@@ -22,7 +22,9 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<CarReduxAction>;
   cars: ICarsState;
   dashboard: IDashboardState;
+
   getCarAction(id: string): void;
+
   getParticipant(id: string): void;
 
   loadParticipantInCarAction(participant: IParticipant): void;
@@ -33,20 +35,20 @@ interface IStateType {
 }
 
 class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   state = {
     error: null,
     highlight: []
   };
 
-  constructor(props : IPropsType) {
+  constructor(props: IPropsType) {
     super(props);
     this.title = 'Detalle VIN';
   }
 
   componentWillMount() {
-    const {id} = this.props.match.params;
+    const { id } = this.props.match.params;
     this.props.getCarAction(id);
   }
 
@@ -55,7 +57,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -73,12 +75,12 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, car, carEvents} = this.props.cars;
-    const {loadingParticipant} = this.props.dashboard;
-    const {getParticipant} = this.props;
+    const { loading, car, carEvents } = this.props.cars;
+    const { loadingParticipant } = this.props.dashboard;
+    const { getParticipant } = this.props;
     return (
-      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="1" cSubMenu="1.0"  cAction="Detalle">
-        <section className="content">
+      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu='1' cSubMenu='1.0' cAction='Detalle'>
+        <section className='content'>
           <Row>
             <div className='col-md-3 col-lg-3'>
               <div className='box box-primary'>
@@ -159,9 +161,9 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     {/*</li>*/}
                   </ul>
                   <button
-                    className="btn btn-primary btn-block"
-                    onClick={()=>{
-                      this.props.history.push(parseReplicableURL(`/cars/${car?._id}`));
+                    className='btn btn-primary btn-block'
+                    onClick={() => {
+                      this.props.history.replace(parseReplicableURL(`/cars/${car?._id}`));
                     }}
                   >
                     <strong>Controles</strong>
@@ -172,31 +174,31 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-md-9 col-lg-9'>
               {
                 loading ?
-                  <div className="box">
-                    <div className="box-body text-center">
+                  <div className='box'>
+                    <div className='box-body text-center'>
                       <p>&nbsp;</p>
                     </div>
-                      <div className="overlay">
-                        <i className="fa fa-spinner fa-spin text-purple"/>
-                      </div>
+                    <div className='overlay'>
+                      <i className='fa fa-spinner fa-spin text-purple' />
+                    </div>
                   </div> :
-                  <div className="nav-tabs-custom">
-                    <ul className="nav nav-tabs">
-                      <li className="active"><a href="#timeline" data-toggle="tab" aria-expanded="true">Timeline</a></li>
+                  <div className='nav-tabs-custom'>
+                    <ul className='nav nav-tabs'>
+                      <li className='active'><a href='#timeline' data-toggle='tab' aria-expanded='true'>Timeline</a></li>
                     </ul>
-                    <div className="tab-content" style={{
+                    <div className='tab-content' style={{
                       backgroundColor: '#f9f9f9'
                       // maxHeight: '80vh',
                       // overflowX: 'auto'
                     }}>
-                      <div className="tab-pane active" id="timeline">
-                        <ul className="timeline">
+                      <div className='tab-pane active' id='timeline'>
+                        <ul className='timeline'>
                           {
                             Object.keys(carEvents).map((event) => {
                               const events = carEvents[event];
                               return <React.Fragment key={event}>
-                                <li className="time-label">
-                                  <span className="bg-blue">
+                                <li className='time-label'>
+                                  <span className='bg-blue'>
                                       {moment(event).format('MMMM YYYY')}
                                   </span>
                                 </li>
@@ -204,25 +206,32 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   events.map((data: any) => {
                                     return (
                                       data.typeEvent === 'created' ?
-                                        <li style={{marginRight: '0'}} key={data._id}>
-                                          <i className={`fa fa-cloud-upload bg-green`}/>
-                                          <div className="timeline-item">
-                                            <span className="time" style={{
+                                        <li style={{ marginRight: '0' }} key={data._id}>
+                                          <i className={`fa fa-cloud-upload bg-green`} />
+                                          <div className='timeline-item'>
+                                            <span className='time' style={{
                                               color: '#888',
                                               fontSize: '13px'
                                             }}>
-                                              <i className="fa fa-fw fa-calendar-o"/> {data.createdAt.format('LL')}
+                                              <div
+                                                className='text-muted text-sm' data-toggle='tooltip'
+                                                data-placement='top'
+                                                title={moment(data.createdAt).format('LLL')}
+                                              >
+                                <i className='fa fa-fw fa-clock-o' /> {moment(data.createdAt).fromNow()}
+                              </div>
                                             </span>
-                                            <h3 className="timeline-header"><a href="javascript:void(0)">VEHÍCULO IMPORTADO</a></h3>
-                                            <div className="timeline-body">
+                                            <h3 className='timeline-header'><a href='javascript:void(0)'>VEHÍCULO IMPORTADO</a></h3>
+                                            <div className='timeline-body'>
                                               El vehículo fue importado al sistema
                                               el {data.createdAt.format('LLLL')}.
                                             </div>
                                           </div>
                                         </li>
                                         : data.typeEvent === 'revision' ?
-                                        <TimeLineForm form={data} getParticipant={getParticipant} loadingParticipant={loadingParticipant} key={data._id}/>
-                                        : <TimeLineInventory inventory={data} key={data._id}/>
+                                          <TimeLineForm form={data} getParticipant={getParticipant} loadingParticipant={loadingParticipant}
+                                                        key={data._id} />
+                                          : <TimeLineInventory inventory={data} key={data._id} />
                                     );
                                   })
                                 }
@@ -230,7 +239,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             })
                           }
                           <li>
-                            <i className="fa fa-clock-o bg-gray"/>
+                            <i className='fa fa-clock-o bg-gray' />
                           </li>
                         </ul>
                       </div>
@@ -253,7 +262,7 @@ const mapStateToProps = (state: { cars: ICarsState, dashboard: IDashboardState }
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getCarAction: (id: string) => dispatch(getCarAction(id)),

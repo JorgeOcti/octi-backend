@@ -1,6 +1,7 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import Row from '../Utils/Row';
+import * as moment from 'moment-timezone';
 
 interface IPropsType {
   inventory: any;
@@ -55,6 +56,10 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
   render(): React.ReactElement<IPropsType> {
     const { inventory } = this.props;
     return (
@@ -65,7 +70,13 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
             color: '#888',
             fontSize: '13px'
           }}>
-            <i className='fa fa-fw fa-calendar-o' /> {inventory.createdAt.format('LL')}
+            <div
+              className='text-muted text-sm' data-toggle='tooltip'
+              data-placement='top'
+              title={moment(inventory.createdAt).format('LLL')}
+            >
+                                <i className='fa fa-fw fa-clock-o' /> {moment(inventory.createdAt).fromNow()}
+                              </div>
           </span>
 
           <h3 className='timeline-header'><a href={`/inventory/${inventory.inventory._id}`} target='_blank'>{inventory.inventory.name}</a></h3>
