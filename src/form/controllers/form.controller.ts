@@ -1023,54 +1023,6 @@ class FormController {
               await triggersHandler.execute({});
             }
 
-            /* Search alerts */
-            const alerts = await Alert
-              .find({
-                team,
-                $or: [
-                  { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
-                  { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
-                ]
-              }).populate([{
-                path: 'users',
-                select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
-              }]);
-            /* Send alerts if exist */
-            if (alerts.length && car) {
-              alerts.forEach((alert) => {
-                alert.users.forEach((user: IUserModel) => {
-                  const userName = `${user.firstName} ${user.lastName}`;
-                  if (user.venuesPermissions(true).includes(venue._id) && user.email && user.email.length) {
-                    queue.create('email', {
-                      from: '',
-                      title: `Alert qualification`,
-                      to: `""<${user.email}>`,
-                      subject: `ALERTA: ${alert.name}`,
-                      text: `Hola ${userName}
-                        Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
-
-                        Datos del Vehiculo
-                        VIN: ${car ? car.vin : ''}
-                        MARCA: ${car && car.brand ? car.brand : ''}
-
-                        Para ver el detalle has click aquí
-                        ${process.env.SITE_URL}cars/${car._id}
-
-                        © 2021 OSA SpA. Todos los derechos reservados.`,
-                      view: 'alerts/lowQualification',
-                      context: {
-                        userName,
-                        brand: car && car.brand ? car.brand : '',
-                        vin: car && car.vin ? car.vin : '',
-                        qualification: formQualification.toFixed(0),
-                        url: `${process.env.SITE_URL}cars/${car._id}`
-                      }
-                    }).priority('high').attempts(5).save();
-                  }
-                });
-              });
-            }
-
 
             return res.json({
               data: {
