@@ -1457,7 +1457,7 @@ class CarController {
       if (options.page && revisions.pages && revisions.pages < options.page) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
-          status: 200
+          status: 400
         });
       } else {
         return res.json({
@@ -1471,10 +1471,8 @@ class CarController {
       }
     } catch (e) {
       /* istanbul ignore next */
-      console.log(e);
-      if (e) {
-        return res.status(500).json(e);
-      }
+      logger.error(e);
+      return res.status(500).json(e);
     }
   }
 

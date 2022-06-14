@@ -410,7 +410,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     className={'text-muted'}>{participant.car?.brand}</strong><br /> {participant.car?.denomination}<br />{participant.car?.color}<br />
                                 </span>
                                 <span className='text-muted text-sm hidden-xs hidden-sm'>
-                                  <strong>{participant.car?.brand}</strong> {participant.car?.denomination}<br /> {participant.car?.color}
+                                  <strong>{participant.car?.brand}</strong><br />{participant.car?.denomination}<br /> {participant.car?.color}
                                   <ShowIf condition={!!participant.car?.patent?.length}>
                                     <div>
                                       <i
@@ -447,7 +447,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className='middle hidden-xs hidden-sm'>
                                 <strong className='text-muted text-sm'>{participant.name}</strong>
                               </td>
-                              <td className='middle hidden-xs hidden-sm text-ellipsis' style={{
+                              <td className='middle hidden-xs hidden-sm  text-ellipsis' style={{
                                 paddingTop: '15px',
                                 paddingBottom: '15px'
                               }}>
@@ -455,7 +455,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <strong><i
                                     className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</strong><br />
                                 </div>
-                                <div className='text-muted'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
+                                <div className='text-muted text-sm'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
                                 condition={participant.hasDamages}
                               >
                                 <React.Fragment>

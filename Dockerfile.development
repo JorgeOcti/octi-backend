@@ -40,7 +40,7 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
-RUN yarn global add typescript ts-node ts-node-dev
+RUN npm i -g typescript ts-node ts-node-dev
 RUN touch /srv/s3-config.json
 RUN echo "{}" >> /srv/s3-config.json
 RUN touch /srv/ses-config.json
@@ -49,7 +49,7 @@ RUN echo "{}" >> /srv/ses-config.json
 COPY ./package.json /srv/package.json
 
 RUN export PYTHON=python3
-RUN yarn install
+RUN npm install
 
 EXPOSE 3000
 

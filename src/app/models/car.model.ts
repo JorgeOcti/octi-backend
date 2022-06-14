@@ -219,6 +219,10 @@ carSchema.index({
 });
 
 carSchema.index({ team: 1, vin: 1 });
+carSchema.index({ team: 1 });
+carSchema.index({ venue: 1 });
+carSchema.index({ color: 1 });
+carSchema.index({ property: 1 });
 carSchema.index({ team: 1, status: 1, createdAt: -1 });
 carSchema.index({ team: 1, lastForm: -1 });
 

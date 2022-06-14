@@ -293,6 +293,9 @@ class RequestController {
             currentCar.engineNumber = car.engineNumber;
             currentCar.brand = car.brand;
             currentCar.color = car.color;
+            currentCar.firstColorOption = car?.color ?? '';
+            currentCar.secondColorOption = car?.secondColorOption ?? '';
+            currentCar.thirdColorOption = car?.thirdColorOption ?? '';
             currentCar.denomination = car.denomination;
             currentCar.type = car.type;
             currentCar.client = car.client;
@@ -319,6 +322,9 @@ class RequestController {
               engineNumber: car.engineNumber,
               brand: car.brand,
               color: car.color,
+              firstColorOption: car?.color ?? '',
+              secondColorOption: car?.secondColorOption ?? '',
+              thirdColorOption: car?.thirdColorOption ?? '',
               denomination: car.denomination,
               type: car.type,
               client: car.client,
@@ -501,6 +507,7 @@ class RequestController {
           denomination: car.denomination,
           material: car.material,
           color: car.color,
+          firstColorOption: car?.color ?? '',
           secondColorOption: car?.secondColorOption ?? '',
           thirdColorOption: car?.thirdColorOption ?? '',
           status: ChoicesStatusCar.pending,
@@ -758,6 +765,7 @@ class RequestController {
           'car.vin': 1,
           'car.brand': 1,
           'car.color': 1,
+          'car.firstColorOption': 1,
           'car.secondColorOption': 1,
           'car.thirdColorOption': 1,
           'car.material': 1,
@@ -885,6 +893,8 @@ class RequestController {
         header: 'MATERIAL', key: 'material', width: 20
       }, {
         header: 'COLOR', key: 'color', width: 20
+      }, {
+        header: 'COLOR 1', key: 'firstColorOption', width: 20
       }, {
         header: 'COLOR 2', key: 'secondColorOption', width: 20
       }, {
@@ -1049,6 +1059,7 @@ class RequestController {
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
+          firstColorOption: item.car.firstColorOption,
           secondColorOption: item.car.secondColorOption,
           thirdColorOption: item.car.thirdColorOption,
           destination: item.destination?.name ?? '',
@@ -1552,6 +1563,7 @@ class RequestController {
             denomination: requestItem.car.denomination,
             material: requestItem.car.material,
             color: requestItem.car.color,
+            firstColorOption: requestItem.car.firstColorOption,
             secondColorOption: requestItem.car.secondColorOption,
             thirdColorOption: requestItem.car.thirdColorOption,
             status: ChoicesStatusCar.pending,
@@ -2305,23 +2317,30 @@ class RequestController {
     }
   }
 
-  private autoRotate(path: string): Promise<any> {
+  private async autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
      brew install imagemagick
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve({});
-          }
-        });
+      try {
+        logger.debug(`RequestController.autoRotate`);
+        GraphicsMagick(path)
+          .autoOrient()
+          .write(path, (err) => {
+            if (err) {
+              logger.error(`RequestController.autoRotate err`);
+              logger.error(err.message);
+              reject(err);
+            } else {
+              resolve({});
+            }
+          });
+      } catch (e) {
+        logger.error(`RequestController.autoRotate err 2`);
+        logger.error(e.message);
+      }
     });
   }
 

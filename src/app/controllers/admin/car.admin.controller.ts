@@ -154,15 +154,12 @@ class AdminCarController {
         internalNumber: true,
         invoice: true,
         entry: true,
+        material: true,
         client: true,
         bl: true,
         createdAt: true,
         updatedAt: true
       },
-      populate: [{
-        path: 'venue',
-        select: ['name', 'active']
-      }],
       sort: {
         createdAt: -1
       },

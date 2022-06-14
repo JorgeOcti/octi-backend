@@ -68,7 +68,7 @@ async function migrateTracker() {
         status: {
           $in: [ChoicesStatusInventory.finalized]
         }
-      }, { _id: true });
+      }, { _id: true }) ;
     const inventoryCarcursor = await InventoryCar
       .find({
         inventory: {

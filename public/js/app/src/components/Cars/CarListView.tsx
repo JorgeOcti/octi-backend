@@ -1,16 +1,18 @@
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
+import { ErrorInfo } from 'react';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {debounce} from 'throttle-debounce';
-import {ICar} from '../../../../../../src/app/interfaces/car.interface';
-import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars.actions';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { debounce } from 'throttle-debounce';
+import { ICar } from '../../../../../../src/app/interfaces/car.interface';
+import { CarReduxAction, getCarsAction, ICarsState } from '../../actions/cars.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import {hasPermission} from '../../utils/common';
+import { IWindow } from '../../interfaces/window';
+import { hasPermission, parseReplicableURL } from '../../utils/common';
+import CopyText from '../Utils/CopyText';
+import ShowIf from '../Utils/ShowIf';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
@@ -30,7 +32,7 @@ interface IStateType {
 }
 
 class CarListView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -54,21 +56,22 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
-    const {pagination} = this.props.cars;
+    const { pagination } = this.props.cars;
     this.props.getCarsAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if(this.props.cars.pagination !== prevProps.cars.pagination){
+    if (this.props.cars.pagination !== prevProps.cars.pagination) {
       window.scrollTo(0, 0);
     }
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   public componentWillUnmount() {
@@ -79,108 +82,166 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars, pagination} = this.props.cars;
-    const {searchText} = this.state;
+    const { loading, cars, pagination } = this.props.cars;
+    const { searchText } = this.state;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.0" cAction="Listado">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">
+      <AppContainer title='' cMenu='1' cSubMenu='1.0' cAction='Listado'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>
                 Unidades <small>{pagination.count}</small>
               </h3>
-              <div className="box-tools">
+              <div className='box-tools'>
                 {
                   hasPermission(window.user, 'addCar') ?
                     <button
-                      className="btn btn-sm btn-primary hidden-xs"
+                      className='btn btn-sm btn-primary hidden-xs'
                       onClick={() => this.props.history.push(`/settings/cars/import/`)}
-                      style={{marginRight: '5px'}}
-                    ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
+                    ><i className='fa fa-fw fa-cloud-upload' /> Importar</button> : null
                 }
               </div>
             </div>
-            <div className="box-body no-padding">
-              <div className="row">
-                <div className="col-md-offset-8 col-md-4">
+            <div className='box-body no-padding'>
+              <div className='row'>
+                <div className='col-md-offset-8 col-md-4'>
                   <div
-                    className="input-group input-group-sm"
-                    style={{padding: '10px'}}
+                    className='input-group input-group-sm'
+                    style={{ padding: '10px' }}
                   >
                     <input
-                      type="text"
-                      className="form-control pull-right"
+                      type='text'
+                      className='form-control pull-right'
                       onChange={this.onChangeSearch}
-                      placeholder="Buscar"/>
-                    <div className="input-group-btn">
-                      <button className="btn btn-default"><i className="fa fa-search"/></button>
+                      placeholder='Buscar' />
+                    <div className='input-group-btn'>
+                      <button className='btn btn-default'><i className='fa fa-search' /></button>
                     </div>
                   </div>
                 </div>
               </div>
-              <table className="table table-andes table-striped">
+              <table className='table table-andes table-striped'>
                 <thead>
-                  <tr>
-                    <th style={{width: '20%'}}>VIN</th>
-                    <th style={{width: '10%'}}>Patente</th>
-                    <th style={{width: '10%'}}>Marca</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
-                    <th style={{width: '15%'}} className="hidden-xs">Color</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Creado</th>
-                    <th style={{width: '5%'}} />
-                    {/*<th className="width-10" />*/}
-                  </tr>
+                <tr>
+                  {/*<th className='middle  hidden-xs' style={{ width: '180px' }}>VIN</th>*/}
+                  <th className='middle'>Descripción</th>
+                  <ShowIf
+                    condition={
+                      ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id)
+                    }
+                  >
+                    <th className='middle hidden-xs' style={{ width: '100px' }}>Material</th>
+                  </ShowIf>
+                  <ShowIf
+                    condition={
+                      !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id)
+                    }
+                  >
+                    <th className='middle hidden-xs' style={{ width: '100px' }}>Partida</th>
+                  </ShowIf>
+                  <th className='middle hidden-xs' style={{ width: '15%' }}></th>
+                  <th style={{ width: '1%' }} />
+                </tr>
                 </thead>
                 <tbody>
-                  {
-                    !loading && cars.length === 0 && searchText ? <tr>
-                      <td colSpan={5}>No se han encontrado resultados.</td>
-                    </tr> : null
-                  }
-                  {
-                    cars.map((car: ICar) => {
-                      return (
-                        <tr key={car._id} id={`car-${car._id}`}>
-                          <td>{car.vin}</td>
-                          <td>{car.patent}</td>
-                          <td>{car.brand}</td>
-                          <td className="hidden-xs text-ellipsis">{car.denomination}</td>
-                          <td className="hidden-xs text-ellipsis">{car.color}</td>
-                          <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
-                          <td className="text-primary middle-center">
-                            <button
-                              className="btn btn-xs btn-primary"
-                              onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}
-                            ><i className="fa fa-bars"/>
-                            </button>
+                {
+                  !loading && cars.length === 0 && searchText ? <tr>
+                    <td colSpan={5}>No se han encontrado resultados.</td>
+                  </tr> : null
+                }
+                {
+                  cars.map((car: ICar) => {
+                    return (
+                      <tr key={car._id} id={`car-${car._id}`}>
+                        <td
+                          className='middle text-muted'
+                        >
+                          <CopyText value={car?.vin}>
+                            <strong
+                              className='text-primary pointer text-underline'
+                              onClick={() => this.props.history.push(parseReplicableURL(`/settings/cars/${car?._id}`))}
+                            >
+                              {car?.vin}
+                            </strong>
+                          </CopyText>
+                          <div className={'text-sm'}>
+                            <strong className={'text-muted'}>
+                              {car?.brand}
+                            </strong><br />
+                            {car?.denomination}<br />
+                            {car.color}
+                          </div>
+                          <ShowIf condition={!!car?.patent?.length}>
+                            <br />
+                            <i
+                              className='fa fa-fw fa-id-card-o' /> {car?.patent && car?.patent.length ? car?.patent : '-'}
+                          </ShowIf>
+                        </td>
+                        <ShowIf
+                            condition={
+                              ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id)
+                            }
+                          >
+                            <td
+                              className='middle text-muted  hidden-xs'
+                            >
+                              {car.material?.length ? car.material : '-'}
+                            </td>
+                          </ShowIf>
+                        <ShowIf
+                          condition={
+                            !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id)
+                          }
+                        >
+                          <td
+                            className='middle text-muted hidden-xs'
+                          >
+                            {car.entry}
                           </td>
-                        </tr>
-                      );
-                    })
-                  }
+                        </ShowIf>
+                        <td className='middle hidden-xs text-ellipsis text-muted hidden-xs'>
+                          <div
+                            className='text-muted text-sm' data-toggle='tooltip'
+                            data-placement='top'
+                            title={moment(car.createdAt).format('LLL')}
+                          >
+                            <i className='fa fa-fw fa-clock-o' /> {moment(car.createdAt).fromNow()}
+                          </div>
+                        </td>
+                        <td className='text-primary middle-center'>
+                          <button
+                            className='btn btn-sm btn-primary'
+                            onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}
+                          ><i className='fa fa-bars' />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                }
                 </tbody>
               </table>
             </div>
             {
               pagination.pages > 1 &&
-                <div className="box-footer">
-                  <div className="row">
-                    <div className="col-md-6">
-                      {
-                        searchText && searchText.length ? <p><strong>Filtrado por:</strong> {searchText}</p> : null
-                      }
-                    </div>
-                    <div className="col-md-6 text-right">
-                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                    </div>
+              <div className='box-footer'>
+                <div className='row'>
+                  <div className='col-md-6'>
+                    {
+                      searchText && searchText.length ? <p><strong>Filtrado por:</strong> {searchText}</p> : null
+                    }
+                  </div>
+                  <div className='col-md-6 text-right'>
+                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
                   </div>
                 </div>
+              </div>
             }
             {
               loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
+              </div>
             }
           </div>
           <ModalView />
@@ -199,7 +260,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    const {searchText} = this.state;
+    const { searchText } = this.state;
     if (searchText && searchText.length) {
       this.props.getCarsAction(1, searchText);
     } else {
@@ -219,7 +280,7 @@ const mapStateToProps = (state: { cars: ICarsState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getCarsAction: (page: number, search?: string) => dispatch(getCarsAction(page, search))

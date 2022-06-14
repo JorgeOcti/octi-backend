@@ -66,15 +66,14 @@ class Middlewares {
           res.locals.user = user;
           req.user = user;
           return next();
+        } else {
+          logger.error(`isJWTAuthenticated error:  ${JSON.stringify(headers)}`);
+          res.locals.user = null;
+          return res.json({
+            error: 'Debes estar autenticado para este recurso.',
+            status: 401
+          });
         }
-        //  else {
-        //   logger.error(`isJWTAuthenticated error:  ${JSON.stringify(headers)}`);
-        //   res.locals.user = null;
-        //   return res.json({
-        //     error: 'Debes estar autenticado para este recurso.',
-        //     status: 401
-        //   });
-        // }
       } else if ( headers?.authorization && headers.authorization.split(' ')[0] === 'JWT') {
         try {
           const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
