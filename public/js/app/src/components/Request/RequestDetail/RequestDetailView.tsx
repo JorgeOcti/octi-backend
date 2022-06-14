@@ -162,7 +162,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             <span style={{ paddingLeft: '17px' }}>Correo Cliente</span><br />
                             <strong><i className='fa fa-fw fa-envelope-o' /> {
                               request.customerInformation?.email ?
-                                <a href={request.customerInformation.email}>{request.customerInformation.email}</a> : '-'
+                                <a href={`mailto:${request.customerInformation.email}`}>{request.customerInformation.email}</a> : '-'
                             } </strong>
                           </td>
                           <td style={{ width: '40%', borderTop: '0' }} />
