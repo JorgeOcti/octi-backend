@@ -270,14 +270,23 @@ const billingQueue = new Bull('billing', {
     console.log('NO existen tareas');
   }
   if (process.env.ENV === 'development') {
-    // billingQueue.add({}, {repeat: {cron: '0 */1 * * *'}, jobId: 'billing'});
+    billingQueue.process(async (job: Job, done: DoneCallback) => {
+      await new BillingQueue().processBilling();
+      done();
+    });
+    try {
+      await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
+    } catch (error) {
+      console.log(error);
+      console.log('Errr');
+    }
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
-    try {
       billingQueue.process(async (job: Job, done: DoneCallback) => {
         await new BillingQueue().processBilling();
         done();
       });
+    try {
       await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
     } catch (error) {
       console.log(error);
