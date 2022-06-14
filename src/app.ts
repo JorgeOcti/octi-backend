@@ -243,14 +243,21 @@ app.use('/api/v1', jwtRouter);
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    createClientFactory: createRedisClient
+    createClientFactory: () => {
+      return createRedisClient();
+    }
   }
 });
 
 const billingQueue = new Bull('billing', {
+   // redis: {
+   //   host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+   //   port: 6379
+   // },
   createClient: () => {
     return createRedisClient();
-  }
+  },
+  prefix: '{andes}'
 });
 
 (async () => {
@@ -270,7 +277,7 @@ const billingQueue = new Bull('billing', {
     console.log('NO existen tareas');
   }
   if (process.env.ENV === 'development') {
-    billingQueue.process(async (job: Job, done: DoneCallback) => {
+    /*billingQueue.process(async (job: Job, done: DoneCallback) => {
       await new BillingQueue().processBilling();
       done();
     });
@@ -279,7 +286,7 @@ const billingQueue = new Bull('billing', {
     } catch (error) {
       // console.log(error);
       console.log('No se pudo agrega tarea');
-    }
+    }*/
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
       billingQueue.process(async (job: Job, done: DoneCallback) => {
