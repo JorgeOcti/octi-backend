@@ -238,7 +238,7 @@ class AppController {
       return res.status(404).render('404');
     }
     // close sesión
-    req.logout();
+    req.logout(()=>{});
     try {
       // validate link is valid
       const user = await UserModel
@@ -303,7 +303,7 @@ class AppController {
   public logout(req: IRequest, res: Response) {
     logger.info(`AppController.logout ${req?.user?`${req.user.email} `: ''}from: ${req.header('Referrer') ?? 'system'}`);
     // (req.session as any).redirectTo = req.url;
-    req.logout();
+    req.logout(()=>{});
     return res.redirect('/account/login/');
   }
 

@@ -39,8 +39,9 @@ class Middlewares {
       } else {
         logger.error(`Middlewares.processLogin: session: ${JSON.stringify(req.session)}`);
         logger.error(`Middlewares.isLoggedIn. Attempt to access ${req.url} without credentials. URL made safe, user was sent at login!`);
-        req.logout();
-        (req.session as any).redirectTo = req.url;
+        req.logout(() => {
+          (req.session as any).redirectTo = req.url;
+        });
         return res.redirect(`/account/login/`);
       }
     } catch (e) {
