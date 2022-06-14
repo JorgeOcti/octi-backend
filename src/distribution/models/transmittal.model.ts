@@ -96,6 +96,7 @@ transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 
 transmittalSchema.index({ team: 1 });
+transmittalSchema.index({ evidenceFullLoad: 1 });
 transmittalSchema.index({ items: 1 });
 transmittalSchema.index({ files: 1 });
 transmittalSchema.index({ createdBy: 1 });
@@ -108,8 +109,6 @@ transmittalSchema.set<any>('expires', 30);
 
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
-
-
 
 export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>& AggregatePaginateModel<ITransmittalModel>;
 

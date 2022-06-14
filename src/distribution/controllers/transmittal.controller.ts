@@ -328,87 +328,6 @@ class TransmittalController {
       filter.number = number;
     }
     try {
-      /*const baseAggregate: any[] = [{
-        $match: {
-          team: mongoose.Types.ObjectId(team),
-        }
-      }];
-
-      const aggregatePopulate: any[] = [{
-        $lookup: {
-          from: 'participants',
-          localField: '_id',
-          foreignField: 'transmittal',
-          as: 'revision'
-        }
-      },{
-        $unwind: {
-          path: '$revision',
-          preserveNullAndEmptyArrays: true
-        }
-      }, {
-        $lookup: {
-          from: 'transmittalitems',
-          localField: '_id',
-          foreignField: 'transmittal',
-          as: 'items'
-        }
-      }, {
-        $lookup: {
-          from: 'cars',
-          localField: 'items.car',
-          foreignField: '_id',
-          as: 'items.car'
-        }
-      }, {
-        $project: {
-          '_id': 1,
-          'revision._id': 1,
-          'revision.hasDamages': 1,
-          // 'items': 1,
-          'items.car': 1,
-          'items.requestItem': 1,
-          'items.destination': 1,
-          'items.origin': 1,
-          'items.loadingDate': 1,
-          'items.arrivalDate': 1,
-          'items.observation': 1,
-        }
-      }];
-
-      logger.info(`TransmittalController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
-      logger.debug(`TransmittalController.apiList email: ${req.user.email}, filter: ${JSON.stringify(filter)}`);
-      logger.debug(`TransmittalController.apiList email: ${req.user.email}, aggregate: ${JSON.stringify(baseAggregate)}`);
-      logger.debug(`TransmittalController.apiList email: ${req.user.email}, populate: ${JSON.stringify(aggregatePopulate)}`);
-      const transmittalAggregate = Transmittal.aggregate(baseAggregate).allowDiskUse(true);
-      const options: PaginateOptions = {
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10),
-        customLabels: this.aggregateCustomLabels,
-        sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 },
-        lean: true
-      };
-      const transmitttals = await Transmittal.aggregatePaginate(transmittalAggregate, options);
-      console.log({ $in: transmitttals.docs.map((d) => d._id) })
-      if (options.page && transmitttals.pages && transmitttals.pages < options.page) {
-        return res.status(400).json({
-          message: 'La página solicitada no existe.',
-          status: 400
-        });
-      } else {
-        return res.json({
-          count: transmitttals.total,
-          pages: transmitttals.pages,
-          hasPrevious: transmitttals.hasPrevious,
-          hasNext: transmitttals.hasNext,
-          results: await Transmittal.aggregate([{
-            $match: {
-              _id: { $in: transmitttals.docs.map((d) => mongoose.Types.ObjectId(d._id)) }
-            }
-          }, ...aggregatePopulate]),
-          status: 200
-        });
-      }*/
       logger.info(`TransmittalController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
       logger.debug(`TransmittalController.apiList email: ${req.user.email}, filter: ${JSON.stringify(filter)}`);
       logger.debug(`TransmittalController.apiList email: ${req.user.email}, options: ${JSON.stringify(options)}`);
@@ -440,8 +359,7 @@ class TransmittalController {
   }
 
   public async apiOnlyMe(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiOnlyMe`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+
     const team = req.user.team._id;
     const {
       page,
@@ -491,6 +409,18 @@ class TransmittalController {
         path: 'createdBy',
         select: ['firstName', 'lastName']
       }],
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
@@ -502,10 +432,13 @@ class TransmittalController {
       }
     };
     try {
+      logger.info(`TransmittalController.apiOnlyMe ${req.user.email} query ${JSON.stringify(req.query)}`);
+      logger.debug(`TransmittalController.apiOnlyMe ${req.user.email} filter ${JSON.stringify(filter)}`);
+      logger.debug(`TransmittalController.apiOnlyMe ${req.user.email} options ${JSON.stringify(options)}`);
       const transmittals = await this.getTransmittals(filter, options);
       /* istanbul ignore if  */
       if (options.page && transmittals.pages && transmittals.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
@@ -520,13 +453,13 @@ class TransmittalController {
           milestones[i] = { ...milestone, ...form };
         }
 
-        res.json({
+        return res.json({
           count: transmittals.total,
           pages: transmittals.pages,
-          hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
-          hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
+          hasPrevious: transmittals.hasPrevious,
+          hasNextPage: transmittals.hasNextPage,
           data: transmittals.docs.map((transmittal)=>({
-            ...transmittal.toObject(),
+            ...transmittal,
             detailedEvidence: transmittal.evidenceFullLoad,
             evidenceFullLoad: transmittal.evidenceFullLoad.map(e => e._id),
             milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type.toString())
@@ -540,7 +473,7 @@ class TransmittalController {
       logger.error(`TransmittalController.apiOnlyMe:`, e.toString());
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
