@@ -266,7 +266,7 @@ const billingQueue = new Bull('billing', {
     await billingQueue.clean(0, 'delayed');
     console.log('Se ejecuto la limpieza de tareas');
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     console.log('NO existen tareas');
   }
   if (process.env.ENV === 'development') {
@@ -277,8 +277,8 @@ const billingQueue = new Bull('billing', {
     try {
       await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
     } catch (error) {
-      console.log(error);
-      console.log('Errr');
+      // console.log(error);
+      console.log('No se pudo agrega tarea');
     }
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
@@ -289,8 +289,8 @@ const billingQueue = new Bull('billing', {
     try {
       await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
     } catch (error) {
-      console.log(error);
-      console.log('Errr');
+      // console.log(error);
+      console.log('No se pudo agrega tarea');
     }
   }
 })();
