@@ -107,7 +107,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <ShowIf condition={false}>
           <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
         </ShowIf>
-        <td className="middle" style={{fontSize: '80%'}}><strong>{item.destination?.name ?? '-'}</strong></td>
+        <td className="middle text-primary" style={{fontSize: '80%'}}><strong>{item.destination?.name ?? '-'}</strong></td>
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         <ShowIf condition={requestSettings.entry}>
           {
@@ -251,7 +251,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 }}
               />
             </td>
-            : <td className="middle text-muted">
+            : <td className="middle">
                 <strong>{item.car?.brand}</strong>
             </td>
         }
@@ -325,7 +325,11 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   />
                 </td>
               : <td className='middle text-muted'>
-                <strong>{item.car?.color}{item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption}` : ''}</strong>
+                <ShowIf condition={!!item.car?.color}>
+                  <strong className='text-primary'>{item.car?.color}</strong><br />
+                </ShowIf>
+                {item.car?.firstColorOption}
+                {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption}` : ''}
               </td>
           }
         </ShowIf>

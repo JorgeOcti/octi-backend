@@ -125,8 +125,8 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             <strong>{request.conectaID}</strong>
                           </td>
                           <td style={{ borderTop: '0' }}>
-                            <span style={{ paddingLeft: '17px' }}> Sucursal</span><br />
-                            <strong><i className='fa fa-fw fa-building-o' /> {request.origin?.name}</strong>
+                            <span style={{ paddingLeft: '17px' }}> Destino</span><br />
+                            <strong><i className='fa fa-fw fa-building-o' /> {request.destination?.name}</strong>
                           </td>
                           <td style={{ width: '30%', borderTop: '0' }}>
                             Dirección<br />

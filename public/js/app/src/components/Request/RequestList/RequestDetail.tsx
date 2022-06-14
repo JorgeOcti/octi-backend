@@ -217,7 +217,13 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     <td className='middle text-muted'>
                       <strong>{item.car.brand}</strong><br />{`${item.car.denomination}`}
                     </td>
-                    <td className='middle text-muted'>{item.car.color}{item.car.secondColorOption?.length ? `, ${item.car.secondColorOption}` : ''}{item.car.thirdColorOption?.length ? `, ${item.car.thirdColorOption}` : ''}</td>
+                    <td className='middle text-muted'>
+                      <ShowIf condition={!!item.car?.color}>
+                        <strong className='text-primary'>{item.car?.color}</strong><br />
+                      </ShowIf>
+                      {item.car?.firstColorOption}
+                      {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption}` : ''}
+                    </td>
                     <ShowIf condition={requestSettings.ticket}>
                       <td className='middle-center'>
                         <div

@@ -291,7 +291,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '28px' }}>SOL</th>
-                <th className='middle' style={{ width: '140px' }}>VIN</th>
+                <th className='middle' style={{ width: '150px' }}>VIN</th>
                 <th className='middle' style={{ width: '160px' }}>Descripción</th>
                 <th className='middle' style={{ width: '70px' }}>Factura</th>
                 <th className='middle' style={{ width: '70px' }}>Partida</th>
