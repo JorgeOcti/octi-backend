@@ -1,4 +1,4 @@
-FROM node:16.15-bullseye-slim
+FROM node:16.15.1-bullseye-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 # phantom node 16 fix
 ENV OPENSSL_CONF=/dev/null
