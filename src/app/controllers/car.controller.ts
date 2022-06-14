@@ -16,10 +16,11 @@ import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/i
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
-import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
+import CarModel, { Car, ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import { ObjectID } from 'bson';
+import RequestController from '../../request/controllers/request.controller';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -187,8 +188,7 @@ class CarController {
     let { vin, vin2 } = req.body;
     const { inventory } = req.body;
     const team = req.user.team._id;
-    logger.info(`checkVIN`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(`CarController.checkVIN  ${req.user.email} body: ${JSON.stringify(req.body)}}`);
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
@@ -228,10 +228,10 @@ class CarController {
             color: true,
             patent: true,
             denomination: true
-          });
+          }).lean();
           if (cars.length) {
             const carsByID = cars.reduce((acc: any, cur: any) => {
-              acc[cur._id.toString()] = cur;
+              acc[cur._id] = cur;
               return acc;
             }, {});
             const inventoriedCar = await InventoryModel.findOne({
@@ -271,6 +271,7 @@ class CarController {
                 }
               }
               if (carsInInventory.length) {
+                logger.debug(`CarController.checkVIN.generic ${req.user.email} carsInInventory: ${JSON.stringify({ carsInInventory })}}`);
                 res.json({
                   data: vin2 ? carsInInventory : carsInInventory[0],
                   status: 200
@@ -314,39 +315,87 @@ class CarController {
       }
     } else {
       try {
-
-        const inventoryQuery: any = {
+        const carFilter: any = {
           team
         };
         if (vin) {
-          inventoryQuery.vin = vin;
-        }
-        if (vin2) {
-          if (vin2[0] === '0') {
-            const vinRegex = new RegExp(`${vin2.substr(vin2.length - 5)}$`, 'i');
-            inventoryQuery.vin2 = { $regex: vinRegex };
-          } else {
-            const patentRegex = new RegExp(vin2, 'i');
-            inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
+          carFilter.vin = vin;
+          if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
+            let { data: integrationData } = await RequestController.searchVinContecta(vin);
+            if (integrationData?.length > 1) {
+              for (const car of integrationData) {
+                await Car
+                  .updateOne({
+                    team,
+                    vin: car.vin
+                  }, {
+                    $set: {
+                      vin2: car.vin.substr(car.vin?.length - 5),
+                      brand: car.brand,
+                      denomination: car.denomination,
+                      material: car.material,
+                      color: car.color,
+                      company: req.user.company?._id,
+                      status: ChoicesStatusCar.active
+                    }
+                  }, {
+                    upsert: true,
+                    setDefaultsOnInsert: true
+                  });
+              }
+            }
           }
         }
-
-        const car = await CarModel.find(inventoryQuery, {
+        if (vin2) {
+          if (vin2?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
+            let { data: integrationData } = await RequestController.searchVinContecta(vin2);
+            if (integrationData?.length > 1) {
+              for (const car of integrationData) {
+                await Car
+                  .updateOne({
+                    team,
+                    vin: car.vin
+                  }, {
+                    $set: {
+                      vin2: car.vin.substr(car.vin?.length - 5),
+                      brand: car.brand,
+                      denomination: car.denomination,
+                      material: car.material,
+                      color: car.color,
+                      company: req.user.company?._id,
+                      status: ChoicesStatusCar.active
+                    }
+                  }, {
+                    upsert: true,
+                    setDefaultsOnInsert: true
+                  });
+              }
+            }
+          }
+          if (vin2[0] === '0') {
+            const vinRegex = new RegExp(`${vin2.substr(vin2.length - 5)}$`, 'i');
+            carFilter.vin2 = { $regex: vinRegex };
+          } else {
+            const patentRegex = new RegExp(vin2, 'i');
+            carFilter.$or = [{ vin2 }, { patent: patentRegex }];
+          }
+        }
+        logger.debug(`CarController.checkVIN.generic ${req.user.email} carFilter: ${JSON.stringify(carFilter)}}`);
+        const car = await CarModel.find(carFilter, {
           vin: true,
           vin2: true,
           brand: true,
           color: true,
           patent: true,
           denomination: true
-        });
+        }).lean();
         if (car && car.length) {
           res.json({
             data: vin ? car[0] : car,
             status: 200
           });
         } else {
-          logger.error(`checkVIN: VIN no encontrado.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+          logger.error(`CarController.checkVIN  ${req.user.email} no encontrado.`);
           res.status(400).json({
             message: 'VIN no encontrado.',
             status: 400
@@ -1957,7 +2006,7 @@ class CarController {
 
   private getRevisions(filters: any, options: PaginateOptions): Promise<PaginateResult<IParticipant>> {
     return new Promise((resolve, reject) => {
-      ParticipantModel.paginate(filters, options, (err, result) => {
+      ParticipantModel.paginate!(filters, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           reject(err);

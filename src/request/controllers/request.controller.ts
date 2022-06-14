@@ -1865,7 +1865,7 @@ class RequestController {
     }
   }
 
-  private async searchVinContecta(vin: string): Promise<{ data: ICar[] }> {
+  public async searchVinContecta(vin: string): Promise<{ data: ICar[] }> {
     logger.debug(`RequestController.searchVinContecta ${vin}`);
     return new Promise((resolve, reject) => {
       try {
