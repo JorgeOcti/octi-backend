@@ -58,7 +58,6 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { transmittalItem, transmittal: { venues } } = this.props;
-    console.log(this.props);
     return (
       <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
         <td
