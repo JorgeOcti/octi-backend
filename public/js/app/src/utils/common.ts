@@ -13,11 +13,11 @@ export function parseReplicableURL(url: string, extraParams: string[] = []): str
     /* process here actions by parameters in query param */
     return `${hastQueryURL[0]}?${queryString.stringify(
       params.reduce((acc: any, cur: any) => {
-        if (urlQuery[cur]) {
-          acc[cur] = urlQuery[cur];
+        if (linkQuery[cur]) {
+          acc[cur] = linkQuery[cur];
           return acc;
         } else {
-          acc[cur] = linkQuery[cur];
+          acc[cur] = urlQuery[cur];
           return acc;
         }
       }, {})

@@ -15,7 +15,7 @@ import { ITransmittal } from '../../../../../../../src/distribution/interfaces/t
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
-import { goToSection, hasPermission } from '../../../utils/common';
+import { goToSection, hasPermission, parseReplicableURL } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -58,12 +58,13 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { transmittalItem, transmittal: { venues } } = this.props;
+    console.log(this.props);
     return (
       <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
         <td
           className={'middle-center pointer'}
           onClick={transmittalItem.request?._id ? () => {
-            this.props.history.push(`/requests/vehicles/${transmittalItem.request._id}/`);
+            this.props.history.push(parseReplicableURL(`/requests/vehicles/${transmittalItem.request?._id}?item=${transmittalItem.requestItem}`, ['item']));
           } : undefined}
         >
           <strong className="text-underline">
