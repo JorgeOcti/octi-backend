@@ -183,6 +183,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         {/*</ShowIf>*/}
                         <th className='middle-center' style={{ width: '25px' }}>#</th>
                         {/*<th className='middle' style={{ width: '10px' }}>Propiedad</th>*/}
+                        <th className='middle' style={{ width: '200px' }}>VIN</th>
                         <ShowIf
                           condition={
                             !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
@@ -199,7 +200,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           <th className='middle' style={{ width: '100px' }}>Material</th>
                         </ShowIf>
-                        <th className='middle' style={{ width: '200px' }}>VIN</th>
+
                         <ShowIf condition={requestSettings.brand}>
                           <th className='middle' style={{ width: '100px' }}>Marca</th>
                         </ShowIf>

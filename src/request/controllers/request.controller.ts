@@ -37,7 +37,7 @@ class RequestController {
 
   public itemPopulate: QueryPopulateOptions[] = [{
     path: 'car',
-    select :["event", "entry", "internalNumber", "patent", "engineNumber", "engineSize", "driveType", "color", "firstColorOption", "secondColorOption", "thirdColorOption", "invoice", "client", "bl", "isExhibition", "status", "createdBy", "_id", "team", "company", "vin", "vin2", "brand", "denomination", "type", "businessYear", "manufacturingYear", "countryOrigin", "createdAt", "updatedAt", "__v", "id"
+    select :["event", "entry", "internalNumber", "patent", "engineNumber", "engineSize", "driveType", "color", "firstColorOption", "secondColorOption", "thirdColorOption", "invoice", "client", "bl", "isExhibition", "status", "createdBy", "_id", "team", "company", "vin", "vin2", "brand", "denomination", "type", "businessYear", "manufacturingYear", "countryOrigin", "createdAt", "updatedAt", "__v", "id", "material"
     ]
   }, {
     path: 'request',
