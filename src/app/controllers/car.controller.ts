@@ -1097,7 +1097,6 @@ class CarController {
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
         cursor.close();
-        return res.status(200);
       });
 
     } catch (e) {
