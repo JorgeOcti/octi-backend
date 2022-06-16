@@ -11,7 +11,7 @@ import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import ApiService from '../../../utils/axios';
 import { AxiosError } from 'axios';
-import { hasPermission } from '../../../utils/common';
+import { goToSection, hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import { getParticipant } from '../../../actions/dashboard.actions';
@@ -57,6 +57,26 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     this.downloadFiles = this.downloadFiles.bind(this);
     this.debouncedUpdateTransmittalThunkAction = debounce(2000, this.debouncedUpdateTransmittalThunkAction.bind(this));
     this.api = new ApiService();
+  }
+
+  componentDidMount() {
+    const { location: { query } } = this.props.router;
+    if (query?.transmittal?.length) {
+      this.props.transmittalActions.toogleTab(query.transmittal, true);
+      if (query?.item?.length) {
+        const key = `transmittal-item-${query.item}`;
+        setTimeout(() => {
+          const element = document.getElementById(key);
+          if (element) {
+            element?.classList.add('bg-gray');
+            element?.classList.add('text-black');
+            goToSection(`#${key}`);
+          } else {
+            console.log(`No se encontro el elemento ${key}`);
+          }
+        }, 100);
+      }
+    }
   }
 
   private debouncedUpdateTransmittalThunkAction(transmittal: any){
@@ -427,7 +447,6 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         this.api.errorHandler(err);
       });
   }
-
 
   private pushItem(requestItem: IRequestItem) {
     const { item: transmittal } = this.props;

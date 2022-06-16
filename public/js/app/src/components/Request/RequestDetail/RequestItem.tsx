@@ -12,7 +12,7 @@ import { deleteRequestItemThunkAction, deleteRequestThunkAction, updateRequestIt
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import { goToSection, hasPermission } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import AutoCompleteVinInput from '../../Utils/AutoCompleteVinInput';
 import ShowIf from '../../Utils/ShowIf';
@@ -21,6 +21,7 @@ import { ajax } from 'rxjs/ajax';
 import { Subject } from 'rxjs/internal/Subject';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
+  router: any;
   requests: IRequestsState;
   request: IRequest;
   item: IRequestItem;
@@ -88,11 +89,29 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  componentDidMount() {
+    const { location: { query } } = this.props.router;
+    if (query?.item?.length > 0) {
+      const key = `request-item-${query.item}`;
+      const element = document.getElementById(key);
+      if(element){
+        element?.classList.add('bg-gray');
+        element?.classList.add('text-black');
+        goToSection(`#${key}`);
+      } else {
+        console.log(`No se encontro el elemento ${key}`)
+      }
+    }
+    // console.log(query);
+    // `request-item-${item}`
+    // window.scrollTo(0, 0);
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const { item, index, request } = this.props;
     const { requestItemStatus, reasons, requestSettings } = this.props.requests;
     const { recommends } = this.state;
-    const canChangeRequest = hasPermission(window.user, 'changeRequest');
+    const canChangeRequest = hasPermission(window.user, 'changeRequest') || window.user.isAdmin;
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
         {/*<ShowIf condition={requestSettings.priority}>*/}
@@ -112,10 +131,91 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           </td>
         {/*</ShowIf>*/}
         <td className="middle-center"><strong>{item.order}</strong></td>
+         <ShowIf condition={
+           !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+           requestSettings.entry}
+         >
+          {
+            canChangeRequest ?
+              <td className="middle">
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  defaultValue={item.car?.entry}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const { value } = e.target;
+                    this.props.updateRequestItemInDetailThunkAction({
+                      item: {
+                        ...item,
+                        car: {
+                          ...item.car,
+                          entry: value
+                        }
+                      },
+                      debounce: true
+                    });
+                  }}
+                />
+              </td>
+              : <td className="middle-center">{item.car?.entry}</td>
+          }
+        </ShowIf>
+        <ShowIf condition={
+          ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+          requestSettings.material}
+        >
+          {
+            canChangeRequest ?
+              <td className="middle">
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  defaultValue={item.car?.material}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const { value } = e.target;
+                    this.props.updateRequestItemInDetailThunkAction({
+                      item: {
+                        ...item,
+                        car: {
+                          ...item.car,
+                          material: value
+                        }
+                      },
+                      debounce: true
+                    });
+                  }}
+                />
+              </td>
+              : <td className="middle-center">{item.car?.material}</td>
+          }
+        </ShowIf>
+        {
+          canChangeRequest ?
+           <td
+              className='middle'
+              style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
+             <div className='flex'>
+              <AutoCompleteVinInput
+                  history={this.props.history}
+                  defaultValue={item.car.vin}
+                  item={item}
+                  inputClass={'input-sm'}
+                  renderItem={(car, index) => (
+                    <div key={index} className='item'>
+                      {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
+                      <strong>{car.brand}</strong>
+                    </div>
+                  )}
+                />
+               </div>
+            </td> :
+            <td className="middle">{item.car.vin}</td>
+        }
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         <ShowIf condition={requestSettings.brand}>
           {
-            canChangeRequest && !requestSettings.brandReadOnly ?
+            // canChangeRequest && !requestSettings.brandReadOnly ?
+            canChangeRequest?
               <td className="middle">
                 <AutoCompleteInput
                   value={item.car.brand}
@@ -162,7 +262,8 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         <ShowIf condition={requestSettings.denomination}>
           {
-            canChangeRequest && !requestSettings.denominationReadOnly ?
+            // canChangeRequest && !requestSettings.denominationReadOnly ?
+            canChangeRequest ?
               <td className="middle">
                 <AutoCompleteInput
                   value={item.car.denomination}
@@ -213,7 +314,8 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           }
         >
           {
-            canChangeRequest && !requestSettings.materialReadOnly ?
+            // canChangeRequest && !requestSettings.materialReadOnly ?
+            canChangeRequest  ?
               <td className='middle'>
                 <AutoCompleteInput
                   value={item.car.material}
@@ -260,7 +362,8 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         <ShowIf condition={requestSettings.color}>
           {
-            canChangeRequest && !requestSettings.colorReadOnly ?
+            // canChangeRequest && !requestSettings.colorReadOnly ?
+            canChangeRequest ?
               <td className="middle">
                 <input type="text"
                   className="form-control input-sm"
@@ -289,28 +392,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               </td>
           }
         </ShowIf>
-        {
-          canChangeRequest ?
-           <td
-              className='middle'
-              style={{ paddingRight: !item.car.vin?.length ? '29px' : undefined }}>
-             <div className='flex'>
-              <AutoCompleteVinInput
-                  history={this.props.history}
-                  defaultValue={item.car.vin}
-                  item={item}
-                  inputClass={'input-sm'}
-                  renderItem={(car, index) => (
-                    <div key={index} className='item'>
-                      {car.vin ? `${car.vin} - ` : ''} {car.denomination} <br />
-                      <strong>{car.brand}</strong>
-                    </div>
-                  )}
-                />
-               </div>
-            </td> :
-            <td className="middle">{item.car.vin}</td>
-        }
         {
           canChangeRequest ?
             <td className="middle" style={{width: '120px'}}>
@@ -521,9 +602,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: { requests: IRequestsState }) => {
+const mapStateToProps = (state: { requests: IRequestsState, router: any }) => {
   return {
-    requests: state.requests
+    requests: state.requests,
+    router: state.router
   };
 };
 

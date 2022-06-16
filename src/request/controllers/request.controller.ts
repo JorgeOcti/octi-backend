@@ -58,32 +58,65 @@ class RequestController {
     select: ['name']
   }, {
     path: 'origin',
-    select: ['name']
+    select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
   }, {
     path: 'destination',
-    select: ['name']
+    select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
   }, {
     path: 'transmittalItem',
-    select: ['loadingDate', 'arrivalDate', 'revisions'],
+    select: ['loadingDate', 'arrivalDate', 'revisions', 'origin', 'destination'],
     populate: [{
+      path: 'origin',
+      select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
+    }, {
+      path: 'destination',
+      select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
+    }, {
       path: 'revisions',
       select: ['createdAt']
     }]
   }, {
     path: 'transmittal',
-    select: ['number', 'revision'],
+    select: ['number', 'revision', 'status', 'transporter.patent'],
     populate: [{
       path: 'revision',
       select: ['createdAt']
+    }, {
+      path: 'type',
+      select: ['name']
+    }, {
+      path: 'transporter.carrier',
+      select: ['name']
+    }, {
+      path: 'transporter.driver',
+      select: ['firstName', 'lastName']
     }]
   }];
 
   private requestPopulate: QueryPopulateOptions[] = [{
     path: 'origin',
-    select: ['name']
+    select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
   }, {
     path: 'destination',
-    select: ['name']
+    select: ['name'],
+      populate: [{
+        path: 'company'
+      }]
   }, {
     path: 'channel',
     select: ['name']
@@ -698,9 +731,17 @@ class RequestController {
       }, {
         $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'companies', localField: 'origin.company', foreignField: '_id', as: 'origin.company' }
+      }, {
+        $unwind: { path: '$origin.company', preserveNullAndEmptyArrays: true }
+      }, {
         $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
       }, {
         $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'companies', localField: 'destination.company', foreignField: '_id', as: 'destination.company' }
+      }, {
+        $unwind: { path: '$destination.company', preserveNullAndEmptyArrays: true }
       }, {
         $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
       }, {
@@ -736,6 +777,38 @@ class RequestController {
       }, {
         $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'milestonetypes', localField: 'transmittal.type', foreignField: '_id', as: 'transmittal.type' }
+      }, {
+        $unwind: { path: '$transmittal.type', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'users', localField: 'transmittal.transporter.driver', foreignField: '_id', as: 'transmittal.transporter.driver' }
+      }, {
+        $unwind: { path: '$transmittal.transporter.driver', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'carriers', localField: 'transmittal.transporter.carrier', foreignField: '_id', as: 'transmittal.transporter.carrier' }
+      }, {
+        $unwind: { path: '$transmittal.transporter.carrier', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'transmittalitems', localField: 'transmittalItem', foreignField: '_id', as: 'transmittalItem' }
+      }, {
+        $unwind: { path: '$transmittalItem', preserveNullAndEmptyArrays: true }
+      },{
+        $lookup: { from: 'venues', localField: 'transmittalItem.origin', foreignField: '_id', as: 'transmittalItem.origin' }
+      }, {
+        $unwind: { path: '$transmittalItem.origin', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'companies', localField: 'transmittalItem.origin.company', foreignField: '_id', as: 'transmittalItem.origin.company' }
+      }, {
+        $unwind: { path: '$transmittalItem.origin.company', preserveNullAndEmptyArrays: true }
+      },{
+        $lookup: { from: 'venues', localField: 'transmittalItem.destination', foreignField: '_id', as: 'transmittalItem.destination' }
+      }, {
+        $unwind: { path: '$transmittalItem.destination', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: { from: 'companies', localField: 'transmittalItem.destination.company', foreignField: '_id', as: 'transmittalItem.destination.company' }
+      }, {
+        $unwind: { path: '$transmittalItem.destination.company', preserveNullAndEmptyArrays: true }
+      }, {
         $addFields: { requestNumber: { $toString: '$request.number' } }
       }, {
         $addFields: { transmittalNumber: { $toString: '$transmittal.number' } }
@@ -744,9 +817,29 @@ class RequestController {
       }, {
         $project: {
           '_id': 1,
+          'transmittalItem._id': 1,
+          'transmittalItem.origin._id': 1,
+          'transmittalItem.origin.name': 1,
+          'transmittalItem.origin.company._id': 1,
+          'transmittalItem.origin.company.name': 1,
+          'transmittalItem.destination._id': 1,
+          'transmittalItem.destination.name': 1,
+          'transmittalItem.destination.company._id': 1,
+          'transmittalItem.destination.company.name': 1,
+          'transmittal._id': 1,
+          'transmittal.revision': 1,
+          'transmittal.type._id': 1,
+          'transmittal.type.name': 1,
+          'transmittal.number': 1,
+          'transmittal.status': 1,
+          'transmittal.transporter.carrier._id': 1,
+          'transmittal.transporter.carrier.name': 1,
+          'transmittal.transporter.driver._id': 1,
+          'transmittal.transporter.driver.firstName': 1,
+          'transmittal.transporter.driver.lastName': 1,
+          'transmittal.transporter.patent': 1,
           'request._id': 1,
           'request.number': 1,
-          'transmittal.number': 1,
           'request.conectaID': 1,
           'request.sellerText': 1,
           'request.advancePaymentInformation': 1,
@@ -780,8 +873,12 @@ class RequestController {
           'car.internalNumber': 1,
           'origin._id': 1,
           'origin.name': 1,
+          'origin.company._id': 1,
+          'origin.company.name': 1,
           'destination._id': 1,
           'destination.name': 1,
+          'destination.company._id': 1,
+          'destination.company.name': 1,
           'reason._id': 1,
           'reason.name': 1,
           'uploadDate': 1,

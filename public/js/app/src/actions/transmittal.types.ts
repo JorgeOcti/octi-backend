@@ -140,6 +140,7 @@ interface ITransmittalToogleTabAction {
   type: typeof TOOGLE_TAB_TRANSMITTAL;
   payload: {
     transmittalId: string;
+    status?: boolean;
   }
 }
 

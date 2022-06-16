@@ -120,11 +120,12 @@ export default class TransmittalActions {
     });
   }
 
-  public toogleTab(transmittalId:  string): void {
+  public toogleTab(transmittalId:  string, status?: boolean): void {
     this.dispatch({
       type: TOOGLE_TAB_TRANSMITTAL,
       payload: {
         transmittalId,
+        status
       }
     });
   }

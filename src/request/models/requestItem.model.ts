@@ -172,6 +172,7 @@ requestItemSchema.index({ reason: 1 });
 requestItemSchema.index({ carrier: 1 });
 requestItemSchema.index({ reason: 1 });
 requestItemSchema.index({ transmittal: 1 });
+requestItemSchema.index({ transmittalitems: 1 });
 requestItemSchema.index({ createdBy: 1 });
 requestItemSchema.index({ items: 1 });
 requestItemSchema.index({ 'request.channel': 1 });

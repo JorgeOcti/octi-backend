@@ -169,7 +169,7 @@ export default function transmittalReducer(state= initialState, action: ITransmi
       return {
         ...state,
         transmittalOpen: state.transmittalOpen.includes(action.payload.transmittalId) ?
-          state.transmittalOpen.filter(id => id !== action.payload.transmittalId) :
+          state.transmittalOpen.filter(id => action.payload.status || id !== action.payload.transmittalId) :
           [...state.transmittalOpen, action.payload.transmittalId]
       };
     case CHANGE_ORDER_TRANSMITTAL:

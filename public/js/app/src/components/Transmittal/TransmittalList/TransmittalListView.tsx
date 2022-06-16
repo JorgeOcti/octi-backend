@@ -335,7 +335,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentDidMount(): void {
     super.componentDidMount();
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, 0);
   }
 
   public componentDidUpdate(prevProps: IPropsType): void {

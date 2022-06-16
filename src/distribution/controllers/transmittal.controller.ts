@@ -1,7 +1,7 @@
 import {IAnyObject, IRequest} from "../../interfaces/global.interface";
 import {Response} from "express";
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from "../models/transmittal.model";
+import Transmittal, {ITransmittalModel} from "../models/transmittal.model";
 import logger from "../../services/logger.service";
 import TransmittalItem from "../models/transmittalItem.model";
 import TransmittalFile from "../models/transmittalFile.model";
@@ -22,6 +22,7 @@ import * as bluebird from 'bluebird';
 import * as fs from 'fs';
 import * as https from 'https';
 import { IUser } from '../../app/interfaces';
+import { ChoicesStatusTransmittal } from '../models/transmitall.types';
 
 
 class TransmittalController {

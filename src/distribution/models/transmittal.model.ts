@@ -3,22 +3,9 @@ import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {ITransmittal} from '../interfaces/transmittal.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { ChoicesStatusTransmittal, choicesStatusTransmittal } from './transmitall.types';
 
 export interface ITransmittalModel extends ITransmittal, mongoose.Document { }
-
-export enum ChoicesStatusTransmittal {
-  pending = 'pending',
-  inTransit = 'inTransit',
-  damaged = 'damaged',
-  completed = 'completed',
-}
-
-export const choicesStatusTransmittal = [
-  ChoicesStatusTransmittal.pending,
-  ChoicesStatusTransmittal.inTransit,
-  ChoicesStatusTransmittal.damaged,
-  ChoicesStatusTransmittal.completed,
-];
 
 const transmittalTransporterSchema = new mongoose.Schema({
   carrier: {
@@ -96,6 +83,8 @@ transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 
 transmittalSchema.index({ team: 1 });
+transmittalSchema.index({ type: 1 });
+transmittalSchema.index({ revision: 1 });
 transmittalSchema.index({ evidenceFullLoad: 1 });
 transmittalSchema.index({ items: 1 });
 transmittalSchema.index({ files: 1 });

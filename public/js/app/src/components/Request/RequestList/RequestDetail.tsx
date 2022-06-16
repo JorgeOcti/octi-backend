@@ -32,11 +32,13 @@ interface IStateType {
   error: Error | null;
 }
 
-const getColorForPercentage = (value: number): string => {
-  if (value < 40) {
+export const getColorForPercentage = (value: number): string => {
+  if (value < 11) {
     return '#00c0ef';
-  } else if (value < 60) {
+  } else if (value < 80) {
     return '#f39c12';
+  } else if (value < 100) {
+    return '#337ab7';
   } else {
     return '#00a65a';
   }

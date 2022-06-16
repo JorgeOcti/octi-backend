@@ -4,24 +4,26 @@ import * as queryString from 'query-string';
 
 declare let window: IWindow;
 
-export function parseReplicableURL(url: string): string {
-  let query = queryString.parse(window.location.search);
+export function parseReplicableURL(url: string, extraParams: string[] = []): string {
   const hastQueryURL = url.split('?');
-  if (hastQueryURL.length > 1) {
-    let text = window.location.search;
-    if (window.location.search) {
-      if (text?.length) {
-        text = `${text}&${hastQueryURL[hastQueryURL.length - 1]}`;
-      } else {
-        text = `?${hastQueryURL[hastQueryURL.length - 1]}`;
-      }
-    } else {
-      text = `?${hastQueryURL[hastQueryURL.length - 1]}`;
-    }
-    query = queryString.parse(text);
+  if (hastQueryURL) {
+    let urlQuery = queryString.parse(window.location.search);
+    let linkQuery = queryString.parse(hastQueryURL[1]);
+    let params: any = ['integration', ...extraParams];
+    /* process here actions by parameters in query param */
+    return `${hastQueryURL[0]}?${queryString.stringify(
+      params.reduce((acc: any, cur: any) => {
+        if (urlQuery[cur]) {
+          acc[cur] = urlQuery[cur];
+          return acc;
+        } else {
+          acc[cur] = linkQuery[cur];
+          return acc;
+        }
+      }, {})
+    )}`;
   }
-  /* process here actions by parameters in query param */
-  return `${url.split('?')[0]}?${queryString.stringify(query)}`;
+  return `${url.split('?')[0]}`;
 }
 
 export function getExtension(name: string): string {
@@ -85,13 +87,10 @@ export function showModal(show: boolean) {
   ($('#andesModal') as any).modal(show ? 'show' : 'hide');
 }
 
-export function goToSection(id: string) {
-  const $id = $(id);
-  const distance = ($id as any).offset().top - ($('.main-header') as any).height() - 50;
-  if ($id && $id.length) {
-    $('html, body').stop().animate({
-      scrollTop: distance
-    }, 500);
+export function goToSection(selector: string) {
+  const section = document.querySelector(`${selector}`);
+  if (section) {
+    section?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 

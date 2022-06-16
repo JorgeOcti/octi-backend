@@ -34,10 +34,11 @@ import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
 import RequestController from '../../request/controllers/request.controller';
-import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
+import Transmittal from '../../distribution/models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
+import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
 
 
 // import * as puppeteer from 'puppeteer';

@@ -22,13 +22,14 @@ import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { disabledTView, hasPermission, parseReplicableURL } from '../../../utils/common';
+import { disabledTView, goToSection, hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
 import RequestItem from './RequestItem';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
 import ShowIf from '../../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
+  router: any;
   requests: IRequestsState;
   getRequestAction: (id: string) => void;
   createRequestItemActionInDetail: (item: IRequestItem) => void;
@@ -74,12 +75,16 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
+    // const { location: { query: item } } = this.props.router;
+    // if(item.length > 0) {
+    //   goToSection(`#request-item-${item}`);
+    // }
   }
 
   public render(): React.ReactElement<IPropsType> {
     const { request, loading, reasons, requestSettings } = this.props.requests;
     const { recommends, car } = this.state;
-    const canChangeRequest = hasPermission(window.user, 'changeRequest');
+    const canChangeRequest = hasPermission(window.user, 'changeRequest') || window.user.isAdmin;
     const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
     return (
       <AppContainer title='' cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
@@ -178,11 +183,13 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         {/*</ShowIf>*/}
                         <th className='middle-center' style={{ width: '25px' }}>#</th>
                         {/*<th className='middle' style={{ width: '10px' }}>Propiedad</th>*/}
-                        <ShowIf condition={requestSettings.brand}>
-                          <th className='middle' style={{ width: '100px' }}>Marca</th>
-                        </ShowIf>
-                        <ShowIf condition={requestSettings.denomination}>
-                          <th className='middle' style={{ maxWidth: '300px' }}>Modelo</th>
+                        <ShowIf
+                          condition={
+                            !['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                            requestSettings.entry
+                          }
+                        >
+                          <th className='middle' style={{ width: '100px' }}>Partida</th>
                         </ShowIf>
                         <ShowIf
                           condition={
@@ -192,10 +199,17 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           <th className='middle' style={{ width: '100px' }}>Material</th>
                         </ShowIf>
+                        <th className='middle' style={{ width: '200px' }}>VIN</th>
+                        <ShowIf condition={requestSettings.brand}>
+                          <th className='middle' style={{ width: '100px' }}>Marca</th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th className='middle' style={{ maxWidth: '300px' }}>Modelo</th>
+                        </ShowIf>
                         <ShowIf condition={requestSettings.color}>
                           <th className='middle'  style={{ maxWidth: '300px' }}>Color</th>
                         </ShowIf>
-                        <th className='middle' style={{ width: '200px' }}>VIN</th>
+
                         <th className='middle' style={{ minWidth: '100px' }}>Estado</th>
                         <ShowIf condition={requestSettings.ticket}>
                           <th
@@ -592,9 +606,10 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
 }
 
-const mapStateToProps = (state: { requests: IRequestsState }) => {
+const mapStateToProps = (state: { requests: IRequestsState, router: any  }) => {
   return {
-    requests: state.requests
+    requests: state.requests,
+    router: state.router
   };
 };
 

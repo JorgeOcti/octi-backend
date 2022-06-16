@@ -92,30 +92,33 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
         <div
           className='input-group input-group-sm'
         >
-          {
-            !canEdit ?
-              <ShowIf condition={hasPermission(window.user, 'viewCar') && item.car?.vin?.length > 0}>
-              <span
-                className='input-group-addon pointer bg-primary'
-                style={{ padding: '5px' }}
-                onClick={this.openVehicle}
-              >
-                <i className='fa fa-fw fa-external-link-square' />
-              </span>
-              </ShowIf>
-              : <span
-                className='input-group-addon pointer bg-red'
-                style={{ padding: '5px' }}
-                onClick={() => {
-                  this.setState({
-                    value: defaultValue || '',
-                    canEdit: false
-                  });
-                }}
-              >
-                <i className='fa fa-fw fa-close' />
-              </span>
-          }
+          <div className='input-group-btn'>
+            {
+              !canEdit ?
+                <ShowIf condition={hasPermission(window.user, 'viewCar') && item.car?.vin?.length > 0}>
+                <button
+                  // className='btn btn-sm pointer btn-success'
+                  className='btn btn-sm pointer btn-default'
+                  style={{ padding: '5px 10px' }}
+                  onClick={this.openVehicle}
+                >
+                  <i className='fa fa-external-link-square' />
+                </button>
+                </ShowIf>
+                : <button
+                  className='btn btn-sm pointer btn-primary'
+                  style={{ padding: '5px 10px' }}
+                  onClick={() => {
+                    this.setState({
+                      value: defaultValue || '',
+                      canEdit: false
+                    });
+                  }}
+                >
+                  <i className='fa fa-stop-circle' />
+                </button>
+            }
+          </div>
           <input
             type='text'
             className={`form-control ${inputClass ? inputClass : ''}`}
@@ -137,18 +140,23 @@ class AutoCompleteVinInput extends React.Component<IPropsType, IStateType> {
             autoComplete={'off'}
           />
           <div
-            className={`input-group-addon pointer ${canEdit ? 'bg-green' : ''}`}
-            onClick={() => {
-              if (canEdit) {
-                this.updateVin(value);
-              } else {
-                this.setState({
-                  canEdit: true
-                });
-              }
-            }}
+            className={`input-group-btn`}
           >
-            <i className={`fa ${canEdit ? 'fa fa-save' : 'fa fa-pencil'}`} />
+            <button
+              className={`${canEdit || item.car?.vin?.length === 0 ? 'btn btn-sm btn-success' : 'btn btn-sm btn-primary'}`}
+              style={{ padding: '5px 10px' }}
+              onClick={() => {
+                if (canEdit) {
+                  this.updateVin(value);
+                } else {
+                  this.setState({
+                    canEdit: true
+                  });
+                }
+              }}
+            >
+              <i className={`fa ${canEdit ? 'fa-check' : 'fa-pencil-square-o'}`} />
+            </button>
           </div>
         </div>
         {

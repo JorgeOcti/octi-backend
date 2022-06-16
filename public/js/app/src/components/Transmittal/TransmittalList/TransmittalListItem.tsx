@@ -15,7 +15,7 @@ import { ITransmittal } from '../../../../../../../src/distribution/interfaces/t
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
-import { hasPermission } from '../../../utils/common';
+import { goToSection, hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -315,9 +315,10 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
 
 }
 
-const mapStateToProps = (state: { transmittal: ITransmittalState }) => {
+const mapStateToProps = (state: { transmittal: ITransmittalState, router: any }) => {
   return {
-    transmittal: state.transmittal
+    transmittal: state.transmittal,
+    router: state.router
   };
 };
 

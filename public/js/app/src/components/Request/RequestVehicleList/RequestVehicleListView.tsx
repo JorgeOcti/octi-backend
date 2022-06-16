@@ -73,6 +73,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
+    const canChangeRequest = hasPermission(window.user, 'changeRequest') && window.user.isAdmin;
     return (
       <AppContainer title='' cMenu='3' cSubMenu='3.2'>
         <section className='content'>
@@ -227,7 +228,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label className='control-label'>
-                        Vendedor
+                        Solicitante
                       </label>
                       <BootstrapSelect
                         noneSelectedText='Todas'
@@ -397,26 +398,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     <thead>
                       <tr className='bg-primary' style={{ height: '45px' }}>
                         {/*<ShowIf condition={requestSettings.priority}>*/}
-                          <th className='middle' style={{ width: '30px' }} />
+                          <th className='middle' style={{ width: '45px' }} />
                         {/*</ShowIf>*/}
-                        <th
-                          className='middle pointer'
-                          style={{ width: '70px' }}
-                          onClick={() => this.changeOrder('meta.request.number')}
-                        >
-                          SOL
-                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
-                          <th
-                            className='middle'
-                            style={{ width: '50px' }}
-                            // onClick={() => this.changeOrder('transmittal.transmittalNumber')}
-                          >
-                            OT
-                            {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'transmittal.transmittalNumber' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
-                          </th>
-                        </ShowIf>
+
                         <ShowIf condition={false}>
                           <th
                             className='middle pointer'
@@ -430,7 +414,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </ShowIf>
                         <th
                           className='middle pointer'
-                          style={{ width: '150px' }}
+                          style={{ width: '100px' }}
+                          onClick={() => this.changeOrder('meta.request.number')}
+                        >
+                          Solicitud
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'meta.request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <th
+                          className='middle pointer'
+                          style={{ width: '140px' }}
                           onClick={() => this.changeOrder('meta.destination.name')}
                         >
                           Destino
@@ -440,8 +432,43 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                             />
                           </span>
                         </th>
-                        <ShowIf condition={requestSettings.entry}>
-                          <th className='middle' style={{ width: '70px' }}>Partida</th>
+                        <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
+                          <th
+                            className='middle'
+                            style={{ width: '120px' }}
+                            // onClick={() => this.changeOrder('transmittal.transmittalNumber')}
+                          >
+                            Transporte
+                            {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'transmittal.transmittalNumber' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
+                          <th
+                            className='middle'
+                            style={{ width: '200px', maxWidth: '220px' }}
+                            // onClick={() => this.changeOrder('meta.destination.name')}
+                          >
+                            Ruta
+                            {/*<span style={{ float: 'right' }}>
+                              <i
+                                className={`fa fa-fw ${orderBy === 'meta.destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`}
+                              />
+                            </span>*/}
+                          </th>
+                        </ShowIf>
+
+                        {/*<ShowIf condition={canChangeRequest && requestSettings.denominationReadOnly}>*/}
+                        <ShowIf condition={!canChangeRequest}>
+                          <th
+                            className='middle pointer'
+                            style={{ minWidth: '200px' }}
+                            onClick={() => this.changeOrder('meta.car.brand')}
+                          >
+                            Detalle de la unidad
+                            <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
                         </ShowIf>
                         <ShowIf
                           condition={
@@ -451,7 +478,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           <th
                             className='middle-center pointer'
-                            style={{ width: '70px' }}
+                            style={{ width: '100px' }}
                             onClick={() => this.changeOrder('meta.car.material')}
                           >
                             Material
@@ -459,9 +486,19 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                               className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                           </th>
                         </ShowIf>
+                        <ShowIf condition={false && requestSettings.entry}>
+                          <th className='middle-center' style={{ width: '60px' }}>
+                            BL
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.entry}>
+                          <th className='middle-center' style={{ width: '60px' }}>
+                            Partida
+                          </th>
+                        </ShowIf>
                         <th
                           className='middle pointer'
-                          style={{ minWidth: '200px', width: '200px' }}
+                          style={{ minWidth: '210px', width: '210px' }}
                           onClick={() => this.changeOrder('meta.car.vin')}
                         >
                           VIN
@@ -469,17 +506,18 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                               <i className={`fa fa-fw ${orderBy === 'meta.car.vin' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                             </span>
                         </th>
-                        <th
-                          className='middle pointer'
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('meta.car.brand')}
-                        >
-                          Marca
-                          <span style={{ float: 'right' }}>
-                            <i className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                          </span>
-                        </th>
-                        <ShowIf condition={requestSettings.denomination}>
+                        {/*<ShowIf condition={canChangeRequest && !requestSettings.denominationReadOnly}>*/}
+                        <ShowIf condition={canChangeRequest}>
+                          <th
+                            className='middle pointer'
+                            style={{ width: '120px' }}
+                            onClick={() => this.changeOrder('meta.car.brand')}
+                          >
+                            Marca
+                            <span style={{ float: 'right' }}>
+                              <i className={`fa fa-fw ${orderBy === 'meta.car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                            </span>
+                          </th>
                           <th
                             className='middle pointer'
                             style={{ minWidth: '120px' }}
@@ -491,7 +529,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                             </span>
                           </th>
                         </ShowIf>
-                        <ShowIf condition={requestSettings.color}>
+                        <ShowIf condition={false && requestSettings.color}>
                           <th
                             className='middle pointer'
                             style={{ minWidth: '120px' }}
@@ -502,15 +540,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                               className={`fa fa-fw ${orderBy === 'meta.car.color' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                           </th>
                         </ShowIf>
-                        <th
-                          className='middle pointer'
-                          style={{ width: '120px' }}
-                          onClick={() => this.changeOrder('meta.status.weigth')}
-                        >
-                          Estado
-                          <span style={{ float: 'right' }}><i
-                            className={`fa fa-fw ${orderBy === 'meta.status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
                         <ShowIf
                           condition={
                             ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
@@ -536,7 +565,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </ShowIf>
                         <ShowIf condition={requestSettings.ticket}>
                           <th
-                            className='middle pointer'
+                            className='middle-center'
                             style={{ minWidth: '40px', maxWidth: '40px' }}
                           >
                             Ticket
@@ -587,9 +616,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                   <ShowIf condition={pagination.pages > 1}>
                     <div className='row'>
                       <div className='col-md-6' style={{ padding: '20px 15px' }}>
-                          <span className='react-bootstrap-table-pagination-total text-ellipsis'>
-                            &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
-                          </span>
+                        <span className='react-bootstrap-table-pagination-total text-muted text-ellipsis'>
+                          &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                        </span>
                       </div>
                       <div className='col-md-6'>
                         <div className='text-right' style={{ marginRight: '15px' }}>
@@ -644,7 +673,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
         $item.addClass('bg-aqua-active');
         setTimeout(() => {
           $item.removeClass('bg-aqua-active');
-        }, 300);
+        }, 400);
       }
     });
 
@@ -658,7 +687,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
         const { page } = this.props.requestItems.pagination;
         this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
         // this.props.deleteRequestItemAction(data.item);
-      }, 300);
+      }, 400);
     });
 
     // this.socket.on('DELETE_REQUEST', (data: any): void => {
@@ -684,7 +713,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             }
             setTimeout(() => {
               $item.removeClass('bg-green-active');
-            }, 300);
+            }, 400);
           }
         }
         this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
@@ -701,7 +730,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
       }
       setTimeout(() => {
         $item.removeClass('bg-green-active');
-      }, 300);
+      }, 400);
     });
   }
 
