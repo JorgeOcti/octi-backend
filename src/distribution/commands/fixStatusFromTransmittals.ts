@@ -4,9 +4,10 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import RequestItem from "../../request/models/requestItem.model";
 import TransmittalItem from "../models/transmittalItem.model";
-import Transmittal, {ChoicesStatusTransmittal} from "../models/transmittal.model";
+import Transmittal from "../models/transmittal.model";
 import Milestone, {ChoicesStepMilestone} from "../models/milestone.model";
 import Participant from "../../form/models/participant.model";
+import { ChoicesStatusTransmittal } from '../models/transmitall.types';
 
 async function fixStatus() {
   try {
