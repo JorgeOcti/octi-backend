@@ -58,6 +58,9 @@ RUN npm install
 RUN tsc --project tsconfig.json
 
 RUN rm -rf /srv/src
+RUN rm -rf /srv/node_modules
+
+RUN npm --production install
 
 EXPOSE 3000
 
