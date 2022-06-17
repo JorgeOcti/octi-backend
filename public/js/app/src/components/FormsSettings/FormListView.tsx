@@ -173,7 +173,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
                         return (
                           <tr key={item._id}>
                             <td
-                              className={`middle ${!item.active ? 'line-through' : ''}`}
+                              className={`middle ${!item.active ? 'line-through text-muted' : ''}`}
                             >
                               <strong>
                                 {item.name}
