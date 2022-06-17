@@ -95,7 +95,8 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
       const key = `request-item-${query.item}`;
       const element = document.getElementById(key);
       if(element){
-        element?.classList.add('bg-gray');
+        element.style.backgroundColor = '#efefef';
+        // element?.classList.add('bg-gray-light');
         element?.classList.add('text-black');
         goToSection(`#${key}`);
       } else {

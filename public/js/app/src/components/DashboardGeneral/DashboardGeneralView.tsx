@@ -297,7 +297,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
         data: totalsplanningProcess,
         name: 'Linea de control',
         type: 'line',
-        color: '#7c344c',
+        color: '#a1214c',
         smooth: true
       });
     }

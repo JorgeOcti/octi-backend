@@ -1,25 +1,25 @@
 ///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
-import {CancelTokenSource, default as Axios} from 'axios';
+import { CancelTokenSource, default as Axios } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
+import { ErrorInfo } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {RouterState} from 'react-router-redux';
-import {Dispatch} from 'redux';
-import { io } from "socket.io-client";
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { RouterState } from 'react-router-redux';
+import { Dispatch } from 'redux';
+import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
-import {IInventoryCar} from '../../../../../../src/inventory/interfaces/inventory.interface';
-import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
-import {IInventorySetting} from '../../../../../../src/app/interfaces/teamSetting.interface';
+import { IInventoryCar } from '../../../../../../src/inventory/interfaces/inventory.interface';
+import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import {
   actionSetLabel,
   addCommentAction,
@@ -35,15 +35,12 @@ import {
   sendCommentAction,
   updateInventoryCarAction
 } from '../../actions/inventory.actions';
-import {
-  loadDataAction,
-  ModalReduxAction
-} from '../../actions/modal.actions';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import {IFilterCar} from '../../reducers/inventory.reducer';
+import { IWindow } from '../../interfaces/window';
+import { IFilterCar } from '../../reducers/inventory.reducer';
 import ApiService from '../../utils/axios';
-import {goToSection, hasPermission, isDercoDercocenter, maxText} from '../../utils/common';
+import { goToSection, hasPermission, isDercoDercocenter, maxText } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
@@ -64,11 +61,17 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   dispatch: Dispatch<InventoryReduxAction>;
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
+
   updateInventoryCarAction(inventoryCar: IInventoryCar): InventoryReduxAction;
+
   inventoryDetailChangeFilter(filter: IFilterCar): InventoryReduxAction;
+
   inventoryDetailChangeFilterText(filter: IFilterCar): InventoryReduxAction;
+
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
+
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
+
   actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel): ModalReduxAction;
 }
 
@@ -86,7 +89,7 @@ interface IStateType {
 }
 
 class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   readonly state = {
     error: null,
@@ -193,7 +196,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     this.sendToDetailFilteredByVenue = this.sendToDetailFilteredByVenue.bind(this);
     this.downloadImages = this.downloadImages.bind(this);
     this.changeTab = this.changeTab.bind(this);
-    const {tab} = this.props.match.params;
+    const { tab } = this.props.match.params;
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
@@ -354,7 +357,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     // get data
-    const {id} = this.props.match.params;
+    const { id } = this.props.match.params;
     this.props.getInventoryDetailAction(id, false);
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
@@ -363,10 +366,10 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: { token: (window.user as any).token }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `inventory-detail-${id}`});
+      this.socket.emit('join', { room: `inventory-detail-${id}` });
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && (window.user.venuesAccess as string[]).includes(data.venue)) {
@@ -401,13 +404,13 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.state.source) {
       (this.state.source as any).cancel('Operation canceled by the user.');
     }
-    const {id} = this.props.match.params;
-    this.socket.emit('leave', {room: `inventory-detail-${id}`});
+    const { id } = this.props.match.params;
+    this.socket.emit('leave', { room: `inventory-detail-${id}` });
     this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -423,15 +426,15 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType): void {
-    const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
+    const { loadingDetail, detailByVenue, detailByBrand } = this.props.inventories;
     // style react boostrap table
-    $('.react-bootstrap-table-pagination').css({padding: '3px 15px'});
-    $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
+    $('.react-bootstrap-table-pagination').css({ padding: '3px 15px' });
+    $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({ padding: '3px 15px' });
     $('.react-bootstrap-table-pagination div:last-child').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
     $('.bs-searchbox input').removeClass('input-sm').addClass('input-sm');
-    $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
-    const {setCharts} = this.state;
+    $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({ margin: 0 });
+    const { setCharts } = this.state;
     if (!loadingDetail && !setCharts) {
       this.updateVenueChart(detailByVenue, false);
       this.updateBrandChart(detailByBrand, false);
@@ -477,7 +480,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private openFileManager(car: any): void {
-    const {inventories} = this.props;
+    const { inventories } = this.props;
     setTimeout(() => {
       this.props.loadDataAction(
         `Archivos de ${car.vin}`,
@@ -495,7 +498,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       <div className='row'>
         <div className={'col-md-12 images-25 text-center'}>
           <button className='btn btn-xs btn-default' onClick={() => this.openFileManager(row)}>
-            <i className='fa fa-fw fa-cloud-upload' /> {row.files?.length }
+            <i className='fa fa-fw fa-cloud-upload' /> {row.files?.length}
           </button>
         </div>
       </div>
@@ -509,37 +512,37 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           row.venue && row.venueFound && row.venueFound !== '-' && row.venue !== row.venueFound ?
             <React.Fragment>
               <i
-                data-toggle="tooltip"
-                data-placement="top"
-                title="Este vehículo no fue encontrado en la sucursal esperada."
-                className="fa fa-warning text-yellow pointer"
+                data-toggle='tooltip'
+                data-placement='top'
+                title='Este vehículo no fue encontrado en la sucursal esperada.'
+                className='fa fa-warning text-yellow pointer'
               /> {` `}
             </React.Fragment>
             : null
         }
-            <React.Fragment>
-              {
-                row.vin && row.vin.length
-                ? <CopyText value={row.vin} className={'text-muted'}>{row.vin}</CopyText> : null
-              }&nbsp;
-              {
-                row.patent && row.patent.length
-                  ? <CopyText value={row.patent} className={'text-muted'}><strong>{row.patent}</strong></CopyText>
-                  : null
-              }
-            </React.Fragment>
-        <br/>
-        <span className="text-muted text-sm">{cell} / {row.denomination}</span>
+        <React.Fragment>
+          {
+            row.vin && row.vin.length
+              ? <CopyText value={row.vin} className={'text-muted'}>{row.vin}</CopyText> : null
+          }&nbsp;
+          {
+            row.patent && row.patent.length
+              ? <CopyText value={row.patent} className={'text-muted'}><strong>{row.patent}</strong></CopyText>
+              : null
+          }
+        </React.Fragment>
+        <br />
+        <span className='text-muted text-sm'>{cell} / {row.denomination}</span>
         {
-          row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
+          row.internalNumber ? <React.Fragment><br /><span className='text-muted text-sm'>{row.internalNumber}</span></React.Fragment> : null
         }
         {
           row.color ?
-            <React.Fragment><br/>
-              <span className="text-muted text-sm">{row.color}</span>
+            <React.Fragment><br />
+              <span className='text-muted text-sm'>{row.color}</span>
             </React.Fragment> : null
         }
-        <div className="visible-xs">
+        <div className='visible-xs'>
           {this.labelFormatter(cell, row)}
         </div>
       </React.Fragment>
@@ -551,14 +554,14 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       <Checkbox
         active={cell}
         action={() => this.props.inventoryDetailChangeSelected(row._id)}
-        classes="icheck-in-checkbox"
-        style={{margin: '5px', marginTop: '5px'}}
+        classes='icheck-in-checkbox'
+        style={{ margin: '5px', marginTop: '5px' }}
       />
     );
   }
 
   public statusFormatter(cell: CarStatusType) {
-    const {inventorySettings} = this.props.inventories;
+    const { inventorySettings } = this.props.inventories;
     const className = `${cell}Class` as CarStatusType;
     return (
       <span
@@ -573,8 +576,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public optionsFormatter(cell: any, row: any) {
-    const {labels} = this.props.inventories;
-    const {id} = this.props.match.params;
+    const { labels } = this.props.inventories;
+    const { id } = this.props.match.params;
     const newLabels = [...labels];
     if (hasPermission(window.user, 'deleteReported')) {
       newLabels.push({
@@ -594,24 +597,24 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     });
     if (options.length) {
       return (
-        <div className="btn-group btn-group-sm" style={{
+        <div className='btn-group btn-group-sm' style={{
           marginLeft: '5px'
         }}>
-          <button type="button" className="btn btn-default">
-            <i className="fa fa-fw fa-cogs"/> Etiqueta
+          <button type='button' className='btn btn-default'>
+            <i className='fa fa-fw fa-cogs' /> Etiqueta
           </button>
-          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span className="caret"/>
-            <span className="sr-only">Toggle Dropdown</span>
+          <button type='button' className='btn btn-default dropdown-toggle' data-toggle='dropdown'>
+            <span className='caret' />
+            <span className='sr-only'>Toggle Dropdown</span>
           </button>
-          <ul className="dropdown-menu dropdown-menu-right dropdown-menu-scrollable" role="menu">
+          <ul className='dropdown-menu dropdown-menu-right dropdown-menu-scrollable' role='menu'>
             {
               options.map((option) => {
                 return (
                   <li key={option._id} onClick={() => {
                     this.props.actionSetLabel(id, row._id, row.carID, option);
                   }}>
-                    <a href="javascript:void(0)">
+                    <a href='javascript:void(0)'>
                       <i className={`fa ${this.iconStatus[option.sendTo]}`} />{option.name}
                     </a>
                   </li>
@@ -631,14 +634,14 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         <React.Fragment>
           {maxText(row.comments[row.comments.length - 1].comment, 20)}<br />
           <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
-            {row.comments.length} <i className={'fa fa-comments'}/>
+            {row.comments.length} <i className={'fa fa-comments'} />
           </button>
         </React.Fragment>
       );
     } else {
       return (
         <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
-          Agregar <i className={'fa fa-comments'}/>
+          Agregar <i className={'fa fa-comments'} />
         </button>
       );
     }
@@ -647,7 +650,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   public labelFormatter(cell: any, row: any) {
     if (row.label) {
       const sendTo = row.label.sendTo;
-      const {inventorySettings} = this.props.inventories;
+      const { inventorySettings } = this.props.inventories;
       const className = `${sendTo}Class` as CarStatusType;
       return (
         <React.Fragment>
@@ -656,7 +659,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
               `label label-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`
             }
           >
-            <i className={`fa fa-fw ${this.iconStatus[sendTo]}`}/>
+            <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
             {row.label.name}
           </span>
           {/*<span*/}
@@ -683,7 +686,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                 >
                   {row.labelText}
                 </p>
-              </React.Fragment>:
+              </React.Fragment> :
               ''
           }
         </React.Fragment>
@@ -718,25 +721,25 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const showDownloadFile = isDercoDercocenter(this.props.inventories.detail) || moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
     return (
-      <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
-        <section className="content">
+      <AppContainer title={summary.name} cMenu='2' cSubMenu='2.1' cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
+        <section className='content'>
           <Row>
-            <div className="col-md-12 col-lg-12">
-              <div className="box box-solid">
-                <ul className="nav nav-pills nav-justified">
+            <div className='col-md-12 col-lg-12'>
+              <div className='box box-solid'>
+                <ul className='nav nav-pills nav-justified'>
                   <li className={tab === 'summary' ? 'active' : ''}>
                     <a
-                      href="javascript:void(0);"
+                      href='javascript:void(0);'
                       className={tab === 'summary' ? 'background-transition' : ''}
-                      style={{borderTop: '0', marginBottom: '0'}}
+                      style={{ borderTop: '0', marginBottom: '0' }}
                       onClick={() => this.changeTab('summary')}
                     >Consolidado</a>
                   </li>
                   <li className={tab === 'detail' ? 'active' : ''}>
                     <a
                       className={tab === 'detail' ? 'background-transition' : ''}
-                      href="javascript:void(0);"
-                      style={{borderTop: '0', marginBottom: '0'}}
+                      href='javascript:void(0);'
+                      style={{ borderTop: '0', marginBottom: '0' }}
                       onClick={() => this.changeTab('detail')}
                     >Detalle</a>
                   </li>
@@ -744,13 +747,13 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-12 col-lg-12">
-              <div className="box box-default">
-                <div className="box-header with-border">
-                  <Row className="vertical-line-mobile">
-                    <div className="col-md-4 col-lg-3">
-                      <i className="fa fa-fw fa-user text-primary"/>
+          <Row style={{ display: tab === 'summary' ? 'block' : 'none' }}>
+            <div className='col-md-12 col-lg-12'>
+              <div className='box box-default'>
+                <div className='box-header with-border'>
+                  <Row className='vertical-line-mobile'>
+                    <div className='col-md-4 col-lg-3'>
+                      <i className='fa fa-fw fa-user text-primary' />
                       <strong>
                         {
                           !loadingDetail && summary && summary.createdBy ?
@@ -760,242 +763,244 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       </strong>
 
                     </div>
-                    <div className="col-md-4 col-lg-3">
-                      <i className="fa fa-fw fa-clock-o text-green"/>
+                    <div className='col-md-4 col-lg-3'>
+                      <i className='fa fa-fw fa-clock-o text-green' />
                       <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
                     </div>
-                    <div className="col-md-4 col-lg-3">
-                      <i className="fa fa-fw fa-clock-o text-red"/>
+                    <div className='col-md-4 col-lg-3'>
+                      <i className='fa fa-fw fa-clock-o text-red' />
                       <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
                     </div>
-                    <div className="col-md-12 col-lg-3 text-right">
+                    <div className='col-md-12 col-lg-3 text-right'>
                       {!loadingDetail ? this.labelStatus(detail.status) : null}
                     </div>
                   </Row>
                 </div>
                 {
                   loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  <div className='overlay'>
+                    <i className='fa fa-spinner fa-spin text-purple' />
                   </div>
                 }
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('found')}>
+          <Row style={{ display: tab === 'summary' ? 'block' : 'none' }}>
+            <div className='col-md-4 col-lg-4 pointer' onClick={() => this.sendToDetailFilteredByState('found')}>
               <div className={`info-box bg-${inventorySettings.foundClass}`}>
-                <span className="info-box-icon"><i className="fa fa-check" /></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">{inventorySettings.found}</span>
-                  <span className="info-box-number count">
-                    {!loadingDetail && summary.results ? summary.results.found : <i className="fa fa-spinner fa-spin"/>}
+                <span className='info-box-icon'><i className='fa fa-check' /></span>
+                <div className='info-box-content'>
+                  <span className='info-box-text'>{inventorySettings.found}</span>
+                  <span className='info-box-number count'>
+                    {!loadingDetail && summary.results ? summary.results.found : <i className='fa fa-spinner fa-spin' />}
                   </span>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
+                  <div className='progress'>
+                    <div className='progress-bar' style={{
                       width: `${!loadingDetail ? percentageFound : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
-                  <span className="progress-description">
+                  <span className='progress-description'>
                     {!loadingDetail ? `${percentageFound.toFixed(1)}% ${inventorySettings.found.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('leftover')}>
+            <div className='col-md-4 col-lg-4 pointer' onClick={() => this.sendToDetailFilteredByState('leftover')}>
               <div className={`info-box bg-${inventorySettings.leftoverClass}`}>
-                <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">{inventorySettings.leftover}</span>
-                  <span className="info-box-number count">
-                    {!loadingDetail && summary.results ? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
+                <span className='info-box-icon'><i className='fa fa-arrow-up' /></span>
+                <div className='info-box-content'>
+                  <span className='info-box-text'>{inventorySettings.leftover}</span>
+                  <span className='info-box-number count'>
+                    {!loadingDetail && summary.results ? summary.results.leftover : <i className='fa fa-spinner fa-spin' />}
                   </span>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
+                  <div className='progress'>
+                    <div className='progress-bar' style={{
                       width: `${!loadingDetail ? percentageLeftover : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
-                    }}/>
+                    }} />
                   </div>
-                  <span className="progress-description">
+                  <span className='progress-description'>
                     {!loadingDetail ? `${percentageLeftover.toFixed(1)}% ${inventorySettings.leftover.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('missing')}>
+            <div className='col-md-4 col-lg-4 pointer' onClick={() => this.sendToDetailFilteredByState('missing')}>
               <div className={`info-box bg-${inventorySettings.missingClass}`}>
-                <span className="info-box-icon">
-                  <i className="fa fa-arrow-down"/>
+                <span className='info-box-icon'>
+                  <i className='fa fa-arrow-down' />
                 </span>
-                <div className="info-box-content">
-                  <span className="info-box-text">{inventorySettings.missing}</span>
-                  <span className="info-box-number count">
-                    {!loadingDetail && summary.results ? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
+                <div className='info-box-content'>
+                  <span className='info-box-text'>{inventorySettings.missing}</span>
+                  <span className='info-box-number count'>
+                    {!loadingDetail && summary.results ? summary.results.missing : <i className='fa fa-spinner fa-spin' />}
                   </span>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
+                  <div className='progress'>
+                    <div className='progress-bar' style={{
                       width: `${!loadingDetail ? percentageMissing : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
-                  <span className="progress-description">
+                  <span className='progress-description'>
                     {!loadingDetail ? `${percentageMissing.toFixed(1)}% ${inventorySettings.missing.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-12 col-lg-12">
-              <div className="box box-primary">
-                <div className="box-header with-border">
-                  <h3 className="box-title">Detalle de inventario por sucursal</h3>
+          <Row style={{ display: tab === 'summary' ? 'block' : 'none' }}>
+            <div className='col-md-12 col-lg-12'>
+              <div className='box box-primary'>
+                <div className='box-header with-border'>
+                  <h3 className='box-title'>Detalle de inventario por sucursal</h3>
                   {
                     showDownloadFile ?
-                      <div className="box-tools pull-right">
+                      <div className='box-tools pull-right'>
                         <button
-                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          className='btn btn-sm btn-primary hidden-xs hidden-sm'
                           onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
                         >
-                          <i className="fa fa-fw fa-download" /> Exportar Excel
-                    </button>
+                          <i className='fa fa-fw fa-download' /> Exportar Excel
+                        </button>
                       </div> : null
                   }
                 </div>
-                <div className="box-body">
-                  <div id="chart-venues-detail" style={{height: '550px', maxWidth: '100%'}}/>
+                <div className='box-body'>
+                  <div id='chart-venues-detail' style={{ height: '550px', maxWidth: '100%' }} />
                 </div>
                 {
                   loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  <div className='overlay'>
+                    <i className='fa fa-spinner fa-spin text-purple' />
                   </div>
                 }
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-12">
-              <div className="box box-success">
-                <div className="box-header with-border">
-                  <h3 className="box-title">Detalle de inventario por Marca</h3>
+          <Row style={{ display: tab === 'summary' ? 'block' : 'none' }}>
+            <div className='col-md-12'>
+              <div className='box box-success'>
+                <div className='box-header with-border'>
+                  <h3 className='box-title'>Detalle de inventario por Marca</h3>
                   {/*<div className="box-tools pull-right">*/}
                   {/*</div>*/}
                 </div>
-                <div className="box-body">
-                  <div id="chart-brand-detail" style={{height: '550px', maxWidth: '100%'}}/>
+                <div className='box-body'>
+                  <div id='chart-brand-detail' style={{ height: '550px', maxWidth: '100%' }} />
                 </div>
                 {
                   loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  <div className='overlay'>
+                    <i className='fa fa-spinner fa-spin text-purple' />
                   </div>
                 }
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
-            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('pending')}>
+          <Row style={{ display: tab === 'detail' ? 'block' : 'none' }}>
+            <div className='col-md-6 col-lg-6 pointer' onClick={() => this.sendToDetailFilteredByState('pending')}>
               <div className={`info-box bg-${inventorySettings.pendingClass}`}>
-                <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">{inventorySettings.pending}</span>
-                  <span className="info-box-number count">
-                    {!loadingDetail && summary.results ? summary.results.pending : <i className="fa fa-spinner fa-spin"/>}
+                <span className='info-box-icon'><i className='fa fa-clock-o' /></span>
+                <div className='info-box-content'>
+                  <span className='info-box-text'>{inventorySettings.pending}</span>
+                  <span className='info-box-number count'>
+                    {!loadingDetail && summary.results ? summary.results.pending : <i className='fa fa-spinner fa-spin' />}
                   </span>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
+                  <div className='progress'>
+                    <div className='progress-bar' style={{
                       width: `${!loadingDetail ? percentagePending : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
-                  <span className="progress-description">
+                  <span className='progress-description'>
                     {!loadingDetail ? `${percentagePending.toFixed(1)}% ${inventorySettings.pending.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('reported')}>
+            <div className='col-md-6 col-lg-6 pointer' onClick={() => this.sendToDetailFilteredByState('reported')}>
               <div className={`info-box bg-${inventorySettings.reportedClass}`}>
-                <span className="info-box-icon"><i className="fa fa-exclamation" /></span>
-                <div className="info-box-content">
-                  <span className="info-box-text">{inventorySettings.reported}</span>
-                  <span className="info-box-number count">
-                    {!loadingDetail && summary.results ? summary.results.reported : <i className="fa fa-spinner fa-spin"/>}
+                <span className='info-box-icon'><i className='fa fa-exclamation' /></span>
+                <div className='info-box-content'>
+                  <span className='info-box-text'>{inventorySettings.reported}</span>
+                  <span className='info-box-number count'>
+                    {!loadingDetail && summary.results ? summary.results.reported : <i className='fa fa-spinner fa-spin' />}
                   </span>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
+                  <div className='progress'>
+                    <div className='progress-bar' style={{
                       width: `${!loadingDetail ? percentageReported : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
-                  <span className="progress-description">
+                  <span className='progress-description'>
                     {!loadingDetail ? `${percentageReported.toFixed(1)}% ${inventorySettings.reported.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
-            <div className="col-md-12">
-              <div className="box box-info">
-                <div className="box-header with-border">
-                  <h3 className="box-title">
-                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{carsTable.length}</small>}
+          <Row style={{ display: tab === 'detail' ? 'block' : 'none' }}>
+            <div className='col-md-12'>
+              <div className='box box-info'>
+                <div className='box-header with-border'>
+                  <h3 className='box-title'>
+                    Detalle de inventario {selected.length ? <small
+                      className='hidden-sm hidden-xs text-primary'>{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> :
+                    <small>{carsTable.length}</small>}
                   </h3>
-                  <div className="box-tools pull-right">
+                  <div className='box-tools pull-right'>
                     {
                       showDownloadFile ?
                         <button
-                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          className='btn btn-sm btn-primary hidden-xs hidden-sm'
                           onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
                         >
-                          <i className="fa fa-fw fa-download" /> Exportar Excel
-                    </button>
+                          <i className='fa fa-fw fa-download' /> Exportar Excel
+                        </button>
                         : null
                     }
-                    <div className="btn-group btn-group-sm hidden-xs hidden-sm" style={{marginLeft: '5px'}}>
-                      <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
-                      <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
-                        <span className="caret"/>
-                        <span className="sr-only">Toggle Dropdown</span>
+                    <div className='btn-group btn-group-sm hidden-xs hidden-sm' style={{ marginLeft: '5px' }}>
+                      <button type='button' className='btn btn-success'><i className='fa fa-fw fa-cogs' /> Acciones</button>
+                      <button type='button' className='btn btn-success dropdown-toggle' data-toggle='dropdown'>
+                        <span className='caret' />
+                        <span className='sr-only'>Toggle Dropdown</span>
                       </button>
-                      <ul className="dropdown-menu" role="menu">
-                        <li onClick={() => this.downloadImages({all: true})}>
-                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar todas las imágenes</a>
+                      <ul className='dropdown-menu' role='menu'>
+                        <li onClick={() => this.downloadImages({ all: true })}>
+                          <a href='javascript:void(0)'><i className='fa fa-fw fa-download' /> Descargar todas las imágenes</a>
                         </li>
                         <li onClick={() => this.downloadImages({})}>
-                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar imágenes seleccionadas</a>
+                          <a href='javascript:void(0)'><i className='fa fa-fw fa-download' /> Descargar imágenes seleccionadas</a>
                         </li>
                       </ul>
                     </div>
                   </div>
                 </div>
-                <div className="box-body no-padding" id="table-detail-inventory" style={{
+                <div className='box-body no-padding' id='table-detail-inventory' style={{
                   display: loadingDetail ? 'none' : ''
                 }}>
-                  <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-12">
-                      <div className="form-group">
-                        <label htmlFor="cars" className="control-label">Unidades</label>
+                  <Row style={{ margin: '5px 0' }}>
+                    <div className='col-md-12'>
+                      <div className='form-group'>
+                        <label htmlFor='cars' className='control-label'>Unidades</label>
                         <input
-                          type="text"
+                          type='text'
                           className='form-control input-sm'
-                          id="cars"
-                          placeholder="Busca por VIN, patente, marca o modelo."
+                          id='cars'
+                          placeholder='Busca por VIN, patente, marca o modelo.'
                           onChange={this.handleChangeSearchText}
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label htmlFor="venues" className="control-label">Sucursales</label>
+                    <div className='col-md-3'>
+                      <div className='form-group'>
+                        <label htmlFor='venues' className='control-label'>Sucursales</label>
                         <BootstrapSelect
-                          noneSelectedText="Todas"
+                          noneSelectedText='Todas'
                           displayItems={2}
                           sm={true}
-                          selectedText="sucursales seleccionadas."
+                          selectedText='sucursales seleccionadas.'
                           selected={filter.venues}
                           allOption={true}
                           selectAll={this.filterAllVenues}
@@ -1007,18 +1012,18 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label htmlFor="states" className="control-label">Estados</label>
+                    <div className='col-md-3'>
+                      <div className='form-group'>
+                        <label htmlFor='states' className='control-label'>Estados</label>
                         <BootstrapSelect
-                          noneSelectedText="Todos"
+                          noneSelectedText='Todos'
                           displayItems={4}
                           sm={true}
-                          selectedText="estados seleccionados."
-                          separator=" - "
+                          selectedText='estados seleccionados.'
+                          separator=' - '
                           options={Object
                             .keys(this.statusText)
-                            .map((status: CarStatusType ) => ({
+                            .map((status: CarStatusType) => ({
                               value: status,
                               text: inventorySettings[status],
                               className: `label label-${inventorySettings[`${status}Class` as CarStatusType]}`
@@ -1030,15 +1035,15 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     {
                       cardTypes.length ?
-                        <div className="col-md-3">
-                          <div className="form-group">
-                            <label htmlFor="states" className="control-label">Tipo</label>
+                        <div className='col-md-3'>
+                          <div className='form-group'>
+                            <label htmlFor='states' className='control-label'>Tipo</label>
                             <BootstrapSelect
-                              noneSelectedText="Todos"
+                              noneSelectedText='Todos'
                               displayItems={4}
                               sm={true}
-                              selectedText="estados seleccionados."
-                              separator=" - "
+                              selectedText='estados seleccionados.'
+                              separator=' - '
                               options={cardTypes
                                 .map((name) => ({
                                   value: name,
@@ -1054,15 +1059,15 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     }
                     {
                       cardProperties.length ?
-                        <div className="col-md-3">
-                          <div className="form-group">
-                            <label htmlFor="states" className="control-label">Propiedad</label>
+                        <div className='col-md-3'>
+                          <div className='form-group'>
+                            <label htmlFor='states' className='control-label'>Propiedad</label>
                             <BootstrapSelect
-                              noneSelectedText="Todos"
+                              noneSelectedText='Todos'
                               displayItems={4}
                               sm={true}
-                              selectedText="estados seleccionados."
-                              separator=" - "
+                              selectedText='estados seleccionados.'
+                              separator=' - '
                               options={cardProperties
                                 .map((name) => ({
                                   value: name,
@@ -1077,68 +1082,68 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         : null
                     }
                   </Row>
-                  <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-3 col-md-push-9 text-right" style={{marginBottom: '10px'}}>
+                  <Row style={{ margin: '5px 0' }}>
+                    <div className='col-md-3 col-md-push-9 text-right' style={{ marginBottom: '10px' }}>
                       <button
-                        className="btn btn-default btn-sm"
+                        className='btn btn-default btn-sm'
                         onClick={this.clearFilter}
-                        style={{paddingLeft: '5px'}}
+                        style={{ paddingLeft: '5px' }}
                         disabled={
                           !(filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length)}
                       >
-                        <i className="fa fa-fw fa-eraser"/> Limpiar
+                        <i className='fa fa-fw fa-eraser' /> Limpiar
                       </button>
                     </div>
                   </Row>
                   {
                     this.state.downloadImages.downloading ?
                       <Row>
-                        <div className="col-md-12" style={{padding: '24px 25vh'}}>
-                          <div className="progress progress-xs progress-striped active">
+                        <div className='col-md-12' style={{ padding: '24px 25vh' }}>
+                          <div className='progress progress-xs progress-striped active'>
                             <div
-                              className="progress-bar progress-bar-success"
-                              style={{width: `${this.state.downloadImages.progress}%`}}/>
+                              className='progress-bar progress-bar-success'
+                              style={{ width: `${this.state.downloadImages.progress}%` }} />
                           </div>
                           {
                             this.state.downloadImages.downloading && this.state.downloadImages.sizeFile === 0 ?
-                              <div className="text-center">
+                              <div className='text-center'>
                                 Estamos preparando las imágenes.
                                 <button
-                                  className="btn btn-sm btn-danger"
-                                  style={{marginLeft: '10px'}}
+                                  className='btn btn-sm btn-danger'
+                                  style={{ marginLeft: '10px' }}
                                   onClick={() => (source as any).cancel('Operation canceled by the user.')}
                                 >
                                   Cancelar
                                 </button>
                               </div>
-                            : <div className="text-center">
+                              : <div className='text-center'>
                                 Descargando imágenes {this.state.downloadImages.progress}%
                                 <button
-                                  className="btn btn-sm btn-danger"
-                                  style={{marginLeft: '10px'}}
+                                  className='btn btn-sm btn-danger'
+                                  style={{ marginLeft: '10px' }}
                                   onClick={() => (source as any).cancel('Operation canceled by the user.')}
                                 >
                                   Cancelar
                                 </button>
-                            </div>
+                              </div>
                           }
                         </div>
                       </Row> : null
                   }
                   <Row>
-                    <div className="col-md-12">
+                    <div className='col-md-12'>
                       {
                         !loadingDetail && carsTable.length ?
                           <BootstrapTable
-                            keyField="_id"
+                            keyField='_id'
                             data={carsTable}
                             columns={this.columns}
                             filter={filterFactory()}
                             pagination={paginationFactory(this.paginationOption)}
                             defaultSorted={this.defaultSorted}
-                          /> : !loadingDetail ? <p className="text-center text-muted">
+                          /> : !loadingDetail ? <p className='text-center text-muted'>
                             <ImageLazyLoad
-                              url="/images/not_found.png"
+                              url='/images/not_found.png'
                               height={'200px'}
                               style={{
                                 opacity: 0.5,
@@ -1147,9 +1152,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                               }}
                               replaceLoading={<i
                                 className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
-                                style={{padding: '30px'}}
-                              /> }
-                            /><br/>
+                                style={{ padding: '30px' }}
+                              />}
+                            /><br />
                             <strong>No hay información para mostrar</strong>
                           </p> : null
                       }
@@ -1158,8 +1163,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 {
                   loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  <div className='overlay'>
+                    <i className='fa fa-spinner fa-spin text-purple' />
                   </div>
                 }
               </div>
@@ -1171,9 +1176,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
-  private downloadImages({all}: { all?: boolean }) {
-    const {id} = this.props.match.params;
-    const {selectedItems, summary, carsTable} = this.props.inventories;
+  private downloadImages({ all }: { all?: boolean }) {
+    const { id } = this.props.match.params;
+    const { selectedItems, summary, carsTable } = this.props.inventories;
     let ids: string[];
     if (all) {
       ids = carsTable
@@ -1214,7 +1219,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             cancelToken: source.token,
             onDownloadProgress: (progressEvent) => {
               const sizeFile = parseInt(progressEvent.target.getResponseHeader('size'), 10);
-              const {loaded} = progressEvent;
+              const { loaded } = progressEvent;
               if (sizeFile) {
                 const progress = Math.round((progressEvent.loaded * 100) / sizeFile);
                 this.setState({
@@ -1241,22 +1246,22 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           //   // the URL has been freed."
           //   window.navigator.msSaveBlob(blob, fileName);
           // } else {
-            const blobURL = URL.createObjectURL(blob);
-            const tempLink = document.createElement('a');
-            tempLink.style.display = 'none';
-            tempLink.href = blobURL;
-            tempLink.setAttribute('download', fileName);
-            // Safari thinks _blank anchor are pop ups. We only want to set _blank
-            // target if the browser does not support the HTML5 download attribute.
-            // This allows you to download files in desktop safari if pop up blocking
-            // is enabled.
-            if (typeof tempLink.download === 'undefined') {
-              tempLink.setAttribute('target', '_blank');
-            }
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            URL.revokeObjectURL(blobURL);
+          const blobURL = URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          URL.revokeObjectURL(blobURL);
           // }
           this.setState({
             downloadImages: {
@@ -1295,7 +1300,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterVenues(value: any) {
-    const {filter} = this.props.inventories;
+    const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
       ...filter,
       venues: filter.venues.includes(value)
@@ -1305,7 +1310,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterAllVenues(value: boolean) {
-    const {filter, detail} = this.props.inventories;
+    const { filter, detail } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
       ...filter,
       venues: value ? detail.venues.map((venue: any) => venue._id) : []
@@ -1313,7 +1318,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterStatus(value: any) {
-    const {filter} = this.props.inventories;
+    const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
       ...filter,
       states: filter.states.includes(value)
@@ -1323,7 +1328,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterType(value: string) {
-    const {filter} = this.props.inventories;
+    const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
       ...filter,
       type: filter.type !== value ? value : ''
@@ -1331,7 +1336,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterProperty(value: string) {
-    const {filter} = this.props.inventories;
+    const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
       ...filter,
       property: filter.property !== value ? value : ''
@@ -1382,7 +1387,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
-    const {filter} = this.props.inventories;
+    const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilterText({
       ...filter,
       text: value ? e.target.value : ''
@@ -1390,7 +1395,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeTab(name: string): void {
-    const {id} = this.props.match.params;
+    const { id } = this.props.match.params;
     if (name === 'detail') {
       this.props.history.replace(`/inventory/${id}/detail/`);
     } else {
@@ -1403,22 +1408,22 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  private selectedHeaderFormatter(): React.ReactElement<IPropsType> | null  {
+  private selectedHeaderFormatter(): React.ReactElement<IPropsType> | null {
     return (
       <React.Fragment>
         <Checkbox
           active={false}
           action={undefined}
-          classes="icheck-in-checkbox"
-          style={{margin: '5px', marginTop: '5px'}}
+          classes='icheck-in-checkbox'
+          style={{ margin: '5px', marginTop: '5px' }}
         />
-        <i className="fa fa-order" />
+        <i className='fa fa-order' />
       </React.Fragment>
     );
   }
 
   private calculateDetails(results: IInventorySummaryResult | undefined) {
-    const {loadingDetail} = this.props.inventories;
+    const { loadingDetail } = this.props.inventories;
     if (!loadingDetail) {
       const totalCars = results ? results.missing + results.found + results.pending + results.leftover + results.reported : 0;
       return {
@@ -1441,7 +1446,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private carComments(inventoryCar: IInventoryCar): void {
-    const { inventories} = this.props;
+    const { inventories } = this.props;
     this.props.updateInventoryCarAction(inventoryCar);
     setTimeout(() => {
       this.props.loadDataAction(
@@ -1458,9 +1463,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   private xlsExport(status: string[]) {
     this.trackClick('Exportar');
-    const {detail} = this.props.inventories;
+    const { detail } = this.props.inventories;
     const data: any = [];
-    const {inventorySettings} = this.props.inventories;
+    const { inventorySettings } = this.props.inventories;
     // Order data
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
@@ -1497,7 +1502,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
-    const {loadingDetail, detail, inventorySettings} = this.props.inventories;
+    const { loadingDetail, detail, inventorySettings } = this.props.inventories;
     const venuesNames: string[] = [];
     const venuesFound: any[] = [];
     const venuesPending: any[] = [];
@@ -1537,7 +1542,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           type: 'shadow'
         },
         formatter: (params: any) => {
-          const colorSpan = (color: any) => `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+          const colorSpan = (color: any) => `<span style='display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};'></span>`;
           let rez = `<span> ${params[0].axisValue}</span>`;
           // console.log(params); //quite useful for debug
           let total = 0;
@@ -1706,7 +1711,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
-    const {loadingDetail, detail, inventorySettings} = this.props.inventories;
+    const { loadingDetail, detail, inventorySettings } = this.props.inventories;
     const brandNames: string[] = [];
     const brandFound: any[] = [];
     const brandPending: any[] = [];
@@ -1868,8 +1873,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private customTotal(from: any, to: any, size: any) {
-    return(
-      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
+    return (
+      <span className='react-bootstrap-table-pagination-total text-ellipsis' style={{ fontSize: '75%' }}>
         &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
@@ -1877,13 +1882,13 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   private labelStatus(option: string): React.ReactElement<IPropsType> | null {
     if (option === 'finalized') {
-      return <span className="label label-success" style={{
+      return <span className='label label-success' style={{
         padding: '5px 10px', fontSize: '11px'
-      }}><i className="fa fa-fw fa-check"/> Finalizado</span>;
+      }}><i className='fa fa-fw fa-check' /> Finalizado</span>;
     } else if (option === 'inProcess') {
-      return <span className="label label-primary" style={{
+      return <span className='label label-primary' style={{
         padding: '5px 10px', fontSize: '11px'
-      }}><i className="fa fa-fw fa-spin fa-spinner"/> En progreso</span>;
+      }}><i className='fa fa-fw fa-spin fa-spinner' /> En progreso</span>;
     } else {
       return null;
     }
@@ -1898,7 +1903,7 @@ const mapStateToProps = (state: { inventories: IInventoryState, router: RouterSt
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),

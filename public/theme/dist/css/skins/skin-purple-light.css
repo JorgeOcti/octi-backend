@@ -3,7 +3,7 @@
  * ------------
  */
 .skin-purple-light .main-header .navbar {
-  background-color: #8e3b57;
+  background-color: #a1214c;
 }
 .skin-purple-light .main-header .navbar .nav > li > a {
   color: #ffffff;
@@ -29,7 +29,7 @@
   color: #fff;
 }
 .skin-purple-light .main-header .navbar .sidebar-toggle:hover {
-  background-color: #7c344c;
+  background-color: #8c1d42;
 }
 @media (max-width: 767px) {
   .skin-purple-light .main-header .navbar .dropdown-menu li.divider {
@@ -39,19 +39,19 @@
     color: #fff;
   }
   .skin-purple-light .main-header .navbar .dropdown-menu li a:hover {
-    background: #7c344c;
+    background: #8c1d42;
   }
 }
 .skin-purple-light .main-header .logo {
-  background-color: #8e3b57;
+  background-color: #a1214c;
   color: #ffffff;
   border-bottom: 0 solid transparent;
 }
 .skin-purple-light .main-header .logo:hover {
-  background-color: #8a3a55;
+  background-color: #9d204a;
 }
 .skin-purple-light .main-header li.user-header {
-  background-color: #8e3b57;
+  background-color: #a1214c;
 }
 .skin-purple-light .content-header {
   background: transparent;
@@ -87,7 +87,7 @@
   background: #f4f4f5;
 }
 .skin-purple-light .sidebar-menu > li.active {
-  border-left-color: #8e3b57;
+  border-left-color: #a1214c;
 }
 .skin-purple-light .sidebar-menu > li.active > a {
   font-weight: 600;

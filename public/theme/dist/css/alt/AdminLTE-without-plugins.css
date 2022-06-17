@@ -3546,7 +3546,7 @@ table.text-center th {
   background-color: #f012be !important;
 }
 .bg-purple {
-  background-color: #8e3b57 !important;
+  background-color: #a1214c !important;
 }
 .bg-maroon {
   background-color: #d81b60 !important;
@@ -3605,7 +3605,7 @@ table.text-center th {
   background-color: #db0ead !important;
 }
 .bg-purple-active {
-  background-color: #7c344c !important;
+  background-color: #8c1d42 !important;
 }
 .bg-maroon-active {
   background-color: #ca195a !important;
@@ -3660,7 +3660,7 @@ table.text-center th {
   color: #f012be !important;
 }
 .text-purple {
-  color: #8e3b57 !important;
+  color: #a1214c !important;
 }
 .text-maroon {
   color: #d81b60 !important;
@@ -3772,12 +3772,12 @@ table.text-center th {
   color: #fff;
 }
 .bg-purple-gradient {
-  background: #8e3b57 !important;
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0, #8e3b57), color-stop(1, #bc5e7e)) !important;
-  background: -ms-linear-gradient(bottom, #8e3b57, #bc5e7e) !important;
-  background: -moz-linear-gradient(center bottom, #8e3b57 0%, #bc5e7e 100%) !important;
-  background: -o-linear-gradient(#bc5e7e, #8e3b57) !important;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc5e7e', endColorstr='#8e3b57', GradientType=0) !important;
+  background: #a1214c !important;
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0, #a1214c), color-stop(1, #d73c70)) !important;
+  background: -ms-linear-gradient(bottom, #a1214c, #d73c70) !important;
+  background: -moz-linear-gradient(center bottom, #a1214c 0%, #d73c70 100%) !important;
+  background: -o-linear-gradient(#d73c70, #a1214c) !important;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d73c70', endColorstr='#a1214c', GradientType=0) !important;
   color: #fff;
 }
 .bg-green-gradient {

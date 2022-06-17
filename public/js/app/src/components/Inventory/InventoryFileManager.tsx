@@ -51,7 +51,7 @@ class InventoryFileManager extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
-    const {inventoryCardId} = this.props;
+    const { inventoryCardId } = this.props;
     this.api.getInventoryCarFiles(inventoryCardId)
       .then((response) => {
         const { files } = response.data;
@@ -67,10 +67,10 @@ class InventoryFileManager extends React.Component<IPropsType, IStateType> {
             };
           })
         });
-      })
+      });
   }
 
-  private deleteFile(id: string){
+  private deleteFile(id: string) {
     this.api.deleteInventoryCarFile(id);
   }
 
@@ -88,8 +88,8 @@ class InventoryFileManager extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {inventories, inventoryCardId} = this.props;
-    const {loading, files} = this.state;
+    const { inventories, inventoryCardId } = this.props;
+    const { loading, files } = this.state;
     return (
       <>
         <Row>

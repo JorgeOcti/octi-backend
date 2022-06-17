@@ -336,11 +336,11 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 </strong><br />
                 {item.car?.denomination}<br />
               <ShowIf condition={!!item.car?.vin?.length && !!item.car?.color?.length}>
-                <strong>{item.car?.color}</strong><br />
+                <strong>{item.car?.color?.toUpperCase()}</strong><br />
               </ShowIf>
               <ShowIf condition={!item.car?.vin?.length &&  !!item.car?.firstColorOption.length}>
                 {item.car?.firstColorOption}
-                {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption}` : ''}
+                {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption?.toUpperCase()}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption?.toUpperCase()}` : ''}
               </ShowIf>
             </td>
         }

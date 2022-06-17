@@ -1,9 +1,9 @@
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import {
   getInventoryDashboard,
   getInventoryDashboardFiltered,
@@ -11,18 +11,20 @@ import {
   InventoryDashboardReduxAction
 } from '../../actions/inventoryDashboard.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import {IFilterCar} from '../../reducers/inventory.reducer';
+import { IWindow } from '../../interfaces/window';
+import { IFilterCar } from '../../reducers/inventory.reducer';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Row from '../Utils/Row';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   inventoryDashboard: IInventoryDashboardState;
   dispatch: Dispatch<InventoryDashboardReduxAction>;
+
   getInventoryDashboard(filter: IFilterCar): void;
+
   getInventoryDashboardFiltered(filter: IFilterCar): void;
 }
 
@@ -31,7 +33,7 @@ interface IStateType {
 }
 
 class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   monthlyReport: echarts.ECharts;
 
@@ -69,7 +71,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {loading} = this.props.inventoryDashboard;
+    const { loading } = this.props.inventoryDashboard;
     if (!loading) {
       this.updateDashboardChart();
     }
@@ -81,7 +83,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -90,19 +92,19 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { filter, loading, venues } = this.props.inventoryDashboard;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.3">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Dashboard de inventarios</h3>
+      <AppContainer title='' cMenu='2' cSubMenu='2.3'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Dashboard de inventarios</h3>
             </div>
-            <div className="box-body">
+            <div className='box-body'>
               <Row>
-                <div className="col-md-12">
+                <div className='col-md-12'>
                   <BootstrapSelect
-                    noneSelectedText="Todas"
+                    noneSelectedText='Todas'
                     displayItems={2}
-                    selectedText="sucursales seleccionadas."
+                    selectedText='sucursales seleccionadas.'
                     selected={filter.venues}
                     allOption={true}
                     selectAll={this.filterAllVenues}
@@ -112,15 +114,15 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
                     }))}
                     onClick={this.filterVenues}
                   />
-                  <div id="inventory-monthly-report" style={{height: '50vh', maxWidth: '100%'}} />
+                  <div id='inventory-monthly-report' style={{ height: '50vh', maxWidth: '100%' }} />
                 </div>
               </Row>
             </div>
             {
               loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
+              </div>
             }
           </div>
         </section>
@@ -139,7 +141,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
   private filterVenues(value: any) {
 
-    const {filter} = this.props.inventoryDashboard;
+    const { filter } = this.props.inventoryDashboard;
 
     const venues = filter.venues.includes(value) ? filter.venues.filter((venue) => venue !== value) : [value, ...filter.venues];
     this.props.getInventoryDashboardFiltered({
@@ -149,7 +151,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterAllVenues(value: boolean) {
-    const { filter, venues} = this.props.inventoryDashboard;
+    const { filter, venues } = this.props.inventoryDashboard;
     this.props.getInventoryDashboardFiltered({
       ...filter,
       venues: value ? venues.map((v) => v._id) : []
@@ -200,7 +202,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
       xAxis: [
         {
           type: 'category',
-          axisTick: {show: false},
+          axisTick: { show: false },
           data: xSerie
         }
       ],
@@ -268,7 +270,7 @@ const mapStateToProps = (state: { inventoryDashboard: IInventoryDashboardState }
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getInventoryDashboard: () => dispatch(getInventoryDashboard()),
