@@ -192,7 +192,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                 {/*</div>*/}
               </div>
             </div>
-            <div className='box-body table-responsive request-list'>
+            <div className='box-body table-responsive request-list no-padding'>
               <ShowIf condition={requests.length > 0}>
                 <div className='row request bg-primary'>
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted' onClick={() => this.changeOrder('_id')}>
@@ -209,14 +209,14 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                     <strong>Destino</strong>
                   </div>
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Nº Unidades</strong>
+                    <strong>Unidades</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted' onClick={() => this.changeOrder('createdAt')}>
-                    <strong>Fecha Creación</strong> <i
+                    <strong>Creación</strong> <i
                     className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted' onClick={() => this.changeOrder('updatedAt')}>
-                    <strong>Última Actualización</strong> <i
+                    <strong>Actualización</strong> <i
                     className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
@@ -264,7 +264,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                   <ShowIf condition={pagination.pages > 1}>
                     <div className='row'>
                       <div className='col-md-6' style={{ padding: '20px 15px' }}>
-                          <span className='react-bootstrap-table-pagination-total text-ellipsis'>
+                          <span className='react-bootstrap-table-pagination-total text-muted text-ellipsis'>
                             &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
                           </span>
                       </div>

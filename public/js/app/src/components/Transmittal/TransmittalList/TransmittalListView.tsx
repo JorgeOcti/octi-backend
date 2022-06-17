@@ -128,8 +128,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className={`box-body transmittal-list`}>
-              <div className='row'>
+            <div className={`box-body transmittal-list no-padding`}>
+              <div style={{padding: '10px'}}>
+                <div className='row'>
                 <div className='col-md-12'>
                   <div
                     className='input-group input-group-sm'
@@ -157,6 +158,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
               <div className='table-responsive'>
                 <ShowIf condition={data.length > 0}>
@@ -243,7 +245,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className='box-footer'>
                 <div className='row'>
                   <div className='col-md-6' style={{ padding: '20px 15px' }}>
-                    <span className='react-bootstrap-table-pagination-total text-ellipsis'>
+                    <span className='react-bootstrap-table-pagination-total text-muted text-ellipsis'>
                       &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
                       </span>
                   </div>

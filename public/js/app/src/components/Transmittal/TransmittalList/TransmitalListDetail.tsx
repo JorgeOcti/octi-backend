@@ -308,7 +308,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         </div>
         <ShowIf condition={open}>
           <div className='table-transmittal'>
-            <table className='table table-hover m-0 table-xs'>
+            <table className='table table-striped table-hover m-0 table-xs'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '30px' }}>SOL</th>

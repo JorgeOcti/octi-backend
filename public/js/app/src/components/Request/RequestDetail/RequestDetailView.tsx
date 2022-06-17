@@ -175,7 +175,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         </tbody>
                       </table>
                     </div>
-                    <table className='table table-xs table-hover' style={{ minWidth: '900px' }}>
+                    <table className='table table-xs table-striped table-hover' style={{ minWidth: '900px' }}>
                       <thead>
                       <tr>
                         {/*<ShowIf condition={requestSettings.priority}>*/}

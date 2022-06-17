@@ -166,7 +166,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
               </div>
               <div className='col-md-12'>
                 <div className='table-responsive'>
-                  <table className='table table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
+                  <table className='table table-striped table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
                   <thead>
                   <tr className='bg-primary' style={{ height: '45px' }}>
                     <th className='middle-center' style={{ width: '45px' }}>ID Sol.</th>
@@ -265,7 +265,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                             <td className={`middle`}>
                               <ShowIf condition={!!item.car?.vin?.trim()}>
                                 <a
-                                  className='btn btn-success btn-xs'
+                                  className='btn btn-success btn-sm'
                                   href={'javascript:void(0);'}
                                   onClick={() => this.props.onClick(item)}
                                 >

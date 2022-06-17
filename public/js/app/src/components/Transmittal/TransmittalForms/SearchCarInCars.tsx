@@ -69,7 +69,7 @@ class SearchCarInCars extends React.Component<IPropsType, IStateType> {
               </div>
               <div className='col-md-12'>
                 <div className='table-responsive'>
-                  <table className='table table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
+                  <table className='table table-striped table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
                   <thead>
                   <tr className='bg-primary' style={{ height: '45px' }}>
                     <th className='middle' style={{ width: '120px' }}>VIN</th>
@@ -114,7 +114,7 @@ class SearchCarInCars extends React.Component<IPropsType, IStateType> {
                           }
                           <td className='middle'>
                             <a
-                              className='btn btn-success btn-xs'
+                              className='btn btn-success btn-sm'
                               href={'javascript:void(0);'}
                               onClick={() => onClick(car)}
                             >

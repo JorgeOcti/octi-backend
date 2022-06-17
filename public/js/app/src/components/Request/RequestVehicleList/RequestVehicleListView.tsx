@@ -155,7 +155,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className='box-body no-padding'>
-              <div style={{ padding: '10px 5px' }}>
+              <div style={{ padding: '10px' }}>
                 <div className='row' style={{ margin: 0 }}>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
@@ -394,7 +394,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               <ShowIf condition={!loading && requestItems.length > 0}>
                 <div className='table-responsive'>
-                  <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
+                  <table className='table table-striped table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
                       <tr className='bg-primary' style={{ height: '45px' }}>
                         {/*<ShowIf condition={requestSettings.priority}>*/}

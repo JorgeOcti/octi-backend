@@ -73,10 +73,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             <strong className='text-underline'>
               #{request.number}
             </strong>&nbsp;
-            <i className='fa fa-share-square-o' style={{ fontSize: '10px' }} />
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {request.channel ? request.channel.name : ''}
+            <strong className='text-info'>{request.channel ? request.channel.name : ''}</strong>
             {/* {
               request.fleet ?
                 <i className="fa fa-check-circle-o text-green" />
@@ -84,16 +83,16 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             } */}
           </div>
           <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.sellerText?.length ? request.sellerText : '-'}</div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.destination.name}</div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'><strong className='text-primary'>{request.destination.name}</strong></div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 text-muted'>
             {
               request.items.length
             }
           </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-muted'>
             {moment(request.createdAt).format('DD-MM-YY')}
           </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-muted'>
             {moment(request.updatedAt).format('DD-MM-YY')}
           </div>
           {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
@@ -117,7 +116,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             </div>
           </ShowIf>
           <ShowIf condition={this.props.requests.requestItemsById.hasOwnProperty(request._id)}>
-            <table className='table table-xd table-hover'>
+            <table className='table table-xd table-striped table-hover'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '28px' }} />
