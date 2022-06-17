@@ -195,7 +195,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
             properties: {
               title: 'Sucursal',
               name: venue.name?.toUpperCase(),
-              company: venue.company?.name?.toUpperCase(),
+              venue,
               logo: venue.company.marker?.url?.length
                 ? `url("${venue.company.marker.url}")`
                 : 'url("/static/images/files/pin_osa.svg")'
@@ -225,7 +225,11 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
         new mapboxgl.Marker(el)
           .setLngLat((marker.geometry.coordinates as [number, number]))
           .setPopup(new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`<strong>${marker.properties.name}</strong><br />${marker.properties.company}`))
+          .setHTML(`
+            <strong>${marker.properties.name}</strong><br />
+            ${marker.properties.venue.name}<br />
+<!--            <strong >Editar</strong>-->
+          `))
           .addTo($map);
 
         bounds.extend((marker.geometry.coordinates as [number, number]));
@@ -236,6 +240,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentDidMount() {
+    super.componentDidMount();
     // mapboxgl.accessToken = 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw';
     this.map = new mapboxgl.Map({
       accessToken: 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw',
