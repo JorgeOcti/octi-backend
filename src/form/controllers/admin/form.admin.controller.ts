@@ -17,7 +17,7 @@ class AdminFormsController {
 
   /* istanbul ignore next */
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiCreate(req: IRequest, res: Response) {
@@ -48,7 +48,7 @@ class AdminFormsController {
       const team = req.user.team._id;
       const { body } = req;
       const form = await Form.findOneAndUpdate({ _id: id, team }, { $set: { ...body } });
-      io.to(`forms-list-${team._id}`).emit('REFRESH', {
+      io.to(`forms-list-${team}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -87,7 +87,7 @@ class AdminFormsController {
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
-    const {page, pageSize, activated} = req.query as { page: string, pageSize: string, activated?: string };
+    const { page, pageSize, activated } = req.query as { page: string, pageSize: string, activated?: string };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -97,7 +97,8 @@ class AdminFormsController {
         active: true
       },
       sort: {
-        firstName: 1
+        active: -1,
+        name: 1
       },
       customLabels: {
         totalDocs: 'total',
@@ -111,11 +112,11 @@ class AdminFormsController {
       },
       // allowDiskUse: true,
       lean: true,
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
 
-    let filter : any = { team };
+    let filter: any = { team };
     if (activated) {
       filter = { ...filter, active: activated === '1' };
     }

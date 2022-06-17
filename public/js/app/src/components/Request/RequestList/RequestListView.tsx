@@ -168,27 +168,27 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
               <h3 className='box-title'>Solicitudes <small>{pagination.count}</small></h3>
               <div className='pull-right box-tools'>
                 {/*<div className='btn-group btn-group-sm'>*/}
-                  <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                    <button
-                      className='btn btn-sm btn-success'
-                      onClick={this.create}
-                      style={{marginRight: '5px' }}
-                    >
-                      <i className='fa fa-fw fa-plus' /> Crear solicitud
-                    </button>
-                  </ShowIf>
-                  <ShowIf condition={requests.length > 0}>
-                    <button
-                      className='btn btn-sm btn-primary hidden-xs'
-                      onClick={this.exportExcel}
-                      disabled={exporing}
-                    >
-                      {
-                        exporing ? <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment>
-                          : <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
-                      }
-                    </button>
-                  </ShowIf>
+                <ShowIf condition={hasPermission(window.user, 'createRequest')}>
+                  <button
+                    className='btn btn-sm btn-success'
+                    onClick={this.create}
+                    style={{ marginRight: '5px' }}
+                  >
+                    <i className='fa fa-fw fa-plus' /> Crear solicitud
+                  </button>
+                </ShowIf>
+                <ShowIf condition={requests.length > 0}>
+                  <button
+                    className='btn btn-sm btn-primary hidden-xs'
+                    onClick={this.exportExcel}
+                    disabled={exporing}
+                  >
+                    {
+                      exporing ? <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment>
+                        : <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
+                    }
+                  </button>
+                </ShowIf>
                 {/*</div>*/}
               </div>
             </div>
@@ -383,6 +383,5 @@ const mapDispatchToProps = (dispatch: any) => {
     deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))
   };
 };
-
 
 export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestListView);

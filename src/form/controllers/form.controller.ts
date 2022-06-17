@@ -280,10 +280,14 @@ class FormController {
     const team = req.user.team._id;
     try {
       const filter = {
-        _id: {
-          $in: req.user.userForms.map((form) => form._id)
-        },
-        team
+        team: team,
+        $and: [{
+          _id: {
+            $in: req.user.userForms.map((form) => form._id)
+          }
+        },{
+          active: true
+        }]
       };
       logger.info(`FormController.list: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       logger.debug(`FormController.list: email: ${req.user.email} filter: ${JSON.stringify(filter)}`);
@@ -353,7 +357,8 @@ class FormController {
       }]) as IUserModel);
       const form = await this.getForm({
         _id: id,
-        team
+        team,
+
       });
       // generate array of scale ids
       const scalesIds: any[] = [];
@@ -879,7 +884,7 @@ class FormController {
                 team,
                 type: updatedTransmittal?.type
               });
-              let requestItems: any[] = [];
+              let requestItems: any[];
 
               await TransmittalItem
                 .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
@@ -1074,7 +1079,7 @@ class FormController {
       const { company } = req.user;
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
       if (file) {
-      logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id} file: ${JSON.stringify(file)}`);
+        logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id} file: ${JSON.stringify(file)}`);
         try {
           const participantFile = new ParticipantFile();
           /*
@@ -1893,10 +1898,10 @@ class FormController {
 
             // only one form
             if (participants.length < 2) {
-              if (participants[0].form.toString() == f0)
+              if (participants[0].form.toString() === f0)
                 p0 = participants[0];
 
-              else if (participants[0].form.toString() == f1)
+              else if (participants[0].form.toString() === f1)
                 p1 = participants[0];
 
             } else {
@@ -1908,44 +1913,44 @@ class FormController {
             let choice0Gas = null;
             let choice1Gas = null;
             if (p0) {
-              const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
+              const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString());
+                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() === answer0Gas.answer.toString());
             }
 
             if (p1) {
-              const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
+              const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString());
+                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() === answer1Gas.answer.toString());
             }
 
             let choice0Paint = null;
             let choice1Paint = null;
             if (p0) {
-              const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
+              const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString());
+                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() === answer0Paint.answer.toString());
             }
 
             if (p1) {
-              const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
+              const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString());
+                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() === answer1Paint.answer.toString());
             }
 
             // lata
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString());
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() === answer0SheetMetal.answer.toString());
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString());
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() === answer1SheetMetal.answer.toString());
             }
 
             const row = {
@@ -2075,8 +2080,7 @@ class FormController {
 
         for (const datum of notCleanDispatch) {
           const day = datum._id;
-          const sum = datum.count;
-          daysDict[day].notClean = sum;
+          daysDict[day].notClean = datum.count;
         }
       }
       res.json({
@@ -2128,7 +2132,7 @@ class FormController {
           name: 1
         })
         .lean()
-        .exec((err, forms: IFormModel[]) => {
+        .exec!((err, forms: IFormModel[]) => {
           if (err) {
             /* istanbul ignore next */
             return reject(err);

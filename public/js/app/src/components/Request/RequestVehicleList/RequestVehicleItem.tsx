@@ -5,13 +5,12 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 import { IRequestItem } from '../../../../../../../src/request/interfaces';
-import { deleteRequestItemsThunkAction, updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
+import { updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import AutoCompleteInput from '../../Utils/AutoCompleteInput';
-import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
@@ -97,59 +96,59 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
         {/*<ShowIf condition={requestSettings.priority}>*/}
-          <td
-            className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
-            onClick={canChangeRequest ? () => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  priority: !item.priority
-                },
-                debounce: false
-              });
-            } : undefined}
-          >
-            {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-gray' />}
-          </td>
+        <td
+          className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
+          onClick={canChangeRequest ? () => {
+            this.props.updateRequestItemsThunkAction({
+              item: {
+                ...item,
+                priority: !item.priority
+              },
+              debounce: false
+            });
+          } : undefined}
+        >
+          {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-gray' />}
+        </td>
         <td
           className='middle pointer'
           onClick={() => this.goToDetail(item._id, item.request._id)}
-          style={{
-          }}
+          style={{}}
         >
-            <ShowIf condition={!!item.code?.length} alternative={'-'}>
-              <div>
-                <strong className='text-underline'>
-                  #{item.code}
-                </strong>
-              </div>
-            </ShowIf>
-            <div className={`progress progress-xs progress-striped ${item.status?.weigth > 10 && item.status?.weigth < 100? 'active' : ''}`} style={{ margin: '3px 0' }}>
-              <div
-                className='progress-bar progress-bar-danger'
-                style={{
-                  width: `${(item.status?.weigth ?? 0)}%`,
-                  backgroundColor: getColorForPercentage(item.status?.weigth ?? 0)
-                }}
-              />
+          <ShowIf condition={!!item.code?.length} alternative={'-'}>
+            <div>
+              <strong className='text-underline'>
+                #{item.code}
+              </strong>
             </div>
-            <div>{
-              item.status?.name.length
-                ? item.status?.name
-                : ' Desconocido'
-            }</div>
+          </ShowIf>
+          <div className={`progress progress-xs progress-striped ${item.status?.weigth > 10 && item.status?.weigth < 100 ? 'active' : ''}`}
+               style={{ margin: '3px 0' }}>
+            <div
+              className='progress-bar progress-bar-danger'
+              style={{
+                width: `${(item.status?.weigth ?? 0)}%`,
+                backgroundColor: getColorForPercentage(item.status?.weigth ?? 0)
+              }}
+            />
+          </div>
+          <div>{
+            item.status?.name.length
+              ? item.status?.name
+              : ' Desconocido'
+          }</div>
         </td>
         <td
-          className="middle pointer"
+          className='middle pointer'
           onClick={() => this.goToDetail(item._id, item.request._id)}
-          style={{fontSize: '80%'}}
+          style={{ fontSize: '80%' }}
         >
           <div>
-            <strong className="text-primary text-underline">
+            <strong className='text-primary text-underline'>
               {item.destination?.name?.toUpperCase() ?? '-'}
             </strong>
           </div>
-          <div className={"text-info"}>
+          <div className={'text-info'}>
             <strong>
               {item.destination?.company?.name?.toUpperCase() ?? '-'}
             </strong>
@@ -174,23 +173,25 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   !!item?.transmittal?.type?._id?.length
                 }
               >
-                <strong className={"text-info"}> {item?.transmittal?.type?.name?.toUpperCase()}</strong>
+                <strong className={'text-info'}> {item?.transmittal?.type?.name?.toUpperCase()}</strong>
               </ShowIf>
-              <div className={`progress progress-xs progress-striped ${ChoicesStatusTransmittal.inTransit === item.transmittal?.status?'active':''}`} style={{margin:'3px 0'}}>
+              <div
+                className={`progress progress-xs progress-striped ${ChoicesStatusTransmittal.inTransit === item.transmittal?.status ? 'active' : ''}`}
+                style={{ margin: '3px 0' }}>
                 <div
                   className='progress-bar progress-bar-danger'
                   style={{
                     width: `${transmittalWidth[item.transmittal?.status]}%`,
-                    backgroundColor:  `${transmittalColor[item.transmittal?.status]}`,
+                    backgroundColor: `${transmittalColor[item.transmittal?.status]}`
                   }}
                 />
               </div>
               <div>
                 {
                   transmittalTexto[item.transmittal?.status]
-                  ?
+                    ?
                     transmittalTexto[item.transmittal?.status]
-                  :
+                    :
                     'Desconocido'
                 }
               </div>
@@ -199,95 +200,95 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
           <td
-            className={`middle text-sm ${!!item.transmittalItem?.origin?.name?.length || !!item.transmittalItem?.destination?.name?.length?'pointer':''}`}
-            style={{padding: '20px 5px'}}
+            className={`middle text-sm ${!!item.transmittalItem?.origin?.name?.length || !!item.transmittalItem?.destination?.name?.length ? 'pointer' : ''}`}
+            style={{ padding: '20px 5px' }}
             onClick={!!item.transmittalItem?.origin?.name?.length || !!item.transmittalItem?.destination?.name?.length
               ? () => this.openOT(item.transmittal.number.toString(), item.transmittal._id, item?.transmittalItem._id)
               : undefined
             }
           >
-          <ShowIf
-            condition={
-              !!item.transmittalItem?.origin?.name?.length ||
-              !!item.transmittalItem?.destination?.name?.length
-            }
-          >
-            <ShowIf
-            condition={
-              item?.transmittal?.transporter?.driver?._id?.length
-            }
-            >
-              <div className={"text-primary"}>
-                <strong>{
-                  item?.transmittal?.transporter?.driver?.firstName?.toUpperCase()} {item?.transmittal?.transporter?.driver?.lastName?.toUpperCase()
-                }</strong>
-              </div>
-
-            </ShowIf>
             <ShowIf
               condition={
-                item?.transmittal?.transporter?.carrier?._id?.length
+                !!item.transmittalItem?.origin?.name?.length ||
+                !!item.transmittalItem?.destination?.name?.length
               }
             >
-              <div className={"text-info"}>
-                <strong>
-                  <ShowIf condition={!!item?.transmittal?.transporter?.patent?.length}>
+              <ShowIf
+                condition={
+                  item?.transmittal?.transporter?.driver?._id?.length
+                }
+              >
+                <div className={'text-primary'}>
+                  <strong>{
+                    item?.transmittal?.transporter?.driver?.firstName?.toUpperCase()} {item?.transmittal?.transporter?.driver?.lastName?.toUpperCase()
+                  }</strong>
+                </div>
+
+              </ShowIf>
+              <ShowIf
+                condition={
+                  item?.transmittal?.transporter?.carrier?._id?.length
+                }
+              >
+                <div className={'text-info'}>
+                  <strong>
+                    <ShowIf condition={!!item?.transmittal?.transporter?.patent?.length}>
                       PLACA: {item?.transmittal?.transporter?.patent?.toUpperCase()} -
-                  </ShowIf> {item?.transmittal?.transporter?.carrier?.name?.toUpperCase()}
+                    </ShowIf> {item?.transmittal?.transporter?.carrier?.name?.toUpperCase()}
                   </strong>
+                </div>
+
+              </ShowIf>
+
+              <div className={'text-info'}>
+                <strong>
+                  {
+                    item.transmittalItem?.origin?.name?.length
+                      ? item.transmittalItem?.origin?.name?.toUpperCase()
+                      : '-'
+                  }
+                  <i className='fa fa-fw fa-flag-o text-black' />
+                </strong>
+                {/*<br />{item.transmittalItem.origin?.company?.name}*/}
               </div>
-
+              <div className={'text-primary  text-underline'}>
+                <strong>
+                  {
+                    item.transmittalItem?.destination?.name?.length
+                      ? item.transmittalItem?.destination?.name?.toUpperCase()
+                      : '-'
+                  }
+                  <i className='fa fa-fw fa-flag-checkered text-black' />
+                </strong>
+                {/*<br />{item.transmittalItem.destination?.company?.name}*/}
+              </div>
+              <ShowIf condition={false}>
+                <JsonFormatter
+                  json={JSON.stringify({
+                    // transmittal: Object.keys(item?.transmittal ?? {}),
+                    transporter: Object.keys(item?.transmittal?.transporter ?? {}),
+                    driver: item?.transmittal?.transporter?.driver ?? {},
+                    carrier: item?.transmittal?.transporter?.carrier ?? {}
+                    // transmittalItem: Object.keys(item?.transmittalItem ?? {})
+                  })}
+                  jsonStyle={{
+                    propertyStyle: { color: 'red' },
+                    stringStyle: { color: 'green' },
+                    numberStyle: { color: 'darkorange' }
+                  }}
+                />
+              </ShowIf>
             </ShowIf>
-
-            <div className={"text-info"}>
-              <strong>
-                {
-                  item.transmittalItem?.origin?.name?.length
-                    ? item.transmittalItem?.origin?.name?.toUpperCase()
-                    : '-'
-                }
-                <i className='fa fa-fw fa-flag-o text-black' />
-              </strong>
-              {/*<br />{item.transmittalItem.origin?.company?.name}*/}
-            </div>
-            <div className={"text-primary  text-underline"}>
-              <strong>
-                {
-                  item.transmittalItem?.destination?.name?.length
-                    ? item.transmittalItem?.destination?.name?.toUpperCase()
-                    : '-'
-                }
-                <i className='fa fa-fw fa-flag-checkered text-black' />
-              </strong>
-              {/*<br />{item.transmittalItem.destination?.company?.name}*/}
-            </div>
-            <ShowIf condition={false}>
-              <JsonFormatter
-                json={JSON.stringify({
-                  // transmittal: Object.keys(item?.transmittal ?? {}),
-                  transporter: Object.keys(item?.transmittal?.transporter ?? {}),
-                  driver: item?.transmittal?.transporter?.driver ?? {},
-                  carrier: item?.transmittal?.transporter?.carrier ?? {},
-                  // transmittalItem: Object.keys(item?.transmittalItem ?? {})
-                })}
-                jsonStyle={{
-                  propertyStyle: { color: 'red' },
-                  stringStyle: { color: 'green' },
-                  numberStyle: { color: 'darkorange' }
-                }}
-              />
-            </ShowIf>
-          </ShowIf>
           </td>
         </ShowIf>
         <ShowIf condition={false}>
-          <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
+          <td className='middle' style={{ fontSize: '80%' }}>{item.origin?.name ?? '-'}</td>
         </ShowIf>
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         {
           // canChangeRequest && !requestSettings.brandReadOnly ?
           canChangeRequest ?
-            <td className="middle">
+            <td className='middle'>
               <AutoCompleteInput
                 value={item.car?.brand}
                 inputClass={'input-sm'}
@@ -330,30 +331,30 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 }}
               />
             </td>
-            : <td className="middle">
-                <strong className={"text-primary"}>
-                  {item.car?.brand}
-                </strong><br />
-                {item.car?.denomination}<br />
+            : <td className='middle'>
+              <strong className={'text-primary'}>
+                {item.car?.brand}
+              </strong><br />
+              {item.car?.denomination}<br />
               <ShowIf condition={!!item.car?.vin?.length && !!item.car?.color?.length}>
                 <strong>{item.car?.color?.toUpperCase()}</strong><br />
               </ShowIf>
-              <ShowIf condition={!item.car?.vin?.length &&  !!item.car?.firstColorOption.length}>
+              <ShowIf condition={!item.car?.vin?.length && !!item.car?.firstColorOption.length}>
                 {item.car?.firstColorOption}
                 {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption?.toUpperCase()}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption?.toUpperCase()}` : ''}
               </ShowIf>
             </td>
         }
-        <ShowIf condition={false && requestSettings.entry}>
-          <td className="middle-center"><strong>{item.car?.bl}</strong></td>
+        <ShowIf condition={requestSettings.entry && false}>
+          <td className='middle-center'><strong>{item.car?.bl}</strong></td>
         </ShowIf>
         <ShowIf condition={requestSettings.entry}>
           {
             canChangeRequest ?
-              <td className="middle">
+              <td className='middle'>
                 <input
-                  type="text"
-                  className="form-control input-sm"
+                  type='text'
+                  className='form-control input-sm'
                   defaultValue={item.car?.entry}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     this.props.updateRequestItemsThunkAction({
@@ -369,7 +370,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle-center"><strong>{item.car?.entry}</strong></td>
+              : <td className='middle-center'><strong>{item.car?.entry}</strong></td>
           }
         </ShowIf>
         <ShowIf
@@ -380,13 +381,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
           {
             canChangeRequest && !requestSettings.materialReadOnly ?
-              <td className="middle">
+              <td className='middle'>
                 <AutoCompleteInput
                   value={item.car?.material}
                   inputClass={'input-sm'}
                   items={recommends}
                   renderItem={(car, index) => (
-                    <div key={index} className="item">
+                    <div key={index} className='item'>
                       {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                       <strong>{car.brand}</strong>
                     </div>
@@ -421,7 +422,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }}
                 />
               </td>
-              : <td className="middle-center"><strong>{item.car?.material}</strong></td>
+              : <td className='middle-center'><strong>{item.car?.material}</strong></td>
           }
         </ShowIf>
         <ShowIf
@@ -513,29 +514,29 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             />
           </td>
         </ShowIf>
-        <ShowIf condition={false && requestSettings.color}>
+        <ShowIf condition={requestSettings.color && false}>
           {
             canChangeRequest && !requestSettings.colorReadOnly
               ?
-                <td className="middle">
-                  <input type="text"
-                    className="form-control input-sm"
-                    defaultValue={item.car?.color}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      this.props.updateRequestItemsThunkAction({
-                        item: {
-                          ...item,
-                          car: {
-                            ...item.car,
-                            color: e.target.value
-                          }
-                        },
-                        debounce: false
-                      });
-                    }}
-                  />
-                </td>
-              : <td className={`middle ${!!item.car?.color?.length?'': ' text-muted'}`}>
+              <td className='middle'>
+                <input type='text'
+                       className='form-control input-sm'
+                       defaultValue={item.car?.color}
+                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                         this.props.updateRequestItemsThunkAction({
+                           item: {
+                             ...item,
+                             car: {
+                               ...item.car,
+                               color: e.target.value
+                             }
+                           },
+                           debounce: false
+                         });
+                       }}
+                />
+              </td>
+              : <td className={`middle ${!!item.car?.color?.length ? '' : ' text-muted'}`}>
                 <ShowIf condition={!!item.car?.color?.length}>
                   <strong>{item.car?.color}</strong><br />
                 </ShowIf>
@@ -546,7 +547,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               </td>
           }
         </ShowIf>
-        <ShowIf condition={false && canChangeRequest}>
+        <ShowIf condition={canChangeRequest && false}>
           {
             canChangeRequest ?
               <td className='middle'>
@@ -585,33 +586,33 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
           {
             canChangeRequest ?
-              <td className="middle">
-                <input type="text"
-                  className="form-control input-sm"
-                  defaultValue={item.car?.internalNumber}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    this.props.updateRequestItemsThunkAction({
-                      item: {
-                        ...item,
-                        car: {
-                          ...item.car,
-                          internalNumber: e.target.value
-                        }
-                      },
-                      debounce: false
-                    });
-                  }}
+              <td className='middle'>
+                <input type='text'
+                       className='form-control input-sm'
+                       defaultValue={item.car?.internalNumber}
+                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                         this.props.updateRequestItemsThunkAction({
+                           item: {
+                             ...item,
+                             car: {
+                               ...item.car,
+                               internalNumber: e.target.value
+                             }
+                           },
+                           debounce: false
+                         });
+                       }}
                 />
               </td>
-              : <td className="middle">{item.car?.internalNumber}</td>
+              : <td className='middle'>{item.car?.internalNumber}</td>
           }
         </ShowIf>
-        <ShowIf condition={false && requestSettings.reason}>
+        <ShowIf condition={requestSettings.reason && false}>
           {
             canChangeRequest ?
-              <td className="middle">
+              <td className='middle'>
                 <select
-                  className="form-control select-sm font-12"
+                  className='form-control select-sm font-12'
                   value={item.reason?._id ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     this.props.updateRequestItemsThunkAction({
@@ -626,7 +627,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                     });
                   }}
                 >
-                  <option value="" disabled={true}>-</option>
+                  <option value='' disabled={true}>-</option>
                   {
                     reasons.map((reason) => (
                       <option key={reason._id} value={reason._id}>{reason.name}</option>
@@ -634,7 +635,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   }
                 </select>
               </td>
-              : <td className="middle">{item.reason?.name}</td>
+              : <td className='middle'>{item.reason?.name}</td>
           }
         </ShowIf>
         <ShowIf condition={requestSettings.ticket}>
@@ -719,10 +720,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private search(text: string): void {
-    this.$subjectRecommends.next(text)
+    this.$subjectRecommends.next(text);
   }
 
-  private deleteRequestItem(item: IRequestItem) {
+  /*private deleteRequestItem(item: IRequestItem) {
     swal({
       title: '¿Estás seguro?',
       text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
@@ -739,7 +740,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         this.props.deleteRequestItemsThunkAction(item._id);
       }
     });
-  }
+  }*/
 
   private openBlank(url: string) {
     window.open(decodeURI(url), '_blank');
@@ -755,11 +756,13 @@ const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemsThunkAction({ item, debounce })),
-    deleteRequestItemsThunkAction: (id: string) => dispatch(deleteRequestItemsThunkAction(id))
+    updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemsThunkAction({
+      item,
+      debounce
+    }))
+    // deleteRequestItemsThunkAction: (id: string) => dispatch(deleteRequestItemsThunkAction(id))
     // deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
   };
 };
-
 
 export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(RequestVehicleItem);

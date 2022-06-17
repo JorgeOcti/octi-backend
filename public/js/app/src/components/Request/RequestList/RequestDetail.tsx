@@ -154,7 +154,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className='middle-center' style={{ width: '20px' }}></th>
                 <th className='middle' />
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
-                <ShowIf condition={false && false && requestSettings.reason}>
+                <ShowIf condition={requestSettings.reason && false}>
                   <th className='middle' style={{ width: '150px' }}>Motivo</th>
                 </ShowIf>
                 {/* <th className="middle" >Transporte</th>
@@ -269,7 +269,11 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     }
                     <td
                       className={`middle ${item.transmittal?.number ? 'pointer' : ''}`}
-                      onClick={item.transmittal?.number ? () => this.openOT(item.transmittal.number.toString()) : undefined}
+                      onClick={item.transmittal?.number ? () => this.openOT(
+                        item.transmittal.number.toString(),
+                        item?.transmittal?._id,
+                        item?.transmittalItem?._id,
+                      ) : undefined}
                     >
                       <strong className={"text-underline"}>
                         {item?.transmittal?.number ? `#${item?.transmittal?.number}`: ''}
@@ -340,7 +344,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         </div>
                       </div>
                     </td> */}
-                    <ShowIf condition={false && requestSettings.reason}>
+                    <ShowIf condition={requestSettings.reason && false}>
                       {
                         canChangeRequest ?
                           <td className='middle'>
@@ -432,8 +436,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private openOT(number: string) {
-    this.props.history.push(parseReplicableURL(`/transmittals/?number=${number}`))
+  private openOT(number: string, transmittal: string, item: string) {
+    this.props.history.push(parseReplicableURL(`/transmittals?number=${number}&transmittal=${transmittal}&item=${item}`,
+      ['number', 'transmittal', 'item']));
     // window.open(parseReplicableURL(`/transmittals/?number=${number}`), '_blank');
   }
 

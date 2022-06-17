@@ -50,6 +50,7 @@ import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import InventoryFileManager from './InventoryFileManager';
+import ShowIf from '../Utils/ShowIf';
 
 declare let window: IWindow;
 
@@ -239,19 +240,19 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     }, {
       dataField: 'venue',
       text: 'Sucursal',
-      classes: 'middle hidden-xs hidden-sm text-muted text-sm',
+      classes: 'middle hidden-xs hidden-sm text-muted',
       headerClasses: 'middle hidden-xs hidden-sm pointer',
       style: {
-        width: '15%'
+        width: '18%'
       },
       sort: true
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
-      classes: 'middle hidden-xs hidden-sm text-muted text-sm',
+      classes: 'middle hidden-xs hidden-sm text-muted',
       headerClasses: 'middle hidden-xs hidden-sm hidden-md pointer',
       style: {
-        width: '15%'
+        width: '18%'
       },
       sort: true
     }, /* {
@@ -521,10 +522,31 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             : null
         }
         <React.Fragment>
-          {
-            row.vin && row.vin.length
-              ? <CopyText value={row.vin} className={'text-muted'}>{row.vin}</CopyText> : null
-          }&nbsp;
+          <ShowIf
+            condition={row.vin?.length}
+            alternative={row?.vin}
+          >
+            <ShowIf
+              condition={hasPermission(window.user, 'viewCar')}
+              alternative={
+                <CopyText value={row.vin}>
+                  <strong className='text-primary'>{row.vin}</strong>
+                </CopyText>
+              }
+            >
+              <CopyText value={row?.vin}>
+                <strong
+                  className={'text-underline text-primary pointer'}
+                  onClick={() => {
+                    this.props.history.push(`/settings/cars/${row.carID}/`);
+                  }}
+                >
+                  {row?.vin}
+                </strong>
+              </CopyText>
+            </ShowIf>
+          </ShowIf>
+          &nbsp;
           {
             row.patent && row.patent.length
               ? <CopyText value={row.patent} className={'text-muted'}><strong>{row.patent}</strong></CopyText>
@@ -532,15 +554,15 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           }
         </React.Fragment>
         <br />
-        <span className='text-muted text-sm'>{cell} / {row.denomination}</span>
-        {
-          row.internalNumber ? <React.Fragment><br /><span className='text-muted text-sm'>{row.internalNumber}</span></React.Fragment> : null
-        }
+        <span className='text-muted'><strong>{cell}</strong> {row.denomination}</span>
         {
           row.color ?
             <React.Fragment><br />
               <span className='text-muted text-sm'>{row.color}</span>
             </React.Fragment> : null
+        }
+        {
+          row.internalNumber ? <React.Fragment><br /><span className='text-muted text-sm'>{row.internalNumber}</span></React.Fragment> : null
         }
         <div className='visible-xs'>
           {this.labelFormatter(cell, row)}

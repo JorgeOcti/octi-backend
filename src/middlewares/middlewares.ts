@@ -160,7 +160,7 @@ class Middlewares {
               path: 'team',
               select: ['name']
             }]);
-          logger.debug(`Middlewares.refreshSession: ${user?.email} create key ${userId} ${req?.originalUrl ?? 'system'}`);
+          logger.debug(`Middlewares.refreshSession: ${user?.email} generate key ${userId} ${req?.originalUrl ?? 'system'}`);
           if (user) {
             const userCache = JSON.stringify(user);
             await redisClient.set(userId, userCache, 'ex', 60);

@@ -172,7 +172,13 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
                       forms.map((item) => {
                         return (
                           <tr key={item._id}>
-                            <td className='middle'>{item.name}</td>
+                            <td
+                              className={`middle ${!item.active ? 'line-through' : ''}`}
+                            >
+                              <strong>
+                                {item.name}
+                              </strong>
+                            </td>
                             <td className='middle-center' style={{ paddingTop: '15px' }}>
                               <BootstrapSwitch
                                 checked={item.active}
@@ -184,7 +190,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
                                 }}
                               />
                             </td>
-                            <td className='middle-center'>
+                            <td className='middle-center text-muted'>
                               {item.triggers?.length ?? 0}
                             </td>
                             <ShowIf condition={canEdit}>
