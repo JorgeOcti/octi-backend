@@ -19,7 +19,7 @@ import {
   TOOGLE_TAB_TRANSMITTAL,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
   UPDATE_TRANSMITTAL_TRANSMITTAL,
-  TRANSPORT_MILESTONE_LOAD_STATUS,
+  TRANSPORT_MILESTONE_LOAD_STATUS, LOAD_TRANSMITTAL_RESUME,
 } from './transmittal.types';
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
@@ -352,6 +352,30 @@ export default class TransmittalActions {
           this.api.errorHandler(err);
         });
     });
+  }
+
+  public loadTransmittalResumeAction(resume: any[]): void{
+    this.dispatch({
+      type: LOAD_TRANSMITTAL_RESUME,
+      payload: {resume: resume}
+    })
+  }
+
+  public loadTransmittalResume(from: string, to: string): void {
+    this.dispatch((dispatch, getState) => {
+      const state = getState();
+      const transmittalActions = new TransmittalActions(dispatch);
+      transmittalActions.loadingAction(true);
+      this.api.getTransmittalResume(from, to).then((response: AxiosResponse) => {
+        transmittalActions.loadTransmittalResumeAction(response.data.data);
+        transmittalActions.loadingAction(false);
+      })
+        .catch((err: AxiosError) => {
+          transmittalActions.loadTransmittalResumeAction([]);
+          transmittalActions.loadingAction(false);
+          this.api.errorHandler(err);
+        });
+    })
   }
 
 }
