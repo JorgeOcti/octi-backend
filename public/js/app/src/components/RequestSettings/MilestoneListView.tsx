@@ -212,8 +212,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                         milestones.map((item) => {
                           return (
                             <tr key={item._id}>
-                              <td className='middle-center'>{item.order}</td>
-                              <td className='middle'>{item.name}</td>
+                              <td className='middle-center text-muted'>{item.order}</td>
+                              <td className='middle'><strong className='text-primary'>{item.name}</strong></td>
                               <td className='middle'>
                                 <select
                                   className='form-control select-sm font-12' value={item.kind}

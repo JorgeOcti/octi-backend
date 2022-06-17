@@ -184,7 +184,7 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                         status.map((item) => {
                           return (
                             <tr key={item._id}>
-                              <td className="middle">{item.name}</td>
+                              <td className="middle"><strong className='text-primary'>{item.name}</strong></td>
                               <td className="middle">{item.weigth}</td>
                               <td className="middle text-center">
                                 <i

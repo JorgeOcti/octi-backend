@@ -135,7 +135,7 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                           className={'background-transition'}
                         >
                           <td className="middle">
-                            {company.name} <br/>
+                            <strong className='text-primary'>{company.name}</strong> <br/>
                             <span className="text-sm text-muted">
                               {company?.businessName ?? ''} - {company?.rut ?? ''}
                             </span>

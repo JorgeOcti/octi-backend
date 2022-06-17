@@ -107,19 +107,21 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                         invoices.map((invoice)=>(
                           <tr key={invoice._id}>
                             <td className="middle">
-                              {
-                                moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY').toUpperCase()
-                              }
+                              <strong className='text-info'>
+                                {
+                                  moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY').toUpperCase()
+                                }
+                              </strong>
                             </td>
                             <td className="middle">
-                              {invoice.company.name} <br />
+                              <strong className='text-primary'>{invoice.company.name}</strong> <br />
                               <span className='text-sm text-muted'>
                               {invoice.company?.businessName ?? ''} - {invoice.company?.rut ?? ''}
                             </span>
                             </td>
-                            <td className="middle hidden-xs">{invoice.inventoryCars}</td>
-                            <td className="middle hidden-xs">{invoice.checklistCars}</td>
-                            <td className="middle hidden-xs">{invoice.requestCars}</td>
+                            <td className="middle text-muted hidden-xs">{invoice.inventoryCars}</td>
+                            <td className="middle text-muted hidden-xs">{invoice.checklistCars}</td>
+                            <td className="middle text-muted hidden-xs">{invoice.requestCars}</td>
                             <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>
                             <td className="middle">
                               <button

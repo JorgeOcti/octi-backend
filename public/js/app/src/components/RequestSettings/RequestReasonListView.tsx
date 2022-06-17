@@ -184,7 +184,7 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
                         reasons.map((reason) => {
                           return (
                             <tr key={reason._id}>
-                              <td>{reason.name}</td>
+                              <td><strong className='text-primary'>{reason.name}</strong></td>
                               <td className="middle-center">
                                 <i
                                   className={

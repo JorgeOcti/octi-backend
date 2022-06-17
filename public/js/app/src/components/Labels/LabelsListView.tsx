@@ -143,7 +143,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                           className={`background-transition ${!label.active ? 'text-muted' : ''}`}
                         >
                           <td className="middle text-ellipsis">
-                            {label.name}
+                            <strong className='text-primary'>{label.name}</strong>
                             <p
                               className={"text-muted text-sm"}
                               style={{marginBottom: "0"}}

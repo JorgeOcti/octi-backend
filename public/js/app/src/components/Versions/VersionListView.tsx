@@ -132,11 +132,13 @@ class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
                           id={`alert-${version._id}`}
                           className={'background-transition'}
                         >
-                          <td className="middle">{version.description}</td>
-                          <td className="middle text-center">{version.ios}</td>
-                          <td className="middle text-center">{version.android}</td>
-                          <td className="middle text-sm text-muted">{moment(version.createdAt).format('LLL')}</td>
                           <td className="middle">
+                            <strong className='text-primary'>{version.description}</strong>
+                          </td>
+                          <td className="middle text-center text-muted">{version.ios}</td>
+                          <td className="middle text-center text-muted">{version.android}</td>
+                          <td className="middle text-sm text-muted">{moment(version.createdAt).format('LLL')}</td>
+                          <td className="middle text-info">
                             {
                               version.createdBy ? version.createdBy.firstName + ' ' + version.createdBy.lastName : '-'
                             }

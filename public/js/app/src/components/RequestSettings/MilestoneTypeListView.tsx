@@ -186,7 +186,7 @@ class MilestoneTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                       milestoneTypes.map((item) => {
                         return (
                           <tr key={item._id}>
-                            <td className='middle'>{item.name}</td>
+                            <td className='middle'><strong className='text-primary'>{item.name}</strong></td>
                             {
                               canEdit ?
                                 <td

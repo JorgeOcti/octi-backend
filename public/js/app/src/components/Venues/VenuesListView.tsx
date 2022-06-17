@@ -31,8 +31,9 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import { debounce } from 'throttle-debounce';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
-
-// var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+import ShowIf from '../Utils/ShowIf';
+import CopyText from '../Utils/CopyText';
+import Row from '../Utils/Row';
 
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -40,29 +41,37 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   venues: IVenuesState;
 
   getVenuesAction(page: number): VenueReduxAction;
+
   createVenueAction(): VenueReduxAction;
+
   updateVenueAction(): VenueReduxAction;
+
   deleteVenueAction(id?: string): VenueReduxAction;
+
   changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
+
   changeSearchAction(searchText: string): VenueReduxAction;
+
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
 interface IStateType {
   error: Error | null;
-  exporing: boolean;
+  exporting: boolean;
+  tab: string;
 }
 
 declare let window: IWindow;
 
 class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   private socket: Socket;
   private map: any;
-  readonly state = {
+  readonly state: IStateType = {
     error: null,
-    exporing: false
+    exporting: false,
+    tab: 'list'
   };
 
   constructor(props: IPropsType) {
@@ -76,12 +85,25 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.deleteVenue = this.deleteVenue.bind(this);
     this.onChangeTab = this.onChangeTab.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.changeTab = this.changeTab.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
+  private changeTab(name: string): void {
+    // const { id } = this.props.match.params;
+    // if (name === 'detail') {
+    //   this.props.history.replace(`/inventory/${id}/detail/`);
+    // } else {
+    //   this.props.history.replace(`/inventory/${id}/`);
+    // }
+    this.setState({
+      tab: name
+    }, this.onChangeTab);
+  }
+
   public componentWillMount(): void {
-    const {pagination} = this.props.venues;
+    const { pagination } = this.props.venues;
     this.props.getVenuesAction(pagination.page);
 
     // socket
@@ -89,14 +111,14 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: { token: (window.user as any).token }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `venue-list-${window.user.team._id}`});
+      this.socket.emit('join', { room: `venue-list-${window.user.team._id}` });
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && data.updatedBy !== window.user._id) {
-        const {pagination} = this.props.venues;
+        const { pagination } = this.props.venues;
         this.props.getVenuesAction(pagination.page);
       }
     });
@@ -104,9 +126,9 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public exportExcel() {
     this.setState({
-      exporing: true
+      exporting: true
     });
-    this.trackClick("Exportar");
+    this.trackClick('Exportar');
     const api: ApiService = new ApiService();
     const instance = api.getInstance();
     instance.defaults.responseType = 'blob';
@@ -124,30 +146,30 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
         //   // the URL has been freed."
         //   window.navigator.msSaveBlob(blob, fileName);
         // } else {
-          const blobURL = URL.createObjectURL(blob);
-          const tempLink = document.createElement('a');
-          tempLink.style.display = 'none';
-          tempLink.href = blobURL;
-          tempLink.setAttribute('download', fileName);
-          // Safari thinks _blank anchor are pop ups. We only want to set _blank
-          // target if the browser does not support the HTML5 download attribute.
-          // This allows you to download files in desktop safari if pop up blocking
-          // is enabled.
-          if (typeof tempLink.download === 'undefined') {
-            tempLink.setAttribute('target', '_blank');
-          }
-          this.setState({
-            exporing: false
-          });
-          document.body.appendChild(tempLink);
-          tempLink.click();
-          document.body.removeChild(tempLink);
-          URL.revokeObjectURL(blobURL);
+        const blobURL = URL.createObjectURL(blob);
+        const tempLink = document.createElement('a');
+        tempLink.style.display = 'none';
+        tempLink.href = blobURL;
+        tempLink.setAttribute('download', fileName);
+        // Safari thinks _blank anchor are pop ups. We only want to set _blank
+        // target if the browser does not support the HTML5 download attribute.
+        // This allows you to download files in desktop safari if pop up blocking
+        // is enabled.
+        if (typeof tempLink.download === 'undefined') {
+          tempLink.setAttribute('target', '_blank');
+        }
+        this.setState({
+          exporting: false
+        });
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        URL.revokeObjectURL(blobURL);
         // }
       })
       .catch((err) => {
         this.setState({
-          exporing: false
+          exporting: false
         });
         if (!Axios.isCancel(err)) {
           swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
@@ -157,30 +179,33 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private onChangeTab() {
 
-    const {allVenues: venues} = this.props.venues;
+    const { allVenues: venues } = this.props.venues;
 
     const geojson = {
       type: 'FeatureCollection',
       features: venues
-        .filter((venue)=>(venue.lng && venue.lat))
+        .filter((venue) => (venue.lng && venue.lat))
         .map((venue: any) => {
-        return {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [venue.lng, venue.lat]
-          },
-          properties: {
-            title: 'Sucursal',
-            name: venue.name,
-            logo: venue.company.marker && venue.company.marker.hasOwnProperty('url') ? `url("${venue.company.marker.url}")` : 'url("/static/images/files/pin_osa.svg")'
-          }
-        }
-      })
+          return {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [venue.lng, venue.lat]
+            },
+            properties: {
+              title: 'Sucursal',
+              name: venue.name?.toUpperCase(),
+              company: venue.company?.name?.toUpperCase(),
+              logo: venue.company.marker?.url?.length
+                ? `url("${venue.company.marker.url}")`
+                : 'url("/static/images/files/pin_osa.svg")'
+            }
+          };
+        })
     };
 
     const $map = this.map;
-    $('#map').css('width', $('#tab_2').width() as any);
+    // $('#map').css('width', $('#tab_2').width() as any);
     const bounds = new mapboxgl.LngLatBounds();
     geojson.features.forEach((marker) => {
 
@@ -193,22 +218,21 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       el.style.width = '50px';
       el.style.height = '50px';
       el.style.borderRadius = '50p%';
-      el.style.cursor = 'pointer%';
+      el.style.cursor = 'pointer';
 
       // make a marker for each feature and add to the map
-      if(Math.abs(marker.geometry.coordinates[0]) > 0.1) // skip sucursales sin lat, lng
-      {
+      if (Math.abs(marker.geometry.coordinates[0]) > 0.1) {
         new mapboxgl.Marker(el)
           .setLngLat((marker.geometry.coordinates as [number, number]))
-          .setPopup(new mapboxgl.Popup({offset: 25}).setHTML(`<p>${marker.properties.name}</p>`))
+          .setPopup(new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`<strong>${marker.properties.name}</strong><br />${marker.properties.company}`))
           .addTo($map);
 
         bounds.extend((marker.geometry.coordinates as [number, number]));
       }
     });
     $map.resize();
-    $map.fitBounds(bounds);
-
+    $map.fitBounds(bounds, {padding: 100});
   }
 
   public componentDidMount() {
@@ -230,13 +254,13 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if(this.props.venues.pagination !== prevProps.venues.pagination){
+    if (this.props.venues.pagination !== prevProps.venues.pagination) {
       window.scrollTo(0, 0);
     }
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -251,178 +275,218 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {exporing} = this.state;
-    const {loading, venues, pagination, searchText} = this.props.venues;
+    const { exporting, tab } = this.state;
+    const { loading, venues, pagination, searchText } = this.props.venues;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.4" cAction="Listado">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Sucursales <small>{pagination.count}</small></h3>
-              <div className="box-tools pull-right">
+      <AppContainer title='' cMenu='10' cSubMenu='10.4' cAction='Listado'>
+        <section className='content'>
+          <Row>
+            <div className='col-md-12 col-lg-12'>
+              <div className='box box-solid'>
+                <ul className='nav nav-pills nav-justified no-padding'>
+                  <li className={tab === 'list' ? 'no-margin active' : 'no-margin'}>
+                    <a
+                      href='javascript:void(0);'
+                      className={tab === 'list' ? 'background-transition' : ''}
+                      style={{ borderTop: '0', marginBottom: '0' }}
+                      onClick={() => this.changeTab('list')}
+                    >Sucursales</a>
+                  </li>
+                  <li className={tab === 'map' ? 'no-margin active' : 'no-margin'}>
+                    <a
+                      className={tab === 'map' ? 'background-transition' : ''}
+                      href='javascript:void(0);'
+                      style={{ borderTop: '0', marginBottom: '0' }}
+                      onClick={() => this.changeTab('map')}
+                    >Mapa</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Row>
+
+          <div className={`box ${tab === 'list' ? '' : 'hidden'}`}>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Sucursales <small>{pagination.count}</small></h3>
+              <div className='box-tools pull-right'>
                 {
                   hasPermission(window.user, 'addVenue') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createVenue}><i className="fa fa-plus" />  Crear sucursal</button>
+                    <button className='btn btn-sm btn-success' onClick={this.createVenue}><i className='fa fa-plus' /> Crear sucursal</button>
                     : null
                 }
                 <button
-                  className="btn btn-sm btn-primary  hidden-xs"
+                  className='btn btn-sm btn-primary  hidden-xs'
                   onClick={this.exportExcel}
-                  disabled={exporing}
-                  style={{marginLeft: '5px'}}
+                  disabled={exporting}
+                  style={{ marginLeft: '5px' }}
                 >
                   {
-                    exporing ?
+                    exporting ?
                       <React.Fragment>
-                        <i className="fa fa-spin fa-spinner"/> Exportando
+                        <i className='fa fa-spin fa-spinner' /> Exportando
                       </React.Fragment>
                       : <React.Fragment>
-                        <i className="fa fa-fw fa-download"/> Exportar
+                        <i className='fa fa-fw fa-download' /> Exportar
                       </React.Fragment>
                   }
                 </button>
               </div>
             </div>
-            <div className="box-body no-padding">
+            <div className='box-body no-padding'>
               <div className='row'>
-                        <div className='col-md-offset-8 col-md-4'>
-                          <div className='input-group input-group-sm'
-                               style={{ padding: '10px' }}
-                          >
-                            <input
-                              type='text'
-                              value={searchText}
-                              className='form-control pull-right'
-                              onChange={this.onChangeSearch}
-                              placeholder='Buscar' />
-                            <div className='input-group-btn'>
-                              <button className='btn btn-default'><i className='fa fa-search' /></button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-              <div className="nav-tabs-custom">
-                <ul className="nav nav-tabs">
-                  <li className="active">
-                    <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
-                  </li>
-                  <li>
-                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
-                  </li>
-                </ul>
-                <div className="tab-content">
-                  <div className='tab-pane active' id='tab_1'>
-                    <div className='box-body table-responsive no-padding'>
-                      <table className='table table-andes table-striped'>
-                        <thead>
-                        <tr>
-                          <th style={{width: '40%'}} className="middle">Nombre</th>
-                          <th style={{width: '10%'}} className="middle">Código</th>
-                          <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
-                          <th style={{width: '10%'}} className="middle">Asignaciones</th>
-                          <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
-                          <th style={{width: '15%'}} className="middle hidden-xs">Modificado</th>
-                          {
-                            hasPermission(window.user, 'changeVenue') ?
-                              <th style={{width: '1%'}} className="width-10"/> : null
-                          }
-                          {
-                            hasPermission(window.user, 'deleteVenue') ?
-                              <th style={{width: '1%'}} className="width-10"/> : null
-                          }
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {
-                          venues.map((venue: IVenue) => {
-                            const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
-                            return (
-                              <tr
-                                key={venue._id}
-                                id={`venue-${venue._id}`}
-                                className={'background-transition'}
-                              >
-                                <td className="middle">{venue.name}<br/>
-                                  {
-                                    venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
-                                  }
-                                </td>
-                                <td className="middle text-sm text-muted">{venue.code}</td>
-                                <td className="middle-center hidden-xs">
-                                  {
-                                    venue.type === 'distributor' ?
-                                      <i className="fa fa-check-circle text-green"/>
-                                      : <i className="fa fa-times-circle text-blue"/>
-                                  }
-                                </td>
-                                <td className="middle text-sm text-muted">
-                                  Usuarios: {venue.users ? venue.users.length : 0}<br/>
-                                  Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
-                                </td>
-                                <td className="middle  text-sm text-muted">
-                                  lat: {venue.lat}<br />lng: {venue.lng}</td>
-                                <td className="middle hidden-xs text-sm text-muted">
-                                  {
-                                    moment(venue.updatedAt).format('LLL')
-                                  }
-                                </td>
-                                {
-                                  hasPermission(window.user, 'changeVenue') ?
-                                    <td
-                                      className="middle text-blue pointer"
-                                      onClick={() => this.updateVenue(venue)}>
-                                      <i className="fa fa-pencil"/>
-                                    </td> : null
-                                }
-                                {
-                                  hasPermission(window.user, 'deleteVenue') ?
-                                    <td
-                                      className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
-                                      onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
-                                    >
-                                      <i className="fa fa-minus-circle"/>
-                                    </td> : null
-                                }
-                              </tr>
-                            );
-                          })
-                        }
-                        </tbody>
-                      </table>
+                <div className='col-md-12'>
+                  <div className='input-group input-group-sm'
+                       style={{ padding: '10px' }}
+                  >
+                    <input
+                      type='text'
+                      value={searchText}
+                      className='form-control pull-right'
+                      onChange={this.onChangeSearch}
+                      placeholder='Buscar' />
+                    <div className='input-group-btn'>
+                      <button className='btn btn-default'><i className='fa fa-search' /></button>
                     </div>
-                  </div>
-                  <div className="tab-pane" id="tab_2">
-                    <div
-                      id="map"
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        height: '80vh'
-                      }}
-                    />
                   </div>
                 </div>
               </div>
+              <div className='box-body no-padding'>
+                  <table className='table table-andes table-striped'>
+                    <thead>
+                    <tr>
+                      <th style={{ width: '40%' }} className='middle'>Nombre</th>
+                      <th style={{ width: '10%' }} className='middle hidden-xs'>Código</th>
+                      <th style={{ width: '10%' }} className='middle-center hidden-xs'>Distribuidor</th>
+                      <th style={{ width: '10%' }} className='middle hidden-xs'>Asignaciones</th>
+                      <th style={{ width: '10%' }} className='middle-center hidden-xs'>Ubicación</th>
+                      <th style={{ width: '15%' }} className='middle hidden-xs'>Modificado</th>
+                      {
+                        hasPermission(window.user, 'changeVenue') ?
+                          <th style={{ width: '1%' }} className='width-10' /> : null
+                      }
+                      {
+                        hasPermission(window.user, 'deleteVenue') ?
+                          <th style={{ width: '1%' }} className='width-10' /> : null
+                      }
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {
+                      venues.map((venue: IVenue) => {
+                        const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
+                        return (
+                          <tr
+                            key={venue._id}
+                            id={`venue-${venue._id}`}
+                            className={'background-transition'}
+                          >
+                            <td className='middle'>
+                              <CopyText value={`${venue.name?.toUpperCase()}`}>
+                                <strong className='text-primary'>
+                                  {venue.name?.toUpperCase()}
+                                </strong>
+                              </CopyText>
+                              <br />
+                              {
+                                venue.company ? <span className={'text-sm text-muted'}>{venue.company.name?.toUpperCase()}</span> : null
+                              }
+                            </td>
+                            <td className='middle text-sm text-muted  hidden-xs'>{venue.code}</td>
+                            <td className='middle-center hidden-xs'>
+                              {
+                                venue.type === 'distributor' ?
+                                  <i className='fa fa-check-circle text-green' />
+                                  : <i className='fa fa-times-circle text-blue' />
+                              }
+                            </td>
+                            <td className='middle text-sm text-muted  hidden-xs'>
+                              Usuarios: {venue.users ? venue.users.length : 0}<br />
+                              Revisiones: {venue.participants ? venue.participants.length : 0}<br />
+                            </td>
+                            <td className='middle text-sm text-muted hidden-xs'>
+                              lat: {venue.lat}<br />lng: {venue.lng}</td>
+                            <td className='middle hidden-xs text-sm text-muted'>
+                              {
+                                moment(venue.updatedAt).format('LLL')
+                              }
+                            </td>
+                            {
+                              hasPermission(window.user, 'changeVenue') ?
+                                <td
+                                  className='middle text-blue pointer'
+                                  onClick={() => this.updateVenue(venue)}>
+                                  <i className='fa fa-pencil' />
+                                </td> : null
+                            }
+                            {
+                              hasPermission(window.user, 'deleteVenue') ?
+                                <td
+                                  className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
+                                  onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
+                                >
+                                  <i className='fa fa-minus-circle' />
+                                </td> : null
+                            }
+                          </tr>
+                        );
+                      })
+                    }
+                    </tbody>
+                  </table>
+                </div>
             </div>
             {
               pagination.pages > 1 &&
-              <div className="box-footer text-right">
+              <div className='box-footer text-right'>
                 <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
               </div>
             }
             {
               loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
               </div>
             }
+          </div>
+
+          <div className={`box ${tab === 'map' ? '' : 'hidden'}`}>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Sucursales <small>{pagination.count}</small></h3>
+              <div className='box-tools pull-right'>
+                <button
+                  className='btn btn-sm btn-primary  hidden-xs'
+                  onClick={this.exportExcel}
+                  disabled={exporting}
+                  style={{ marginLeft: '5px' }}
+                >
+                  {
+                    exporting ?
+                      <React.Fragment>
+                        <i className='fa fa-spin fa-spinner' /> Exportando
+                      </React.Fragment>
+                      : <React.Fragment>
+                        <i className='fa fa-fw fa-download' /> Exportar
+                      </React.Fragment>
+                  }
+                </button>
+              </div>
+            </div>
+            <div className='box-body no-padding'>
+              <div
+                id='map'
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '70vh'
+                }}
+              />
+            </div>
           </div>
           <ModalView />
         </section>
       </AppContainer>
     );
   }
-
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
@@ -454,16 +518,16 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     });
     this.props.loadDataAction(
       'Agregar Sucursal',
-      <VenueFormView/>,
+      <VenueFormView />,
       <React.Fragment>
-        <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateVenue}>Grabar</button>
+        <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
+        <button type='button' className='btn btn-sm btn-primary' onClick={this.processCreateVenue}>Grabar</button>
       </React.Fragment>
     );
   }
 
   private processCreateVenue(): void {
-    const {tempVenue} = this.props.venues;
+    const { tempVenue } = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal!('Agregar sucursal', 'El nombres es requerido', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
@@ -486,7 +550,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       type: venue.type ? venue.type : 'receiver',
       sendTo: venue.sendTo ? venue.sendTo : [],
       sendToDays: venue.sendToDays ? venue.sendToDays : [],
-      shippingMaxDays : venue.shippingMaxDays,
+      shippingMaxDays: venue.shippingMaxDays,
       receiveFrom: venue.receiveFrom ? venue.receiveFrom : [],
       responsible: venue.responsible ? venue.responsible : [],
       shippingCarriers: venue.shippingCarriers ? venue.shippingCarriers : [],
@@ -496,14 +560,14 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       'Editar Sucursal',
       <VenueFormView update={true} />,
       <React.Fragment>
-        <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
+        <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
+        <button type='button' className='btn btn-sm btn-primary' onClick={this.processUpdateVenue}>Editar</button>
       </React.Fragment>
     );
   }
 
   private processUpdateVenue(): void {
-    const {tempVenue} = this.props.venues;
+    const { tempVenue } = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal!('Editar sucursal', 'El nombres es requerido', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
@@ -545,7 +609,7 @@ const mapStateToProps = (state: { venues: IVenuesState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getVenuesAction: (page: number) => dispatch(getVenuesAction(page)),
@@ -558,4 +622,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{venues: IVenuesState}, {dispatch: any}, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);
+export default connect<{ venues: IVenuesState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);

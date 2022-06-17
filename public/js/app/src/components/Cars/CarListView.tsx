@@ -104,7 +104,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className='box-body no-padding'>
               <div className='row'>
-                <div className='col-md-offset-8 col-md-4'>
+                <div className='col-md-12'>
                   <div
                     className='input-group input-group-sm'
                     style={{ padding: '10px' }}

@@ -749,7 +749,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-md-12 col-lg-12'>
               <div className='box box-solid'>
                 <ul className='nav nav-pills nav-justified'>
-                  <li className={tab === 'summary' ? 'active' : ''}>
+                  <li className={tab === 'summary' ? 'no-margin active' : 'no-margin'}>
                     <a
                       href='javascript:void(0);'
                       className={tab === 'summary' ? 'background-transition' : ''}
@@ -757,7 +757,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       onClick={() => this.changeTab('summary')}
                     >Consolidado</a>
                   </li>
-                  <li className={tab === 'detail' ? 'active' : ''}>
+                  <li className={tab === 'detail' ? 'no-margin active' : 'no-margin'}>
                     <a
                       className={tab === 'detail' ? 'background-transition' : ''}
                       href='javascript:void(0);'
@@ -1184,7 +1184,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                   </Row>
                 </div>
                 {
-                  loadingDetail &&
+                  carsTable.length === 0 && loadingDetail &&
                   <div className='overlay'>
                     <i className='fa fa-spinner fa-spin text-purple' />
                   </div>

@@ -208,9 +208,9 @@ class DashboardStatsListView extends TrackingBasePage<IPropsType, IStateType> {
                         id={`studio-${studio._id}`}
                         className={'background-transition'}
                       >
-                        <td className="middle">{studio.name}</td>
-                        <td className="middle">{DashboardTypesDictionary[studio.type]}</td>
-                        <td className="middle hidden-xs">{moment(studio.updatedAt).format('LLL')}</td>
+                        <td className="middle"><strong className='text-primary'>{studio.name}</strong></td>
+                        <td className="middle text-muted">{DashboardTypesDictionary[studio.type]}</td>
+                        <td className="middle text-sm text-muted hidden-xs">{moment(studio.updatedAt).format('LLL')}</td>
                         {
                           hasPermission(window.user, 'changeStatsDashboard') ?
                             <td

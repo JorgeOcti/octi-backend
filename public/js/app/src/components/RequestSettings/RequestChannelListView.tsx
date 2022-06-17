@@ -182,7 +182,7 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
                         channels.map((item) => {
                           return (
                             <tr key={item._id}>
-                              <td className="middle">{item.name}</td>
+                              <td className="middle"><strong className='text-primary'>{item.name}</strong></td>
                               {
                                 canEdit ?
                                   <td
