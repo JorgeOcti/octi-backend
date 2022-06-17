@@ -74,7 +74,6 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td
           className={'middle text-primary'}
-
         >
           <CopyText value={transmittalItem.car.vin}>
             <strong
@@ -88,7 +87,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         <td className={'middle'}>
           <strong className={"text-muted"}>{transmittalItem.car.brand}</strong><br />
           <span className={"text-muted"}>{transmittalItem.car.denomination}</span><br />
-          <span className={"text-primary"}>{transmittalItem.car.color}</span>
+          <span className={"text-info"}>{transmittalItem.car.color}</span>
         </td>
         <td className={'middle-center'}>
           <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.car.invoice}>

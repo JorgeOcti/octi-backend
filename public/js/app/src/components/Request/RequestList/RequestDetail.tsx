@@ -117,7 +117,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             </div>
           </ShowIf>
           <ShowIf condition={this.props.requests.requestItemsById.hasOwnProperty(request._id)}>
-            <table className='table table-hover'>
+            <table className='table table-xd table-hover'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '28px' }} />

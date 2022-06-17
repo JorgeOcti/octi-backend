@@ -190,7 +190,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 )
             }
           </div>
-          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 text-sm text-muted'>
             {transmittal.items.length} unidades.
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
@@ -308,17 +308,17 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         </div>
         <ShowIf condition={open}>
           <div className='table-transmittal'>
-            <table className='table table-hover m-0'>
+            <table className='table table-hover m-0 table-xs'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
-                <th className='middle' style={{ width: '28px' }}>SOL</th>
-                <th className='middle' style={{ width: '150px' }}>VIN</th>
-                <th className='middle' style={{ width: '160px' }}>Descripción</th>
-                <th className='middle' style={{ width: '70px' }}>Factura</th>
-                <th className='middle' style={{ width: '70px' }}>Partida</th>
-                <th className='middle' style={{ width: '70px' }}>BL</th>
-                <th className='middle' style={{ minWidth: '100px' }}>Origen</th>
-                <th className='middle' style={{ minWidth: '100px' }}>Destino</th>
+                <th className='middle' style={{ width: '30px' }}>SOL</th>
+                <th className='middle' style={{ width: '145px' }}>VIN</th>
+                <th className='middle' style={{ minWidth: '120px' }}>Descripción</th>
+                <th className='middle' style={{ width: '90px' }}>Factura</th>
+                <th className='middle' style={{ width: '90px' }}>Partida</th>
+                <th className='middle' style={{ width: '90px' }}>BL</th>
+                <th className='middle' style={{ width: '100px' }}>Origen</th>
+                <th className='middle' style={{ width: '100px' }}>Destino</th>
                 <th className='middle' style={{ width: '105px' }}>Fecha emisión</th>
                 <th className='middle' style={{ width: '105px' }}>Fecha arribo</th>
                 <th className='middle' style={{ width: '20px' }}></th>
@@ -467,8 +467,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   private padNumber(n: number): string {
-    const s = '0000' + n;
-    return s.substr(s.length - 5);
+    const s = '' + n;
+    return s.substr(0, 5);
   }
 
 }

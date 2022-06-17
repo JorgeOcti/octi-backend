@@ -48,6 +48,7 @@ class UserFormChangePasswordView extends React.Component<IPropsType, IStateType>
               <input
                 type={this.state.type}
                 className="form-control"
+                name={"change-user"}
                 defaultValue={tempUser ? tempUser.password : undefined}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({password: e.target.value})}
               />

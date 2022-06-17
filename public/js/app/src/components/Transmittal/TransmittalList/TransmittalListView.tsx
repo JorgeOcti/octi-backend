@@ -73,10 +73,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
     const { exporing, number } = this.state;
     return (
-      <AppContainer title={
-        <div
+      <AppContainer title={''
+        /*<div
           className='input-group input-group-sm'
-          style={{ width: '300px' }}
+          style={{ width: '80%' }}
         >
           <input
             type='text'
@@ -85,7 +85,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               this.changeNumber(e.target.value);
             }}
             value={number}
-            placeholder='Buscar OT ej: 452' />
+            placeholder='Buscar OT por número ej: 1686' />
           <div className='input-group-btn'>
             <button
               className={`btn ${!!this.state.number?.length ? 'btn-primary' : 'btn-default'}`}
@@ -99,7 +99,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               </ShowIf>
             </button>
           </div>
-        </div>
+        </div>*/
       } cMenu='3' cSubMenu='3.4'>
         <section className='content'>
           <div className='box'>
@@ -129,6 +129,35 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className={`box-body transmittal-list`}>
+              <div className='row'>
+                <div className='col-md-12'>
+                  <div
+                    className='input-group input-group-sm'
+                  >
+                    <input
+                      type='text'
+                      className='form-control pull-right'
+                      onChange={(e) => {
+                        this.changeNumber(e.target.value);
+                      }}
+                      value={number}
+                      placeholder='Buscar OT por número ej: 1686' />
+                    <div className='input-group-btn'>
+                      <button
+                        className={`btn ${!!this.state.number?.length ? 'btn-primary' : 'btn-default'}`}
+                        onClick={!!this.state.number?.length ? () => {
+                          this.props.history.replace(`/transmittals/`);
+                          this.changeNumber('');
+                        } : undefined}
+                      >
+                        <ShowIf condition={!!this.state.number?.length} alternative={<i className='fa fa-search' />}>
+                          <i className='fa fa-close' />
+                        </ShowIf>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className='table-responsive'>
                 <ShowIf condition={data.length > 0}>
                   <>
@@ -137,7 +166,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                         className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
                         onClick={() => this.changeOrder('_id')}
                       >
-                        <strong>ID</strong> <i
+                        <strong>OT Nº</strong> <i
                         className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
@@ -150,13 +179,13 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                         <strong>Transportista</strong>
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                        <strong>Nº Unidades</strong>
+                        <strong>Carga</strong>
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                         <strong>Tipo</strong>
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                        <strong>Documentos</strong>
+                        <strong>Docs</strong>
                       </div>
                       {
                         longestMilestones.map((milestone: IMilestone, index) => {

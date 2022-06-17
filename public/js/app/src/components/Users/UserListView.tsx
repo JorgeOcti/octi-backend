@@ -237,6 +237,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       value={searchText}
                       className='form-control pull-right'
                       onChange={this.onChangeSearch}
+                      name={"search-user"}
                       placeholder='Buscar' />
                     <div className='input-group-btn'>
                       <button className='btn btn-default'><i className='fa fa-search' /></button>

@@ -196,7 +196,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
               <ShowIf condition={requests.length > 0}>
                 <div className='row request bg-primary'>
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted' onClick={() => this.changeOrder('_id')}>
-                    <strong>ID</strong> <i
+                    <strong>SOL Nº</strong> <i
                     className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1'>
