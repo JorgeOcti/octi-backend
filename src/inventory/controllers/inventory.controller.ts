@@ -1876,7 +1876,7 @@ class InventoryController {
     if (venues && venues.length) {
       venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v.toString()));
     }
-    const total = 6;
+    const total = 18;
     try {
       const inventory: any = await InventoryCar.aggregate([{
         $match: {

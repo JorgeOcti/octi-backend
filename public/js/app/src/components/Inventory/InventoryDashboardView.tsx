@@ -98,10 +98,11 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-header with-border'>
               <h3 className='box-title'>Dashboard de inventarios</h3>
             </div>
-            <div className='box-body'>
+            <div className='box-body no-padding'>
               <Row>
-                <div className='col-md-12'>
+                <div className='col-md-offset-8 col-md-4' style={{ padding: '20px 40px' }}>
                   <BootstrapSelect
+                    sm={true}
                     noneSelectedText='Todas'
                     displayItems={2}
                     selectedText='sucursales seleccionadas.'
@@ -114,7 +115,9 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
                     }))}
                     onClick={this.filterVenues}
                   />
-                  <div id='inventory-monthly-report' style={{ height: '50vh', maxWidth: '100%' }} />
+                </div>
+                <div className='col-md-12' style={{padding: '0 0 15px 0'}}>
+                   <div id='inventory-monthly-report' style={{ height: '65vh', maxWidth: '100%' }} />
                 </div>
               </Row>
             </div>
@@ -190,70 +193,116 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
-          type: 'shadow'
+          type: 'cross',
+          label: {
+            backgroundColor: '#6a7985'
+          }
         }
       },
       legend: {
-        x: 'center',
-        bottom: 50,
+        // x: 'center',
+        // bottom: 50,
         data: [inventorySettings.found, inventorySettings.leftover, inventorySettings.missing, inventorySettings.pending, inventorySettings.reported]
       },
       calculable: true,
       xAxis: [
         {
           type: 'category',
-          axisTick: { show: false },
+          boundaryGap: false,
           data: xSerie
         }
       ],
-      yAxis: [
-        {
-          type: 'value'
+       yAxis: {
+        // minInterval: 1,
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
         }
-      ],
+      },
       grid: {
-        top: 30,
-        bottom: 100,
-        // left
-        x: 0,
-        // right
-        x2: 10,
+        left: '3%',
+        right: '4%',
+        bottom: 80,
         containLabel: true
+      },
+      dataZoom: {
+        show: true,
+        realtime: true,
+        start: 50,
+        end: 100
       },
       series: [
         {
           name: inventorySettings.found,
-          type: 'bar',
-          barMaxWidth: 100,
-          label: labelOption,
+          type: 'line',
+          stack: 'Total',
+          // barMaxWidth: 100,
+          // label: labelOption,
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
           data: found
         },
         {
           name: inventorySettings.leftover,
-          type: 'bar',
-          barMaxWidth: 100,
-          label: labelOption,
+          type: 'line',
+          stack: 'Total',
+          // barMaxWidth: 100,
+          // label: labelOption,
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+
           data: leftover
         },
         {
           name: inventorySettings.missing,
-          type: 'bar',
-          barMaxWidth: 100,
-          label: labelOption,
+          type: 'line',
+          stack: 'Total',
+          // barMaxWidth: 100,
+          // label: labelOption,
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+
           data: missing
         },
         {
           name: inventorySettings.pending,
-          type: 'bar',
-          barMaxWidth: 100,
-          label: labelOption,
+          type: 'line',
+          stack: 'Total',
+          // barMaxWidth: 100,
+          // label: labelOption,
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+
           data: pending
         },
         {
           name: inventorySettings.reported,
-          type: 'bar',
-          barMaxWidth: 100,
-          label: labelOption,
+          type: 'line',
+          stack: 'Total',
+          // barMaxWidth: 100,
+          // label: labelOption,
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+
           data: reported
         }
       ]

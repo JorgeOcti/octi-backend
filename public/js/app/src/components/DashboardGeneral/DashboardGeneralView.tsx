@@ -316,7 +316,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
       },
       legend: {
         x: 'center',
-        bottom: 50,
+        bottom: 60,
         // y: 'bottom',
         data: dataLabels
       },
