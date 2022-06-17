@@ -147,27 +147,29 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
                             </div>
                           </Row>
                           <Row>
-                            <div className='col-lg-3 col-md-4 col-xs-12 text-muted text-detail-user'>
-                              <p>
-                                <i className='fa fa-fw fa-clock-o text-success' />Creado el {moment(inventory.createdAt).format('LLL')}<br />
-                                {
-                                  inventory.createdBy ?
-                                    <React.Fragment><i className='fa fa-fw fa-user' />Por {inventory.createdBy.fullName}<br /></React.Fragment>
-                                    : null
-                                }
-                                {
-                                  inventory.finalizedAt ?
-                                    <React.Fragment>
-                                      <i className='fa fa-fw fa-clock-o text-danger' />Finalizado
-                                      el {moment(inventory.finalizedAt).format('LLL')}<br />
-                                      {
-                                        inventory.finalizedBy ? <React.Fragment><i className='fa fa-fw fa-user' />Por {inventory.finalizedBy.fullName}
-                                        </React.Fragment> : null
-                                      }
-                                    </React.Fragment>
-                                    : null
-                                }
-                              </p>
+                            <div className='col-lg-3 col-md-4 col-xs-12'>
+                              <div className='text-detail-user'>
+                                <div className={"detail-info  text-muted"}>
+                                  <i className='fa fa-fw fa-clock-o text-success' />Creado el {moment(inventory.createdAt).format('LLL')}<br />
+                                  {
+                                    inventory.createdBy ?
+                                      <React.Fragment><i className='fa fa-fw fa-user' />Por {inventory.createdBy.fullName}<br /></React.Fragment>
+                                      : null
+                                  }
+                                  {
+                                    inventory.finalizedAt ?
+                                      <React.Fragment>
+                                        <i className='fa fa-fw fa-clock-o text-danger' />Finalizado
+                                        el {moment(inventory.finalizedAt).format('LLL')}<br />
+                                        {
+                                          inventory.finalizedBy ? <React.Fragment><i className='fa fa-fw fa-user' />Por {inventory.finalizedBy.fullName}
+                                          </React.Fragment> : null
+                                        }
+                                      </React.Fragment>
+                                      : null
+                                  }
+                                </div>
+                              </div>
                             </div>
                             <div className='col-lg-7 col-md-8'>
                               <div className='row right-border'>
@@ -269,7 +271,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className='box-footer'>
                 <div className='row'>
                   <div className='col-md-6' style={{ padding: '20px 15px' }}>
-                      <span className='react-bootstrap-table-pagination-total text-ellipsis'>
+                      <span className='react-bootstrap-table-pagination-total text-muted text-ellipsis'>
                         &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 10 + 1} al {(pagination.page) * 10} de {pagination.count} registros.
                             </span>
                   </div>

@@ -1,15 +1,21 @@
 .inventory
-  border: 1px solid #cccccc4d
-  padding: 10px
+  //display: flex
+  border-bottom: 1px solid #f8f7f7
+  &:last-child
+    border-bottom: 0
+  padding: 15px 5px
   margin-bottom: 10px
   h4
     margin-top: 3px
     margin-bottom: 10px
   .text-detail-user
-    p
+    display: flex
+    flex: 1
+    min-height: 80px
+    .detail-info
+      align-self: flex-end
       font-size: 80%
-      margin-top: 40px
-      margin-bottom: 5px
+
   .btn-group
     margin-top: 10px
 
