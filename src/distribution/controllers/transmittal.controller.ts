@@ -1165,6 +1165,46 @@ private getForm(filter: any): Promise<IFormModel> {
     }
   }
 
+  // public async transmittalResume(req: IRequest, res: Response) {
+  //   const team = req.user.team._id;
+  //   const {from, to} = req.query;
+  //
+  //   let transmittals = await Transmittal.aggregate([{$match: {
+  //       team: team,
+  //       createdAt:{
+  //         $gte:from,
+  //         $lt:to
+  //       }
+  //     }}, {$lookup: {
+  //       from: 'transmittalitems',
+  //       localField: '_id',
+  //       foreignField: 'transmittal',
+  //       as: 'items'
+  //     }}, {$lookup: {
+  //       from: 'cars',
+  //       localField: 'items.car',
+  //       foreignField: '_id',
+  //       as: 'car_data'
+  //     }}, {$lookup: {
+  //       from: 'transmittalfiles',
+  //       localField: 'evidenceFullLoad',
+  //       foreignField: '_id',
+  //       as: 'evidenceFullLoad'
+  //     }}, {$lookup: {
+  //       from: 'participants',
+  //       localField: '_id',
+  //       foreignField: 'transmittal',
+  //       as: 'participant'
+  //     }}, {$lookup: {
+  //       from: 'participants',
+  //       localField: 'items._id',
+  //       foreignField: 'transmittalItem',
+  //       as: 'participantItems'
+  //     }}]);
+  //
+  //
+  // }
+
   public async downloadTransmittalFiles(req: IRequest, res: Response) {
     const { id } = req.params;
     const team = req.user.team._id;

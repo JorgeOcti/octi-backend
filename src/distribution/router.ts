@@ -15,6 +15,7 @@ distributionRouter.get('/transmittals/', isLoggedIn, TransmittalController.index
 distributionRouter.get('/transmittals/export-xls/', isJWTAuthenticated, TransmittalController.xlsExport);
 distributionRouter.get('/transmittals/create/', isLoggedIn, TransmittalController.index);
 distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
+distributionRouter.get('/transmittals/dashboard/', isLoggedIn, TransmittalController.index);
 distributionRouter.get('/transmittals/:id/download-files/', isLoggedIn, TransmittalController.downloadTransmittalFiles);
 
 
@@ -34,6 +35,8 @@ distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, Transm
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDelete);
+distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, TransmittalItemController.apiList);
+
 
 distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
 distributionRouter.get('/transmittals/settings/milestone-type/', Middlewares.isLoggedIn, MilestoneController.index);
