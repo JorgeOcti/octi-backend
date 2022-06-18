@@ -896,29 +896,29 @@ class RequestController {
           'updatedAt': 1
         }
       }];
-      const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
+      const requestsItemsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '20', 20),
+        limit: parseInt(pageSize ? pageSize : '20', 10),
         customLabels: this.aggregateCustomLabels,
         sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 },
         lean: true
       };
-      const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
-      if (options.page && requests.pages && requests.pages < options.page) {
+      const requestsItems = await RequestItem.aggregatePaginate(requestsItemsAggregate, options);
+      if (options.page && requestsItems.pages && requestsItems.pages < options.page) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
         });
       } else {
         return res.json({
-          count: requests.total,
-          pages: requests.pages,
-          hasPrevious: requests.hasPrevious,
-          hasNext: requests.hasNext,
+          count: requestsItems.total,
+          pages: requestsItems.pages,
+          hasPrevious: requestsItems.hasPrevious,
+          hasNext: requestsItems.hasNext,
           results: await RequestItem.aggregate([{
             $match: {
-              _id: { $in: requests.docs.map((d) => d._id) }
+              _id: { $in: requestsItems.docs.map((d) => d._id) }
             }
           }, ...aggregatePopulate]),
           status: 200
