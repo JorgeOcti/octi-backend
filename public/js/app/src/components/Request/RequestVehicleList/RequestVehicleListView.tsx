@@ -617,7 +617,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     <div className='row'>
                       <div className='col-md-6' style={{ padding: '20px 15px' }}>
                         <span className='react-bootstrap-table-pagination-total text-muted text-ellipsis'>
-                          &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                          &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 50 + 1} al {(pagination.page) * 50} de {pagination.count} registros.
                         </span>
                       </div>
                       <div className='col-md-6'>

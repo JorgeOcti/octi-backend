@@ -675,6 +675,7 @@ export default class ApiService {
     }: { page: number, orderBy?: string, orderType?: string, pageSize: number, filters: any }): AxiosPromise {
     let body: any = {
       page,
+      pageSize,
       filters
     };
     body = pageSize ? { ...body, pageSize } : body;

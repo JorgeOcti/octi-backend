@@ -248,6 +248,11 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
           // barMaxWidth: 100,
           // label: labelOption,
           areaStyle: {},
+          // label: {
+          //   show: true,
+          //   position: 'bottom',
+          //   color: '#444'
+          // },
           emphasis: {
             focus: 'series'
           },

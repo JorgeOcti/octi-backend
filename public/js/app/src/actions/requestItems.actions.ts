@@ -202,7 +202,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
     dispatch(cancelRequestItemsAction(api.getSource()));
     Axios
       .all([
-        api.getRequestItems({ page, orderBy, orderType, pageSize: 20, filters: state.requestItems.filters }),
+        api.getRequestItems({ page, orderBy, orderType, pageSize: 50, filters: state.requestItems.filters }),
         api.getReasons({ page: 1, pageSize: 200 }),
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),

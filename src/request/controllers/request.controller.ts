@@ -899,7 +899,7 @@ class RequestController {
       const requestsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10),
+        limit: parseInt(pageSize ? pageSize : '20', 20),
         customLabels: this.aggregateCustomLabels,
         sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 },
         lean: true
