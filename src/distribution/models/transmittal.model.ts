@@ -23,7 +23,7 @@ const transmittalTransporterSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const transmittalSchema = new mongoose.Schema<ITransmittal>({
+export const transmittalSchema = new mongoose.Schema<ITransmittal>({
   name: {
     type: String
   },

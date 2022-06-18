@@ -15,21 +15,21 @@ const dashboardItems = [{
   url: '/'
 }];
 
+dashboardItems.push({
+  id: '1.2',
+  icon: 'fa-circle-o text-blue',
+  text: 'Revisiones',
+  url: '/cars/'
+});
+
 if (hasPermission(window.user, 'viewCar')) {
   dashboardItems.push({
     id: '1.0',
-    icon: 'fa-circle-o text-blue',
+    icon: 'fa-circle-o text-green',
     text: 'Unidades',
     url: '/settings/cars/'
   });
 }
-
-dashboardItems.push({
-  id: '1.2',
-  icon: 'fa-circle-o text-green',
-  text: 'Revisiones',
-  url: '/cars/'
-});
 
 if (hasPermission(window.user, 'viewChecklistStudio')) {
   dashboardItems.push({
@@ -101,27 +101,27 @@ const distributionItems = [];
 if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
     id: '3.2',
-    icon: 'fa-circle-o text-blue',
+    icon: 'fa-circle-o text-red',
     text: 'Unidades',
     url: parseReplicableURL('/requests/vehicles/')
   });
 }
 
-if (hasPermission(window.user, 'viewTransmittal')) {
-  distributionItems.push({
-    id: '3.4',
-    icon: 'fa-circle-o text-red',
-    text: 'Transportes',
-    url: parseReplicableURL('/transmittals/')
-  });
-}
 
 if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
     id: '3.1',
-    icon: 'fa-circle-o text-green',
+    icon: 'fa-circle-o text-blue',
     text: 'Solicitudes',
     url: parseReplicableURL('/requests/')
+  });
+}
+if (hasPermission(window.user, 'viewTransmittal')) {
+  distributionItems.push({
+    id: '3.4',
+    icon: 'fa-circle-o text-green',
+    text: 'Transportes',
+    url: parseReplicableURL('/transmittals/')
   });
 }
 

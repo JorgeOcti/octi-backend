@@ -434,12 +434,12 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
                           <th
-                            className='middle'
+                            className='middle pointer'
                             style={{ width: '120px' }}
-                            // onClick={() => this.changeOrder('transmittal.transmittalNumber')}
+                            onClick={() => this.changeOrder('meta.transmittal.number')}
                           >
                             Transporte
-                            {/*<span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'transmittal.transmittalNumber' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                            <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'meta.transmittal.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                           </th>
                         </ShowIf>
                         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>

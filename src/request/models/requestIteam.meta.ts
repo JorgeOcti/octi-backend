@@ -6,6 +6,7 @@ class RequestItemMeta {
     this.processCar = this.processCar.bind(this);
     this.processVenue = this.processVenue.bind(this);
     this.processMeta = this.processMeta.bind(this);
+    this.processTransmittal = this.processTransmittal.bind(this);
   }
 
   public processUser(user: any) {
@@ -16,7 +17,8 @@ class RequestItemMeta {
       firstName: user.firstName,
       lastName: user.lastName,
       venue: user.venue,
-      email: user.email
+      email: user.email,
+      createdAt: user.createdAt
     };
   }
 
@@ -24,9 +26,11 @@ class RequestItemMeta {
     return {
       _id: request._id,
       number: request.number,
+      createdBy: request.createdBy,
       sellerText: request.sellerText,
       conectaID: request.conectaID,
-      advancePaymentInformation: request.advancePaymentInformation
+      advancePaymentInformation: request.advancePaymentInformation,
+      createdAt: request.createdAt
     };
   }
 
@@ -42,7 +46,8 @@ class RequestItemMeta {
       color: car.color,
       denomination: car.denomination,
       material: car.material,
-      property: car.property
+      property: car.property,
+      createdAt: car.createdAt
     };
   }
 
@@ -55,9 +60,25 @@ class RequestItemMeta {
     };
   }
 
-  public processMeta({ request, car, user, origin, destination, status }: any) {
+  public processTransmittal(transmittal: any) {
+    return {
+      _id: transmittal._id,
+      team: transmittal.team,
+      company: transmittal.company,
+      createdBy: transmittal.createdBy,
+      transporter: transmittal.transporter,
+      number: transmittal.number,
+      status: transmittal.status,
+      createdAt: transmittal.createdAt
+    };
+  }
+
+  public processMeta({ request, car, user, origin, destination, status, transmittal }: any) {
     if (request) {
       request = this.processRequest(request);
+    }
+    if (transmittal) {
+      transmittal = this.processTransmittal(transmittal);
     }
     if (car) {
       car = this.processCar(car);
@@ -72,7 +93,7 @@ class RequestItemMeta {
       destination = this.processVenue(destination);
     }
     return {
-      request, car, user, origin, destination, status
+      request, car, user, origin, destination, status, transmittal
     };
   }
 }

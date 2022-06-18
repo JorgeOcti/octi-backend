@@ -7,6 +7,7 @@ import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models
 import { requestSchema } from './request.model';
 import { baseRequestItemStatusSchema } from './';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { transmittalSchema } from '../../distribution/models/transmittal.model';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
@@ -19,6 +20,9 @@ const metaSchema = new mongoose.Schema({
   },
   request: {
     type: requestSchema
+  },
+  transmittal: {
+    type: transmittalSchema
   },
   user: {
     type: baseUserSchema
