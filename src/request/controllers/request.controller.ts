@@ -622,7 +622,7 @@ class RequestController {
     };
 
     const requestNumbers = filters.request
-      .replace(/[^0-9,]/g, '')
+      .replace(/[^0-9\-,]/g, '')
       .split(',')
       .filter((requestNumber: string) => (requestNumber.length));
 
@@ -659,7 +659,37 @@ class RequestController {
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
     }
     if (requestNumbers.length) {
-      extraQuery['meta.request.number'] = { $in: requestNumbers.map((requestNumber: any) => +requestNumber) };
+      // extraQuery['meta.request.code'] = { '$regex': requestNumber, '$options': 'i' };
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
+      }
+      requestNumbers.forEach((requestNumber: any) => {
+        if (requestNumber.includes('-') && requestNumber.split("-")[1].length) {
+          /*extraQuery.$or.push({
+            'code': {
+              $regex: requestNumber,
+              $options: 'i'
+            }
+          });*/
+          extraQuery.$or.push({
+            'code': requestNumber
+          });
+        } else {
+          try {
+            extraQuery.$or.push({
+              'meta.request.number': parseInt(requestNumber)
+            });
+          } catch (e) {
+
+          }
+        }
+      });
+      // extraQuery['meta.request.code'] = {
+      //   $or: requestNumbers.map((requestNumber: any) => ({
+      //     $regex: requestNumber,
+      //     $options: 'i'
+      //   }))
+      // };
     }
     if (filters.entry?.length) {
       extraQuery['meta.car.entry'] = { '$regex': filters.entry, '$options': 'i' };
@@ -753,7 +783,7 @@ class RequestController {
       }, {
         $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
       }, {
-        $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+        $unwind: { path: '$request', preserveNullAndEmptyArrays: true }
       }, {
         $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
       }, {
@@ -896,6 +926,8 @@ class RequestController {
           'updatedAt': 1
         }
       }];
+      logger.info(`RequestController.apiListItems: extraQuery ${JSON.stringify(extraQuery)}`);
+      logger.debug(`RequestController.apiListItems: baseAggregate ${JSON.stringify(baseAggregate)}`);
       const requestsItemsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),

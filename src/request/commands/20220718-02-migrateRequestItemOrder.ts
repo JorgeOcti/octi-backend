@@ -12,15 +12,17 @@ async function migrateRequestItemOrder() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-  mongoose.set('debug', true);
+  mongoose.set('debug', false);
   try {
-    const requests = await Request.find({ team: '5bf2de35caf8ef7096105cdd' }, { _id: true, number: true });
+    const requests = await Request
+      .find({}, { _id: true, number: true });
     for (const request of requests) {
-      const requestItems = await RequestItem.find({ request });
+      console.log('request', request.number)
+      const requestItems = await RequestItem.find({ request: request._id });
       let order = 0;
       for (const items of requestItems) {
         order++;
-        await RequestItem.updateMany({ _id: items._id }, {
+        await RequestItem.findOneAndUpdate({ _id: items._id }, {
           $set: {
             order,
             code: `${request.number}-${order}`
@@ -31,8 +33,8 @@ async function migrateRequestItemOrder() {
   } catch (e) {
     console.log('Ha ocurrido un error en migrateRequestItemOrder');
     console.log('error:', e);
+    await process.exit(1);
   }
-  await process.exit(1);
 }
 
 migrateRequestItemOrder();

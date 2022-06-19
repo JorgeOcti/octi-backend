@@ -42,7 +42,7 @@ const initialState: IRequestItemsState = {
     users: [],
     properties: [],
     status: [],
-    from: moment().subtract(6, 'months'),
+    from: moment().subtract(12, 'months'),
     to: null
   },
   options: {

@@ -4,7 +4,6 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import RequestItem from '../../request/models/requestItem.model';
 import requestItemsHooks from '../models/requestItem.hooks';
-import Request from '../models/request.model';
 
 async function metaRequests() {
   dotenv.config({
@@ -15,44 +14,42 @@ async function metaRequests() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', false);
   try {
-    const requestsCursor = Request
-      .find({}, {
-        _id: true,
-        createdAt: true
-      })
-      .batchSize(2)
-      .cursor();
+    const requestsItemsCursor = RequestItem
+      .aggregate([{
+        $project: {
+          _id: true,
+          request: true,
+          transmittal: true,
+          car: true,
+          createdBy: true,
+          origin: true,
+          destination: true,
+          status: true
+        }
+      }])
+      .allowDiskUse(true)
+      .cursor({ batchSize: 40 })
+      .exec();
 
-    requestsCursor.on('data', async (request) => {
+    requestsItemsCursor.on('data', async (requestITem: any) => {
       // console.log(request.createdAt)
-      const requestItems = await RequestItem.find({
-        request: request._id,
-        transmittal: {
-          $exists: true
-        }
-      }, {
-        request: true,
-        transmittal: true,
-        car: true,
-        createdBy: true,
-        origin: true,
-        destination: true,
-        status: true
-      });
-      for (const requestItem of requestItems) {
-        console.log(requestItem.transmittal);
-        try {
-          await requestItemsHooks.postFindOneAndUpdateHandler(requestItem);
-        } catch (e) {
-          console.log('error:', e);
-        }
+      try {
+        await requestItemsHooks.postFindOneAndUpdateHandler(requestITem);
+      } catch (e) {
+        console.log('error:', e);
       }
     });
-    requestsCursor.on('end', async () => {
-      process.exit(1);
+    requestsItemsCursor.on('end', async () => {
+      mongoose.set('debug', true);
+      console.log('Terminado');
+      // setTimeout(() => {
+      //   process.exit(1);
+      // }, 60000)
     });
   } catch (e) {
+    console.log(e);
     console.log('Ha ocurrido un error en metaRequests');
+    process.exit(1);
     console.log('error:', e);
   }
 }

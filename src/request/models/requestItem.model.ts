@@ -178,7 +178,18 @@ requestItemSchema.index({ reason: 1 });
 requestItemSchema.index({ transmittal: 1 });
 requestItemSchema.index({ transmittalitems: 1 });
 requestItemSchema.index({ createdBy: 1 });
+requestItemSchema.index({ createdAt: 1 });
 requestItemSchema.index({ items: 1 });
+requestItemSchema.index({
+  request: 1,
+  transmittal: 1,
+  car: 1,
+  createdBy: 1,
+  origin: 1,
+  destination: 1,
+  status: 1,
+  createdAt: -1
+});
 requestItemSchema.index({ 'request.channel': 1 });
 requestItemSchema.index({ 'request.createdBy': 1 });
 requestItemSchema.index({ 'meta.request.number': 1 });
