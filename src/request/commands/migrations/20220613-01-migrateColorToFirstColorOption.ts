@@ -2,9 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import { IRequestItemModel } from '../models';
-import { Car } from '../../app/models';
-import logger from '../../services/logger.service';
+import { IRequestItemModel } from '../../models';
+import { Car } from '../../../app/models';
+import logger from '../../../services/logger.service';
 
 async function migrateFirstColor() {
   dotenv.config({

@@ -46,7 +46,7 @@ class CarTracker {
             }
           }]);
         // logger.info(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
-        if (inventoryCar && inventoryCar.inventory && inventoryCar.inventoriedBy) {
+        if (inventoryCar && inventoryCar.inventory && inventoryCar.updatedAt && inventoryCar.inventoriedBy) {
           const { inventory, car, venue, venueFound, inventoriedBy, updatedAt, status } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;
           let history: Partial<IHistory> = {
@@ -190,48 +190,8 @@ class CarTracker {
           executedAt: executedAt
         };
         logger.info(`CarTracker.importIntoSystem history: ${JSON.stringify(history)}`);
-        await this.createHistory(history);
-        resolve({});
-      } catch (e) {
-        /* istanbul ignore next */
-        logger.error(e);
-        reject(e);
-      }
-    });
-  }
-
-  public async updateCurrentHistory(car: any) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        logger.debug(`CarTracker.updateCurrentHistory ${JSON.stringify(car)}`);
-        const lastHistory = await History
-          .findOne({
-            car
-          }, {
-            _id: true
-          }, {
-            sort: {
-              executedAt: -1
-            }
-          });
-        if (lastHistory) {
-          await History.updateMany({
-            car: car
-          }, {
-            $set: { current: false }
-          });
-          await History.updateOne({
-            _id: lastHistory._id
-          }, {
-            $set: { current: true }
-          });
-          await Car.updateOne({
-            _id: car
-          }, {
-            $set: {
-              event: lastHistory._id
-            }
-          });
+        if(executedAt){
+          await this.createHistory(history);
         }
         resolve({});
       } catch (e) {
@@ -305,6 +265,48 @@ class CarTracker {
     });
   }
 
+  public async updateCurrentHistory(car: any) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        logger.debug(`CarTracker.updateCurrentHistory ${JSON.stringify(car)}`);
+        const lastHistory = await History
+          .findOne({
+            car
+          }, {
+            _id: true
+          }, {
+            sort: {
+              executedAt: -1
+            }
+          });
+        if (lastHistory) {
+          await History.updateMany({
+            car: car
+          }, {
+            $set: { current: false }
+          });
+          await History.updateOne({
+            _id: lastHistory._id
+          }, {
+            $set: { current: true }
+          });
+          await Car.updateOne({
+            _id: car
+          }, {
+            $set: {
+              event: lastHistory._id
+            }
+          });
+        }
+        resolve({});
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
   private async createHistory(history: Partial<IHistory>) {
     return new Promise(async (resolve, reject) => {
       // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
@@ -316,6 +318,7 @@ class CarTracker {
         // this.processAlert(history);
         logger.debug(`CarTracker.createHistory history: ${JSON.stringify(history)}`);
         await new History(history).save();
+        // disable if create new database
         await this.updateCurrentHistory(history.car);
         resolve(history);
       } catch (e) {

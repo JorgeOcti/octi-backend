@@ -2,8 +2,8 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Team from "../models/team.model";
-import TeamSetting from "../models/teamSetting.model";
+import Team from "../../models/team.model";
+import TeamSetting from "../../models/teamSetting.model";
 
 async function createTeamSettings() {
   /*

@@ -2,8 +2,8 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Request from '../../request/models/request.model';
-import RequestItem from '../../request/models/requestItem.model';
+import Request from '../../models/request.model';
+import RequestItem from '../../models/requestItem.model';
 
 async function migrateSalfa() {
   dotenv.config({

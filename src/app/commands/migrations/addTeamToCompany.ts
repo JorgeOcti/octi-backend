@@ -2,9 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Company from '../models/company.model';
-import Team from '../models/team.model';
-import User from '../models/user.model';
+import Company from '../../models/company.model';
+import Team from '../../models/team.model';
+import User from '../../models/user.model';
 
 async function addTeamToCompany() {
   /*

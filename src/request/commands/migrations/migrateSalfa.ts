@@ -2,11 +2,11 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Team from '../../app/models/team.model';
-import RequestItem from '../../request/models/requestItem.model';
-import Request from '../../request/models/request.model';
+import Team from '../../../app/models/team.model';
+import RequestItem from '../../models/requestItem.model';
+import Request from '../../models/request.model';
 // import PaymentMethods from '../models/paymentMethod.model';
-import TeamSetting from '../../app/models/teamSetting.model';
+import TeamSetting from '../../../app/models/teamSetting.model';
 
 async function migrateSalfa() {
   dotenv.config({

@@ -2,14 +2,14 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Car from '../models/car.model';
-import InventoryCar from '../../inventory/models/inventoryCar.model';
-import RequestItem from '../../request/models/requestItem.model';
-import Participant from '../../form/models/participant.model';
-import StockCar from '../../inventory/models/stockCar.model';
-import Planning from '../../planning/models/planning.model';
-import TransmittalItem from '../../distribution/models/transmittalItem.model';
-import Team from '../models/team.model';
+import Car from '../../models/car.model';
+import InventoryCar from '../../../inventory/models/inventoryCar.model';
+import RequestItem from '../../../request/models/requestItem.model';
+import Participant from '../../../form/models/participant.model';
+import StockCar from '../../../inventory/models/stockCar.model';
+import Planning from '../../../planning/models/planning.model';
+import TransmittalItem from '../../../distribution/models/transmittalItem.model';
+import Team from '../../models/team.model';
 
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 

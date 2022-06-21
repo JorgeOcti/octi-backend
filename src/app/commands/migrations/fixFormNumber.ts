@@ -2,8 +2,8 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Participant from '../../form/models/participant.model';
-import Team from '../models/team.model';
+import Participant from '../../../form/models/participant.model';
+import Team from '../../models/team.model';
 
 async function fixAccesories() {
   dotenv.config({

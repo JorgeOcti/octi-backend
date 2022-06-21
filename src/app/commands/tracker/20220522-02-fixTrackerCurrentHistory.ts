@@ -5,6 +5,7 @@ import * as path from 'path';
 import { Car } from '../../models';
 import carTracker from '../../controllers/tracker/car.tracker';
 import History from '../../models/history.model';
+import { ICar } from '../../interfaces';
 
 async function fixTrackerCurrentHistory() {
   dotenv.config({
@@ -21,41 +22,77 @@ async function fixTrackerCurrentHistory() {
     const teams: string[] = [];
 
     let extraFilter: any = {};
-    if(teams.length){
+    if (teams.length) {
       extraFilter['team'] = { $in: teams };
     }
-
-    const histories = await History
-      .find({
-        ...extraFilter,
+    new History();
+    const carCursor = Car
+      .aggregate([{
+        $match: {
+          createdBy: { $exists: true }
+          // ...extraFilter
+        }
       }, {
-        car: true
-      });
-    const carCursor = await Car
-      .find({
-        ...extraFilter,
-        _id: {
-          $in: histories.map((history)=>(history.car))
-        },
-        createdBy: { $exists: true },
-      }, {
-        _id: true,
-        createdBy: true,
-        company: true,
-        team: true,
-        createdAt: true,
-      })
-      .batchSize(2)
-      .cursor();
-    carCursor.on('data', async (car) => {
-      await carTracker.createImportHitory(car);
+        $lookup: {
+          from: 'histories', localField: '_id', foreignField: 'car', as: 'events'
+        }
+      }, /*{
+        $match: {
+          $and:[{
+            'events.module': { $ne: 'import' }
+          }, {
+            'events.status': { $ne: 'created' }
+          }]
+        }
+      }, */{
+        $project: {
+          _id: true,
+          createdBy: true,
+          company: true,
+          team: true,
+          createdAt: true,
+          // 'events.module': true,
+          // 'events.status': true,
+          // events: {
+          //   $cond: {
+          //     if: {
+          //       $ne: [
+          //         '$events.module', 'import'
+          //       ]
+          //     },
+          //     then: {
+          //       $size: '$events'
+          //
+          //     }, else: '0'
+          //   }
+          // }
+        }
+      }])
+      .allowDiskUse(true)
+      .cursor({ batchSize: 5 })
+      .exec();
+    carCursor.on('data', async (car: ICar) => {
+      try {
+        if (car?.events?.filter((event) => (
+          event?.module.includes('import') ||
+          event?.status.includes('created')
+        )).length === 0) {
+          console.log(car);
+          await carTracker.createImportHitory(car);
+        }
+      } catch (e) {
+        console.log(e);
+      }
     });
     carCursor.on('end', async () => {
-      process.exit(1);
+      mongoose.set('debug', true);
+      console.log('terminado');
+      // process.exit(1);
     });
   } catch (e) {
     console.log('Ha ocurrido un error en fixTrackerCurrentHistory');
     console.log('error:', e);
+    // process.exit(1);
   }
 
 }

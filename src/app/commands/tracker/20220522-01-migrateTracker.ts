@@ -81,13 +81,15 @@ async function migrateTracker() {
           ChoicesStatusCarInventory.reported
         ]
       }, { _id: true })
-      .batchSize(20)
+      .batchSize(5)
       .cursor();
     inventoryCarcursor.on('data', async (inventoryCar) => {
       try {
         await carTracker.fromInventoryCar({ id: inventoryCar._id });
       } catch (e) {
-        console.log('error:', e);
+        console.error(e);
+        console.log('error.fromInventoryCar:', e);
+        process.exit(1);
       }
     });
     inventoryCarcursor.on('end', async () => {
@@ -95,22 +97,28 @@ async function migrateTracker() {
         .find({
           ...extraFilter
         }, { _id: true })
-        .batchSize(20)
+        .batchSize(5)
         .cursor();
       participantCursor.on('data', async (participant) => {
         try {
           await carTracker.fromParticipant({ id: participant._id });
         } catch (e) {
-          console.log('error:', e);
+          console.error(e);
+          console.log('error.fromParticipant', e);
+          process.exit(1);
         }
       });
       participantCursor.on('end', async () => {
-        process.exit(1);
+        mongoose.set('debug', true);
+        console.log('terminado')
+      // process.exit(1);
       });
     });
   } catch (e) {
+    console.error(e);
     console.log('Ha ocurrido un error en migrateTracker');
     console.log('error:', e);
+    process.exit(1);
   }
 }
 

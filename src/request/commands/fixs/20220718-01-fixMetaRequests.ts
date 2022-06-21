@@ -2,8 +2,8 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import RequestItem from '../../request/models/requestItem.model';
-import requestItemsHooks from '../models/requestItem.hooks';
+import RequestItem from '../../models/requestItem.model';
+import requestItemsHooks from '../../models/requestItem.hooks';
 
 async function metaRequests() {
   dotenv.config({
@@ -54,4 +54,4 @@ async function metaRequests() {
   }
 }
 
-metaRequests();
+metaRequests!();
