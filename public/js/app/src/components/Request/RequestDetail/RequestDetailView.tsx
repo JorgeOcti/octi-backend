@@ -181,8 +181,9 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         {/*<ShowIf condition={requestSettings.priority}>*/}
                           <th className='middle' style={{ width: '28px' }} />
                         {/*</ShowIf>*/}
-                        <th className='middle-center' style={{ width: '25px' }}>#</th>
+                        {/*<th className='middle-center' style={{ width: '25px' }}>#</th>*/}
                         {/*<th className='middle' style={{ width: '10px' }}>Propiedad</th>*/}
+                        <th className='middle' style={{ width: '80px' }}>Solicitud</th>
                         <th className='middle' style={{ width: '200px' }}>VIN</th>
                         <ShowIf
                           condition={
@@ -190,7 +191,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                             requestSettings.entry
                           }
                         >
-                          <th className='middle' style={{ width: '100px' }}>Partida</th>
+                          <th className='middle' style={{ width: '60px' }}>Partida</th>
                         </ShowIf>
                         <ShowIf
                           condition={
@@ -210,8 +211,6 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <ShowIf condition={requestSettings.color}>
                           <th className='middle'  style={{ maxWidth: '300px' }}>Color</th>
                         </ShowIf>
-
-                        <th className='middle' style={{ minWidth: '100px' }}>Estado</th>
                         <ShowIf condition={requestSettings.ticket}>
                           <th
                             className='middle-center pointer'

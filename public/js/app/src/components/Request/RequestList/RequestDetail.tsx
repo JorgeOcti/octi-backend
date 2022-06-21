@@ -13,6 +13,7 @@ import { IWindow } from '../../../interfaces/window';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
 import ShowIf from '../../Utils/ShowIf';
 import CopyText from '../../Utils/CopyText';
+import RequestStatusDislay from '../StatusComponents/RequestStatusDislay';
 
 declare let window: IWindow;
 
@@ -82,7 +83,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 : null
             } */}
           </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.sellerText?.length ? request.sellerText : '-'}</div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>{request.createdBy?.firstName.length ? `${request.createdBy?.firstName} ${request.createdBy?.lastName}`: '-'}</div>
           <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'><strong className='text-primary'>{request.destination.name}</strong></div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 text-muted'>
             {
@@ -110,9 +111,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               padding: '10px',
               borderBottom: '1px solid #e1e1e1',
               borderLeft: '1px solid #e1e1e1',
-              borderRight: '1px solid #e1e1e1',
+              borderRight: '1px solid #e1e1e1'
             }}>
-              <i className="fa fa-spinner fa-spin text-purple"/>
+              <i className='fa fa-spinner fa-spin text-purple' />
             </div>
           </ShowIf>
           <ShowIf condition={this.props.requests.requestItemsById.hasOwnProperty(request._id)}>
@@ -120,7 +121,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className='middle' style={{ width: '28px' }} />
-                <th className='middle' style={{ width: '100px' }}>Progreso</th>
+                <th className='middle' style={{ width: '100px' }}>Solicitud</th>
                 <th className='middle' style={{ width: '160px' }}>VIN</th>
                 <ShowIf condition={requestSettings.entry}>
                   <th>Partida</th>
@@ -145,7 +146,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     Ticket
                   </th>
                 </ShowIf>
-                <th className='middle' style={{ width: '110px' }}>Estado</th>
+                {/*<th className='middle' style={{ width: '110px' }}>Estado</th>*/}
                 <th>OT</th>
                 <th>F. emisión</th>
                 <th>F. carga</th>
@@ -172,15 +173,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         : null}
                     </td>
                     <td className='middle'>
-                      <div className='progress progress-xs'>
-                        <div
-                          className={`progress-bar progress-bar-aqua`}
-                          style={{
-                            width: `${(item.status?.weigth ?? 0)}%`,
-                            backgroundColor: getColorForPercentage(100 / requests.requestItemStatusMax * (item.status?.weigth ?? 0))
-                          }}
-                        />
-                      </div>
+                      <RequestStatusDislay requestItem={item} showNumber={true} />
                     </td>
                     <td className={`middle`}>
                       <ShowIf condition={item.car.vin?.length}>
@@ -204,11 +197,11 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       </td>
                     </ShowIf>
                     <ShowIf
-                  condition={
-                    ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
-                    requestSettings.material
-                  }
-                >
+                      condition={
+                        ['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id) &&
+                        requestSettings.material
+                      }
+                    >
                       <td className='middle text-muted'>
                         {
                           item.car.material?.length ? item.car.material : null
@@ -245,7 +238,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       </td>
                     </ShowIf>
                     {
-                      canChangeRequest ?
+                      canChangeRequest && false ?
                         <td className='middle'>
                           <select className='form-control select-sm font-12' value={item.status?._id ?? ''}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -263,24 +256,27 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                             }
 
                           </select>
-                        </td> :
-                        <td className='middle'>{item.status?.name}</td>
+                        </td> : null
+                      // <td className='middle'>{item.status?.name}</td>
                     }
                     <td
                       className={`middle ${item.transmittal?.number ? 'pointer' : ''}`}
                       onClick={item.transmittal?.number ? () => this.openOT(
                         item.transmittal.number.toString(),
                         item?.transmittal?._id,
-                        item?.transmittalItem?._id,
+                        item?.transmittalItem?._id
                       ) : undefined}
                     >
-                      <strong className={"text-underline"}>
-                        {item?.transmittal?.number ? `#${item?.transmittal?.number}`: ''}
+                      <strong className={'text-underline'}>
+                        {item?.transmittal?.number ? `#${item?.transmittal?.number}` : ''}
                       </strong>
                     </td>
-                    <td className='middle text-muted'>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YY') : ''}</td>
-                    <td className='middle text-muted'>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length -1].createdAt).format('DD-MM-YY'): ''}</td>
-                    <td className='middle text-muted'>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY'): ''}</td>
+                    <td
+                      className='middle text-muted'>{item.transmittalItem?.loadingDate ? moment(item.transmittalItem.loadingDate).format('DD-MM-YY') : ''}</td>
+                    <td
+                      className='middle text-muted'>{item?.transmittalItem?.revisions?.length ? moment(item.transmittalItem.revisions[item.transmittalItem.revisions.length - 1].createdAt).format('DD-MM-YY') : ''}</td>
+                    <td
+                      className='middle text-muted'>{item?.transmittal?.revision ? moment(item.transmittal.revision.createdAt).format('DD-MM-YY') : ''}</td>
                     {/*<td>{item.transmittalItem?.arrivalDate ? moment(item.transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}</td>*/}
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}

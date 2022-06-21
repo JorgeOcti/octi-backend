@@ -203,7 +203,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                     <strong>Canal</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
-                    <strong>Vendedor</strong>
+                    <strong>Solicitante</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Destino</strong>

@@ -17,9 +17,9 @@ import { ajax } from 'rxjs/ajax';
 import AutoCompleteVinInput from '../../Utils/AutoCompleteVinInput';
 import { Subject } from 'rxjs/internal/Subject';
 import CopyText from '../../Utils/CopyText';
-import { getColorForPercentage } from '../RequestList/RequestDetail';
-import { ChoicesStatusTransmittal } from '../../../../../../../src/distribution/models/transmitall.types';
 import JsonFormatter from 'react-json-formatter';
+import RequestStatusDislay from '../StatusComponents/RequestStatusDislay';
+import TransmittalStatusDislay from '../StatusComponents/TransmittalStatusDislay';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
@@ -73,26 +73,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     const { requestItemStatus, reasons, requestSettings } = this.props.requestItems;
     const { recommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest') && window.user.isAdmin;
-    const transmittalWidth: any = {
-      [ChoicesStatusTransmittal.pending]: 10,
-      [ChoicesStatusTransmittal.inTransit]: 75,
-      [ChoicesStatusTransmittal.completed]: 100,
-      [ChoicesStatusTransmittal.damaged]: 0
-    };
-    const transmittalColor: any = {
-      [ChoicesStatusTransmittal.pending]: '#00c0ef',
-      [ChoicesStatusTransmittal.inTransit]: '#337ab7',
-      [ChoicesStatusTransmittal.completed]: '#00a65a',
-      [ChoicesStatusTransmittal.damaged]: '#dd4b39'
-    };
-    const transmittalTexto: any = {
-      [ChoicesStatusTransmittal.pending]: 'Pendiente',
-      // [ChoicesStatusTransmittal.inTransit]: <span>En transito <i className={'fa fa-fw text-primary fa-circle-o-notch fa-spin'} style={{fontSize: '10px'}}/></span>,
-      [ChoicesStatusTransmittal.inTransit]: <span>En transito</span>,
-      [ChoicesStatusTransmittal.completed]: <span>Completado</span>,
-      // [ChoicesStatusTransmittal.completed]: <span>Completado <i className={'fa fa-fw text-success fa-check-circle-o'} style={{fontSize: '10px'}}/></span>,
-      [ChoicesStatusTransmittal.damaged]: 'Completado'
-    };
+
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
         {/*<ShowIf condition={requestSettings.priority}>*/}
@@ -115,28 +96,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           onClick={() => this.goToDetail(item._id, item.request._id)}
           style={{}}
         >
-          <ShowIf condition={!!item.code?.length} alternative={'-'}>
-            <div>
-              <strong className='text-underline'>
-                #{item.code}
-              </strong>
-            </div>
-          </ShowIf>
-          <div className={`progress progress-xs progress-striped ${item.status?.weigth > 10 && item.status?.weigth < 100 ? 'active' : ''}`}
-               style={{ margin: '3px 0' }}>
-            <div
-              className='progress-bar progress-bar-danger'
-              style={{
-                width: `${(item.status?.weigth ?? 0)}%`,
-                backgroundColor: getColorForPercentage(item.status?.weigth ?? 0)
-              }}
-            />
-          </div>
-          <div>{
-            item.status?.name.length
-              ? item.status?.name
-              : ' Desconocido'
-          }</div>
+          <RequestStatusDislay requestItem={item} showNumber={true} />
         </td>
         <td
           className='middle pointer'
@@ -162,40 +122,41 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               : undefined
             }
           >
-            <ShowIf condition={!!item.transmittal?.number} alternative={''}>
-              <div>
-                <strong className='text-underline'>
-                  #{item.transmittal?.number}
-                </strong>
-              </div>
-              <ShowIf
-                condition={
-                  !!item?.transmittal?.type?._id?.length
-                }
-              >
-                <strong className={'text-info'}> {item?.transmittal?.type?.name?.toUpperCase()}</strong>
-              </ShowIf>
-              <div
-                className={`progress progress-xs progress-striped ${ChoicesStatusTransmittal.inTransit === item.transmittal?.status ? 'active' : ''}`}
-                style={{ margin: '3px 0' }}>
-                <div
-                  className='progress-bar progress-bar-danger'
-                  style={{
-                    width: `${transmittalWidth[item.transmittal?.status]}%`,
-                    backgroundColor: `${transmittalColor[item.transmittal?.status]}`
-                  }}
-                />
-              </div>
-              <div>
-                {
-                  transmittalTexto[item.transmittal?.status]
-                    ?
-                    transmittalTexto[item.transmittal?.status]
-                    :
-                    'Desconocido'
-                }
-              </div>
-            </ShowIf>
+            <TransmittalStatusDislay transmittal={item.transmittal} showNumber={true} />
+            {/*<ShowIf condition={!!item.transmittal?.number} alternative={''}>*/}
+            {/*  <div>*/}
+            {/*    <strong className='text-underline'>*/}
+            {/*      #{item.transmittal?.number}*/}
+            {/*    </strong>*/}
+            {/*  </div>*/}
+            {/*  <ShowIf*/}
+            {/*    condition={*/}
+            {/*      !!item?.transmittal?.type?._id?.length*/}
+            {/*    }*/}
+            {/*  >*/}
+            {/*    <strong className={'text-info'}> {item?.transmittal?.type?.name?.toUpperCase()}</strong>*/}
+            {/*  </ShowIf>*/}
+            {/*  <div*/}
+            {/*    className={`progress progress-xs progress-striped ${ChoicesStatusTransmittal.inTransit === item.transmittal?.status ? 'active' : ''}`}*/}
+            {/*    style={{ margin: '3px 0' }}>*/}
+            {/*    <div*/}
+            {/*      className='progress-bar progress-bar-danger'*/}
+            {/*      style={{*/}
+            {/*        width: `${transmittalWidth[item.transmittal?.status]}%`,*/}
+            {/*        backgroundColor: `${transmittalColor[item.transmittal?.status]}`*/}
+            {/*      }}*/}
+            {/*    />*/}
+            {/*  </div>*/}
+            {/*  <div>*/}
+            {/*    {*/}
+            {/*      transmittalTexto[item.transmittal?.status]*/}
+            {/*        ?*/}
+            {/*        transmittalTexto[item.transmittal?.status]*/}
+            {/*        :*/}
+            {/*        'Desconocido'*/}
+            {/*    }*/}
+            {/*  </div>*/}
+            {/*</ShowIf>*/}
           </td>
         </ShowIf>
         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>

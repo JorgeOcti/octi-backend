@@ -40,6 +40,13 @@ class TransmittalController {
     path: 'origin',
     select: ['name']
   }, {
+    path: 'requestItem',
+    select: ['_id', 'code', 'status'],
+    populate: [{
+      path: 'status',
+     select: ['name', 'weigth']
+    }],
+  }, {
     path: 'revisions',
     select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
     // options: {
@@ -295,7 +302,7 @@ class TransmittalController {
         select: ['firstName', 'lastName']
       }, {
         path: 'items',
-        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
+        select: ['car', 'car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
         populate: this.itemPopulate
       }, {
         path: 'files',

@@ -19,6 +19,7 @@ import ShowIf from '../../Utils/ShowIf';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 import { Subject } from 'rxjs/internal/Subject';
+import RequestStatusDislay from '../StatusComponents/RequestStatusDislay';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   router: any;
@@ -131,7 +132,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             {item.priority ? <i className='fa fa-star text-yellow' /> : <i className='fa fa-star text-gray' />}
           </td>
         {/*</ShowIf>*/}
-        <td className="middle-center"><strong>{item.order}</strong></td>
+        {/*<td className="middle-center"><strong>{item.order}</strong></td>*/}
+        <td className="middle" style={{width: '120px'}}>
+          <RequestStatusDislay requestItem={item} showNumber={true} />
+         </td>
         {
           canChangeRequest ?
            <td
@@ -364,8 +368,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               </td>
           }
         </ShowIf>
-        {
-          canChangeRequest ?
+        <ShowIf condition={canChangeRequest && false} alternative={
+          null // <td className="middle">{item.status?.name}</td>
+        }>
             <td className="middle" style={{width: '120px'}}>
               <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -389,9 +394,8 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                 }
 
               </select>
-            </td> :
-            <td className="middle">{item.status?.name}</td>
-        }
+            </td>
+        </ShowIf>
         <ShowIf condition={requestSettings.ticket}>
           <td className='middle-center'>
              <div

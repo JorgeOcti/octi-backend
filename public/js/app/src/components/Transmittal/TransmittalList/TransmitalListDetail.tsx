@@ -311,12 +311,12 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             <table className='table table-striped table-hover m-0 table-xs'>
               <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
-                <th className='middle' style={{ width: '30px' }}>SOL</th>
+                <th className='middle' style={{ width: '80px' }}>SOL</th>
                 <th className='middle' style={{ width: '145px' }}>VIN</th>
-                <th className='middle' style={{ minWidth: '120px' }}>Descripción</th>
-                <th className='middle' style={{ width: '90px' }}>Factura</th>
-                <th className='middle' style={{ width: '90px' }}>Partida</th>
-                <th className='middle' style={{ width: '90px' }}>BL</th>
+                <th className='middle' style={{ minWidth: '100px' }}>Descripción</th>
+                <th className='middle' style={{ width: '80px' }}>Factura</th>
+                <th className='middle' style={{ width: '80px' }}>Partida</th>
+                <th className='middle' style={{ width: '80px' }}>BL</th>
                 <th className='middle' style={{ width: '100px' }}>Origen</th>
                 <th className='middle' style={{ width: '100px' }}>Destino</th>
                 <th className='middle' style={{ width: '105px' }}>Fecha emisión</th>

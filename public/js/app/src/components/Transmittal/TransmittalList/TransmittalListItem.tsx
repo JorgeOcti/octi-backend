@@ -17,6 +17,8 @@ import { getParticipant } from '../../../actions/dashboard.actions';
 import { debounce } from 'throttle-debounce';
 import { goToSection, hasPermission, parseReplicableURL } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
+import TransmittalStatusDislay from '../../Request/StatusComponents/TransmittalStatusDislay';
+import RequestStatusDislay from '../../Request/StatusComponents/RequestStatusDislay';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
@@ -61,16 +63,18 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     return (
       <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
         <td
-          className={'middle-center pointer'}
+          className={'middle pointer'}
           onClick={transmittalItem.request?._id ? () => {
-            this.props.history.push(parseReplicableURL(`/requests/vehicles/${transmittalItem.request?._id}?item=${transmittalItem.requestItem}`, ['item']));
+            this.props.history.push(parseReplicableURL(`/requests/vehicles/${transmittalItem.request?._id}?item=${transmittalItem.requestItem._id}`, ['item']));
           } : undefined}
         >
-          <strong className="text-underline">
-            <ShowIf condition={!!transmittalItem?.request?.number}>
-              #{transmittalItem.request?.number}
-            </ShowIf>
-          </strong>
+          <RequestStatusDislay requestItem={transmittalItem.requestItem} showNumber={true} />
+          {/*<TransmittalStatusDislay transmittal={transmittalItem.transmittal} showNumber={false} />*/}
+          {/*<strong className="text-underline">*/}
+          {/*  <ShowIf condition={!!transmittalItem?.request?.number}>*/}
+          {/*    #{transmittalItem.request?.number}*/}
+          {/*  </ShowIf>*/}
+          {/*</strong>*/}
         </td>
         <td
           className={'middle text-primary'}

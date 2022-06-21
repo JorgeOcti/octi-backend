@@ -70,6 +70,7 @@ const transmittalItemSchema = new mongoose.Schema({
 transmittalItemSchema.index({ team: 1, 'transporter.driver': 1, status: 1 });
 transmittalItemSchema.index({ team: 1 });
 transmittalItemSchema.index({ transmittal: 1 });
+transmittalItemSchema.index({ requestItem: 1 });
 transmittalItemSchema.index({ car: 1 });
 transmittalItemSchema.index({ request: 1 });
 transmittalItemSchema.index({ revisions: 1 });
