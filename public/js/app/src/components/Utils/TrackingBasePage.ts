@@ -5,8 +5,8 @@ import * as ReactGA from 'react-ga';
 
 declare let window: IWindow;
 
-abstract class TrackingBasePage<PropsType, StateType> extends React.Component<PropsType, StateType>{
-  abstract title : string;
+abstract class TrackingBasePage<PropsType, StateType> extends React.Component<PropsType, StateType> {
+  abstract title: string;
 
   protected constructor(props: PropsType) {
     super(props);
@@ -17,38 +17,39 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
     this.trackClick = this.trackClick.bind(this);
   }
 
-  public componentDidMount() : void {
+  public componentDidMount(): void {
     // set the title of the page
     document.title = `OSA Andes | ${this.title}`;
     this.registerUser();
     this.trackPage();
   }
 
-  trackPage() : void {
-    if (this.shouldTrack()){
-      ReactGA.initialize('UA-101792436-1', {
-        // debug: true,
-        // titleCase: false,
-        gaOptions: {
-          clientId: window.user._id,
-          name: window.user.email
-        }
-      });
-      ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`);
-      MixpanelTracker.getInstance().trackAction(this.title);
-    }
+  trackPage(): void {
+    // console.log('trackPage');
+    // if (this.shouldTrack()){
+    ReactGA.initialize('UA-101792436-1', {
+      // debug: true,
+      // titleCase: false,
+      gaOptions: {
+        clientId: window.user._id,
+        // name: window.user.email
+      }
+    });
+    ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`);
+    MixpanelTracker.getInstance().trackAction(this.title);
+    // }
   }
 
-  trackClick(title: string, properties: any = {}) : void {
+  trackClick(title: string, properties: any = {}): void {
     if (this.shouldTrack())
       MixpanelTracker.getInstance().trackAction(`${this.title} - ${title}`, properties);
   }
 
-  public shouldTrack() : boolean {
+  public shouldTrack(): boolean {
     return !window.user.email.includes('@osacontrol.com');
   }
 
-  private registerUser() : void {
+  private registerUser(): void {
     if (this.shouldTrack() && !window.isTracked) {
       MixpanelTracker.getInstance().identifyUser(window.user);
       window.isTracked = true;
@@ -56,4 +57,4 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
   }
 }
 
- export default TrackingBasePage;
+export default TrackingBasePage;
