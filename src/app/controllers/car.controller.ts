@@ -20,7 +20,7 @@ import CarModel, { Car, ChoicesStatusCar, ICarModel } from '../models/car.model'
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import { ObjectID } from 'bson';
-import RequestController from '../../request/controllers/request.controller';
+import conectaController from '../../request/controllers/conecta.controller';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -321,7 +321,7 @@ class CarController {
         if (vin) {
           carFilter.vin = vin;
           if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } = await RequestController.searchVinContecta(vin);
+            let { data: integrationData } = await conectaController.searchVinContecta(vin);
             if (integrationData?.length > 1) {
               for (const car of integrationData) {
                 await Car
@@ -348,7 +348,7 @@ class CarController {
         }
         if (vin2) {
           if (vin2?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } = await RequestController.searchVinContecta(vin2);
+            let { data: integrationData } = await conectaController.searchVinContecta(vin2);
             if (integrationData?.length > 1) {
               for (const car of integrationData) {
                 await Car

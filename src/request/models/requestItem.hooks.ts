@@ -17,7 +17,7 @@ class RequestItemHooks {
         const [
           request, car, user, origin, destination, status, transmittal
         ] = await Promise.all([
-          Request.findById(doc.request, { meta: false }),
+          Request.findById(doc?.request, { meta: false }),
           Car.findById(doc.car),
           User.findById(doc.createdBy),
           Venue.findById(doc.origin),

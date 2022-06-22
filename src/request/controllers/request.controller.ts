@@ -7,7 +7,6 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
-import axios from 'axios';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
@@ -28,8 +27,8 @@ import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
 import * as mongoose from 'mongoose';
 
-import { XMLParser } from 'fast-xml-parser';
 import { ICar } from '../../app/interfaces';
+import conectaController from './conecta.controller';
 
 // import * as mongoose from 'mongoose'
 
@@ -185,7 +184,7 @@ class RequestController {
     this.apiImport = this.apiImport.bind(this);
     this.createRequest = this.createRequest.bind(this);
     this.searchVin = this.searchVin.bind(this);
-    this.searchVinContecta = this.searchVinContecta.bind(this);
+    conectaController.searchVinContecta = conectaController.searchVinContecta.bind(this);
     this.checkItemMassAllocation = this.checkItemMassAllocation.bind(this);
     this.processItemMassAllocation = this.processItemMassAllocation.bind(this);
   }
@@ -1625,7 +1624,7 @@ class RequestController {
         let integrationData: ICar | undefined;
         if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
           if (vin?.length >= 6) {
-            let { data } = await this.searchVinContecta(vin);
+            let { data } = await conectaController.searchVinContecta(vin);
             if (data.length > 1) {
               res.status(400).json({
                 message: 'Hay más de una coincidencia'
@@ -1978,9 +1977,9 @@ class RequestController {
     try {
       logger.info(`RequestController.searchVin\x1b[90m query: ${JSON.stringify(req.query)}`);
       if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        // const data = await this.searchVinContecta('014688');
+        // const data = await conectaController.searchVinContecta('014688');
         if (vin?.length > 5) {
-          let { data } = await this.searchVinContecta(vin);
+          let { data } = await conectaController.searchVinContecta(vin);
           if (material?.length > 4 && !['undefined'].includes(material)) {
             data = data.filter((car) => car.material.toString() === material);
           }
@@ -2001,71 +2000,7 @@ class RequestController {
     }
   }
 
-  public async searchVinContecta(vin: string): Promise<{ data: ICar[] }> {
-    logger.debug(`RequestController.searchVinContecta ${vin}`);
-    return new Promise((resolve, reject) => {
-      try {
-        const data = `<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:urn='urn:sap-com:document:sap:rfc:functions'><soapenv:Header/><soapenv:Body><urn:ZPM_GET_EQUIPMENTS><LAST_PART_EQUIPMENT_NO>${vin}</LAST_PART_EQUIPMENT_NO></urn:ZPM_GET_EQUIPMENTS></soapenv:Body></soapenv:Envelope>`;
-        const config = {
-          headers: {
-            'Content-Type': 'text/xml',
-            'SOAPAction': 'http://sap.com/xi/WebService/soap1.1',
-            'Content-Length': `${Buffer.byteLength(data)}`
-          },
-          auth: {
-            username: 'USR_SOA_PI',
-            password: 'Inicio.2130'
-          }
-        };
-        const instance = axios.create(config);
-        instance.post(`${process.env.SALFA_SOAP}/XISOAPAdapter/MessageServlet?senderParty=&senderService=BC_OBTENER_EQUIPOS&receiverParty=&receiverService=&interface=ObtenerEquiposRequestConfirmation_Out&interfaceNamespace=urn:salfa.cl:salfa:ObtenerEquipos`,
-          data
-        )
-          .then(async (response) => {
-            try {
-              const parser = new XMLParser({
-                ignoreAttributes: true
-              });
-              let jObj = parser.parse(response.data);
-              const data = [];
-              const cars = jObj['SOAP:Envelope']['SOAP:Body']['ns0:ZPM_GET_EQUIPMENTS.Response']['EQUIPMENTS_INFO']['item'];
-              for (const car of cars.length ? cars : [cars]) {
-                let {
-                  EQUIPMENT_NO: vin,
-                  BRAND: brand,
-                  MODEL: denomination,
-                  VERSION: version,
-                  MATERIAL: material,
-                  COLOR: color
-                } = car;
-                data.push({
-                  vin,
-                  brand,
-                  denomination: `${denomination}${version ? ` ${version}` : ''}`,
-                  material: material.toString(),
-                  color
-                } as ICar);
-              }
-              logger.info(`RequestController.searchVinContecta\x1b[90m data: ${JSON.stringify(data)}`);
-              resolve({ data });
 
-            } catch (e) {
-              logger.error(`RequestController.parser\x1b[90m error: ${JSON.stringify(e)}`);
-              logger.error(e);
-              resolve({ data: [] });
-            }
-          })
-          .catch(function(e) {
-            logger.debug(`RequestController.searchVin\x1b[90m: There are no records.`);
-            resolve({ data: [] });
-          });
-      } catch (e) {
-        logger.error(`RequestController.searchVin\x1b[90m: catch error.`);
-        logger.error(e);
-        resolve({ data: [] });
-      }
-    });
-  }
 
   public async preMassAllocation(req: IRequest, res: Response) {
     try {
@@ -2121,7 +2056,7 @@ class RequestController {
         : item?.car.vin ?? '';
       if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
         if (vin?.length >= 6) {
-          let { data } = await this.searchVinContecta(vin);
+          let { data } = await conectaController.searchVinContecta(vin);
           const foundVin = !!data.length;
           if (data.length > 1) {
             errors.push({
@@ -2196,7 +2131,7 @@ class RequestController {
       // si existe la solicitud y el team es salfa
       if (requestItem) {
         if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-          let { data: conectaData } = await this.searchVinContecta(vin);
+          let { data: conectaData } = await conectaController.searchVinContecta(vin);
           const foundVin = !!conectaData.length;
           if (conectaData.length > 1) {
             errors.push({
