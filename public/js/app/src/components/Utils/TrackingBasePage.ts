@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { IWindow } from '../../interfaces/window';
 import MixpanelTracker from './MixpanelTracker';
+import * as ReactGA from 'react-ga';
 
 declare let window: IWindow;
 
@@ -24,8 +25,18 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
   }
 
   trackPage() : void {
-    if (this.shouldTrack())
+    if (this.shouldTrack()){
+      ReactGA.initialize('UA-101792436-1', {
+        // debug: true,
+        // titleCase: false,
+        gaOptions: {
+          clientId: window.user._id,
+          name: window.user.email
+        }
+      });
+      // ReactGA.pageview('/about/contact-us');
       MixpanelTracker.getInstance().trackAction(this.title);
+    }
   }
 
   trackClick(title: string, properties: any = {}) : void {
