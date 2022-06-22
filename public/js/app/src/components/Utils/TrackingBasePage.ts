@@ -34,7 +34,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
           name: window.user.email
         }
       });
-      // ReactGA.pageview('/about/contact-us');
+      ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`);
       MixpanelTracker.getInstance().trackAction(this.title);
     }
   }
