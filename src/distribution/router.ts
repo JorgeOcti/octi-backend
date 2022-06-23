@@ -23,6 +23,7 @@ distributionRouter.get('/transmittals/:id/download-files/', isLoggedIn, Transmit
 distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalController.apiList);
 distributionRouter.post('/api/v1/transmittals/', isJWTAuthenticated, validateBody(createTransmittalSchema), TransmittalController.apiCreate);
 distributionRouter.get('/api/v1/transmittals/only-me/', isJWTAuthenticated, TransmittalController.apiOnlyMe);
+distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, TransmittalController.transmittalResume);
 distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiPatch);
 distributionRouter.put('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiUpdate);
@@ -35,7 +36,7 @@ distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, Transm
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDelete);
-distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, TransmittalItemController.apiList);
+
 
 
 distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
