@@ -8,11 +8,13 @@ export interface dataPoint {
   upperValues: string[];
   lowerValues: string[];
   title: string;
+  color: string;
 }
 
 interface IPropsType {
   circles: dataPoint[],
   circleSize: number;
+  lineColor: string;
 }
 
 interface IStateType {
@@ -23,71 +25,55 @@ interface IStateType {
 export default class TransmittalLineChartComponent extends React.Component<IPropsType, IStateType>{
 
   render() {
-    let circles_n = 3;
-    let circle_width = 40;
+    let {circles, circleSize, lineColor} = this.props;
+    let circles_n = circles.length;
+    let circle_width = circleSize;
     let label_length = 50;
     let line_diff = circles_n * circle_width + label_length;
     let lines_n = circles_n - 1;
-    console.log(`calc((95% - ${line_diff}px)/${lines_n})`)
+    return <div className="row" style={{display: 'flex', alignItems: 'center', marginLeft: '20px', marginRight: '20px', marginBottom: '40px'}} >
 
-    return <div className="row no-margin" style={{width: '95%', display: 'flex', alignItems: 'center'}} >
-
-      <div style={{paddingRight: '10px', width:`${label_length}px`}}>
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
+      <div style={{paddingRight: '10px', width:`${label_length}px`}} key='0'>
+        <div style={{marginBottom: '16px', marginTop:'20px'}}>
+          <p style={{color: '#fff'}}>padding</p>
+          <p style={{fontSize: '16px'}}><i className="fa fa-fw fa-clock-o" /></p>
         </div>
         <div className="no-margin" style={{height: `${circle_width}px`}} />
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
+        <div style={{marginTop: '5px'}}>
+          <p style={{fontSize: '16px'}}><i className="fa fa-fw fa-car" /></p>
+          <p style={{fontSize: '16px'}}><i className="fa fa-fw fa-truck" /></p>
         </div>
       </div>
 
-      <div style={{display: "inline-block", width: `${circle_width}px`}}>
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-        <div className="no-margin" style={{height: `${circle_width}px`, width: `${circle_width}px`, borderRadius: '50%', backgroundColor: '#000'}} />
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-      </div>
-
-      <div style={{display: "inline-block", height: '100%', width: `calc((95% - ${line_diff}px)/${lines_n})`}}>
-        <div style={{height: '10px', backgroundColor: '#000'}} />
-      </div>
-
-      <div style={{display: "inline-block", width: `${circle_width}px`}}>
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-        <div className="no-margin" style={{height: `${circle_width}px`, width: `${circle_width}px`, borderRadius: '50%', backgroundColor: '#000'}} />
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-      </div>
-
-      <div style={{display: "inline-block", height: '100%', width: `calc((95% - ${line_diff}px)/${lines_n})`}}>
-        <div style={{height: '10px', backgroundColor: '#000'}} />
-      </div>
-
-      <div style={{display: "inline-block", width: `${circle_width}px`}}>
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-        <div className="no-margin" style={{height: `${circle_width}px`, width: `${circle_width}px`, borderRadius: '50%', backgroundColor: '#000'}} />
-        <div>
-          <p>Hola</p>
-          <p>Hola</p>
-        </div>
-      </div>
-
+      { circles.map((circle, index) => {
+        if (index === 0)
+          return <div key={`circle-${index}`} style={{display: "inline-block", width: `${circle_width}px`}}>
+            <div style={{marginTop: '10px'}}>
+              <p style={{paddingLeft: '20%', fontSize: '18px', fontWeight: 510, whiteSpace: 'nowrap'}}>{circle.title}</p>
+              {circle.upperValues.map(value => <p key={value} style={{paddingLeft: '20%', fontSize: '16px', fontWeight: 510, whiteSpace: 'nowrap'}}>{value}</p>)}
+            </div>
+            <div className="no-margin" style={{height: `${circle_width}px`, width: `${circle_width}px`, borderRadius: '50%', backgroundColor: circle.color}} />
+            <div style={{marginTop: '10px'}}>
+              {circle.lowerValues.map(value => <p key={value} style={{paddingLeft: '20%', fontSize: '16px', fontWeight: 510, whiteSpace: 'nowrap'}} >{value}</p>)}
+            </div>
+          </div>;
+        else
+          return <React.Fragment key={index}>
+            <div key={`line-${index}`} style={{display: "inline-block", height: '100%', width: `calc((95% - ${line_diff}px)/${lines_n})`, marginTop:'10px'}}>
+              <div style={{height: '10px', backgroundColor: lineColor}} />
+            </div>
+            <div key={`circle-${index}`} style={{display: "inline-block", width: `${circle_width}px`}}>
+              <div style={{marginTop: '10px'}}>
+                <p style={{paddingLeft: '20%', fontSize: '18px', fontWeight: 510, whiteSpace: 'nowrap'}} >{circle.title}</p>
+                {circle.upperValues.map(value => <p key={value} style={{paddingLeft: '20%', fontSize: '16px', fontWeight: 510, whiteSpace: 'nowrap'}} >{value}</p>)}
+              </div>
+              <div className="no-margin" style={{height: `${circle_width}px`, width: `${circle_width}px`, borderRadius: '50%', backgroundColor: circle.color}} />
+              <div>
+                {circle.lowerValues.map( (value, index) => <p key={index} style={{paddingLeft: '20%', fontSize: '16px', fontWeight: 510, whiteSpace: 'nowrap'}}>{value}</p>)}
+              </div>
+            </div>
+          </React.Fragment>;
+      })}
 
     </div>;
   }
