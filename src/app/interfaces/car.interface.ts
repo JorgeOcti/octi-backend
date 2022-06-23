@@ -46,7 +46,6 @@ export interface ICar {
   color: string;
   shippingDate: Date;
   firstColorOption: string;
-  shippingDate: Date;
   secondColorOption: string;
   thirdColorOption: string;
   team: ITeam | any;
