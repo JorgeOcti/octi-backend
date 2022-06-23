@@ -44,6 +44,7 @@ export interface ICar {
   bl: string;
   client: string;
   color: string;
+  shippingDate: Date;
   firstColorOption: string;
   secondColorOption: string;
   thirdColorOption: string;

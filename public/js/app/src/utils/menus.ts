@@ -143,6 +143,15 @@ if (hasPermission(window.user, 'adminRequest')) {
   });
 }
 
+if (hasPermission(window.user, 'transmittalDashboard')) {
+  distributionItems.push({
+    id: '3.6',
+    icon: 'fa-circle-o',
+    text: 'Dashboard',
+    url: parseReplicableURL('/transmittals/dashboard/')
+  });
+}
+
 if (distributionItems.length) {
   menus.push({
     id: '3',

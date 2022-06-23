@@ -309,6 +309,7 @@ class RequestController {
             currentCar.gas = car.gas;
             currentCar.ap = car.ap;
             currentCar.countryOrigin = car.countryOrigin;
+            currentCar.shippingDate = car.shippingDate;
             currentCar.save();
           } else {
             currentCar = await new Car({

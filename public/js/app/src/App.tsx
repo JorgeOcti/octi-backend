@@ -60,6 +60,7 @@ import {
   VUnitControlDashboardStatsView
 } from "./components/Stats/DashboardStatsView";
 import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
+import DashboardView from "./components/Transmittal/StatsDashboard/DashboardView";
 
 
 declare let window: IWindow;
@@ -114,6 +115,7 @@ const App = () => (
         <Route exact path='/requests/create/' component={RequestCreateView} />
         <Route exact path='/transmittals/' component={TransmittalListView} />
         <Route exact path='/transmittals/create/' component={TransmittalCreateView} />
+        <Route exact path='/transmittals/dashboard/' component={DashboardView} />
         <Route exact path='/requests/' component={RequestListView} />
         <Route exact path='/requests/settings/reasons/' component={RequestReasonListView} />
         <Route exact path='/requests/settings/channels/' component={RequestChannelListView} />

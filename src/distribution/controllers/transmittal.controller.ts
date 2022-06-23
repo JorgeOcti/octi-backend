@@ -22,6 +22,7 @@ import * as bluebird from 'bluebird';
 import * as fs from 'fs';
 import * as https from 'https';
 import { IUser } from '../../app/interfaces';
+import * as mongoose from "mongoose";
 
 
 class TransmittalController {
@@ -102,6 +103,7 @@ class TransmittalController {
     this.attachEvidence = this.attachEvidence.bind(this);
     this.fillFormSections = this.fillFormSections.bind(this);
     this.getScales = this.getScales.bind(this);
+    this.transmittalResume = this.transmittalResume.bind(this)
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1162,6 +1164,123 @@ private getForm(filter: any): Promise<IFormModel> {
         message: 'La imagen es obligatoria.',
         status: 400
       });
+    }
+  }
+
+  public async transmittalResume(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    const {from, to} = req.query as {from: string, to: string};
+    logger.info(`TransmittalController.transmittalResume`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+
+    try {
+      let transmittals = await TransmittalItem.aggregate([{$match: {
+          team: mongoose.Types.ObjectId(team),
+          createdAt:{
+            $gte: moment.unix(Number(from)).toDate(),
+            $lt: moment.unix(Number(to)).toDate()
+          }
+        }}, {$lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car_data',
+        }}, {$unwind: {
+          path: "$car_data",
+          includeArrayIndex: "0",
+          preserveNullAndEmptyArrays: true
+        }}, {$lookup: {
+          from: 'transmittals',
+          localField: 'transmittal',
+          foreignField: '_id',
+          as: 'transmittal_data'
+        }}, {$unwind: {
+          path: "$transmittal_data",
+          includeArrayIndex: "0",
+          preserveNullAndEmptyArrays: true
+        }}, {$lookup: {
+          from: 'participants',
+          localField: 'revisions',
+          foreignField: '_id',
+          as: 'revisions_data'
+        }},{$lookup: {
+          from: 'transmittalfiles',
+          localField: 'transmittal_data.evidenceFullLoad',
+          foreignField: '_id',
+          as: 'transmittalfiles'
+        }},{$lookup: {
+          from: 'milestonetypes',
+          localField: 'transmittal_data.type',
+          foreignField: '_id',
+          as: 'type'
+        }},
+        {$unwind: {
+            path: "$type",
+            includeArrayIndex: "0",
+            preserveNullAndEmptyArrays: true
+          }},
+        {
+          $addFields: { type: { $toString: '$type.name' } }
+        },
+
+        {
+          $addFields: { status: { $toString: '$transmittal_data.status' } }
+        },
+        {$lookup: {
+            from: 'participants',
+            let: {car_id: '$car', created: '$arrivalDate'},
+            as: 'participants',
+            pipeline: [{$match:
+                { $expr:
+                    { $and:
+                        [
+                          { $eq: [ "$car",  "$$car_id" ] },
+                          { $eq: [ "$reception",  true ] },
+                          { $gt: [ "$createdAt",  "$$created" ] },
+
+                        ]
+                    }
+                }
+            }]
+
+          }},
+        {$addFields:{
+            checkDate:{$min:"$participants.createdAt"}
+          },},{$project: {
+            transmittal: 1,
+            revisions: 1,
+            checkDate: 1,
+            createdAt: 1,
+            loadingDate: {$max: "$revisions_data.createdAt" },
+            arrivalDate: 1,
+            type: 1,
+            status: 1,
+            latest_evidence: { $max: "$transmittalfiles.createdAt" },
+            latest_shipping: { $max: "$car_data.shipping_date" },
+          }},{$group:{
+            _id: '$transmittal',
+            cars: {$sum: 1},
+            pendingDate: {$max: '$createdAt'},
+            loadingDate: {$max: '$loadingDate'},
+            arrivalDate: {$max: '$arrivalDate'},
+            shippingDate: {$min: '$latest_shipping'},
+            evidenceDate: {$max: '$latest_evidence'},
+            checkDate: {$max: "$checkDate"},
+            type: {$first: '$type'},
+            status: {$first: '$status'},
+          }}]);
+
+        return res.json({data: transmittals});
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.uploadFile: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
     }
   }
 

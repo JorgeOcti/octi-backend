@@ -1,21 +1,25 @@
 import {
   CANCEL_REQUEST_TRANSMITTAL,
-  CHANGE_ORDER_TRANSMITTAL, CREATE_TRANSMITTAL_ITEM_TRANSMITTAL,
-  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL, DELETE_TRANSMITTAL_TRANSMITTAL,
+  CHANGE_ORDER_TRANSMITTAL,
+  CREATE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  DELETE_TRANSMITTAL_TRANSMITTAL,
   FILTER_REQUEST_ITEMS_TRANSMITTAL,
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_DRIVERS_TRANSMITTAL, LOAD_MILESTONE_TYPES_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL,
+  LOAD_MILESTONE_TYPES_TRANSMITTAL,
   LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
+  LOAD_TRANSMITTAL_RESUME,
   LOAD_VENUES_TRANSMITTAL,
   LOADING_REQUEST_ITEMS_TRANSMITTAL,
   LOADING_TRANSMITTAL,
   TOOGLE_TAB_TRANSMITTAL,
+  TRANSPORT_MILESTONE_LOAD_STATUS,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
-  UPDATE_TRANSMITTAL_TRANSMITTAL,
-  TRANSPORT_MILESTONE_LOAD_STATUS
+  UPDATE_TRANSMITTAL_TRANSMITTAL
 } from '../actions/transmittal.types';
 import {ITransmittal} from '../../../../../src/distribution/interfaces/transmittal.interface';
 
@@ -31,6 +35,7 @@ const initialState: ITransmittalState<ITransmittal> = {
   transmittalOpen: [],
   source: null,
   requestItems: [],
+  resume: [],
   requestItemsfilters: {
     request: '',
     entry: '',
@@ -213,6 +218,11 @@ export default function transmittalReducer(state= initialState, action: ITransmi
       return {
         ...state,
         milestones: action.payload.milestones
+      };
+    case LOAD_TRANSMITTAL_RESUME:
+      return {
+        ...state,
+        resume: action.payload.resume
       };
     default:
       return state;

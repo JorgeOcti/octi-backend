@@ -11,6 +11,7 @@ import { IMilestone } from '../../../../../src/distribution/interfaces';
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
 export const LOAD_TRANSMITTAL = '@transmittal/LOAD';
+export const LOAD_TRANSMITTAL_RESUME = '@transmittal/LOAD_RESUME';
 export const LOAD_VENUES_TRANSMITTAL = '@transmittal/LOAD_VENUES';
 export const LOAD_CARRIERS_TRANSMITTAL = '@transmittal/LOAD_CARRIERS';
 export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
@@ -67,6 +68,7 @@ export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
   requestItemsfilters: IRequestItemsFilters;
   requestItemsPagination: IPaginationListView;
   transmittalOpen: string[];
+  resume: any[];
 }
 
 export interface ITransmittalChangeOrderAction {
@@ -208,6 +210,13 @@ export interface ILoadingRequestItemsTransmittalItemAction  {
   };
 }
 
+export interface ILoadTransmittalResume {
+  type: typeof LOAD_TRANSMITTAL_RESUME;
+  payload: {
+    resume: any[]
+  }
+}
+
 export type ITransmittalActionTypes =
   ITransmittalCancerlRequestAction |
   ITransmittalLoadVenuesAction |
@@ -226,5 +235,6 @@ export type ITransmittalActionTypes =
   ILoadRequestItemsTransmittalItemAction |
   ILoadingRequestItemsTransmittalItemAction |
   ITransmittalLoadingAction |
-  ITransmittalLoadMilestones;
+  ITransmittalLoadMilestones |
+  ILoadTransmittalResume;
 

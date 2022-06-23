@@ -134,6 +134,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             <h4>Preguntas personalizadas</h4>
           </div>
           <FieldArray
+            props={{}}
             name="questions"
             component={renderQuestion}
           />
