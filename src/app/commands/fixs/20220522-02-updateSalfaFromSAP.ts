@@ -70,7 +70,7 @@ async function fixTrackerCurrentHistory() {
       try {
         if (car?.vin?.length) {
           let { data: integrationData } = await conectaController.searchVinContecta(car.vin);
-          if (integrationData?.length > 1) {
+          if (integrationData?.length) {
             for (const car of integrationData) {
               await Car
                 .updateOne({
