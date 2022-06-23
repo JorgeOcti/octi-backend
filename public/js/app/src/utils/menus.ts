@@ -143,7 +143,7 @@ if (hasPermission(window.user, 'adminRequest')) {
   });
 }
 
-if (true || hasPermission(window.user, 'transmittalDashboard')) {
+if (hasPermission(window.user, 'transmittalDashboard')) {
   distributionItems.push({
     id: '3.6',
     icon: 'fa-circle-o',

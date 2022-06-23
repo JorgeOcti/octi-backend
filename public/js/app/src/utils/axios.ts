@@ -1024,7 +1024,7 @@ export default class ApiService {
 
   public getTransmittalResume(from: string, to: string): AxiosPromise {
     return this.instance.get(
-      `/api/transmittals/resume?start=${from}&end=${to}`
+      `/api/v1/transmittals/resume?from=${from}&to=${to}`
     );
   }
 }
