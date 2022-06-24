@@ -886,9 +886,11 @@ private getForm(filter: any): Promise<IFormModel> {
         useSharedStrings: true
       };
       let columns = [{
-        header: '# Orden transporte', key: 'transmittalNumber', width: 30
+        header: '# Orden transporte', key: 'transmittalNumber', width: 20
       }, {
-        header: '# Solicitud', key: 'requestNumber', width: 30
+        header: '# Solicitud', key: 'requestNumber', width: 20
+      }, {
+        header: 'Tipo', key: 'type', width: 20
       }, {
         header: 'Chofer', key: 'driver', width: 30
       }, {
@@ -930,6 +932,9 @@ private getForm(filter: any): Promise<IFormModel> {
         .populate([{
           path: 'transporter.carrier',
           select: ['name']
+        },{
+          path: 'type',
+          select: ['name']
         }, {
           path: 'transporter.driver',
           select: ['firstName', 'lastName']
@@ -953,6 +958,7 @@ private getForm(filter: any): Promise<IFormModel> {
         for (const item of transmittal.items) {
           worksheet.addRow({
             transmittalNumber: transmittal.number,
+            type: transmittal?.type?.name,
             requestNumber: item.request?.number,
             driver: `${transmittal.transporter?.driver?.firstName} ${transmittal.transporter?.driver?.lastName}`,
             carrier: transmittal.transporter?.carrier?.name,

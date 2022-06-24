@@ -876,7 +876,7 @@ class CarController {
   public processParticipant(participant: IParticipant) {
     const datum = {
       number: participant.number,
-      created_at: moment(participant.createdAt).toDate(),
+      created_at: moment(participant.createdAt).subtract(4, 'hours').toDate(),
       brand: participant.car?.brand ?? '',
       denomination: participant.car?.denomination ?? '',
       color: participant.car?.color ?? '',
@@ -934,7 +934,7 @@ class CarController {
       logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       const team = req.user.team._id;
       const company = req.user.company._id;
-      const { from, to } = req.query;
+      const { from, to } = req.query as { from: string, to: string};
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
        // Create Excel Stream with pipe to response object
