@@ -1018,4 +1018,10 @@ export default class ApiService {
       `/api/stats/studios/${studio._id}/`, {studio}
     );
   }
+
+  public getTransmittalResume(from: string, to: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/transmittals/resume?from=${from}&to=${to}`
+    );
+  }
 }
