@@ -89,7 +89,6 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if (this.props.requestChannel.pagination !== prevProps.requestChannel.pagination) {
       window.scrollTo(0, 0);

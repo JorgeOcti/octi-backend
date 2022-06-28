@@ -57,7 +57,6 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
     this.sendCreate = this.sendCreate.bind(this);
   }
 
-
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
