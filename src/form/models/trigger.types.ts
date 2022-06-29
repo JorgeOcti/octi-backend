@@ -3,4 +3,5 @@ export enum KindTrigger {
   email = 'email',
   request = 'request',
   integration = 'integration',
+  transmittal = 'transmittal',
 }

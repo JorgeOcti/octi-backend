@@ -1,13 +1,14 @@
 import * as mongoose from 'mongoose';
-import { IFormTrigger, ITriggerConfig } from '../interfaces/form.interface';
-import { KindTrigger } from './trigger.types';
+import {IFormTrigger, ITriggerConfig} from '../interfaces/form.interface';
+import {KindTrigger} from './trigger.types';
 
 
 export const kindsTrigger = [
   KindTrigger.file,
   KindTrigger.email,
   KindTrigger.request,
-  KindTrigger.integration
+  KindTrigger.integration,
+  KindTrigger.transmittal
 ];
 
 export enum IntegrationType {
@@ -69,6 +70,10 @@ export const triggerConfigSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RequestItemStatus'
   },
+
+  transmittalTypes: {
+    type: [mongoose.Schema.Types.ObjectId]
+  }
 });
 
 
