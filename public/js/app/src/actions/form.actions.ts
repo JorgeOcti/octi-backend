@@ -7,7 +7,7 @@ import {
   FORM_CHANGE_ORDER,
   FORM_CREATE_STATUS,
   FORM_DELETE_STATUS,
-  FORM_IS_LOADING,
+  FORM_IS_LOADING, FORM_LOAD_MILESTONE_TYPES,
   FORM_LOAD_REQUEST_STATUS,
   FORM_LOAD_STATUS,
   FORM_UDPATE_STATUS,
@@ -18,12 +18,13 @@ import {
   IDeleteForm,
   IFormsState,
   IIsLoadingForm,
-  ILoadForm,
+  ILoadForm, ILoadMilestoneTypesForm,
   ILoadRequestStatusForm,
   IUpdateForm
 } from './form.types';
 import * as swal from 'sweetalert';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
+import {IMilestoneType} from "../../../../../src/distribution/interfaces";
 
 export function cancelFormAction(source: CancelTokenSource): ICancelForm {
   return {
@@ -103,6 +104,17 @@ export function loadRequestStatusFormAction(requestStatus: IRequestStatus[]): IL
   };
 }
 
+export function loadTypesMilestoneAction(milestoneTypes: IMilestoneType[]): ILoadMilestoneTypesForm {
+  return {
+    type: FORM_LOAD_MILESTONE_TYPES,
+    payload: {
+      milestoneTypes
+    }
+  };
+}
+
+
+
 export function getFormsThunkAction(nextPage: number, hideLoading?: boolean) {
   return (dispatch: Dispatch<FormReduxActions>, getState: () => { form: IFormsState }) => {
     const api: ApiService = new ApiService();
@@ -114,12 +126,14 @@ export function getFormsThunkAction(nextPage: number, hideLoading?: boolean) {
     Axios
       .all([
         api.getForms(page),
-        api.getRequestItemsStatus({ page:1, pageSize: 200 })
+        api.getRequestItemsStatus({ page:1, pageSize: 200 }),
+        api.getMilestoneTypes({ page: 1, pageSize: 200 }),
       ])
-      .then(Axios.spread((forms, requestStatus) => {
+      .then(Axios.spread((forms, requestStatus, milestones) => {
         const { data } = forms;
         dispatch(loadFormAction(data.results, data.count, data.pages, page));
         dispatch(loadRequestStatusFormAction(requestStatus.data.results));
+        dispatch(loadTypesMilestoneAction(milestones.data.results));
         dispatch(isLoadingFormAction(false));
       }))
       .catch((err: AxiosError) => {
