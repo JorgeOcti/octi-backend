@@ -13,6 +13,7 @@ import FormRequestTriggerRender from './TriggersTypes/FormRequestTriggerRender';
 import ShowIf from '../../Utils/ShowIf';
 import FormIntegrationTriggerRender from './TriggersTypes/FormIntegrationTriggerRender';
 import * as uuid from 'uuid';
+import FormTransmittalTriggerRender from "./TriggersTypes/FormTransmittalTriggerRender";
 
 
 export interface IFormTriggerRenderItemItemProps {
@@ -90,6 +91,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     <option key={KindTrigger.email} value={KindTrigger.email}>Correo</option>
                     <option key={KindTrigger.request} value={KindTrigger.request}>Estado solicitudes</option>
                     <option key={KindTrigger.integration} value={KindTrigger.integration}>Integraciones</option>
+                    <option key={KindTrigger.transmittal} value={KindTrigger.transmittal}>Cierre OT</option>
                   </Field>
                 </div>
                 <div className='col-md-2' style={{backgroundColor: '#fff', paddingBottom: '13px'}}>
@@ -139,6 +141,9 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     </ShowIf>
                     <ShowIf condition={KindTrigger.integration === value.kind}>
                       <FormIntegrationTriggerRender item={item} />
+                    </ShowIf>
+                    <ShowIf condition={KindTrigger.transmittal === value.kind}>
+                      <FormTransmittalTriggerRender item={item} forms={forms}  />
                     </ShowIf>
                     <ShowIf condition={!value.kind}>
                       <span className={"text-muted"}>Seleccione un tipo</span>

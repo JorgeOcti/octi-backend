@@ -21,6 +21,7 @@ import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 import { debounce } from 'throttle-debounce';
 import {IMilestone} from "../../../../../../../src/distribution/interfaces";
+import {ChoicesStatusTransmittal} from "../../../../../../../src/distribution/models/transmitall.types";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
@@ -292,8 +293,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
           }
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
-              transmittal?.revision ?
-                this.statusIcon(transmittal.revision) :
+              transmittal?.revision || [ChoicesStatusTransmittal.completed_by_reception.toString(), ChoicesStatusTransmittal.completed.toString()].includes(transmittal?.status) ?
+                this.statusIcon(transmittal.revision, transmittal.status) :
                 null
             }
           </div>
@@ -390,8 +391,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private statusIcon(revision: IParticipant) {
-    if (revision.hasDamages) {
+  private statusIcon(revision: IParticipant, status: string) {
+    if (revision && revision.hasDamages) {
       return (
         <button
           className='btn btn-xs btn-default'
@@ -404,6 +405,12 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         </button>
       );
     } else {
+      if (status === ChoicesStatusTransmittal.completed_by_reception)
+        return (
+
+            <i className='fa fa-warning text-warning' style={{paddingLeft: '5px'}}/>
+
+        );
       return (
         <button
           className='btn btn-xs btn-default'
