@@ -414,7 +414,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </ShowIf>
                         <th
                           className='middle pointer'
-                          style={{ width: '80px' }}
+                          style={{ width: '120px' }}
                           onClick={() => this.changeOrder('meta.request.number')}
                         >
                           Solicitud

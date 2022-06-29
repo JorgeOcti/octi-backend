@@ -56,7 +56,7 @@ class PaymentMethodListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Listado de Canales';
+    this.title = 'Listado de métodos de pago';
     this.changePage = this.changePage.bind(this);
     this.createPaymentMethod = this.createPaymentMethod.bind(this);
     this.processCreatePaymentMethod = this.processCreatePaymentMethod.bind(this);

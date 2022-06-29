@@ -93,7 +93,6 @@ class MilestoneTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if (this.props.milestoneType.pagination !== prevProps.milestoneType.pagination) {
       window.scrollTo(0, 0);
