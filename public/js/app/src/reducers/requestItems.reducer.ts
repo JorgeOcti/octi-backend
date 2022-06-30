@@ -33,6 +33,7 @@ const initialState: IRequestItemsState = {
   requestSettings,
   filters: {
     request: '',
+    transmittal: '',
     ticket: '',
     conectaID: '',
     entry: '',
@@ -42,8 +43,8 @@ const initialState: IRequestItemsState = {
     users: [],
     properties: [],
     status: [],
-    from: moment().subtract(12, 'months'),
-    to: null
+    from: moment().subtract(12, 'months').startOf('day'),
+    to: moment().endOf('day')
   },
   options: {
     orderBy: 'meta.request.number',

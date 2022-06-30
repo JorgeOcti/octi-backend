@@ -326,12 +326,14 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className='col-md-6 no-padding'>
-                  <DateRangeInput
-                    options={this.getDateRangeOptions()}
-                    onChange={this.onDateRangeChange}
-                    startDate={from}
-                    endDate={to}
-                  />
+                  <div style={{padding: '10px'}}>
+                    <DateRangeInput
+                      options={this.getDateRangeOptions()}
+                      onChange={this.onDateRangeChange}
+                      startDate={from}
+                      endDate={to}
+                    />
+                  </div>
                 </div>
                 <div className='col-md-12 no-padding'>
                   <div
