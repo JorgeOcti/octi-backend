@@ -896,6 +896,8 @@ private getForm(filter: any): Promise<IFormModel> {
       }, {
         header: 'Chofer', key: 'driver', width: 30
       }, {
+        header: 'Patente', key: 'patent', width: 30
+      }, {
         header: 'Transportista', key: 'carrier', width: 30
       }, {
         header: 'VIN', key: 'vin', width: 30
@@ -963,6 +965,7 @@ private getForm(filter: any): Promise<IFormModel> {
             type: transmittal?.type?.name,
             requestNumber: item.request?.number,
             driver: `${transmittal.transporter?.driver?.firstName} ${transmittal.transporter?.driver?.lastName}`,
+            patent: `${transmittal.transporter?.patent}`,
             carrier: transmittal.transporter?.carrier?.name,
             vin: item.car?.vin,
             brand: item.car?.brand,

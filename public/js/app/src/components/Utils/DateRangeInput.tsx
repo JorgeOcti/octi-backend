@@ -47,7 +47,7 @@ class DateRangeInput extends React.Component<IPropsType, IStateType> {
   }
 
   render() {
-    return <div className='input-group input-group-sm' style={{ padding: '10px' }}>
+    return <div className='input-group input-group-sm'>
       <input type='text' className='form-control input-sm' ref={this.pickerRef} />
       <div className='input-group-btn'>
         <button className='btn btn-default' onClick={() => {

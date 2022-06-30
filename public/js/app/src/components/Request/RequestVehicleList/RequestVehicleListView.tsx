@@ -7,7 +7,7 @@ import { IRequestItem } from '../../../../../../../src/request/interfaces/reques
 import {
   changeFilterRequestAction,
   createRequestItemAction,
-  deleteRequestItemAction,
+  // deleteRequestItemAction,
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
@@ -24,6 +24,8 @@ import TrackingBasePage from '../../Utils/TrackingBasePage';
 import RequestVehicleItem from './RequestVehicleItem';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
+import DateRangeInput from '../../Utils/DateRangeInput';
+import * as moment from 'moment-timezone';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -52,11 +54,31 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     exporing: false
   };
 
+  readonly rangeOptions: daterangepicker.Options = {
+    // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
+    // endDate: moment().toDate(),
+    maxDate: moment().toDate(),
+    locale: {
+      format: 'DD/MM/YYYY',
+      customRangeLabel: 'Período personalizado',
+      applyLabel: 'Aplicar',
+      cancelLabel: 'Cancelar'
+    },
+    ranges: {
+      'Este mes': [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
+      'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+      'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+      'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
+    },
+    opens: 'left'
+  };
+
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Solicitudes';
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
+    this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.changeFilterDebounced = debounce(200, this.changeFilterDebounced.bind(this));
     this.changeFilter = this.changeFilter.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
@@ -75,7 +97,19 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     const { exporing } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest') && window.user.isAdmin;
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.2'>
+      <AppContainer title={
+        <div
+          style={{ width: '180px' }}
+        >
+          <DateRangeInput
+            options={this.rangeOptions}
+            onChange={this.onDateRangeChange}
+            startDate={filters.from}
+            endDate={filters.to}
+          />
+
+        </div>
+      } cMenu='3' cSubMenu='3.2'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
@@ -225,42 +259,24 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-3' style={{ padding: '0 5px' }}>
-                    <div className='form-group'>
-                      <label className='control-label'>
-                        Solicitante
-                      </label>
-                      <BootstrapSelect
-                        noneSelectedText='Todas'
-                        search={true}
-                        displayItems={2}
-                        selectedText='sucursales seleccionadas.'
-                        selected={filters.users}
-                        sm={true}
-                        allOption={true}
-                        selectAll={
-                          (all: boolean) => {
-                            if (all) {
-                              this.changeFilter('users', users.map((user) => user._id));
-                            } else {
-                              this.changeFilter('users', []);
-                            }
-                          }
-                        }
-                        options={users.map((user) => ({
-                          value: user._id,
-                          text: `${user.firstName} ${user.lastName}`
-                        }))}
-                        onClick={(selected: any) => {
-                          if (filters.users.includes(selected)) {
-                            this.changeFilter('users', [...filters.users.filter((venue) => venue !== selected)]);
-                          } else {
-                            this.changeFilter('users', [...filters.users, selected]);
-                          }
-                        }}
-                      />
+                  <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
+                      <div className='form-group'>
+                        <label className='control-label'>
+                          Nº Transporte
+                        </label>
+                        <input
+                          type='text'
+                          className='form-control input-sm'
+                          placeholder='Nº de ordenes de transporte ejemplo: 2, 8, 10'
+                          defaultValue={filters.transmittal}
+                          onChange={(e) => {
+                            this.changeFilterDebounced('transmittal', e.target.value);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </ShowIf>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
@@ -328,66 +344,76 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
+                  <ShowIf condition={['5bf2de35caf8ef7096105cdd'].includes(window.user.team._id)}>
+                    <div className='col-md-3' style={{ padding: '0 5px' }}>
+                      <div className='form-group'>
+                        <label htmlFor='venues' className='control-label'>Propiedad</label>
+                        <BootstrapSelect
+                          noneSelectedText='Todas'
+                          search={true}
+                          displayItems={2}
+                          selectedText='propiedades seleccionadas.'
+                          selected={filters.properties}
+                          sm={true}
+                          allOption={true}
+                          selectAll={
+                            (all: boolean) => {
+                              if (all) {
+                                this.changeFilter('properties', properties.map((property) => property._id));
+                              } else {
+                                this.changeFilter('properties', []);
+                              }
+                            }
+                          }
+                          options={properties.map((property) => ({
+                            value: property._id,
+                            text: property.name
+                          }))}
+                          onClick={(selected: any) => {
+                            if (filters.properties.includes(selected)) {
+                              this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
+                            } else {
+                              this.changeFilter('properties', [...filters.properties, selected]);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </ShowIf>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
-                      <label htmlFor='venues' className='control-label'>Propiedad</label>
+                      <label className='control-label'>
+                        Solicitante
+                      </label>
                       <BootstrapSelect
                         noneSelectedText='Todas'
                         search={true}
                         displayItems={2}
-                        selectedText='propiedades seleccionadas.'
-                        selected={filters.properties}
+                        selectedText='sucursales seleccionadas.'
+                        selected={filters.users}
                         sm={true}
                         allOption={true}
                         selectAll={
                           (all: boolean) => {
                             if (all) {
-                              this.changeFilter('properties', properties.map((property) => property._id));
+                              this.changeFilter('users', users.map((user) => user._id));
                             } else {
-                              this.changeFilter('properties', []);
+                              this.changeFilter('users', []);
                             }
                           }
                         }
-                        options={properties.map((property) => ({
-                          value: property._id,
-                          text: property.name
+                        options={users.map((user) => ({
+                          value: user._id,
+                          text: `${user.firstName} ${user.lastName}`
                         }))}
                         onClick={(selected: any) => {
-                          if (filters.properties.includes(selected)) {
-                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
+                          if (filters.users.includes(selected)) {
+                            this.changeFilter('users', [...filters.users.filter((venue) => venue !== selected)]);
                           } else {
-                            this.changeFilter('properties', [...filters.properties, selected]);
+                            this.changeFilter('users', [...filters.users, selected]);
                           }
                         }}
                       />
-                    </div>
-                  </div>
-                  <div className='col-md-3'>
-                    <div className='row'>
-                      <div className='col-md-6' style={{ padding: '0 5px' }}>
-                        <div className='form-group'>
-                          <label htmlFor='venues' className='control-label'>Desde</label>
-                          <DateRangePicker
-                            value={filters.from}
-                            className={'input-sm'}
-                            onChange={(e) => {
-                              this.changeFilter('from', e);
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div className='col-md-6' style={{ padding: '0 5px' }}>
-                        <div className='form-group'>
-                          <label htmlFor='venues' className='control-label'>Hasta</label>
-                          <DateRangePicker
-                            value={filters.to}
-                            className={'input-sm'}
-                            onChange={(e) => {
-                              this.changeFilter('to', e);
-                            }}
-                          />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -445,7 +471,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
                           <th
                             className='middle'
-                            style={{ width: '200px', maxWidth: '220px' }}
+                            style={{ width: '250px', maxWidth: '260px' }}
                             // onClick={() => this.changeOrder('meta.destination.name')}
                           >
                             Ruta
@@ -486,7 +512,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                               className={`fa fa-fw ${orderBy === 'meta.car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                           </th>
                         </ShowIf>
-                        <ShowIf condition={false && requestSettings.entry}>
+                        <ShowIf condition={requestSettings.entry && false}>
                           <th className='middle-center' style={{ width: '60px' }}>
                             BL
                           </th>
@@ -529,7 +555,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                             </span>
                           </th>
                         </ShowIf>
-                        <ShowIf condition={false && requestSettings.color}>
+                        <ShowIf condition={requestSettings.color && false}>
                           <th
                             className='middle pointer'
                             style={{ minWidth: '120px' }}
@@ -548,7 +574,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           <th className='middle' style={{ width: '60px' }}>CDO</th>
                         </ShowIf>
-                        <ShowIf condition={false && requestSettings.reason}>
+                        <ShowIf condition={requestSettings.reason && false}>
                           <th
                             className='middle pointer'
                             style={{ minWidth: '100px' }}
@@ -639,6 +665,13 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private onDateRangeChange(from: Date, to: Date) {
+    const { orderBy, orderType } = this.props.requestItems.options;
+    this.props.changeFilterRequestAction('from', from);
+    this.props.changeFilterRequestAction('to', to);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
   }
 
   public componentDidMount() {
@@ -859,7 +892,7 @@ const mapDispatchToProps = (dispatch: any) => {
     getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType, hideLoading)),
     createRequestItemAction: (item: IRequestItem) => dispatch(createRequestItemAction(item)),
     updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
-    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
+    // deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
     changeFilterRequestAction: (key: keyof IRequestItemsFilters, value: any | any[]) => dispatch(changeFilterRequestAction(key, value))
   };
 };
