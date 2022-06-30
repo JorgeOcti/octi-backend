@@ -3,6 +3,7 @@ export enum ChoicesStatusTransmittal {
   inTransit = 'inTransit',
   damaged = 'damaged',
   completed = 'completed',
+  completed_by_reception = 'completed_by_reception',
 }
 
 export const choicesStatusTransmittal = [
@@ -10,4 +11,5 @@ export const choicesStatusTransmittal = [
   ChoicesStatusTransmittal.inTransit,
   ChoicesStatusTransmittal.damaged,
   ChoicesStatusTransmittal.completed,
+  ChoicesStatusTransmittal.completed_by_reception,
 ];

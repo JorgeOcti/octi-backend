@@ -11,6 +11,7 @@ import { MILESTONE_LOAD_REQUEST_STATUS } from '../actions/milestone.types';
 const initialState: IFormsState = {
   forms: [],
   requestStatus: [],
+  milestoneTypes: [],
   loading: true,
   source: null,
   options:{
@@ -60,6 +61,11 @@ export function formsReducer(state = initialState, action: FormReduxActions): IF
           count: action.payload.count
         }
       };
+    case "/FORM/LOAD_MILESTONE_TYPES":
+      return {
+        ...state,
+        milestoneTypes: action.payload.milestoneTypes
+      }
     default:
       return state;
   }
