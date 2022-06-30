@@ -822,15 +822,9 @@ class CarController {
     const columns = [];
     for (const section of form.sections) {
       for (const question of section.questions) {
-        if (['scale', 'accessory', 'numeric-scale'].includes(question.kind)) {
+        if (['scale', 'accessory', 'numeric-scale', 'damage', 'text'].includes(question.kind)) {
           columns.push({
             header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
-          });
-        } else if (question.kind === 'damage') {
-          columns.push({
-            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30, style: {
-              numFmt: '0'
-            }
           });
         }
       }
@@ -848,10 +842,26 @@ class CarController {
     return columns;
   }
 
+  private createObjectFromDamages(items: any[]){
+    let dict : any = {};
+    items.map(item => {
+      return dict[item._id.toString()] = item.name;
+    })
+    return dict;
+  }
+
+  private createObjectFromItems(items: any[]){
+    let dict : any = {};
+    items.map(item => {
+      return dict[item._id.toString()] = item.item;
+    })
+    return dict;
+  }
+
   public processAnswer(answer: IParticipantAnswerModel) {
     let datum = {};
 
-    if (answer.kind === 'scale' || answer.kind === 'accessory') {
+    if (answer.kind === 'scale') {
       if (!answer.answer) {
         return {};
       }
@@ -863,12 +873,24 @@ class CarController {
           [answer._id.toString()]: selectedChoice.choice
         };
       }
+    } else if (answer.kind === 'text' ) {
+      datum = {
+        [answer._id.toString()]: answer.comment
+      };
+    } else if (answer.kind === 'accessory' ) {
+      let accessories = this.createObjectFromItems(answer.accessories.items);
+      datum = {
+        [answer._id.toString()]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
+      };
     } else if (answer.kind === 'numeric-scale') {
       datum = {
         [answer._id.toString()]: answer.score
       };
     } else if (answer.kind === 'damage') {
-      datum = { [answer._id.toString()]: answer.damagesSelected.length };
+      let parts = this.createObjectFromDamages(answer.damages.parts);
+      let kinds = this.createObjectFromDamages(answer.damages.kinds);
+      let positions = this.createObjectFromDamages(answer.damages.positions);
+      datum = { [answer._id.toString()]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
     }
     return datum;
   }
@@ -880,19 +902,14 @@ class CarController {
       brand: participant.car?.brand ?? '',
       denomination: participant.car?.denomination ?? '',
       color: participant.car?.color ?? '',
-      team: participant.team.name,
       user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
       company: participant.company.name,
       venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
       vin: participant.car ? participant.car.vin : '',
       plate: participant.car ? participant.car.patent : '',
       name: participant.name,
-      conciliation: participant.conciliation ? 'SI' : 'NO',
-      qualification: participant.qualification,
       reception: participant.reception ? 'SI' : 'NO',
       shipping: participant.shipping ? 'SI' : 'NO',
-      isReception: participant.receptionText.length > 0 ? 'SI' : 'NO',
-      isShipping: participant.shippingText.length > 0 ? 'SI' : 'NO'
     };
 
     let sectionAnswers = {};
@@ -934,6 +951,7 @@ class CarController {
       logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       const team = req.user.team._id;
       const company = req.user.company._id;
+      const {userForms} = req.user;
       const { from, to } = req.query as { from: string, to: string};
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
@@ -952,6 +970,9 @@ class CarController {
         team,
         venue: {
           $in: venuesPermissions
+        },
+        form: {
+          $in: userForms.map(form => form._id)
         }
       };
       if (from && to) {
@@ -978,8 +999,6 @@ class CarController {
       }, {
         header: 'Color', key: 'color', width: 30
       }, {
-        header: 'Team', key: 'team', width: 30
-      }, {
         header: 'Usuario', key: 'user', width: 30
       }, {
         header: 'Compañía', key: 'company', width: 30
@@ -989,19 +1008,9 @@ class CarController {
         header: 'VIN', key: 'vin', width: 30
       }, {
         header: 'Formulario', key: 'name', width: 30
-      }, {
-        header: 'Tiene conciliación', key: 'conciliation', width: 30
-      }, {
-        header: 'Calificación', key: 'qualification', width: 30, style: {
-          numFmt: '0.000'
-        }
-      }, {
-        header: 'Tipo Recepción', key: 'isReception', width: 30
-      }, {
+      },{
         header: 'Recepcionado', key: 'reception', width: 30
-      }, {
-        header: 'Tipo Envío', key: 'isShipping', width: 30
-      }, {
+      },{
         header: 'Enviado', key: 'shipping', width: 30
       }];
 
@@ -1029,15 +1038,10 @@ class CarController {
           number: 1,
           createdAt: 1,
           car: 1,
-          team: 1,
           user: 1,
           company: 1,
           venue: 1,
           name: 1,
-          conciliation: 1,
-          qualification: 1,
-          reception: 1,
-          shipping: 1,
           receptionText: 1,
           shippingText: 1,
           sections: 1,
@@ -1062,9 +1066,6 @@ class CarController {
           select: 'name'
         }, {
           path: 'company',
-          select: 'name'
-        }, {
-          path: 'team',
           select: 'name'
         }, {
           path: 'sendTo',
