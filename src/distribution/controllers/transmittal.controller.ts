@@ -1205,7 +1205,7 @@ private getForm(filter: any): Promise<IFormModel> {
             type: 1,
             status: 1,
             latest_evidence: { $max: "$transmittalfiles.createdAt" },
-            latest_shipping: { $max: "$car_data.shipping_date" },
+            latest_shipping: { $max: "$car_data.shippingDate" },
           }},{$group:{
             _id: '$transmittal',
             cars: {$sum: 1},
