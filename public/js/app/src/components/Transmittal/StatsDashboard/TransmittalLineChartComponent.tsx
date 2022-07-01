@@ -35,8 +35,7 @@ export default class TransmittalLineChartComponent extends React.Component<IProp
 
       <div style={{paddingRight: '10px', width:`${label_length}px`}} key='0'>
         <div style={{marginBottom: '16px', marginTop:'20px'}}>
-          <p style={{color: '#fff'}}>padding</p>
-          <p style={{fontSize: '16px'}}><i className="fa fa-fw fa-clock-o" /></p>
+          <p style={{fontSize: '16px', marginTop: '45px', marginBottom: '0px'}}><i className="fa fa-fw fa-clock-o" /></p>
         </div>
         <div className="no-margin" style={{height: `${circle_width}px`}} />
         <div style={{marginTop: '5px'}}>

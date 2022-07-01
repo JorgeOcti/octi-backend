@@ -260,7 +260,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
     return <AppContainer title='OT por etapa' cMenu='3' cSubMenu='3.6'>
       <div className="row no-margin">
-        <div className='col-xs-12 col-md-3 no-padding'>
+        <div className='col-xs-12 col-md-3 no-padding' style={{marginLeft: '15px', marginTop: '10px'}}>
           <DateRangeInput
             options={this.getDateRangeOptions()}
             onChange={this.onDateRangeChange}
