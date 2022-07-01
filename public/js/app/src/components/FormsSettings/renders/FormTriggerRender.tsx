@@ -13,7 +13,7 @@ import FormRequestTriggerRender from './TriggersTypes/FormRequestTriggerRender';
 import ShowIf from '../../Utils/ShowIf';
 import FormIntegrationTriggerRender from './TriggersTypes/FormIntegrationTriggerRender';
 import * as uuid from 'uuid';
-import FormTransmittalTriggerRender from "./TriggersTypes/FormTransmittalTriggerRender";
+import FormTransmittalTriggerRender from './TriggersTypes/FormTransmittalTriggerRender';
 
 
 export interface IFormTriggerRenderItemItemProps {
@@ -68,8 +68,8 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
             const value: any = fields.get(index);
             const openTab = openTabs.includes(value._id ?? value.tid);
             return (
-              <div className='row' key={index} style={{paddingTop: '10px'}}>
-                <div className='col-md-4' style={{backgroundColor: '#fff'}}>
+              <div className='row' key={index} style={{ paddingTop: '10px' }}>
+                <div className='col-md-4' style={{ backgroundColor: '#fff' }}>
                   <Field
                     name={`${item}.name`}
                     label='Nombre *'
@@ -79,7 +79,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     validate={[inputStringRequired]}
                   />
                 </div>
-                <div className='col-md-4' style={{backgroundColor: '#fff'}}>
+                <div className='col-md-4' style={{ backgroundColor: '#fff' }}>
                   <Field
                     name={`${item}.kind`}
                     label='Tipo *'
@@ -94,7 +94,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     <option key={KindTrigger.transmittal} value={KindTrigger.transmittal}>Cierre OT</option>
                   </Field>
                 </div>
-                <div className='col-md-2' style={{backgroundColor: '#fff', paddingBottom: '13px'}}>
+                <div className='col-md-2' style={{ backgroundColor: '#fff', paddingBottom: '13px' }}>
                   <Field
                     name={`${item}.enabled`}
                     label='Activo'
@@ -114,11 +114,11 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                   className={`col-md-2 pointer text-right`}
                   style={{ paddingTop: '30px', paddingBottom: '10px', backgroundColor: '#fff' }}
                 >
-                  <ul className="list-inline">
-                    <li onClick={() => fields.remove(index)} style={{padding: '0 10px'}}>
+                  <ul className='list-inline'>
+                    <li onClick={() => fields.remove(index)} style={{ padding: '0 10px' }}>
                       <i className='fa fa-minus-circle text-red' />
                     </li>
-                    <li onClick={() => this.toogleTab(value._id ?? value.tid)} style={{padding: '0 10px'}}>
+                    <li onClick={() => this.toogleTab(value._id ?? value.tid)} style={{ padding: '0 10px' }}>
                       {
                         openTab ? <i className='fa fa-chevron-up' /> : <i className='fa fa-chevron-down' />
                       }
@@ -143,10 +143,10 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                       <FormIntegrationTriggerRender item={item} />
                     </ShowIf>
                     <ShowIf condition={KindTrigger.transmittal === value.kind}>
-                      <FormTransmittalTriggerRender item={item} forms={forms}  />
+                      <FormTransmittalTriggerRender item={item} forms={forms} />
                     </ShowIf>
                     <ShowIf condition={!value.kind}>
-                      <span className={"text-muted"}>Seleccione un tipo</span>
+                      <span className={'text-muted'}>Seleccione un tipo</span>
                     </ShowIf>
                   </div>
                 </ShowIf>
@@ -154,14 +154,15 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
             );
           })
         }
-        <div className='row' style={{padding: '15px 0'}}>
+        <div className='row' style={{ padding: '15px 0' }}>
           <div className='col-md-12 text-right'>
             <button
               className='btn btn-sm btn-success'
               onClick={() => fields.push({
-                tid: uuid.v4(),
-                enabled: true,
-                config: { method: 'post' } }
+                  tid: uuid.v4(),
+                  enabled: true,
+                  config: { method: 'post' }
+                }
               )}
             >
               <i className='fa fa-plus' /> Agregar trigger
