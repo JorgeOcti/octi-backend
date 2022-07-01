@@ -108,7 +108,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
   private calculateTimeDiff(transmittalResume: any){
     let datum = {
-      shipping_pending: -1,
+      shipping_pending: 0,
       pending_loading: -1,
       loading_evidence: -1,
       evidence_arrival: -1,
@@ -165,7 +165,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       else
         return `${days}d`
     else
-      return `${left_hours}d`
+      return `${left_hours}h`
   }
 
   private processDataForTimeline() {
@@ -182,7 +182,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       this.calculateTimeDiff(transmittal)
     )
 
-    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending >= 0).map(d => d.shipping_pending)
+
+    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending !== 0).map(d => d.shipping_pending > 0 ? d.shipping_pending : d.pending_loading + d.shipping_pending )
     let filtered_pending = time_datum_resume.filter(datum => datum.pending_loading >= 0).map(d => d.pending_loading)
     let filtered_loaded = time_datum_resume.filter(datum => datum.loading_evidence >= 0).map(d => d.loading_evidence)
     let filtered_evidence = time_datum_resume.filter(datum => datum.evidence_arrival >= 0).map(d => d.evidence_arrival)
