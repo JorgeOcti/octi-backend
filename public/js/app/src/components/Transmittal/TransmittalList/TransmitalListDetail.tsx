@@ -408,7 +408,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       if (status === ChoicesStatusTransmittal.completed_by_reception)
         return (
 
-            <i className='fa fa-warning text-warning' style={{paddingLeft: '5px'}}/>
+            <i className='fa fa-ban text-warning' style={{paddingLeft: '5px'}}/>
 
         );
       return (
