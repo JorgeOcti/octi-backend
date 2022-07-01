@@ -626,6 +626,11 @@ class RequestController {
       .split(',')
       .filter((requestNumber: string) => (requestNumber.length));
 
+    const transmittalsNumbers = filters.transmittal
+      .replace(/[^0-9\-,]/g, '')
+      .split(',')
+      .filter((transmitttalNumber: string) => (transmitttalNumber.length));
+
     let venuesIds: any[];
     const extraQuery: any = {};
 
@@ -691,6 +696,20 @@ class RequestController {
       //   }))
       // };
     }
+    if (transmittalsNumbers.length) {
+      if (!extraQuery.hasOwnProperty('$or')) {
+        extraQuery.$or = [];
+      }
+      transmittalsNumbers.forEach((transmittalNumber: any) => {
+          try {
+            extraQuery.$or.push({
+              'meta.transmittal.number': parseInt(transmittalNumber)
+            });
+          } catch (e) {
+          }
+      });
+    }
+
     if (filters.entry?.length) {
       extraQuery['meta.car.entry'] = { '$regex': filters.entry, '$options': 'i' };
     }

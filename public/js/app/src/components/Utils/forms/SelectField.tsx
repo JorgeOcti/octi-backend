@@ -24,7 +24,7 @@ const SelectField: React.FunctionComponent<IPropsType> = ({
 }: IPropsType) => {
   return (
     <div className={`form-group ${touched && error ? 'has-error' : ''} ${touched && warning ? 'has-warning' : ''}`}>
-      {!labelOff ? <label className='control-label'>{label}</label> : null}
+      {!labelOff ? <label className='control-label text-ellipsis'>{label}</label> : null}
       <select
         {...input}
         className={`form-control input-sm ${touched && error ? 'is-invalid' : warning ? 'is-warning' : ''}`}

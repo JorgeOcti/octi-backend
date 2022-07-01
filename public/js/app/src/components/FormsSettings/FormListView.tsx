@@ -98,7 +98,6 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if (this.props.forms.pagination !== prevProps.forms.pagination) {
       window.scrollTo(0, 0);
