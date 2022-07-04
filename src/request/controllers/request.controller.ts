@@ -626,10 +626,10 @@ class RequestController {
       .split(',')
       .filter((requestNumber: string) => (requestNumber.length));
 
-    const transmittalsNumbers = filters.transmittal
+    const transmittalsNumbers = filters.transmittal ? filters.transmittal
       .replace(/[^0-9\-,]/g, '')
       .split(',')
-      .filter((transmitttalNumber: string) => (transmitttalNumber.length));
+      .filter((transmitttalNumber: string) => (transmitttalNumber.length)) : [];
 
     let venuesIds: any[];
     const extraQuery: any = {};
