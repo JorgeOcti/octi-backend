@@ -1297,6 +1297,8 @@ class RequestController {
       }, {
         path: 'advancePaymentInformation.files'
       }, {
+        path: 'advancePaymentInformation.letters'
+      },{
         path: 'items',
         select: ['_id']
       }],
