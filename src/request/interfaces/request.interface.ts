@@ -33,6 +33,7 @@ export interface IRequestAdvancePayment {
   otherMethod: string;
   number: string;
   files: IRequestFile[];
+  letters: IRequestFile[];
 }
 
 export interface IRequest {
