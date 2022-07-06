@@ -145,6 +145,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                   <th className='middle-center pointer' style={{ width: '60px' }}>
                     Ticket
                   </th>
+                  <th className='middle-center pointer' style={{ width: '60px' }}>
+                    Carta
+                  </th>
                 </ShowIf>
                 {/*<th className='middle' style={{ width: '110px' }}>Estado</th>*/}
                 <th>OT</th>
@@ -230,6 +233,26 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           {
                             //request.advancePaymentInformation.files[0].file.url
                             request?.advancePaymentInformation?.files?.length ?
+                              <i
+                                className='fa fa-check-circle text-green'
+                              /> : ''
+                          }
+                        </div>
+                      </td>
+                    </ShowIf>
+                    <ShowIf condition={requestSettings.ticket}>
+                      <td className='middle-center'>
+                        <div
+                          data-toggle='tooltip'
+                          data-placement='top'
+                          className={`${request?.advancePaymentInformation?.letters?.length ? 'pointer' : ''}`}
+                          title={request?.advancePaymentInformation?.letters[0]?.file?.name ?? '-'}
+                          onClick={() => this.openBlank(request.advancePaymentInformation.letters[0].file.url)}
+
+                        >
+                          {
+                            //request.advancePaymentInformation.files[0].file.url
+                            request?.advancePaymentInformation?.letters?.length ?
                               <i
                                 className='fa fa-check-circle text-green'
                               /> : ''
