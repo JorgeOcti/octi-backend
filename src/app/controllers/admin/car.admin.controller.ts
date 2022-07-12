@@ -3,8 +3,10 @@ import { PaginateOptions, PaginateResult, Types } from 'mongoose';
 import { IRequest } from '../../../interfaces/global.interface';
 import { io } from '../../../server';
 import Car, { ChoicesStatusCar, ICarModel } from '../../models/car.model';
-import carTracker from '../tracker/car.tracker';
+// import carTracker from '../tracker/car.tracker';
 import logger from '../../../services/logger.service';
+import History from '../../models/history.model';
+import { ModuleHistory, StatusHistory } from '../../models/history.types';
 
 class AdminCarController {
 
@@ -54,83 +56,102 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
+    let carsToInsert : ICarModel[] = [];
+
     const { company } = req.user;
     const { team } = req.user;
     logger.info(`CarController.importCars email: ${req.user.email}`);
     const { cars } = req.body;
-    if (cars && cars.length) {
-      logger.info(`CarController.importCars cars: ${JSON.stringify(cars)}`);
-      for (const car of cars) {
-        if (car.vin && car.vin.length) {
-          try {
-            const vin2 = car.vin.toUpperCase().trim().substr(car.vin.length - 6);
-            let newCar = await Car.findOne({
-              vin: car.vin.toUpperCase().trim(),
-              team: team._id
-            }, {
-              _id: true,
-              type: true,
-              NInterno: true,
-              property: true,
-              color: true,
-              denomination: true,
-              brand: true,
-              patent: true,
-              internalNumber: true,
-              createdBy: true,
-              createdAt: true,
-              status: true
-            });
-            if (newCar) {
-              logger.info(`CarController.importCars updated: ${JSON.stringify(car)}`);
-              newCar.vin2 = vin2;
-              newCar.type = car.tipo ? car.tipo : newCar.type;
-              newCar.property = car.propiedad ? car.propiedad : newCar.property;
-              newCar.color = car.color ? car.color : newCar.color;
-              newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-              newCar.brand = car.marca ? car.marca : newCar.brand;
-              newCar.patent = car.patente ? car.patente : newCar.patent;
-              newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
-              newCar.createdBy = req.user;
-              newCar.status = ChoicesStatusCar.active;
-              await newCar.save();
-            } else {
-              logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
-              newCar = await new Car({
-                vin: car.vin,
-                vin2,
-                type: car.tipo ? car.tipo : '',
-                color: car.color ? car.color : '',
-                property: car.propiedad ? car.propiedad : '',
-                denomination: car.denominacion ? car.denominacion : '',
-                brand: car.marca ? car.marca : '',
-                patent: car.patente ? car.patente : '',
-                internalNumber: car.NInterno ? car.NInterno : '',
-                company: company._id,
-                team: team._id,
-                createdBy: req.user,
-                status: ChoicesStatusCar.active
-              }).save();
-            }
-            await carTracker.importIntoSystem({
-              car: newCar._id,
-              team: team._id,
-              company: company._id,
-              createdBy: req.user._id,
-              executedAt: newCar.createdAt
-            });
-            // io.to(req.user._id).emit('STATUS-CARS', {newCar});
-          } catch (e) {
-            /* istanbul ignore next */
-            console.log(e);
+    try {
+      if (cars && cars.length) {
+        logger.info(`CarController.importCars cars: ${JSON.stringify(cars)}`);
+        for (const car of cars) {
+          if (car.vin && car.vin.length) {
+
+              const vin2 = car.vin.toUpperCase().trim().substr(car.vin.length - 6);
+              let newCar = await Car.findOne({
+                vin: car.vin.toUpperCase().trim(),
+                team: team._id
+              }, {
+                _id: true,
+                type: true,
+                NInterno: true,
+                property: true,
+                color: true,
+                denomination: true,
+                brand: true,
+                patent: true,
+                internalNumber: true,
+                createdBy: true,
+                createdAt: true,
+                status: true
+              });
+              if (newCar) {
+                logger.info(`CarController.importCars updated: ${JSON.stringify(car)}`);
+                newCar.vin2 = vin2;
+                newCar.type = car.tipo ? car.tipo : newCar.type;
+                newCar.property = car.propiedad ? car.propiedad : newCar.property;
+                newCar.color = car.color ? car.color : newCar.color;
+                newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
+                newCar.brand = car.marca ? car.marca : newCar.brand;
+                newCar.patent = car.patente ? car.patente : newCar.patent;
+                newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
+                newCar.createdBy = req.user;
+                newCar.status = ChoicesStatusCar.active;
+                await newCar.save();
+              } else {
+                carsToInsert.push({
+                  vin: car.vin,
+                  vin2,
+                  type: car.tipo ? car.tipo : '',
+                  color: car.color ? car.color : '',
+                  property: car.propiedad ? car.propiedad : '',
+                  denomination: car.denominacion ? car.denominacion : '',
+                  brand: car.marca ? car.marca : '',
+                  patent: car.patente ? car.patente : '',
+                  internalNumber: car.NInterno ? car.NInterno : '',
+                  company: company._id,
+                  team: team._id,
+                  createdBy: req.user,
+                  status: ChoicesStatusCar.active
+                } as ICarModel);
+              }
+              // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           }
         }
+
+        await Car.insertMany(carsToInsert, async (err, data) => {
+          for (let car of data){
+            logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
+            let history = await new History({
+              status: StatusHistory.created,
+              module: ModuleHistory.import,
+              car: car._id,
+              team: team._id,
+              company: company._id,
+              createdBy: car.createdBy,
+              executedAt: car.createdAt,
+              current: true
+            }).save();
+            await Car.updateOne({
+              _id: car
+            }, {
+              $set: {
+                event: history._id
+              }
+            });
+          }
+        });
+        io.to(req.user._id).emit('FINISH-IMPORT', { finish: true });
       }
-      io.to(req.user._id).emit('FINISH-IMPORT', { finish: true });
+      logger.info(`CarController.importCars: Finish importing`);
+      res.json({
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
     }
-    res.json({
-      status: 200
-    });
   }
 
   public async apiListCars(req: IRequest, res: Response): Promise<any> {
