@@ -1,4 +1,4 @@
-import {AxiosError} from 'axios';
+import Axios, {AxiosError} from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo, RefObject} from 'react';
@@ -277,8 +277,17 @@ class ImportCarsView extends TrackingBasePage<IPropsType, IStateType> {
           });
           api
             .getSource();
-          api
-            .sendImportCars({cars})
+
+          let slicedCars = []
+          const chunkSize = 1000;
+          for (let i = 0; i < cars.length; i += chunkSize){
+            slicedCars.push(
+              cars.slice(i, i + chunkSize)
+            );
+          }
+
+          Axios.all(slicedCars.map(sCars =>  api
+            .sendImportCars({cars: sCars})))
             .then(() => {
               swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
               this.setState({
