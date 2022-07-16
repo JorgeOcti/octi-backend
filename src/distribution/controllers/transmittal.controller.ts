@@ -1122,6 +1122,7 @@ private getForm(filter: any): Promise<IFormModel> {
     logger.info(`TransmittalController.transmittalResume`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
 
+
     try {
       let transmittals = await TransmittalItem.aggregate([{$match: {
           team: mongoose.Types.ObjectId(team),
@@ -1147,7 +1148,9 @@ private getForm(filter: any): Promise<IFormModel> {
           path: "$transmittal_data",
           includeArrayIndex: "0",
           preserveNullAndEmptyArrays: true
-        }}, {$lookup: {
+        }}, { $addFields: {
+          'transmittal_data.evidenceFullLoad': { $slice: ['$transmittal_data.evidenceFullLoad', 1, 5] } }
+        }, {$lookup: {
           from: 'participants',
           localField: 'revisions',
           foreignField: '_id',
@@ -1156,7 +1159,8 @@ private getForm(filter: any): Promise<IFormModel> {
           from: 'transmittalfiles',
           localField: 'transmittal_data.evidenceFullLoad',
           foreignField: '_id',
-          as: 'transmittalfiles'
+          as: 'transmittalfiles',
+
         }},{$lookup: {
           from: 'milestonetypes',
           localField: 'transmittal_data.type',
@@ -1174,6 +1178,9 @@ private getForm(filter: any): Promise<IFormModel> {
 
         {
           $addFields: { status: { $toString: '$transmittal_data.status' } }
+        },
+        {
+          $addFields: { OT: { $toString: '$transmittal_data.number' } }
         },
         {$lookup: {
             from: 'participants',
@@ -1204,6 +1211,7 @@ private getForm(filter: any): Promise<IFormModel> {
             arrivalDate: 1,
             type: 1,
             status: 1,
+            OT: 1,
             latest_evidence: { $max: "$transmittalfiles.createdAt" },
             latest_shipping: { $max: "$car_data.shippingDate" },
           }},{$group:{
@@ -1217,6 +1225,7 @@ private getForm(filter: any): Promise<IFormModel> {
             checkDate: {$max: "$checkDate"},
             type: {$first: '$type'},
             status: {$first: '$status'},
+            OT: {$first: '$OT'},
           }}]);
 
         return res.json({data: transmittals});

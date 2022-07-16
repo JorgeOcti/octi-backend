@@ -136,7 +136,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
   private calculateCarOTQuantity(transmittalResumes: any){
     let shipping = transmittalResumes.filter((t: { shippingDate: string; }) =>  t.shippingDate != null)
     let pending = transmittalResumes.filter((t: { status: string; }) =>  t.status === 'pending' )
-    let loading = transmittalResumes.filter((t: { status: string; loadingDate: string|null; }) =>  t.status === 'pending' && t.loadingDate != null)
+    let loading = transmittalResumes.filter((t: { status: string; loadingDate: string|null; evidenceDate: string|null; }) =>  (t.status === 'pending' && t.loadingDate != null) ||  (t.status === 'inTransit' && t.evidenceDate == null) )
     let evidence  = transmittalResumes.filter((t: { status: string; evidenceDate: string|null; }) =>  t.status === 'inTransit' && t.evidenceDate != null)
     let arrival = transmittalResumes.filter((t: { status: string; checkDate: string|null;}) =>  t.status === 'completed'&& t.checkDate == null)
 
