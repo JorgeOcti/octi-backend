@@ -1192,8 +1192,6 @@ private getForm(filter: any): Promise<IFormModel> {
                         [
                           { $eq: [ "$car",  "$$car_id" ] },
                           { $eq: [ "$reception",  true ] },
-                          { $gt: [ "$createdAt",  "$$created" ] },
-
                         ]
                     }
                 }

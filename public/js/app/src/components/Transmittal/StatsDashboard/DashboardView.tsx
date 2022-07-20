@@ -135,10 +135,11 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
   private calculateCarOTQuantity(transmittalResumes: any){
     let shipping = transmittalResumes.filter((t: { shippingDate: string; }) =>  t.shippingDate != null)
-    let pending = transmittalResumes.filter((t: { status: string; }) =>  t.status === 'pending' )
+    let pending = transmittalResumes.filter((t: { status: string; loadingDate: string|null; }) =>  t.status === 'pending' && t.loadingDate == null)
     let loading = transmittalResumes.filter((t: { status: string; loadingDate: string|null; evidenceDate: string|null; }) =>  (t.status === 'pending' && t.loadingDate != null) ||  (t.status === 'inTransit' && t.evidenceDate == null) )
     let evidence  = transmittalResumes.filter((t: { status: string; evidenceDate: string|null; }) =>  t.status === 'inTransit' && t.evidenceDate != null)
     let arrival = transmittalResumes.filter((t: { status: string; checkDate: string|null;}) =>  t.status === 'completed'&& t.checkDate == null)
+    let receptions = transmittalResumes.filter((t: { status: string; checkDate: string|null;}) =>  ['completed', 'completed_by_reception'].includes(t.status) && t.checkDate != null)
 
     return {
       shipping_car: shipping.reduce((a:number, b:any) => a + b.cars, 0),
@@ -150,6 +151,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       evidence_ot: evidence.length,
       arrival_car: arrival.reduce((a:number, b:any) => a + b.cars, 0),
       arrival_ot: arrival.length,
+      receptions_car : receptions.reduce((a:number, b:any) => a + b.cars, 0),
+      receptions_ot: receptions.length
     };
   }
 
