@@ -330,7 +330,7 @@ class CarController {
                     vin: car.vin
                   }, {
                     $set: {
-                      vin2: car.vin.substr(car.vin?.length - 5),
+                      vin2: car.vin.substr(car.vin?.length - 6),
                       brand: car.brand,
                       denomination: car.denomination,
                       material: car.material,
@@ -357,7 +357,7 @@ class CarController {
                     vin: car.vin
                   }, {
                     $set: {
-                      vin2: car.vin.substr(car.vin?.length - 5),
+                      vin2: car.vin.substr(car.vin?.length - 6),
                       brand: car.brand,
                       denomination: car.denomination,
                       material: car.material,
