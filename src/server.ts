@@ -142,11 +142,8 @@ io.on('connection', async (socket: Socket) => {
 
 setInterval(() => {
   io.of('').adapter.rooms.forEach((room, key) => {
-    console.log(`HOSTNAME: ${process.env?.HOSTNAME} --> room`);
-    console.log(`key:`, key);
-    console.log(`room:`, room);
+    console.log(`HOSTNAME: ${process.env?.HOSTNAME} room: ${key}`, room);
   });
-  //console.log(`HOSTNAME: ${process.env?.HOSTNAME}`);
-}, 5000);
+}, 10000);
 
 export default server;
