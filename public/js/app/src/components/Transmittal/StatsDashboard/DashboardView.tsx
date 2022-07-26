@@ -11,8 +11,23 @@ import DateRangeInput from "../../Utils/DateRangeInput";
 import {IWindow} from "../../../interfaces/window";
 import TransmittalLineChartComponent from "./TransmittalLineChartComponent";
 import {sum} from "lodash";
+import {
+  ChoicesStatusTransmittal
+} from "../../../../../../../src/distribution/models/transmitall.types";
 
 declare let window: IWindow;
+
+interface ITransmittalResume {
+  _id: string;
+  status: ChoicesStatusTransmittal;
+  shippingDate: string;
+  checkDate: string | null;
+  loadingDate: string | null;
+  evidenceDate: string | null;
+  cars: number;
+  OT: string;
+  type: string;
+}
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
@@ -62,7 +77,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
-    const {from, to} =  this.state;
+    const {from, to} = this.state;
     this.props.transmittalActions.loadTransmittalResume(moment(from).unix().toString(), moment(to).unix().toString())
 
   }
@@ -106,7 +121,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  private calculateTimeDiff(transmittalResume: any){
+  private calculateTimeDiff(transmittalResume: any) {
     let datum = {
       shipping_pending: 0,
       pending_loading: -1,
@@ -133,34 +148,67 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     return datum;
   }
 
-  private calculateCarOTQuantity(transmittalResumes: any){
-    let shipping = transmittalResumes.filter((t: { shippingDate: string; }) =>  t.shippingDate != null)
-    let pending = transmittalResumes.filter((t: { status: string; loadingDate: string|null; }) =>  t.status === 'pending' && t.loadingDate == null)
-    let loading = transmittalResumes.filter((t: { status: string; loadingDate: string|null; evidenceDate: string|null; }) =>  (t.status === 'pending' && t.loadingDate != null) ||  (t.status === 'inTransit' && t.evidenceDate == null) )
-    let evidence  = transmittalResumes.filter((t: { status: string; evidenceDate: string|null; }) =>  t.status === 'inTransit' && t.evidenceDate != null)
-    let arrival = transmittalResumes.filter((t: { status: string; checkDate: string|null;}) =>  t.status === 'completed'&& t.checkDate == null)
-    let receptions = transmittalResumes.filter((t: { status: string; checkDate: string|null;}) =>  ['completed', 'completed_by_reception'].includes(t.status) && t.checkDate != null)
+  private calculateCarOTQuantity(transmittalResumes: ITransmittalResume[]) {
+
+    let shipping = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          transmittalResume.status === 'pending' && moment(transmittalResume.shippingDate).isValid()
+      )
+    let pending = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          transmittalResume.status === 'pending' && !moment(transmittalResume.loadingDate).isValid()
+      )
+    let loading = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          (transmittalResume.status === 'pending' && moment(transmittalResume.loadingDate).isValid()) ||
+          (transmittalResume.status === 'inTransit' && !moment(transmittalResume.evidenceDate).isValid())
+      )
+    let evidence = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          transmittalResume.status === 'inTransit' && moment(transmittalResume.evidenceDate).isValid()
+      )
+    let arrival = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          transmittalResume.status === 'completed' && !moment(transmittalResume.checkDate).isValid()
+      )
+    let receptions = transmittalResumes
+      .filter(
+        (transmittalResume) =>
+          ['completed', 'completed_by_reception'].includes(transmittalResume.status) &&
+          moment(transmittalResume.checkDate).isValid()
+      )
 
     return {
-      shipping_car: shipping.reduce((a:number, b:any) => a + b.cars, 0),
-      pending_car: pending.reduce((a:number, b:any) => a + b.cars, 0),
+      shipping_car: shipping.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
+      shipping,
+      pending_car: pending.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
       pending_ot: pending.length,
-      loading_car: loading.reduce((a:number, b:any) => a + b.cars, 0),
+      pending,
+      loading_car: loading.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
       loading_ot: loading.length,
-      evidence_car: evidence.reduce((a:number, b:any) => a + b.cars, 0),
+      loading,
+      evidence_car: evidence.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
       evidence_ot: evidence.length,
-      arrival_car: arrival.reduce((a:number, b:any) => a + b.cars, 0),
+      evidence,
+      arrival_car: arrival.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
       arrival_ot: arrival.length,
-      receptions_car : receptions.reduce((a:number, b:any) => a + b.cars, 0),
-      receptions_ot: receptions.length
+      arrival,
+      receptions_car: receptions.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
+      receptions_ot: receptions.length,
+      receptions
     };
   }
 
-  private humanizeHours(hours: number){
+  private humanizeHours(hours: number) {
     if (hours === 0)
       return '-'
-    let days = Math.floor(hours/24);
-    let left_hours = Math.floor(hours%24);
+    let days = Math.floor(hours / 24);
+    let left_hours = Math.floor(hours % 24);
 
     if (days > 0)
       if (hours > 0)
@@ -177,27 +225,32 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     if (resume.length === 0)
       return {circles: []}
 
-    resume = resume.filter(r => r.type === "Internacional")
-
+    resume = resume.filter(transmittalResume =>
+      transmittalResume.type === "Internacional"
+    )
 
     let quanty_datum = this.calculateCarOTQuantity(resume);
-    let time_datum_resume = resume.map(transmittal =>
+
+    let active_OT = resume.filter(transmittalResume =>
+      !quanty_datum.receptions.find((datum: ITransmittalResume) => datum.OT === transmittalResume.OT)
+    )
+
+    let time_datum_resume = active_OT.map(transmittal =>
       this.calculateTimeDiff(transmittal)
     )
 
-
-    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending !== 0).map(d => d.shipping_pending > 0 ? d.shipping_pending : d.pending_loading + d.shipping_pending )
+    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending !== 0).map(d => d.shipping_pending > 0 ? d.shipping_pending : d.pending_loading + d.shipping_pending)
     let filtered_pending = time_datum_resume.filter(datum => datum.pending_loading >= 0).map(d => d.pending_loading)
     let filtered_loaded = time_datum_resume.filter(datum => datum.loading_evidence >= 0).map(d => d.loading_evidence)
     let filtered_evidence = time_datum_resume.filter(datum => datum.evidence_arrival >= 0).map(d => d.evidence_arrival)
     let filtered_checked = time_datum_resume.filter(datum => datum.arrival_check >= 0).map(d => d.arrival_check)
 
 
-    let shipping_time_hours = filtered_shipping.length === 0 ? 0 : sum(filtered_shipping)/filtered_shipping.length;
-    let pending_time_hours = filtered_pending.length === 0 ? 0 : sum(filtered_pending)/filtered_pending.length;
-    let loaded_time_hours = filtered_loaded.length === 0 ? 0 : sum(filtered_loaded)/filtered_loaded.length;
-    let evidence_time_hours = filtered_evidence.length === 0 ? 0 : sum(filtered_evidence)/filtered_evidence.length;
-    let checked_time_hours = filtered_checked.length === 0 ? 0 : sum(filtered_checked)/filtered_checked.length;
+    let shipping_time_hours = filtered_shipping.length === 0 ? 0 : sum(filtered_shipping) / filtered_shipping.length;
+    let pending_time_hours = filtered_pending.length === 0 ? 0 : sum(filtered_pending) / filtered_pending.length;
+    let loaded_time_hours = filtered_loaded.length === 0 ? 0 : sum(filtered_loaded) / filtered_loaded.length;
+    let evidence_time_hours = filtered_evidence.length === 0 ? 0 : sum(filtered_evidence) / filtered_evidence.length;
+    let checked_time_hours = filtered_checked.length === 0 ? 0 : sum(filtered_checked) / filtered_checked.length;
 
     let shipping_time = this.humanizeHours(shipping_time_hours);
     let pending_time = this.humanizeHours(pending_time_hours);
@@ -207,9 +260,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
 
     let total_time = shipping_time_hours + pending_time_hours + loaded_time_hours + evidence_time_hours + checked_time_hours;
-    let total_ot = resume.length;
-    let total_car = sum(resume.map(d => d.cars));
-
+    let total_ot = resume.length - quanty_datum.receptions_ot;
+    let total_car = sum(resume.map(d => d.cars)) - quanty_datum.receptions_car;
 
     return {
       circles: [{
@@ -245,7 +297,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       }, {
         value: quanty_datum.arrival_car,
         upperValues: ['-'],
-        lowerValues: ['-','-'],
+        lowerValues: ['-', '-'],
         title: 'Recepción PDI',
         color: '#f23d8b'
       }],
@@ -257,10 +309,16 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   render() {
-    const {from, to } = this.state;
-    const {loading} = this.props.transmittal;
+    const {from, to} = this.state;
+    const {loading, resume} = this.props.transmittal;
 
-    let international_data : any  = this.processDataForTimeline();
+    let end_date = moment(to).endOf('week').endOf('d');
+
+    let completedTransmittals = resume.filter(t =>
+      [ChoicesStatusTransmittal.completed, ChoicesStatusTransmittal.completed_by_reception].includes(t.status) &&
+      moment(t.arrivalDate).isSameOrBefore(end_date));
+
+    let international_data: any = this.processDataForTimeline();
 
     return <AppContainer title='OT por etapa' cMenu='3' cSubMenu='3.6'>
       <div className="row no-margin">
@@ -281,25 +339,30 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
               <p>&nbsp;</p>
             </div>
             <div className='overlay'>
-              <i className='fa fa-spinner fa-spin text-purple' />
+              <i className='fa fa-spinner fa-spin text-purple'/>
             </div>
           </div> :
-          <section  className='content'>
+          <section className='content'>
             <div className="box">
 
               <div className="row no-margin" style={{maxWidth: '100%', marginBottom: '20px'}}>
                 <div className='box-header with-border'><h3 className='box-title'>Vista general de la cadena</h3></div>
                 <div className="box-title" style={{marginTop: '20px', marginBottom: '20px'}}>
-                  <span style={{fontSize: '19px', marginLeft: '20px', fontWeight:'bold'}}>Ruta Internacional | <i className="fa fa-fw fa-car" /> {international_data.total_car} | <i className="fa fa-fw fa-truck" /> {international_data.total_ot} | <i className="fa fa-fw fa-clock-o" /> {international_data.total_time}</span>
+                  <span style={{fontSize: '19px', marginLeft: '20px', fontWeight: 'bold'}}>Ruta Internacional | <i
+                    className="fa fa-fw fa-car"/> {international_data.total_car} | <i
+                    className="fa fa-fw fa-truck"/> {international_data.total_ot} | <i
+                    className="fa fa-fw fa-clock-o"/> {international_data.total_time}</span>
                 </div>
-                <TransmittalLineChartComponent  circleSize={50} circles={international_data.circles} lineColor='#7bd7eb' />
+                <TransmittalLineChartComponent circleSize={50} circles={international_data.circles}
+                                               lineColor='#7bd7eb'/>
               </div>
 
             </div>
             <div className="box">
               <div className="row no-margin">
-                <div className='box-header with-border'><h3 className='box-title'>OT totales completadas por semana</h3></div>
-                <div ref={this.histogramChartRef}  style={{height: '30vh', maxWidth: '100%'}} > </div>
+                <div className='box-header with-border'><h3 className='box-title'>OT totales completadas por semana <small>({completedTransmittals.length})</small></h3>
+                </div>
+                <div ref={this.histogramChartRef} style={{height: '30vh', maxWidth: '100%'}}></div>
               </div>
 
             </div>
@@ -313,34 +376,50 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     const {resume} = this.props.transmittal;
     const {from, to} = this.state;
 
-    let start_date = moment(from).startOf('week');
-    let end_date = moment(to).endOf('week');
+    let startDate = moment(from).startOf('week').startOf('d');
+    let endDate = moment(to).endOf('week').endOf('d');
 
-    let data = []
-    let completed_transmittals = resume.filter(t => t.status === "completed").map(t => moment(t.arrivalDate))
+    let completed = [];
+    let completed_reception = [];
 
-    while(start_date < end_date) {
-      let tmp = start_date.clone().endOf('week')
-      data.push({
-        name: `${start_date.format("MMM DD")} ${tmp.format("MMM DD")}`.replace('.', '').toUpperCase(),
-        value: completed_transmittals.filter(date => date >= start_date && date <= tmp).length,
+    let completedTransmittals = resume.filter(t =>
+      [ChoicesStatusTransmittal.completed, ChoicesStatusTransmittal.completed_by_reception].includes(t.status) &&
+      moment(t.arrivalDate).isSameOrBefore(endDate)
+    ).map(t => {return {date: moment(t.arrivalDate), status: t.status}})
+
+    while (startDate < endDate) {
+      let endWeek = startDate.clone().endOf('week')
+      completed.push({
+        name: `${startDate.format("MMM DD")} ${endWeek.format("MMM DD")}`.replace('.', '').toUpperCase(),
+        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status == ChoicesStatusTransmittal.completed).length,
         label: {
           fontWeight: 'bold',
           fontSize: 12,
-          color: start_date.clone().add(1, 'week') > end_date ? '#52c1e9' : '#000'
+          color: startDate.clone().add(1, 'week') > endDate ? '#52c1e9' : '#000'
         }
-      })
-      start_date = start_date.add(1, 'week')
+      });
+
+      completed_reception.push({
+        name: `${startDate.format("MMM DD")} ${endWeek.format("MMM DD")}`.replace('.', '').toUpperCase(),
+        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status == ChoicesStatusTransmittal.completed_by_reception).length,
+        label: {
+          fontWeight: 'bold',
+          fontSize: 12,
+          color: startDate.clone().add(1, 'week') > endDate ? '#52c1e9' : '#000'
+        }
+      });
+      startDate = startDate.add(1, 'week')
     }
 
-    return data;
+    return {completed, completed_reception};
+
   }
 
   private updateDashboardChart() {
     if (this.histogramChart == undefined)
       return
 
-    let data = this.proccessDataForChart()
+    let {completed, completed_reception} = this.proccessDataForChart()
 
     const option: any = {
       tooltip: {
@@ -350,14 +429,16 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
         }
       },
       legend: {
-        show: false,
+        show: true,
+        bottom: 20,
+        selectedMode: false
       },
       calculable: true,
       xAxis: [
         {
           type: 'category',
           axisTick: {show: false},
-          data: data.map(datum => {
+          data: completed.map(datum => {
             return {value: datum.name, textStyle: datum.label}
           })
         }
@@ -381,15 +462,36 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
         {
           name: 'OT completadas',
           type: 'bar',
+          stack: 'total',
           color: '#3b8dbc',
+          barMaxWidth: 50,
+          label: {
+            position: 'top',
+            show: false,
+            fontSize: 12,
+            color: '#000'
+          },
+          data: completed.map(datum => {
+            return {name: datum.name, value: datum.value}
+          }),
+        }, {
+          name: 'OT cerradas por checklist',
+          type: 'bar',
+          stack: 'total',
+          color: '#f39c12',
           barMaxWidth: 50,
           label: {
             position: 'top',
             show: true,
             fontSize: 12,
-            color: '#000'
+            color: '#000',
+            formatter: (object: any) => {
+              return completed[object.dataIndex].value + completed_reception[object.dataIndex].value;
+            }
           },
-          data: data.map(datum => {return {name: datum.name, value: datum.value}}),
+          data: completed_reception.map(datum => {
+            return {name: datum.name, value: datum.value}
+          }),
         }
       ]
     };
