@@ -21,7 +21,7 @@
   "dependencies": {
     "@pusher/push-notifications-server": "~1.2.0",
     "@sentry/node": "5.5.0",
-    "@socket.io/redis-adapter": "~7.1.0",
+    "@socket.io/redis-adapter": "^7.2.0",
     "@types/cors": "~2.8.12",
     "@types/xml2js": "~0.4.9",
     "archiver": "~3.0.0",
