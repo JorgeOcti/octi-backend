@@ -10,8 +10,6 @@ import logger from './services/logger.service';
 import redisClient, {createRedisClient} from './services/redis.service';
 import GeneralUtils from './utils/general.utils';
 
-import { RedisAdapter } from '@socket.io/redis-adapter';
-
 const mongooseRedisCache = require("mongoose-redis-cache");
 
 // Mongoose setting
@@ -141,13 +139,5 @@ io.on('connection', async (socket: Socket) => {
     // io.emit('user disconnected');
   });
 });
-
-setInterval(async () => {
-  const rooms = await (io.of('/').adapter as unknown as RedisAdapter).allRooms();
-  console.log(`HOSTNAME: ${process.env?.HOSTNAME}`, rooms); // a Set containing all rooms (across every node)
-  /*io.of('').adapter.rooms.forEach((room, key) => {
-    console.log(`HOSTNAME: ${process.env?.HOSTNAME} room: ${key}`, room);
-  });*/
-}, 10000);
 
 export default server;
