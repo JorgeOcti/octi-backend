@@ -462,6 +462,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
         {
           name: 'OT completadas',
           type: 'bar',
+          cursor: 'default',
           stack: 'total',
           color: '#3b8dbc',
           barMaxWidth: 50,
@@ -475,9 +476,10 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
             return {name: datum.name, value: datum.value}
           }),
         }, {
-          name: 'OT cerradas por checklist',
+          name: 'OT cerradas por recepción',
           type: 'bar',
           stack: 'total',
+          cursor: 'default',
           color: '#f39c12',
           barMaxWidth: 50,
           label: {
