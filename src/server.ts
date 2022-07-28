@@ -63,6 +63,7 @@ io.use( async (socket: Socket, next: any) => {
   if (token) {
     try {
       const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
+
       if (user) {
         // socket: generate user room
         (socket as any).user = user;
@@ -83,8 +84,7 @@ io.use( async (socket: Socket, next: any) => {
 });
 
 /* istanbul ignore next */
-io.on( 'connection', async ( socket: Socket) => {
-  // logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
+io.on('connection', async (socket: Socket) => {
   socket.on('join', (data) => {
     const { room } = data;
     redisClient.get(room, async (error, result) => {
@@ -130,7 +130,6 @@ io.on( 'connection', async ( socket: Socket) => {
         }
       }
       io.to(room).emit('USERS_IN_CHANNEL', data);
-      // logger.info(`socket.leave.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.leave(room);
     });
   });
