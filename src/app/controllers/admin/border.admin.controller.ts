@@ -3,7 +3,7 @@ import logger from "../../services/logger.service";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import {Response} from "express";
 import {IRequest} from "../../interfaces/global.interface";
-import Border, {IBorderModel} from "../models/border.model";
+import Border, {IBorderModel} from "../../app/models/border.model";
 
 class BorderController {
 
