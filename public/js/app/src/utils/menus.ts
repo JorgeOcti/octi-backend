@@ -319,6 +319,15 @@ if (hasPermission(window.user, 'viewColor')) {
   });
 }
 
+if (hasPermission(window.user, 'viewBorder')) {
+  settingItems.push({
+    id: '10.11',
+    icon: 'fa-circle-o',
+    text: 'Pasos de frontera',
+    url: '/settings/border/'
+  });
+}
+
 if (settingItems.length) {
   menus.push({
     id: '10',

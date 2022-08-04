@@ -61,6 +61,7 @@ import {
 } from "./components/Stats/DashboardStatsView";
 import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
 import DashboardView from "./components/Transmittal/StatsDashboard/DashboardView";
+import BordersListView from "./components/Borders/BordersListView";
 
 
 declare let window: IWindow;
@@ -112,6 +113,7 @@ const App = () => (
         <Route exact path='/settings/billing/' component={BillingListView} />
         <Route exact path='/settings/versions/' component={VersionListView} />
         <Route exact path='/settings/stats/' component={DashboardStatsListView} />
+        <Route exact path='/settings/border/' component={BordersListView} />
         <Route exact path='/requests/create/' component={RequestCreateView} />
         <Route exact path='/transmittals/' component={TransmittalListView} />
         <Route exact path='/transmittals/create/' component={TransmittalCreateView} />
