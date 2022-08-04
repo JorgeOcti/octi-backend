@@ -1,9 +1,9 @@
 import * as mongoose from "mongoose";
-import logger from "../../services/logger.service";
+import logger from "../../../services/logger.service";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import {Response} from "express";
-import {IRequest} from "../../interfaces/global.interface";
-import Border, {IBorderModel} from "../../app/models/border.model";
+import {IRequest} from "../../../interfaces/global.interface";
+import Border, {IBorderModel} from "../../models/border.model";
 
 class BorderController {
 
@@ -56,6 +56,11 @@ class BorderController {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '20', 10),
       };
+      options['populate'] = [{
+        path: 'company',
+        select: ['name', 'marker']
+      }];
+
       const filter = {team: new mongoose.Types.ObjectId(team)};
 
       logger.info(`BorderController.apiListBorder: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);

@@ -1,4 +1,4 @@
-import {ICompany, ITeam} from "../../app/interfaces";
+import {ICompany, ITeam} from "./index";
 
 export interface IBaseBorder {
   _id: any;
@@ -10,4 +10,6 @@ export interface IBaseBorder {
 
 export interface IBorder extends IBaseBorder{
   team?: ITeam | any;
+  updatedAt?: Date;
+  createdAt?: Date;
 }

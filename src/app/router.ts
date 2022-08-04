@@ -21,6 +21,8 @@ import { passport } from '../passportConfig';
 import appController from './controllers/app.controller';
 import StudioController from '../stats/controllers/studio.controller';
 import historyController from './controllers/history.controller';
+import BorderController from "./controllers/admin/border.admin.controller";
+import {distributionRouter} from "../distribution/router";
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -199,6 +201,13 @@ appRouter.get('/account/logout/', Middlewares.isLoggedIn, appController.logout);
 
 // recover files
 router.post('/api/v1/recover/upload-file/', Middlewares.isJWTAuthenticated, appController.recoverFile);
+
+// Border
+distributionRouter.get('/settings/border/', Middlewares.isLoggedIn, BorderController.index);
+distributionRouter.get('/api/admin/border/', Middlewares.isLoggedIn, BorderController.apiListBorder);
+distributionRouter.post('/api/admin/border/', Middlewares.isLoggedIn, BorderController.apiCreateBorder);
+distributionRouter.patch('/api/admin/border/:id', Middlewares.isLoggedIn, BorderController.apiUpdateBorder);
+distributionRouter.delete('/api/admin/border/:id', Middlewares.isLoggedIn, BorderController.apiDeleteBorder);
 
 // JWT authentication API
 const jwtRouter = express.Router();

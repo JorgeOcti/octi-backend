@@ -5,7 +5,6 @@ import TransmittalItemController from './controllers/transmittalItem.controller'
 import MilestoneController from './controllers/milestone.controller';
 import MilestoneTypeController from './controllers/milestoneType.controller';
 import { createTransmittalSchema } from './inputsSchema';
-import BorderController from "./controllers/border.controller";
 
 const {isJWTAuthenticated, isLoggedIn, validateBody} = Middlewares;
 
@@ -49,12 +48,6 @@ distributionRouter.post('/api/v1/milestone-types/', Middlewares.isJWTAuthenticat
 distributionRouter.patch('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiUpdate);
 distributionRouter.delete('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiDelete);
 
-// Border
-distributionRouter.get('settings/border/', isLoggedIn, BorderController.index);
-distributionRouter.get('api/v1/border/', Middlewares.isJWTAuthenticated, BorderController.apiListBorder);
-distributionRouter.post('api/v1/border/', Middlewares.isJWTAuthenticated, BorderController.apiListBorder);
-distributionRouter.patch('api/v1/border/', Middlewares.isJWTAuthenticated, BorderController.apiListBorder);
-distributionRouter.delete('api/v1/border/', Middlewares.isJWTAuthenticated, BorderController.apiListBorder);
 
 export {
   distributionRouter
