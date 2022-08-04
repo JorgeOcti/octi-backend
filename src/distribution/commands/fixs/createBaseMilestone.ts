@@ -2,9 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Milestone, {ChoicesKindMilestone, ChoicesStepMilestone} from "../models/milestone.model";
-import Team from "../../app/models/team.model";
-import Form from "../../form/models/form.model";
+import Milestone, {ChoicesKindMilestone, ChoicesStepMilestone} from "../../models/milestone.model";
+import Team from "../../../app/models/team.model";
+import Form from "../../../form/models/form.model";
 
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 

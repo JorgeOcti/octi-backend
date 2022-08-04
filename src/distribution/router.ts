@@ -24,6 +24,7 @@ distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalC
 distributionRouter.post('/api/v1/transmittals/', isJWTAuthenticated, validateBody(createTransmittalSchema), TransmittalController.apiCreate);
 distributionRouter.get('/api/v1/transmittals/only-me/', isJWTAuthenticated, TransmittalController.apiOnlyMe);
 distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, TransmittalController.transmittalResume);
+distributionRouter.get('/api/v1/transmittals/resume-by-status/', isJWTAuthenticated, TransmittalController.transmittalResumeByStatus);
 distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiPatch);
 distributionRouter.put('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiUpdate);

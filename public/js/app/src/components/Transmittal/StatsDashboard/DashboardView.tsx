@@ -1,19 +1,23 @@
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
-import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
-import TrackingBasePage from "../../Utils/TrackingBasePage";
-import * as moment from "moment-timezone";
-import * as React from "react";
-import AppContainer from "../../../container/AppContainer";
-import TransmittalActions from "../../../actions/transmittal.actions";
-import {connect} from "react-redux";
-import DateRangeInput from "../../Utils/DateRangeInput";
-import {IWindow} from "../../../interfaces/window";
-import TransmittalLineChartComponent from "./TransmittalLineChartComponent";
-import {sum} from "lodash";
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/transmittal.types';
+import TrackingBasePage from '../../Utils/TrackingBasePage';
+import * as moment from 'moment-timezone';
+import * as React from 'react';
+import AppContainer from '../../../container/AppContainer';
+import TransmittalActions from '../../../actions/transmittal.actions';
+import { connect } from 'react-redux';
+import DateRangeInput from '../../Utils/DateRangeInput';
+import { IWindow } from '../../../interfaces/window';
+import TransmittalLineChartComponent from './TransmittalLineChartComponent';
+import { sum } from 'lodash';
 import {
   ChoicesStatusTransmittal
-} from "../../../../../../../src/distribution/models/transmitall.types";
+} from '../../../../../../../src/distribution/models/transmitall.types';
+import * as daterangepicker from 'daterangepicker';
+import { ChoicesStatusTransmittalItem } from '../../../../../../../src/distribution/models/transmittalItem.types';
+import ModalView from '../../Modal/ModalView';
+import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
 
 declare let window: IWindow;
 
@@ -32,8 +36,11 @@ interface ITransmittalResume {
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
   dispatch: Dispatch<ITransmittalActionTypes>;
+
+  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+
   transmittalActions: TransmittalActions;
-  transmittal: ITransmittalState
+  transmittal: ITransmittalState;
 }
 
 interface IStateType {
@@ -52,7 +59,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     error: null,
     loading: true,
     from: moment().startOf('month').subtract(1, 'months').toDate(),
-    to: moment().toDate(),
+    to: moment().toDate()
   };
 
   constructor(props: IPropsType) {
@@ -77,15 +84,15 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
-    const {from, to} = this.state;
-    this.props.transmittalActions.loadTransmittalResume(moment(from).unix().toString(), moment(to).unix().toString())
+    const { from, to } = this.state;
+    this.props.transmittalActions.loadTransmittalResume(moment(from).unix().toString(), moment(to).unix().toString());
 
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.histogramChartRef.current)
       this.histogramChart = echarts.init(this.histogramChartRef.current!!);
-    this.updateDashboardChart()
+    this.updateDashboardChart();
   }
 
   private resizeCharts(): void {
@@ -117,7 +124,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       from,
       to
     }, () => {
-      this.props.transmittalActions.loadTransmittalResume(moment(from).unix().toString(), moment(to).unix().toString())
+      this.props.transmittalActions.loadTransmittalResume(moment(from).unix().toString(), moment(to).unix().toString());
     });
   }
 
@@ -127,23 +134,28 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       pending_loading: -1,
       loading_evidence: -1,
       evidence_arrival: -1,
-      arrival_check: -1,
+      arrival_check: -1
+    };
+
+    if (transmittalResume.shippingDate && transmittalResume.pendingDate) {
+      datum.shipping_pending = moment(transmittalResume.pendingDate).diff(moment(transmittalResume.shippingDate), 'hours');
     }
 
-    if (transmittalResume.shippingDate && transmittalResume.pendingDate)
-      datum.shipping_pending = moment(transmittalResume.pendingDate).diff(moment(transmittalResume.shippingDate), 'hours');
-
-    if (transmittalResume.pendingDate && transmittalResume.loadingDate)
+    if (transmittalResume.pendingDate && transmittalResume.loadingDate) {
       datum.pending_loading = moment(transmittalResume.loadingDate).diff(moment(transmittalResume.pendingDate), 'hours');
+    }
 
-    if (transmittalResume.loadingDate && transmittalResume.evidenceDate)
+    if (transmittalResume.loadingDate && transmittalResume.evidenceDate) {
       datum.loading_evidence = moment(transmittalResume.evidenceDate).diff(moment(transmittalResume.loadingDate), 'hours');
+    }
 
-    if (transmittalResume.evidenceDate && transmittalResume.arrivalDate)
+    if (transmittalResume.evidenceDate && transmittalResume.arrivalDate) {
       datum.evidence_arrival = moment(transmittalResume.arrivalDate).diff(moment(transmittalResume.evidenceDate), 'hours');
+    }
 
-    if (transmittalResume.arrivalDate && transmittalResume.checkDate)
+    if (transmittalResume.arrivalDate && transmittalResume.checkDate) {
       datum.arrival_check = moment(transmittalResume.checkDate).diff(moment(transmittalResume.arrivalDate), 'hours');
+    }
 
     return datum;
   }
@@ -154,34 +166,34 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       .filter(
         (transmittalResume) =>
           transmittalResume.status === 'pending' && moment(transmittalResume.shippingDate).isValid()
-      )
+      );
     let pending = transmittalResumes
       .filter(
         (transmittalResume) =>
           transmittalResume.status === 'pending' && !moment(transmittalResume.loadingDate).isValid()
-      )
+      );
     let loading = transmittalResumes
       .filter(
         (transmittalResume) =>
           (transmittalResume.status === 'pending' && moment(transmittalResume.loadingDate).isValid()) ||
           (transmittalResume.status === 'inTransit' && !moment(transmittalResume.evidenceDate).isValid())
-      )
+      );
     let evidence = transmittalResumes
       .filter(
         (transmittalResume) =>
           transmittalResume.status === 'inTransit' && moment(transmittalResume.evidenceDate).isValid()
-      )
+      );
     let arrival = transmittalResumes
       .filter(
         (transmittalResume) =>
           transmittalResume.status === 'completed' && !moment(transmittalResume.checkDate).isValid()
-      )
+      );
     let receptions = transmittalResumes
       .filter(
         (transmittalResume) =>
           ['completed', 'completed_by_reception'].includes(transmittalResume.status) &&
           moment(transmittalResume.checkDate).isValid()
-      )
+      );
 
     return {
       shipping_car: shipping.reduce((a: number, b: ITransmittalResume) => a + b.cars, 0),
@@ -205,45 +217,49 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private humanizeHours(hours: number) {
-    if (hours === 0)
-      return '-'
+    if (hours === 0) {
+      return '-';
+    }
     let days = Math.floor(hours / 24);
     let left_hours = Math.floor(hours % 24);
 
     if (days > 0)
-      if (hours > 0)
-        return `${days}d ${left_hours}h`
-      else
-        return `${days}d`
-    else
-      return `${left_hours}h`
+      if (hours > 0) {
+        return `${days}d ${left_hours}h`;
+      } else {
+        return `${days}d`;
+      }
+    else {
+      return `${left_hours}h`;
+    }
   }
 
   private processDataForTimeline() {
-    let {resume} = this.props.transmittal;
+    let { resume } = this.props.transmittal;
 
-    if (resume.length === 0)
-      return {circles: []}
+    if (resume.length === 0) {
+      return { circles: [] };
+    }
 
     resume = resume.filter(transmittalResume =>
-      transmittalResume.type === "Internacional"
-    )
+      transmittalResume.type === 'Internacional'
+    );
 
     let quanty_datum = this.calculateCarOTQuantity(resume);
 
     let active_OT = resume.filter(transmittalResume =>
       !quanty_datum.receptions.find((datum: ITransmittalResume) => datum.OT === transmittalResume.OT)
-    )
+    );
 
     let time_datum_resume = active_OT.map(transmittal =>
       this.calculateTimeDiff(transmittal)
-    )
+    );
 
-    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending !== 0).map(d => d.shipping_pending > 0 ? d.shipping_pending : d.pending_loading + d.shipping_pending)
-    let filtered_pending = time_datum_resume.filter(datum => datum.pending_loading >= 0).map(d => d.pending_loading)
-    let filtered_loaded = time_datum_resume.filter(datum => datum.loading_evidence >= 0).map(d => d.loading_evidence)
-    let filtered_evidence = time_datum_resume.filter(datum => datum.evidence_arrival >= 0).map(d => d.evidence_arrival)
-    let filtered_checked = time_datum_resume.filter(datum => datum.arrival_check >= 0).map(d => d.arrival_check)
+    let filtered_shipping = time_datum_resume.filter(datum => datum.shipping_pending !== 0).map(d => d.shipping_pending > 0 ? d.shipping_pending : d.pending_loading + d.shipping_pending);
+    let filtered_pending = time_datum_resume.filter(datum => datum.pending_loading >= 0).map(d => d.pending_loading);
+    let filtered_loaded = time_datum_resume.filter(datum => datum.loading_evidence >= 0).map(d => d.loading_evidence);
+    let filtered_evidence = time_datum_resume.filter(datum => datum.evidence_arrival >= 0).map(d => d.evidence_arrival);
+    let filtered_checked = time_datum_resume.filter(datum => datum.arrival_check >= 0).map(d => d.arrival_check);
 
 
     let shipping_time_hours = filtered_shipping.length === 0 ? 0 : sum(filtered_shipping) / filtered_shipping.length;
@@ -268,34 +284,40 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
         value: quanty_datum.shipping_car,
         upperValues: [shipping_time],
         lowerValues: [quanty_datum.shipping_car, '-'],
+        type: ChoicesStatusTransmittalItem.shipped,
         title: 'Embarque',
         color: '#808080'
       }, {
         value: quanty_datum.pending_car,
         upperValues: [pending_time],
         lowerValues: [quanty_datum.pending_car, quanty_datum.pending_ot],
+        type: ChoicesStatusTransmittalItem.pending,
         title: 'Pendiente',
         color: '#bc4da0'
       }, {
         value: quanty_datum.loading_car,
         upperValues: [loaded_time],
         lowerValues: [quanty_datum.loading_car, quanty_datum.loading_ot],
+        type: ChoicesStatusTransmittalItem.loaded,
         title: 'Cargado',
         color: '#00c1f7'
       }, {
         value: quanty_datum.evidence_car,
         upperValues: [evidence_time],
         lowerValues: [quanty_datum.evidence_car, quanty_datum.evidence_ot],
+        type: ChoicesStatusTransmittalItem.documented,
         title: 'Documentación',
         color: '#00c1f7'
       }, {
         value: quanty_datum.arrival_car,
         upperValues: [checked_time],
         lowerValues: [quanty_datum.arrival_car, quanty_datum.arrival_ot],
+        type: ChoicesStatusTransmittalItem.arrived,
         title: 'Descargado',
         color: '#00c1f7'
       }, {
         value: quanty_datum.arrival_car,
+        type: ChoicesStatusTransmittalItem.received,
         upperValues: ['-'],
         lowerValues: ['-', '-'],
         title: 'Recepción PDI',
@@ -304,13 +326,13 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       total_time: this.humanizeHours(total_time),
       total_ot,
       total_car
-    }
+    };
 
   }
 
   render() {
-    const {from, to} = this.state;
-    const {loading, resume} = this.props.transmittal;
+    const { from, to } = this.state;
+    const { loading, resume } = this.props.transmittal;
 
     let end_date = moment(to).endOf('week').endOf('d');
 
@@ -320,9 +342,13 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
 
     let international_data: any = this.processDataForTimeline();
 
-    return <AppContainer title='OT por etapa' cMenu='3' cSubMenu='3.6'>
-      <div className="row no-margin">
-        <div className='col-xs-12 col-md-3 no-padding' style={{marginLeft: '15px', marginTop: '10px'}}>
+    return <AppContainer
+      cMenu='3'
+      cSubMenu='3.6'
+      title={
+        <div
+          style={{ width: '180px' }}
+        >
           <DateRangeInput
             options={this.getDateRangeOptions()}
             onChange={this.onDateRangeChange}
@@ -330,51 +356,63 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
             endDate={to}
           />
         </div>
-      </div>
-
-      {
-        loading ?
-          <div className='box'>
-            <div className='box-body text-center'>
-              <p>&nbsp;</p>
-            </div>
-            <div className='overlay'>
-              <i className='fa fa-spinner fa-spin text-purple'/>
-            </div>
-          </div> :
-          <section className='content'>
-            <div className="box">
-
-              <div className="row no-margin" style={{maxWidth: '100%', marginBottom: '20px'}}>
-                <div className='box-header with-border'><h3 className='box-title'>Vista general de la cadena</h3></div>
-                <div className="box-title" style={{marginTop: '20px', marginBottom: '20px'}}>
-                  <span style={{fontSize: '19px', marginLeft: '20px', fontWeight: 'bold'}}>Ruta Internacional | <i
-                    className="fa fa-fw fa-car"/> {international_data.total_car} | <i
-                    className="fa fa-fw fa-truck"/> {international_data.total_ot} | <i
-                    className="fa fa-fw fa-clock-o"/> {international_data.total_time}</span>
-                </div>
-                <TransmittalLineChartComponent circleSize={50} circles={international_data.circles}
-                                               lineColor='#7bd7eb'/>
-              </div>
-
-            </div>
-            <div className="box">
-              <div className="row no-margin">
-                <div className='box-header with-border'><h3 className='box-title'>OT totales completadas por semana <small>({completedTransmittals.length})</small></h3>
-                </div>
-                <div ref={this.histogramChartRef} style={{height: '30vh', maxWidth: '100%'}}></div>
-              </div>
-
-            </div>
-          </section>
       }
+    >
+      <section className='content'>
+        {
+          loading ?
+            <div className='box'>
+              <div className='box-body text-center'>
+                <p>&nbsp;</p>
+              </div>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
+              </div>
+            </div> :
+            <>
+              <div className='box'>
 
+                <div className='row no-margin' style={{ maxWidth: '100%', marginBottom: '20px' }}>
+                  <div className='box-header with-border'>
+                    <h3 className='box-title'>Vista general de la cadena</h3>
+                  </div>
+                  <div className='box-title' style={{ marginTop: '20px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '16px', marginLeft: '20px', fontWeight: 'bold' }}>Ruta Internacional | <i
+                      className='fa fa-fw fa-car' /> {international_data.total_car} | <i
+                      className='fa fa-fw fa-truck' /> {international_data.total_ot} | <i
+                      className='fa fa-fw fa-clock-o' /> {international_data.total_time}</span>
+                  </div>
+                  <TransmittalLineChartComponent
+                    circleSize={50}
+                    loadDataAction={this.props.loadDataAction}
+                    circles={international_data.circles}
+                    lineColor='#7bd7eb'
+                    from={moment(from).unix().toString()}
+                    to={moment(to).unix().toString()}
+                  />
+                </div>
+
+              </div>
+              <div className='box'>
+                <div className='row no-margin'>
+                  <div className='box-header with-border'>
+                    <h3 className='box-title'>
+                      OT totales completadas por semana <small>({completedTransmittals.length})</small>
+                    </h3>
+                  </div>
+                  <div ref={this.histogramChartRef} style={{ height: '40vh', maxWidth: '100%' }}></div>
+                </div>
+              </div>
+            </>
+        }
+        <ModalView noPadding={true} modalLarge={true} />
+      </section>
     </AppContainer>;
   }
 
   private proccessDataForChart() {
-    const {resume} = this.props.transmittal;
-    const {from, to} = this.state;
+    const { resume } = this.props.transmittal;
+    const { from, to } = this.state;
 
     let startDate = moment(from).startOf('week').startOf('d');
     let endDate = moment(to).endOf('week').endOf('d');
@@ -385,13 +423,15 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     let completedTransmittals = resume.filter(t =>
       [ChoicesStatusTransmittal.completed, ChoicesStatusTransmittal.completed_by_reception].includes(t.status) &&
       moment(t.arrivalDate).isSameOrBefore(endDate)
-    ).map(t => {return {date: moment(t.arrivalDate), status: t.status}})
+    ).map(t => {
+      return { date: moment(t.arrivalDate), status: t.status };
+    });
 
     while (startDate < endDate) {
-      let endWeek = startDate.clone().endOf('week')
+      let endWeek = startDate.clone().endOf('week');
       completed.push({
-        name: `${startDate.format("MMM DD")} ${endWeek.format("MMM DD")}`.replace('.', '').toUpperCase(),
-        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status == ChoicesStatusTransmittal.completed).length,
+        name: `${startDate.format('MMM DD')} ${endWeek.format('MMM DD')}`.replace('.', '').toUpperCase(),
+        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status === ChoicesStatusTransmittal.completed).length,
         label: {
           fontWeight: 'bold',
           fontSize: 12,
@@ -400,26 +440,27 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       });
 
       completed_reception.push({
-        name: `${startDate.format("MMM DD")} ${endWeek.format("MMM DD")}`.replace('.', '').toUpperCase(),
-        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status == ChoicesStatusTransmittal.completed_by_reception).length,
+        name: `${startDate.format('MMM DD')} ${endWeek.format('MMM DD')}`.replace('.', '').toUpperCase(),
+        value: completedTransmittals.filter(t => t.date.isSameOrAfter(startDate) && t.date.isBefore(endWeek) && t.status === ChoicesStatusTransmittal.completed_by_reception).length,
         label: {
           fontWeight: 'bold',
           fontSize: 12,
           color: startDate.clone().add(1, 'week') > endDate ? '#52c1e9' : '#000'
         }
       });
-      startDate = startDate.add(1, 'week')
+      startDate = startDate.add(1, 'week');
     }
 
-    return {completed, completed_reception};
+    return { completed, completed_reception };
 
   }
 
   private updateDashboardChart() {
-    if (this.histogramChart == undefined)
-      return
+    if (this.histogramChart === undefined) {
+      return;
+    }
 
-    let {completed, completed_reception} = this.proccessDataForChart()
+    let { completed, completed_reception } = this.proccessDataForChart();
 
     const option: any = {
       tooltip: {
@@ -437,9 +478,9 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       xAxis: [
         {
           type: 'category',
-          axisTick: {show: false},
+          axisTick: { show: false },
           data: completed.map(datum => {
-            return {value: datum.name, textStyle: datum.label}
+            return { value: datum.name, textStyle: datum.label };
           })
         }
       ],
@@ -473,8 +514,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
             color: '#000'
           },
           data: completed.map(datum => {
-            return {name: datum.name, value: datum.value}
-          }),
+            return { name: datum.name, value: datum.value };
+          })
         }, {
           name: 'OT cerradas por recepción',
           type: 'bar',
@@ -492,8 +533,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
             }
           },
           data: completed_reception.map(datum => {
-            return {name: datum.name, value: datum.value}
-          }),
+            return { name: datum.name, value: datum.value };
+          })
         }
       ]
     };
@@ -515,6 +556,7 @@ const mapDispatchToProps = (dispatch: any) => {
   const transmittalActions = new TransmittalActions(dispatch);
   return {
     dispatch,
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
     transmittalActions
   };
 };

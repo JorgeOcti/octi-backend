@@ -1024,4 +1024,11 @@ export default class ApiService {
       `/api/v1/transmittals/resume?from=${from}&to=${to}`
     );
   }
+
+
+  public getOtsOnStatus(type: string, from: string, to: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/transmittals/resume-by-status?status=${type}&from=${from}&to=${to}`
+    );
+  }
 }
