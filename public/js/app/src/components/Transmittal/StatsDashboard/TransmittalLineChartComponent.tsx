@@ -208,12 +208,12 @@ class TransmittalLineChartComponent extends React.Component<IPropsType, IStateTy
             type={type}
             data={response.data.map((item: any) => {
             const dateDiff: any = {
-              [ChoicesStatusTransmittalItem.pending]: moment().diff(moment(item.createdAt), 'hours'),
-              [ChoicesStatusTransmittalItem.shipped]: moment().diff(moment(item.shippingDate), 'hours'),
-              [ChoicesStatusTransmittalItem.loaded]: moment().diff(moment(item.loadingDate), 'hours'),
-              [ChoicesStatusTransmittalItem.documented]: item.arrivalDate ? moment().diff(moment(item.evidenceDate), 'hours') : '',
-              [ChoicesStatusTransmittalItem.arrived]: moment().diff(moment(item.arrivalDate), 'hours'),
-              [ChoicesStatusTransmittalItem.received]: moment().diff(moment(item.checkDate), 'hours'),
+              [ChoicesStatusTransmittalItem.pending]: moment().diff(moment(item.createdAt), 'minutes'),
+              [ChoicesStatusTransmittalItem.shipped]: moment().diff(moment(item.shippingDate), 'minutes'),
+              [ChoicesStatusTransmittalItem.loaded]: moment().diff(moment(item.loadingDate), 'minutes'),
+              [ChoicesStatusTransmittalItem.documented]: item.arrivalDate ? moment().diff(moment(item.evidenceDate), 'minutes') : '',
+              [ChoicesStatusTransmittalItem.arrived]: moment().diff(moment(item.arrivalDate), 'minutes'),
+              [ChoicesStatusTransmittalItem.received]: moment().diff(moment(item.checkDate), 'minutes'),
               [ChoicesStatusTransmittalItem.damaged]: 'OTS dañadas',
               [ChoicesStatusTransmittalItem.completed]: 'OTS completadas'
             };
