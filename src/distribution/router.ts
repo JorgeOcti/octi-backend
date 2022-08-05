@@ -27,6 +27,7 @@ distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, Trans
 distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiPatch);
 distributionRouter.put('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiUpdate);
+distributionRouter.get('/api/v1/transmittals/:id/mark-border/', isJWTAuthenticated, TransmittalController.apiRegisterBorderPass);
 distributionRouter.delete('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', isJWTAuthenticated, TransmittalController.uploadFile);
 distributionRouter.post('/api/v1/transmittals/attach-evidence/', isJWTAuthenticated, TransmittalController.attachEvidence);
@@ -36,6 +37,8 @@ distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, Transm
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDetail);
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDelete);
+
+distributionRouter.get('/api/v1/borders/', Middlewares.isJWTAuthenticated, TransmittalController.apiGetBorders);
 
 distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
 distributionRouter.get('/transmittals/settings/milestone-type/', Middlewares.isLoggedIn, MilestoneController.index);

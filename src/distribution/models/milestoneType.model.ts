@@ -14,6 +14,10 @@ const milestoneTypeSchema = new mongoose.Schema({
   name: {
     type: String
   },
+  needMarkBorder: {
+    type: Boolean,
+    default: false
+  },
 }, {
   timestamps: true
 });

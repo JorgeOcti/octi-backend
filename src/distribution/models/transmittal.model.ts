@@ -61,7 +61,7 @@ export const transmittalSchema = new mongoose.Schema<ITransmittal>({
     enum: choicesStatusTransmittal,
     default: ChoicesStatusTransmittal.pending
   },
-  needMarkBorder: {
+  passBorder: {
     type: Boolean,
     default: false
   }

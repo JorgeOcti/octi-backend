@@ -5,4 +5,5 @@ export interface IMilestoneType {
   _id: any;
   team: ITeam | ITeamModel;
   name: string;
+  needMarkBorder: boolean;
 }
