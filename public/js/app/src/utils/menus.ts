@@ -323,7 +323,7 @@ if (hasPermission(window.user, 'viewBorder')) {
   settingItems.push({
     id: '10.11',
     icon: 'fa-circle-o',
-    text: 'Pasos de frontera',
+    text: 'Pórticos',
     url: '/settings/border/'
   });
 }

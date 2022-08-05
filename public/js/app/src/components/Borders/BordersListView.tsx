@@ -51,7 +51,7 @@ interface IStateType {
 declare let window: IWindow;
 
 class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
-  title: string = "Administrador de pasos de frontera";
+  title: string = "Administrador de pórticos";
   private map: any;
   timer: any;
 
@@ -104,7 +104,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
       company: null
     });
     this.props.loadDataAction(
-      'Agregar Paso de frontera',
+      'Agregar Pórtico',
       <BorderFormView />,
       <React.Fragment>
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
@@ -116,9 +116,9 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
   private processCreateBorder() {
     const {tempBorder} = this.props.border;
     if (!tempBorder.name || !tempBorder.name.trim()) {
-      swal!('Agregar paso fronterizo', 'El nombres es requerido', 'error');
+      swal!('Agregar pórtico', 'El nombres es requerido', 'error');
     } else if (!tempBorder.company || !tempBorder.company._id) {
-      swal!('Agregar paso fronterizo', 'La empresa es requerida', 'error');
+      swal!('Agregar pórtico', 'La empresa es requerida', 'error');
     } else {
       this.props.createBorderAction();
     }
@@ -127,7 +127,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
   private changeBorder(border: IBaseBorder) {
     this.props.changeTempBorder(border);
     this.props.loadDataAction(
-      'Editar Paso de frontera',
+      'Editar Pórtico',
       <BorderFormView />,
       <React.Fragment>
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
@@ -139,9 +139,9 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
   private processChangeBorder() {
     const {tempBorder} = this.props.border;
     if (!tempBorder.name || !tempBorder.name.trim()) {
-      swal!('Agregar paso fronterizo', 'El nombres es requerido', 'error');
+      swal!('Agregar pórtico', 'El nombres es requerido', 'error');
     } else if (!tempBorder.company || !tempBorder.company._id) {
-      swal!('Agregar paso fronterizo', 'La empresa es requerida', 'error');
+      swal!('Agregar pórtico', 'La empresa es requerida', 'error');
     } else {
       this.props.updateBorderAction();
     }
@@ -151,7 +151,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el cruce de frontera ${border.name} `,
+      text: `Vas a eliminar el pórtico ${border.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -215,7 +215,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
               coordinates: [border.lng, border.lat]
             },
             properties: {
-              title: 'Paso fronteras',
+              title: 'Pórticos',
               name: border.name?.toUpperCase(),
               border,
               logo: border.company.marker?.url?.length
@@ -273,7 +273,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
       actions.push(Actions.delete)
 
     return (
-      <AppContainer title='' cMenu='10' cSubMenu='10.4' cAction='Listado'>
+      <AppContainer title='' cMenu='10' cSubMenu='10.11' cAction='Listado'>
         <section className='content'>
           <Row>
             <div className='col-md-12 col-lg-12'>
@@ -285,7 +285,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
                       className={tab === IPageSelector.list ? 'background-transition' : ''}
                       style={{borderTop: '0', marginBottom: '0'}}
                       onClick={() => this.changeTab(IPageSelector.list)}
-                    >Paso Fronteras</a>
+                    >Pórticos</a>
                   </li>
                   <li className={tab === IPageSelector.map ? 'no-margin active' : 'no-margin'}>
                     <a
@@ -302,12 +302,12 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
 
           <div className={`box ${tab === IPageSelector.list ? '' : 'hidden'}`}>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Cruces de frontera <small>{pagination.count}</small></h3>
+              <h3 className='box-title'>Pórticos <small>{pagination.count}</small></h3>
               <div className='box-tools pull-right'>
                 {
                   hasPermission(window.user, 'addBorder') ?
                     <button className='btn btn-sm btn-success' onClick={this.createBorder}><i
-                      className='fa fa-plus'/> Crear paso frontera</button>
+                      className='fa fa-plus'/> Crear Pórtico</button>
                     : null
                 }
               </div>
