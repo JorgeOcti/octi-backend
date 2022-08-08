@@ -112,8 +112,8 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
       [ChoicesStatusTransmittalItem.pending]: moment(row.createdAt).fromNow(),
       [ChoicesStatusTransmittalItem.shipped]: moment(row.shippingDate).fromNow(),
       [ChoicesStatusTransmittalItem.loaded]: moment(row.loadingDate).fromNow(),
-      [ChoicesStatusTransmittalItem.documented]: row.arrivalDate ? moment(row.evidenceDate).fromNow() : '',
-      [ChoicesStatusTransmittalItem.arrived]: moment(row.arrivalDate).fromNow(),
+      [ChoicesStatusTransmittalItem.documented]: row.checkDate ? moment(row.checkDate).fromNow() : '',
+      [ChoicesStatusTransmittalItem.arrived]: moment(row.evidenceDate).fromNow(),
       [ChoicesStatusTransmittalItem.received]: moment(row.checkDate).fromNow(),
       [ChoicesStatusTransmittalItem.damaged]: 'OTS dañadas',
       [ChoicesStatusTransmittalItem.completed]: 'OTS completadas'

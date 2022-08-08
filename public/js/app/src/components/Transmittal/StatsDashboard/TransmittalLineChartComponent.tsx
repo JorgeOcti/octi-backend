@@ -211,8 +211,8 @@ class TransmittalLineChartComponent extends React.Component<IPropsType, IStateTy
               [ChoicesStatusTransmittalItem.pending]: moment().diff(moment(item.createdAt), 'minutes'),
               [ChoicesStatusTransmittalItem.shipped]: moment().diff(moment(item.shippingDate), 'minutes'),
               [ChoicesStatusTransmittalItem.loaded]: moment().diff(moment(item.loadingDate), 'minutes'),
-              [ChoicesStatusTransmittalItem.documented]: item.arrivalDate ? moment().diff(moment(item.evidenceDate), 'minutes') : '',
-              [ChoicesStatusTransmittalItem.arrived]: moment().diff(moment(item.arrivalDate), 'minutes'),
+              [ChoicesStatusTransmittalItem.documented]: item.checkDate ? moment().diff(moment(item.checkDate), 'minutes') : 0,
+              [ChoicesStatusTransmittalItem.arrived]: moment().diff(moment(item.evidenceDate), 'minutes'),
               [ChoicesStatusTransmittalItem.received]: moment().diff(moment(item.checkDate), 'minutes'),
               [ChoicesStatusTransmittalItem.damaged]: 'OTS dañadas',
               [ChoicesStatusTransmittalItem.completed]: 'OTS completadas'

@@ -137,25 +137,27 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
       arrival_check: -1
     };
 
+    // console.log('transmittalResume', transmittalResume);
+    if (transmittalResume.pendingDate && !transmittalResume.loadingDate) {
+      datum.pending_loading = moment().diff(moment(transmittalResume.createdAt), 'hours');
+    }
+
     if (transmittalResume.shippingDate && transmittalResume.pendingDate) {
-      datum.shipping_pending = moment(transmittalResume.pendingDate).diff(moment(transmittalResume.shippingDate), 'hours');
+      datum.shipping_pending = moment().diff(moment(transmittalResume.shippingDate), 'hours');
     }
 
-    if (transmittalResume.pendingDate && transmittalResume.loadingDate) {
-      datum.pending_loading = moment(transmittalResume.loadingDate).diff(moment(transmittalResume.pendingDate), 'hours');
+    if (transmittalResume.loadingDate && !transmittalResume.evidenceDate) {
+      datum.loading_evidence = moment().diff(moment(transmittalResume.loadingDate), 'hours');
     }
 
-    if (transmittalResume.loadingDate && transmittalResume.evidenceDate) {
-      datum.loading_evidence = moment(transmittalResume.evidenceDate).diff(moment(transmittalResume.loadingDate), 'hours');
+    if (transmittalResume.evidenceDate && !transmittalResume.arrivalDate) {
+      datum.evidence_arrival = moment().diff(moment(transmittalResume.checkDate), 'hours');
     }
 
-    if (transmittalResume.evidenceDate && transmittalResume.arrivalDate) {
-      datum.evidence_arrival = moment(transmittalResume.arrivalDate).diff(moment(transmittalResume.evidenceDate), 'hours');
+    if (transmittalResume.evidenceDate && !transmittalResume.checkDate) {
+      datum.arrival_check = moment().diff(moment(transmittalResume.evidenceDate), 'hours');
     }
-
-    if (transmittalResume.arrivalDate && transmittalResume.checkDate) {
-      datum.arrival_check = moment(transmittalResume.checkDate).diff(moment(transmittalResume.arrivalDate), 'hours');
-    }
+    console.log('datum.evidence_arrival', datum?.evidence_arrival);
 
     return datum;
   }
@@ -172,17 +174,20 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
         (transmittalResume) =>
           transmittalResume.status === 'pending' && !moment(transmittalResume.loadingDate).isValid()
       );
+    // console.log('pending', pending);
     let loading = transmittalResumes
       .filter(
         (transmittalResume) =>
           (transmittalResume.status === 'pending' && moment(transmittalResume.loadingDate).isValid()) ||
           (transmittalResume.status === 'inTransit' && !moment(transmittalResume.evidenceDate).isValid())
       );
+    // console.log('loading', loading);
     let evidence = transmittalResumes
       .filter(
         (transmittalResume) =>
           transmittalResume.status === 'inTransit' && moment(transmittalResume.evidenceDate).isValid()
       );
+    console.log('evidence', evidence);
     let arrival = transmittalResumes
       .filter(
         (transmittalResume) =>
@@ -260,6 +265,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     let filtered_loaded = time_datum_resume.filter(datum => datum.loading_evidence >= 0).map(d => d.loading_evidence);
     let filtered_evidence = time_datum_resume.filter(datum => datum.evidence_arrival >= 0).map(d => d.evidence_arrival);
     let filtered_checked = time_datum_resume.filter(datum => datum.arrival_check >= 0).map(d => d.arrival_check);
+    console.log('filtered_pending', filtered_pending);
 
 
     let shipping_time_hours = filtered_shipping.length === 0 ? 0 : sum(filtered_shipping) / filtered_shipping.length;
@@ -267,6 +273,7 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     let loaded_time_hours = filtered_loaded.length === 0 ? 0 : sum(filtered_loaded) / filtered_loaded.length;
     let evidence_time_hours = filtered_evidence.length === 0 ? 0 : sum(filtered_evidence) / filtered_evidence.length;
     let checked_time_hours = filtered_checked.length === 0 ? 0 : sum(filtered_checked) / filtered_checked.length;
+    console.log('pending_time_hours', pending_time_hours);
 
     let shipping_time = this.humanizeHours(shipping_time_hours);
     let pending_time = this.humanizeHours(pending_time_hours);

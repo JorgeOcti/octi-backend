@@ -1125,26 +1125,20 @@ class TransmittalController {
       let filter: any = {};
       if (status) {
         filter = {
-          [ChoicesStatusTransmittalItem.pending]: {
-            $or: [{
-              status: ChoicesStatusTransmittal.pending,
-              loadingDate: {
-                // $exists: true,
-                $eq: null
-              }
-            }, {
-              status: ChoicesStatusTransmittal.pending,
-              loadingDate: {
-                $exists: false
-              }
-            }]
-          },
           [ChoicesStatusTransmittalItem.shipped]: {
             $and: [{
               status: ChoicesStatusTransmittal.pending,
               shippingDate: {
                 $exists: true,
                 $ne: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.pending]: {
+            $or: [{
+              status: ChoicesStatusTransmittal.pending,
+              loadingDate: {
+                $eq: null
               }
             }]
           },
@@ -1158,12 +1152,7 @@ class TransmittalController {
             }, {
               status: ChoicesStatusTransmittal.inTransit,
               evidenceDate: {
-                $in: [null, undefined, '']
-              }
-            }, {
-              status: ChoicesStatusTransmittal.inTransit,
-              evidenceDate: {
-                $exists: false
+                $eq: null
               }
             }]
           },
@@ -1197,7 +1186,7 @@ class TransmittalController {
           [ChoicesStatusTransmittalItem.completed]: {}
         }[status];
       }
-      // mongoose.set('debug', true);
+      mongoose.set('debug', true);
       const transmittals = await TransmittalItem.aggregate([{
         $match: {
           team: mongoose.Types.ObjectId(team),
@@ -1283,7 +1272,7 @@ class TransmittalController {
         $lookup: {
           from: 'participants',
           let: { car_id: '$car', created: '$arrivalDate' },
-          as: 'revisions',
+          as: 'revisionsArrival',
           pipeline: [{
             $match: {
               $expr: {
@@ -1297,14 +1286,14 @@ class TransmittalController {
         }
       }, {
         $addFields: {
-          checkDate: { $min: '$revisions.createdAt' }
+          checkDate: { $min: '$revisionsArrival.createdAt' }
         }
       }, {
         $lookup: {
           from: 'participants',
           localField: 'revisions',
           foreignField: '_id',
-          as: 'revisions'
+          as: 'participants'
         }
       }, {
         $group: {
@@ -1315,14 +1304,14 @@ class TransmittalController {
           arrivalDate: { $first: '$arrivalDate' },
           origin: { $first: '$origin' },
           destination: { $first: '$destination' },
-          loadingDate: { $max: '$revisions.createdAt' },
+          loadingDate: { $max: '$participants.createdAt' },
           checkDate: { $max: '$checkDate' },
           // checkDate: { $first: '$checkDate' },
           // loadingDates: { $push: '$loadingDate' },
           status: { $first: '$transmittal.status' },
           shippingDates: { $push: '$car.shippingDate' },
           evidenceDates: { $push: '$transmittal.evidenceFullLoad.createdAt' },
-          shippingDate: { $first: '$shippingDate' },
+          // shippingDate: { $first: '$shippingDate' },
           transporter: { $first: '$transmittal.transporter' }
           /*dateDiff: {
             $dateDiff: {
@@ -1391,7 +1380,7 @@ class TransmittalController {
           'checkDate': true,
           'evidenceDate': { $max: '$evidenceDates' },
           'shippingDate': { $max: '$shippingDates' },
-          'loadingDate': { $max: '$loadingDates' }
+          'loadingDate': { $max: '$loadingDate' }
         }
       }, {
         $match: {
@@ -1550,6 +1539,7 @@ class TransmittalController {
           evidenceDate: { $max: '$latest_evidence' },
           checkDate: { $max: '$checkDate' },
           type: { $first: '$type' },
+          createdAt: { $first: '$createdAt' },
           status: { $first: '$status' },
           OT: { $first: '$OT' }
         }
