@@ -378,10 +378,20 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
             </div> :
             <>
               <div className='box'>
+                <div className='row no-margin'>
+                  <div className='box-header with-border'>
+                    <h3 className='box-title'>
+                      OT totales completadas por semana <small>({completedTransmittals.length})</small>
+                    </h3>
+                  </div>
+                  <div ref={this.histogramChartRef} style={{ height: '40vh', maxWidth: '100%' }}></div>
+                </div>
+              </div>
+              <div className='box'>
 
                 <div className='row no-margin' style={{ maxWidth: '100%', marginBottom: '20px' }}>
                   <div className='box-header with-border'>
-                    <h3 className='box-title'>Vista general de la cadena</h3>
+                    <h3 className='box-title'>Vista actual de la cadena </h3>
                   </div>
                   <div className='box-title' style={{ marginTop: '20px', marginBottom: '20px' }}>
                     <span style={{ fontSize: '16px', marginLeft: '20px', fontWeight: 'bold' }}>Ruta Internacional | <i
@@ -399,16 +409,6 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
                   />
                 </div>
 
-              </div>
-              <div className='box'>
-                <div className='row no-margin'>
-                  <div className='box-header with-border'>
-                    <h3 className='box-title'>
-                      OT totales completadas por semana <small>({completedTransmittals.length})</small>
-                    </h3>
-                  </div>
-                  <div ref={this.histogramChartRef} style={{ height: '40vh', maxWidth: '100%' }}></div>
-                </div>
               </div>
             </>
         }
