@@ -2,13 +2,13 @@ import * as mongoose from 'mongoose';
 import * as dotenv from "dotenv";
 import * as path from 'path';
 import * as bluebird from "bluebird";
-import TransmittalItem from "../models/transmittalItem.model";
-import {ITransmittalItem} from "../interfaces";
-import Transmittal from "../models/transmittal.model";
-import {ChoicesStatusTransmittal} from "../models/transmitall.types";
-import logger from "../../services/logger.service";
+import TransmittalItem from "../../models/transmittalItem.model";
+import {ITransmittalItem} from "../../interfaces";
+import Transmittal from "../../models/transmittal.model";
+import {ChoicesStatusTransmittal} from "../../models/transmitall.types";
+import logger from "../../../services/logger.service";
 import * as moment from "moment-timezone";
-import {IParticipant} from "../../form/interfaces";
+import {IParticipant} from "../../../form/interfaces";
 
 interface IGroupTransmittalItems {
   _id: string;

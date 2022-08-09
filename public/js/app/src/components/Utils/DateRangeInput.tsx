@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createRef, RefObject } from 'react';
+import * as daterangepicker from 'daterangepicker';
 
 interface IPropsType {
   options: daterangepicker.Options,

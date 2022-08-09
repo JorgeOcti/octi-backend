@@ -1,22 +1,22 @@
-import {IAnyObject, IRequest} from "../../interfaces/global.interface";
-import {Response} from "express";
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import Transmittal, {ITransmittalModel} from "../models/transmittal.model";
-import logger from "../../services/logger.service";
-import TransmittalItem from "../models/transmittalItem.model";
-import TransmittalFile from "../models/transmittalFile.model";
-import GeneralUtils from "../../utils/general.utils";
-import * as GraphicsMagick from "gm";
-import Team from "../../app/models/team.model";
-import Car from "../../app/models/car.model";
-import RequestItem from "../../request/models/requestItem.model";
-import {io} from "../../server";
-import * as excel from "exceljs";
-import * as moment from "moment-timezone";
-import Milestone  from "../models/milestone.model";
-import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model";
-import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
-import redisClient from "../../services/redis.service";
+import Transmittal, { ITransmittalModel } from '../models/transmittal.model';
+import logger from '../../services/logger.service';
+import TransmittalItem from '../models/transmittalItem.model';
+import TransmittalFile from '../models/transmittalFile.model';
+import GeneralUtils from '../../utils/general.utils';
+import * as GraphicsMagick from 'gm';
+import Team from '../../app/models/team.model';
+import Car from '../../app/models/car.model';
+import RequestItem from '../../request/models/requestItem.model';
+import { io } from '../../server';
+import * as excel from 'exceljs';
+import * as moment from 'moment-timezone';
+import Milestone from '../models/milestone.model';
+import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
+import ScaleModel, { IScaleModel } from '../../form/models/scale.model';
+import redisClient from '../../services/redis.service';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as fs from 'fs';
@@ -26,6 +26,7 @@ import { ChoicesStatusTransmittal } from '../models/transmitall.types';
 import * as mongoose from "mongoose";
 import Border from "../../app/models/border.model";
 import transmittalModel from "../models/transmittal.model";
+import { ChoicesStatusTransmittalItem } from '../models/transmittalItem.types';
 
 
 class TransmittalController {
@@ -47,11 +48,11 @@ class TransmittalController {
     select: ['_id', 'code', 'status'],
     populate: [{
       path: 'status',
-     select: ['name', 'weigth']
-    }],
+      select: ['name', 'weigth']
+    }]
   }, {
     path: 'revisions',
-    select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
+    select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt']
     // options: {
     //   sort: {
     //     _id: -1
@@ -87,7 +88,7 @@ class TransmittalController {
     populate: this.itemPopulate
   }, {
     path: 'files',
-    select: ['file', 'thumbnail'],
+    select: ['file', 'thumbnail']
     // match: { milestone: { $exists: false } }
   }, {
     path: 'evidenceFullLoad',
@@ -116,6 +117,7 @@ class TransmittalController {
     this.transmittalResume = this.transmittalResume.bind(this)
     this.apiGetBorders = this.apiGetBorders.bind(this)
     this.apiRegisterBorderPass = this.apiRegisterBorderPass.bind(this)
+    this.transmittalResumeByStatus = this.transmittalResumeByStatus.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -172,7 +174,7 @@ class TransmittalController {
           loadingDate: moment().toDate()
         }).save();
         // associate request item with transmittal and transmittal item
-        if(item.requestItem?.length) {
+        if (item.requestItem?.length) {
           await RequestItem.findOneAndUpdate({
             _id: item.requestItem
           }, {
@@ -475,7 +477,7 @@ class TransmittalController {
           pages: transmittals.pages,
           hasPrevious: transmittals.hasPrevious,
           hasNextPage: transmittals.hasNextPage,
-          data: transmittals.docs.map((transmittal)=>({
+          data: transmittals.docs.map((transmittal) => ({
             ...transmittal,
             type: transmittal.type._id,
             type_data: transmittal.type,
@@ -496,91 +498,91 @@ class TransmittalController {
     }
   }
 
-private getForm(filter: any): Promise<IFormModel> {
-  const keyCache = `form-${filter._id}`;
-  logger.debug(`keyCache ${keyCache}`);
-  return new Promise((resolve, reject) => {
-    redisClient.get(keyCache, async (error, result) => {
-      if (result) {
-        logger.debug(`FROM CACHE`);
-        resolve(JSON.parse(result));
-      } else {
-        logger.debug(`NEW CACHE`);
-        FormModel
-          .findOne(filter, {
-            'company': false,
-            'updatedAt': false,
-            'createdAt': false,
-            'active': false,
-            'sections.shortName': false,
-            'sections.questions.shortName': false,
-            '__v': false
-          })
-          .populate([{
-            path: 'sections.questions.damages',
-            select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
-            populate: [{
-              path: 'positions',
-              select: ['name'],
-              options: {
-                sort: {
-                  name: 1
+  private getForm(filter: any): Promise<IFormModel> {
+    const keyCache = `form-${filter._id}`;
+    logger.debug(`keyCache ${keyCache}`);
+    return new Promise((resolve, reject) => {
+      redisClient.get(keyCache, async (error, result) => {
+        if (result) {
+          logger.debug(`FROM CACHE`);
+          resolve(JSON.parse(result));
+        } else {
+          logger.debug(`NEW CACHE`);
+          FormModel
+            .findOne(filter, {
+              'company': false,
+              'updatedAt': false,
+              'createdAt': false,
+              'active': false,
+              'sections.shortName': false,
+              'sections.questions.shortName': false,
+              '__v': false
+            })
+            .populate([{
+              path: 'sections.questions.damages',
+              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+              populate: [{
+                path: 'positions',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
                 }
-              }
-            }, {
-              path: 'kinds',
-              select: ['name'],
-              options: {
-                sort: {
-                  name: 1
+              }, {
+                path: 'kinds',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
                 }
-              }
-            }, {
-              path: 'parts',
-              select: ['name'],
-              options: {
-                sort: {
-                  name: 1
+              }, {
+                path: 'parts',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
                 }
-              }
-            }, {
-              path: 'kindFallback',
-              select: ['name'],
-              options: {
-                sort: {
-                  name: 1
+              }, {
+                path: 'kindFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
                 }
-              }
-            }, {
-              path: 'partFallback',
-              select: ['name'],
-              options: {
-                sort: {
-                  name: 1
+              }, {
+                path: 'partFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
                 }
+              }]
+            }])
+            .lean()
+            .exec((err, form: IFormModel) => {
+              if (err) {
+                /* istanbul ignore next */
+                return reject(err);
               }
-            }]
-          }])
-          .lean()
-          .exec((err, form: IFormModel) => {
-            if (err) {
-              /* istanbul ignore next */
-              return reject(err);
-            }
-            if (form) {
-              redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
-              return resolve(form);
-            }
-            return reject('No se encontro formularío');
-          });
-      }
+              if (form) {
+                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
+                return resolve(form);
+              }
+              return reject('No se encontro formularío');
+            });
+        }
+      });
     });
-  });
-}
+  }
 
-  public async fillFormSections(formID : String, user: IUser){
+  public async fillFormSections(formID: String, user: IUser) {
     try {
-      if (!formID){
+      if (!formID) {
         return {};
       }
 
@@ -784,30 +786,30 @@ private getForm(filter: any): Promise<IFormModel> {
       // get scales from db
 
       return {
-          form: {
-            _id: form._id,
-            name: form.name,
-            description: form.description,
-            // norrmalize questions in sections
-            sections: form.sections.map((section) => {
-              return {
-                _id: section._id,
-                name: section.name,
-                questions: section.questions.map((question) => {
-                  return {
-                    ...baseQuestion,
-                    ...question
-                  };
-                }),
-                weight: section.weight,
-                order: section.order
-              };
-            })
-          },
-          scales,
-          extra,
-          ...response
-        };
+        form: {
+          _id: form._id,
+          name: form.name,
+          description: form.description,
+          // norrmalize questions in sections
+          sections: form.sections.map((section) => {
+            return {
+              _id: section._id,
+              name: section.name,
+              questions: section.questions.map((question) => {
+                return {
+                  ...baseQuestion,
+                  ...question
+                };
+              }),
+              weight: section.weight,
+              order: section.order
+            };
+          })
+        },
+        scales,
+        extra,
+        ...response
+      };
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiOnlyMe:`, e);
@@ -942,13 +944,13 @@ private getForm(filter: any): Promise<IFormModel> {
           items: true,
           files: true,
           createdBy: true,
-          createdAt: 1,
           passBorder: 1,
+          createdAt: 1
         })
         .populate([{
           path: 'transporter.carrier',
           select: ['name']
-        },{
+        }, {
           path: 'type',
           select: ['name']
         }, {
@@ -1040,7 +1042,6 @@ private getForm(filter: any): Promise<IFormModel> {
       try {
 
 
-
         const transmittaltFile = new TransmittalFile();
         /*
           {
@@ -1061,14 +1062,14 @@ private getForm(filter: any): Promise<IFormModel> {
         transmittaltFile.user = user._id;
         transmittaltFile.team = user.team._id;
 
-        if (transmittal?.length){
-          transmittal = transmittal.replace(/["']/g, "");
+        if (transmittal?.length) {
+          transmittal = transmittal.replace(/["']/g, '');
 
           transmittaltFile.transmittal = transmittal;
         }
 
-        if (milestone?.length){
-          milestone = milestone.replace(/["']/g, "");
+        if (milestone?.length) {
+          milestone = milestone.replace(/["']/g, '');
 
           transmittaltFile.milestone = milestone;
         }
@@ -1093,7 +1094,7 @@ private getForm(filter: any): Promise<IFormModel> {
         }
 
         await transmittaltFile.save();
-        if(transmittal?.length){
+        if (transmittal?.length) {
           const newTransmittal = await Transmittal
             .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { new: true })
             .populate(this.populate);
@@ -1129,117 +1130,437 @@ private getForm(filter: any): Promise<IFormModel> {
     }
   }
 
-  public async transmittalResume(req: IRequest, res: Response) {
-    const team = req.user.team._id;
-    const {from, to} = req.query as {from: string, to: string};
-    logger.info(`TransmittalController.transmittalResume`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-
-
+  public async transmittalResumeByStatus(req: IRequest, res: Response) {
+    logger.info(`TransmittalController.transmittalResumeByStatus`);
     try {
-      let transmittals = await TransmittalItem.aggregate([{$match: {
+      const team = req.user.team._id;
+      const { from, to, status } = req.query as { from: string, to: string, status: string };
+      let filter: any = {};
+      if (status) {
+        filter = {
+          [ChoicesStatusTransmittalItem.shipped]: {
+            $and: [{
+              status: ChoicesStatusTransmittal.pending,
+              shippingDate: {
+                $exists: true,
+                $ne: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.pending]: {
+            $or: [{
+              status: ChoicesStatusTransmittal.pending,
+              loadingDate: {
+                $eq: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.loaded]: {
+            $or: [{
+              status: ChoicesStatusTransmittal.pending,
+              loadingDate: {
+                $exists: true,
+                $ne: null
+              }
+            }, {
+              status: ChoicesStatusTransmittal.inTransit,
+              evidenceDate: {
+                $eq: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.documented]: {
+            $and: [{
+              status: ChoicesStatusTransmittal.inTransit,
+              evidenceDate: {
+                $exists: true,
+                $ne: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.arrived]: {
+            $and: [{
+              status: ChoicesStatusTransmittal.completed,
+              checkDate: {
+                $eq: null
+              }
+            }]
+          },
+          [ChoicesStatusTransmittalItem.received]: {
+            status: {
+              $in: [ChoicesStatusTransmittal.completed, ChoicesStatusTransmittal.completed_by_reception]
+            },
+            checkDate: {
+              $exists: true,
+              $ne: null
+            }
+          },
+          [ChoicesStatusTransmittalItem.damaged]: {},
+          [ChoicesStatusTransmittalItem.completed]: {}
+        }[status];
+      }
+      mongoose.set('debug', true);
+      const transmittals = await TransmittalItem.aggregate([{
+        $match: {
           team: mongoose.Types.ObjectId(team),
-          createdAt:{
+          createdAt: {
             $gte: moment.unix(Number(from)).toDate(),
             $lt: moment.unix(Number(to)).toDate()
           }
-        }}, {$lookup: {
+        }
+      }/*, {
+        $lookup: {
           from: 'cars',
           localField: 'car',
           foreignField: '_id',
-          as: 'car_data',
-        }}, {$unwind: {
-          path: "$car_data",
-          includeArrayIndex: "0",
+          as: 'car'
+        }
+      }, {
+        $unwind: {
+          path: '$car',
           preserveNullAndEmptyArrays: true
-        }}, {$lookup: {
+        }
+      }*/, {
+        $lookup: {
+          from: 'transmittals',
+          localField: 'transmittal',
+          foreignField: '_id',
+          as: 'transmittal'
+        }
+      }, {
+        $unwind: {
+          path: '$transmittal',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $addFields: {
+          'transmittal.evidenceFullLoad': {
+            $slice: ['$transmittal.evidenceFullLoad', 1, 5]
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'milestonetypes',
+          localField: 'transmittal.type',
+          foreignField: '_id',
+          as: 'transmittal.type'
+        }
+      }, {
+        $unwind: {
+          path: '$transmittal.type',
+          includeArrayIndex: '0',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $addFields: {
+          type: {
+            $toString: '$type.name'
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'transmittalfiles',
+          localField: 'transmittal.evidenceFullLoad',
+          foreignField: '_id',
+          as: 'transmittal.evidenceFullLoad'
+        }
+      }, {
+        $unwind: {
+          path: '$transmittal.evidenceFullLoad',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'transmittal.transporter.driver',
+          foreignField: '_id',
+          as: 'transmittal.transporter.driver'
+        }
+      }, {
+        $unwind: {
+          path: '$transmittal.transporter.driver',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $lookup: {
+          from: 'participants',
+          let: { car_id: '$car', created: '$arrivalDate' },
+          as: 'revisionsArrival',
+          pipeline: [{
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$car', '$$car_id'] },
+                  { $eq: ['$reception', true] }
+                ]
+              }
+            }
+          }]
+        }
+      }, {
+        $addFields: {
+          checkDate: { $min: '$revisionsArrival.createdAt' }
+        }
+      }, {
+        $lookup: {
+          from: 'participants',
+          localField: 'revisions',
+          foreignField: '_id',
+          as: 'participants'
+        }
+      }, {
+        $group: {
+          _id: '$transmittal._id',
+          number: { $first: '$transmittal.number' },
+          createdAt: { $first: '$transmittal.createdAt' },
+          type: { $first: '$transmittal.type' },
+          arrivalDate: { $first: '$arrivalDate' },
+          origin: { $first: '$origin' },
+          destination: { $first: '$destination' },
+          loadingDate: { $max: '$participants.createdAt' },
+          checkDate: { $max: '$checkDate' },
+          // checkDate: { $first: '$checkDate' },
+          // loadingDates: { $push: '$loadingDate' },
+          status: { $first: '$transmittal.status' },
+          shippingDates: { $push: '$car.shippingDate' },
+          evidenceDates: { $push: '$transmittal.evidenceFullLoad.createdAt' },
+          // shippingDate: { $first: '$shippingDate' },
+          transporter: { $first: '$transmittal.transporter' }
+          /*dateDiff: {
+            $dateDiff: {
+                startDate: '$purchased',
+                endDate: '$delivered',
+                unit: 'day'
+              }
+          }*/
+          // meta : { $first : '$muted'}, title : { $first : '$title'},
+        }
+      },/* {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'cars'
+        }
+      }, {
+        $unwind: {
+          path: '$cars',
+          includeArrayIndex: '0',
+          preserveNullAndEmptyArrays: true
+        }
+      }*/ {
+        $lookup: {
+          from: 'venues',
+          localField: 'origin',
+          foreignField: '_id',
+          as: 'origin'
+        }
+      }, {
+        $unwind: {
+          path: '$origin',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'destination',
+          foreignField: '_id',
+          as: 'destination'
+        }
+      }, {
+        $unwind: {
+          path: '$destination',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $project: {
+          '_id': 1,
+          'number': true,
+          'type._id': true,
+          'type.name': true,
+          'status': true,
+          'createdAt': true,
+          'origin._id': true,
+          'origin.name': true,
+          'destination._id': true,
+          'destination.name': true,
+          'transporter.patent': true,
+          'transporter.driver._id': true,
+          'transporter.driver.firstName': true,
+          'transporter.driver.lastName': true,
+          'arrivalDate': true,
+          // 'checkDate': { $max: '$checkDate' },
+          'checkDate': true,
+          'evidenceDate': { $max: '$evidenceDates' },
+          'shippingDate': { $max: '$shippingDates' },
+          'loadingDate': { $max: '$loadingDate' }
+        }
+      }, {
+        $match: {
+          'type.name': 'Internacional',
+          ...filter
+        }
+      }]);
+      res.status(200).json(transmittals);
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.transmittalResumeByStatus: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(500).json(e);
+    }
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+  }
+
+  public async transmittalResume(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    const { from, to } = req.query as { from: string, to: string };
+    logger.info(`TransmittalController.transmittalResume`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+
+    try {
+      let transmittals = await TransmittalItem.aggregate([{
+        $match: {
+          team: mongoose.Types.ObjectId(team),
+          createdAt: {
+            $gte: moment.unix(Number(from)).toDate(),
+            $lt: moment.unix(Number(to)).toDate()
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car_data'
+        }
+      }, {
+        $unwind: {
+          path: '$car_data',
+          includeArrayIndex: '0',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $lookup: {
           from: 'transmittals',
           localField: 'transmittal',
           foreignField: '_id',
           as: 'transmittal_data'
-        }}, {$unwind: {
-          path: "$transmittal_data",
-          includeArrayIndex: "0",
+        }
+      }, {
+        $unwind: {
+          path: '$transmittal_data',
+          includeArrayIndex: '0',
           preserveNullAndEmptyArrays: true
-        }}, { $addFields: {
-          'transmittal_data.evidenceFullLoad': { $slice: ['$transmittal_data.evidenceFullLoad', 1, 5] } }
-        }, {$lookup: {
+        }
+      }, {
+        $addFields: {
+          'transmittal_data.evidenceFullLoad': {
+            $slice: ['$transmittal_data.evidenceFullLoad', 1, 5]
+          }
+        }
+      }, {
+        $lookup: {
           from: 'participants',
           localField: 'revisions',
           foreignField: '_id',
           as: 'revisions_data'
-        }},{$lookup: {
+        }
+      }, {
+        $lookup: {
           from: 'transmittalfiles',
           localField: 'transmittal_data.evidenceFullLoad',
           foreignField: '_id',
-          as: 'transmittalfiles',
-
-        }},{$lookup: {
+          as: 'transmittalfiles'
+        }
+      }, {
+        $lookup: {
           from: 'milestonetypes',
           localField: 'transmittal_data.type',
           foreignField: '_id',
           as: 'type'
-        }},
-        {$unwind: {
-            path: "$type",
-            includeArrayIndex: "0",
-            preserveNullAndEmptyArrays: true
-          }},
-        {
-          $addFields: { type: { $toString: '$type.name' } }
-        },
+        }
+      }, {
+        $unwind: {
+          path: '$type',
+          includeArrayIndex: '0',
+          preserveNullAndEmptyArrays: true
+        }
+      }, {
+        $addFields: {
+          type: {
+            $toString: '$type.name'
+          }
+        }
+      }, {
+        $addFields: {
+          status: {
+            $toString: '$transmittal_data.status'
+          }
+        }
+      }, {
+        $addFields: {
+          OT: {
+            $toString: '$transmittal_data.number'
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'participants',
+          let: { car_id: '$car', created: '$arrivalDate' },
+          as: 'participants',
+          pipeline: [{
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$car', '$$car_id'] },
+                  { $eq: ['$reception', true] }
+                ]
+              }
+            }
+          }]
+        }
+      }, {
+        $addFields: {
+          checkDate: { $min: '$participants.createdAt' }
+        }
+      }, {
+        $project: {
+          transmittal: 1,
+          revisions: 1,
+          checkDate: 1,
+          createdAt: 1,
+          loadingDate: { $max: '$revisions_data.createdAt' },
+          arrivalDate: 1,
+          type: 1,
+          status: 1,
+          OT: 1,
+          latest_evidence: { $max: '$transmittalfiles.createdAt' },
+          latest_shipping: { $max: '$car_data.shippingDate' }
+        }
+      }, {
+        $group: {
+          _id: '$transmittal',
+          cars: { $sum: 1 },
+          pendingDate: { $max: '$createdAt' },
+          loadingDate: { $max: '$loadingDate' },
+          arrivalDate: { $max: '$arrivalDate' },
+          shippingDate: { $min: '$latest_shipping' },
+          evidenceDate: { $max: '$latest_evidence' },
+          checkDate: { $max: '$checkDate' },
+          type: { $first: '$type' },
+          createdAt: { $first: '$createdAt' },
+          status: { $first: '$status' },
+          OT: { $first: '$OT' }
+        }
+      }]);
 
-        {
-          $addFields: { status: { $toString: '$transmittal_data.status' } }
-        },
-        {
-          $addFields: { OT: { $toString: '$transmittal_data.number' } }
-        },
-        {$lookup: {
-            from: 'participants',
-            let: {car_id: '$car', created: '$arrivalDate'},
-            as: 'participants',
-            pipeline: [{$match:
-                { $expr:
-                    { $and:
-                        [
-                          { $eq: [ "$car",  "$$car_id" ] },
-                          { $eq: [ "$reception",  true ] },
-                        ]
-                    }
-                }
-            }]
-
-          }},
-        {$addFields:{
-            checkDate:{$min:"$participants.createdAt"}
-          },},{$project: {
-            transmittal: 1,
-            revisions: 1,
-            checkDate: 1,
-            createdAt: 1,
-            loadingDate: {$max: "$revisions_data.createdAt" },
-            arrivalDate: 1,
-            type: 1,
-            status: 1,
-            OT: 1,
-            latest_evidence: { $max: "$transmittalfiles.createdAt" },
-            latest_shipping: { $max: "$car_data.shippingDate" },
-          }},{$group:{
-            _id: '$transmittal',
-            cars: {$sum: 1},
-            pendingDate: {$max: '$createdAt'},
-            loadingDate: {$max: '$loadingDate'},
-            arrivalDate: {$max: '$arrivalDate'},
-            shippingDate: {$min: '$latest_shipping'},
-            evidenceDate: {$max: '$latest_evidence'},
-            checkDate: {$max: "$checkDate"},
-            type: {$first: '$type'},
-            status: {$first: '$status'},
-            OT: {$first: '$OT'},
-          }}]);
-
-        return res.json({data: transmittals});
+      return res.json({
+        data: transmittals
+      });
 
     } catch (e) {
       /* istanbul ignore next */

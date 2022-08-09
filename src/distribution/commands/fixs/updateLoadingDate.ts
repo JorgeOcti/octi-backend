@@ -2,7 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import TransmittalItem from '../models/transmittalItem.model';
+import TransmittalItem from '../../models/transmittalItem.model';
 
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 

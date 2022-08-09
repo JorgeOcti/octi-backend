@@ -1025,7 +1025,7 @@ export default class ApiService {
       `/api/v1/transmittals/resume?from=${from}&to=${to}`
     );
   }
-
+  
   public createBorder(border: IBaseBorder): AxiosPromise {
     return this.instance.post(
       `/api/admin/border/`, border
@@ -1047,6 +1047,11 @@ export default class ApiService {
   public getBorders(page: number, pageSize?: number, search?:string): AxiosPromise {
     return this.instance.get(
       `/api/admin/border?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${search ? `&search=${search}` : ''}`
+
+
+  public getOtsOnStatus(type: string, from: string, to: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/transmittals/resume-by-status?status=${type}&from=${from}&to=${to}`
     );
   }
 }

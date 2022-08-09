@@ -21,8 +21,17 @@ async function migrateSalfa() {
     for (const request of requests) {
       const company = request.createdBy?.company;
       if (company) {
-        await Request.updateOne({ _id: request._id }, { company: request.createdBy.company });
-        await RequestItem.updateMany({ request: request._id }, { company: request.createdBy.company });
+        await Request
+          .updateOne({
+            _id: request._id
+          }, {
+            company: request.createdBy.company
+          });
+        await RequestItem.updateMany({
+          request: request._id
+        }, {
+          company: request.createdBy.company
+        });
       } else {
         console.log(request);
       }

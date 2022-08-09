@@ -16,4 +16,5 @@ export interface ITransmittalFile {
   file: IIFile;
   thumbnail: IIFile;
   milestone?: IMilestone | IMilestoneModel
+  createdAt?: Date;
 }

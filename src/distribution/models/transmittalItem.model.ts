@@ -3,18 +3,9 @@ import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {ITransmittalItem} from '../interfaces/transmittalItem.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { ChoicesStatusTransmittalItem, choicesStatusTransmittalItem } from './transmittalItem.types';
 
 export interface ITransmittalItemModel extends ITransmittalItem, mongoose.Document {}
-
-export enum ChoicesStatusTransmittalItem {
-  pending = 'pending',
-  completed = 'completed',
-}
-
-export const choicesStatusTransmittalItem = [
-  ChoicesStatusTransmittalItem.pending,
-  ChoicesStatusTransmittalItem.completed,
-];
 
 const transmittalItemSchema = new mongoose.Schema({
   transmittal: {
