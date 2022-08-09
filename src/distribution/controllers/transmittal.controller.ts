@@ -477,6 +477,8 @@ class TransmittalController {
           hasNextPage: transmittals.hasNextPage,
           data: transmittals.docs.map((transmittal)=>({
             ...transmittal,
+            type: transmittal.type._id,
+            type_data: transmittal.type,
             detailedEvidence: transmittal.evidenceFullLoad,
             evidenceFullLoad: transmittal.evidenceFullLoad.map(e => e._id),
             milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type._id.toString())
