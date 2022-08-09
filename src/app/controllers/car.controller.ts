@@ -824,7 +824,7 @@ class CarController {
       for (const question of section.questions) {
         if (['scale', 'accessory', 'numeric-scale', 'damage', 'text'].includes(question.kind)) {
           columns.push({
-            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+            header: `${form.name} - ${question.question}`, key: `${form._id}-${question._id.toString()}`, width: 30
           });
         }
       }
@@ -837,6 +837,11 @@ class CarController {
     if (form.receptionVenue) {
       columns.push({
         header: `${form.name} - ${form.receptionVenueText}`, key: `${form._id.toString()}-reception`, width: 30
+      });
+    }
+    if (form.carrier) {
+      columns.push({
+        header: `${form.name} - ${form.carrierText}`, key: `${form._id.toString()}-carrier`, width: 30
       });
     }
     return columns;
@@ -858,7 +863,7 @@ class CarController {
     return dict;
   }
 
-  public processAnswer(answer: IParticipantAnswerModel) {
+  public processAnswer(answer: IParticipantAnswerModel, formID: String) {
     let datum = {};
 
     if (answer.kind === 'scale') {
@@ -870,27 +875,27 @@ class CarController {
       });
       if (selectedChoice) {
         datum = {
-          [answer._id.toString()]: selectedChoice.choice
+          [`${formID}-${answer._id.toString()}`]: selectedChoice.choice
         };
       }
     } else if (answer.kind === 'text' ) {
       datum = {
-        [answer._id.toString()]: answer.comment
+        [`${formID}-${answer._id.toString()}`]: answer.comment
       };
     } else if (answer.kind === 'accessory' ) {
       let accessories = this.createObjectFromItems(answer.accessories.items);
       datum = {
-        [answer._id.toString()]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
+        [`${formID}-${answer._id.toString()}`]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
       };
     } else if (answer.kind === 'numeric-scale') {
       datum = {
-        [answer._id.toString()]: answer.score
+        [`${formID}-${answer._id.toString()}`]: answer.score
       };
     } else if (answer.kind === 'damage') {
       let parts = this.createObjectFromDamages(answer.damages.parts);
       let kinds = this.createObjectFromDamages(answer.damages.kinds);
       let positions = this.createObjectFromDamages(answer.damages.positions);
-      datum = { [answer._id.toString()]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
+      datum = { [`${formID}-${answer._id.toString()}`]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
     }
     return datum;
   }
@@ -917,7 +922,7 @@ class CarController {
     if (['618d1c6e691899fc37247237', '618d2032691899fc3724725f'].includes(participant.form.toString())) {
       for (const section of participant.sections) {
         for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
+          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
           if (['618d2032691899fc37247284', '618d1c6e691899fc3724725c'].includes(answer._id.toString())) {
             // @ts-ignore
             sectionAnswers['has_15km'] = parseInt(answer.comment) > 15 ? '1' : '0';
@@ -927,7 +932,7 @@ class CarController {
     } else {
       for (const section of participant.sections) {
         for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
+          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
         }
       }
     }
@@ -937,6 +942,9 @@ class CarController {
     }
     if (participant.receptionVenue) {
       sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
+    }
+    if (participant.carrier) {
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-carrier`]: participant.carrierBy.name };
     }
 
     return {
@@ -1049,7 +1057,12 @@ class CarController {
           shippingVenue: 1,
           receptionVenue: 1,
           sendTo: 1,
-          receiveFrom: 1
+          receiveFrom: 1,
+          reception: 1,
+          shipping: 1,
+          carrier: 1,
+          carrierText: 1,
+          carrierBy: 1,
         })
         .populate([{
           path: 'car',
@@ -1073,7 +1086,10 @@ class CarController {
         }, {
           path: 'receiveFrom',
           select: 'name'
-        }])
+        }, {
+          path: 'carrierBy',
+          select: 'name'
+        } ])
         .batchSize(50)
         .cursor();
 
