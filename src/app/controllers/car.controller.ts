@@ -919,21 +919,9 @@ class CarController {
 
     let sectionAnswers = {};
 
-    if (['618d1c6e691899fc37247237', '618d2032691899fc3724725f'].includes(participant.form.toString())) {
-      for (const section of participant.sections) {
-        for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
-          if (['618d2032691899fc37247284', '618d1c6e691899fc3724725c'].includes(answer._id.toString())) {
-            // @ts-ignore
-            sectionAnswers['has_15km'] = parseInt(answer.comment) > 15 ? '1' : '0';
-          }
-        }
-      }
-    } else {
-      for (const section of participant.sections) {
-        for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
-        }
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
       }
     }
 
@@ -1025,12 +1013,6 @@ class CarController {
       // create additional columns/headers based of form questions
       for (const form of forms) {
         columns = columns.concat(this.getHeadersFromForm(form));
-      }
-
-      if (company.toString() === '5bbe39fca9683b82857035b1') {
-        columns.push({
-          header: 'Tiene más de 15 KM.', key: 'has_15km', width: 30
-        });
       }
 
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
