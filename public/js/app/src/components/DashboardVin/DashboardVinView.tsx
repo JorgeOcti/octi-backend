@@ -221,7 +221,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public downloadReport() {
-    const { from, to } = this.state;
+    const { from, to, selectedForms, searchText,  } = this.state;
     const monthsDiff = moment(to).diff(moment(from), 'months');
     this.trackClick('Descargar reporte', {
       from,
@@ -230,7 +230,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     if (monthsDiff > 3) {
       swal('Revisiones', 'Selecciona un rango de 3 meses para dercargar la información', 'error');
     } else {
-      window.open(`/api/participant/export/?from=${moment(from).unix()}&to=${moment(to).unix()}`, '_blank');
+      let query = `?from=${moment(from).unix()}&to=${moment(to).unix()}`;
+
+      if (searchText)
+        query += `&search=${searchText}`;
+
+      if (selectedForms)
+        query += `&forms=${selectedForms.join(",")}`;
+      
+      window.open(`/api/participant/export/${query}`, '_blank');
     }
 
     // const api: ApiService = new ApiService();
@@ -588,6 +596,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value;
+    this.setState({
+      searchText: value
+    })
     this.props.changeSearchDashboardAction(value);
     this.debounceOnChangeSearch();
   }
