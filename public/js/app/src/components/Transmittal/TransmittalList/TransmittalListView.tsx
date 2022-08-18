@@ -177,17 +177,19 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                         <strong>Chofer</strong>
                       </div>
-                      <div className='flex-45 col-sm-2 col-xs-2 col-md-1 col-lg-1'>
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                         <strong>Transportista</strong>
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                         <strong>Carga</strong>
                       </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                        <strong>Tipo</strong>
-                      </div>
-                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                        <strong>Docs</strong>
+                        <div className='flex-45 col-sm-8 col-xs-8 col-md-8 col-lg-8'>
+                          <strong>Tipo</strong>
+                        </div>
+                        <div className='flex-45 col-sm-4 col-xs-4 col-md-4 col-lg-4'>
+                          <strong>Docs</strong>
+                        </div>
                       </div>
                       {
                         longestMilestones.map((milestone: IMilestone, index) => {
@@ -200,6 +202,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                           )
                         })
                       }
+                      <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 no-padding'>
+                        <strong>FRONTERA</strong>
+                      </div>
                       <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 no-padding'>
                         <strong>DESCARGA</strong>
                       </div>

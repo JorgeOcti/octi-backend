@@ -6,6 +6,8 @@ import { Field, InjectedFormProps, reduxForm } from 'redux-form';
 import { IReasonsState } from '../../actions/reasons.types';
 import InputField from '../Utils/forms/InputField';
 import { inputStringRequired } from '../Utils/forms/validations';
+import CheckBoxField from "../Utils/forms/CheckBoxField";
+import Checkbox from "../Utils/CheckBox";
 
 interface IPropsType extends InjectedFormProps {
   update: boolean;
@@ -35,6 +37,21 @@ class Form extends React.Component<IPropsType, IStateType> {
               type="text"
               component={InputField}
               validate={[inputStringRequired]}
+            />
+          </div>
+          <div className='col-md-12' style={{ backgroundColor: '#fff', paddingBottom: '13px' }}>
+            <Field
+              name='needMarkBorder'
+              label='Necesita marcar pasó por pórtico?'
+              placeholder='Activo'
+              type='checkbox'
+              component={CheckBoxField}
+              props={{
+                style: {
+                  marginBottom: 0,
+                }
+              }}
+              validate={[]}
             />
           </div>
           {

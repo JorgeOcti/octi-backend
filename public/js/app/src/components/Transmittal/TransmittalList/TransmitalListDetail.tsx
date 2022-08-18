@@ -194,68 +194,70 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 text-sm text-muted'>
             {transmittal.items.length} unidades.
           </div>
-          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
-            {
-              hasPermission(window.user, 'changeTransmittal') ?
-                (
-                  <select
-                    className='form-control select-sm font-12' value={transmittal.type?._id ?? ''}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                      this.props.transmittalActions.updateTransmittalThunkAction({
-                        _id: transmittal._id,
-                        'type': e.target.value
-                      });
-                    }}
-                  >
-                    <option value='' disabled={true}>-</option>
-                    {
-                      milestoneTypes.map((milestoneType) => (
-                        <option key={milestoneType._id} value={milestoneType._id}>{`${milestoneType.name}`}</option>
-                      ))
-                    }
-                  </select>
-                  /*<BootstrapSelect
-                    noneSelectedText='Selecciona un transportista'
-                    displayItems={2}
-                    sm={true}
-                    selectedText='transportistas seleccionadas.'
-                    selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
-                    autoClouse={true}
-                    allOption={false}
-                    search={true}
-                    options={carriers.map((carrier: any) => ({
-                      value: carrier._id,
-                      text: carrier.name
-                    }))}
-                    onClick={(e: string) => {
-                      this.props.transmittalActions.updateTransmittalThunkAction({
-                        _id: transmittal._id,
-                        'transporter.carrier': e
-                      });
-                    }}
-                  />*/
-                ) :
-                (
-                  `${transmittal.type?.name}`
-                )
-            }
-
-          </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            <UploadTransmittalFile transmittal={transmittal} />
-            <ShowIf condition={transmittal.files.length >= 1}>
-              <button
-                className='btn btn-xs btn-default'
-                onClick={() => this.downloadFiles(transmittal)}
-              >
-                <i
-                  className='fa fa-paperclip'
-                  data-toggle='tooltip'
-                  data-placement='top'
-                  title={`${transmittal.files.length} archivos adjuntos.`}
-                /> {`(${transmittal.files.length})`}
-              </button>
-            </ShowIf>
+            <div className='flex-45 col-sm-8 col-xs-8 col-md-8 col-lg-8' style={{ position: 'static' }}>
+              {
+                hasPermission(window.user, 'changeTransmittal') ?
+                  (
+                    <select
+                      className='form-control select-sm font-12' value={transmittal.type?._id ?? ''}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                        this.props.transmittalActions.updateTransmittalThunkAction({
+                          _id: transmittal._id,
+                          'type': e.target.value
+                        });
+                      }}
+                    >
+                      <option value='' disabled={true}>-</option>
+                      {
+                        milestoneTypes.map((milestoneType) => (
+                          <option key={milestoneType._id} value={milestoneType._id}>{`${milestoneType.name}`}</option>
+                        ))
+                      }
+                    </select>
+                    /*<BootstrapSelect
+                      noneSelectedText='Selecciona un transportista'
+                      displayItems={2}
+                      sm={true}
+                      selectedText='transportistas seleccionadas.'
+                      selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
+                      autoClouse={true}
+                      allOption={false}
+                      search={true}
+                      options={carriers.map((carrier: any) => ({
+                        value: carrier._id,
+                        text: carrier.name
+                      }))}
+                      onClick={(e: string) => {
+                        this.props.transmittalActions.updateTransmittalThunkAction({
+                          _id: transmittal._id,
+                          'transporter.carrier': e
+                        });
+                      }}
+                    />*/
+                  ) :
+                  (
+                    `${transmittal.type?.name}`
+                  )
+              }
+
+            </div>
+            <div className='flex-45 col-sm-4 col-xs-4 col-md-4 col-lg-4'>
+              <UploadTransmittalFile transmittal={transmittal} />
+              <ShowIf condition={transmittal.files.length >= 1}>
+                <button
+                  className='btn btn-xs btn-default'
+                  onClick={() => this.downloadFiles(transmittal)}
+                >
+                  <i
+                    className='fa fa-paperclip'
+                    data-toggle='tooltip'
+                    data-placement='top'
+                    title={`${transmittal.files.length} archivos adjuntos.`}
+                  /> {`(${transmittal.files.length})`}
+                </button>
+              </ShowIf>
+            </div>
           </div>
           {
             evidenceMilestones.map((milestone: IMilestone, index: number) => {
@@ -291,6 +293,13 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               );
             })
           }
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+            {
+              transmittal?.passBorder ?
+                <i className='fa fa-flag' style={{paddingLeft: '5px'}}/> :
+                null
+            }
+          </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
               transmittal?.revision || [ChoicesStatusTransmittal.completed_by_reception.toString(), ChoicesStatusTransmittal.completed.toString()].includes(transmittal?.status) ?

@@ -20,6 +20,7 @@ import { IMilestone } from '../../../../../src/distribution/interfaces/milestone
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 import { ITempStudio } from '../actions/statsDashboard.actions';
 import { getUsersParams } from './axios.types';
+import {IBaseBorder} from "../../../../../src/app/interfaces/border.interface";
 
 export default class ApiService {
 
@@ -1025,6 +1026,29 @@ export default class ApiService {
     );
   }
 
+  public createBorder(border: IBaseBorder): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/border/`, border
+    );
+  }
+
+  public updateBorder(border: IBaseBorder): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/border/${border._id}/`, border
+    );
+  }
+
+  public deleteBorder(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/border/${id}/`
+    );
+  }
+
+  public getBorders(page: number, pageSize?: number, search?:string): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/border?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${search ? `&search=${search}` : ''}`
+    );
+  }
 
   public getOtsOnStatus(type: string, from: string, to: string): AxiosPromise {
     return this.instance.get(

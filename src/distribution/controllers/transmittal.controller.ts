@@ -23,7 +23,9 @@ import * as fs from 'fs';
 import * as https from 'https';
 import { IUser } from '../../app/interfaces';
 import { ChoicesStatusTransmittal } from '../models/transmitall.types';
-import * as mongoose from 'mongoose';
+import * as mongoose from "mongoose";
+import Border from "../../app/models/border.model";
+import transmittalModel from "../models/transmittal.model";
 import { ChoicesStatusTransmittalItem } from '../models/transmittalItem.types';
 
 
@@ -112,7 +114,9 @@ class TransmittalController {
     this.attachEvidence = this.attachEvidence.bind(this);
     this.fillFormSections = this.fillFormSections.bind(this);
     this.getScales = this.getScales.bind(this);
-    this.transmittalResume = this.transmittalResume.bind(this);
+    this.transmittalResume = this.transmittalResume.bind(this)
+    this.apiGetBorders = this.apiGetBorders.bind(this)
+    this.apiRegisterBorderPass = this.apiRegisterBorderPass.bind(this)
     this.transmittalResumeByStatus = this.transmittalResumeByStatus.bind(this);
   }
 
@@ -418,6 +422,9 @@ class TransmittalController {
           select: ['name']
         }]
       }, {
+        path: 'type',
+        select: ['name', 'needMarkBorder']
+      }, {
         path: 'createdBy',
         select: ['firstName', 'lastName']
       }],
@@ -472,9 +479,11 @@ class TransmittalController {
           hasNextPage: transmittals.hasNextPage,
           data: transmittals.docs.map((transmittal) => ({
             ...transmittal,
+            type: transmittal.type._id,
+            type_data: transmittal.type,
             detailedEvidence: transmittal.evidenceFullLoad,
             evidenceFullLoad: transmittal.evidenceFullLoad.map(e => e._id),
-            milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type.toString())
+            milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type._id.toString())
           })),
           status: 200
         });
@@ -911,6 +920,8 @@ class TransmittalController {
         header: 'Color', key: 'color', width: 30
       }, {
         header: 'Observación', key: 'observation', width: 30
+      },{
+        header: 'Marcó frontera', key: 'passBorder', width: 30
       }, {
         header: 'Fecha', key: 'createdAt', width: 30, style: {
           numFmt: 'dd/mm/yyyy hh:mm'
@@ -933,6 +944,7 @@ class TransmittalController {
           items: true,
           files: true,
           createdBy: true,
+          passBorder: 1,
           createdAt: 1
         })
         .populate([{
@@ -969,6 +981,7 @@ class TransmittalController {
             driver: `${transmittal.transporter?.driver?.firstName} ${transmittal.transporter?.driver?.lastName}`,
             patent: `${transmittal.transporter?.patent}`,
             carrier: transmittal.transporter?.carrier?.name,
+            passBorder: transmittal.passBorder ? "1" : "0",
             vin: item.car?.vin,
             brand: item.car?.brand,
             denomination: item.car?.denomination,
@@ -1717,6 +1730,64 @@ class TransmittalController {
         });
     });
   }
+
+
+  public async apiGetBorders(req: IRequest, res: Response) {
+    const company = req.user.company._id;
+    try {
+      const borders =  await Border.find({company: company}, {name: 1, lat: 1, lng: 1});
+      res.status(200).json({
+        data: borders
+      })
+
+    } catch (error) {
+      /* istanbul ignore next */
+      logger.error(error);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiGetBorders: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      res.status(500).json(error);
+    }
+  }
+
+  public async apiRegisterBorderPass(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    const { id } = req.params;
+    logger.info(`TransmittalController.apiRegisterBorderPass`);
+    try {
+      let transmittal = await transmittalModel.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+        team,
+        'transporter.driver': req.user._id,
+        status: {
+          $in: [ChoicesStatusTransmittal.pending, ChoicesStatusTransmittal.inTransit]
+        }
+      });
+      if (transmittal){
+        transmittal.passBorder = true;
+        transmittal.save()
+        res.status(200).json({
+          status: 200,
+          message: "Transmittal edited successfully"
+        })
+      } else {
+        res.status(404).json({
+          status: 404,
+          message: "Transmittal not found"
+        })
+      }
+    } catch (error) {
+      /* istanbul ignore next */
+      logger.error(error);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiRegisterBorderPass: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      res.status(500).json(error);
+    }
+  }
+
 }
 
 export default new TransmittalController();

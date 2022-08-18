@@ -60,6 +60,10 @@ export const transmittalSchema = new mongoose.Schema<ITransmittal>({
     type: String,
     enum: choicesStatusTransmittal,
     default: ChoicesStatusTransmittal.pending
+  },
+  passBorder: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

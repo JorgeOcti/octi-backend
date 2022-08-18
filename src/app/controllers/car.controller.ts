@@ -824,7 +824,7 @@ class CarController {
       for (const question of section.questions) {
         if (['scale', 'accessory', 'numeric-scale', 'damage', 'text'].includes(question.kind)) {
           columns.push({
-            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+            header: `${form.name} - ${question.question}`, key: `${form._id}-${question._id.toString()}`, width: 30
           });
         }
       }
@@ -837,6 +837,11 @@ class CarController {
     if (form.receptionVenue) {
       columns.push({
         header: `${form.name} - ${form.receptionVenueText}`, key: `${form._id.toString()}-reception`, width: 30
+      });
+    }
+    if (form.carrier) {
+      columns.push({
+        header: `${form.name} - ${form.carrierText}`, key: `${form._id.toString()}-carrier`, width: 30
       });
     }
     return columns;
@@ -858,7 +863,7 @@ class CarController {
     return dict;
   }
 
-  public processAnswer(answer: IParticipantAnswerModel) {
+  public processAnswer(answer: IParticipantAnswerModel, formID: String) {
     let datum = {};
 
     if (answer.kind === 'scale') {
@@ -870,27 +875,27 @@ class CarController {
       });
       if (selectedChoice) {
         datum = {
-          [answer._id.toString()]: selectedChoice.choice
+          [`${formID}-${answer._id.toString()}`]: selectedChoice.choice
         };
       }
     } else if (answer.kind === 'text' ) {
       datum = {
-        [answer._id.toString()]: answer.comment
+        [`${formID}-${answer._id.toString()}`]: answer.comment
       };
     } else if (answer.kind === 'accessory' ) {
       let accessories = this.createObjectFromItems(answer.accessories.items);
       datum = {
-        [answer._id.toString()]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
+        [`${formID}-${answer._id.toString()}`]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
       };
     } else if (answer.kind === 'numeric-scale') {
       datum = {
-        [answer._id.toString()]: answer.score
+        [`${formID}-${answer._id.toString()}`]: answer.score
       };
     } else if (answer.kind === 'damage') {
       let parts = this.createObjectFromDamages(answer.damages.parts);
       let kinds = this.createObjectFromDamages(answer.damages.kinds);
       let positions = this.createObjectFromDamages(answer.damages.positions);
-      datum = { [answer._id.toString()]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
+      datum = { [`${formID}-${answer._id.toString()}`]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
     }
     return datum;
   }
@@ -914,21 +919,9 @@ class CarController {
 
     let sectionAnswers = {};
 
-    if (['618d1c6e691899fc37247237', '618d2032691899fc3724725f'].includes(participant.form.toString())) {
-      for (const section of participant.sections) {
-        for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
-          if (['618d2032691899fc37247284', '618d1c6e691899fc3724725c'].includes(answer._id.toString())) {
-            // @ts-ignore
-            sectionAnswers['has_15km'] = parseInt(answer.comment) > 15 ? '1' : '0';
-          }
-        }
-      }
-    } else {
-      for (const section of participant.sections) {
-        for (const answer of section.answers) {
-          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
-        }
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
       }
     }
 
@@ -937,6 +930,9 @@ class CarController {
     }
     if (participant.receptionVenue) {
       sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
+    }
+    if (participant.carrier) {
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-carrier`]: participant.carrierBy.name };
     }
 
     return {
@@ -950,9 +946,11 @@ class CarController {
     try {
       logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       const team = req.user.team._id;
-      const company = req.user.company._id;
       const {userForms} = req.user;
-      const { from, to } = req.query as { from: string, to: string};
+      let { search, from, to} = req.query as {
+        search: string,  from: string, to: string, forms: string
+      };
+      let queryForms = req.query.forms as string;
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
        // Create Excel Stream with pipe to response object
@@ -966,13 +964,22 @@ class CarController {
       const venuesPermissions = req.user.venuesPermissions();
 
       // Get filters for Mongo Query
+      let targetForms = userForms.map(form => form._id.toString())
+      if (queryForms) {
+        const formArray = queryForms.split(',');
+        targetForms = formArray.filter(f => targetForms.includes(f))
+      }
+      logger.debug(queryForms)
+      logger.debug(JSON.stringify(targetForms))
+
+
       const queryFilter: any = {
-        team,
+        team: new ObjectID(team),
         venue: {
           $in: venuesPermissions
         },
         form: {
-          $in: userForms.map(form => form._id)
+          $in: targetForms.map(f => new ObjectID(f))
         }
       };
       if (from && to) {
@@ -981,6 +988,8 @@ class CarController {
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
         };
       }
+      logger.debug(JSON.stringify(queryFilter))
+
       // Get the forms to create columns/header of excel
       let forms = await ParticipantModel.find(queryFilter).distinct('form');
       forms = await FormModel.find({ _id: { $in: forms } });
@@ -1019,12 +1028,6 @@ class CarController {
         columns = columns.concat(this.getHeadersFromForm(form));
       }
 
-      if (company.toString() === '5bbe39fca9683b82857035b1') {
-        columns.push({
-          header: 'Tiene más de 15 KM.', key: 'has_15km', width: 30
-        });
-      }
-
       const worksheet = workbook.addWorksheet('Rotación de unidades', {
         pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
@@ -1032,14 +1035,86 @@ class CarController {
       });
       worksheet.columns = columns;
 
-      // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
-      const cursor = ParticipantModel
-        .find(queryFilter, {
+      let searchTextFilter : any = {}
+
+      if (search?.length > 0){
+        search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
+        // search = search.trim().replace("*", "");
+        logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
+        const searchText = new RegExp(search, 'i');
+        const searchTextArray = search.split(" ");
+
+        // User first name and last name
+        const filterUser: any = {
+          $and: [],
+        };
+        //User
+        if (searchTextArray.length > 3) {
+          filterUser['$or'] = [{
+            firstName: {
+              $regex: new RegExp(`${searchTextArray[0]} ${searchTextArray[1]}`, 'i')
+            },
+            lastName: {
+              $regex: new RegExp(`${searchTextArray[2]} ${searchTextArray[3]}`, 'i')
+            }
+          }];
+        } else {
+          filterUser['$and'].push({
+            'user.firstName': {
+              $regex: new RegExp(searchTextArray[0], 'i')
+            }
+          });
+          if (searchTextArray.length > 1) {
+            filterUser['$and'].push({
+              'user.lastName': {
+                $regex: new RegExp(searchTextArray[1], 'i')
+              }
+            });
+          }
+        }
+
+        //Car (VIN or Brand)
+        const filterCar: any = {
+          $or: [{
+            'car.vin': {
+              $regex: searchText
+            }
+          }, {
+            'car.patent': {
+              $regex: searchText
+            }
+          }, {
+            'car.brand': {
+              $regex: searchText
+            }
+          }]
+        };
+        //Venue (name)
+        const filterVenue: any = {
+          'venue.name': {
+            $regex: searchText
+          }
+        }
+
+        searchTextFilter = {
+          $or: [
+            filterUser,
+            filterCar,
+            filterVenue
+          ]
+        }
+
+      }
+
+
+      let aggregation : any[] = [{
+        $project: {
           number: 1,
           createdAt: 1,
           car: 1,
           user: 1,
           company: 1,
+          team: 1,
           venue: 1,
           name: 1,
           receptionText: 1,
@@ -1049,35 +1124,103 @@ class CarController {
           shippingVenue: 1,
           receptionVenue: 1,
           sendTo: 1,
-          receiveFrom: 1
-        })
-        .populate([{
-          path: 'car',
-          select: 'brand denomination color vin patent'
-        }, {
-          path: 'user',
-          select: 'firstName lastName venue',
-          populate: [{
-            path: 'venue',
-            select: 'name'
-          }]
-        }, {
-          path: 'venue',
-          select: 'name'
-        }, {
-          path: 'company',
-          select: 'name'
-        }, {
-          path: 'sendTo',
-          select: 'name'
-        }, {
-          path: 'receiveFrom',
-          select: 'name'
-        }])
-        .batchSize(50)
-        .cursor();
+          receiveFrom: 1,
+          reception: 1,
+          shipping: 1,
+          carrier: 1,
+          carrierText: 1,
+          carrierBy: 1,
+        }
+      }, {
+        $match: queryFilter
+      }, {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car'
+        }
+      }, {
+        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      }, {
+        $unwind: { path: '$user', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'user.venue',
+          foreignField: '_id',
+          as: 'user.venue'
+        }
+      }, {
+        $unwind: { path: '$user.venue', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue'
+        }
+      }, {
+        $unwind: { path: '$venue', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'receiveFrom',
+          foreignField: '_id',
+          as: 'receiveFrom'
+        }
+      }, {
+        $unwind: { path: '$receiveFrom', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'sendTo',
+          foreignField: '_id',
+          as: 'sendTo'
+        }
+      }, {
+        $unwind: { path: '$sendTo', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'carriers',
+          localField: 'carrierBy',
+          foreignField: '_id',
+          as: 'carrierBy'
+        }
+      }, {
+        $unwind: { path: '$carrierBy', preserveNullAndEmptyArrays: true }
+      }, {
+        $lookup: {
+          from: 'companies',
+          localField: 'company',
+          foreignField: '_id',
+          as: 'company'
+        }
+      }, {
+        $unwind: { path: '$company', preserveNullAndEmptyArrays: true }
+      }];
 
-      cursor.on('data', async (participant) => {
+      if (searchTextFilter){
+        aggregation.push({
+          $match: searchTextFilter
+        })
+      }
+
+      logger.debug(JSON.stringify(aggregation))
+
+      // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+      const cursor = ParticipantModel.aggregate(aggregation).cursor({
+        batchSize: 50
+      }).exec();
+
+      cursor.on('data', async (participant : any ) => {
         const row = await this.processParticipant(participant);
         worksheet.addRow(row).commit();
       });

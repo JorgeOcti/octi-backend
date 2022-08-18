@@ -24,5 +24,6 @@ export interface ITransmittal {
   revision: IParticipant;
   status: string;
   createdBy: IUser | IUserModel;
+  passBorder: boolean;
 }
 
