@@ -123,40 +123,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             }
           >
             <TransmittalStatusDislay transmittal={item.transmittal} showNumber={true} />
-            {/*<ShowIf condition={!!item.transmittal?.number} alternative={''}>*/}
-            {/*  <div>*/}
-            {/*    <strong className='text-underline'>*/}
-            {/*      #{item.transmittal?.number}*/}
-            {/*    </strong>*/}
-            {/*  </div>*/}
-            {/*  <ShowIf*/}
-            {/*    condition={*/}
-            {/*      !!item?.transmittal?.type?._id?.length*/}
-            {/*    }*/}
-            {/*  >*/}
-            {/*    <strong className={'text-info'}> {item?.transmittal?.type?.name?.toUpperCase()}</strong>*/}
-            {/*  </ShowIf>*/}
-            {/*  <div*/}
-            {/*    className={`progress progress-xs progress-striped ${ChoicesStatusTransmittal.inTransit === item.transmittal?.status ? 'active' : ''}`}*/}
-            {/*    style={{ margin: '3px 0' }}>*/}
-            {/*    <div*/}
-            {/*      className='progress-bar progress-bar-danger'*/}
-            {/*      style={{*/}
-            {/*        width: `${transmittalWidth[item.transmittal?.status]}%`,*/}
-            {/*        backgroundColor: `${transmittalColor[item.transmittal?.status]}`*/}
-            {/*      }}*/}
-            {/*    />*/}
-            {/*  </div>*/}
-            {/*  <div>*/}
-            {/*    {*/}
-            {/*      transmittalTexto[item.transmittal?.status]*/}
-            {/*        ?*/}
-            {/*        transmittalTexto[item.transmittal?.status]*/}
-            {/*        :*/}
-            {/*        'Desconocido'*/}
-            {/*    }*/}
-            {/*  </div>*/}
-            {/*</ShowIf>*/}
           </td>
         </ShowIf>
         <ShowIf condition={hasPermission(window.user, 'viewTransmittal')}>
@@ -248,51 +214,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         {
           // canChangeRequest && !requestSettings.brandReadOnly ?
-          canChangeRequest ?
-            <td className='middle'>
-              <AutoCompleteInput
-                value={item.car?.brand}
-                inputClass={'input-sm'}
-                items={recommends}
-                renderItem={(car, index) => {
-                  return (
-                    <div key={index} className='item'>
-                      {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
-                      <strong>{car.brand}</strong>
-                    </div>
-                  );
-                }}
-                onChange={(e) => {
-                  const { value } = e.target;
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        brand: value
-                      }
-                    },
-                    debounce: true
-                  });
-                  this.search(value);
-                }}
-                onSelect={(car: any) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        brand: car.brand,
-                        denomination: car.denomination,
-                        material: car.material ?? ''
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td>
-            : <td className='middle'>
+          !canChangeRequest ? <td className='middle'>
               <strong className={'text-primary'}>
                 {item.car?.brand}
               </strong><br />
@@ -304,7 +226,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 {item.car?.firstColorOption}
                 {item.car?.secondColorOption?.length ? `, ${item.car?.secondColorOption?.toUpperCase()}` : ''}{item.car?.thirdColorOption?.length ? `, ${item.car?.thirdColorOption?.toUpperCase()}` : ''}
               </ShowIf>
-            </td>
+            </td> :null
         }
         <ShowIf condition={requestSettings.entry && false}>
           <td className='middle-center'><strong>{item.car?.bl}</strong></td>
@@ -430,6 +352,51 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </div>
           </td>
+        </ShowIf>
+        <ShowIf condition={canChangeRequest}>
+          <td className='middle'>
+              <AutoCompleteInput
+                value={item.car?.brand}
+                inputClass={'input-sm'}
+                items={recommends}
+                renderItem={(car, index) => {
+                  return (
+                    <div key={index} className='item'>
+                      {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
+                      <strong>{car.brand}</strong>
+                    </div>
+                  );
+                }}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: value
+                      }
+                    },
+                    debounce: true
+                  });
+                  this.search(value);
+                }}
+                onSelect={(car: any) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: car.brand,
+                        denomination: car.denomination,
+                        material: car.material ?? ''
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
         </ShowIf>
         {/*<ShowIf condition={canChangeRequest && !requestSettings.denominationReadOnly}>*/}
         <ShowIf condition={canChangeRequest}>
