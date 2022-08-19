@@ -37,6 +37,8 @@ import * as  Joi from 'joi';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import InventoryFile from '../models/inventoryFile.model';
+import History from "../../app/models/history.model";
+import {StatusHistory} from "../../app/models/history.types";
 
 class InventoryController {
 
@@ -2224,6 +2226,7 @@ class InventoryController {
           console.log('showStock');
         }
       }
+
       if(showInventory) {
         const inventory = await Inventory
           .findOne({
@@ -2237,7 +2240,7 @@ class InventoryController {
           })
           .populate([{
             path: 'cars',
-            select: ['_id', 'car', 'venue', 'venueFound'],
+            select: ['_id', 'car'],
             match: {
               status: {
                 $in: [
@@ -2245,26 +2248,9 @@ class InventoryController {
                   ChoicesStatusCarInventory.leftover
                 ]
               }
-            },
-            populate: [{
-              path: 'car',
-              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
-            }, {
-              path: 'venue',
-              select: ['name'],
-              populate: [{
-                path: 'region',
-                select: ['code', 'name']
-              }]
-            }, {
-              path: 'venueFound',
-              select: ['name'],
-              populate: [{
-                path: 'region',
-                select: ['code', 'name']
-              }]
-            }]
-          }]).lean();
+            }
+          }]);
+
         if (!inventory) {
           res
             .status(200)
@@ -2287,11 +2273,40 @@ class InventoryController {
               cars: []
             });
         } else {
+          const historyCars = await History.find({
+            company,
+            current: true,
+            status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
+            car: {$in: inventory.cars.map( (c: any) => c.car )}
+          }, {
+            status: true,
+            from: true,
+            to: true,
+            createdAt: true,
+          }).populate([{
+              path: 'car',
+              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
+            }, {
+              path: 'from',
+              select: ['name'],
+              populate: [{
+                path: 'region',
+                select: ['code', 'name']
+              }]
+            }, {
+              path: 'to',
+              select: ['name'],
+              populate: [{
+                path: 'region',
+                select: ['code', 'name']
+              }]
+            }]).lean();
+
           res
             .status(200)
             .json({
               message: '',
-              cars: inventory.cars
+              cars: historyCars
             });
         }
       } else if (showStock) {
@@ -2307,24 +2322,43 @@ class InventoryController {
           })
           .populate([{
             path: 'cars',
-            select: ['_id', 'car', 'venue'],
-            populate: [{
-              path: 'car',
-              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-            }, {
-              path: 'venue',
-              select: ['name'],
-              populate: [{
-                path: 'region',
-                select: ['code', 'name']
-              }]
-            }]
+            select: ['_id', 'car']
           }]).lean();
+
+        const historyCars = await History.find({
+          company,
+          current: true,
+          status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
+          car: {$in: stock?.cars.map( (c: any) => c.car )}
+        }, {
+          status: true,
+          from: true,
+          to: true,
+          createdAt: true,
+        }).populate([{
+          path: 'car',
+          select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
+        }, {
+          path: 'from',
+          select: ['name'],
+          populate: [{
+            path: 'region',
+            select: ['code', 'name']
+          }]
+        }, {
+          path: 'to',
+          select: ['name'],
+          populate: [{
+            path: 'region',
+            select: ['code', 'name']
+          }]
+        }]).lean();
+
         res
           .status(200)
           .json({
             message: '',
-            cars: stock!.cars
+            cars: historyCars
           });
 
       }
