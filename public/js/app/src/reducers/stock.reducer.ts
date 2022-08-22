@@ -97,8 +97,13 @@ function processfilters(cars:IInventoryCar[]){
     propertiesKeys: string[] = [];
 
   for (const car of cars) {
+
+    if (!car.car)
+      continue
     const {color, property, type, brand, denomination} = car.car;
-    const {venueFound, venue} = car;
+    const {from, to } = car as any;
+    let venue = to ? to : from ? from : null;
+    let venueFound = to ? to : from ? from : null;
     if (brand && brand.length && !brandsKeys.includes(brand)) {
       brandsKeys.push(brand);
       brands.push(brand);
@@ -119,6 +124,7 @@ function processfilters(cars:IInventoryCar[]){
       propertiesKeys.push(property);
       properties.push(property);
     }
+
     if (venueFound && !venuesKeys.includes(venueFound._id)) {
       venuesKeys.push(venueFound._id);
       venues.push(venueFound);
@@ -147,12 +153,15 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
   const data: any[] = [];
   let vinInStock: any = {};
   for (const car of cars) {
+
+    if (!car.car)
+      continue;
+
     let add = true;
-    if (filter && filter.venues && filter.venues.length && car.venue) {
-      add = (filter.venues as any).includes(car.venue._id);
-      if (!add && car.venueFound) {
-        add = (filter.venues as any).includes(car.venueFound._id);
-      }
+    let venue = (car as any).to ? (car as any).to : (car as any).from
+
+    if (filter && filter.venues && filter.venues.length && venue) {
+      add = (filter.venues as any).includes(venue._id);
     }
     if (add && filter && filter.brands && filter.brands.length && car.car.brand) {
       add = (filter.brands as any).includes(car.car.brand);
@@ -186,9 +195,10 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
         vinInStock[vin] = {
         }
       }
-      const venueFoundID = car.venueFound ? car.venueFound._id : '-';
+      const venueFoundID = venue ? venue._id : '-';
       let daysInVenue = null;
       let receptionVenue = null;
+
       if (car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venueFoundID) {
         receptionVenue = car.car.meta.location.checkedDate;
         daysInVenue = moment().diff(moment(receptionVenue), 'days');
@@ -207,13 +217,14 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
         color: car.car.color,
         labelText: car.labelText,
         meta: car.car.meta,
-        venue: car.venue ? car.venue.name : '-',
+        venue: (car as any).to ? (car as any).to.name : (car as any).from ? (car as any).from.name : '-',
         images: car.images && car.images.length ? car.images : [],
         comments: car.comments && car.comments.length ? car.comments : [],
         countComments: car.comments && car.comments.length ? car.comments.length : 0,
         venueFoundID,
-        venueFound: car.venueFound ? car.venueFound.name : '-',
+        venueFound: (car as any).to ? (car as any).to.name : (car as any).from ? (car as any).from.name : '-',
         receptionVenue,
+        lastUpdate: car.createdAt,
         daysInVenue,
         patent,
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',

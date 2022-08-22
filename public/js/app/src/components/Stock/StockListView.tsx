@@ -28,6 +28,7 @@ import ImageLazyLoad from "../Utils/ImageLazyLoad";
 import {IWindow} from "../../interfaces/window";
 import {hasPermission} from "../../utils/common";
 import TrackingBasePage from "../Utils/TrackingBasePage";
+import {StatusHistory} from "../../../../../../src/app/models/history.types";
 
 declare let window: IWindow;
 
@@ -76,8 +77,8 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   readonly columns: any[] = [];
 
   readonly defaultSorted = [{
-    dataField: 'status',
-    order: 'asc'
+    dataField: 'daysInVenue',
+    order: 'desc'
   }];
 
   constructor(props: IPropsType) {
@@ -99,6 +100,8 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     this.filterProperty = this.filterProperty.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
+    this.statusHumanize = this.statusHumanize.bind(this);
+
     this.columns = [{
       dataField: 'vin',
       text: 'VIN',
@@ -132,15 +135,22 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       headerClasses: 'middle pointer',
       sort: true
     }, {
-      dataField: 'venueFound',
+      dataField: 'status',
+      text: 'Estado',
+      formatter: this.statusFormatter,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      sort: true
+    }, {
+      dataField: 'to',
       text: 'Sucursal',
       formatter: this.venueFormatter,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
     }, {
-      dataField: 'receptionVenue',
-      text: 'Fecha Recepción',
+      dataField: 'lastUpdate',
+      text: 'Última actualización',
       formatter: this.repcetionVenue,
       classes: 'middle',
       headerClasses: 'middle pointer',
@@ -571,6 +581,14 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     // order data
     if (cars.length) {
       for (const car of cars) {
+        if (!car.car)
+          continue
+        let venue = (car as any).to ? (car as any).to : (car as any).from
+        let receptionData = car.car?.meta?.location && car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venue._id ?
+          moment(car.car.meta.location.checkedDate).format('YYYY-MM-DD') : ""
+        let receptionDays = car.car?.meta?.location && car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venue._id ?
+          moment().diff(moment(car.car.meta.location.checkedDate), 'days') : ""
+
         data.push({
           VIN: car.car.vin,
           Patente: car.car.patent && car.car.patent.length ? car.car.patent : '-',
@@ -578,9 +596,13 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
           Marca: car.car.brand && car.car.brand.length ? car.car.brand : '-',
           ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
           Color: car.car.color && car.car.color.length ? car.car.color : '-',
+          Estado: this.statusHumanize(car.status as StatusHistory),
           Tipo: car.car.type && car.car.type ? car.car.type : '-',
           Propiedad: car.car.property && car.car.property ? car.car.property : '-',
-          Sucursal: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
+          Sucursal: venue ? venue.name : '-',
+          ['Última actualización']: moment(car.createdAt).format('YYYY-MM-DD'),
+          ['Fecha de recepción']: receptionData,
+          ['Fecha Recepción']: receptionDays,
         });
       }
     }
@@ -591,6 +613,17 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.utils.book_append_sheet(wb, ws, 'Detalle');
     /* generate an XLSX file */
     XLSX.writeFile(wb, `Stock ${moment().format('YYYYMMDD')}.xlsx`);
+  }
+
+  private statusHumanize(status: StatusHistory) {
+    switch (status) {
+      case StatusHistory.available:
+        return "Disponible";
+      case StatusHistory.inTransit:
+        return "En transito";
+      default:
+        return "-"
+    }
   }
 
   private customTotal(from: any, to: any, size: any) {
@@ -612,6 +645,19 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   private venueFormatter(cell: string, row: any) {
     return row.venueFound !== "-" ? row.venueFound : row.venue;
   }
+
+  private statusFormatter(cell: string, row: any) {
+    let status : StatusHistory = row.status;
+    switch (status) {
+      case StatusHistory.available:
+        return "Disponible";
+      case StatusHistory.inTransit:
+        return "En transito";
+      default:
+        return "-"
+    }
+  }
+
 }
 
 const mapStateToProps = (state: { stock: IStockState }) => {
