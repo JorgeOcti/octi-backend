@@ -2193,175 +2193,46 @@ class InventoryController {
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {
-      const {company, venue} = req.user;
-      const lastInventory = await Inventory
-        .findOne({
-          company
-        }, {
-          name: true,
-          status: true,
-          cars: true,
-          createdAt: true
-        }, {
-          sort: {'createdAt': -1}
-        });
-      const lastStock = await Stock
-        .findOne({
-          company
-        }, {}, {
-          sort: {'createdAt': -1}
-        });
-      let showInventory = false;
-      let showStock = false;
-      if(lastInventory && !lastStock){
-        showInventory = true;
-      } else if(!lastInventory && lastStock){
-        showStock = true;
-      } else if(lastInventory && lastStock){
-        if(moment(lastInventory.createdAt).isAfter(lastStock.createdAt)){
-          showInventory = true;
-          console.log('showInventory');
-        } else {
-          showStock = true;
-          console.log('showStock');
+      const {company} = req.user;
+
+      const historyCars = await History.find({
+        company,
+        current: true,
+        status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
+        createdAt: {
+          $gt: moment().subtract(60, 'days')
         }
-      }
+      }, {
+        status: true,
+        from: true,
+        to: true,
+        createdAt: true,
+      }).populate([{
+        path: 'car',
+        select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
+      }, {
+        path: 'from',
+        select: ['name'],
+        populate: [{
+          path: 'region',
+          select: ['code', 'name']
+        }]
+      }, {
+        path: 'to',
+        select: ['name'],
+        populate: [{
+          path: 'region',
+          select: ['code', 'name']
+        }]
+      }]).lean();
 
-      if(showInventory) {
-        const inventory = await Inventory
-          .findOne({
-            company
-          }, {
-            name: true,
-            status: true,
-            cars: true
-          }, {
-            sort: {'createdAt': -1}
-          })
-          .populate([{
-            path: 'cars',
-            select: ['_id', 'car'],
-            match: {
-              status: {
-                $in: [
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.leftover
-                ]
-              }
-            }
-          }]);
+      res
+        .status(200)
+        .json({
+          message: '',
+          cars: historyCars
+        });
 
-        if (!inventory) {
-          res
-            .status(200)
-            .json({
-              message: 'No se han realizado inventarios para ver el stock.',
-              cars: []
-            });
-        } else if (inventory.status !== ChoicesStatusInventory.finalized) {
-          res
-            .status(200)
-            .json({
-              message: 'Se esta procesando la toma de inventario.',
-              cars: []
-            });
-        } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).countDocuments()) {
-          res
-            .status(200)
-            .json({
-              message: 'Tú sucursal no ha terminado el inventario.',
-              cars: []
-            });
-        } else {
-          const historyCars = await History.find({
-            company,
-            current: true,
-            status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
-            car: {$in: inventory.cars.map( (c: any) => c.car )}
-          }, {
-            status: true,
-            from: true,
-            to: true,
-            createdAt: true,
-          }).populate([{
-              path: 'car',
-              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
-            }, {
-              path: 'from',
-              select: ['name'],
-              populate: [{
-                path: 'region',
-                select: ['code', 'name']
-              }]
-            }, {
-              path: 'to',
-              select: ['name'],
-              populate: [{
-                path: 'region',
-                select: ['code', 'name']
-              }]
-            }]).lean();
-
-          res
-            .status(200)
-            .json({
-              message: '',
-              cars: historyCars
-            });
-        }
-      } else if (showStock) {
-        const stock = await Stock
-          .findOne({
-            company
-          }, {
-            name: true,
-            status: true,
-            cars: true
-          }, {
-            sort: {'createdAt': -1}
-          })
-          .populate([{
-            path: 'cars',
-            select: ['_id', 'car']
-          }]).lean();
-
-        const historyCars = await History.find({
-          company,
-          current: true,
-          status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
-          car: {$in: stock?.cars.map( (c: any) => c.car )}
-        }, {
-          status: true,
-          from: true,
-          to: true,
-          createdAt: true,
-        }).populate([{
-          path: 'car',
-          select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
-        }, {
-          path: 'from',
-          select: ['name'],
-          populate: [{
-            path: 'region',
-            select: ['code', 'name']
-          }]
-        }, {
-          path: 'to',
-          select: ['name'],
-          populate: [{
-            path: 'region',
-            select: ['code', 'name']
-          }]
-        }]).lean();
-
-        res
-          .status(200)
-          .json({
-            message: '',
-            cars: historyCars
-          });
-
-      }
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`inventory currentStock: Async Error.`);
