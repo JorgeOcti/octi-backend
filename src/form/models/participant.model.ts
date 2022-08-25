@@ -153,6 +153,10 @@ const damagesSelectedSchema = new mongoose.Schema({
   part: {
     type: mongoose.Schema.Types.ObjectId
   },
+  severity: {
+    type: String,
+    required: false
+  },
   images:  [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
@@ -234,6 +238,11 @@ const participantAnswersSchema = new mongoose.Schema({
   maxValue: Number,
   colors: [String],
   score: Number,
+
+  requireSeverity: {
+    type: Boolean,
+    default: false
+  }
 
 });
 

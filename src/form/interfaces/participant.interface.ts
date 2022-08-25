@@ -89,6 +89,9 @@ export interface IParticipantAnswer {
   maxValue: number;
   colors: string[];
   score: number;
+
+  requireSeverity: boolean;
+
 }
 
 export interface IParticipantSection {

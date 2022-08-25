@@ -798,7 +798,8 @@ class FormController {
                 optional: question.optional,
                 minValue: question.minValue,
                 maxValue: question.maxValue,
-                score: answer && answer.score ? answer.score : -1
+                score: answer && answer.score ? answer.score : -1,
+                requireSeverity: question.requireSeverity,
               });
             }
             // calculate section qualification
@@ -2164,7 +2165,7 @@ class FormController {
             })
             .populate([{
               path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback', 'severityOptions'],
               populate: [{
                 path: 'positions',
                 select: ['name'],

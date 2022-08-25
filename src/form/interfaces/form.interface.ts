@@ -47,6 +47,8 @@ export interface IFormQuestion {
   minValue: number;
   maxValue: number;
   colors: string[];
+
+  requireSeverity: boolean;
 }
 
 export interface IFormSection {

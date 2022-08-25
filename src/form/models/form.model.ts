@@ -159,7 +159,12 @@ const formQuestionsSchema = new mongoose.Schema({
 
   minValue: Number,
   maxValue: Number,
-  colors: [String]
+  colors: [String],
+
+  requireSeverity: {
+    type: Boolean,
+    default: false
+  }
 });
 
 

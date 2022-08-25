@@ -33,7 +33,8 @@ export const damagesSchema = new mongoose.Schema({
   kindFallback: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Kind'
-  }
+  },
+  severityOptions: [String]
 }, {
   timestamps: true
 });

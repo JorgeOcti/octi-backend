@@ -12,6 +12,7 @@ export interface IDamages {
   parts: mongoose.Types.Array<IPart>;
   kinds: mongoose.Types.Array<IKind>;
   positions: mongoose.Types.Array<IPosition>;
+  severityOptions: [string];
   kindFallback: IPart;
   partFallback: IKind;
 }
@@ -21,5 +22,6 @@ export interface IDamageSelected {
   part: string;
   kind: string;
   position: string;
+  severity: string;
   images: IParticipantFile[];
 }
