@@ -895,7 +895,9 @@ class CarController {
       let parts = this.createObjectFromDamages(answer.damages.parts);
       let kinds = this.createObjectFromDamages(answer.damages.kinds);
       let positions = this.createObjectFromDamages(answer.damages.positions);
-      datum = { [`${formID}-${answer._id.toString()}`]: answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${kinds[item.kind] ?? '-'};${positions[item.position] ?? '-'}`).join(";") };
+
+      datum = { [`${formID}-${answer._id.toString()}`]:
+          answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${positions[item.position] ?? '-'};${kinds[item.kind] ?? '-'}${answer.requireSeverity ? `;${item.severity}` : ''}`).join(";") };
     }
     return datum;
   }
