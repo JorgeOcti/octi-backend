@@ -499,6 +499,7 @@ export function getParticipant(id: string) {
                           }, {}) : {};
                           const positions: any = answer.damages && answer.damages.hasOwnProperty('positions') ? answer.damages.positions.reduce((acc: any, cur: any) => {
                             acc[cur._id] = cur.name;
+                            const severity: string = answer.damages && answer.requireSeverity && answer.damages.hasOwnProperty('severity') ? answer.damages.severity : ""
                             return acc;
                           }, {}) : {};
                           // no show conciliation questions if no require
@@ -550,6 +551,9 @@ export function getParticipant(id: string) {
                                               <strong className="title">{parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}</strong><br/>
                                               <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
+                                              { answer.damages && answer.requireSeverity && ds.hasOwnProperty('severity') ?
+                                                <> <strong>Severidad</strong> {ds.severity} </> : null
+                                              }
                                             </p>
                                             <ShowIf
                                               condition={!!ds.images.length}
