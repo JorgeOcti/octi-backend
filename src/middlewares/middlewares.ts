@@ -196,6 +196,7 @@ class Middlewares {
     return async (req: IRequest, res: Response, next: NextFunction) => {
       const resource = req.body;
       try {
+        logger.info(`Middlewares.validateBody resource: ${JSON.stringify(resource)}`);
         req.body = await resourceSchema.validate(resource, {
           stripUnknown: true
         });

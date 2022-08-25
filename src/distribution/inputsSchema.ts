@@ -16,7 +16,7 @@ const createTransmittalSchema = yup.object().shape({
     car: yup.object({
       _id: yup.string().required(),
       bl: yup.string(),
-      client: yup.string(),
+      client: yup.string().nullable(true),
     }).required(),
     destination: yup.string().required(),
     origin: yup.string().required()
