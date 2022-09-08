@@ -20,7 +20,7 @@ import User from '../../app/models/user.model';
 import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
-import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import ActivityHistory from '../../billing/models/activityHistory.model';
 import Reason from '../models/reason.model';
 import { createRequestSalfaParams } from '../inputsSchema';
 import Venue from '../../app/models/venue.model';
@@ -29,6 +29,7 @@ import * as mongoose from 'mongoose';
 
 import { ICar } from '../../app/interfaces';
 import conectaController from './conecta.controller';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 
 // import * as mongoose from 'mongoose'
 

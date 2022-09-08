@@ -4,7 +4,7 @@ import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
 // import * as Raven from 'raven';
 import * as uuid from 'uuid';
-import { queue } from '../../app';
+import { queue } from '../../utils/queue';
 import { passport } from '../../passportConfig';
 
 import { IRequest } from '../../interfaces/global.interface';

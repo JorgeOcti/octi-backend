@@ -10,15 +10,14 @@ import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import { PaginateOptions } from 'mongoose';
-// import * as Raven from 'raven';
 import * as tempfile from 'tempfile';
-import { queue } from '../../app';
+import { queue } from '../../utils/queue';
 import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import TeamSetting from '../../app/models/teamSetting.model';
 import { default as User, default as UserModel } from '../../app/models/user.model';
 import { default as Venue, default as VenueModel, IVenueModel } from '../../app/models/venue.model';
-import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import ActivityHistory from '../../billing/models/activityHistory.model';
 import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
 import { IRequest } from '../../interfaces/global.interface';
 import { IInventoryCar } from '../interfaces/inventory.interface';
@@ -37,8 +36,9 @@ import * as  Joi from 'joi';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import InventoryFile from '../models/inventoryFile.model';
-import History from "../../app/models/history.model";
-import {StatusHistory} from "../../app/models/history.types";
+import History from '../../app/models/history.model';
+import { StatusHistory } from '../../app/models/history.types';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 
 class InventoryController {
 
@@ -81,7 +81,7 @@ class InventoryController {
   }
 
   public test(req: IRequest, res: Response) {
-    const {user, body} = req;
+    const { user, body } = req;
     const schema = Joi.object({
       username: Joi.string()
         .alphanum()
@@ -92,15 +92,16 @@ class InventoryController {
       access_token: [
         Joi.string(),
         Joi.number()
-      ],
+      ]
     })
-    .xor('password', 'access_token');
+      .xor('password', 'access_token');
     res.json({
-      status: "ok",
+      status: 'ok',
       user,
       validate: schema.validate(body)
-    })
+    });
   }
+
   public async stock(req: IRequest, res: Response) {
     try {
       res.render('app/index', {
@@ -113,13 +114,13 @@ class InventoryController {
 
   public async detail(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     try {
-      const inventory = await InventoryModel.findOne({_id: id, team});
+      const inventory = await InventoryModel.findOne({ _id: id, team });
       if (!inventory) {
         return res.status(404).render('404');
       } else {
-        return res.render('app/index', {token: await req.user.generateToken()});
+        return res.render('app/index', { token: await req.user.generateToken() });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -150,8 +151,8 @@ class InventoryController {
 
   public async create(req: IRequest, res: Response) {
     const { company, team } = req.user;
-    const {name, manualPhoto, reportPhoto} = req.body;
-    let {carsByVenue, notification} = req.body;
+    const { name, manualPhoto, reportPhoto } = req.body;
+    let { carsByVenue, notification } = req.body;
     carsByVenue = JSON.parse(carsByVenue);
     notification = notification === 'true';
     try {
@@ -282,7 +283,7 @@ class InventoryController {
           'Nuevo inventario',
           `Se ha iniciado el inventario "${inventory.name}"`,
           'Ya puedes empezar a escanear',
-           usersIDs.map((user) => user._id.toString())
+          usersIDs.map((user) => user._id.toString())
         );
       }
       io.to(`inventory-list-${team}`).emit('REFRESH', {
@@ -559,11 +560,11 @@ class InventoryController {
 
   public async apiDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     logger.info(`apiDetail`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`);
     try {
-      const updatedUser = await User.findById(req.user._id, {venue: true});
+      const updatedUser = await User.findById(req.user._id, { venue: true });
       if (!updatedUser) {
         res.status(404).json({
           message: 'No se ha encontrado el inventario solicitado.',
@@ -571,7 +572,7 @@ class InventoryController {
         });
       } else {
         // const venuesPermissions = req.user.venuesPermissions();
-        const inventory = await (Inventory as any  )
+        const inventory = await (Inventory as any)
           .findOne({
             _id: id,
             venues: updatedUser.venue,
@@ -586,9 +587,9 @@ class InventoryController {
               status: {
                 $in: [ChoicesStatusCarInventory.pending, ChoicesStatusCarInventory.found]
               }
-            //   venue: {
-            //     $in: venuesPermissions
-            //   }
+              //   venue: {
+              //     $in: venuesPermissions
+              //   }
             },
             populate: [{
               path: 'car',
@@ -603,13 +604,13 @@ class InventoryController {
             data: {
               cars: inventory.cars
                 .map((car: IInventoryCar) => {
-                return {
-                  ...car.car,
-                  _id: (car as any)._id,
-                  venue: car.venue,
-                  status: car.status
-                };
-              }),
+                  return {
+                    ...car.car,
+                    _id: (car as any)._id,
+                    venue: car.venue,
+                    status: car.status
+                  };
+                }),
               reasons: []
             },
             status: 200
@@ -645,7 +646,7 @@ class InventoryController {
         // validate that the directory exist and create recursive if it does not exist
         const directoyName = directories.join('/');
         if (!fs.existsSync(directoyName)) {
-          fs.mkdirSync(directoyName, {recursive: true});
+          fs.mkdirSync(directoyName, { recursive: true });
         }
         const file = fs.createWriteStream(dest);
         // download file
@@ -673,7 +674,7 @@ class InventoryController {
   }
 
   public async uploadFile(req: IRequest, res: Response) {
-    const {id} = req.params;
+    const { id } = req.params;
     const { company, venue, team } = req.user;
     const { inventoryCardId } = req.body;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
@@ -759,14 +760,14 @@ class InventoryController {
   }
 
   public async removeInventoryCarFile(req: IRequest, res: Response): Promise<any> {
-    try{
+    try {
       const { id } = req.params;
       const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
-      if(inventoryFile){
-         io.to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
-           update: true,
-           venue: req.user.venue._id
-         });
+      if (inventoryFile) {
+        io.to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
+          update: true,
+          venue: req.user.venue._id
+        });
       }
       res.json({});
     } catch (e) {
@@ -781,9 +782,9 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
-    const {id} = req.params;
-    const {vin, images} = req.body;
+    const { team } = req.user;
+    const { id } = req.params;
+    const { vin, images } = req.body;
     logger.info(`apiFoundCar`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     try {
@@ -791,7 +792,7 @@ class InventoryController {
         path: 'venue',
         select: ['name']
       }]);
-      const teamSettings = await TeamSetting.findOne({team});
+      const teamSettings = await TeamSetting.findOne({ team });
       if (!updatedUser) {
         return res.status(404).json({
           message: 'No se ha encontrado el inventario solicitado.',
@@ -832,7 +833,7 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
-              if (teamSettings!.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString() ) {
+              if (teamSettings!.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
                 inventoryCar.status = ChoicesStatusCarInventory.leftover;
                 io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                   title: 'Vehículo encontrado',
@@ -906,14 +907,14 @@ class InventoryController {
 
   public async finishInventory(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     if (!req.user.hasPermission('finishInventory')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     try {
-      const inventory = await InventoryModel.findOne({_id: id, team});
+      const inventory = await InventoryModel.findOne({ _id: id, team });
       if (inventory) {
         await inventory.update({
           status: ChoicesStatusInventory.finalized,
@@ -959,7 +960,7 @@ class InventoryController {
 
   public async deleteInventory(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const {id} = req.params;
+    const { id } = req.params;
     if (!req.user.hasPermission('deleteInventory')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -971,7 +972,7 @@ class InventoryController {
         team
       });
       if (inventory) {
-        await InventoryCar.find({inventory}).remove();
+        await InventoryCar.find({ inventory }).remove();
         await inventory.remove();
         io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
@@ -1008,8 +1009,8 @@ class InventoryController {
   }
 
   public async addComment(req: IRequest, res: Response) {
-    const {inventory} = req.params;
-    const {_id, comment} = req.body;
+    const { inventory } = req.params;
+    const { _id, comment } = req.body;
     try {
       await InventoryCar.update({
         inventory,
@@ -1057,8 +1058,8 @@ class InventoryController {
   }
 
   public async downloadImages(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const {cars} = req.body;
+    const { id } = req.params;
+    const { cars } = req.body;
     const team = req.user.team._id;
     try {
       const inventory = await InventoryModel.findOne({
@@ -1151,7 +1152,7 @@ class InventoryController {
           console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
         });
         res.attachment(filename);
-        const imagesToDownload: any  = [];
+        const imagesToDownload: any = [];
         const imagesToCompress: any = [];
         for (const car of inventoriesCars) {
           for (const image of car.images) {
@@ -1196,9 +1197,9 @@ class InventoryController {
         logger.error(`downloadImages: 'No se ha encontrado el inventario.`);
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
-        message: 'No se ha encontrado el inventario.',
-        status: 404
-      });
+          message: 'No se ha encontrado el inventario.',
+          status: 404
+        });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -1217,8 +1218,8 @@ class InventoryController {
 
   public async reportCar(req: IRequest, res: Response): Promise<any> {
     const { company, team } = req.user;
-    const {id} = req.params;
-    const {vin, patent, denomination, brand, color, images} = req.body;
+    const { id } = req.params;
+    const { vin, patent, denomination, brand, color, images } = req.body;
     logger.info(`reportCar`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
     try {
@@ -1235,31 +1236,31 @@ class InventoryController {
       const venueId = updatedUser.venue._id;
       const inventory = await InventoryModel.findOne({
         _id: id,
-        status:  ChoicesStatusInventory.inProcess,
+        status: ChoicesStatusInventory.inProcess,
         team
       });
 
       let findCOnditions: any = {};
       let isVinAvailable = vin && vin.length > 0;
       if (vin)
-        findCOnditions = {vin, team};
+        findCOnditions = { vin, team };
       if (!isVinAvailable && patent && patent.length > 0)
-        findCOnditions = {patent, team};
+        findCOnditions = { patent, team };
 
       if (inventory) {
         const car = await CarModel.findOneOrCreate(findCOnditions,
-        {
-          vin,
-          vin2: vin.substr(vin.length - 6),
-          patent,
-          brand,
-          denomination,
-          color,
-          team,
-          company,
-          createdBy: req.user,
-          status: ChoicesStatusCar.inventory
-        });
+          {
+            vin,
+            vin2: vin.substr(vin.length - 6),
+            patent,
+            brand,
+            denomination,
+            color,
+            team,
+            company,
+            createdBy: req.user,
+            status: ChoicesStatusCar.inventory
+          });
         const inventoryCar = new InventoryCar({
           car,
           inventory,
@@ -1312,13 +1313,13 @@ class InventoryController {
 
   public async setLabel(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {id} = req.params;
-    const {car, label, custom, carID} = req.body;
+    const { id } = req.params;
+    const { car, label, custom, carID } = req.body;
     logger.info(`setLabel`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
     try {
-      if(label === 'deleted'){
-        const inventoryCar = await InventoryCar.findById(car, {venue: true});
+      if (label === 'deleted') {
+        const inventoryCar = await InventoryCar.findById(car, { venue: true });
         if (inventoryCar) {
           await InventoryCar.update({
             _id: car,
@@ -1347,7 +1348,7 @@ class InventoryController {
           team
         });
         if (newLabel) {
-          const inventoryCar = await InventoryCar.findById(car, {venue: true});
+          const inventoryCar = await InventoryCar.findById(car, { venue: true });
           if (inventoryCar) {
             await InventoryCar.update({
               _id: car,
@@ -1873,7 +1874,7 @@ class InventoryController {
 
   public async dashboard(req: IRequest, res: Response): Promise<any> {
     let venuesPermissions: any = req.user.venuesPermissions();
-    const {venues} = req.body;
+    const { venues } = req.body;
     const team = req.user.team._id;
     if (venues && venues.length) {
       venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v.toString()));
@@ -1897,7 +1898,7 @@ class InventoryController {
           _id: {
             status: '$status',
             month: {
-              $dateToString: {format: '%Y-%m', date: '$createdAt'}
+              $dateToString: { format: '%Y-%m', date: '$createdAt' }
             }
           },
           total: {
@@ -1917,17 +1918,17 @@ class InventoryController {
       }]);
       const data: any = {};
       const defaultResults = {
-         [ChoicesStatusCarInventory.pending]: 0,
-         [ChoicesStatusCarInventory.found]: 0,
-         [ChoicesStatusCarInventory.missing]: 0,
-         [ChoicesStatusCarInventory.reported]: 0,
-         [ChoicesStatusCarInventory.leftover]: 0
-       };
+        [ChoicesStatusCarInventory.pending]: 0,
+        [ChoicesStatusCarInventory.found]: 0,
+        [ChoicesStatusCarInventory.missing]: 0,
+        [ChoicesStatusCarInventory.reported]: 0,
+        [ChoicesStatusCarInventory.leftover]: 0
+      };
       for (let i = 0; i <= total; i++) {
         const month = moment()
           .subtract(total - i, 'months')
           .format('YYYY-MM');
-        data[month] = {...defaultResults};
+        data[month] = { ...defaultResults };
       }
       for (const item of inventory) {
         data[item._id] = item.results.reduce((acc: any, cur: any) => {
@@ -1937,7 +1938,7 @@ class InventoryController {
           ...defaultResults
         });
       }
-      const teamSettings = await TeamSetting.findOne({team});
+      const teamSettings = await TeamSetting.findOne({ team });
       res.json({
         data,
         inventorySettings: teamSettings!.inventory
@@ -1999,7 +2000,7 @@ class InventoryController {
           wrapText: true
         }
       }];
-      const venues = await Venue.find({team, deleted: false}).sort('name');
+      const venues = await Venue.find({ team, deleted: false }).sort('name');
       for (const venue of venues) {
         columns.push({
           header: venue.name, key: venue._id.toString(), width: 5,
@@ -2045,35 +2046,35 @@ class InventoryController {
         };
       });
       const cars = await CarModel.find({
-          team,
-          isExhibition: false,
-          createdAt: {
-            $gte:  moment().subtract(6, 'months')
+        team,
+        isExhibition: false,
+        createdAt: {
+          $gte: moment().subtract(6, 'months')
           //   $lte: tf,
+        }
+      }, {
+        vin: true,
+        denomination: true,
+        color: true,
+        brand: true
+      }).populate({
+        path: 'inventories',
+        select: ['name', 'createdAt', 'venueFound', 'status'],
+        match: {
+          status: {
+            $in: [ChoicesStatusCarInventory.found]
           }
-        }, {
-          vin: true,
-          denomination: true,
-          color: true,
-          brand: true
-        }).populate({
-          path: 'inventories',
-          select: ['name', 'createdAt', 'venueFound', 'status'],
-          match: {
-            status: {
-              $in: [ChoicesStatusCarInventory.found]
-            }
-          },
-          options: {
-            sort: {
-              createdAt: 1
-            }
+        },
+        options: {
+          sort: {
+            createdAt: 1
           }
-        });
+        }
+      });
       for (const car of cars) {
         const inventories: any[] = car.inventories!;
-        if(inventories.length){
-          const carData:any = {
+        if (inventories.length) {
+          const carData: any = {
             vin: car.vin,
             marca: car.brand,
             modelo: car.denomination
@@ -2100,7 +2101,7 @@ class InventoryController {
   public async loadStock(req: IRequest, res: Response): Promise<any> {
     const { company } = req.user;
     const team = req.user.team._id;
-    const {carsByVenue} = req.body;
+    const { carsByVenue } = req.body;
     try {
       const stockCars: IStockCar[] = [];
       for (const venue of carsByVenue) {
@@ -2176,7 +2177,7 @@ class InventoryController {
         message: 'Stock creado satisfactoriamente',
         status: 200
       });
-    }  catch (e) {
+    } catch (e) {
       /* istanbul ignore next */
       logger.error(`loadStock: Async Error.`);
       /* istanbul ignore next */
@@ -2193,12 +2194,12 @@ class InventoryController {
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {
-      const {company} = req.user;
+      const { company } = req.user;
 
       const historyCars = await History.find({
         company,
         current: true,
-        status: {$in: [StatusHistory.available, StatusHistory.inTransit,]},
+        status: { $in: [StatusHistory.available, StatusHistory.inTransit] },
         createdAt: {
           $gt: moment().subtract(60, 'days')
         }
@@ -2206,7 +2207,7 @@ class InventoryController {
         status: true,
         from: true,
         to: true,
-        createdAt: true,
+        createdAt: true
       }).populate([{
         path: 'car',
         select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']

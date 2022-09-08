@@ -1,6 +1,8 @@
 import {  ObjectId } from 'bson';
 import * as mongoose from 'mongoose';
 import {IActivityHistoryInterface} from '../interfaces/activityHistory.interface';
+import { choicesTypeActivity } from './activiHistory.types';
+
 
 const detailInventorySchema = new mongoose.Schema({
   name: {
@@ -31,17 +33,7 @@ const responseCarSchema = new mongoose.Schema({
 
 export interface IActivityHistorygModel extends IActivityHistoryInterface, mongoose.Document {}
 
-export enum ChoicesTypeActivity {
-  inventory = 'inventory',
-  checklist = 'checklist',
-  request = 'request'
-}
 
-export const choicesTypeActivity = [
-  ChoicesTypeActivity.inventory,
-  ChoicesTypeActivity.checklist,
-  ChoicesTypeActivity.request
-];
 
 const activityHistorySchema = new mongoose.Schema({
   team: {

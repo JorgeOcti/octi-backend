@@ -1199,7 +1199,7 @@ class TransmittalController {
           [ChoicesStatusTransmittalItem.completed]: {}
         }[status];
       }
-      mongoose.set('debug', true);
+      // mongoose.set('debug', true);
       const transmittals = await TransmittalItem.aggregate([{
         $match: {
           team: mongoose.Types.ObjectId(team),

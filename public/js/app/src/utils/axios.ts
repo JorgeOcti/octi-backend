@@ -1055,4 +1055,35 @@ export default class ApiService {
       `/api/v1/transmittals/resume-by-status?status=${type}&from=${from}&to=${to}`
     );
   }
+
+  public getInvoiceCorporate(): AxiosPromise {
+    return this.instance.get(
+      '/settings/billing-settings/invoices/'
+    )
+  }
+
+  public getBillingByCorporate(): AxiosPromise {
+    return this.instance.get(
+      '/api/settings/billing/corporate/'
+    )
+  }
+
+  public updateBillingByCorporate(data: any): AxiosPromise {
+    return this.instance.patch(
+      '/api/settings/billing/corporate/',
+      data
+    );
+  }
+
+  public getAllCompanies(): AxiosPromise {
+    return this.instance.get(
+      `/api/settings/billing/companies/`
+    );
+  }
+
+  public getAllModules(): AxiosPromise {
+    return this.instance.get(
+      `/api/settings/billing/modules/`
+    );
+  }
 }

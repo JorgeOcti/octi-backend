@@ -1,7 +1,7 @@
 import NullTriggerDelegate from './nullTrigger.delegate';
 import { IFormTriggerModel } from '../../../models/trigger.model';
 import logger from '../../../../services/logger.service';
-import { queue } from '../../../../app';
+import { queue } from '../../../../utils/queue';
 import { IAnyObject } from '../../../../interfaces/global.interface';
 
 export default class EmailTriggerDelegate extends NullTriggerDelegate {

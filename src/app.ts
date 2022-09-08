@@ -35,6 +35,7 @@ import { statsRouter } from './stats/router';
 // import { accessLogStream } from './services/logger.service';
 import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
+import {queue} from "./utils/queue";
 // import GeneralUtils from './utils/general.utils';
 
 // Create Express server
@@ -240,14 +241,6 @@ app.use('/', billingRouter);
 app.use('/', statsRouter);
 app.use('/api/v1', jwtRouter);
 
-/* queues */
-export const queue = kue.createQueue({
-  redis: {
-    createClientFactory: () => {
-      return createRedisClient();
-    }
-  }
-});
 
 const billingQueue = new Bull('billing', {
    // redis: {

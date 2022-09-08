@@ -111,6 +111,35 @@ export function getBillingAction(nextPage: number) {
   };
 }
 
+export function getInvoiceAction(nextPage: number) {
+  return (dispatch: Dispatch<BillingReduxAction>, getState: () => {labels: IBillingState}) => {
+    const api: ApiService = new ApiService();
+    const state = getState();
+    if (nextPage && nextPage !== state.labels.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
+    dispatch(cancelRequestAction(api.getSource()));
+    const page = nextPage ? nextPage : state.labels.pagination.page;
+    if (nextPage) {
+      dispatch(changePageAction(nextPage));
+    }
+    api.getBilling(page)
+      .then((response: AxiosResponse) => {
+        dispatch(loadBillingAction(response.data.results, response.data.count, response.data.pages));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export type BillingReduxAction = IIsLoading
   | ICancelRequest
   | ILoadBilling

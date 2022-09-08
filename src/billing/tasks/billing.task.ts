@@ -4,13 +4,14 @@ import * as moment from 'moment-timezone';
 import * as path from 'path';
 // import * as Raven from 'raven';
 import * as request from 'request';
-import { queue } from '../../app';
+import {queue} from '../../utils/queue';
 import Company from '../../app/models/company.model';
 import { ICompany } from '../../app/interfaces/company.interface';
 import GeneralUtils from '../../utils/general.utils';
-import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
+import ActivityHistory from '../models/activityHistory.model';
 import Invoice, { IInvoiceModel } from '../models/invoice.model';
 import { RequestItem } from '../../request/models';
+import { ChoicesTypeActivity } from '../models/activiHistory.types';
 
 class BillingQueue {
 

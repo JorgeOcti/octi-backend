@@ -7,7 +7,7 @@ import User, { IUserModel } from '../models/user.model';
 import Venue from '../models/venue.model';
 import PushService from '../../services/push.service';
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import Permission from "../models/permission.model";
+import Permission from "../../billing/models/permission.model";
 
 class UserController {
 

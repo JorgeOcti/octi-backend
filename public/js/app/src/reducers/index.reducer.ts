@@ -34,6 +34,7 @@ import { formsReducer } from './form.reducer';
 import { colorsReducer } from './color.reducer';
 import {statsDashboardReducer} from "./statsDashboard.reducer";
 import {bordersReducer} from "./borders.reducer";
+import billingSettingsReducer from './billingSettings.reducer';
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -62,6 +63,7 @@ export default (history: any) => combineReducers({
   requests: requestsReducers,
   requestItems: requestItemsReducers,
   operationType: operationTypeReducer,
+  billingSettings: billingSettingsReducer,
   milestone: milestoneReducer,
   milestoneType: milestoneTypeReducer,
   regions: regionsReducer,
