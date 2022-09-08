@@ -33,7 +33,8 @@ mongoose.connect!(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true
   }
 });
 // mongoose.set('debug', app.get('env') === 'development');
-mongoose.set('debug', true);
+// mongoose.set('debug', true);
+mongoose.set('debug', false);
 const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
 const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */

@@ -6,10 +6,21 @@ import BillingQueue from '../tasks/billing.task';
 import * as HtmlPdf from 'html-pdf';
 import * as excel from 'exceljs';
 import * as tempfile from 'tempfile';
-import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
+import ActivityHistory from '../models/activityHistory.model';
 import * as moment from 'moment-timezone';
+import {ChoicesTypeActivity} from '../models/activiHistory.types';
+import Company from '../../app/models/company.model';
+import Module from '../models/module.model';
+import Submodule from '../models/submodule.model';
+import logger from '../../services/logger.service';
+import History from '../../app/models/history.model';
+import TeamBilling from "../models/teamBilling.model";
+import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
+import BillingTeamQueue from "../tasks/billingTeam.task";
 
 class BillingController {
+
+  readonly submodule:any;
 
   constructor() {
     this.index = this.index.bind(this);
@@ -17,6 +28,16 @@ class BillingController {
     this.apiDetail = this.apiDetail.bind(this);
     this.pdf = this.pdf.bind(this);
     this.run = this.run.bind(this);
+    this.getInvoiceCorporative = this.getInvoiceCorporative.bind(this);
+    this.coportarePdf = this.coportarePdf.bind(this);
+    this.apiInvoiceCorporative = this.apiInvoiceCorporative.bind(this);
+    this.apiListCorporateBilling = this.apiListCorporateBilling.bind(this);
+    this.apiListCompaniesCorporateBilling = this.apiListCompaniesCorporateBilling.bind(this);
+    this.getCompaniesCorporateBilling = this.getCompaniesCorporateBilling.bind(this);
+    this.getModules = this.getModules.bind(this);
+    this.apiListModules = this.apiListModules.bind(this);
+    this.exportDetail = this.exportDetail.bind(this);
+    this.submodule = new Submodule()
   }
 
   /* istanbul ignore next */
@@ -25,10 +46,10 @@ class BillingController {
   }
 
   public async pdf(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const {debug} = req.query as { debug: string };
+    const { id } = req.params;
+    const { debug } = req.query as { debug: string };
     try {
-      const invoice = await Invoice.findById(id).populate([{path: 'company'}]);
+      const invoice = await Invoice.findById(id).populate([{ path: 'company' }]);
       if (invoice) {
         const billing = new BillingQueue();
         const html = billing.generateHTML(invoice);
@@ -57,7 +78,54 @@ class BillingController {
             }
           });
         }
-      } else{
+      } else {
+        res.status(400).json({
+          message: 'Invoice no encontrado.'
+        });
+      }
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  }
+
+  public async coportarePdf(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { debug } = req.query as { debug: string };
+    try {
+      const invoice = await InvoiceTeamBilling.findById(id).populate({
+        path: 'companies.company',
+        select: ['_id', 'name']
+      });
+      // console.log(invoice);
+      if (invoice) {
+        const billing = new BillingTeamQueue();
+        const html = billing.generateHTML(invoice);
+        // new BillingQueue().createPDF(invoice);
+        if (debug) {
+          res.send(html);
+        } else {
+          HtmlPdf.create(html, billing.PDFconfig).toStream((err, pdfStream) => {
+            if (err) {
+              console.log(err);
+              res.sendStatus(500);
+            } else {
+              // set header
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
+              // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
+              // send a status code of 200 OK
+              res.statusCode = 200;
+              // once we are done reading end the response
+              pdfStream.on('end', () => {
+                // done reading
+                res.end();
+              });
+              // pipe the contents of the PDF directly to the response
+              pdfStream.pipe(res);
+            }
+          });
+        }
+      } else {
         res.status(400).json({
           message: 'Invoice no encontrado.'
         });
@@ -190,7 +258,7 @@ class BillingController {
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
-      const filter = req.user.isAdmin ? {team} : {company};
+      const filter = req.user.isAdmin ? { team } : { company };
       const invoices = await this.getInvoices(filter, options);
       if (options.page && invoices.pages && invoices.pages < options.page) {
         return res.status(400).json({
@@ -210,6 +278,303 @@ class BillingController {
     } catch (e) {
       /* istanbul ignore next  */
       return res.status(500).json(e);
+    }
+  }
+
+  private getCompaniesCorporateBilling(filter: any, options: PaginateOptions) {
+    return Company.aggregate([{
+        $lookup: {
+          from: 'teams',
+          localField: 'team',
+          foreignField: '_id',
+          as: 'team'
+        }
+      }, {
+        $unwind: { path: '$team', preserveNullAndEmptyArrays: true }
+      }, {
+        $project: {
+          _id: 1,
+          name: 1,
+          team: {
+            _id: 1,
+            name: 1
+          }
+        }
+      }, {
+      $sort: {
+        'team.name': 1,
+        'name': 1,
+      }
+    }])
+
+  }
+
+  public async apiListCompaniesCorporateBilling(req: IRequest, res: Response) {
+    try {
+      return res.json({
+          results: await this.getCompaniesCorporateBilling({}, {})
+        }
+      );
+    } catch (e) {
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  private getModules(filter: any, options: PaginateOptions) {
+    return Module
+      .aggregate([{
+        $lookup: {
+          from: 'submodules',
+          localField: '_id',
+          foreignField: 'module',
+          as: 'subModules'
+        }
+      }, {
+        $project: {
+          _id: 1,
+          name: 1,
+          subModules: {
+            _id: 1,
+            name: 1
+          }
+        }
+      }]);
+  }
+
+  public async apiListModules(req: IRequest, res: Response) {
+    try {
+      return res.json({
+          results: await this.getModules({}, {})
+        }
+      );
+    } catch (e) {
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  public async apiListCorporateBilling(req: IRequest, res: Response) {
+    try {
+      const {team} = req.user;
+      const teamBiling = await TeamBilling.findOneOrCreate({
+        team: team._id
+      }, {
+        team: team._id,
+        companies: [],
+        modules: [],
+        notifications: [],
+      });
+      return res.json({
+        results: teamBiling
+      });
+    } catch (e) {
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  public async apiPatchCorporateBilling(req: IRequest, res: Response) {
+    try {
+      const {team} = req.user;
+      const {businessName, modules, notifications, companies, name, rut, baseCost, textBaseCost} = req.body;
+      const teamBilling = await TeamBilling.findOneAndUpdate({
+        team: team._id
+      }, {
+        $set: {
+          name,
+          businessName,
+          rut,
+          baseCost,
+          textBaseCost,
+          companies,
+          notifications,
+          modules,
+        }
+      }, {new: true});
+      return res.json(teamBilling);
+    } catch (e) {
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  private getInvoiceCorporative(filter: any) {
+    return InvoiceTeamBilling
+      .findOne(filter, {
+        "realDolar": true,
+        "teamBilling": true,
+        "totalDolar": true,
+        "total": true,
+        "totalUF": true,
+        "totalPeso": true,
+        "valueUF": true,
+        "valueDolar": true,
+        "_id": true,
+        "team": true,
+        "period": true,
+        "companies": true,
+      })
+      .populate({
+        path: 'companies.company',
+        select: ['_id', 'name']
+      })
+      .sort({createdAt: -1});
+  }
+
+  public async apiInvoiceCorporative(req: IRequest, res: Response) {
+    try {
+      const {team} = req.user;
+      return res.json({
+        results: await this.getInvoiceCorporative({
+          team: team._id
+        })
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  public async exportDetail(req: IRequest, res: Response): Promise<any> {
+    try {
+      const {period} = req.query;
+      const {team} = req.user;
+      logger.info(`CarController.exportParticipants email: ${req.user.email}`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=billing-${period}.xlsx`);
+       // Create Excel Stream with pipe to response object
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+
+      // Create columns/headers for excel
+      let columns = [{
+        header: 'Fecha', key: 'createdAt', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        }
+      }, {
+        header: 'VIN', key: 'vin', width: 30
+      }, {
+        header: 'Empresa', key: 'company', width: 30
+      }, {
+        header: 'Aplicación', key: 'app', width: 30
+      }, {
+        header: 'Formulario', key: 'form', width: 30
+      }, {
+        header: 'Usuario', key: 'user', width: 30
+      }];
+
+      const worksheet = workbook.addWorksheet('Detalle Billing', {
+        pageSetup: {
+          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        }
+      });
+      worksheet.columns = columns;
+
+      // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+      const invoices = await InvoiceTeamBilling.findOne({
+        team: team._id,
+        period
+      }, {histories: true});
+      if (invoices) {
+        const cursor = History.aggregate([{
+          $match: {
+            _id: {$in: invoices.histories},
+            // company: {
+            //   $in: [
+            //     new ObjectID('5b8da01ea9683b0bd74fcc53'), // Dercomaq
+            //     new ObjectID('5bc88d87a9683ba58c197c24'), // IMCRUZ
+            //     new ObjectID('5b17f8f0346a450658b5721e'), // Derco
+            //     new ObjectID('5c1a80f84fba86565186a757') // Dercocenter
+            //   ]
+            // },
+            module: {$nin: ['import']},
+            // executedAt: {
+            //   $gte: new Date('2022-08-01T00:00:00.000Z' ),
+            //   $lte: new Date( '2022-08-28T00:00:00.000Z' )
+            // }
+          }
+        }, {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        }, {
+          $unwind: {path: '$car', preserveNullAndEmptyArrays: true}
+        }, {
+          $lookup: {
+            from: 'companies',
+            localField: 'company',
+            foreignField: '_id',
+            as: 'company'
+          }
+        }, {
+          $unwind: {path: '$company', preserveNullAndEmptyArrays: true}
+        }, {
+          $lookup: {
+            from: 'participants',
+            localField: 'participant',
+            foreignField: '_id',
+            as: 'participant'
+          }
+        }, {
+          $unwind: {path: '$participant', preserveNullAndEmptyArrays: true}
+        }, {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'user'
+          }
+        }, {
+          $unwind: {path: '$user', preserveNullAndEmptyArrays: true}
+        }]).cursor({
+          batchSize: 50
+        }).exec();
+
+        cursor.on('data', async (history: any) => {
+          worksheet.addRow({
+            createdAt: moment(history.executedAt).toDate(),
+            vin: history.car.vin,
+            app: history.module,
+            form: history?.participant?.name,
+            company: history.company.name,
+            user: history.user.email
+          }).commit();
+        });
+
+        // code to handle connection abort or finish query read process
+        cursor.on('end', async () => {
+          setTimeout(() => {
+            cursor.close();
+            workbook.commit();
+            // return res.status(200);
+          }, 1000);
+
+        });
+
+        cursor.on('error', (error: any) => {
+          cursor.close();
+          logger.error(error.message);
+          // return res.status(500).json(error);
+        });
+
+        // code to handle connection abort or finish of data send
+        req.connection.on('close', async () => {
+          cursor.close();
+        });
+      } else {
+        return res.status(404).json({message: 'No se encontró el periodo solicitado'});
+      }
+    } catch (e) {
+      logger.error(e);
     }
   }
 

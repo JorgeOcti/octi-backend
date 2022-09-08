@@ -1,7 +1,7 @@
+import { IPermission } from '../interfaces';
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IPermission } from '../interfaces';
 
 export interface IPermissionModel extends IPermission, mongoose.Document {
 }

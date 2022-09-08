@@ -1,4 +1,3 @@
-import { IPermissionModel } from './permission.model';
 import * as bcrypt from 'bcrypt';
 import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
@@ -29,7 +28,7 @@ export default class UserServices {
   public hasPermission(permission: string): boolean {
     const { userPermissions } = this.user;
     if (permission && permission.length && userPermissions && userPermissions.length) {
-      return userPermissions.some((perm: IPermissionModel) => perm.codeName === permission);
+      return userPermissions.some((perm) => perm.codeName === permission);
     }
     return false;
   }
