@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import Module from '../../../billing/models/module.model';
 import Submodule from '../../../billing/models/submodule.model';
-import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
+// import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
 
 async function loadModulesAndSubmodules() {
 
