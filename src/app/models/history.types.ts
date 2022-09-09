@@ -17,11 +17,21 @@ export const statusHistory= [
 export enum ModuleHistory {
   import = 'import',
   form = 'form',
+  deliveryCertificate = 'deliveryCertificate',
   inventory = 'inventory',
+  request = 'request',
+  transportation = 'transportation',
+  assignment = 'assignment',
+  scheduling = 'scheduling',
 }
 
 export const modulesHistory = [
   ModuleHistory.import,
   ModuleHistory.form,
-  ModuleHistory.inventory
+  ModuleHistory.deliveryCertificate,
+  ModuleHistory.inventory,
+  ModuleHistory.request,
+  ModuleHistory.transportation,
+  ModuleHistory.assignment,
+  ModuleHistory.scheduling,
 ];

@@ -62,6 +62,8 @@ import {
 import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
 import DashboardView from "./components/Transmittal/StatsDashboard/DashboardView";
 import BordersListView from "./components/Borders/BordersListView";
+import BillingSettingsListView from './components/Billing/BillingSettings/BillingSettingsListView';
+import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
 
 
 declare let window: IWindow;
@@ -110,8 +112,11 @@ const App = () => (
         <Route exact path='/settings/carriers/' component={CarriersListView} />
         <Route exact path='/settings/companies/' component={CompaniesListView} />
         <Route exact path='/settings/alerts/' component={AlertsViews} />
-        <Route exact path='/settings/billing/' component={BillingListView} />
         <Route exact path='/settings/versions/' component={VersionListView} />
+        <Route exact path='/settings/billing-settings/' component={BillingSettingsListView} />
+        <Route exact path='/settings/billing/corporate/' component={BillingCoporateListView} />
+        <Route exact path='/settings/billing/' component={BillingListView} />
+        <Route exact path='/settings/billing/' component={BillingListView} />
         <Route exact path='/settings/stats/' component={DashboardStatsListView} />
         <Route exact path='/settings/border/' component={BordersListView} />
         <Route exact path='/requests/create/' component={RequestCreateView} />

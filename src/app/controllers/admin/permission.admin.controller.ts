@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { IRequest } from '../../../interfaces/global.interface';
-import Permission, { PermissionSchema } from '../../models/permission.model';
+import Permission, { PermissionSchema } from '../../../billing/models/permission.model';
 import BaseAdminController from './base.admin.controller';
 
 class AdminPermissionController extends BaseAdminController<PermissionSchema> {

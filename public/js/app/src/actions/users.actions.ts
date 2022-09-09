@@ -3,7 +3,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {ICompany} from '../../../../../src/app/interfaces/company.interface';
 import {IForm} from '../../../../../src/form/interfaces/form.interface';
-import {IPermission} from '../../../../../src/app/interfaces/permission.interface';
+import {IPermission} from '../../../../../src/billing/interfaces/permission.interface';
 import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';

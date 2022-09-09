@@ -29,7 +29,7 @@ import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
 import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
-import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import ActivityHistory from '../../billing/models/activityHistory.model';
 import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
@@ -39,6 +39,7 @@ import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 
 
 // import * as puppeteer from 'puppeteer';

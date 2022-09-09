@@ -344,6 +344,15 @@ if (settingItems.length) {
 *****************/
 const AdminItems: any[] = [];
 
+if (window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.21',
+    icon: 'fa-circle-o',
+    text: 'General',
+    url: '/settings/billing-settings/'
+  });
+}
+
 if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
   AdminItems.push({
     id: '200.0',
@@ -370,21 +379,22 @@ if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
   });
 }
 
+if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.4',
+    icon: 'fa-circle-o',
+    text: 'Billing Corporativo',
+    url: '/settings/billing/corporate/'
+  });
+}
+
+
 if (hasPermission(window.user, 'viewStatsDashboard') && window.user.isAdmin) {
   AdminItems.push({
     id: '200.3',
     icon: 'fa-circle-o',
     text: 'Estádisticas',
     url: '/settings/stats/'
-  });
-}
-
-if (hasPermission(window.user, 'viewVersion') && window.user.isAdmin) {
-  AdminItems.push({
-    id: '200.100',
-    icon: 'fa-circle-o',
-    text: 'Versiones',
-    url: '/settings/versions/'
   });
 }
 
@@ -395,6 +405,15 @@ if (AdminItems.length && window.user.isAdmin) {
     icon: `fa-check-square ${process.env.NODE_ENV === 'development' ? 'text-red' : ''}`,
     url: '/settings/integrations/',
     items: AdminItems
+  });
+}
+
+if (hasPermission(window.user, 'viewVersion') && window.user.isAdmin) {
+  AdminItems.push({
+    id: '200.100',
+    icon: 'fa-circle-o',
+    text: 'Versiones',
+    url: '/settings/versions/'
   });
 }
 

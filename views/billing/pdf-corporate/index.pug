@@ -1,0 +1,67 @@
+doctype html
+head
+  title OSA Andes
+  meta(charset='utf8')
+  meta(content='text/html; charset=utf-8', http-equiv='Content-Type')
+  link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous')
+  style(type='text/css')=css
+body
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;")
+    tr
+      td
+        img(src="http://localhost:3030/static/images/circle_andes.png", height="100px")
+      td.text-right
+        h1
+          | Billing #{jsUcfirst(moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY"))}
+  h2
+    | Resumen
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;width:50%")
+    tbody
+      tr
+        td
+          strong
+            | Razón social
+        td
+          | #{invoice.teamBilling.businessName}
+      tr
+        td
+          strong
+            | RUT
+        td
+          | #{invoice.teamBilling.rut}
+      tr
+        td
+          strong
+            | Unidades controladas
+        td
+          | #{new Intl.NumberFormat('de-DE').format(invoice.total)}
+      tr
+        td
+          strong
+            | Total
+        td
+          | #{new Intl.NumberFormat('de-DE').format(invoice.totalDolar)} US$
+
+  h2
+    | Detalle
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0", class="border")
+    thead
+      tr.heading
+        th
+          strong
+            | Empresa
+        th.text-right
+          strong
+            | Unidades únicas
+    tbody
+      each item in invoice.companies
+        tr
+          td
+            | #{item.company.name}
+          td.text-right
+            | #{new Intl.NumberFormat('de-DE').format(item.histories.length)} unidades únicas
+
+
+
+
+

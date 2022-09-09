@@ -284,7 +284,7 @@ export default class TransmittalActions {
           transmittalActions.loadDrivers(drivers.data.results);
           transmittalActions.loadDrivers(drivers.data.results);
           transmittalActions.loadMilestoneTypes(milestoneTypes.data.results);
-          transmittalActions.loadMilestoneAction(milestones.data.results)
+          transmittalActions.loadMilestoneAction(milestones.data.results);
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError) => {
@@ -375,7 +375,7 @@ export default class TransmittalActions {
           transmittalActions.loadingAction(false);
           this.api.errorHandler(err);
         });
-    })
+    });
   }
 
 }
