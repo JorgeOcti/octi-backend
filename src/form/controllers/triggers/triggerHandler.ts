@@ -74,6 +74,7 @@ export default class TriggerHandler {
       }, {
         name: true,
         number: true,
+        company: true,
         user: true,
         sections: true,
         qualification: true,
@@ -117,6 +118,8 @@ export default class TriggerHandler {
       }, {
         path: 'car',
         select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
+      }, {
+        path: 'company',
       }, {
         path: 'sections.answers.images'
       }, {

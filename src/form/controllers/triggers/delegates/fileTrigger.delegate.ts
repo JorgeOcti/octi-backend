@@ -32,7 +32,7 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
       let context = this.processTrigerConfig(trigger, answers);
       let filename = `${moment().unix()}_${context.filename}`;
       let { participant } = payload;
-      const participantCompany = participant.user.venue && participant.user.venue.company || {};
+      const participantCompany = participant.company || {};
 
       context.signature = (await ParticipantFile.find({ _id: { $in: context.signature } })).map(f => f.file.url)[0];
       moment.locale('es');

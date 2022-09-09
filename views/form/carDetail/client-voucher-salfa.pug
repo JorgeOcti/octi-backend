@@ -1,0 +1,201 @@
+mixin headerDetail(first, second, third, quarter)
+  tr
+    td(width="18%", class="strong")=first
+    if second
+      td(width="32%")=second
+    else
+      td(width="32%")
+        .border-bottom-dashed
+    if third
+      td(width="12%", class="strong")=third
+      if quarter
+        td(width="38%")=quarter
+      else
+        td(width="38%")
+          .border-bottom-dashed
+
+mixin headerDetailRight(first, second, third, quarter)
+  tr
+    td(width="18%", class="strong")=first
+    if second
+      td(width="32%")=second
+    else
+      td(width="32%")
+        .border-bottom-dashed
+    if third
+      td(width="12%", class="strong")=third
+      if quarter
+        td(width="38%").text-right=quarter
+      else
+        td(width="38%").text-right
+          .border-bottom-dashed
+
+mixin carDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+doctype html
+head
+  title OSA Andes
+  meta(charset='utf8')
+  meta(content='text/html; charset=utf-8', http-equiv='Content-Type')
+  link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous')
+  style(type='text/css')=css
+body
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0")
+    tr
+      td(width="80%")
+        if logo
+          img(src=logo, height="60px")
+      td(width="20%")
+        .text-right
+
+  table(cellpadding='0', cellspacing='0')
+    tr
+      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")="Acta de entrega"
+    +headerDetailRight('Nº TRASLADO', participant.number, 'FECHA', moment(participant.createdAt).format('LLL'))
+    +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
+    +headerDetail('ORIGEN', origin(), false, false)
+
+  table(cellpadding='0', cellspacing='0', class="border")
+    tr
+      td(colspan=6, class="strong")="DETALLES DE LA UNIDAD"
+    +carDetail('CHASIS', participant.car.vin, 'MARCA', participant.car.brand, 'MODELO', participant.car.denomination)
+    +carDetail('COLOR', participant.car.color, participant.car.patent ? 'PATENTE': false, participant.car.patent ? participant.car.patent: false, participant.car.engineNumber ? 'MOTOR': false, participant.car.engineNumber ? participant.car.engineNumber: false)
+
+  table(cellpadding='0', cellspacing='0', class="border")
+    each section in participant.sections
+      tr.heading
+        td=section.name
+        td(width="20%", class="text-center")
+          | Respuesta
+        td(width="10%", class="text-center")
+          | Evidencia
+      each answer in section.answers
+        tr.item
+          td
+            p.no-margin.strong=answer.question
+          if ['scale', 'accessory'].includes(answer.kind) && answer.scale
+            td.text-center=getAnswer(answer.scale, answer)
+          else
+            td
+          td.text-center
+            if answer.kind === 'scale' && answer.scale
+              if answer.images.length
+                | Si
+              else
+                | No
+        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+          tr
+            td(colspan=3, style="padding-bottom:0px").text-center
+              strong=answer.accessories.question
+          tr.item
+            td(colspan=3, style="padding-top:0px")
+              - const accesorySeletedIds = answer.accesoriesAnswered?answer.accesoriesAnswered.map(accesory=>accesory.item):[];
+              - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id.toString()));
+              if items.length
+                table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                  while items.length
+                    tr
+                      each item in items.splice(0,4)
+                        td(style="padding:4px 0", width="25%").no-border-bottom
+                          - const accesory = accesorySelected(answer, item);
+                          | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
+                          //- if accesory
+                          //-   | <i class="far fa-check-square"></i>
+                          //- else
+                          //-   | <i class="far fa-square"></i>
+              else
+                tr.item-damage
+                  td(colspan=2)
+                    | No se seleccionaron items.
+        if answer.kind === 'damage'
+          if !answer.damagesSelected.length
+            tr.item-damage
+              td(colspan=2)
+                | No se encontraron daños
+          else
+            each ds in answer.damagesSelected
+              tr.item-damage
+                td(colspan=2)
+                  table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                    tr
+                      td
+                        strong=getDamageItem(answer.damages.parts, ds.part)
+                    tr
+                      td
+                        strong Daño:
+                        | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        strong Posición:
+                        | #{' ' +getDamageItem(answer.damages.positions, ds.position)}
+                td(class="text-center")
+                  if ds.images.length
+                    | Si
+                  else
+                    | No
+        if answer.comment
+          tr.item
+            td(colspan=3, style="padding: 0 5px")
+              table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                tr
+                  td.no-border-bottom
+                    strong(style="color:#6B6B6B") Comentario:
+                    | #{' ' + answer.comment}
+        if answer.kind === 'numeric-scale'
+          tr.item
+            td(colspan=3, style="padding: 0 5px")
+              table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                tr
+                  td.no-border-bottom
+                    strong(style="color:#6B6B6B") Puntaje:
+                    | #{' ' + answer.score}
+
+
+  div(style="page-break-after:always")
+
+  p(class="strong" style="font-size:10px;padding-bottom:10px") Información de cada Distribuidor/ Concesionario.
+
+  table(cellpadding='0', cellspacing='0', class="border")
+    tr
+      td(colspan=6, class="strong")="Identificación del Concesionario"
+    +headerDetailRight('RAZÓN SOCIAL', 'SALINAS Y FABRES S.A.', 'RUT', '91.502.000-3')
+
+  table(cellpadding='0', cellspacing='0')
+    tr
+      td(colspan=4, class="", style="font-size:10px;padding-bottom:10px")="En este acto el cliente que suscribe al final de este documento deja constancia que tomó conocimiento y aceptó los términos y condiciones de la garantía del fabricante  contenidos en la documentación adjunta, así como de sus exclusiones y las exigencias obligatorias justificadas para mantener vigente la garantía voluntaria del Proveedor declarándose conocedor de ellas las cuales se explicaron de forma previa a la venta y durante la entrega del vehículo."
+    tr
+      td(colspan=4, class="", style="font-size:10px;padding-bottom:10px")="El cliente deja constancia que tomó conocimiento del plan de mantenimiento del vehículo recomendado por el fabricante incluyendo sus valores estimados una nómina de todos los talleres o establecimientos de servicio técnico autorizados donde se podrán realizar las mantenciones a su vehículo y la información contenida en la Hoja resumen anexa al presente instrumento declarándose conocedor de esta información la cual se explicó de forma previa a la venta y durante la entrega del vehículo."
+    tr
+      td(colspan=4, class="strong", style="font-size:11px;padding-bottom:10px")="Le recordamos que podrá comunicarse a nuestro centro de atención al cliente (CAC) al 600 360 6200 ante cualquier requerimiento o agendamiento que desee realizar con Salinas y Fabres S.A"
+
+
+  table(cellpadding='0', cellspacing='0' style="margin-top:300px")
+    tr
+      td(width="40%", class="text-center strong")
+        img(src="https://mediaosa.s3.sa-east-1.amazonaws.com/mailing_osa/salfa_timbre.png",style="max-width: 100%")
+        | Firma Encargado
+      td(width="20%")
+      if signature
+        td(width="40%", class=" text-center strong")
+          img(src=signature, height="80px")
+
+
