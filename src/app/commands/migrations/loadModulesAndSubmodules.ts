@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import Module from '../../../billing/models/module.model';
 import Submodule from '../../../billing/models/submodule.model';
-// import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
+import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
 
 async function loadModulesAndSubmodules() {
 
@@ -83,9 +83,9 @@ async function loadModulesAndSubmodules() {
       module: module._id,
       type: ModuleHistory.transportation
     }, { upsert: true, new: true });
-    // await new BillingTeamQueue().processBilling({
-    //
-    // });
+    await new BillingTeamQueue().processBilling({
+
+    });
   } catch (e) {
     console.log('Ha ocurrido un error en loadModulesAndSubmodules');
     console.log('error:', e);
