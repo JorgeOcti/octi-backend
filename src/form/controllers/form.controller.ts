@@ -39,7 +39,7 @@ import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import {ChoicesTypeActivity} from "../../billing/models";
 
 
 // import * as puppeteer from 'puppeteer';

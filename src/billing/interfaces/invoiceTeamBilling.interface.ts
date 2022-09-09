@@ -52,6 +52,9 @@ export interface IInvoiceTeamBilling {
 
   file: IIFile;
 
+  from?: Date;
+  to?: Date;
+
   updatedAt?: Date;
   createdAt?: Date;
 }

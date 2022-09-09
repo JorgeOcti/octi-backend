@@ -313,6 +313,8 @@ class BillingTeamQueue {
             // valueUF,
             // valueDolar,
             // totalUF,
+            from: new Date('2022-08-01T00:00:00.000Z'),
+            to: new Date('2022-08-28T00:00:00.000Z'),
             total: uniqueHistories.length,
             realDolar: totalDolar,
             totalDolar: totalDolar > teamBilling.baseCost ? totalDolar : teamBilling.baseCost,

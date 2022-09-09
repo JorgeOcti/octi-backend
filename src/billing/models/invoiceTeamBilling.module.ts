@@ -120,6 +120,12 @@ const invoiceTeamBillingSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  from: {
+    type: Date
+  },
+  to: {
+    type: Date,
+  },
   file: {
     type: fileSchema,
     default: {}

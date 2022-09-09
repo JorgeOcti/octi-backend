@@ -83,9 +83,9 @@ async function loadModulesAndSubmodules() {
       module: module._id,
       type: ModuleHistory.transportation
     }, { upsert: true, new: true });
-    await new BillingTeamQueue().processBilling({
-
-    });
+    // await new BillingTeamQueue().processBilling({
+    //
+    // });
   } catch (e) {
     console.log('Ha ocurrido un error en loadModulesAndSubmodules');
     console.log('error:', e);
