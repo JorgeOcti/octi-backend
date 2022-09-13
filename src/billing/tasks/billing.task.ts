@@ -11,7 +11,7 @@ import GeneralUtils from '../../utils/general.utils';
 import ActivityHistory from '../models/activityHistory.model';
 import Invoice, { IInvoiceModel } from '../models/invoice.model';
 import { RequestItem } from '../../request/models';
-import { ChoicesTypeActivity } from '../models/activiHistory.types';
+import {ChoicesTypeActivity} from "../models";
 
 class BillingQueue {
 

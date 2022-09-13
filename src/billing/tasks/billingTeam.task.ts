@@ -131,7 +131,7 @@ class BillingTeamQueue {
   }
 
   private sendEmail(invoice: IInvoiceTeamBillingModel): void {
-    const period = moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY');
+    const period = moment(invoice.createdAt).format('MMMM YYYY');
     for (const notification of invoice.teamBilling.notifications) {
       queue.create('email', {
         from: '',
@@ -174,12 +174,21 @@ class BillingTeamQueue {
           return acc;
         }, {});
         for (const teamBilling of teamBillings) {
+          const now = moment();
+          const lastInvoice = await InvoiceTeamBilling
+            .findOne({
+              team: teamBilling.team._id,
+            }).sort({
+              createdAt: -1
+            });
+          const from = lastInvoice ? lastInvoice.to : new Date(`${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`);
+          const to = new Date(`${now.endOf('month').subtract(3, 'days').format('YYYY-MM-DD')}T00:00:00.000Z`);
           const histories = await History
             .find({
               company: {$in: teamBilling.companies},
               executedAt: {
-                $gte: new Date('2022-08-01T00:00:00.000Z'),
-                $lte: new Date('2022-08-28T00:00:00.000Z')
+                $gte: from,
+                $lte: to
               }
             },{
               company: 1,
@@ -253,7 +262,7 @@ class BillingTeamQueue {
             countByCompany,
             countBySubmodule
           });
-          const period = moment('2022-08-01T00:00:00.000Z').format('YYYYMM');
+          const period = now.format('YYYYMM');
           let sumUFbyModule:any = {};
           let totalDolar = 0;
           teamBilling.modules.forEach((module: any) => {
@@ -313,8 +322,8 @@ class BillingTeamQueue {
             // valueUF,
             // valueDolar,
             // totalUF,
-            from: new Date('2022-08-01T00:00:00.000Z'),
-            to: new Date('2022-08-28T00:00:00.000Z'),
+            from,
+            to,
             total: uniqueHistories.length,
             realDolar: totalDolar,
             totalDolar: totalDolar > teamBilling.baseCost ? totalDolar : teamBilling.baseCost,
