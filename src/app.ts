@@ -13,6 +13,8 @@ import * as morgan from 'morgan';
 import * as multer from 'multer';
 import * as moment from 'moment-timezone';
 import { passport } from './passportConfig';
+import * as swaggerUi from "swagger-ui-express";
+import * as swaggerJSDoc from "swagger-jsdoc";
 // const passportSaml = require('passport-saml');
 import * as path from 'path';
 // import * as Raven from 'raven';
@@ -240,6 +242,40 @@ app.use('/', distributionRouter);
 app.use('/', billingRouter);
 app.use('/', statsRouter);
 app.use('/api/v1', jwtRouter);
+
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Express API for JSONPlaceholder',
+    version: '1.0.0',
+    description:
+      'This is a REST API application made with Express. It retrieves data from JSONPlaceholder.',
+    license: {
+      name: 'Licensed Under MIT',
+      url: 'https://spdx.org/licenses/MIT.html',
+    },
+    contact: {
+      name: 'JSONPlaceholder',
+      url: 'https://jsonplaceholder.typicode.com',
+    },
+  },
+  servers: [
+    {
+      url: 'http://localhost:3030',
+      description: 'Development server',
+    },
+  ],
+};
+
+const options : swaggerJSDoc.Options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ['../dist/form/router.js'],
+};
+
+
+const swaggerDocs =  swaggerJSDoc(options);
+app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 
 const billingQueue = new Bull('billing', {
