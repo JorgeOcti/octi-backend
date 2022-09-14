@@ -312,7 +312,7 @@ const swaggerDefinition = {
 const options : swaggerJSDoc.Options = {
   swaggerDefinition,
   // Paths to files containing OpenAPI definitions
-  apis: [path.join(__dirname, "./**/*.ts") ]
+  apis: [path.join(__dirname, "./**/*.ts"), path.join(__dirname, "./**/*.js") ]
 };
 
 const swaggerDocs =  swaggerJSDoc(options);
