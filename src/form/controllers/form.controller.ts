@@ -2107,13 +2107,6 @@ class FormController {
     }
   }
 
-  /**
-   * @swagger
-   * /api/v1/forms/deliveries/:
-   *   get:
-   *     summary: Entrega una lista de las unidades entregadas y su respectivo checklist de entrega
-   *     description: Retrieve a list of users from JSONPlaceholder. Can be used to populate a list of fake users when prototyping or testing an API.
-   */
   public async deliveriesOfTheday(req: IRequest, res: Response): Promise<any> {
     try {
       const team = req.user.team._id;
