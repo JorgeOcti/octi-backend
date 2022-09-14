@@ -17,6 +17,7 @@ router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cl
 router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.apiRevisionsGapExport);
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
+router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 

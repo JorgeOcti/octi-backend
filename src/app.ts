@@ -259,8 +259,7 @@ const swaggerDefinition = {
       url: 'https://jsonplaceholder.typicode.com',
     },
   },
-  servers: [
-    {
+  servers: [{
       url: 'http://localhost:3030',
       description: 'Development server',
     },
@@ -275,7 +274,7 @@ const options : swaggerJSDoc.Options = {
 
 
 const swaggerDocs =  swaggerJSDoc(options);
-app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
+app.use("/api-docs/", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 
 const billingQueue = new Bull('billing', {

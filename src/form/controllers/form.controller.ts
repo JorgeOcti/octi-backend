@@ -23,7 +23,6 @@ import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import FormModel, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
-import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
@@ -40,6 +39,8 @@ import Milestone, { ChoicesStepMilestone } from '../../distribution/models/miles
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
 import {ChoicesTypeActivity} from "../../billing/models";
+import Participant from "../models/participant.model";
+import * as mongoose from "mongoose";
 
 
 // import * as puppeteer from 'puppeteer';
@@ -95,7 +96,7 @@ class FormController {
       };
 
       const venuesPermissions = req.user.venuesPermissions();
-      const participant = await ParticipantModel
+      const participant = await Participant
         .findOne({
           _id: id,
           team,
@@ -718,7 +719,7 @@ class FormController {
               participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
             }
           }
-          const newParticipant = new ParticipantModel(participantObject);
+          const newParticipant = new Participant(participantObject);
           // var sum sections
           let sumSectionWeigths = 0;
           let sumSectionQualifications = 0;
@@ -988,7 +989,7 @@ class FormController {
               });
 
               // send refresh with websocket to dashboard detail
-              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
+              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await Participant
                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                 .populate([{
                   path: 'user',
@@ -1016,7 +1017,7 @@ class FormController {
             }
             const today = moment().startOf('day');
             const tomorrow = moment(today).add(1, 'days');
-            const count = await ParticipantModel.find({
+            const count = await Participant.find({
               user: req.user,
               createdAt: {
                 $gte: today.toDate(),
@@ -1207,7 +1208,7 @@ class FormController {
     try {
 
       const team = req.user.team._id;
-      const damaged = await ParticipantModel.aggregate([{
+      const damaged = await Participant.aggregate([{
         $match: {
           team,
           'venue': {
@@ -1225,7 +1226,7 @@ class FormController {
         }
       }]);
 
-      const undamaged = await ParticipantModel.aggregate([{
+      const undamaged = await Participant.aggregate([{
         $match: {
           team,
           'venue': {
@@ -1319,7 +1320,7 @@ class FormController {
       const days = 15;
       moment.locale('es');
       moment.tz.setDefault('America/Santiago');
-      const participants = await ParticipantModel.find({
+      const participants = await Participant.find({
         venue: {
           $in: req.user.venuesPermissions()
         },
@@ -1435,7 +1436,7 @@ class FormController {
 
         let receptions: any[] = [];
         for (let i = 0; i < total; i++) {
-          const aux = await ParticipantModel.find({
+          const aux = await Participant.find({
             team,
             form: reception!._id,
             createdAt: {
@@ -1536,7 +1537,7 @@ class FormController {
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
     const receptionForm = await FormModel.findOne({ _id: '5b1ae5799ebea419025b3e41' });
-    return ParticipantModel.aggregate([
+    return Participant.aggregate([
       {
         $match: {
           team,
@@ -1592,7 +1593,7 @@ class FormController {
     const distributors = await Venue.find({ team, type: 'distributor' });
     const receivers = await Venue.find({ team, type: 'receiver' });
 
-    const receptions = await ParticipantModel.aggregate([
+    const receptions = await Participant.aggregate([
       {
         $lookup: {
           from: 'participants',
@@ -2036,7 +2037,7 @@ class FormController {
         }
 
 
-        const cleanDispatch = await ParticipantModel.aggregate([
+        const cleanDispatch = await Participant.aggregate([
           {
             $match: {
               team,
@@ -2061,7 +2062,7 @@ class FormController {
           daysDict[day].clean = sum;
         }
 
-        const notCleanDispatch = await ParticipantModel.aggregate([
+        const notCleanDispatch = await Participant.aggregate([
           {
             $match: {
               team,
@@ -2103,8 +2104,62 @@ class FormController {
         status: 400
       });
     }
-
   }
+
+  public async deliveriesOfTheday(req: IRequest, res: Response): Promise<any> {
+    try {
+      const team = req.user.team._id;
+      mongoose.set('debug', true);
+      const participas = await Participant.find({
+        team,
+        deliveryToCustomer: true,
+        createdAt: {
+          $gte: moment().startOf('day').toDate(),
+          $lte: moment().endOf('day').toDate(),
+        }
+      },{
+        "_id": true,
+        "name": true,
+        "sections": true,
+        "number": true,
+        "createdAt": true,
+      }).populate([{
+        path: 'car',
+        select: {
+          "_id": true,
+          "vin": true,
+          "patent": true,
+          "color": true,
+          "denomination": true,
+          "brand": true,
+          "type": true,
+          "internalNumber": true,
+        }
+      },{
+        path: 'user',
+        select: {
+          "_id": true,
+          "firstName": true,
+          "lastName": true,
+          "email": true,
+        }
+      }]);
+      return res.json(participas);
+    } catch (e) {
+      // Raven.captureException(e, { req });
+      /* istanbul ignore next */
+      logger.error(`deliveriesOfTheday: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      return res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
 
   private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
