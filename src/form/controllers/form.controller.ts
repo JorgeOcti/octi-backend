@@ -650,6 +650,7 @@ class FormController {
             team,
             company,
             form: form._id,
+            deliveryToCustomer: form.deliveryToCustomer,
             car,
             transmittal: transmittal,
             description: form.description,
