@@ -53,6 +53,7 @@ class FormController {
     this.detail = this.detail.bind(this);
     this.pdf = this.pdf.bind(this);
     this.complete = this.complete.bind(this);
+    this.deliveriesOfTheday = this.deliveriesOfTheday.bind(this);
     this.changePreferred = this.changePreferred.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.damagesDashboardPerDay = this.damagesDashboardPerDay.bind(this);
@@ -2151,7 +2152,7 @@ class FormController {
           "name": true
         }
       }]);
-      return res.json(participas);
+      return res.json({data: participas});
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
