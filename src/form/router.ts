@@ -17,6 +17,37 @@ router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cl
 router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.apiRevisionsGapExport);
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
+
+/**
+ * @swagger
+ * definitions:
+ *   Login:
+ *     required:
+ *       - username
+ *       - password
+ *     properties:
+ *       username:
+ *         type: string
+ *       password:
+ *         type: string
+ *       path:
+ *         type: string
+ */
+
+/**
+ * @swagger
+ * /api/v1/forms/deliveries/:
+ *   get:
+ *     summary: Entrega una lista de las unidades entregadas y su respectivo checklist de entrega
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Participants
+ *         schema:
+ *           type: object
+ *           $ref: '#/definitions/Login'
+ */
 router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);

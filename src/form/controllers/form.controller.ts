@@ -2151,6 +2151,10 @@ class FormController {
           "_id": true,
           "name": true
         }
+      }, {
+        path: 'sections.answers.images'
+      }, {
+        path: 'sections.answers.damagesSelected.images'
       }]);
       return res.json({data: participas});
     } catch (e) {

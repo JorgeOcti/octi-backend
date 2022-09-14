@@ -246,21 +246,27 @@ app.use('/api/v1', jwtRouter);
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Express API for JSONPlaceholder',
+    title: 'OSA API Swagger',
     version: '1.0.0',
     description:
-      'This is a REST API application made with Express. It retrieves data from JSONPlaceholder.',
-    license: {
-      name: 'Licensed Under MIT',
-      url: 'https://spdx.org/licenses/MIT.html',
-    },
+      'Esta es la primera implementación de Swagger para la API de entegas diarias.',
     contact: {
-      name: 'JSONPlaceholder',
-      url: 'https://jsonplaceholder.typicode.com',
+      name: 'Documentación',
+      url: 'https://sites.google.com/osacontrol.com/doc-osa-api/inicio',
     },
   },
+  components: {
+    securitySchemes: {
+
+      bearerAuth: {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+      }
+    }
+  },
   servers: [{
-      url: 'http://localhost:3030',
+      url: process.env.SITE_URL,
       description: 'Development server',
     },
   ],
@@ -269,9 +275,8 @@ const swaggerDefinition = {
 const options : swaggerJSDoc.Options = {
   swaggerDefinition,
   // Paths to files containing OpenAPI definitions
-  apis: ['../dist/form/router.js'],
+  apis: [path.join(__dirname, "./**/*.ts") ]
 };
-
 
 const swaggerDocs =  swaggerJSDoc(options);
 app.use("/api-docs/", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
