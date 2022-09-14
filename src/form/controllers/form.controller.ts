@@ -2143,6 +2143,12 @@ class FormController {
           "lastName": true,
           "email": true,
         }
+      },{
+        path: 'venue',
+        select: {
+          "_id": true,
+          "name": true
+        }
       }]);
       return res.json(participas);
     } catch (e) {
