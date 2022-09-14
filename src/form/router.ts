@@ -44,9 +44,12 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *     responses:
  *       200:
  *         description: Participants
- *         schema:
- *           type: object
- *           $ref: '#/definitions/Login'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Participant'
+ *     security:
+ *       - bearerAuth: []
  */
 router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
 

@@ -256,8 +256,45 @@ const swaggerDefinition = {
     },
   },
   components: {
+    schemas: {
+      Participant: {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "format": "UUID",
+            "example": "b938beb1bcb6493e8418a818a22256fd"
+          },
+          "name": {
+            "type": "string",
+            "format": "UUID",
+            "example": "b938beb1bcb6493e8418a818a22256fd"
+          },
+          "car": {
+            "type": "object",
+          },
+          "user": {
+            "type": "object",
+          },
+          "venue": {
+            "type": "object",
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32",
+            "example": 7
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sections": {
+            "type": "object"
+          }
+        },
+      }
+    },
     securitySchemes: {
-
       bearerAuth: {
         "type": "http",
         "scheme": "bearer",
