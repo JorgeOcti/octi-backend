@@ -257,46 +257,375 @@ const swaggerDefinition = {
   },
   components: {
     schemas: {
+      Car: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          vin: {
+            type: "string",
+          },
+          patent: {
+            type: "string",
+          },
+          type: {
+            type: "string",
+          },
+          brand: {
+            type: "string",
+          },
+          denomination: {
+            type: "string",
+          },
+          color: {
+            type: "string",
+          }
+        }
+      },
+      User: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          firstName: {
+            type: "string",
+          },
+          lastName: {
+            type: "string",
+          },
+          email: {
+          type: "string",
+          },
+        }
+      },
+      Venue: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        }
+      },
       Participant: {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string",
-            "format": "UUID",
-            "example": "b938beb1bcb6493e8418a818a22256fd"
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+            format: "UUID",
+            example: "b938beb1bcb6493e8418a818a22256fd"
           },
-          "name": {
-            "type": "string",
-            "format": "UUID",
-            "example": "b938beb1bcb6493e8418a818a22256fd"
+          name: {
+            type: "string",
+            example: "Entrega a cliente"
           },
-          "car": {
-            "type": "object",
+          car: {
+            "$ref": "#/components/schemas/Car"
           },
-          "user": {
-            "type": "object",
+          user: {
+            "$ref": "#/components/schemas/User"
           },
-          "venue": {
-            "type": "object",
+          venue: {
+            "$ref": "#/components/schemas/Venue"
           },
-          "number": {
-            "type": "integer",
-            "format": "int32",
-            "example": 7
+          number: {
+            type: "integer",
+            format: "int32",
+            example: 7
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
+          createdAt: {
+            type: "string",
+            format: "date-time"
           },
-          "sections": {
-            "type": "object"
+          sections: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/Section"
+            }
           }
         },
+      },
+      Section: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+            format: "UUID",
+            example: "b938beb1bcb6493e8418a818a22256fd"
+          },
+          name: {
+            type: "string",
+            example: "Datos del cliente"
+          },
+          order: {
+            type: "integer",
+            format: "int32",
+            example: 1
+          },
+          answers: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/Answer"
+            }
+          }
+        }
+      },
+      Answer: {
+        type: "object",
+        properties: {
+          accessories: {
+            type: "array",
+            items:{
+              type: "object",
+              properties: {
+                _id: {
+                  type: "string" ,
+                },
+                question: {
+                  type: "string",
+                },
+                items: {
+                  type: "array",
+                  items: {
+                    "$ref": "#/components/schemas/Accessory"
+                  }
+                  // type: Array<Accessory>,
+                },
+              }
+            }
+          },
+          accesoriesSelected: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/AccessorySelected"
+            }
+            // type: Array<AccessorySelected>,
+          },
+          images: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/Image"
+            }
+            // type: Array<Image>,
+          },
+          kind: {
+            type: "string",
+          },
+          optional: {
+            type: "boolean",
+          },
+          requireSeverity: {
+            type: "boolean",
+          },
+          damage: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                positions: {
+                  type: "array",
+                  items: {
+                    "$ref": "#/components/schemas/Position"
+                  }
+                  // type: Array<Positions>,
+                },
+                kinds: {
+                  type: "array",
+                  items: {
+                    "$ref": "#/components/schemas/Kind"
+                  }
+                  // type: Array<Kind>,
+                },
+                parts: {
+                  type: "array",
+                  items: {
+                    "$ref": "#/components/schemas/Part"
+                  }
+                  // type: Array<Parts>,
+                },
+                severityOptions: {
+                  type: "array",
+                  items: "string"
+                },
+              }
+            }
+          },
+          damagesSelected: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/DamageSelected"
+            }
+            // type: Array<DamageSelected>,
+          },
+          accesoriesAnswered: {
+            type: "array",
+            items: "string",
+          },
+          _id: {
+            type: "string",
+          },
+          question: {
+            type: "string",
+          },
+          scale: {
+            _id: {
+              type: "string",
+            },
+            choices: {
+              type: "array",
+              items: {
+                "$ref": "#/components/schemas/Choice"
+              }
+            },
+          },
+          comment: {
+            type: "string",
+          },
+          answer: {
+            type: "string",
+          },
+          order: {
+            type: "integer",
+          },
+        }
+      },
+      Accessory: {
+        type: "object",
+        properties: {
+          amount: {
+            type: "boolean",
+          },
+          item: {
+            type: "string",
+          },
+          _id: {
+            type: "string",
+          },
+        }
+      },
+    AccessorySelected: {
+      type: "object",
+      properties: {
+        amount: {
+          type: "integer",
+        },
+        item: {
+          type: "string",
+        },
+      }
+    },
+    Image: {
+      type: "object",
+      properties: {
+        _id: {
+          type: "string",
+        },
+        file: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+            },
+            url: {
+              type: "string",
+            }
+          }
+        }
+      }
+    },
+      Position: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        }
+      },
+      Kind: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        }
+      },
+      Part: {
+        type: "object",
+        properties: {
+          _id: {
+            type: "string",
+          },
+          name: {
+            type: "string",
+          },
+        }
+      },
+      DamageSelected: {
+        type: "object",
+        properties: {
+          images: {
+            type: "array",
+            items: {
+              "$ref": "#/components/schemas/Image"
+            }
+          },
+          _id: {
+            type: "string",
+          },
+          kind: {
+            type: "string",
+          },
+          part: {
+            type: "string",
+          },
+          position: {
+            type: "string",
+          },
+          severity: {
+            type: "string",
+          },
+        }
+      },
+      Choice: {
+        type: "object",
+        properties: {
+          backgroundColor: {
+            type: "string",
+          },
+          requireImage: {
+            type: "boolean",
+          },
+          requireComment: {
+            type: "boolean",
+          },
+          requireAccesories: {
+            type: "boolean",
+          },
+          _id: {
+            type: "string",
+          },
+          choice: {
+            type: "string",
+          },
+          order: {
+            type: "integer",
+          },
+        }
       }
     },
     securitySchemes: {
       bearerAuth: {
-        "type": "http",
+        type: "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
       }
