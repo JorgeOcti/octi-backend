@@ -2116,7 +2116,7 @@ class FormController {
         team,
         deliveryToCustomer: true,
         createdAt: {
-          $gte: moment().startOf('day').toDate(),
+          $gte: moment().subtract(2, 'days').startOf('day').toDate(),
           $lte: moment().endOf('day').toDate(),
         }
       },{
