@@ -633,7 +633,7 @@ const swaggerDefinition = {
   },
   servers: [{
       url: process.env.SITE_URL,
-      description: 'Development server',
+      description: 'OSA server',
     },
   ],
 };
