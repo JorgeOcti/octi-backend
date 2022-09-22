@@ -320,7 +320,7 @@ class CarController {
         };
         if (vin) {
           carFilter.vin = vin;
-          if (vin?.length > 6 && team === '5bf2de35caf8ef7096105cdd') {
+          if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
             let { data: integrationData } = await conectaController.searchVinContecta(vin);
             if (integrationData?.length) {
               for (const car of integrationData) {

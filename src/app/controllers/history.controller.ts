@@ -1,7 +1,6 @@
 import { IRequest } from '../../interfaces/global.interface';
 import { Response } from 'express';
 import logger from '../../services/logger.service';
-import * as mongoose from 'mongoose';
 import { Car } from '../models';
 import History from '../models/history.model';
 
@@ -41,7 +40,6 @@ class HistoryController {
         path: 'createdBy',
         select: { email: true }
       }];
-      mongoose.set('debug', true);
       /*const car = await Car.aggregate([{
         $match: {
           vin,
@@ -106,7 +104,6 @@ class HistoryController {
           }
         }
       }]);
-      mongoose.set('debug', false);
       if (car) {
         // logger.info(`HistoryController.searchCar {car: ${JSON.stringify(car ?? {})}`);
         return res.json(car);
