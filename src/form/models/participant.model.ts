@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
+import {PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {
   IParticipant,
@@ -10,10 +10,12 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
-import { choiceBackgroundColors } from './scale.model';
+import {KindForm, kindForm, KindQuestion, kindQuestion} from './form.model';
+import {choiceBackgroundColors} from './scale.model';
 
-export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
+export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {
+}
+
 const participantChoiceSchema = new mongoose.Schema({
   choice: {
     type: String,
@@ -64,6 +66,7 @@ const participantChoiceSchema = new mongoose.Schema({
 });
 
 export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {}
+
 export const scaleSchema = new mongoose.Schema({
   name: String,
   minValue: {
@@ -81,7 +84,9 @@ export const scaleSchema = new mongoose.Schema({
   }
 });
 
-export interface IParticipantItemModel extends IParticipantItems, mongoose.Types.Subdocument {}
+export interface IParticipantItemModel extends IParticipantItems, mongoose.Types.Subdocument {
+}
+
 const itemSchema = new mongoose.Schema({
   item: {
     type: String,
@@ -108,7 +113,9 @@ const accesorySchema = new mongoose.Schema({
   _id: false
 });
 
-export interface IParticipantAccesoryModel extends IParticipantAccesory, mongoose.Types.Subdocument {}
+export interface IParticipantAccesoryModel extends IParticipantAccesory, mongoose.Types.Subdocument {
+}
+
 const accessorySchema = new mongoose.Schema({
   question: {
     type: String,
@@ -157,13 +164,14 @@ const damagesSelectedSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  images:  [{
+  images: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
   }]
 });
 
-export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {}
+export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {
+}
 
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
@@ -246,7 +254,9 @@ const participantAnswersSchema = new mongoose.Schema({
 
 });
 
-export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}
+export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {
+}
+
 const participantSectionsSchema = new mongoose.Schema({
   section_id: {
     type: mongoose.Schema.Types.ObjectId
@@ -276,7 +286,9 @@ const participantSectionsSchema = new mongoose.Schema({
   }
 });
 
-export interface IParticipantModel extends IParticipant, mongoose.Document {}
+export interface IParticipantModel extends IParticipant, mongoose.Document {
+}
+
 const participantSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -447,32 +459,32 @@ const participantSchema = new mongoose.Schema({
 participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
-participantSchema.index({ createdAt: -1 });
-participantSchema.index({ team: 1, createdAt: 1 });
-participantSchema.index({ venue: 1 });
-participantSchema.index({ company: 1 });
-participantSchema.index({ user: 1 });
-participantSchema.index({ car: 1 });
-participantSchema.index({ shipping: 1 });
-participantSchema.index({ company: 1 });
-participantSchema.index({ team: 1 });
-participantSchema.index({ sendTo: 1 });
-participantSchema.index({ receiveFrom: 1 });
-participantSchema.index({ team: 1, venue: 1 , createdAt: 1});
-participantSchema.index({ team: 1, destination: 1 });
-participantSchema.index({ team: 1, venue: 1, kind: 1 });
-participantSchema.index({ team: 1, venue: 1, kind: 1, createdAt: 1});
-participantSchema.index({ car: 1, team: 1, venue: 1, kind: 1 });
-participantSchema.index({ transmittal: 1 });
-participantSchema.index({ survey: 1, completed: 1 });
-participantSchema.index({ form: 1, user: 1 });
-participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({ venue: 1, team: 1, kind: 1 });
-participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1 });
-participantSchema.index({ venue: 1, team: 1, kind: 1, form: 1 });
-participantSchema.index({ venue: 1, team: 1, car: 1, kind: 1, form: 1 });
-participantSchema.index({ _id: 1, venue: 1, team: 1, kind: 1 });
+participantSchema.index({createdAt: -1});
+participantSchema.index({team: 1, createdAt: 1});
+participantSchema.index({venue: 1});
+participantSchema.index({company: 1});
+participantSchema.index({user: 1});
+participantSchema.index({car: 1});
+participantSchema.index({shipping: 1});
+participantSchema.index({company: 1});
+participantSchema.index({team: 1});
+participantSchema.index({sendTo: 1});
+participantSchema.index({receiveFrom: 1});
+participantSchema.index({team: 1, venue: 1, createdAt: 1});
+participantSchema.index({team: 1, destination: 1});
+participantSchema.index({team: 1, venue: 1, kind: 1});
+participantSchema.index({team: 1, venue: 1, kind: 1, createdAt: 1});
+participantSchema.index({car: 1, team: 1, venue: 1, kind: 1});
+participantSchema.index({transmittal: 1});
+participantSchema.index({survey: 1, completed: 1});
+participantSchema.index({form: 1, user: 1});
+participantSchema.index({company: 1, venue: 1, createdAt: 1});
+participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1});
+participantSchema.index({venue: 1, team: 1, kind: 1});
+participantSchema.index({venue: 1, team: 1, car: 1, kind: 1});
+participantSchema.index({venue: 1, team: 1, kind: 1, form: 1});
+participantSchema.index({venue: 1, team: 1, car: 1, kind: 1, form: 1});
+participantSchema.index({_id: 1, venue: 1, team: 1, kind: 1});
 
 participantSchema.plugin(mongoosePaginate);
 

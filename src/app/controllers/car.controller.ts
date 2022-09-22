@@ -320,7 +320,7 @@ class CarController {
         };
         if (vin) {
           carFilter.vin = vin;
-          if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
+          if (vin?.length > 6 && team === '5bf2de35caf8ef7096105cdd') {
             let { data: integrationData } = await conectaController.searchVinContecta(vin);
             if (integrationData?.length) {
               for (const car of integrationData) {
@@ -330,7 +330,7 @@ class CarController {
                     vin: car.vin
                   }, {
                     $set: {
-                      vin2: car.vin.substr(car.vin?.length - 6),
+                      vin2: car.vin.toString().substr(car.vin?.length - 6),
                       brand: car.brand,
                       denomination: car.denomination,
                       material: car.material,
@@ -351,24 +351,28 @@ class CarController {
             let { data: integrationData } = await conectaController.searchVinContecta(vin2);
             if (integrationData?.length > 1) {
               for (const car of integrationData) {
-                await Car
-                  .updateOne({
-                    team,
-                    vin: car.vin
-                  }, {
-                    $set: {
-                      vin2: car.vin.substr(car.vin?.length - 6),
-                      brand: car.brand,
-                      denomination: car.denomination,
-                      material: car.material,
-                      color: car.color,
-                      company: req.user.company?._id,
-                      status: ChoicesStatusCar.active
-                    }
-                  }, {
-                    upsert: true,
-                    setDefaultsOnInsert: true
-                  });
+                try{
+                  await Car
+                    .updateOne({
+                      team,
+                      vin: car.vin
+                    }, {
+                      $set: {
+                        vin2: car.vin.toString().substr(car.vin?.length - 6),
+                        brand: car.brand,
+                        denomination: car.denomination,
+                        material: car.material,
+                        color: car.color,
+                        company: req.user.company?._id,
+                        status: ChoicesStatusCar.active
+                      }
+                    }, {
+                      upsert: true,
+                      setDefaultsOnInsert: true
+                    });
+                } catch (e) {
+                  console.log(e);
+                }
               }
             }
           }

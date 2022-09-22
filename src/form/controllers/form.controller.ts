@@ -40,7 +40,6 @@ import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
 import {ChoicesTypeActivity} from "../../billing/models";
 import Participant from "../models/participant.model";
-import * as mongoose from "mongoose";
 
 
 // import * as puppeteer from 'puppeteer';
@@ -2110,8 +2109,8 @@ class FormController {
 
   public async deliveriesOfTheday(req: IRequest, res: Response): Promise<any> {
     try {
+      logger.info(`FormController.deliveriesOfTheday email: ${req.user.email}`);
       const team = req.user.team._id;
-      mongoose.set('debug', true);
       const participas = await Participant.find({
         team,
         deliveryToCustomer: true,
