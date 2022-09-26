@@ -14,6 +14,7 @@ import Axios, { AxiosError, CancelTokenSource } from 'axios';
 import { ICompany } from '../../../../../src/app/interfaces';
 import { IModule, ITeamBilling } from '../../../../../src/billing/interfaces';
 import { IInvoiceTeamBilling } from '../../../../../src/billing/interfaces/invoiceTeamBilling.interface';
+import { Moment } from 'moment';
 
 export default class BillingSettingsActions {
 
@@ -35,11 +36,13 @@ export default class BillingSettingsActions {
     });
   }
 
-  public loadInvoiceAction(invoice: IInvoiceTeamBilling): void {
+  public loadInvoiceAction(invoice: IInvoiceTeamBilling, oldest: Moment, last: Moment): void {
     this.dispatch({
       type: LOAD_INVOICE,
       payload: {
-        invoice
+        invoice,
+        oldest,
+        last
       }
     });
   }
@@ -90,17 +93,18 @@ export default class BillingSettingsActions {
     );
   }
 
-  public getInvoice(): void {
+  public getInvoice({ period }: { period?: string }): void {
     this.dispatch((dispatch) => {
       const actions = new BillingSettingsActions(dispatch);
       actions.loadingAction(true);
       Axios
         .all([
-          this.api.getInvoiceCorporate(),
+          this.api.getInvoiceCorporate({ period })
         ])
         .then(Axios.spread((
           invoice) => {
-          actions.loadInvoiceAction(invoice.data.results);
+          const {results, oldestInvoice, lastInvoice} = invoice.data;
+          actions.loadInvoiceAction(results, oldestInvoice, lastInvoice);
           actions.loadingAction(false);
         }))
         .catch((err: AxiosError): void => {

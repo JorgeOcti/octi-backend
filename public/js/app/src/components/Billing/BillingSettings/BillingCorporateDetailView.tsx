@@ -10,12 +10,9 @@ import AppContainer from '../../../container/AppContainer';
 import * as Raven from 'raven-js';
 import ModalView from '../../Modal/ModalView';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
-import { IForm } from '../../../../../../../src/form/interfaces';
 import * as moment from 'moment-timezone';
 import ShowIf from '../../Utils/ShowIf';
-import BillingMenu from '../BillingMenu';
 import ApiService from '../../../utils/axios';
-import DateRangeInput from '../../Utils/DateRangeInput';
 import BootstrapSelect from '../../Utils/BootstrapSelect';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -44,11 +41,12 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Billing Corporativo';
     this.api = new ApiService();
     this.selectPeriod = this.selectPeriod.bind(this);
+    this.makeRangeMonths = this.makeRangeMonths.bind(this);
   }
 
   public componentWillMount(): void {
     const { billingSettingsActions } = this.props;
-    billingSettingsActions.getInvoice();
+    billingSettingsActions.getInvoice({});
   }
 
   public componentDidMount(): void {
@@ -76,7 +74,6 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    // const { billingSettingsActions } = this.props;
     const { loading, invoice } = this.props.billingSettings;
     return (
       <AppContainer title={''} cMenu='200' cSubMenu='200.4'>
@@ -102,96 +99,96 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
                         () => window.open(`/settings/billing/export/?period=${invoice?.period}`, '_blank')
                       }
                     >
-                      Exportar</button>
+                      Exportar
+                    </button>
                   </div>
                 </div>
                 <div className={`box-body`}>
                   <div className='row'>
                     <div className='col-md-12'>
-                      <div className={"pull-right"} style={{ width: '200px' }}>
+                      <div className={'pull-right'} style={{ width: '200px' }}>
                         <BootstrapSelect
-                          noneSelectedText='Agosto 2022'
+                          noneSelectedText='Seleccione un periodo'
                           displayItems={2}
                           sm={true}
-                          selectedText='empresas seleccionadas.'
-                          selected={[]}
+                          selectedText='periodos seleccionadas.'
+                          selected={invoice?.period ? [invoice.period] : []}
                           autoClouse={true}
                           allOption={false}
                           selectAll={() => ({})}
-                          options={[{ value: '082022', text: 'Agosto 2022' }]}
+                          options={this.makeRangeMonths()}
                           onClick={this.selectPeriod}
                         />
                       </div>
                     </div>
-                    <div className='col-md-6 text-right'>
-
+                    <div className='col-md-6 text-right'>{}
                     </div>
                   </div>
                   <div className='row'>
-                    <div className='col-md-5' style={{padding: '15px'}}>
-                      <div style={{fontSize: '120%'}}>Módulo Control de Stock</div>
+                    <div className='col-md-5' style={{ padding: '15px' }}>
+                      <div style={{ fontSize: '120%' }}>Módulo Control de Stock</div>
                       <ShowIf condition={!!(invoice && invoice.total < invoice.teamBilling.baseCost)}>
                         <div className='alert alert-danger' style={{ margin: '10px 0' }}>{invoice?.teamBilling.textBaseCost}</div>
                       </ShowIf>
                       <ShowIf condition={!!(invoice && invoice.total > invoice.teamBilling.baseCost)}>
                         {
                           invoice?.teamBilling.modules.map((module, index) => {
-                            const section = module.sections.find((section) => invoice.total >= section.start  && invoice.total <= section.end);
-                            if(section) {
+                            const section = module.sections.find((section) => invoice.total >= section.start && invoice.total <= section.end);
+                            if (section) {
                               return (
                                 <div key={index}>
                                   <div className='alert alert-success'>{section?.text}</div>
                                 </div>
-                              )
+                              );
                             }
-                            return null
+                            return null;
                           })
                         }
                       </ShowIf>
                     </div>
-                    <div className='col-md-5' style={{padding: '15px'}}>
-                      <div style={{fontSize: '120%'}}>{new Intl.NumberFormat('de-DE').format(invoice?.total as number)} unidades controladas</div>
+                    <div className='col-md-5' style={{ padding: '15px' }}>
+                      <div style={{ fontSize: '120%' }}>{new Intl.NumberFormat('de-DE').format(invoice?.total as number)} unidades controladas</div>
                       <div>
                         <ShowIf condition={!!(invoice && invoice.total > invoice.teamBilling.baseCost)}>
-                        {
-                          invoice?.teamBilling.modules.map((module, index) => {
-                            let totalInModule = invoice.total;
-                            return module.sections.sort((a: any, b: any) => {
-                              if (a.start < b.start) {
-                                return -1;
-                              }
-                              if (a.start > b.start) {
-                                return 1;
-                              }
-                              return 0;
-                            }).map((section) => {
-                              if(totalInModule > 0) {
-                                const totalInSection = totalInModule >= section.end ? section.end: totalInModule;
-                                totalInModule = totalInModule - totalInSection;
-                                return (
-                                  <div key={index} className={"text-muted"}>
-                                    {new Intl.NumberFormat('de-DE').format(totalInSection)} a {new Intl.NumberFormat('de-DE').format(section.price)} USD
-                                  </div>
-                                )
-                              }
-                              return null;
-                            });
-                          })
-                        }
-                      </ShowIf>
+                          {
+                            invoice?.teamBilling.modules.map((module, index) => {
+                              let totalInModule = invoice.total;
+                              return module.sections.sort((a: any, b: any) => {
+                                if (a.start < b.start) {
+                                  return -1;
+                                }
+                                if (a.start > b.start) {
+                                  return 1;
+                                }
+                                return 0;
+                              }).map((section) => {
+                                if (totalInModule > 0) {
+                                  const totalInSection = totalInModule >= section.end ? section.end : totalInModule;
+                                  totalInModule = totalInModule - totalInSection;
+                                  return (
+                                    <div key={index} className={'text-muted'}>
+                                      {new Intl.NumberFormat('de-DE').format(totalInSection)} a {new Intl.NumberFormat('de-DE').format(section.price)} USD
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              });
+                            })
+                          }
+                        </ShowIf>
                       </div>
                     </div>
-                    <div className='col-md-2 text-right' style={{padding: '15px'}}>
-                      <div style={{fontSize: '120%'}}>{new Intl.NumberFormat('de-DE').format(invoice?.totalDolar as number)} USD</div>
+                    <div className='col-md-2 text-right' style={{ padding: '15px' }}>
+                      <div style={{ fontSize: '120%' }}>{new Intl.NumberFormat('de-DE').format(invoice?.totalDolar as number)} USD</div>
                     </div>
                     <div className='col-md-12'>
                       <table className='table'>
                         <thead>
-                          <tr>
-                            <th>Empresa</th>
-                            <th></th>
-                            <th></th>
-                          </tr>
+                        <tr>
+                          <th>Empresa</th>
+                          <th></th>
+                          <th></th>
+                        </tr>
                         </thead>
                         <tbody>
                         {
@@ -225,14 +222,23 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
-  private selectPeriod(value: any): void  {
-    // if (this.props.labels && this.props.changeTempLabelAction) {
-    //   const {tempLabel} = this.props.labels;
-    //   this.props.changeTempLabelAction({
-    //     ...tempLabel,
-    //     sendTo: value
-    //   });
-    // }
+  private makeRangeMonths() {
+    const { oldest, last } = this.props.billingSettings;
+    const months = [];
+    const lastDate = moment(last).clone();
+    while (lastDate?.isSameOrAfter(oldest)) {
+      months.push({
+        value: lastDate.format('YYYYMM'),
+        text: lastDate.format('MMMM YYYY').toUpperCase()
+      });
+      lastDate?.subtract(1, 'month');
+    }
+    return months;
+  }
+
+  private selectPeriod(value: any): void {
+    const { billingSettingsActions } = this.props;
+    billingSettingsActions.getInvoice({ period: value });
   }
 
 }
