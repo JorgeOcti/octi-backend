@@ -808,11 +808,22 @@ export default class ApiService {
                            pageSize,
                            orderBy,
                            orderType,
-    number
-                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string }): AxiosPromise {
-    let url = `/api/v1/transmittals?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'}`;
+                           number,
+                           plate,
+                           drivers,
+                           from,
+                           to
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string, plate?: string, drivers?: string[], from: number, to: number }): AxiosPromise {
+    let url = `/api/v1/transmittals?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'}${from && to ? `&from=${from}&to=${to}` : '?'}`;
     if(number){
       url = `${url}&number=${number}`;
+    }
+    if(plate){
+      url = `${url}&plate=${plate}`;
+    }
+
+    if(drivers){
+      url = `${url}&drivers=${drivers}`;
     }
     return this.instance.get(url);
   }
