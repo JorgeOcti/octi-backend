@@ -38,6 +38,7 @@ import { statsRouter } from './stats/router';
 import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
 import {queue} from "./utils/queue";
+import BillingTeamQueue from "./billing/tasks/billingTeam.task";
 // import GeneralUtils from './utils/general.utils';
 
 // Create Express server
@@ -641,14 +642,24 @@ const swaggerDefinition = {
 const options : swaggerJSDoc.Options = {
   swaggerDefinition,
   // Paths to files containing OpenAPI definitions
-  apis: [path.join(__dirname, "./**/*.ts"), path.join(__dirname, "./**/*.js") ]
+  apis: [path.join(__dirname, "./**/router.ts"), path.join(__dirname, "./**/router.js") ]
 };
 
 const swaggerDocs =  swaggerJSDoc(options);
-app.use("/api-docs/", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
+app.use("/api-docs/", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
 const billingQueue = new Bull('billing', {
+   // redis: {
+   //   host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+   //   port: 6379
+   // },
+  createClient: () => {
+    return createRedisClient();
+  },
+  prefix: '{andes}'
+});
+const billingCorporateQueue = new Bull('billingCorporate', {
    // redis: {
    //   host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
    //   port: 6379
@@ -662,11 +673,20 @@ const billingQueue = new Bull('billing', {
 (async () => {
   try {
     // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
-    const jobs = await billingQueue.getRepeatableJobs();
-    if (jobs && jobs.length) {
-      for (const job of jobs) {
+    const billingSettings = await billingCorporateQueue.getRepeatableJobs();
+    if (billingSettings && billingSettings.length) {
+      for (const job of billingSettings) {
+        await billingCorporateQueue.removeRepeatableByKey(job.key);
+        console.log(`${billingSettings[0].key} Removida`);
+      }
+    }
+    await billingCorporateQueue.clean(0, 'delayed');
+
+    const billing = await billingQueue.getRepeatableJobs();
+    if (billing && billing.length) {
+      for (const job of billing) {
         await billingQueue.removeRepeatableByKey(job.key);
-        console.log(`${jobs[0].key} Removida`);
+        console.log(`${billing[0].key} Removida`);
       }
     }
     await billingQueue.clean(0, 'delayed');
@@ -688,12 +708,17 @@ const billingQueue = new Bull('billing', {
     }*/
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
-      billingQueue.process(async (job: Job, done: DoneCallback) => {
-        await new BillingQueue().processBilling();
-        done();
-      });
+    billingQueue.process(async (job: Job, done: DoneCallback) => {
+      await new BillingQueue().processBilling();
+      done();
+    });
+    billingCorporateQueue.process(async (job: Job, done: DoneCallback) => {
+      await new BillingTeamQueue().processBilling({});
+      done();
+    });
     try {
-      await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
+      await billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+      await billingCorporateQueue.add({}, {repeat: {cron: '0 1 * * *'}, jobId: 'billing'});
     } catch (error) {
       // console.log(error);
       console.log('No se pudo agrega tarea');

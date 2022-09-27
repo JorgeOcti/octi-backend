@@ -1067,9 +1067,9 @@ export default class ApiService {
     );
   }
 
-  public getInvoiceCorporate(): AxiosPromise {
+  public getInvoiceCorporate({ period }: { period?: string }): AxiosPromise {
     return this.instance.get(
-      '/settings/billing-settings/invoices/'
+      `/settings/billing-settings/invoices/${period? `?period=${period}` : ''}`
     )
   }
 

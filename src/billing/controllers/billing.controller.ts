@@ -29,6 +29,8 @@ class BillingController {
     this.pdf = this.pdf.bind(this);
     this.run = this.run.bind(this);
     this.getInvoiceCorporative = this.getInvoiceCorporative.bind(this);
+    this.getOldestInvoiceCorporative = this.getOldestInvoiceCorporative.bind(this);
+    this.getLastInvoiceCorporative = this.getLastInvoiceCorporative.bind(this);
     this.coportarePdf = this.coportarePdf.bind(this);
     this.apiInvoiceCorporative = this.apiInvoiceCorporative.bind(this);
     this.apiListCorporateBilling = this.apiListCorporateBilling.bind(this);
@@ -399,6 +401,18 @@ class BillingController {
     }
   }
 
+  private getOldestInvoiceCorporative(filter: any) {
+    return InvoiceTeamBilling
+      .findOne(filter)
+      .sort({createdAt: 1})
+  }
+
+  private getLastInvoiceCorporative(filter: any) {
+    return InvoiceTeamBilling
+      .findOne(filter)
+      .sort({createdAt: -1})
+  }
+
   private getInvoiceCorporative(filter: any) {
     return InvoiceTeamBilling
       .findOne(filter, {
@@ -425,10 +439,17 @@ class BillingController {
   public async apiInvoiceCorporative(req: IRequest, res: Response) {
     try {
       const {team} = req.user;
+      const {period} = req.query as { period: string };
+      let filter: any = {team: team._id};
+      if (period) {
+        filter = {...filter, period};
+      }
+      const oldestInvoice = await this.getOldestInvoiceCorporative({team: team._id});
+      const lastInvoice = await this.getLastInvoiceCorporative({team: team._id});
       return res.json({
-        results: await this.getInvoiceCorporative({
-          team: team._id
-        })
+        results: await this.getInvoiceCorporative(filter),
+        oldestInvoice: oldestInvoice?.period,
+        lastInvoice: lastInvoice?.period
       });
     } catch (e) {
       console.log(e);
@@ -604,6 +625,7 @@ class BillingController {
       });
     });
   }
+
 }
 
 export default new BillingController();

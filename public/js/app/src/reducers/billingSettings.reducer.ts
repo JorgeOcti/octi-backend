@@ -1,10 +1,14 @@
 import {
   CANCEL_BILLING_SETINGS,
   IBillingSettingsActionTypes,
-  IBillingSettingsState, LOAD_ALL_COMPANIES_BILLING_SETINGS, LOAD_ALL_MODULES_BILLING_SETINGS,
-  LOAD_BILLING_SETINGS, LOAD_INVOICE,
+  IBillingSettingsState,
+  LOAD_ALL_COMPANIES_BILLING_SETINGS,
+  LOAD_ALL_MODULES_BILLING_SETINGS,
+  LOAD_BILLING_SETINGS,
+  LOAD_INVOICE,
   LOADING_BILLING_SETINGS
 } from '../actions/billingSettings.types';
+import * as moment from 'moment';
 
 const initialState: IBillingSettingsState = {
   loading: true,
@@ -12,7 +16,9 @@ const initialState: IBillingSettingsState = {
   companies: [],
   modules: [],
   billingSettings: null,
-  invoice: null
+  invoice: null,
+  oldest: null,
+  last: null
 };
 
 export default function billingSettingsReducer(state = initialState, action: IBillingSettingsActionTypes): IBillingSettingsState {
@@ -51,7 +57,9 @@ export default function billingSettingsReducer(state = initialState, action: IBi
     case LOAD_INVOICE:
       return {
         ...state,
-        invoice: action.payload.invoice
+        invoice: action.payload.invoice,
+        oldest: moment(action.payload.oldest, 'YYYYMM'),
+        last: moment(action.payload.last, 'YYYYMM')
       };
     case CANCEL_BILLING_SETINGS:
       return {
