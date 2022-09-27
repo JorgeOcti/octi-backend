@@ -286,8 +286,23 @@ class TransmittalController {
       search,
       orderBy,
       orderType,
-      number
-    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string; number: string };
+      number,
+      plate,
+      drivers,
+      from,
+      to
+    } = req.query as {
+      page: string;
+      pageSize: string;
+      search: string;
+      orderBy: string;
+      orderType: string;
+      number: string;
+      drivers: string;
+      plate: string;
+      from: string;
+      to: string;
+    };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -319,6 +334,7 @@ class TransmittalController {
         path: 'createdBy',
         select: ['firstName', 'lastName']
       }],
+
       customLabels: {
         totalDocs: 'total',
         docs: 'docs',
@@ -343,6 +359,25 @@ class TransmittalController {
     if (number) {
       filter.number = number;
     }
+    if (drivers){
+      let driversIds = drivers.split(",").map(d => new mongoose.Types.ObjectId(d))
+      filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": plate}];
+    } else if (!drivers && plate){
+      filter["transporter.patent"] = plate;
+    }
+
+    if (from || to) {
+      const createdAtFilter: any = {};
+
+      if (from) {
+        createdAtFilter.$gte = moment.unix(parseInt(from)).startOf('day');
+      }
+      if (to) {
+        createdAtFilter.$lte = moment.unix(parseInt(to)).endOf('day');
+      }
+      filter.createdAt = createdAtFilter;
+    }
+
     try {
       logger.info(`TransmittalController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
       logger.debug(`TransmittalController.apiList email: ${req.user.email}, filter: ${JSON.stringify(filter)}`);
@@ -923,7 +958,11 @@ class TransmittalController {
       },{
         header: 'Marcó frontera', key: 'passBorder', width: 30
       }, {
-        header: 'Fecha', key: 'createdAt', width: 30, style: {
+        header: 'Fecha Carga', key: 'loadingDate', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        },
+      },{
+        header: 'Fecha Arribo', key: 'arrivalDate', width: 30, style: {
           numFmt: 'dd/mm/yyyy hh:mm'
         }
       }];
@@ -987,7 +1026,8 @@ class TransmittalController {
             denomination: item.car?.denomination,
             color: item.car?.color,
             observation: item.observation,
-            createdAt: item.createdAt
+            loadingDate: item.loadingDate,
+            arrivalDate: item.arrivalDate,
           }).commit();
         }
       });
