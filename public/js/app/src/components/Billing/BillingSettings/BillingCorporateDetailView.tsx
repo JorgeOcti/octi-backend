@@ -127,7 +127,7 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='row'>
                     <div className='col-md-5' style={{ padding: '15px' }}>
                       <div style={{ fontSize: '120%' }}>Módulo Control de Stock</div>
-                      <ShowIf condition={!!(invoice && invoice.totalDolar < invoice.teamBilling.baseCost)}>
+                      <ShowIf condition={!!(invoice && invoice.totalDolar <= invoice.teamBilling.baseCost)}>
                         <div className='alert alert-danger' style={{ margin: '10px 0' }}>{invoice?.teamBilling.textBaseCost}</div>
                       </ShowIf>
                       <ShowIf condition={!!(invoice && invoice.totalDolar > invoice.teamBilling.baseCost)}>
