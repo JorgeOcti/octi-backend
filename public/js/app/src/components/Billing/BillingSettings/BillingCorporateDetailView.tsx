@@ -149,7 +149,7 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
                     <div className='col-md-5' style={{ padding: '15px' }}>
                       <div style={{ fontSize: '120%' }}>{new Intl.NumberFormat('de-DE').format(invoice?.total as number)} unidades controladas</div>
                       <div>
-                        <ShowIf condition={!!(invoice && invoice.total > invoice.teamBilling.baseCost)}>
+                        <ShowIf condition={!!(invoice && invoice.totalDolar > invoice.teamBilling.baseCost)}>
                           {
                             invoice?.teamBilling.modules.map((module, index) => {
                               let totalInModule = invoice.total;
