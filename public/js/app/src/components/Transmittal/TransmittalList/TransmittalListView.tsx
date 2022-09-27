@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
+import * as moment from 'moment-timezone';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import { hasPermission, parseReplicableURL } from '../../../utils/common';
@@ -19,6 +20,8 @@ import { Dispatch } from 'redux';
 import ModalView from '../../Modal/ModalView';
 import { debounce } from 'throttle-debounce';
 import { IMilestone } from '../../../../../../../src/distribution/interfaces';
+import DateRangeInput from "../../Utils/DateRangeInput";
+import {IUser} from "../../../../../../../src/app/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
@@ -31,6 +34,10 @@ interface IStateType {
   error: Error | null;
   exporing: boolean;
   number: string | undefined;
+  drivers: string[] | undefined;
+  driverText: string | undefined
+  from: Date;
+  to: Date;
 }
 
 declare let window: IWindow;
@@ -38,10 +45,14 @@ declare let window: IWindow;
 class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
-  readonly state = {
+  readonly state : IStateType = {
     error: null,
     exporing: false,
-    number: ""
+    number: "",
+    drivers: [],
+    driverText: '',
+    from: moment().startOf('month').toDate(),
+    to: moment().endOf('month').toDate(),
   };
 
   private socket: Socket;
@@ -54,7 +65,28 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     this.exportExcel = this.exportExcel.bind(this);
     this.changePage = this.changePage.bind(this);
     this.changeNumber = this.changeNumber.bind(this);
-    this.callChangeNumber = debounce(1000, this.callChangeNumber.bind(this));
+    this.changeDriver = this.changeDriver.bind(this);
+    this.changePeriod = this.changePeriod.bind(this);
+    this.callChangeFilterData = debounce(1000, this.callChangeFilterData.bind(this));
+  }
+
+  getDateRangeOptions(): daterangepicker.Options {
+    return {
+      // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
+      // endDate: moment().toDate(),
+      maxDate: moment().toDate(),
+      locale: {
+        format: 'DD/MM/YYYY',
+        customRangeLabel: 'Período personalizado',
+        applyLabel: 'Aplicar',
+        cancelLabel: 'Cancelar'
+      },
+      ranges: {
+        "Este mes": [moment().startOf('month').toDate(), moment().endOf('month').toDate()],
+        "Últimos 3 meses": [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+      },
+      opens: 'left'
+    };
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -71,7 +103,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         longestMilestones = tmp.sort((a, b) => a.order - b.order);
     }
 
-    const { exporing, number } = this.state;
+    const { exporing, number, driverText, from, to } = this.state;
     return (
       <AppContainer title={''
         /*<div
@@ -131,33 +163,72 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className={`box-body transmittal-list no-padding`}>
               <div style={{padding: '10px'}}>
                 <div className='row'>
-                <div className='col-md-12'>
-                  <div
-                    className='input-group input-group-sm'
-                  >
-                    <input
-                      type='text'
-                      className='form-control pull-right'
-                      onChange={(e) => {
-                        this.changeNumber(e.target.value);
-                      }}
-                      value={number}
-                      placeholder='Buscar OT por número ej: 1686' />
-                    <div className='input-group-btn'>
-                      <button
-                        className={`btn ${!!this.state.number?.length ? 'btn-primary' : 'btn-default'}`}
-                        onClick={!!this.state.number?.length ? () => {
-                          this.props.history.replace(`/transmittals/`);
-                          this.changeNumber('');
-                        } : undefined}
-                      >
-                        <ShowIf condition={!!this.state.number?.length} alternative={<i className='fa fa-search' />}>
-                          <i className='fa fa-close' />
-                        </ShowIf>
-                      </button>
+                  <div className='col-md-4'>
+                    <div
+                      className='input-group input-group-sm'
+                      style={{padding: '10px'}}
+                    >
+                      <input
+                        type='text'
+                        className='form-control pull-right'
+                        onChange={(e) => {
+                          this.changeNumber(e.target.value);
+                        }}
+                        value={number}
+                        placeholder='Buscar OT por número ej: 1686' />
+                      <div className='input-group-btn'>
+                        <button
+                          className={`btn ${!!this.state.number?.length ? 'btn-primary' : 'btn-default'}`}
+                          onClick={!!this.state.number?.length ? () => {
+                            this.props.history.replace(`/transmittals/`);
+                            this.changeNumber('');
+                          } : undefined}
+                        >
+                          <ShowIf condition={!!this.state.number?.length} alternative={<i className='fa fa-search' />}>
+                            <i className='fa fa-close' />
+                          </ShowIf>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <div className='col-md-4'>
+                    <div
+                      className='input-group input-group-sm'
+                      style={{padding: '10px'}}
+                    >
+                      <input
+                        type='text'
+                        className='form-control pull-right'
+                        onChange={(e) => {
+                          this.changeDriver(e.target.value);
+                        }}
+                        value={driverText}
+                        placeholder='Chofer o Placa' />
+                      <div className='input-group-btn'>
+                        <button
+                          className={`btn ${!!this.state.driverText?.length ? 'btn-primary' : 'btn-default'}`}
+                          onClick={!!this.state.driverText?.length ? () => {
+                            this.props.history.replace(`/transmittals/`);
+                            this.changeDriver('');
+                          } : undefined}
+                        >
+                          <ShowIf condition={!!this.state.driverText?.length} alternative={<i className='fa fa-search' />}>
+                            <i className='fa fa-close' />
+                          </ShowIf>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='col-md-4 no-padding'>
+                    <div style={{padding: '10px'}}>
+                      <DateRangeInput
+                        options={this.getDateRangeOptions()}
+                        onChange={this.changePeriod}
+                        startDate={from}
+                        endDate={to}
+                      />
+                    </div>
+                  </div>
               </div>
               </div>
               <div className='table-responsive'>
@@ -280,6 +351,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     const { page } = this.props.transmittal.pagination;
     const { location: { query } } = this.props.router;
     const { transmittalActions } = this.props;
+    const state : IStateType = this.state;
     window.scrollTo(0, 0);
     const { number } = query;
     this.setState({ number });
@@ -287,7 +359,11 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       nextPage: number ? 1 : page,
       orderBy,
       orderType,
-      number
+      number,
+      plate: state.driverText,
+      drivers: state.drivers,
+      from: moment(state.from).unix(),
+      to: moment(state.to).unix(),
     });
     // socket
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -357,14 +433,16 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         transmittalActions.deleteTransmittalAction(data.transmittal);
         const { orderBy, orderType } = this.props.transmittal.options;
         const { page } = this.props.transmittal.pagination;
-        transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true });
+        const {from, to } = this.state;
+        transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true, from: moment(from).unix(), to: moment(to).unix() });
       }, 300);
     });
 
     this.socket.on('CREATE_TRANSMITTAL', (): void => {
       const { page } = this.props.transmittal.pagination;
       const { orderBy, orderType } = this.props.transmittal.options;
-      transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true });
+      const {from, to } = this.state;
+      transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, hideLoading: true, from: moment(from).unix(), to: moment(to).unix() });
     });
 
   }
@@ -395,13 +473,34 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeNumber(number: string) {
-    this.setState({ number });
-    this.callChangeNumber(number);
+    this.setState({ number }, () => {
+      this.callChangeFilterData();
+    });
   }
 
-  private callChangeNumber(number: string) {
+  private changeDriver(driver: string) {
+    let driverNames = driver.toLowerCase().replace(/\s\s+/g, ' ').split(" ")
+    let drivers = this.props.transmittal.drivers.filter((user: IUser) => {
+      let fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
+      return fullName === driver || driverNames.filter((name: string) => fullName.includes(name)).length > 0
+    }).map((user: IUser) => user._id);
+
+    this.setState({ driverText: driver, drivers }, () => {
+      this.callChangeFilterData();
+    });
+  }
+
+  private changePeriod(from: Date, to: Date) {
+    this.setState({ from, to }, () => {
+      this.callChangeFilterData();
+    });
+  }
+
+  private callChangeFilterData() {
     const { options: { orderBy, orderType } } = this.props.transmittal;
-    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: 1, orderBy, orderType, number });
+    let {drivers, driverText, from, to, number} = this.state;
+    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: 1, orderBy, orderType, number,
+      plate: driverText, drivers, from: moment(from).unix(), to: moment(to).unix() });
   }
 
   private changeOrder(key: string) {
@@ -416,7 +515,16 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy: newOrderBy, orderType: newOrderType });
+    let {driverText, drivers, from, to, number} = this.state;
+    this.props.transmittalActions.getTransmittalsThunkAction({
+      nextPage: page,
+      orderBy: newOrderBy,
+      orderType: newOrderType,
+      number,
+      plate: driverText,
+      drivers: drivers,
+      from: moment(from).unix(),
+      to: moment(to).unix() });
   }
 
   private create(): void {
@@ -425,7 +533,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     const { options: { orderBy, orderType } } = this.props.transmittal;
-    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType });
+    let {drivers, driverText, from, to, number} = this.state;
+    this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, number,
+      plate: driverText, drivers: drivers, from: moment(from).unix(), to: moment(to).unix() });
   }
 
   public exportExcel(): void {
