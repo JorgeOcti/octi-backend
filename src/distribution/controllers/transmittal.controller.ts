@@ -361,9 +361,9 @@ class TransmittalController {
     }
     if (drivers){
       let driversIds = drivers.split(",").map(d => new mongoose.Types.ObjectId(d))
-      filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": plate}];
+      filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": {$regex: plate.trim(), $options: 'i'}}];
     } else if (!drivers && plate){
-      filter["transporter.patent"] = plate;
+      filter["transporter.patent"] = {$regex: plate.trim(), $options: 'i'};
     }
 
     if (from || to) {

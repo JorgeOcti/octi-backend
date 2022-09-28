@@ -479,11 +479,14 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeDriver(driver: string) {
-    let driverNames = driver.toLowerCase().replace(/\s\s+/g, ' ').split(" ")
-    let drivers = this.props.transmittal.drivers.filter((user: IUser) => {
-      let fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
-      return fullName === driver || driverNames.filter((name: string) => fullName.includes(name)).length > 0
-    }).map((user: IUser) => user._id);
+    let drivers = []
+    if (driver) {
+      let driverNames = driver.toLowerCase().replace(/\s\s+/g, ' ').trim().split(" ")
+      drivers = this.props.transmittal.drivers.filter((user: IUser) => {
+        let fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
+        return fullName === driver || driverNames.filter((name: string) => fullName.includes(name)).length > 0
+      }).map((user: IUser) => user._id);
+    }
 
     this.setState({ driverText: driver, drivers }, () => {
       this.callChangeFilterData();
