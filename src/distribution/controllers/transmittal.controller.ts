@@ -289,6 +289,7 @@ class TransmittalController {
       number,
       plate,
       drivers,
+      types,
       from,
       to
     } = req.query as {
@@ -299,6 +300,7 @@ class TransmittalController {
       orderType: string;
       number: string;
       drivers: string;
+      types: string;
       plate: string;
       from: string;
       to: string;
@@ -364,6 +366,11 @@ class TransmittalController {
       filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": {$regex: plate.trim(), $options: 'i'}}];
     } else if (!drivers && plate){
       filter["transporter.patent"] = {$regex: plate.trim(), $options: 'i'};
+    }
+
+    if (types){
+      let typeIds = types.split(",").map(t => new mongoose.Types.ObjectId(t))
+      filter["type"] = {$in: typeIds};
     }
 
     if (from || to) {
