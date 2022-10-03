@@ -19,9 +19,11 @@ import TransmitalListDetail from './TransmitalListDetail';
 import { Dispatch } from 'redux';
 import ModalView from '../../Modal/ModalView';
 import { debounce } from 'throttle-debounce';
-import { IMilestone } from '../../../../../../../src/distribution/interfaces';
+import {IMilestone, IMilestoneType} from '../../../../../../../src/distribution/interfaces';
 import DateRangeInput from "../../Utils/DateRangeInput";
 import {IUser} from "../../../../../../../src/app/interfaces";
+import BootstrapSelect from "../../Utils/BootstrapSelect";
+import {IForm} from "../../../../../../../src/form/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;
@@ -35,7 +37,8 @@ interface IStateType {
   exporing: boolean;
   number: string | undefined;
   drivers: string[] | undefined;
-  driverText: string | undefined
+  driverText: string | undefined;
+  types: string[] | undefined;
   from: Date;
   to: Date;
 }
@@ -50,6 +53,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     exporing: false,
     number: "",
     drivers: [],
+    types: [],
     driverText: '',
     from: moment().startOf('month').toDate(),
     to: moment().endOf('month').toDate(),
@@ -67,6 +71,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     this.changeNumber = this.changeNumber.bind(this);
     this.changeDriver = this.changeDriver.bind(this);
     this.changePeriod = this.changePeriod.bind(this);
+    this.changeTypes = this.changeTypes.bind(this);
     this.callChangeFilterData = debounce(1000, this.callChangeFilterData.bind(this));
   }
 
@@ -103,7 +108,8 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         longestMilestones = tmp.sort((a, b) => a.order - b.order);
     }
 
-    const { exporing, number, driverText, from, to } = this.state;
+    const { exporing, number, driverText, from, to, types } = this.state;
+
     return (
       <AppContainer title={''
         /*<div
@@ -163,7 +169,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className={`box-body transmittal-list no-padding`}>
               <div style={{padding: '10px'}}>
                 <div className='row'>
-                  <div className='col-md-4'>
+                  <div className='col-md-3'>
                     <div
                       className='input-group input-group-sm'
                       style={{padding: '10px'}}
@@ -191,7 +197,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-                  <div className='col-md-4'>
+                  <div className='col-md-3'>
                     <div
                       className='input-group input-group-sm'
                       style={{padding: '10px'}}
@@ -219,7 +225,26 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-                  <div className='col-md-4 no-padding'>
+                  <div className='col-md-3 no-padding'>
+                    <div style={{ padding: '10px' }}>
+                      <BootstrapSelect
+                        noneSelectedText='Todos los tipos de ruta'
+                        displayItems={4}
+                        sm={true}
+                        autoClouse={true}
+                        selectedText='Tipos de ruta seleccionadas.'
+                        selected={types ?? []}
+                        separator=" - "
+                        options={this.props.transmittal.milestoneTypes.map((type: IMilestoneType) => ({
+                          value: type._id,
+                          text: type.name
+                        }))}
+                        onClick={this.changeTypes}
+                        notHideOnClickOutside={false}
+                      />
+                    </div>
+                  </div>
+                  <div className='col-md-3 no-padding'>
                     <div style={{padding: '10px'}}>
                       <DateRangeInput
                         options={this.getDateRangeOptions()}
@@ -362,6 +387,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       number,
       plate: state.driverText,
       drivers: state.drivers,
+      types: state.types,
       from: moment(state.from).unix(),
       to: moment(state.to).unix(),
     });
@@ -478,10 +504,25 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
+  private changeTypes(value: any) {
+    let { types } = this.state;
+    let sTypes = types || [];
+
+    types = sTypes.includes(value)
+      ? sTypes.filter((type) => type !== value)
+      : [value, ...sTypes];
+
+    this.setState({
+      types: types
+    }, () => {
+      this.callChangeFilterData();
+    });
+  }
+
   private changeDriver(driver: string) {
     let drivers = []
     if (driver) {
-      let driverNames = driver.toLowerCase().replace(/\s\s+/g, ' ').trim().split(" ")
+      let driverNames = driver.split(",").map(n => n.toLowerCase().replace(/\s\s+/g, ' ').trim())
       drivers = this.props.transmittal.drivers.filter((user: IUser) => {
         let fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
         return fullName === driver || driverNames.filter((name: string) => fullName.includes(name)).length > 0
@@ -501,9 +542,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private callChangeFilterData() {
     const { options: { orderBy, orderType } } = this.props.transmittal;
-    let {drivers, driverText, from, to, number} = this.state;
+    let {drivers, driverText, from, to, number, types} = this.state;
     this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: 1, orderBy, orderType, number,
-      plate: driverText, drivers, from: moment(from).unix(), to: moment(to).unix() });
+      plate: driverText, drivers, types, from: moment(from).unix(), to: moment(to).unix() });
   }
 
   private changeOrder(key: string) {
@@ -518,7 +559,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    let {driverText, drivers, from, to, number} = this.state;
+    let {driverText, drivers, from, to, number, types} = this.state;
     this.props.transmittalActions.getTransmittalsThunkAction({
       nextPage: page,
       orderBy: newOrderBy,
@@ -526,6 +567,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       number,
       plate: driverText,
       drivers: drivers,
+      types,
       from: moment(from).unix(),
       to: moment(to).unix() });
   }

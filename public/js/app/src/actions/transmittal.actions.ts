@@ -252,7 +252,7 @@ export default class TransmittalActions {
   }
 
   public getTransmittalsThunkAction({
-  nextPage, orderBy, orderType, hideLoading, number, plate, drivers, from, to
+  nextPage, orderBy, orderType, hideLoading, number, plate, drivers, types, from, to
 }:{
     nextPage: number,
     orderBy: string,
@@ -261,6 +261,7 @@ export default class TransmittalActions {
     hideLoading?: boolean,
     plate?: string,
     drivers?: string[],
+    types?: string[],
     from: number,
     to: number
 }): void {
@@ -273,7 +274,7 @@ export default class TransmittalActions {
       transmittalActions.cancelRequestAction(this.api.getSource());
       Axios
         .all([
-          this.api.getTransmittals({page, orderBy, orderType, number, plate, drivers, from, to}),
+          this.api.getTransmittals({page, orderBy, orderType, number, plate, drivers, types, from, to}),
           this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
           this.api.getDrivers(1, 200),
