@@ -22,7 +22,7 @@ async function migrateTracker() {
     // const teams = ['5bf2de34caf8ef7096105cda'];
     const teams: string[] = [];
 
-    const formsDeliveryCostumer = ['6058f9e53039dbadeeb7a559', '5fb6a0da49698b82eb9454e1'];
+    const formsDeliveryCostumer = ['6318284300000000003b7676', '6058f9e53039dbadeeb7a559'];
 
     let extraFilter: any = {};
     if(teams.length){
