@@ -38,16 +38,12 @@ import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
-<<<<<<< HEAD
-import { ChoicesTypeActivity } from '../../billing/models';
-import Participant from '../models/participant.model';
-=======
+
+
 import {ChoicesTypeActivity} from "../../billing/models";
 import Participant, {IParticipantAnswerModel, IParticipantSectionModel} from "../models/participant.model";
 import {IFormTrigger} from "../interfaces";
 import {KindTrigger} from "../models/trigger.types";
-
->>>>>>> a3e9f94e3dc0ad63b86d34e7708bb7776a5beb4d
 
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
