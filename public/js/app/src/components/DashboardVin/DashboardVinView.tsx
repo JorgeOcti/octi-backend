@@ -29,6 +29,7 @@ import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
+import * as daterangepicker from 'daterangepicker';
 
 declare let window: IWindow;
 
@@ -59,7 +60,7 @@ interface IStateType {
 }
 
 class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
-  title: string;
+  public title: string;
 
   readonly state: IStateType = {
     error: null,
@@ -67,7 +68,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     searchText: '',
     carLoading: '',
     selectedForms: [],
-    from: moment().startOf('month').subtract(6, 'months').startOf('month').toDate(),
+    from: moment().subtract(3, 'months').startOf('month').toDate(),
     to: moment().toDate(),
     downloading: false
   };
@@ -95,7 +96,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     const timezone = moment.tz.guess();
     if (!this.printIframe) {
       iframe = this.printIframe = document.createElement('iframe');
-      document.body.appendChild(iframe);
+      window.document.body.appendChild(iframe);
       iframe.style.display = 'none';
       iframe.onload = () => {
         setTimeout(() => {
@@ -123,12 +124,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         token: (window.user as any).token
       }
     });
+
     this.socket.on('connect', () => {
       this.socket.emit('join', { room: `dashboard-vin-view-${window.user.team._id}` });
     });
+
     this.socket.on('REFRESH', (data: any): void => {
       const { page } = this.props.dashboard.pagination;
-      if (data.update) {
+      const { forms } = this.props.dashboard;
+      if (data.update && window.user.venuesAccess.includes(data.venueId) && forms.map((form: IForm) => form._id).includes(data.formId)) {
+        this.props.getRevisionsAction(page, false);
         ($ as any).toast({
           heading: data.notification.title,
           text: data.notification.text,
@@ -138,7 +143,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
           hideAfter: 5000,
           stack: 6
         } as any);
-        this.props.getRevisionsAction(page, false);
         if (!this.state.highlight.includes(data.car)) {
           this.setState({
             highlight: [data.car, ...this.state.highlight]
@@ -168,38 +172,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     super.componentDidMount();
   }
 
-  getDateRangeOptions(): daterangepicker.Options {
-    return {
-      // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
-      // endDate: moment().toDate(),
-      maxDate: moment().toDate(),
-      locale: {
-        format: 'DD/MM/YYYY',
-        customRangeLabel: 'Período personalizado',
-        applyLabel: 'Aplicar',
-        cancelLabel: 'Cancelar'
-      },
-      ranges: {
-        "Este mes": [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
-        "Últimos 3 meses": [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-        "Últimos 6 meses": [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-        "Último año": [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
-      },
-      opens: 'left'
-    };
-  }
-
-  onDateRangeChange(from: Date, to: Date) {
-    this.setState({
-      from,
-      to
-    });
-    this.props.changeRangeDashboardAction(
-      moment(from).toDate(), moment(to).toDate()
-    );
-    this.debounceOnChangeSearch();
-  }
-
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ error });
     Raven.captureException(error, {
@@ -221,75 +193,25 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public downloadReport() {
-    const { from, to, selectedForms, searchText,  } = this.state;
+    const { from, to, selectedForms, searchText } = this.state;
     const monthsDiff = moment(to).diff(moment(from), 'months');
     this.trackClick('Descargar reporte', {
       from,
       to
     });
     if (monthsDiff > 3) {
-      swal('Revisiones', 'Selecciona un rango de 3 meses para dercargar la información', 'error');
+      swal!('Revisiones', 'Selecciona un rango menor que 3 meses para descargar la información', 'error');
     } else {
-      let query = `?from=${moment(from).unix()}&to=${moment(to).unix()}`;
+      let query = `?deliveries=0&from=${moment(from).unix()}&to=${moment(to).unix()}`;
 
       if (searchText)
         query += `&search=${searchText}`;
 
       if (selectedForms)
-        query += `&forms=${selectedForms.join(",")}`;
-      
+        query += `&forms=${selectedForms.join(',')}`;
+
       window.open(`/api/participant/export/${query}`, '_blank');
     }
-
-    // const api: ApiService = new ApiService();
-    // const instance = api.getInstance();
-    // const source = api.getSource();
-    // instance.defaults.timeout = 7200000;
-    // instance.get(`/api/participant/export/?from=${from}&to=${to}`, {
-    //     responseType: 'arraybuffer',
-    //   })
-    //   .then((response) => {
-    //     const blob = new Blob([response.data], {
-    //       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    //     });
-    //     const fileName = `${moment().format('YYYYMMDD')}-revisiones.xlsx`;
-    //     if (typeof window.navigator.msSaveBlob !== 'undefined') {
-    //       // IE workaround for "HTML7007: One or more blob URLs were
-    //       // revoked by closing the blob for which they were created.
-    //       // These URLs will no longer resolve as the data backing
-    //       // the URL has been freed."
-    //       window.navigator.msSaveBlob(blob, fileName);
-    //     } else {
-    //       const blobURL = URL.createObjectURL(blob);
-    //       const tempLink = document.createElement('a');
-    //       tempLink.style.display = 'none';
-    //       tempLink.href = blobURL;
-    //       tempLink.setAttribute('download', fileName);
-    //       // Safari thinks _blank anchor are pop ups. We only want to set _blank
-    //       // target if the browser does not support the HTML5 download attribute.
-    //       // This allows you to download files in desktop safari if pop up blocking
-    //       // is enabled.
-    //       if (typeof tempLink.download === 'undefined') {
-    //         tempLink.setAttribute('target', '_blank');
-    //       }
-    //       document.body.appendChild(tempLink);
-    //       tempLink.click();
-    //       document.body.removeChild(tempLink);
-    //       URL.revokeObjectURL(blobURL);
-
-    //       this.setState({
-    //         downloading: false
-    //       });
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     this.setState({
-    //       downloading: false
-    //     });
-    //     if (!Axios.isCancel(err)) {
-    //       swal('Exportar revisiones', 'Ha ocurrido un error al general el excel.', 'error');
-    //     }
-    //   });
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -299,7 +221,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       <AppContainer title='Revisiones' cMenu='1' cSubMenu='1.2'>
         <section className='content'>
           <div className='box'>
-            <div className='box-header with-border'><h3 className='box-title'>Controles <small>{pagination.count}</small></h3>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Controles <small>{pagination.count}</small>
+              </h3>
               <div className='box-tools pull-right'>
                 <button
                   className='btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm'
@@ -323,7 +247,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       selected={selectedForms}
                       allOption={true}
                       selectAll={this.filterAllForms}
-                      separator=" - "
+                      separator=' - '
                       options={forms.map((form: IForm) => ({
                         value: form._id,
                         text: form.name
@@ -334,7 +258,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className='col-md-6 no-padding'>
-                  <div style={{padding: '10px'}}>
+                  <div style={{ padding: '10px' }}>
                     <DateRangeInput
                       options={this.getDateRangeOptions()}
                       onChange={this.onDateRangeChange}
@@ -362,11 +286,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               {
                 participants.length ?
-                  <div className='table-responsive' style={{border: 0}}>
+                  <div className='table-responsive' style={{ border: 0 }}>
                     <table className='table table-andes table-striped'>
                       <thead>
                       <tr>
-                        {/*<th style={{ width: '3%' }} className='middle hidden-xs hidden-sm'>Nº</th>*/}
                         <th style={{ width: '18%' }} className='middle'>Detalle</th>
                         {/*<th style={{width: '18%'}} className="middle hidden-xs hidden-sm">Unidad</th>*/}
                         {/*<th style={{width: '13%'}} className="middle hidden-xs hidden-sm">Supervisor</th>*/}
@@ -375,7 +298,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         <th style={{ width: '10%' }} className='middle hidden-xs hidden-sm'></th>
                         <th style={{ width: '1%' }} className='middle-center hidden-xs hidden-sm'></th>
                         {/*<th style={{width: '15%'}} className="hidden-xs hidden-sm">Fecha</th>*/}
-                        <th style={{ width: '1%' }}  />
+                        <th style={{ width: '1%' }} />
                       </tr>
                       </thead>
                       <tbody>
@@ -444,7 +367,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     </React.Fragment>
                                   </ShowIf></span><br />
                                   <div>
-                                    <i className='fa fa-clock-o fa-fw' /> {moment(participant.createdAt).fromNow()} ({moment(participant.createdAt).format('LLL')})
+                                    <i
+                                      className='fa fa-clock-o fa-fw' /> {moment(participant.createdAt).fromNow()} ({moment(participant.createdAt).format('LLL')})
                                   </div>
                                   <ShowIf condition={!!participant.car?.patent?.length}>
                                     <span>
@@ -463,23 +387,25 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               }}>
                                 <div className='text-muted'>
                                   <strong><i
-                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}</strong><br />
+                                    className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
+                                  </strong><br />
                                 </div>
-                                <div className='text-muted text-sm'><i className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
-                                condition={participant.hasDamages}
-                              >
-                                <React.Fragment>
-                                  {' '}<i
-                                  className='fa fa-warning text-red'
-                                  data-toggle='tooltip'
-                                  data-placement='top'
-                                  title='Daños encontrados en esta revisión.'
-                                />
-                                </React.Fragment>
-                              </ShowIf>
-                                  </div>
+                                <div className='text-muted text-sm'><i
+                                  className='fa fa-fw fa-flag-o' /> {`${participant.venue ? `${participant.venue.name}` : '-'}`} <ShowIf
+                                  condition={participant.hasDamages}
+                                >
+                                  <React.Fragment>
+                                    {' '}<i
+                                    className='fa fa-warning text-red'
+                                    data-toggle='tooltip'
+                                    data-placement='top'
+                                    title='Daños encontrados en esta revisión.'
+                                  />
+                                  </React.Fragment>
+                                </ShowIf>
+                                </div>
                                 <div className='text-muted text-sm'>
-                                {`${participant.company ? `${participant.company.name}` : '-'}`}
+                                  {`${participant.company ? `${participant.company.name}` : '-'}`}
                                 </div>
                               </td>
                               <td className='middle-center hidden-xs hidden-sm'>
@@ -517,14 +443,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   className='visible-xs visible-sm'
                                 >
                                   <button
-                                      className='btn btn-sm btn-primary'
-                                      onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
-                                    ><i className='fa fa-bars' /></button>
+                                    className='btn btn-sm btn-primary'
+                                    onClick={() => this.props.history.push(`/cars/${participant.car?._id}`)}
+                                  ><i className='fa fa-bars' /></button>
                                 </div>
                               </td>
-                              {/*<td className='text-primary middle-center'>*/}
-                              {/*  */}
-                              {/*</td>*/}
                             </tr>
                           );
                         })
@@ -598,7 +521,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     const value = e.target.value;
     this.setState({
       searchText: value
-    })
+    });
     this.props.changeSearchDashboardAction(value);
     this.debounceOnChangeSearch();
   }
@@ -617,6 +540,38 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.getRevisionsAction(page, false);
     window.scrollTo(0, 0);
   }
+
+  private getDateRangeOptions(): daterangepicker.Options {
+    return {
+      // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
+      // endDate: moment().toDate(),
+      maxDate: moment().toDate(),
+      locale: {
+        format: 'DD/MM/YYYY',
+        customRangeLabel: 'Período personalizado',
+        applyLabel: 'Aplicar',
+        cancelLabel: 'Cancelar'
+      },
+      ranges: {
+        'Este mes': [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+        'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
+      },
+      opens: 'left'
+    };
+  }
+
+  private onDateRangeChange(from: Date, to: Date) {
+    this.setState({
+      from,
+      to
+    });
+    this.props.changeRangeDashboardAction(
+      moment(from).toDate(), moment(to).toDate()
+    );
+    this.debounceOnChangeSearch();
+  }
 }
 
 const mapStateToProps = (state: { dashboard: IDashboardState }) => {
@@ -628,7 +583,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search, undefined, undefined, undefined, true)),
+    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search, undefined, undefined, undefined)),
     changeSearchFormsDashboardAction: (forms: string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
     changeRangeDashboardAction: (from: Date, to: Date) => dispatch(changeRangeDashboardAction(from, to)),

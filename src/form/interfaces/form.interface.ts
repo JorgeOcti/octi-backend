@@ -24,6 +24,7 @@ export interface IFormAccesory {
 export interface IFormQuestion {
   _id: any;
   question: string;
+  kindUpdate: string;
   shortName: string;
 
   scale: IScaleModel;

@@ -35,6 +35,7 @@ import { colorsReducer } from './color.reducer';
 import {statsDashboardReducer} from "./statsDashboard.reducer";
 import {bordersReducer} from "./borders.reducer";
 import billingSettingsReducer from './billingSettings.reducer';
+import deliveriesReducer from './deliveries.reducer';
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -57,6 +58,7 @@ export default (history: any) => combineReducers({
   requestStatus: requestStatusReducer,
   paymentMethod: paymentMethodReducer,
   requestChannel: requestChannelReducer,
+  deliveries: deliveriesReducer,
   venues: venuesReducer,
   companies: companiesReducer,
   labels: labelsReducer,

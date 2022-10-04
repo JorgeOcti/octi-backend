@@ -5,7 +5,7 @@ import {
   IParticipant,
   IParticipantAccesory,
   IParticipantAnswer,
-  IParticipantChoices,
+  IParticipantChoices, IParticipantDeliveryInfo,
   IParticipantItems,
   IParticipantScale,
   IParticipantSection
@@ -175,6 +175,8 @@ export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Ty
 
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
+  // field to update another model
+  kindUpdate: { type: String },
   shortName: {type: String, trim: true},
 
   scale: scaleSchema,
@@ -254,8 +256,7 @@ const participantAnswersSchema = new mongoose.Schema({
 
 });
 
-export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {
-}
+export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}
 
 const participantSectionsSchema = new mongoose.Schema({
   section_id: {
@@ -283,6 +284,23 @@ const participantSectionsSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
+  }
+});
+
+export interface IParticipantDeliveryInfoModel extends IParticipantDeliveryInfo, mongoose.Types.Subdocument {}
+
+const participantDeliveryInfoSchema = new mongoose.Schema({
+  name: {
+    type: String,
+  },
+  rut: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  order: {
+    type: String,
   }
 });
 
@@ -444,10 +462,16 @@ const participantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Milestone'
   },
+
   deliveryToCustomer: {
     type: Boolean,
     default: false
   },
+  deliveryInfo: {
+    type: participantDeliveryInfoSchema,
+    default: {}
+  },
+
   active: {
     type: Boolean,
     default: true
@@ -470,21 +494,22 @@ participantSchema.index({company: 1});
 participantSchema.index({team: 1});
 participantSchema.index({sendTo: 1});
 participantSchema.index({receiveFrom: 1});
+participantSchema.index({deliveryToCustomer: 1});
 participantSchema.index({team: 1, venue: 1, createdAt: 1});
 participantSchema.index({team: 1, destination: 1});
-participantSchema.index({team: 1, venue: 1, kind: 1});
-participantSchema.index({team: 1, venue: 1, kind: 1, createdAt: 1});
-participantSchema.index({car: 1, team: 1, venue: 1, kind: 1});
+participantSchema.index({team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
+participantSchema.index({team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, createdAt: 1});
+participantSchema.index({car: 1, team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
 participantSchema.index({transmittal: 1});
 participantSchema.index({survey: 1, completed: 1});
 participantSchema.index({form: 1, user: 1});
 participantSchema.index({company: 1, venue: 1, createdAt: 1});
 participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1});
-participantSchema.index({venue: 1, team: 1, kind: 1});
-participantSchema.index({venue: 1, team: 1, car: 1, kind: 1});
-participantSchema.index({venue: 1, team: 1, kind: 1, form: 1});
-participantSchema.index({venue: 1, team: 1, car: 1, kind: 1, form: 1});
-participantSchema.index({_id: 1, venue: 1, team: 1, kind: 1});
+participantSchema.index({venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
+participantSchema.index({venue: 1, team: 1, car: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
+participantSchema.index({venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, form: 1});
+participantSchema.index({venue: 1, team: 1, car: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, form: 1});
+participantSchema.index({_id: 1, venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
 
 participantSchema.plugin(mongoosePaginate);
 

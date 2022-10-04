@@ -22,6 +22,13 @@ dashboardItems.push({
   url: '/cars/'
 });
 
+dashboardItems.push({
+  id: '1.8',
+  icon: 'fa-circle-o text-red',
+  text: 'Entregas',
+  url: '/deliveries/'
+});
+
 if (hasPermission(window.user, 'viewCar')) {
   dashboardItems.push({
     id: '1.0',

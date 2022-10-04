@@ -54,6 +54,10 @@ class CarController {
     return res.render('app/index', { token: await req.user.generateToken() });
   }
 
+  public async deliveries(req: IRequest, res: Response) {
+    return res.render('app/index', { token: await req.user.generateToken() });
+  }
+
   public async vinDashboard(req: IRequest, res: Response) {
     return res.render('app/index', { token: await req.user.generateToken() });
   }
@@ -351,7 +355,7 @@ class CarController {
             let { data: integrationData } = await conectaController.searchVinContecta(vin2);
             if (integrationData?.length > 1) {
               for (const car of integrationData) {
-                try{
+                try {
                   await Car
                     .updateOne({
                       team,
@@ -851,19 +855,19 @@ class CarController {
     return columns;
   }
 
-  private createObjectFromDamages(items: any[]){
-    let dict : any = {};
+  private createObjectFromDamages(items: any[]) {
+    let dict: any = {};
     items.map(item => {
       return dict[item._id.toString()] = item.name;
-    })
+    });
     return dict;
   }
 
-  private createObjectFromItems(items: any[]){
-    let dict : any = {};
+  private createObjectFromItems(items: any[]) {
+    let dict: any = {};
     items.map(item => {
       return dict[item._id.toString()] = item.item;
-    })
+    });
     return dict;
   }
 
@@ -882,14 +886,14 @@ class CarController {
           [`${formID}-${answer._id.toString()}`]: selectedChoice.choice
         };
       }
-    } else if (answer.kind === 'text' ) {
+    } else if (answer.kind === 'text') {
       datum = {
         [`${formID}-${answer._id.toString()}`]: answer.comment
       };
-    } else if (answer.kind === 'accessory' ) {
+    } else if (answer.kind === 'accessory') {
       let accessories = this.createObjectFromItems(answer.accessories.items);
       datum = {
-        [`${formID}-${answer._id.toString()}`]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(";")
+        [`${formID}-${answer._id.toString()}`]: answer.accesoriesAnswered.map(item => accessories[item.item] ?? '-').join(';')
       };
     } else if (answer.kind === 'numeric-scale') {
       datum = {
@@ -900,66 +904,71 @@ class CarController {
       let kinds = this.createObjectFromDamages(answer.damages.kinds);
       let positions = this.createObjectFromDamages(answer.damages.positions);
 
-      datum = { [`${formID}-${answer._id.toString()}`]:
-          answer.damagesSelected.map(item => `${parts[item.part] ??'-'};${positions[item.position] ?? '-'};${kinds[item.kind] ?? '-'}${answer.requireSeverity ? `;${item.severity}` : ''}`).join(";") };
+      datum = {
+        [`${formID}-${answer._id.toString()}`]:
+          answer.damagesSelected.map(item => `${parts[item.part] ?? '-'};${positions[item.position] ?? '-'};${kinds[item.kind] ?? '-'}${answer.requireSeverity ? `;${item.severity}` : ''}`).join(';')
+      };
     }
     return datum;
   }
 
-  public processParticipant(participant: IParticipant) {
-    const datum = {
-      number: participant.number,
-      created_at: moment(participant.createdAt).subtract(4, 'hours').toDate(),
-      brand: participant.car?.brand ?? '',
-      denomination: participant.car?.denomination ?? '',
-      color: participant.car?.color ?? '',
-      user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
-      company: participant.company.name,
-      venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
-      vin: participant.car ? participant.car.vin : '',
-      plate: participant.car ? participant.car.patent : '',
-      name: participant.name,
-      reception: participant.reception ? 'SI' : 'NO',
-      shipping: participant.shipping ? 'SI' : 'NO',
-    };
+  public processParticipant(participant: IParticipant): any {
+    try {
+      const datum = {
+        number: participant.number,
+        created_at: moment(participant.createdAt).subtract(4, 'hours').toDate(),
+        brand: participant.car?.brand ?? '',
+        denomination: participant.car?.denomination ?? '',
+        color: participant.car?.color ?? '',
+        user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
+        company: participant.company.name,
+        venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
+        vin: participant.car ? participant.car.vin : '',
+        plate: participant.car ? participant.car.patent : '',
+        name: participant.name,
+        reception: participant.reception ? 'SI' : 'NO',
+        shipping: participant.shipping ? 'SI' : 'NO'
+      };
 
-    let sectionAnswers = {};
+      let sectionAnswers = {};
 
-    for (const section of participant.sections) {
-      for (const answer of section.answers) {
-        sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer, participant.form.toString()) };
+        }
       }
-    }
 
-    if (participant.shippingVenue) {
-      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-shipping`]: participant.sendTo.name };
-    }
-    if (participant.receptionVenue) {
-      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
-    }
-    if (participant.carrier) {
-      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-carrier`]: participant.carrierBy.name };
-    }
+      if (participant.shippingVenue) {
+        sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-shipping`]: participant.sendTo?.name };
+      }
+      if (participant.receptionVenue) {
+        sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom?.name };
+      }
+      if (participant.carrier) {
+        sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-carrier`]: participant.carrierBy?.name };
+      }
 
-    return {
-      ...datum,
-      ...sectionAnswers
-    };
+      return {
+        ...datum,
+        ...sectionAnswers
+      };
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
     try {
       logger.info(`CarController.exportParticipants email: ${req.user.email}`);
+      logger.info(`CarController.exportParticipants email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       const team = req.user.team._id;
-      const {userForms} = req.user;
-      let { search, from, to} = req.query as {
-        search: string,  from: string, to: string, forms: string
-      };
+      const { userForms } = req.user;
+      let { search, from, to, deliveries } = req.query as Record<string, string>;
       let queryForms = req.query.forms as string;
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
-       // Create Excel Stream with pipe to response object
+      res.setHeader('Content-Disposition', `attachment; filename=${deliveries === '1'?'deliveries':'revisiones'}-${moment().format('YYYY-MM-DD')}.xlsx`);
+      // Create Excel Stream with pipe to response object
       const options = {
         stream: res,
         useStyles: true,
@@ -970,20 +979,23 @@ class CarController {
       const venuesPermissions = req.user.venuesPermissions();
 
       // Get filters for Mongo Query
-      let targetForms = userForms.map(form => form._id.toString())
+      let targetForms = userForms.map(form => form._id.toString());
       if (queryForms) {
         const formArray = queryForms.split(',');
-        targetForms = formArray.filter(f => targetForms.includes(f))
+        targetForms = formArray.filter(f => targetForms.includes(f));
       }
-      logger.debug(queryForms)
-      logger.debug(JSON.stringify(targetForms))
-
+      logger.debug(queryForms);
+      logger.debug(JSON.stringify(targetForms));
 
       const queryFilter: any = {
+        car: {
+          $ne: null
+        },
         team: new ObjectID(team),
         venue: {
           $in: venuesPermissions
         },
+        deliveryToCustomer: deliveries === '1',
         form: {
           $in: targetForms.map(f => new ObjectID(f))
         }
@@ -994,7 +1006,7 @@ class CarController {
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
         };
       }
-      logger.debug(JSON.stringify(queryFilter))
+      logger.debug(JSON.stringify(queryFilter));
 
       // Get the forms to create columns/header of excel
       let forms = await ParticipantModel.find(queryFilter).distinct('form');
@@ -1023,9 +1035,9 @@ class CarController {
         header: 'VIN', key: 'vin', width: 30
       }, {
         header: 'Formulario', key: 'name', width: 30
-      },{
+      }, {
         header: 'Recepcionado', key: 'reception', width: 30
-      },{
+      }, {
         header: 'Enviado', key: 'shipping', width: 30
       }];
 
@@ -1034,25 +1046,25 @@ class CarController {
         columns = columns.concat(this.getHeadersFromForm(form));
       }
 
-      const worksheet = workbook.addWorksheet('Rotación de unidades', {
+      const worksheet = workbook.addWorksheet('Controles', {
         pageSetup: {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
       worksheet.columns = columns;
 
-      let searchTextFilter : any = {}
+      let searchTextFilter: any = {};
 
-      if (search?.length > 0){
+      if (search?.length > 0) {
         search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
         // search = search.trim().replace("*", "");
         logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
         const searchText = new RegExp(search, 'i');
-        const searchTextArray = search.split(" ");
+        const searchTextArray = search.split(' ');
 
         // User first name and last name
         const filterUser: any = {
-          $and: [],
+          $and: []
         };
         //User
         if (searchTextArray.length > 3) {
@@ -1100,7 +1112,7 @@ class CarController {
           'venue.name': {
             $regex: searchText
           }
-        }
+        };
 
         searchTextFilter = {
           $or: [
@@ -1108,15 +1120,15 @@ class CarController {
             filterCar,
             filterVenue
           ]
-        }
-
+        };
       }
 
 
-      let aggregation : any[] = [{
+      let aggregation: any[] = [{
         $project: {
           number: 1,
           createdAt: 1,
+          deliveryToCustomer: 1,
           car: 1,
           user: 1,
           company: 1,
@@ -1135,7 +1147,7 @@ class CarController {
           shipping: 1,
           carrier: 1,
           carrierText: 1,
-          carrierBy: 1,
+          carrierBy: 1
         }
       }, {
         $match: queryFilter
@@ -1213,20 +1225,20 @@ class CarController {
         $unwind: { path: '$company', preserveNullAndEmptyArrays: true }
       }];
 
-      if (searchTextFilter){
+      if (searchTextFilter) {
         aggregation.push({
           $match: searchTextFilter
-        })
+        });
       }
 
-      logger.debug(JSON.stringify(aggregation))
+      logger.debug(JSON.stringify(aggregation));
 
       // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
       const cursor = ParticipantModel.aggregate(aggregation).cursor({
         batchSize: 50
       }).exec();
 
-      cursor.on('data', async (participant : any ) => {
+      cursor.on('data', async (participant: any) => {
         const row = await this.processParticipant(participant);
         worksheet.addRow(row).commit();
       });
@@ -1235,13 +1247,13 @@ class CarController {
       cursor.on('end', async () => {
         cursor.close();
         workbook.commit();
-        return res.status(200);
+        // return res.status(200);
       });
 
       cursor.on('error', (error: any) => {
         cursor.close();
         logger.error(error.message);
-        return res.status(500).json(error);
+        // return res.status(500).json(error);
       });
 
       // code to handle connection abort or finish of data send
@@ -1474,12 +1486,8 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response): Promise<any> {
-    let { page, pageSize, search, from, to, forms } = req.query as {
-      page: string, pageSize: string, search: string,
-      from: string, to: string, forms: string
-    };
+    let { only_controls, deliveries, page, pageSize, search, delivery, from, to, forms } = req.query as Record<string, string>;
     const team = req.user.team._id;
-    const { only_controls } = req.query;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1490,6 +1498,7 @@ class CarController {
         user: true,
         hasDamages: true,
         qualification: true,
+        deliveryInfo: true,
         name: true
       },
       populate: [{
@@ -1530,10 +1539,15 @@ class CarController {
     try {
       logger.info(`CarController.apiRevisions: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       logger.debug(`CarController.apiRevisions: email: ${req.user.email} options: ${JSON.stringify(options)}`);
+      const userForms = req.user.userForms.map((form) => form._id);
       const participantFilter: IAnyObject = {
         car: {
           $ne: null
         },
+        form: {
+          $in: userForms
+        },
+        deliveryToCustomer:  deliveries === '1',
         $and: [{
           venue: {
             $in: req.user.venuesPermissions()
@@ -1543,12 +1557,43 @@ class CarController {
       };
 
       if (forms) {
-        const formArray = forms.split(',');
-        participantFilter.form = { $in: formArray.map(f => new ObjectID(f)) };
+        const formArray = forms
+          .split(',')
+          .filter((form) => userForms.map(f => f.toString()).includes(form));
+        participantFilter.form = { $in: formArray.map((f: string) => new ObjectID(f)) };
       }
 
       if (only_controls === '1') {
         participantFilter.kind = { $ne: KindForm.transmittal };
+      }
+
+      /* search on deliveryInfo */
+      if (delivery?.length > 2) {
+        const deliveryTextArray = delivery.split(' ');
+        participantFilter.$or = [{
+          'deliveryInfo.name': {
+            $regex: new RegExp(deliveryTextArray[0], 'i')
+          }
+        }, {
+          'deliveryInfo.rut': {
+            $regex: new RegExp(delivery, 'i')
+          }
+        }, {
+          'deliveryInfo.email': {
+            $regex: new RegExp(delivery, 'i')
+          }
+        }, {
+          'deliveryInfo.order': {
+            $regex: new RegExp(delivery, 'i'),
+          }
+        }];
+        if (deliveryTextArray.length > 1) {
+          participantFilter['$or'].push({
+            'deliveryInfo.name': {
+              $regex: new RegExp(deliveryTextArray[1], 'i')
+            }
+          });
+        }
       }
 
       if (search?.length > 2) {
@@ -1556,11 +1601,11 @@ class CarController {
         // search = search.trim().replace("*", "");
         logger.info(`CarController.apiRevisions: email: ${req.user.email} search: ${search}`);
         const searchText = new RegExp(search, 'i');
-        const searchTextArray = search.split(" ");
+        const searchTextArray = search.split(' ');
         const filterUser: any = {
           $and: [{
             team
-          }],
+          }]
         };
         if (searchTextArray.length > 3) {
           filterUser['$or'] = [{

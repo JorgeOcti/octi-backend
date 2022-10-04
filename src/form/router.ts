@@ -51,6 +51,7 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *     security:
  *       - bearerAuth: []
  */
+
 router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
@@ -58,6 +59,7 @@ router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, Fo
 router.get('/report/forms/pdf/:id.pdf', Middlewares.isJWTAuthenticated, FormController.pdf);
 
 // detail information of the form
+router.get('/api/v1/user-forms/', Middlewares.isJWTAuthenticated, FormController.userForms);
 router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
 router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 // answer form
