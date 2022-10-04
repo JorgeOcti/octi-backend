@@ -26,7 +26,7 @@ import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import { IParticipant } from '../interfaces/participant.interface';
+import {IParticipant} from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import TriggerHandler from './triggers/triggerHandler';
@@ -38,8 +38,16 @@ import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
+<<<<<<< HEAD
 import { ChoicesTypeActivity } from '../../billing/models';
 import Participant from '../models/participant.model';
+=======
+import {ChoicesTypeActivity} from "../../billing/models";
+import Participant, {IParticipantAnswerModel, IParticipantSectionModel} from "../models/participant.model";
+import {IFormTrigger} from "../interfaces";
+import {KindTrigger} from "../models/trigger.types";
+
+>>>>>>> a3e9f94e3dc0ad63b86d34e7708bb7776a5beb4d
 
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -160,13 +168,19 @@ class FormController {
           path: 'receptionImages'
         }, {
           path: 'conciliationImages'
+        }, {
+          path: 'form',
+          select: ['triggers']
         }]).lean();
+
+      let template : string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+
       moment.locale('es');
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
       const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-      const templatePath: string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
       const participantCompany = participant.user.venue && participant.user.venue.company || {};
-      const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
+
+      let context : any = {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         participant,
         qr: await QRCode.toDataURL(participant.car.vin, {
@@ -230,7 +244,28 @@ class FormController {
             return accesory.item === item._id.toString();
           }) : false;
         }
-      });
+      };
+
+      if (participant.form && participant.form.triggers && participant.form.triggers.length > 0){
+        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled)
+        if (fileTriggers.length){
+          let trigger : IFormTrigger = fileTriggers[0];
+          template = path.join(__dirname, '../../../views/') + trigger.config.template;
+          let signature = participant?.sections.reduce((previousValue: any[], currenSection: IParticipantSectionModel) =>
+            previousValue.concat(currenSection.answers),
+            []
+          ).find((answer: IParticipantAnswerModel) => {
+            return answer._id.toString() === trigger.config.signature.toString()}
+          );
+          if (signature){
+            context.signature = signature.images.map((f :any) => f.file.url)[0];
+          }
+        }
+      }
+
+
+      const html = GeneralUtils.generateHtmlFromPugFile(template, context);
+
       if (debug) {
         return res.send(html);
       } else {

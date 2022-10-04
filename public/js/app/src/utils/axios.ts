@@ -823,9 +823,11 @@ export default class ApiService {
                            number,
                            plate,
                            drivers,
+                           types,
                            from,
                            to
-                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string, plate?: string, drivers?: string[], from: number, to: number }): AxiosPromise {
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number, number?: string, plate?: string, drivers?: string[], types?: string[],from: number, to: number }): AxiosPromise {
+    console.log(types);
     let url = `/api/v1/transmittals?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'}${from && to ? `&from=${from}&to=${to}` : '?'}`;
     if(number){
       url = `${url}&number=${number}`;
@@ -836,6 +838,10 @@ export default class ApiService {
 
     if(drivers){
       url = `${url}&drivers=${drivers}`;
+    }
+
+    if (types){
+      url = `${url}&types=${types}`;
     }
     return this.instance.get(url);
   }
