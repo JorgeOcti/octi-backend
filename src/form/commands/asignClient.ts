@@ -6,6 +6,7 @@ import Form from '../models/form.model';
 import Participant from '../models/participant.model';
 
 // ts-node src/form/commands/asignClient.ts
+// node dist/form/commands/asignClient.js
 async function asignClient() {
   dotenv.config({
     path: path.join(__dirname, '../../../.env')

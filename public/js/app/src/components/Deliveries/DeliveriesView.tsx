@@ -213,7 +213,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                       className='form-control pull-right'
                       onChange={this.onChangeSearch}
                       value={filters.searchText}
-                      placeholder='Buscar VIN, marca, supervisor o sucursal' />
+                      placeholder='Buscar por VIN, marca, vendedor o sucursal' />
                     <div className='input-group-btn'>
                       <button className='btn btn-default'><i className='fa fa-search' /></button>
                     </div>
