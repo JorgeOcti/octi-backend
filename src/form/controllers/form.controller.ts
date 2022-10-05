@@ -836,13 +836,13 @@ class FormController {
               const comment = (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment
                 ? answer.comment
                 : '';
-              if (answer?.kindUpdate === 'participant.clientName') {
+              if (question?.kindUpdate === 'participant.clientName') {
                 newParticipant.deliveryInfo.name = comment;
-              } else if (answer?.kindUpdate === 'participant.clientEmail') {
+              } else if (question?.kindUpdate === 'participant.clientEmail') {
                 newParticipant.deliveryInfo.email = comment;
-              } else if (answer?.kindUpdate === 'participant.clientRut') {
+              } else if (question?.kindUpdate === 'participant.clientRut') {
                 newParticipant.deliveryInfo.rut = comment;
-              } else if (answer?.kindUpdate === 'participant.order') {
+              } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
               }
               newAnswers.push({
