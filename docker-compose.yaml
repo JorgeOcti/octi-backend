@@ -2,6 +2,7 @@ version: '3.2'
 
 services:
   mongo:
+#    image: mongo:4.2.23
     image: mongo:4.2.17
     command: --wiredTigerCacheSizeGB 60
     restart: unless-stopped
@@ -49,6 +50,7 @@ services:
     image: andes:latest
     restart: unless-stopped
 #    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
+#    command: ts-node-dev --trace-warnings --max_old_space_size=4096 src/server.ts
     command: ts-node-dev --max_old_space_size=4096 src/server.ts
 #    ts-node-dev --transpile-only --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
 #    command: pm2 start pm2.development.json --no-daemon

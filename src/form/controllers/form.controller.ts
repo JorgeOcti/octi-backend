@@ -9,7 +9,6 @@ import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
-// import * as Raven from 'raven';
 import CarModel from '../../app/models/car.model';
 import Car, { ICarModel } from '../../app/models/car.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
@@ -241,7 +240,7 @@ class FormController {
       };
 
       if (participant.form && participant.form.triggers && participant.form.triggers.length > 0){
-        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled)
+        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled);
         if (fileTriggers.length){
           let trigger : IFormTrigger = fileTriggers[0];
           template = path.join(__dirname, '../../../views/') + trigger.config.template;

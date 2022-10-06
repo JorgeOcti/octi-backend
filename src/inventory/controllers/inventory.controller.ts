@@ -164,7 +164,13 @@ class InventoryController {
           const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
           let currentVenue: IVenueModel | null = await VenueModel.findOne({
             team,
-            name: venueRegExp
+            $or: [{
+              name: venueRegExp
+            }, {
+              name: { $regex: venueRegExp }
+            }, {
+              name: venue.name
+            }]
           });
           // create venue if no existe
           if (currentVenue === null) {
