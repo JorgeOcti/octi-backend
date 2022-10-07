@@ -499,6 +499,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeNumber(number: string) {
+    if (!number.trim())
+      return
+
     this.setState({ number }, () => {
       this.callChangeFilterData();
     });
@@ -521,12 +524,14 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changeDriver(driver: string) {
     let drivers = []
-    if (driver) {
+    if (driver.trim()) {
       let driverNames = driver.split(",").map(n => n.toLowerCase().replace(/\s\s+/g, ' ').trim())
       drivers = this.props.transmittal.drivers.filter((user: IUser) => {
         let fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
         return fullName === driver || driverNames.filter((name: string) => fullName.includes(name)).length > 0
       }).map((user: IUser) => user._id);
+    } else {
+      return
     }
 
     this.setState({ driverText: driver, drivers }, () => {
@@ -578,14 +583,33 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     const { options: { orderBy, orderType } } = this.props.transmittal;
-    let {drivers, driverText, from, to, number} = this.state;
+    let {drivers, driverText, from, to, number, types} = this.state;
     this.props.transmittalActions.getTransmittalsThunkAction({ nextPage: page, orderBy, orderType, number,
-      plate: driverText, drivers: drivers, from: moment(from).unix(), to: moment(to).unix() });
+      plate: driverText, drivers: drivers, types, from: moment(from).unix(), to: moment(to).unix() });
   }
 
   public exportExcel(): void {
     this.trackClick('Exportar');
-    window.open(`/transmittals/export-xls/`, '_blank');
+    let {from, to, number, driverText, drivers, types} = this.state;
+
+    let url = `/transmittals/export-xls?${from && to ? `&from=${moment(from).unix()}&to=${moment(to).unix()}` : ''}`;
+    if(number?.trim()){
+      url = `${url}&number=${number}`;
+    }
+    if(driverText && driverText.trim()){
+      url = `${url}&plate=${driverText}`;
+    }
+
+    if(drivers){
+      url = `${url}&drivers=${drivers}`;
+    }
+
+    if (types){
+      url = `${url}&types=${types}`;
+    }
+
+
+    window.open(url, '_blank');
     // this.setState({
     //   exporing: true
     // });
