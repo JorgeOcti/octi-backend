@@ -8,7 +8,7 @@ import { IFormModel } from '../models/form.model';
 import {
   IParticipantAccesoryModel,
   IParticipantAnswerModel,
-  IParticipantChoicesModel,
+  IParticipantChoicesModel, IParticipantDeliveryInfoModel,
   IParticipantItemModel,
   IParticipantSectionModel,
   IScaleParticipantModel
@@ -57,6 +57,7 @@ export interface IParticipantAccesory {
 
 export interface IParticipantAnswer {
   question: string;
+  kindUpdate: string;
   shortName: string;
 
   scale: IScaleParticipantModel;
@@ -103,6 +104,13 @@ export interface IParticipantSection {
   qualification: number;
   weight: number;
   order: number;
+}
+
+export interface IParticipantDeliveryInfo {
+  name: string;
+  email: string;
+  rut: string;
+  order: string;
 }
 
 export interface IParticipant {
@@ -157,6 +165,8 @@ export interface IParticipant {
   milestone?: IMilestone | IMilestoneModel;
 
   deliveryToCustomer: boolean;
+  deliveryInfo: IParticipantDeliveryInfo | IParticipantDeliveryInfoModel;
+
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

@@ -38,8 +38,10 @@ appRouter.get('/dashboard/studio/', Middlewares.isLoggedIn, CarController.genera
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
+appRouter.get('/deliveries/', Middlewares.isLoggedIn, CarController.deliveries);
 appRouter.get('/forms/settings/forms/', Middlewares.isLoggedIn, CarController.index);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
+appRouter.get('/deliveries/cars/:id', Middlewares.isLoggedIn, CarController.deliveries);
 appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDashboard);
 
 // api cars

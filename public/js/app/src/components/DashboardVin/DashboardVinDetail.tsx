@@ -139,11 +139,12 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, car, loadingParticipant, requests } = this.props.dashboard;
+    const { car, loadingParticipant, requests } = this.props.dashboard;
     const { highlight, carLoading } = this.state;
     const { getParticipant } = this.props;
+    const deliveriesView = this.props.location.pathname.includes('deliveries/cars');
     return (
-      <AppContainer title={`Detalle ${car ? car.vin : null}`} cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
+      <AppContainer title={`Detalle ${car ? car.vin : null}`} cMenu='1' cSubMenu={deliveriesView ? '1.8' : '1.2'} cAction={`Detalle`}>
         <section className='content'>
           <div className='row'>
             <div className='col-md-3 col-lg-3'>

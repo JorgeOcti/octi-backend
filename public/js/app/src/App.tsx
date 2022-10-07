@@ -64,6 +64,7 @@ import DashboardView from "./components/Transmittal/StatsDashboard/DashboardView
 import BordersListView from "./components/Borders/BordersListView";
 import BillingSettingsListView from './components/Billing/BillingSettings/BillingSettingsListView';
 import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
+import DeliveriesView from './components/Deliveries/DeliveriesView';
 
 
 declare let window: IWindow;
@@ -83,6 +84,7 @@ const App = () => (
         <Route exact path='/' component={DashboardGeneralView} />
         <Route exact path='/revision-report/' component={DashboardRevisionsView} />
         <Route exact path='/cars/' component={DashboardVinView} />
+        <Route exact path='/deliveries/' component={DeliveriesView} />
         <Route exact path='/planning/import/' component={PlanningImportView} />
         <Route exact path='/planning/studio/' component={VPlanificationDashboardStatsView} />
         <Route exact path='/planning/' component={PlanningListView} />
@@ -95,6 +97,7 @@ const App = () => (
         <Route exact path='/stock/' component={StockView} />
         <Route exact path='/stock/import/' component={StockImportView} />
         <Route exact path='/cars/:id/' component={DashboardVinDetail} />
+        <Route exact path='/deliveries/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/inventory/' component={InventoryListView} />
         <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />

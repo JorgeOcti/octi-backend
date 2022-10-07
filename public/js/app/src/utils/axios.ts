@@ -360,10 +360,22 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(onlyControls : boolean, page: number, search?: string, from?: Date, to?: Date, forms?: String[]): AxiosPromise {
-    let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
+  public getRevisions({
+    onlyControls,
+    deliveries,
+    page,
+    search,
+    delivery,
+    from,
+    to,
+    forms
+  }: { onlyControls: boolean, deliveries: boolean, page: number, delivery?:string, search?: string, from?: Date, to?: Date, forms?: String[] }
+  ): AxiosPromise {
+    let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}&deliveries=${deliveries ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;
+    if (delivery)
+      query += `&delivery=${delivery}`;
 
     if (from)
       query += `&from=${from.toISOString()}`;
@@ -959,6 +971,12 @@ export default class ApiService {
   public deleteColor(color: any): AxiosPromise {
     return this.instance.delete(
       `/api/admin/colors/${color._id}/`
+    );
+  }
+
+  public getUserForms({ deliveries }: { deliveries: boolean}): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/user-forms?deliveries=${deliveries ? '1' : 0}`
     );
   }
 

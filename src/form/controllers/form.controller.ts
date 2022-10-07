@@ -9,7 +9,6 @@ import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
-// import * as Raven from 'raven';
 import CarModel from '../../app/models/car.model';
 import Car, { ICarModel } from '../../app/models/car.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
@@ -22,11 +21,11 @@ import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
+import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import {IParticipant} from '../interfaces/participant.interface';
+import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import TriggerHandler from './triggers/triggerHandler';
@@ -38,11 +37,10 @@ import RequestItem from '../../request/models/requestItem.model';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
-import {ChoicesTypeActivity} from "../../billing/models";
-import Participant, {IParticipantAnswerModel, IParticipantSectionModel} from "../models/participant.model";
-import {IFormTrigger} from "../interfaces";
-import {KindTrigger} from "../models/trigger.types";
-
+import { ChoicesTypeActivity } from '../../billing/models';
+import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
+import { IFormTrigger } from '../interfaces';
+import { KindTrigger } from '../models/trigger.types';
 
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -242,7 +240,7 @@ class FormController {
       };
 
       if (participant.form && participant.form.triggers && participant.form.triggers.length > 0){
-        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled)
+        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled);
         if (fileTriggers.length){
           let trigger : IFormTrigger = fileTriggers[0];
           template = path.join(__dirname, '../../../views/') + trigger.config.template;
@@ -307,6 +305,38 @@ class FormController {
     }
   }
 
+  public async userForms(req: IRequest, res: Response): Promise<any> {
+    try {
+      const team = req.user.team._id;
+      const { deliveries } = req.query as Record<string, string>;
+      logger.info(`FormController.userForms: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      const forms = await Form.find({
+        team,
+        _id: {
+          $in: req.user.userForms.map((form) => form._id)
+        },
+        deliveryToCustomer: deliveries === '1',
+        active: true
+      },{
+        _id: true,
+        name: true,
+      });
+      return res.json({
+        results: forms,
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`FormController.userForms: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      res.status(500).json({
+        message: 'Ha ocurrido un error',
+        status: 500
+      });
+    }
+  }
+
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
     try {
@@ -316,7 +346,7 @@ class FormController {
           _id: {
             $in: req.user.userForms.map((form) => form._id)
           }
-        },{
+        }, {
           active: true
         }]
       };
@@ -388,7 +418,7 @@ class FormController {
       }]) as IUserModel);
       const form = await this.getForm({
         _id: id,
-        team,
+        team
 
       });
       // generate array of scale ids
@@ -686,7 +716,8 @@ class FormController {
             user: req.user._id,
             venue: updatedUser.venue,
             active: form.active,
-            kind: transmittal ? KindForm.transmittal : form.kind
+            kind: transmittal ? KindForm.transmittal : form.kind,
+            deliveryInfo: {}
           };
 
           if (form.reception) {
@@ -801,9 +832,22 @@ class FormController {
               }
 
               // generate answer
+              const comment = (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment
+                ? answer.comment
+                : '';
+              if (question?.kindUpdate === 'participant.clientName') {
+                newParticipant.deliveryInfo.name = comment;
+              } else if (question?.kindUpdate === 'participant.clientEmail') {
+                newParticipant.deliveryInfo.email = comment;
+              } else if (question?.kindUpdate === 'participant.clientRut') {
+                newParticipant.deliveryInfo.rut = comment;
+              } else if (question?.kindUpdate === 'participant.order') {
+                newParticipant.deliveryInfo.order = comment;
+              }
               newAnswers.push({
                 _id: question._id,
                 question: question.question,
+                kindUpdate: question?.kindUpdate,
                 shortName: question.shortName,
                 scale: question.scale,
                 conciliation: question.conciliation,
@@ -813,9 +857,7 @@ class FormController {
                 accesoriesAnswered: (question.kind === KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
                   await this.processAccesoryItems(answer.accesories) : [],
                 risk: question.risk,
-                comment: (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
-                  answer.comment
-                  : '',
+                comment,
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
                 images: answer && answer.images && answer.images.length ?
@@ -831,7 +873,7 @@ class FormController {
                 minValue: question.minValue,
                 maxValue: question.maxValue,
                 score: answer && answer.score ? answer.score : -1,
-                requireSeverity: question.requireSeverity,
+                requireSeverity: question.requireSeverity
               });
             }
             // calculate section qualification
@@ -1009,14 +1051,17 @@ class FormController {
               await car.save();
 
               // send refresh with websocket to dashboard list
-              io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
-                update: true,
-                car: newParticipant._id,
-                notification: {
-                  title: 'Vehículo revisado',
-                  text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
-                }
-              });
+              io.to(form.deliveryToCustomer ? `deliveries-view-${team._id}` : `dashboard-vin-view-${team._id}`)
+                .emit('REFRESH', {
+                  update: true,
+                  formId: form._id,
+                  venueId: updatedUser.venue._id,
+                  car: newParticipant._id,
+                  notification: {
+                    title: 'Vehículo revisado',
+                    text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                  }
+                });
 
               // send refresh with websocket to dashboard detail
               io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await Participant
@@ -1194,7 +1239,7 @@ class FormController {
       const user = await UserModel.findOne({ _id: req.user._id, team, active: true });
       // validate exist user
       if (user) {
-        form = await FormModel.findOne({ _id: form, team });
+        form = await Form.findOne({ _id: form, team });
         // validate exist form
         if (form) {
           user.preferred = form;
@@ -1453,7 +1498,7 @@ class FormController {
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        const reception = await FormModel.findOne({ _id: '5b0487db835536612bab1b61' });
+        const reception = await Form.findOne({ _id: '5b0487db835536612bab1b61' });
         const cars = await CarModel.find({
           team,
           lastForm: { $ne: null }
@@ -1566,7 +1611,7 @@ class FormController {
 
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    const receptionForm = await FormModel.findOne({ _id: '5b1ae5799ebea419025b3e41' });
+    const receptionForm = await Form.findOne({ _id: '5b1ae5799ebea419025b3e41' });
     return Participant.aggregate([
       {
         $match: {
@@ -2048,7 +2093,7 @@ class FormController {
     try {
       const team = req.user.team._id;
 
-      const form = await FormModel.findById('5b0487db835536612bab1b61');
+      const form = await Form.findById('5b0487db835536612bab1b61');
       const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
 
       const days: string[] = [];
@@ -2088,8 +2133,7 @@ class FormController {
 
         for (const datum of cleanDispatch) {
           const day = datum._id;
-          const sum = datum.count;
-          daysDict[day].clean = sum;
+          daysDict[day].clean =  datum.count;
         }
 
         const notCleanDispatch = await Participant.aggregate([
@@ -2145,46 +2189,46 @@ class FormController {
         deliveryToCustomer: true,
         createdAt: {
           $gte: moment().subtract(2, 'days').startOf('day').toDate(),
-          $lte: moment().endOf('day').toDate(),
+          $lte: moment().endOf('day').toDate()
         }
-      },{
-        "_id": true,
-        "name": true,
-        "sections": true,
-        "number": true,
-        "createdAt": true,
+      }, {
+        '_id': true,
+        'name': true,
+        'sections': true,
+        'number': true,
+        'createdAt': true
       }).populate([{
         path: 'car',
         select: {
-          "_id": true,
-          "vin": true,
-          "patent": true,
-          "color": true,
-          "denomination": true,
-          "brand": true,
-          "type": true,
-          "internalNumber": true,
+          '_id': true,
+          'vin': true,
+          'patent': true,
+          'color': true,
+          'denomination': true,
+          'brand': true,
+          'type': true,
+          'internalNumber': true
         }
-      },{
+      }, {
         path: 'user',
         select: {
-          "_id": true,
-          "firstName": true,
-          "lastName": true,
-          "email": true,
+          '_id': true,
+          'firstName': true,
+          'lastName': true,
+          'email': true
         }
-      },{
+      }, {
         path: 'venue',
         select: {
-          "_id": true,
-          "name": true
+          '_id': true,
+          'name': true
         }
       }, {
         path: 'sections.answers.images'
       }, {
         path: 'sections.answers.damagesSelected.images'
       }]);
-      return res.json({data: participas});
+      return res.json({ data: participas });
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
@@ -2199,7 +2243,6 @@ class FormController {
       });
     }
   }
-
 
   private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
@@ -2223,19 +2266,19 @@ class FormController {
 
   private getForms(filter: any): Promise<IFormModel[]> {
     return new Promise((resolve, reject) => {
-      FormModel
+      Form
         .find(filter, {
           _id: 1,
           name: 1
         })
         .lean()
         .exec!((err, forms: IFormModel[]) => {
-          if (err) {
-            /* istanbul ignore next */
-            return reject(err);
-          }
-          return resolve(forms);
-        });
+        if (err) {
+          /* istanbul ignore next */
+          return reject(err);
+        }
+        return resolve(forms);
+      });
     });
   }
 
@@ -2249,7 +2292,7 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           logger.debug(`NEW CACHE`);
-          FormModel
+          Form
             .findOne(filter, {
               'company': false,
               'updatedAt': false,
@@ -2346,7 +2389,7 @@ class FormController {
 
   private getFormWithScale(filter: any): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
-      FormModel
+      Form
         .findOne(filter)
         .populate([{
           path: 'sections.questions.scale'

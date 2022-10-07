@@ -87,6 +87,10 @@ const formQuestionsSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // field to update another model
+  kindUpdate: {
+    type: String
+  },
   shortName: {
     type: String,
     trim: true

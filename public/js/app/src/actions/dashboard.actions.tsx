@@ -1,18 +1,14 @@
-import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
+import { AxiosError, AxiosResponse, CancelTokenSource, default as Axios } from 'axios';
 import * as moment from 'moment';
 import * as React from 'react';
-import {Dispatch} from 'redux';
-import {ICar} from '../../../../../src/app/interfaces/car.interface';
-import {
-  IParticipant,
-  IParticipantSection
-} from '../../../../../src/form/interfaces/participant.interface';
+import { Dispatch } from 'redux';
+import { ICar } from '../../../../../src/app/interfaces/car.interface';
+import { IParticipant, IParticipantSection } from '../../../../../src/form/interfaces/participant.interface';
 import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
-import {loadDataAction} from './modal.actions';
+import { loadDataAction } from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
-import {IForm} from "../../../../../src/form/interfaces/form.interface";
-import { loadDashboardCleaningAction } from './dashboardDerco.actions';
+import { IForm } from '../../../../../src/form/interfaces/form.interface';
 
 export interface IDashboardState {
   forms: IForm[];
@@ -228,7 +224,7 @@ export function loadForms(forms: IForm[]): ILoadingForms {
   };
 }
 
-export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true, activated_forms? : boolean) {
+export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -243,8 +239,8 @@ export function getRevisionsThunkAction(nextPage: number, loading: boolean, sear
     const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
     Axios
       .all([
-        api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms),
-        api.getForms(1, 100, activated_forms)
+        api.getRevisions({ onlyControls, deliveries: false, page, search: searchText, from: searchFrom, to: searchTo, forms: searchForms }),
+        api.getUserForms({ deliveries: false })
       ])
       .then(Axios.spread((response, forms) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
@@ -283,7 +279,7 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
       dispatch(changePageAction(nextPage));
     }
     const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
-    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms)
+    api.getRevisions({ onlyControls, deliveries: false, page, search: searchText, from: searchFrom, to: searchTo, forms: searchForms })
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {

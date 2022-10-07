@@ -63,7 +63,8 @@ class JWTController {
             select: ['_id','codeName']
           }, {
             path: 'userForms',
-            select: ['_id','name']
+            select: ['_id','name'],
+            match: { active: true}
           }]);
 
         if (!user || !user.comparePassword(req.body.password)) {
