@@ -68,7 +68,7 @@ router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormCont
  *     tags:
  *     - Control de unidades
  *     summary: Listado de todas las unidades controladas
- *     description: Entrega todas las unidades controladas con los formularios que esten activos en el sistema.
+ *     description: Entrega todas las unidades controladas de los formularios que esten activos en el sistema.
  *     produces:
  *       - application/json
  *     parameters:
