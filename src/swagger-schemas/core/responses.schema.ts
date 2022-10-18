@@ -2,19 +2,19 @@ export const PaginateSchema = (schema: string) => ({
   type: 'object',
   properties: {
     count: {
-      integer: 'integer',
+      type: 'integer',
       example: 91
     },
     pages: {
-      integer: 'integer',
+      type: 'integer',
       example: 10
     },
     hasPrevPage: {
-      integer: 'boolean',
+      type: 'boolean',
       example: false
     },
     hasNextPage: {
-      integer: 'boolean',
+      type: 'boolean',
       example: true
     },
     data: {
@@ -24,7 +24,7 @@ export const PaginateSchema = (schema: string) => ({
       }
     },
     status: {
-      integer: 'integer',
+      type: 'integer',
       example: 200
     }
   }
