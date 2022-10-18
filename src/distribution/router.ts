@@ -6,7 +6,7 @@ import MilestoneController from './controllers/milestone.controller';
 import MilestoneTypeController from './controllers/milestoneType.controller';
 import { createTransmittalSchema } from './inputsSchema';
 
-const {isJWTAuthenticated, isLoggedIn, validateBody} = Middlewares;
+const {isJWTAuthenticated, isLoggedIn, validateBodyParams} = Middlewares;
 
 const distributionRouter = express.Router();
 
@@ -21,7 +21,7 @@ distributionRouter.get('/transmittals/:id/download-files/', isLoggedIn, Transmit
 
 // apis
 distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalController.apiList);
-distributionRouter.post('/api/v1/transmittals/', isJWTAuthenticated, validateBody(createTransmittalSchema), TransmittalController.apiCreate);
+distributionRouter.post('/api/v1/transmittals/', isJWTAuthenticated, validateBodyParams(createTransmittalSchema), TransmittalController.apiCreate);
 distributionRouter.get('/api/v1/transmittals/only-me/', isJWTAuthenticated, TransmittalController.apiOnlyMe);
 distributionRouter.get('/api/v1/transmittals/resume/', isJWTAuthenticated, TransmittalController.transmittalResume);
 distributionRouter.get('/api/v1/transmittals/resume-by-status/', isJWTAuthenticated, TransmittalController.transmittalResumeByStatus);

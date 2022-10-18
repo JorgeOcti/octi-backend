@@ -18,6 +18,7 @@ class AdminVenueController {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
     this.apiListVenues = this.apiListVenues.bind(this);
+    this.apiListIntegrationVenues = this.apiListIntegrationVenues.bind(this);
     this.apiListCompanyVenues = this.apiListCompanyVenues.bind(this);
     this.apiCreateVenue = this.apiCreateVenue.bind(this);
     this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
@@ -251,6 +252,68 @@ class AdminVenueController {
       if (e) {
         return res.status(500).json(e);
       }
+    }
+  }
+
+  public async apiListIntegrationVenues(req: IRequest, res: Response): Promise<any> {
+    /*if (!req.user.hasPermission('viewCompany') && !req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }*/
+    try {
+      const team = req.user.team._id;
+      const { page, pageSize } = req.query as { page: string, pageSize: string, search: string };
+      // paginate options
+      const options: PaginateOptions = {
+        select: {
+          name: true,
+          company: true,
+          updatedAt: true,
+          createdAt: true
+        },
+        sort: {
+          name: 1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          hasNextPage: 'hasNextPage',
+          hasPrevPage: 'hasPrevPage',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '100', 10)
+      };
+      const venues = await this.getVenues({
+        team
+      }, options);
+      /* istanbul ignore if  */
+      if (options.page && venues.pages && venues.pages < options.page) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        return res.json({
+          count: venues.total,
+          pages: venues.pages,
+          hasPrevPage: venues.hasPrevPage,
+          hasNextPage: venues.hasNextPage,
+          data: venues.docs,
+          status: 200
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: 'Error en el servidor',
+        status: 500
+      });
     }
   }
 

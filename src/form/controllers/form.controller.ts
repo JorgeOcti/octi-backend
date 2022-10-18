@@ -41,6 +41,8 @@ import { ChoicesTypeActivity } from '../../billing/models';
 import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
 import { IFormTrigger } from '../interfaces';
 import { KindTrigger } from '../models/trigger.types';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { IOperationTypeModel } from '../../request/models';
 
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -58,6 +60,8 @@ class FormController {
     this.damagesDashboardPerDay = this.damagesDashboardPerDay.bind(this);
     this.participantWithDamages = this.participantWithDamages.bind(this);
     this.timingDashboard = this.timingDashboard.bind(this);
+    this.getControls = this.getControls.bind(this);
+    this.allControls = this.allControls.bind(this);
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
@@ -2228,7 +2232,10 @@ class FormController {
       }, {
         path: 'sections.answers.damagesSelected.images'
       }]);
-      return res.json({ data: participas });
+      return res.json({
+        data: participas,
+        status: 200
+      });
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
@@ -2242,6 +2249,130 @@ class FormController {
         status: 400
       });
     }
+  }
+
+  public async allControls(req: IRequest, res: Response): Promise<any> {
+    try {
+      logger.info(`FormController.allControls email: ${req.user.email}`);
+      logger.info(`FormController.allControls email: ${req.user.email}query: ${JSON.stringify(req.query)}`);
+      const team = req.user.team._id;
+      const { page, pageSize } = req.query as Record<string, string>;
+      const activeForms = await Form.find({ team, active: true }, { '_id': true });
+      const filter = {
+        team,
+        form: { $in: activeForms.map((f) => f._id) },
+        /*deliveryToCustomer: true,
+        createdAt: {
+          $gte: moment().subtract(2, 'days').startOf('day').toDate(),
+          $lte: moment().endOf('day').toDate()
+        }*/
+      };
+      const options: PaginateOptions = {
+        sort: {
+          createdAt: -1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          hasNextPage: 'hasNextPage',
+          hasPrevPage: 'hasPrevPage',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        select: {
+          '_id': true,
+          'name': true,
+          'sections': true,
+          'venue': true,
+          'receiveFrom': true,
+          'sendTo': true,
+          'number': true,
+          'createdAt': true
+        },
+        populate: [{
+          path: 'car',
+          select: {
+            '_id': true,
+            'vin': true,
+            'patent': true,
+            'color': true,
+            'denomination': true,
+            'brand': true,
+            'type': true,
+            'internalNumber': true
+          }
+        },{
+          path: 'form',
+          select: {
+            '_id': true,
+            'name': true,
+            'action': true,
+          }
+        }, {
+          path: 'user',
+          select: {
+            '_id': true,
+            'firstName': true,
+            'lastName': true,
+            'email': true
+          }
+        }, {
+          path: 'carrierBy',
+          select: {
+            '_id': true,
+            'name': true
+          },
+        }, {
+          path: 'sections.answers.images'
+        }, {
+          path: 'sections.answers.damagesSelected.images'
+        }],
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10)
+      };
+      const participants = await this.getControls(filter, options);
+      if (options.page && participants.pages && participants.pages < options.page) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        return res.json({
+          count: participants.total,
+          pages: participants.pages,
+          hasPrevPage: participants.hasPrevPage,
+          hasNextPage: participants.hasNextPage,
+          data: participants.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      // Raven.captureException(e, { req });
+      /* istanbul ignore next */
+      logger.error(`allControls: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      return res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  private getControls(filter: any, options: PaginateOptions): Promise<PaginateResult<IOperationTypeModel>> {
+    return new Promise((resolve, reject) => {
+      Participant.paginate!(filter, options, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
   }
 
   private autoRotate(path: string): Promise<any> {

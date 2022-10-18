@@ -3,6 +3,7 @@ import Middlewares from '../middlewares/middlewares';
 import AdminDamagesController from './controllers/admin/damages.admin.controller';
 import AdminFormsController from './controllers/admin/form.admin.controller';
 import FormController from './controllers/form.controller';
+import { FormListControls } from './inputsSchema';
 
 const router = express.Router();
 
@@ -20,39 +21,124 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
 
 /**
  * @swagger
- * definitions:
- *   Login:
- *     required:
- *       - username
- *       - password
- *     properties:
- *       username:
- *         type: string
- *       password:
- *         type: string
- *       path:
- *         type: string
- */
-
-/**
- * @swagger
  * /api/v1/forms/deliveries/:
  *   get:
- *     summary: Entrega una lista de las unidades entregadas y su respectivo checklist de entrega
+ *     tags:
+ *     - Control de unidades
+ *     summary: Listado de las unidades entregadas en las últimas 48 horas
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: Participants
+ *         description: Respuesta exitosa
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Participant'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Participant'
+ *                 status:
+ *                   type: string
+ *                   example: 200
+ *       401:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Debes estar autenticado para este recurso.
+ *                 status:
+ *                   type: integer
+ *                   example: 401
  *     security:
- *       - bearerAuth: []
+ *       - ApiKeyAuth: []
  */
-
 router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
+
+/**
+ * @swagger
+ * /api/v1/forms/controls/:
+ *   get:
+ *     tags:
+ *     - Control de unidades
+ *     summary: Listado de todas las unidades controladas
+ *     description: Entrega todas las unidades controladas con los formularios que esten activos en el sistema.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         description: Por defecto es 1, se utiliza para seleccionar la pagina a consultar.
+ *         required: false
+ *         type: integer
+ *       - in: query
+ *         name: pageSize
+ *         description: Por defecto es 10, se utiliza para seleccionar la cantidad de resultados por página a consultar.
+ *         required: false
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: Respuesta exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   example: 490
+ *                 pages:
+ *                   type: integer
+ *                   example: 10
+ *                 hasPrevPage:
+ *                   type: boolean
+ *                   example: false
+ *                 hasNextPage:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Participant'
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *       400:
+ *         description: Error en la consulta
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: La página solicitada no existe.
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *       401:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Debes estar autenticado para este recurso.
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.get('/api/v1/forms/controls/', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(FormListControls), FormController.allControls);
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 

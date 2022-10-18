@@ -102,6 +102,8 @@ export interface IForm {
 
   kind: string;
 
+  action: string;
+
   shipping: boolean;
   shippingText: string;
   shippingImage: boolean;

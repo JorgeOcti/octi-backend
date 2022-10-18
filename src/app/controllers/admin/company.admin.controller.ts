@@ -9,6 +9,7 @@ class AdminCompaniesController {
     this.index = this.index.bind(this);
     this.getCompanies = this.getCompanies.bind(this);
     this.apiListCompanies = this.apiListCompanies.bind(this);
+    this.apiListIntegrationCompanies = this.apiListIntegrationCompanies.bind(this);
     this.apiCreateCompany = this.apiCreateCompany.bind(this);
     this.apiUpdateCompany = this.apiUpdateCompany.bind(this);
     this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
@@ -74,6 +75,69 @@ class AdminCompaniesController {
         hasNextPage: companies.hasNextPage,
         results: companies.docs,
         status: 200
+      });
+    }
+  }
+
+  public async apiListIntegrationCompanies(req: IRequest, res: Response): Promise<any> {
+    /*if (!req.user.hasPermission('viewCompany') && !req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }*/
+    try {
+      const team = req.user.team._id;
+      const { page, pageSize } = req.query as { page: string, pageSize: string, search: string };
+      // paginate options
+      const options: PaginateOptions = {
+        select: {
+          name: true,
+          updatedAt: true,
+          createdAt: true
+        },
+        sort: {
+          name: 1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          hasNextPage: 'hasNextPage',
+          hasPrevPage: 'hasPrevPage',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        // allowDiskUse: true,
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '100', 10)
+      };
+      const companies = await this.getCompanies({
+        deleted: false,
+        team
+      }, options);
+      /* istanbul ignore if  */
+      if (options.page && companies.pages && companies.pages < options.page) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        return res.json({
+          count: companies.total,
+          pages: companies.pages,
+          hasPrevPage: companies.hasPrevPage,
+          hasNextPage: companies.hasNextPage,
+          data: companies.docs,
+          status: 200
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: 'Error en el servidor',
+        status: 500
       });
     }
   }

@@ -66,6 +66,18 @@ export const kindQuestionKeyboard = [
   KindQuestionKeyboard.email
 ];
 
+export enum KindActionForm {
+  delivery = 'delivery',
+  shipping = 'shipping',
+  reception = 'reception'
+}
+
+export const kindActionForm = [
+  KindActionForm.delivery,
+  KindActionForm.shipping,
+  KindActionForm.reception
+];
+
 export enum KindQuestionImage {
   photo = 'photo',
   signature = 'signature',
@@ -313,6 +325,11 @@ const formSchema = new mongoose.Schema({
     type: String,
     enum: kindForm,
     default: KindForm.control
+  },
+
+  action: {
+    type: String,
+    enum: kindActionForm
   },
 
   sections: [formSectionsSchema],

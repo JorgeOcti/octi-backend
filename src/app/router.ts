@@ -21,8 +21,9 @@ import { passport } from '../passportConfig';
 import appController from './controllers/app.controller';
 import StudioController from '../stats/controllers/studio.controller';
 import historyController from './controllers/history.controller';
-import BorderController from "./controllers/admin/border.admin.controller";
-import {distributionRouter} from "../distribution/router";
+import BorderController from './controllers/admin/border.admin.controller';
+import { distributionRouter } from '../distribution/router';
+import { AppListCompanies, AppListVenues } from './inputsSchema';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -92,6 +93,85 @@ appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVe
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
+
+/**
+ * @swagger
+ * /api/v1/core/venues/:
+ *   get:
+ *     tags:
+ *     - Core
+ *     summary: Listado de Sucursales
+ *     description: Entrega todas las sucursales activas en el sistema.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         description: Por defecto es 1, se utiliza para seleccionar la pagina a consultar.
+ *         required: false
+ *         type: integer
+ *       - in: query
+ *         name: pageSize
+ *         description: Por defecto es 100, se utiliza para seleccionar la cantidad de resultados por página a consultar.
+ *         required: false
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: Respuesta exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   example: 490
+ *                 pages:
+ *                   type: integer
+ *                   example: 10
+ *                 hasPrevPage:
+ *                   type: boolean
+ *                   example: false
+ *                 hasNextPage:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Venue'
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *       400:
+ *         description: Error en la consulta
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: La página solicitada no existe.
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *       401:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Debes estar autenticado para este recurso.
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+appRouter.get('/api/v1/core/venues/', Middlewares.isLoggedIn, Middlewares.validateQueryParams(AppListVenues), AdminVenuesController.apiListIntegrationVenues);
 appRouter.get('/api/admin/company-venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListCompanyVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
@@ -102,6 +182,85 @@ appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesCont
 
 // api companies
 appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListCompanies);
+
+/**
+ * @swagger
+ * /api/v1/core/companies/:
+ *   get:
+ *     tags:
+ *     - Core
+ *     summary: Listado de Empresas
+ *     description: Entrega todas las empresas activas en el sistema.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         description: Por defecto es 1, se utiliza para seleccionar la pagina a consultar.
+ *         required: false
+ *         type: integer
+ *       - in: query
+ *         name: pageSize
+ *         description: Por defecto es 100, se utiliza para seleccionar la cantidad de resultados por página a consultar.
+ *         required: false
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: Respuesta exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   example: 490
+ *                 pages:
+ *                   type: integer
+ *                   example: 10
+ *                 hasPrevPage:
+ *                   type: boolean
+ *                   example: false
+ *                 hasNextPage:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Company'
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *       400:
+ *         description: Error en la consulta
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: La página solicitada no existe.
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *       401:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Debes estar autenticado para este recurso.
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+appRouter.get('/api/v1/core/companies/', Middlewares.isLoggedIn, Middlewares.validateQueryParams(AppListCompanies), AdminCompaniesController.apiListIntegrationCompanies);
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
 appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);

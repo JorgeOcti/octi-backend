@@ -16,7 +16,7 @@ class Middlewares {
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.addUserToRequest = this.addUserToRequest.bind(this);
     this.cleanStaticFiles = this.cleanStaticFiles.bind(this);
-    this.validateBody = this.validateBody.bind(this);
+    this.validateBodyParams = this.validateBodyParams.bind(this);
   }
 
   public async isLoggedIn(req: IRequest | Request, res: Response, next: NextFunction) {
@@ -70,8 +70,8 @@ class Middlewares {
         } else {
           logger.error(`isJWTAuthenticated error:  ${JSON.stringify(headers)}`);
           res.locals.user = null;
-          return res.json({
-            error: 'Debes estar autenticado para este recurso.',
+          return res.status(401).json({
+            message: 'Debes estar autenticado para este recurso.',
             status: 401
           });
         }
@@ -85,8 +85,8 @@ class Middlewares {
             return next();
           } else {
             res.locals.user = null;
-            return res.json({
-              error: 'Debes estar autenticado para este recurso.',
+            return res.status(401).json({
+              message: 'Debes estar autenticado para este recurso.',
               status: 401
             });
           }
@@ -94,8 +94,8 @@ class Middlewares {
           logger.error(`isJWTAuthenticated error: ${e.message} ${JSON.stringify(headers)}`);
           res.locals.user = null;
           console.error(e);
-          return res.json({
-            error: e.message,
+          return res.status(401).json({
+            message: e.message,
             status: 401
           });
         }
@@ -103,8 +103,8 @@ class Middlewares {
         logger.error(`isJWTAuthenticated error1: Debes estar autenticado para este recurso. ${JSON.stringify(headers)}`);
         res.locals.user = null;
         /* istanbul ignore next */
-        return res.json({
-          error: 'Debes estar autenticado para este recurso.',
+        return res.status(401).json({
+          message: 'Debes estar autenticado para este recurso.',
           status: 401
         });
       }
@@ -113,8 +113,8 @@ class Middlewares {
       res.locals.user = null;
       console.error(e);
       /* istanbul ignore next */
-      return res.json({
-        error: 'Debes estar autenticado para este recurso.',
+      return res.status(401).json({
+        message: 'Debes estar autenticado para este recurso.',
         status: 401
       });
     }
@@ -192,18 +192,40 @@ class Middlewares {
     next();
   }
 
-  public validateBody(resourceSchema: BaseSchema) {
+  public validateQueryParams(resourceSchema: BaseSchema) {
     return async (req: IRequest, res: Response, next: NextFunction) => {
-      const resource = req.body;
+      const resource = req.query;
       try {
-        logger.info(`Middlewares.validateBody resource: ${JSON.stringify(resource)}`);
+        logger.info(`Middlewares.validateQueryParams resource: ${JSON.stringify(resource)}`);
         req.body = await resourceSchema.validate(resource, {
           stripUnknown: true
         });
         next();
       } catch (e) {
         console.error(e);
-        res.status(400).json({ error: e.errors.join(', ') });
+        res.status(400).json({
+          message: e.errors.join(', '),
+          status: 400
+        });
+      }
+    };
+  }
+
+  public validateBodyParams(resourceSchema: BaseSchema) {
+    return async (req: IRequest, res: Response, next: NextFunction) => {
+      const resource = req.body;
+      try {
+        logger.info(`Middlewares.validateBodyParams resource: ${JSON.stringify(resource)}`);
+        req.body = await resourceSchema.validate(resource, {
+          stripUnknown: true
+        });
+        next();
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({
+          message: e.errors.join(', '),
+          status: 400
+        });
       }
     };
   }

@@ -44,8 +44,15 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   },
   optimization: {
     splitChunks: {
-      chunks: 'all',
-      name: 'vendors'
+      // chunks: 'all',
+      // name: 'vendors',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
       // maxSize: 128000,
     }
   },
@@ -56,13 +63,6 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   },
   module: {
     rules: [
-      // {
-      //   test: /\.(js|jsx)$/,
-      //   exclude: /node_modules/,
-      //   use: {
-      //     loader: 'babel-loader'
-      //   },
-      // },
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
@@ -81,7 +81,8 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
               target: 'es5',
               incremental: true  // this could also be in tsconfig.json directly
             },
-            // transpileOnly: true,
+            transpileOnly: true,
+            experimentalWatchApi: true,
           },
         },
       },
@@ -106,15 +107,15 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     'moment-timezone': 'moment'
   },
   devtool: setDevTool(),
-  devServer: {
-    contentBase: sourcePath,
-    hot: true,
-    inline: true,
-    historyApiFallback: {
-      disableDotRule: true
-    },
-    stats: 'minimal'
-  },
+  // devServer: {
+  //   contentBase: sourcePath,
+  //   hot: true,
+  //   inline: true,
+  //   historyApiFallback: {
+  //     disableDotRule: true
+  //   },
+  //   stats: 'minimal'
+  // },
   watchOptions: {
     ignored: /node_modules/,
   },
