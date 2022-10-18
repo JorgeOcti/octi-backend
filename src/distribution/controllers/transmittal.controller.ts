@@ -931,6 +931,22 @@ class TransmittalController {
 
   public async xlsExport(req: IRequest, res: Response): Promise<any> {
     logger.info(`TransmittalController.xlsExport email: ${req.user.email}`);
+    const {
+      number,
+      plate,
+      drivers,
+      types,
+      from,
+      to
+    } = req.query as {
+      number: string;
+      drivers: string;
+      types: string;
+      plate: string;
+      from: string;
+      to: string;
+    };
+
     const team = req.user.team._id;
     try {
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -981,10 +997,39 @@ class TransmittalController {
       });
       worksheet.columns = columns;
 
+      const filter: any = {
+        team
+      };
+
+      if (number) {
+        filter.number = number;
+      }
+      if (drivers){
+        let driversIds = drivers.split(",").map(d => new mongoose.Types.ObjectId(d))
+        filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": {$regex: plate.trim(), $options: 'i'}}];
+      } else if (!drivers && plate){
+        filter["transporter.patent"] = {$regex: plate.trim(), $options: 'i'};
+      }
+
+      if (types){
+        let typeIds = types.split(",").map(t => new mongoose.Types.ObjectId(t))
+        filter["type"] = {$in: typeIds};
+      }
+
+      if (from || to) {
+        const createdAtFilter: any = {};
+
+        if (from) {
+          createdAtFilter.$gte = moment.unix(parseInt(from)).startOf('day');
+        }
+        if (to) {
+          createdAtFilter.$lte = moment.unix(parseInt(to)).endOf('day');
+        }
+        filter.createdAt = createdAtFilter;
+      }
+
       const cursor = Transmittal
-        .find({
-          team
-        }, {
+        .find(filter, {
           number: true,
           transporter: true,
           items: true,
