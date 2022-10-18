@@ -18,3 +18,14 @@ export const DefaultPageSizeSchema = (size: number) => ({
     // 'format': 'int64'
   }
 });
+
+export const AuthorizationJWTSchema = {
+  'name': 'Authorization',
+  'in': 'header',
+  'description': `Token de acceso.`,
+  'required': true,
+  'schema': {
+    'type': 'string'
+    // 'format': 'int64'
+  }
+};

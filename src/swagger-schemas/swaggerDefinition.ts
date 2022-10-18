@@ -9,7 +9,7 @@ import {
   ErrorSchema400,
   ErrorSchema401,
   DefaultPageSchema,
-  DefaultPageSizeSchema, ListCompaniesSchema, ListVenuesSchema
+  DefaultPageSizeSchema, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403, AuthorizationJWTSchema
 } from './core';
 import {
   AccesorySchema,
@@ -82,8 +82,10 @@ export const swaggerDefinition = {
       ListVenues: ListVenuesSchema,
       Error400: ErrorSchema400,
       Error401: ErrorSchema401,
+      Error403: ErrorSchema403,
     },
     parameters: {
+      AuthorizationJWT: AuthorizationJWTSchema,
       DefaultPage: DefaultPageSchema,
       PageSize10: DefaultPageSizeSchema(10),
       PageSize100: DefaultPageSizeSchema(100)

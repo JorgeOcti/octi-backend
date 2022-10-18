@@ -61,3 +61,17 @@ export const ErrorSchema401 = {
     }
   }
 };
+
+export const ErrorSchema403 = {
+  type: 'object',
+  properties: {
+    message: {
+      type: 'string',
+      example: 'No tienes permisos para esta operación.'
+    },
+    status: {
+      type: 'integer',
+      example: 403
+    }
+  }
+};

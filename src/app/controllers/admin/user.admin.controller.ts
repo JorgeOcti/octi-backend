@@ -14,6 +14,7 @@ import { UserTypes } from '../../models/user.model.types';
 import Venue from '../../models/venue.model';
 import { IBaseVenue } from '../../interfaces';
 import * as jwt from 'jsonwebtoken';
+import redisClient from '../../../services/redis.service';
 
 class AdminUsersController {
 
@@ -677,6 +678,11 @@ class AdminUsersController {
             select: ['name']
           }]);
         if (user) {
+          // fix session cache when user is updated
+          const sessionCache = await redisClient.get(user._id);
+          if (sessionCache) {
+            await redisClient.del(user._id);
+          }
           // prevent return password
           user = user.toObject();
           if (user && user.password) {
@@ -692,6 +698,7 @@ class AdminUsersController {
             message: 'Usuario editado satisfactoriamente.',
             user
           };
+
           io.to(`user-list-${team}`).emit('REFRESH', {
             update: true,
             updatedBy: req.user._id
