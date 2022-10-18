@@ -67,7 +67,7 @@ export const swaggerDefinition = {
     url: process.env.SITE_URL,
     description: 'OSA server Production'
   }, {
-    url: 'https://andes-stage.osacontrol.com',
+    url: 'https://andes-stage.osacontrol.com/',
     description: 'OSA server Stage'
   }
   ]
