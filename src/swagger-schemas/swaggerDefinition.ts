@@ -104,6 +104,9 @@ export const swaggerDefinition = {
   }, {
     url: 'https://andes-stage.osacontrol.com/',
     description: 'OSA server Stage'
+  }],
+  externalDocs: {
+    url: 'https://sites.google.com/osacontrol.com/doc-osa-api/inicio',
+    description: 'Find more info here'
   }
-  ]
 };
