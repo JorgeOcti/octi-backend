@@ -48,14 +48,7 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Debes estar autenticado para este recurso.
- *                 status:
- *                   type: integer
- *                   example: 401
+ *               $ref: '#/components/responses/Error401'
  *     security:
  *       - ApiKeyAuth: []
  */
@@ -72,69 +65,27 @@ router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormCont
  *     produces:
  *       - application/json
  *     parameters:
- *       - in: query
- *         name: page
- *         description: Por defecto es 1, se utiliza para seleccionar la pagina a consultar.
- *         required: false
- *         type: integer
- *       - in: query
- *         name: pageSize
- *         description: Por defecto es 10, se utiliza para seleccionar la cantidad de resultados por página a consultar.
- *         required: false
- *         type: integer
+ *       - $ref: '#/components/parameters/DefaultPage'
+ *       - $ref: '#/components/parameters/PageSize10'
  *     responses:
  *       200:
  *         description: Respuesta exitosa
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 count:
- *                   type: integer
- *                   example: 490
- *                 pages:
- *                   type: integer
- *                   example: 10
- *                 hasPrevPage:
- *                   type: boolean
- *                   example: false
- *                 hasNextPage:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Participant'
- *                 status:
- *                   type: integer
- *                   example: 200
+ *               $ref: '#/components/responses/ListControls'
  *       400:
  *         description: Error en la consulta
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: La página solicitada no existe.
- *                 status:
- *                   type: integer
- *                   example: 400
+ *               $ref: '#/components/responses/Error400'
  *       401:
  *         description: Error de autenticación
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Debes estar autenticado para este recurso.
- *                 status:
- *                   type: integer
- *                   example: 401
+ *               $ref: '#/components/responses/Error401'
  *     security:
  *       - ApiKeyAuth: []
  */

@@ -4,3 +4,5 @@ export * from './company.schema';
 export * from './venue.schema';
 export * from './image.schema';
 export * from './carrier.schema';
+export * from './parameters.schema';
+export * from './responses.schema';

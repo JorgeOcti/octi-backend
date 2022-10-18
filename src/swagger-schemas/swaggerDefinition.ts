@@ -1,7 +1,28 @@
-import { CarrierSchema, CarSchema, CompanySchema, ImageSchema, UserSchema, VenueSchema } from './app';
 import {
-  AccesorySchema, AccessorySelectedSchema, AnswerSchema, ChoiseSchema, DamagesSelectedSchema, ParticipantSchema,
-  FormSchema, KindSchema, PartSchema, PositionSchema, SectionSchema
+  CarrierSchema,
+  CarSchema,
+  CompanySchema,
+  ImageSchema,
+  UserSchema,
+  VenueSchema,
+  ListControlsSchema,
+  ErrorSchema400,
+  ErrorSchema401,
+  DefaultPageSchema,
+  DefaultPageSizeSchema, ListCompaniesSchema, ListVenuesSchema
+} from './core';
+import {
+  AccesorySchema,
+  AccessorySelectedSchema,
+  AnswerSchema,
+  ChoiseSchema,
+  DamagesSelectedSchema,
+  ParticipantSchema,
+  FormSchema,
+  KindSchema,
+  PartSchema,
+  PositionSchema,
+  SectionSchema
 } from './form';
 
 export const swaggerDefinition = {
@@ -54,6 +75,18 @@ export const swaggerDefinition = {
       Section: SectionSchema,
       Form: FormSchema,
       Participant: ParticipantSchema
+    },
+    responses: {
+      ListControls: ListControlsSchema,
+      ListCompanies: ListCompaniesSchema,
+      ListVenues: ListVenuesSchema,
+      Error400: ErrorSchema400,
+      Error401: ErrorSchema401,
+    },
+    parameters: {
+      DefaultPage: DefaultPageSchema,
+      PageSize10: DefaultPageSizeSchema(10),
+      PageSize100: DefaultPageSizeSchema(100)
     },
     securitySchemes: {
       ApiKeyAuth: {
