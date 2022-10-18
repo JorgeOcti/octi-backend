@@ -29,7 +29,7 @@ export const swaggerDefinition = {
     </table>
     <p>Está información es de uso exclusivo de nuestros clientes.</p>`,
     contact: {
-      name: 'Soport',
+      name: 'support',
       // url: 'https://www.osacontrol.com',
       email: 'soporte@osacontrol.com'
 
