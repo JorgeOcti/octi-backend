@@ -129,7 +129,7 @@ appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesControlle
  *     security:
  *       - ApiKeyAuth: []
  */
-appRouter.get('/api/v1/core/venues/', Middlewares.isLoggedIn, Middlewares.validateQueryParams(AppListVenues), AdminVenuesController.apiListIntegrationVenues);
+appRouter.get('/api/v1/core/venues/', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(AppListVenues), AdminVenuesController.apiListIntegrationVenues);
 appRouter.get('/api/admin/company-venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListCompanyVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
@@ -176,7 +176,7 @@ appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesCon
  *     security:
  *       - ApiKeyAuth: []
  */
-appRouter.get('/api/v1/core/companies/', Middlewares.isLoggedIn, Middlewares.validateQueryParams(AppListCompanies), AdminCompaniesController.apiListIntegrationCompanies);
+appRouter.get('/api/v1/core/companies/', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(AppListCompanies), AdminCompaniesController.apiListIntegrationCompanies);
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
 appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);
