@@ -8,8 +8,8 @@ import {
   ListControlsSchema,
   ErrorSchema400,
   ErrorSchema401,
-  DefaultPageSchema,
-  DefaultPageSizeSchema, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403, AuthorizationJWTSchema
+  PageSchema,
+  PageSizeSchema, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403, AuthorizationJWTSchema
 } from './core';
 import {
   AccesorySchema,
@@ -86,9 +86,9 @@ export const swaggerDefinition = {
     },
     parameters: {
       AuthorizationJWT: AuthorizationJWTSchema,
-      DefaultPage: DefaultPageSchema,
-      PageSize10: DefaultPageSizeSchema(10),
-      PageSize100: DefaultPageSizeSchema(100)
+      DefaultPage: PageSchema,
+      PageSize10: PageSizeSchema(10),
+      PageSize100: PageSizeSchema(100)
     },
     securitySchemes: {
       ApiKeyAuth: {

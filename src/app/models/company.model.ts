@@ -126,6 +126,9 @@ const companySchema = new mongoose.Schema({
 companySchema.set<any>('redisCache', process.env.ENV === 'production');
 companySchema.set<any>('expires', 30);
 
+companySchema.index({ 'team': 1 });
+companySchema.index({ 'team': 1, deleted: 1 });
+
 companySchema.plugin(mongoosePaginate);
 
 companySchema.plugin(mongooseCrate, {

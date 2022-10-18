@@ -290,7 +290,8 @@ class AdminVenueController {
         limit: parseInt(pageSize ? pageSize : '100', 10)
       };
       const venues = await this.getVenues({
-        team
+        team,
+        deleted: false,
       }, options);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {

@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import {
   IParticipant,
@@ -10,8 +10,8 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import {KindForm, kindForm, KindQuestion, kindQuestion} from './form.model';
-import {choiceBackgroundColors} from './scale.model';
+import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
+import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {
 }
@@ -62,10 +62,11 @@ const participantChoiceSchema = new mongoose.Schema({
   hint: {
     type: String,
     trim: true
-  },
+  }
 });
 
-export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {}
+export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {
+}
 
 export const scaleSchema = new mongoose.Schema({
   name: String,
@@ -123,7 +124,7 @@ const accessorySchema = new mongoose.Schema({
     trim: true
   },
 
-  items: [{type: itemSchema}]
+  items: [{ type: itemSchema }]
 });
 
 const positionSchema = new mongoose.Schema({
@@ -174,10 +175,10 @@ export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Ty
 }
 
 const participantAnswersSchema = new mongoose.Schema({
-  question: {type: String, required: true, trim: true},
+  question: { type: String, required: true, trim: true },
   // field to update another model
   kindUpdate: { type: String },
-  shortName: {type: String, trim: true},
+  shortName: { type: String, trim: true },
 
   scale: scaleSchema,
 
@@ -256,7 +257,8 @@ const participantAnswersSchema = new mongoose.Schema({
 
 });
 
-export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}
+export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {
+}
 
 const participantSectionsSchema = new mongoose.Schema({
   section_id: {
@@ -287,20 +289,21 @@ const participantSectionsSchema = new mongoose.Schema({
   }
 });
 
-export interface IParticipantDeliveryInfoModel extends IParticipantDeliveryInfo, mongoose.Types.Subdocument {}
+export interface IParticipantDeliveryInfoModel extends IParticipantDeliveryInfo, mongoose.Types.Subdocument {
+}
 
 const participantDeliveryInfoSchema = new mongoose.Schema({
   name: {
-    type: String,
+    type: String
   },
   rut: {
-    type: String,
+    type: String
   },
   email: {
-    type: String,
+    type: String
   },
   order: {
-    type: String,
+    type: String
   }
 });
 
@@ -483,33 +486,63 @@ const participantSchema = new mongoose.Schema({
 participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
-participantSchema.index({createdAt: -1});
-participantSchema.index({team: 1, createdAt: 1});
-participantSchema.index({venue: 1});
-participantSchema.index({company: 1});
-participantSchema.index({user: 1});
-participantSchema.index({car: 1});
-participantSchema.index({shipping: 1});
-participantSchema.index({company: 1});
-participantSchema.index({team: 1});
-participantSchema.index({sendTo: 1});
-participantSchema.index({receiveFrom: 1});
-participantSchema.index({deliveryToCustomer: 1});
-participantSchema.index({team: 1, venue: 1, createdAt: 1});
-participantSchema.index({team: 1, destination: 1});
-participantSchema.index({team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
-participantSchema.index({team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, createdAt: 1});
-participantSchema.index({car: 1, team: 1, venue: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
-participantSchema.index({transmittal: 1});
-participantSchema.index({survey: 1, completed: 1});
-participantSchema.index({form: 1, user: 1});
-participantSchema.index({company: 1, venue: 1, createdAt: 1});
-participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1});
-participantSchema.index({venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
-participantSchema.index({venue: 1, team: 1, car: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
-participantSchema.index({venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, form: 1});
-participantSchema.index({venue: 1, team: 1, car: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1, form: 1});
-participantSchema.index({_id: 1, venue: 1, team: 1,'deliveryInfo.name': 1, 'deliveryInfo.rut': 1, 'deliveryInfo.email': 1, 'deliveryInfo.order': 1, deliveryToCustomer:1, kind: 1});
+participantSchema.index({ createdAt: -1 });
+participantSchema.index({ team: 1, createdAt: 1 });
+participantSchema.index({ team: 1, form: 1 });
+participantSchema.index({ team: 1, form: 1, venue: 1 });
+participantSchema.index({ team: 1, form: 1, createdAt: 1 });
+participantSchema.index({ venue: 1 });
+participantSchema.index({ company: 1 });
+participantSchema.index({ user: 1 });
+participantSchema.index({ car: 1 });
+participantSchema.index({ shipping: 1 });
+participantSchema.index({ company: 1 });
+participantSchema.index({ team: 1 });
+participantSchema.index({ sendTo: 1 });
+participantSchema.index({ receiveFrom: 1 });
+participantSchema.index({ deliveryToCustomer: 1 });
+participantSchema.index({ team: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ team: 1, destination: 1 });
+participantSchema.index({
+  car: 1,
+  team: 1,
+  form: 1,
+  venue: 1,
+  deliveryToCustomer: 1,
+  kind: 1
+});
+participantSchema.index({
+  car: 1,
+  team: 1,
+  venue: 1,
+  form: 1,
+  'deliveryInfo.name': 1,
+  'deliveryInfo.rut': 1,
+  'deliveryInfo.email': 1,
+  'deliveryInfo.order': 1,
+  deliveryToCustomer: 1,
+  kind: 1
+});
+participantSchema.index({
+  car: 1,
+  team: 1,
+  venue: 1,
+  form: 1,
+  'deliveryInfo.name': 1,
+  'deliveryInfo.rut': 1,
+  'deliveryInfo.email': 1,
+  'deliveryInfo.order': 1,
+  deliveryToCustomer: 1,
+  kind: 1,
+  createdAt: 1
+});
+
+participantSchema.index({ transmittal: 1 });
+participantSchema.index({ survey: 1, completed: 1 });
+participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
+
 
 participantSchema.plugin(mongoosePaginate);
 

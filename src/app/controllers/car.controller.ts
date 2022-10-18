@@ -1531,7 +1531,7 @@ class CarController {
         totalPages: 'pages',
         pagingCounter: 'si'
       },
-      // allowDiskUse: true,
+      lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
