@@ -504,6 +504,11 @@ participantSchema.index({ deliveryToCustomer: 1 });
 participantSchema.index({ team: 1, venue: 1, createdAt: 1 });
 participantSchema.index({ team: 1, destination: 1 });
 participantSchema.index({
+  team: 1,
+  deliveryToCustomer: 1,
+  createdAt: 1
+});
+participantSchema.index({
   car: 1,
   team: 1,
   form: 1,
