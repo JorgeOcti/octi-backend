@@ -13,7 +13,7 @@ import {
 } from './core';
 import {
   AccesorySchema,
-  AccessorySelectedSchema,
+  AccessoryAnsweredSchema,
   AnswerSchema,
   ChoiseSchema,
   DamagesSelectedSchema,
@@ -70,7 +70,7 @@ export const swaggerDefinition = {
       DamageSelected: DamagesSelectedSchema,
       Choice: ChoiseSchema,
       Accessory: AccesorySchema,
-      AccessorySelected: AccessorySelectedSchema,
+      accessoryAnswered: AccessoryAnsweredSchema,
       Answer: AnswerSchema,
       Section: SectionSchema,
       Form: FormSchema,

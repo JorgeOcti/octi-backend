@@ -40,7 +40,7 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
-RUN npm i -g typescript ts-node ts-node-dev
+RUN npm i -g typescript ts-node ts-node-dev ts-migrate-mongoose
 RUN touch /srv/s3-config.json
 RUN echo "{}" >> /srv/s3-config.json
 RUN touch /srv/ses-config.json

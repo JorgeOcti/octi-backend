@@ -1,4 +1,4 @@
-export const AccessorySelectedSchema = {
+export const AccessoryAnsweredSchema = {
   type: 'object',
   properties: {
     amount: {

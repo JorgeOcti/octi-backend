@@ -80,11 +80,9 @@ export const AnswerSchema ={
           },
           accesoriesAnswered: {
             type: 'array',
-            description: 'Arreglo que contiene los _id de los accesorios seleccionados',
+            description: 'Arreglo que contiene los accesorios seleccionados y cantidad, en la pregunta tipo accessory',
             items: {
-              type: 'string',
-              format: 'UUID',
-              example: '6058ae7a9b33c58664390bed'
+              '$ref': '#/components/schemas/accessoryAnswered'
             }
           },
           scale: {
@@ -148,9 +146,11 @@ export const AnswerSchema ={
           },
           accesoriesSelected: {
             type: 'array',
-            description: 'Arreglo que contiene los accesorios seleccionados, en la pregunta tipo accessory',
+            description: 'Arreglo que contiene los _id de los accesorios seleccionados',
             items: {
-              '$ref': '#/components/schemas/AccessorySelected'
+              type: 'string',
+              format: 'UUID',
+              example: '6058ae7a9b33c58664390bed'
             }
           },
           optional: {
