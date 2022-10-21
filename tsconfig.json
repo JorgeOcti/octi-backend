@@ -15,12 +15,8 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "jsx": "react",
-    "lib": [
-      "es6",
-      "es7",
-      "ES2020",
-      "ES2021"
-    ],
+    "lib": ["ES2021"],
+    "target": "ES2021",
     "typeRoots": [
       "./node_modules/@types",
       "../node_modules/@types/",
