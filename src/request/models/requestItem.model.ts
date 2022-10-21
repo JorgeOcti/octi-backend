@@ -165,6 +165,8 @@ requestItemSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestItemSchema.set<any>('expires', 30);
 
 requestItemSchema.index({ team: 1 });
+requestItemSchema.index({ team: 1, 'meta.request.number': -1, origin: 1, createdAt: 1 });
+requestItemSchema.index({ team: 1, 'meta.request.number': -1, destination: 1, createdAt: 1 });
 requestItemSchema.index({ company: 1 });
 requestItemSchema.index({ request: 1 });
 requestItemSchema.index({ car: 1 });
