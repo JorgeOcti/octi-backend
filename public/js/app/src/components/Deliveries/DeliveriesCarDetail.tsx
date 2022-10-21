@@ -117,7 +117,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                 }}>
                   <div className='text-muted'>
                     <strong><i
-                      className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
+                      className='fa fa-fw fa-user-o' /> {`${participant.user ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}` : ''}`}
                     </strong><br />
                   </div>
                   <div className='text-muted text-sm'><i
@@ -142,9 +142,9 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                   paddingTop: '15px',
                   paddingBottom: '15px'
                 }}>
-                  <div className='text-muted'>
+                  <div className='text-primary'>
                     <strong><i
-                      className='fa fa-fw fa-user-o' /> {`${participant?.deliveryInfo?.name ? `${participant?.deliveryInfo?.name}` : ''}`}
+                      className='fa fa-fw fa-user-o text-muted' /> {`${participant?.deliveryInfo?.name?.toLocaleUpperCase() ? `${participant?.deliveryInfo?.name?.toLocaleUpperCase()}` : ''}`}
                     </strong><br />
                   </div>
                   <ShowIf condition={!!participant?.deliveryInfo?.rut}>
@@ -154,12 +154,12 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                   </ShowIf>
                   <ShowIf condition={!!participant?.deliveryInfo?.email}>
                     <div className='text-muted text-sm'>
-                      {participant?.deliveryInfo?.email}
+                      <i className='fa fa-fw fa-envelope-o' /> {participant?.deliveryInfo?.email}
                     </div>
                   </ShowIf>
                   <ShowIf condition={!!participant?.deliveryInfo?.order}>
                     <div className='text-muted text-sm'>
-                      {participant?.deliveryInfo?.order}
+                      <i className='fa fa-fw fa-bookmark-o' /> {participant?.deliveryInfo?.order}
                     </div>
                   </ShowIf>
                   <div style={{ display: 'flex', alignItems: 'stretch'}}>
@@ -169,7 +169,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                           <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none', paddingRight: '10px' }}>
                             <a href={decodeURI(image.file.url)}
                                data-toggle='lightbox'
-                               data-gallery={'signature'}
+                               data-gallery={`images-${participant._id}`}
                                data-title={`Firma cliente ${participant?.deliveryInfo?.name}`}
                                data-footer={`Entrega ${participant.number}`}
                             >
@@ -193,7 +193,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                           <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none' }}>
                             <a href={decodeURI(image.file.url)}
                                data-toggle='lightbox'
-                               data-gallery={'identifyCard'}
+                               data-gallery={`images-${participant._id}`}
                                data-title={`Identificación cliente ${participant?.deliveryInfo?.name}`}
                                data-footer={`Entrega ${participant.number}`}
                             >
