@@ -2200,8 +2200,7 @@ class FormController {
         team,
         deliveryToCustomer: true,
         createdAt: {
-          $gte: moment().subtract(2, 'days').startOf('day').toDate(),
-          $lte: moment().endOf('day').toDate()
+          $gte: moment().subtract(2, 'days').startOf('day').toDate()
         }
       }, {
         '_id': true,
@@ -2239,7 +2238,7 @@ class FormController {
         path: 'sections.answers.images'
       }, {
         path: 'sections.answers.damagesSelected.images'
-      }]);
+      }]).lean();
       return res.json({
         data: participas,
         status: 200
