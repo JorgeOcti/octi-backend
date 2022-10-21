@@ -111,6 +111,8 @@ export interface IParticipantDeliveryInfo {
   email: string;
   rut: string;
   order: string;
+  signature: IParticipantFile[];
+  identifyCard: IParticipantFile[];
 }
 
 export interface IParticipant {

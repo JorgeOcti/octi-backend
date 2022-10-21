@@ -847,6 +847,14 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
+              } else if (question?.kindUpdate === 'participant.clientSignature') {
+                newParticipant.deliveryInfo.signature = answer?.images?.length ?
+                  answer.images.map((image: string) => (new ObjectID(image)))
+                  : [];
+              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
+                newParticipant.deliveryInfo.identifyCard = answer?.images?.length ?
+                  answer.images.map((image: string) => (new ObjectID(image)))
+                  : [];
               }
               newAnswers.push({
                 _id: question._id,
@@ -864,7 +872,7 @@ class FormController {
                 comment,
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
-                images: answer && answer.images && answer.images.length ?
+                images: answer?.images?.length ?
                   answer.images.map((image: string) => (new ObjectID(image)))
                   : [],
                 qualification,
@@ -2254,7 +2262,7 @@ class FormController {
   public async allControls(req: IRequest, res: Response): Promise<any> {
     try {
       logger.info(`FormController.allControls email: ${req.user.email}`);
-      logger.info(`FormController.allControls email: ${req.user.email}query: ${JSON.stringify(req.query)}`);
+      logger.info(`FormController.allControls email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
       const activeForms = await Form.find({ team, active: true }, { '_id': true });

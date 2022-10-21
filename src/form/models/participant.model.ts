@@ -304,7 +304,15 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   },
   order: {
     type: String
-  }
+  },
+  signature: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+  identifyCard: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }]
 });
 
 export interface IParticipantModel extends IParticipant, mongoose.Document {

@@ -8,12 +8,26 @@ const groupSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
-  company: {
+  description: {
+    type: String
+  },
+  team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: [true, 'La empresa es requerida'],
-    index: true
+    required: [true]
   },
+  companies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+  }],
+  venues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form'
+  }],
+  modules: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Module',
+  }],
   permissions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Permission'
@@ -21,7 +35,11 @@ const groupSchema = new mongoose.Schema({
   forms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form'
-  }]
+  }],
+  active: {
+    type: Boolean,
+    default: true
+  }
 }, {
   timestamps: true
 });

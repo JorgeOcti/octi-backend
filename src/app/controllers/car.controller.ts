@@ -1517,6 +1517,10 @@ class CarController {
       }, {
         path: 'company',
         select: ['name']
+      }, {
+        path: 'deliveryInfo.identifyCard',
+      }, {
+        path: 'deliveryInfo.signature',
       }],
       sort: {
         _id: -1

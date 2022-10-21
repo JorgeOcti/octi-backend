@@ -162,7 +162,56 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                       {participant?.deliveryInfo?.order}
                     </div>
                   </ShowIf>
-                  {/*{JSON.stringify(participant.deliveryInfo)}*/}
+                  <div style={{ display: 'flex', alignItems: 'stretch'}}>
+                    {/*<div className='col-md-6'>*/}
+                      {
+                        participant?.deliveryInfo?.signature.map((image: any, index: number) => (
+                          <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none', paddingRight: '10px' }}>
+                            <a href={decodeURI(image.file.url)}
+                               data-toggle='lightbox'
+                               data-gallery={'signature'}
+                               data-title={`Firma cliente ${participant?.deliveryInfo?.name}`}
+                               data-footer={`Entrega ${participant.number}`}
+                            >
+                              <button
+                                className='btn btn-xs btn-default'
+                                data-toggle='tooltip'
+                                data-placement='top'
+                                title='Ver firma.'
+                              >
+                                <i className='fa fa-fw fa-pencil-square-o' />
+                              </button>
+                              {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+                            </a>
+                          </div>
+                        ))
+                      }
+                    {/*</div>*/}
+                    {/*<div className='col-md-6'>*/}
+                      {
+                        participant?.deliveryInfo?.identifyCard.map((image: any, index: number) => (
+                          <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none' }}>
+                            <a href={decodeURI(image.file.url)}
+                               data-toggle='lightbox'
+                               data-gallery={'identifyCard'}
+                               data-title={`Identificación cliente ${participant?.deliveryInfo?.name}`}
+                               data-footer={`Entrega ${participant.number}`}
+                            >
+                              <button
+                                className='btn btn-xs btn-default'
+                                data-toggle='tooltip'
+                                data-placement='top'
+                                title='Ver identificación.'
+                              >
+                                <i className='fa fa-fw fa-address-card-o' />
+                              </button>
+                              {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+                            </a>
+                          </div>
+                        ))
+                      }
+                    {/*</div>*/}
+                  </div>
                 </td>
                 <td className='middle-center hidden-xs hidden-sm'>
                   <div

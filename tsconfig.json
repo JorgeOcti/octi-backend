@@ -14,6 +14,7 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "jsx": "react",
     "lib": [
       "es6",
       "es7",

@@ -4,9 +4,9 @@ mongoose.set('strictQuery', false);
 mongoose.set('debug', true);
 
 /*
-* Migration: migration-name
-* npm exec migrate up migration-name
-* npm exec migrate down migration-name
+* Migration: core-create-groups
+* npm exec migrate up core-create-groups
+* npm exec migrate down core-create-groups
 * */
 
 // Make any changes you need to make to the database here
