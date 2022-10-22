@@ -176,7 +176,7 @@ const options: swaggerJSDoc.Options = {
 };
 
 const swaggerDocs = swaggerJSDoc(options);
-app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { customSiteTitle: 'API OSA Andes' }));
 
 
 const billingQueue = new Bull('billing', {
