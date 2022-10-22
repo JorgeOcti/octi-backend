@@ -224,6 +224,7 @@ carSchema.index({
 
 carSchema.index({ team: 1, vin: 1 });
 carSchema.index({ team: 1, vin2: 1 });
+carSchema.index({ team: 1, patent: 1 });
 carSchema.index({ team: 1, createdAt: -1 });
 carSchema.index({ team: 1 });
 carSchema.index({ venue: 1 });
