@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true,
+    "experimentalDecorators": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "baseUrl": "src",

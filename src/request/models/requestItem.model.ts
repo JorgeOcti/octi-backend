@@ -75,11 +75,13 @@ const requestItemSchema = new mongoose.Schema({
   },
   transmittal: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Transmittal'
+    ref: 'Transmittal',
+    index: true
   },
   transmittalItem: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'TransmittalItem'
+    ref: 'TransmittalItem',
+    index: true
   },
   // if assigned to transmittal
   assigned: {
