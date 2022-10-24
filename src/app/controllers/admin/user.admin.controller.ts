@@ -581,6 +581,7 @@ class AdminUsersController {
           view: 'account/welcome',
           context: {
             fullname,
+            companyName: req.user.company?.name,
             username: newUser.email,
             password
           }
