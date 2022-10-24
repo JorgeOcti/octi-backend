@@ -27,19 +27,13 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
   trackPage(): void {
     // console.log('trackPage');
     // if (this.shouldTrack()){
-    ReactGA.initialize('UA-101792436-1', {
-      // debug: true,
-      titleCase: false,
-      gaOptions: {
-        clientId: window.user._id,
-        name: window.user.email
-      }
-    });
-    ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`);
-    ReactGA.event({
-      category: 'Navegation',
-      action: this.title
-    });
+
+
+    ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`, ['tracker'], this.title);
+    // ReactGA.event({
+    //   category: 'Navegation',
+    //   action: this.title
+    // }, ['tracker']);
     MixpanelTracker.getInstance().trackAction(this.title);
     // }
   }
@@ -50,7 +44,8 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
   }
 
   public shouldTrack(): boolean {
-    return !window.user.email.includes('@osacontrol.com');
+    return true
+    // return !window.user.email.includes('@osacontrol.com');
   }
 
   private registerUser(): void {
