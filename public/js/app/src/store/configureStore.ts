@@ -27,7 +27,7 @@ const configureStore = () => {
   } else {
     middlewares.push(ThunkMiddleware);
     middlewares.push(createDebounce());
-    Raven.config('https://7cb5eacf6f8249b888468a1b72bd7632@sentry.osacontrol.com/5').install();
+    Raven.config('https://0420e8358aae4b1f91e2d0b234eddebd@sentry.osacontrol.com/17').install();
     const context = {
         id: window.user._id,
         name: `${window.user.firstName} ${window.user.lastName}`,
