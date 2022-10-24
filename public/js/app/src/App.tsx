@@ -170,7 +170,7 @@ $(() => {
 
   moment.locale('es');
   ReactGA.initialize('UA-101792436-1', {
-    debug: true,
+    debug: false,
     titleCase: false,
     gaOptions: {
       userId: window.user._id,
