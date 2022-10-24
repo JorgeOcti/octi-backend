@@ -2,16 +2,15 @@ import * as fs from 'fs';
 import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
-// import * as Raven from 'raven';
 import * as request from 'request';
-import {queue} from '../../utils/queue';
+import { queue } from '../../utils/queue';
 import Company from '../../app/models/company.model';
-import {ICompany} from '../../app/interfaces/company.interface';
+import { ICompany } from '../../app/interfaces/company.interface';
 import GeneralUtils from '../../utils/general.utils';
 import ActivityHistory from '../models/activityHistory.model';
-import Invoice, {IInvoiceModel} from '../models/invoice.model';
-import {RequestItem} from '../../request/models';
-import {ChoicesTypeActivity} from "../models";
+import Invoice, { IInvoiceModel } from '../models/invoice.model';
+import { RequestItem } from '../../request/models';
+import { ChoicesTypeActivity } from '../models';
 
 class BillingQueue {
 
@@ -212,7 +211,7 @@ class BillingQueue {
                 /* istanbul ignore next */
                 console.log(error);
               } else {
-                await invoice.update({file: invoice.file});
+                await invoice.update({ file: invoice.file });
                 this.sendEmail(invoice, company);
               }
             });
@@ -249,50 +248,49 @@ class BillingQueue {
 
   public async processBilling(team?: any): Promise<void> {
     try {
-      if (moment().isSame(moment().endOf('month').subtract(3, 'days'))) {
-        console.log('start billing');
-        // const valueUF = 28662.81; /*await this.getUFPrice();*/
-        // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-        const valueUF = await this.getUFPrice();
-        const filter: any = {
-          'billing.active': true
-        };
-        if (team) {
-          filter.team = team;
-        }
-        const companies = await Company.find(filter);
-        for (const company of companies) {
-          console.log(`calculating billing ${company.name}`);
-          const inventoryCars = await this.calculateCarsInInventory(company);
-          const checklistCars = await this.calculateCarsInChecklist(company);
-          const requestCars = await this.calculateCarsInRequest(company);
-          const totalInventory = inventoryCars * company.billing.inventoryPrice;
-          const totalChecklist = checklistCars * company.billing.checklistPrice;
-          const totalRequest = requestCars * company.billing.requestPrice;
-          const totalUF = totalInventory + totalChecklist + totalRequest;
-          const period = moment().format('YYYYMM');
-          const invoice = new Invoice({
-            team: company.team,
-            company,
-            period,
-            inventoryCars,
-            checklistCars,
-            requestCars,
-            inventoryPrice: company.billing.inventoryPrice,
-            checklistPrice: company.billing.checklistPrice,
-            requestPrice: company.billing.requestPrice,
-            totalUF,
-            valueUF,
-            // valueDolar,
-            // totalDolar: (totalUF * valueUF) / valueDolar,
-            totalPeso: totalUF * valueUF
-          });
-          if (!await Invoice.find({company, period}).countDocuments()) {
-            await invoice.save();
-            this.createPDF(invoice, company);
-          } else {
-            console.log(`${period} ${company.name} ya existe!!!.`);
-          }
+
+      console.log('start billing');
+      // const valueUF = 28662.81; /*await this.getUFPrice();*/
+      // const valueDolar = 767.98; /*await this.getDolarPrice();*/
+      const valueUF = await this.getUFPrice();
+      const filter: any = {
+        'billing.active': true
+      };
+      if (team) {
+        filter.team = team;
+      }
+      const companies = await Company.find(filter);
+      for (const company of companies) {
+        console.log(`calculating billing ${company.name}`);
+        const inventoryCars = await this.calculateCarsInInventory(company);
+        const checklistCars = await this.calculateCarsInChecklist(company);
+        const requestCars = await this.calculateCarsInRequest(company);
+        const totalInventory = inventoryCars * company.billing.inventoryPrice;
+        const totalChecklist = checklistCars * company.billing.checklistPrice;
+        const totalRequest = requestCars * company.billing.requestPrice;
+        const totalUF = totalInventory + totalChecklist + totalRequest;
+        const period = moment().format('YYYYMM');
+        const invoice = new Invoice({
+          team: company.team,
+          company,
+          period,
+          inventoryCars,
+          checklistCars,
+          requestCars,
+          inventoryPrice: company.billing.inventoryPrice,
+          checklistPrice: company.billing.checklistPrice,
+          requestPrice: company.billing.requestPrice,
+          totalUF,
+          valueUF,
+          // valueDolar,
+          // totalDolar: (totalUF * valueUF) / valueDolar,
+          totalPeso: totalUF * valueUF
+        });
+        if (!await Invoice.find({ company, period }).countDocuments()) {
+          await invoice.save();
+          this.createPDF(invoice, company);
+        } else {
+          console.log(`${period} ${company.name} ya existe!!!.`);
         }
       }
     } catch (e) {

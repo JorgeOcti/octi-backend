@@ -2,17 +2,17 @@ import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
 
 import * as request from 'request';
-import {queue} from '../../utils/queue';
-import TeamBilling from "../models/teamBilling.model";
-import History from "../../app/models/history.model";
-import Submodule from "../models/submodule.model";
-import InvoiceTeamBilling, {IInvoiceTeamBillingModel} from "../models/invoiceTeamBilling.module";
-import * as mongoose from "mongoose";
-import {Car} from "../../app/models";
-import {IInvoiceTeamBilling} from "../interfaces/invoiceTeamBilling.interface";
-import * as fs from "fs";
-import * as path from "path";
-import GeneralUtils from "../../utils/general.utils";
+import { queue } from '../../utils/queue';
+import TeamBilling from '../models/teamBilling.model';
+import History from '../../app/models/history.model';
+import Submodule from '../models/submodule.model';
+import InvoiceTeamBilling, { IInvoiceTeamBillingModel } from '../models/invoiceTeamBilling.module';
+import * as mongoose from 'mongoose';
+import { Car } from '../../app/models';
+import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
+import * as fs from 'fs';
+import * as path from 'path';
+import GeneralUtils from '../../utils/general.utils';
 
 class BillingTeamQueue {
 
@@ -118,7 +118,7 @@ class BillingTeamQueue {
               if (error) {
                 console.log(error);
               } else {
-                await invoice.update({file: invoice.file});
+                await invoice.update({ file: invoice.file });
                 this.sendEmail(invoice);
               }
             });
@@ -147,7 +147,7 @@ class BillingTeamQueue {
         context: {
           invoice,
           period,
-          name: notification.name,
+          name: notification.name
         }
       }).priority('high').attempts(5).save();
     }
@@ -156,189 +156,192 @@ class BillingTeamQueue {
   public async processBilling(filter: any = {}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        mongoose.set('debug', true);
-        console.log('START billing');
-        // const valueUF = 28662.81; /*await this.getUFPrice();*/
-        // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-        // const valueUF = await this.getUFPrice();
-        // const valueDolar = await this.getDolarPrice();
-        const teamBillings = await TeamBilling.find(filter).populate([{
-          path: 'team'
-        }]);
-        const subModules = await Submodule.find({});
-        const infoByType: any = subModules.reduce((acc: any, cur: any) => {
-          acc[cur.type] = {
-            'module': cur.module.toString(),
-            'subModule': cur._id.toString(),
-          };
-          return acc;
-        }, {});
-        for (const teamBilling of teamBillings) {
-          const now = moment();
-          const lastInvoice = await InvoiceTeamBilling
-            .findOne({
-              team: teamBilling.team._id,
-            }).sort({
-              createdAt: -1
-            });
-          const from = lastInvoice ? lastInvoice.to : new Date(`${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`);
-          const to = new Date(`${now.endOf('month').subtract(3, 'days').format('YYYY-MM-DD')}T00:00:00.000Z`);
-          const histories = await History
-            .find({
-              company: {$in: teamBilling.companies},
-              executedAt: {
-                $gte: from,
-                $lte: to
-              }
-            },{
-              company: 1,
-              car: 1,
-              module: 1,
-            })
-            .populate([{
-              path: 'car',
-              select: ['vin']
-            }])
-            .sort({
-              executedAt: 1
-            });
-          const usedVINS: any[] = [];
-          const countByModule: any = {};
-          const countBySubmodule: any = {};
-          const countByCompany: any = {};
-          const uniqueHistories: any[] = [];
 
-          for (const history of histories) {
-            if (history.module in infoByType && history?.car?.vin?.trim()?.length && !usedVINS.includes(history.car.vin)) {
-              uniqueHistories.push(history._id);
-              usedVINS.push(history.car.vin);
-              const info = infoByType[history.module];
+        if (moment().isSame(moment().endOf('month').subtract(3, 'days'))) {
+          mongoose.set('debug', true);
+          console.log('START billing');
+          // const valueUF = 28662.81; /*await this.getUFPrice();*/
+          // const valueDolar = 767.98; /*await this.getDolarPrice();*/
+          // const valueUF = await this.getUFPrice();
+          // const valueDolar = await this.getDolarPrice();
+          const teamBillings = await TeamBilling.find(filter).populate([{
+            path: 'team'
+          }]);
+          const subModules = await Submodule.find({});
+          const infoByType: any = subModules.reduce((acc: any, cur: any) => {
+            acc[cur.type] = {
+              'module': cur.module.toString(),
+              'subModule': cur._id.toString()
+            };
+            return acc;
+          }, {});
+          for (const teamBilling of teamBillings) {
+            const now = moment();
+            const lastInvoice = await InvoiceTeamBilling
+              .findOne({
+                team: teamBilling.team._id
+              }).sort({
+                createdAt: -1
+              });
+            const from = lastInvoice ? lastInvoice.to : new Date(`${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`);
+            const to = new Date(`${now.endOf('month').subtract(3, 'days').format('YYYY-MM-DD')}T00:00:00.000Z`);
+            const histories = await History
+              .find({
+                company: { $in: teamBilling.companies },
+                executedAt: {
+                  $gte: from,
+                  $lte: to
+                }
+              }, {
+                company: 1,
+                car: 1,
+                module: 1
+              })
+              .populate([{
+                path: 'car',
+                select: ['vin']
+              }])
+              .sort({
+                executedAt: 1
+              });
+            const usedVINS: any[] = [];
+            const countByModule: any = {};
+            const countBySubmodule: any = {};
+            const countByCompany: any = {};
+            const uniqueHistories: any[] = [];
 
-              if (info.module in countByModule) {
-                countByModule[`${info.module}`] = {
-                  _id: info.module,
-                  count: countByModule[`${info.module}`].count + 1,
-                  histories: [...countByModule[`${info.module}`].histories, history._id]
-                };
-              } else {
-                countByModule[`${info.module}`] = {
-                  _id: info.module,
-                  count: 1,
-                  histories: [history._id]
-                };
-              }
+            for (const history of histories) {
+              if (history.module in infoByType && history?.car?.vin?.trim()?.length && !usedVINS.includes(history.car.vin)) {
+                uniqueHistories.push(history._id);
+                usedVINS.push(history.car.vin);
+                const info = infoByType[history.module];
 
-              if (info.subModule in countBySubmodule) {
-                countBySubmodule[`${info.subModule}`] = {
-                  _id: info.subModule,
-                  count: countBySubmodule[`${info.subModule}`].count + 1,
-                  histories: [...countBySubmodule[`${info.subModule}`].histories, history._id]
-                };
-              } else {
-                countBySubmodule[`${info.subModule}`] = {
-                  _id: info.subModule,
-                  count: 1,
-                  histories: [history._id]
-                };
-              }
+                if (info.module in countByModule) {
+                  countByModule[`${info.module}`] = {
+                    _id: info.module,
+                    count: countByModule[`${info.module}`].count + 1,
+                    histories: [...countByModule[`${info.module}`].histories, history._id]
+                  };
+                } else {
+                  countByModule[`${info.module}`] = {
+                    _id: info.module,
+                    count: 1,
+                    histories: [history._id]
+                  };
+                }
 
-              if (history.company in countByCompany) {
-                countByCompany[`${history.company}`] = {
-                  _id: history.company,
-                  count: countByCompany[`${history.company}`].count + 1,
-                  histories: [...countByCompany[`${history.company}`].histories, history._id]
-                };
-              } else {
-                countByCompany[`${history.company}`] = {
-                  _id: history.company,
-                  count: 1,
-                  histories: [history._id]
-                };
+                if (info.subModule in countBySubmodule) {
+                  countBySubmodule[`${info.subModule}`] = {
+                    _id: info.subModule,
+                    count: countBySubmodule[`${info.subModule}`].count + 1,
+                    histories: [...countBySubmodule[`${info.subModule}`].histories, history._id]
+                  };
+                } else {
+                  countBySubmodule[`${info.subModule}`] = {
+                    _id: info.subModule,
+                    count: 1,
+                    histories: [history._id]
+                  };
+                }
+
+                if (history.company in countByCompany) {
+                  countByCompany[`${history.company}`] = {
+                    _id: history.company,
+                    count: countByCompany[`${history.company}`].count + 1,
+                    histories: [...countByCompany[`${history.company}`].histories, history._id]
+                  };
+                } else {
+                  countByCompany[`${history.company}`] = {
+                    _id: history.company,
+                    count: 1,
+                    histories: [history._id]
+                  };
+                }
               }
             }
-          }
-          console.log({
-            countByModule,
-            countByCompany,
-            countBySubmodule
-          });
-          const period = now.format('YYYYMM');
-          let sumUFbyModule:any = {};
-          let totalDolar = 0;
-          teamBilling.modules.forEach((module: any) => {
-            if (module.module in countByModule) {
-              module.sections
-                .sort((a: any, b: any) => {
-                  if (a.start < b.start) {
-                    return -1;
-                  }
-                  if (a.start > b.start) {
-                    return 1;
-                  }
-                  return 0;
-                })
-                .forEach((section: any) => {
-                  new Array(countByModule[`${module.module}`].count).fill(0).forEach((_, index: number) => {
-                    const item = index + 1;
-                    if (item >= section.start && item <= section.end) {
-                      totalDolar += section.price;
-                      if (module.module in sumUFbyModule) {
-                        const count = sumUFbyModule[`${module.module}`].count + 1;
-                        const total = sumUFbyModule[`${module.module}`].total + section.price;
-                        sumUFbyModule[`${module.module}`] = {
-                          count,
-                          total
-                        }
-                      } else {
-                        sumUFbyModule[`${module.module}`] = {
-                          count: 1,
-                          total: section.price
-                        };
-                      }
+            console.log({
+              countByModule,
+              countByCompany,
+              countBySubmodule
+            });
+            const period = now.format('YYYYMM');
+            let sumUFbyModule: any = {};
+            let totalDolar = 0;
+            teamBilling.modules.forEach((module: any) => {
+              if (module.module in countByModule) {
+                module.sections
+                  .sort((a: any, b: any) => {
+                    if (a.start < b.start) {
+                      return -1;
                     }
+                    if (a.start > b.start) {
+                      return 1;
+                    }
+                    return 0;
                   })
-                });
+                  .forEach((section: any) => {
+                    new Array(countByModule[`${module.module}`].count).fill(0).forEach((_, index: number) => {
+                      const item = index + 1;
+                      if (item >= section.start && item <= section.end) {
+                        totalDolar += section.price;
+                        if (module.module in sumUFbyModule) {
+                          const count = sumUFbyModule[`${module.module}`].count + 1;
+                          const total = sumUFbyModule[`${module.module}`].total + section.price;
+                          sumUFbyModule[`${module.module}`] = {
+                            count,
+                            total
+                          };
+                        } else {
+                          sumUFbyModule[`${module.module}`] = {
+                            count: 1,
+                            total: section.price
+                          };
+                        }
+                      }
+                    });
+                  });
+              }
+            });
+
+            const invoiceData = {
+              team: teamBilling.team,
+              period,
+              teamBilling,
+              histories: histories.map((history: any) => history._id),
+              uniqueHistories,
+              modules: Object.values(countByModule).map((module: any) => ({
+                module: module._id,
+                histories: module.histories
+              })),
+              subModules: Object.values(countBySubmodule).map((subModule: any) => ({
+                subModule: subModule._id,
+                histories: subModule.histories
+              })),
+              companies: Object.values(countByCompany).map((company: any) => ({
+                company: company._id,
+                histories: company.histories
+              })),
+              // valueUF,
+              // valueDolar,
+              // totalUF,
+              from,
+              to,
+              total: uniqueHistories.length,
+              realDolar: totalDolar,
+              totalDolar: totalDolar > teamBilling.baseCost ? totalDolar : teamBilling.baseCost
+              // total
+            };
+
+            if (!await InvoiceTeamBilling.find({ team: teamBilling.team, period }).countDocuments()) {
+              const invoice = new InvoiceTeamBilling(invoiceData);
+              await invoice.save();
+              this.createPDF(invoice);
+            } else {
+              console.log(`${period} ${teamBilling.team.name} ya existe!!!.`);
             }
-          });
-
-          const invoiceData = {
-            team: teamBilling.team,
-            period,
-            teamBilling,
-            histories: histories.map((history: any) => history._id),
-            uniqueHistories,
-            modules: Object.values(countByModule).map((module: any) => ({
-              module: module._id,
-              histories: module.histories,
-            })),
-            subModules: Object.values(countBySubmodule).map((subModule: any) => ({
-              subModule: subModule._id,
-              histories: subModule.histories,
-            })),
-            companies: Object.values(countByCompany).map((company: any) => ({
-              company: company._id,
-              histories: company.histories,
-            })),
-            // valueUF,
-            // valueDolar,
-            // totalUF,
-            from,
-            to,
-            total: uniqueHistories.length,
-            realDolar: totalDolar,
-            totalDolar: totalDolar > teamBilling.baseCost ? totalDolar : teamBilling.baseCost,
-            // total
-          };
-
-          if (!await InvoiceTeamBilling.find({ team: teamBilling.team, period }).countDocuments()) {
-            const invoice = new InvoiceTeamBilling(invoiceData);
-            await invoice.save();
-            this.createPDF(invoice);
-          } else {
-            console.log(`${period} ${teamBilling.team.name} ya existe!!!.`);
           }
         }
-        resolve({})
+        resolve({});
 
         /*const companies = await Company.find(filter);
         for (const company of companies) {
@@ -376,9 +379,9 @@ class BillingTeamQueue {
         }*/
       } catch (e) {
         console.log(e);
-        reject({})
+        reject({});
       }
-    })
+    });
   }
 }
 
