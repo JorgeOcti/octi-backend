@@ -2264,10 +2264,10 @@ class FormController {
       logger.info(`FormController.allControls email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
-      const activeForms = await Form.find({ team, active: true }, { '_id': true });
       const filter = {
         team,
-        form: { $in: activeForms.map((f) => f._id) },
+        active: true,
+        // form: { $in: activeForms.map((f) => f._id) },
         /*deliveryToCustomer: true,
         createdAt: {
           $gte: moment().subtract(2, 'days').startOf('day').toDate(),
@@ -2331,11 +2331,11 @@ class FormController {
             '_id': true,
             'name': true
           },
-        }, {
+        }/*, {
           path: 'sections.answers.images'
         }, {
           path: 'sections.answers.damagesSelected.images'
-        }],
+        }*/],
         lean: true,
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)

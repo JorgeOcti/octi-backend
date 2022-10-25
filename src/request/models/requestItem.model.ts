@@ -168,6 +168,7 @@ requestItemSchema.set<any>('expires', 30);
 
 requestItemSchema.index({ team: 1 });
 requestItemSchema.index({ team: 1, 'meta.request.number': -1, origin: 1, createdAt: 1 });
+requestItemSchema.index({ 'meta.status._id': 1 });
 requestItemSchema.index({ team: 1, 'meta.car.vin': -1, origin: 1, createdAt: 1 });
 requestItemSchema.index({ team: 1, 'meta.request.number': -1, destination: 1, createdAt: 1 });
 requestItemSchema.index({ team: 1, 'meta.car.vin': -1, destination: 1, createdAt: 1 });

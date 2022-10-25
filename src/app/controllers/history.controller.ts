@@ -109,7 +109,8 @@ class HistoryController {
         return res.json(car);
       } else {
         return res.status(404).json({
-          message: 'Not found'
+          message: 'Not found',
+          status: 404
         });
       }
     } catch (e) {
