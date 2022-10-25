@@ -2331,11 +2331,11 @@ class FormController {
             '_id': true,
             'name': true
           },
-        }/*, {
+        }, {
           path: 'sections.answers.images'
         }, {
           path: 'sections.answers.damagesSelected.images'
-        }*/],
+        }],
         lean: true,
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)
