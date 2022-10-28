@@ -496,6 +496,7 @@ participantSchema.set<any>('expires', 10);
 
 participantSchema.index({ team: 1, active: 1 });
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
+participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, deliveryToCustomer: 1, _id: -1, form: 1, venue: 1, kind: 1, createdAt: 1, car: 1 });
 participantSchema.index({ team: 1, createdAt: -1, form: 1 });
 participantSchema.index({ createdAt: -1 });

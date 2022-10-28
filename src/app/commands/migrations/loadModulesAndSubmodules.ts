@@ -1,10 +1,10 @@
-import { ModuleHistory } from '../../../app/models/history.types';
+/*import { ModuleHistory } from '../../../app/models/history.types';*/
 import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Module from '../../../billing/models/module.model';
-import Submodule from '../../../billing/models/submodule.model';
+/*import Module from '../../../billing/models/module.model';
+import Submodule from '../../../billing/models/submodule.model';*/
 import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
 
 async function loadModulesAndSubmodules() {
@@ -17,7 +17,7 @@ async function loadModulesAndSubmodules() {
   await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   mongoose.set('debug', true);
   try {
-    let module;
+    /*let module;
     module = await Module.findOneAndUpdate({ name: 'Control de Stock' }, { name: 'Control de Stock' }, { upsert: true, new: true });
     await Submodule.findOneAndUpdate({
       name: 'Control de Unidad',
@@ -82,7 +82,7 @@ async function loadModulesAndSubmodules() {
       name: 'Transporte',
       module: module._id,
       type: ModuleHistory.transportation
-    }, { upsert: true, new: true });
+    }, { upsert: true, new: true });*/
     await new BillingTeamQueue().processBilling({
 
     });
