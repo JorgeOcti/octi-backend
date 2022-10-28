@@ -156,8 +156,7 @@ class BillingTeamQueue {
   public async processBilling(filter: any = {}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-
-        // if (moment().isSame(moment().endOf('month').subtract(3, 'days'))) {
+        if (moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'))) {
           mongoose.set('debug', true);
           console.log('START billing');
           // const valueUF = 28662.81; /*await this.getUFPrice();*/
@@ -340,7 +339,7 @@ class BillingTeamQueue {
               console.log(`${period} ${teamBilling.team.name} ya existe!!!.`);
             }
           }
-        // }
+        }
         resolve({});
 
         /*const companies = await Company.find(filter);
