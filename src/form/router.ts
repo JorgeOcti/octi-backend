@@ -19,40 +19,7 @@ router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.apiR
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 
-/**
- * @swagger
- * /api/v1/forms/deliveries/:
- *   get:
- *     tags:
- *     - Control de unidades
- *     summary: Listado de las unidades entregadas en las últimas 48 horas
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: Respuesta exitosa
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Participant'
- *                 status:
- *                   type: string
- *                   example: 200
- *       401:
- *         description: Error de autenticación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/responses/Error401'
- *     security:
- *       - ApiKeyAuth: []
- */
-router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);
+/*router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);*/
 
 /**
  * @swagger
