@@ -13,7 +13,9 @@ const initialState: IStockState = {
     venues: [],
     colors: [],
     brands: [],
-    denominations: []
+    denominations: [],
+    from: moment().subtract(30, 'days').startOf('day'),
+    to: moment().endOf('day')
   },
   dataFilters:{
     venues:[],
@@ -38,6 +40,8 @@ export interface IFilterStock {
   colors: string[];
   brands: string[];
   denominations: string[];
+  from: any;
+  to: any;
 }
 
 

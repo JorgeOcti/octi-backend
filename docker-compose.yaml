@@ -12,6 +12,7 @@ services:
       - 27017:27017
     volumes:
       - mongo:/data/db
+      - mongoConf:/data/configdb
 
   redis:
     image: redis:5.0.3
@@ -92,4 +93,5 @@ services:
 
 volumes:
   mongo:
+  mongoConf:
   redis:

@@ -396,10 +396,10 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
         cancelLabel: 'Cancelar'
       },
       ranges: {
-        'Este mes': [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
-        'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-        'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-        'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
+        'Este mes': [moment().startOf('month').startOf('month'), moment().endOf('month')],
+        'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month'), moment().endOf('month')],
+        'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month'), moment().endOf('month')],
+        'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month'), moment().endOf('month')]
       },
       opens: 'left'
     };

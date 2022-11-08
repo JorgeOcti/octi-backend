@@ -2221,7 +2221,7 @@ class InventoryController {
         current: true,
         status: { $in: [StatusHistory.available, StatusHistory.inTransit] },
         createdAt: {
-          $gt: moment().subtract(60, 'days')
+          $gt: moment().subtract(30, 'days')
         }
       }, {
         status: true,
@@ -2234,17 +2234,17 @@ class InventoryController {
       }, {
         path: 'from',
         select: ['name'],
-        populate: [{
+        populate: [/*{
           path: 'region',
           select: ['code', 'name']
-        }]
+        }*/]
       }, {
         path: 'to',
         select: ['name'],
-        populate: [{
+        populate: [/*{
           path: 'region',
           select: ['code', 'name']
-        }]
+        }*/]
       }]).lean();
 
       res
