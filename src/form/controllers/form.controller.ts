@@ -2267,6 +2267,9 @@ class FormController {
       const filter = {
         team,
         active: true,
+        createdAt: {
+          $gte: moment().subtract(2, 'days').startOf('day').toDate()
+        }
         // form: { $in: activeForms.map((f) => f._id) },
         /*deliveryToCustomer: true,
         createdAt: {
