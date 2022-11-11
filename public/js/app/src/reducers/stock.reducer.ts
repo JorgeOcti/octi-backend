@@ -2,6 +2,7 @@ import {IStockState, StockReducerAction} from "../actions/stock.actions";
 import * as unorm from "unorm";
 import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
 import * as moment from 'moment-timezone';
+import { StatusHistory } from "../../../../../src/app/models/history.types";
 
 const initialState: IStockState = {
   cars: [],
@@ -9,7 +10,7 @@ const initialState: IStockState = {
   filter: {
     text: '',
     property: '',
-    type: '',
+    status: [StatusHistory.available, StatusHistory.inTransit],
     venues: [],
     colors: [],
     brands: [],
@@ -29,12 +30,30 @@ const initialState: IStockState = {
   searching: false,
   message: "",
   loading: true,
-  source: null
+  source: null,
+  rangeOptions: {
+    startDate: moment().subtract(11, 'months').startOf('month').toDate(),
+    endDate: moment().toDate(),
+    maxDate: moment().toDate(),
+    locale: {
+      format: 'DD/MM/YYYY',
+      customRangeLabel: 'Período personalizado',
+      applyLabel: 'Aplicar',
+      cancelLabel: 'Cancelar'
+    },
+    ranges: {
+      // 'Este mes': [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
+      // 'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+      // 'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
+      // 'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
+    },
+    opens: 'left'
+  }
 };
 
 export interface IFilterStock {
   text: string;
-  type: string;
+  status: string[];
   property: string;
   venues: string[];
   colors: string[];
@@ -65,12 +84,33 @@ export function stockReducer(state = initialState, action: StockReducerAction) {
         searching: isSearching(action.payload.filter)
       };
     case '/STOCK/LOAD':
+      let rangeOptions: any = state.rangeOptions;
+      let filter: any = state.filter;
+      if (action.payload.inventories.length && !Object.keys(state.rangeOptions.ranges as any).length) {
+        if (action.payload.inventories.length === 2) {
+          rangeOptions['ranges']['Último inventario'] = [moment(action.payload.inventories[0].createdAt).startOf('day'), moment().endOf('day')];
+          rangeOptions['ranges']['Penúltimo inventario'] = [moment(action.payload.inventories[1].createdAt).startOf('day'), moment().endOf('day')];
+          rangeOptions['startDate'] = moment(action.payload.inventories[0].createdAt).startOf('day');
+          rangeOptions['endDate'] = moment().endOf('day');
+          filter['from'] = moment(action.payload.inventories[0].createdAt).startOf('day');
+          filter['to'] = moment().endOf('day');
+        }
+        if (action.payload.inventories.length === 1) {
+          rangeOptions['ranges']['Último inventario'] = [moment(action.payload.inventories[0].createdAt).startOf('day'), moment(action.payload.inventories[0].finalizedAt).endOf('day')];
+          rangeOptions['startDate'] = moment(action.payload.inventories[0].createdAt).startOf('day');
+          rangeOptions['endDate'] = moment().endOf('day');
+          filter['from'] = moment(action.payload.inventories[0].createdAt).startOf('day');
+          filter['to'] = moment().endOf('day');
+        }
+      }
       return {
         ...state,
         cars: action.payload.cars,
         ...processCars(action.payload.cars, state.filter),
         dataFilters: processfilters(action.payload.cars),
-        message: action.payload.message
+        message: action.payload.message,
+        filter,
+        rangeOptions
       };
     default:
       return state;
@@ -78,12 +118,8 @@ export function stockReducer(state = initialState, action: StockReducerAction) {
 }
 
 function isSearching(filter: IFilterStock){
-  const {text, brands, venues, colors, denominations, property, type} = filter;
-  if(text.length || brands.length || venues.length || colors.length || denominations.length || property.length || type.length) {
-    return true
-  }
-  return false;
-
+  const {text, brands, venues, colors, denominations, property, status} = filter;
+  return !!(text.length || brands.length || venues.length || colors.length || denominations.length || property.length || status.length);
 }
 
 function processfilters(cars:IInventoryCar[]){
@@ -103,7 +139,7 @@ function processfilters(cars:IInventoryCar[]){
   for (const car of cars) {
 
     if (!car.car)
-      continue
+      continue;
     const {color, property, type, brand, denomination} = car.car;
     const {from, to } = car as any;
     let venue = to ? to : from ? from : null;
@@ -162,9 +198,15 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
       continue;
 
     let add = true;
-    let venue = (car as any).to ? (car as any).to : (car as any).from
+    let venue = (car as any).to ? (car as any).to : (car as any).from;
 
-    if (filter && filter.venues && filter.venues.length && venue) {
+    if (filter.from) {
+      add = moment(car.createdAt).isSameOrAfter(filter.from);
+    }
+    if (add && filter.to) {
+      add = moment(car.createdAt).isSameOrBefore(filter.to);
+    }
+    if (add && filter && filter.venues && filter.venues.length && venue) {
       add = (filter.venues as any).includes(venue._id);
     }
     if (add && filter && filter.brands && filter.brands.length && car.car.brand) {
@@ -179,8 +221,8 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
     if (add && filter && filter.property && filter.property.length) {
       add = car.car.property === filter.property;
     }
-    if (add && filter && filter.type && filter.type.length) {
-      add = car.car.type === filter.type;
+    if (add && filter && filter.status && filter.status.length) {
+      add = filter.status.includes(car.status);
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
@@ -189,7 +231,7 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
           .toLowerCase()
           .includes(text.toLowerCase())
       ));
-      add = result.every((element: boolean) => element === true) === true;
+      add = result.every((element: boolean) => element);
     }
 
     const patent: string = car.car.patent ? car.car.patent : '';
@@ -201,6 +243,7 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
       }
       const venueFoundID = venue ? venue._id : '-';
       let daysInVenue = null;
+      let daysPermanence = moment().diff(moment(car.car.createdAt), 'days');
       let receptionVenue = null;
 
       if (car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venueFoundID) {
@@ -230,6 +273,8 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: 
         receptionVenue,
         lastUpdate: car.createdAt,
         daysInVenue,
+        movements: car.car.events.length,
+        daysPermanence,
         patent,
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
         status: car.status,

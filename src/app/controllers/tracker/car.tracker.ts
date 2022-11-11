@@ -309,7 +309,6 @@ class CarTracker {
 
   private async createHistory(history: Partial<IHistory>) {
     return new Promise(async (resolve, reject) => {
-      // logger.info(`CarTracker.createHistory: history: ${JSON.stringify(history)}`);
       try {
         history = {
           ...history,

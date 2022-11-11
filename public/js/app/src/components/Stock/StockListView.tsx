@@ -9,27 +9,21 @@ import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
-import {
-  changeFilter,
-  changeFilterText,
-  getStockAction,
-  IStockState,
-  StockReducerAction
-} from '../../actions/stock.actions';
+import { changeFilter, changeFilterText, getStockAction, IStockState, StockReducerAction } from '../../actions/stock.actions';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
 import * as XLSX from 'xlsx';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import Row from '../Utils/Row';
 import { IFilterStock } from '../../reducers/stock.reducer';
 import ShowIf from '../Utils/ShowIf';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import { IWindow } from '../../interfaces/window';
-import { hasPermission } from '../../utils/common';
+import { parseReplicableURL } from '../../utils/common';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { StatusHistory } from '../../../../../../src/app/models/history.types';
 import DateRangeInput from '../Utils/DateRangeInput';
+import CopyText from '../Utils/CopyText';
 
 declare let window: IWindow;
 
@@ -48,7 +42,6 @@ interface IStateType {
   error: Error | null;
 }
 
-
 class StockView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
@@ -57,6 +50,8 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     showTotal: true,
     paginationTotalRenderer: this.customTotal,
     sizePerPageList: [{
+      text: '25', value: 25
+    },{
       text: '40', value: 40
     }, {
       text: '100', value: 100
@@ -71,6 +66,18 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     }
   };
 
+  readonly statusText: any = {
+    available: 'Disponible',
+    inTransit: 'En tránsito',
+    sale: 'Vendido'
+  };
+
+  readonly statusClass: any = {
+    available: 'label-primary',
+    inTransit: 'label-yellow',
+    sale: 'label-green'
+  };
+
   private socket: Socket;
 
   readonly columns: any[] = [];
@@ -79,30 +86,15 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     dataField: 'daysInVenue',
     order: 'desc'
   }];
-  private rangeOptions: daterangepicker.Options = {
-    // startDate: moment().subtract(11, 'months').startOf('month').toDate(),
-    // endDate: moment().toDate(),
-    maxDate: moment().toDate(),
-    locale: {
-      format: 'DD/MM/YYYY',
-      customRangeLabel: 'Período personalizado',
-      applyLabel: 'Aplicar',
-      cancelLabel: 'Cancelar'
-    },
-    ranges: {
-      'Este mes': [moment().startOf('month').startOf('month').toDate(), moment().endOf('month').toDate()],
-      'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-      'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month').toDate(), moment().endOf('month').toDate()],
-      'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month').toDate(), moment().endOf('month').toDate()]
-    },
-    opens: 'left'
-  };
 
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Stock Actual';
     this.xlsExport = this.xlsExport.bind(this);
     this.daysInVenue = this.daysInVenue.bind(this);
+    this.daysPermanence = this.daysPermanence.bind(this);
+    this.onDateRangeChange = this.onDateRangeChange.bind(this);
+    this.movements = this.movements.bind(this);
     this.repcetionVenue = this.repcetionVenue.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
@@ -112,72 +104,83 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     this.filterDenominations = this.filterDenominations.bind(this);
     this.filterAllColors = this.filterAllColors.bind(this);
     this.filterColors = this.filterColors.bind(this);
-    this.filterType = this.filterType.bind(this);
+    this.filterStatus = this.filterStatus.bind(this);
     this.venueFormatter = this.venueFormatter.bind(this);
     this.filterProperty = this.filterProperty.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
     this.statusHumanize = this.statusHumanize.bind(this);
+    this.statusFormatter = this.statusFormatter.bind(this);
+    this.vinFormatter = this.vinFormatter.bind(this);
+    this.brandFormatter = this.brandFormatter.bind(this);
+    this.detailFormatter = this.detailFormatter.bind(this);
 
     this.columns = [{
       dataField: 'vin',
       text: 'VIN',
-      // formatter: this.brandFormatter,
+      headerStyle:{width: '170px'},
+      formatter: this.vinFormatter,
       // filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle text-primary',
       headerClasses: 'middle pointer',
       sort: true
-    }, /*{
-      dataField: 'internalNumber',
-      text: 'Nº Interno',
-      classes: 'middle',
-      headerClasses: 'middle pointer',
-      sort: true
-    }*/, {
+    }, {
       dataField: 'brand',
       text: 'Marca',
+      formatter: this.brandFormatter,
       classes: 'middle',
+      headerStyle:{minWidth: '80px'},
       headerClasses: 'middle pointer',
       sort: true
     }, {
       dataField: 'denomination',
-      text: 'Modelo',
+      text: 'Detalle',
       classes: 'middle',
+      formatter: this.detailFormatter,
       headerClasses: 'middle pointer',
-      sort: true
-    }, {
-      dataField: 'color',
-      text: 'Color',
-      classes: 'middle',
-      headerClasses: 'middle pointer',
+      // headerStyle:{maxWidth: '280px'},
       sort: true
     }, {
       dataField: 'status',
       text: 'Estado',
       formatter: this.statusFormatter,
       classes: 'middle',
+      headerStyle:{minWidth: '100px'},
       headerClasses: 'middle pointer',
       sort: true
     }, {
       dataField: 'to',
       text: 'Sucursal',
+      headerStyle:{minWidth: '100px'},
       formatter: this.venueFormatter,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
     }, {
-      dataField: 'lastUpdate',
-      text: 'Actualizado',
-      formatter: this.repcetionVenue,
+      dataField: 'movements',
+      text: 'Movimientos',
+      headerStyle:{width: '120px'},
+      formatter: this.movements,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
     }, {
       dataField: 'daysInVenue',
-      text: 'Días Sucursal',
+      text: 'En Sucursal',
+      // headerFormatter: () => (<span>Días<br />Sucursal</span>),
       formatter: this.daysInVenue,
       classes: 'middle',
       headerClasses: 'middle pointer',
+      headerStyle:{minWidth: '110px'},
+      sort: true
+    }, {
+      dataField: 'daysPermanence',
+      text: 'Permanencia',
+      // headerFormatter: () => (<span>Días<br />Permanencia</span>),
+      formatter: this.daysPermanence,
+      classes: 'middle',
+      headerClasses: 'middle pointer',
+      headerStyle:{minWidth: '125px'},
       sort: true
     }];
   }
@@ -238,25 +241,27 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, carsTable, dataFilters, filter, searching, message } = this.props.stock;
+    const { loading, carsTable, dataFilters, filter, searching, message, rangeOptions } = this.props.stock;
     return (
       <AppContainer title={
         <div
           style={{ width: '180px' }}
         >
-          <DateRangeInput
-            options={this.rangeOptions}
-            onChange={this.onDateRangeChange}
-            startDate={filter.from}
-            endDate={filter.to}
-          />
+          <ShowIf condition={Object.keys(this.props.stock.rangeOptions.ranges!).length > 0}>
+            <DateRangeInput
+              options={rangeOptions}
+              onChange={this.onDateRangeChange}
+              startDate={filter.from}
+              endDate={filter.to}
+            />
+          </ShowIf>
 
         </div>
       } cMenu='2' cSubMenu='2.4'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Stock Actual</h3>
+              <h3 className='box-title'>Stock Actual <small>{carsTable.length}</small></h3>
               <ShowIf condition={!loading && message.length < 1}>
                 <div className='box-tools pull-right'>
                   <button
@@ -302,6 +307,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
                             type='text'
                             className='form-control input-sm'
                             id='cars'
+                            defaultValue={filter.text}
                             placeholder='Busca por VIN, Nº interno, patente, marca o modelo.'
                             onChange={this.handleChangeSearchText}
                           />
@@ -329,21 +335,24 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                       <div className='col-md-4' style={{padding: '0 5px'}}>
                         <div className='form-group'>
-                          <label htmlFor='types' className='control-label'>Tipo</label>
+                          <label htmlFor='types' className='control-label'>Estado</label>
                           <BootstrapSelect
                             noneSelectedText='Todos'
                             displayItems={4}
                             sm={true}
                             selectedText='estados seleccionados.'
                             separator=' - '
-                            options={dataFilters.types
-                              .map((type) => ({
-                                value: type,
-                                text: type
-                              }))}
-                            selected={[filter.type]}
-                            autoClouse={true}
-                            onClick={this.filterType}
+                            options={Object
+                            .keys(this.statusText)
+                            .map((status: any) => ({
+                              value: status,
+                              text: this.statusText[status],
+                              className: `label ${this.statusClass[status]}`
+                            }))}
+                            // allOption={true}
+                            selected={filter.status}
+                            // autoClouse={true}
+                            onClick={this.filterStatus}
                           />
                         </div>
                       </div>
@@ -582,11 +591,13 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  private filterType(value: string): void {
+  private filterStatus(value: string): void {
     const { filter } = this.props.stock;
     this.props.changeFilter({
       ...filter,
-      type: filter.type !== value ? value : ''
+      status: filter.status.includes(value)
+        ? filter.status.filter((s) => s !== value)
+        : [value, ...filter.status]
     });
   }
 
@@ -606,7 +617,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       brands: [],
       denominations: [],
       property: '',
-      type: '',
+      status: [],
       text: '',
       from,
       to
@@ -656,14 +667,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private statusHumanize(status: StatusHistory) {
-    switch (status) {
-      case StatusHistory.available:
-        return 'Disponible';
-      case StatusHistory.inTransit:
-        return 'En transito';
-      default:
-        return '-';
-    }
+    return this.statusText[status]
   }
 
   private customTotal(from: any, to: any, size: any) {
@@ -674,8 +678,26 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
-  private daysInVenue(cell: string, row: any) {
-    return row.daysInVenue ?? '-';
+  private daysInVenue(_: string, row: any) {
+    if(row.daysInVenue){
+      return (
+        <>{row.daysInVenue}</>
+      );
+    }
+    return '-';
+  }
+
+  private movements(cell: string, row: any) {
+    return row.movements ?? '-';
+  }
+
+  private daysPermanence(cell: string, row: any) {
+    if(row.daysPermanence){
+      return (
+        <>{row.daysPermanence}</>
+      );
+    }
+    return '-';
   }
 
   private repcetionVenue(cell: string, row: any) {
@@ -686,18 +708,44 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     return row.venueFound !== '-' ? row.venueFound : row.venue;
   }
 
-  private statusFormatter(cell: string, row: any) {
-    let status: StatusHistory = row.status;
-    switch (status) {
-      case StatusHistory.available:
-        return 'Disponible';
-      case StatusHistory.inTransit:
-        return 'En transito';
-      default:
-        return '-';
-    }
+  private vinFormatter(cell: string, row: any) {
+    return (
+      <CopyText value={row.vin || '-'}>
+        <strong
+          className='text-primary pointer text-underline'
+          onClick={() => this.props.history.push(parseReplicableURL(`/settings/cars/${row.carID}`))}
+        >
+          {row.vin || '-'}
+        </strong>
+      </CopyText>
+    );
   }
 
+  private brandFormatter(cell: string, row: any) {
+    return (
+      <div>
+        <strong>{row.brand}</strong><br />
+      </div>
+    );
+  }
+
+  private detailFormatter(cell: string, row: any) {
+    return (
+      <div>
+        <strong>{row.denomination}</strong><br />
+        {row.color}
+      </div>
+    );
+  }
+
+  private statusFormatter(cell: string, row: any) {
+    let status: StatusHistory = row.status;
+    return (
+      <span className={`label ${this.statusClass[status]}`}>
+        {this.statusText[status]}
+      </span>
+    )
+  }
 }
 
 const mapStateToProps = (state: { stock: IStockState }) => {

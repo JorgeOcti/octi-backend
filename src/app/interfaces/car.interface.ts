@@ -14,7 +14,7 @@ export interface ICarLocation {
 export interface ICar {
   _id: any;
   meta: {
-    location: ICarLocation;
+    location: Partial<ICarLocation>;
   };
   internalNumber: string;
   patent: string;

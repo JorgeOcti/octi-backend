@@ -19,6 +19,7 @@ export interface IHistory {
   to: IVenue | any;
   status: StatusHistory;
   module: ModuleHistory;
+  changeLocation: boolean;
   current: boolean;
   car: ICar | any;
   createdBy: IUser | any;

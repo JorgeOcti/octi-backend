@@ -68,6 +68,11 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
                     form.venue ?
                       <React.Fragment> en <span className='text-blue'>{form.venue.name}</span></React.Fragment>
                       : ''
+                  }
+                  {
+                    form.receiveFrom ?
+                      <React.Fragment> desde <span className='text-blue'>{form.receiveFrom.name}</span></React.Fragment>
+                      : ''
                   }.
                   {/* Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>. */}
                 </React.Fragment> : null
@@ -75,7 +80,12 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
             {
               form.kind != 'final' && form.form.shipping ?
                 <React.Fragment>
-                  El vehículo fue Despachado.
+                  El vehículo fue Despachado desde <span className='text-blue'>{form.venue.name}</span>
+                  {
+                    form.sendTo ?
+                      <React.Fragment> hacia <span className='text-blue'>{form.sendTo.name}</span></React.Fragment>
+                      : ''
+                  }.
                   {/* Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>. */}
                 </React.Fragment>
                 : ''

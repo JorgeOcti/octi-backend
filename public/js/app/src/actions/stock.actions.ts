@@ -1,7 +1,8 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
-import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
+import {IInventoryCar, IInventory} from '../../../../../src/inventory/interfaces/inventory.interface';
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
+import { Options } from "daterangepicker";
 import {IFilterStock} from "../reducers/stock.reducer";
 
 export interface IStockState {
@@ -20,6 +21,7 @@ export interface IStockState {
   searching: boolean;
   message: string;
   loading: boolean;
+  rangeOptions: Options;
   source: CancelTokenSource | null;
 }
 
@@ -58,17 +60,19 @@ export function isLoadingAction(loading: boolean): IIsLoading {
 interface ILoadStock {
   type: '/STOCK/LOAD';
   payload: {
+    inventories: IInventory[];
     cars: IInventoryCar[];
     message: string;
   };
 }
 
-export function loadStockAction(cars: IInventoryCar[], message: string): ILoadStock {
+export function loadStockAction(cars: IInventoryCar[], message: string, inventories: IInventory[]): ILoadStock {
   return {
     type: '/STOCK/LOAD',
     payload: {
       cars,
-      message
+      message,
+      inventories
     }
   };
 }
@@ -115,16 +119,13 @@ export function changeFilter(filter: IFilterStock): IChangeFilter {
 
 export function getStockAction() {
   return (dispatch: Dispatch<StockReducerAction>) => {
-    dispatch(isLoadingAction(true));
+    // dispatch(isLoadingAction(true));
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     api.getStock()
       .then((response: AxiosResponse) => {
-        dispatch(loadStockAction(response.data.cars, response.data.message));
+        dispatch(loadStockAction(response.data.cars, response.data.message, response.data.inventories));
         dispatch(isLoadingAction(false));
-        // swal(response.data.message, {
-        //   icon: 'success'
-        // });
       })
       .catch((err: AxiosError) => {
         dispatch(isLoadingAction(false));

@@ -66,6 +66,11 @@ const historySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'
   },
+  changeLocation: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   current: {
     type: Boolean,
     required: true

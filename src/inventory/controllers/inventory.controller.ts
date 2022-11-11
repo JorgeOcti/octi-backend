@@ -2219,7 +2219,7 @@ class InventoryController {
       const historyCars = await History.find({
         company,
         current: true,
-        status: { $in: [StatusHistory.available, StatusHistory.inTransit] },
+        status: { $in: [StatusHistory.available, StatusHistory.inTransit, StatusHistory.sale] },
         createdAt: {
           $gt: moment().subtract(30, 'days')
         }
@@ -2230,7 +2230,14 @@ class InventoryController {
         createdAt: true
       }).populate([{
         path: 'car',
-        select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta']
+        select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta', 'createdAt'],
+        populate: [{
+          path: 'events',
+          select: ['_id'],
+          match: {
+             changeLocation: true
+          }
+        }]
       }, {
         path: 'from',
         select: ['name'],
@@ -2246,12 +2253,22 @@ class InventoryController {
           select: ['code', 'name']
         }*/]
       }]).lean();
-
+      const inventories = await Inventory
+        .find({
+          company,
+          status: ChoicesStatusInventory.finalized
+        },{
+          createdAt:true,
+          finalizedAt: true
+        })
+        .sort({ createdAt: -1 })
+        .limit(2);
       res
         .status(200)
         .json({
           message: '',
-          cars: historyCars
+          cars: historyCars,
+          inventories
         });
 
     } catch (e) {

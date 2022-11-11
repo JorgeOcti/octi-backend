@@ -1460,6 +1460,12 @@ class CarController {
             path: 'venue',
             select: ['name']
           }, {
+            path: 'sendTo',
+            select: ['name']
+          }, {
+            path: 'receiveFrom',
+            select: ['name']
+          }, {
             path: 'form',
             select: ['shipping', 'reception']
           }, {
