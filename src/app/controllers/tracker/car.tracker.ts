@@ -6,7 +6,7 @@ import logger from '../../../services/logger.service';
 import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
 import { IInventory } from '../../../inventory/interfaces/inventory.interface';
 import Participant from '../../../form/models/participant.model';
-import { Car } from '../../models';
+import { Car, Venue } from '../../models';
 import { ICar } from '../../interfaces';
 import * as moment from 'moment-timezone';
 import { IStringKeyObject } from '../../../interfaces/global.interface';
@@ -139,7 +139,7 @@ class CarTracker {
             history = {
               ...history,
               status: StatusHistory.available,
-              from: receiveFrom,
+              from: receiveFrom || venue,
               to: venue
             };
           } else if (participant.shipping) {
@@ -147,7 +147,7 @@ class CarTracker {
               ...history,
               status: StatusHistory.inTransit,
               from: venue,
-              to: sendTo
+              to: sendTo || venue
             };
           } else {
             history = {
@@ -316,6 +316,25 @@ class CarTracker {
         };
         // this.processAlert(history);
         logger.debug(`CarTracker.createHistory history: ${JSON.stringify(history)}`);
+        const currentLocation = await History
+          .findOne({ changeLocation: true })
+          .sort({ executedAt: -1 });
+        if (history?.to && currentLocation?.to !== history.to) {
+          history = {
+            ...history,
+            changeLocation: true
+          };
+          await Car.updateOne({
+            car: history.car
+          },{
+            $set: {
+              'meta.location': {
+                venue: await Venue.findOne({ _id: history.to },{name: 1, team: 1, company: 1}),
+                checkedDate: history.executedAt,
+              }
+            }
+          })
+        }
         await new History(history).save();
         // disable if create new database
         await this.updateCurrentHistory(history.car);
