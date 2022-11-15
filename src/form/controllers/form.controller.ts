@@ -10,6 +10,7 @@ import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
 import CarModel from '../../app/models/car.model';
+import { ICarModel } from '../../app/models/car.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
