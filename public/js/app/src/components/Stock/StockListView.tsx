@@ -69,7 +69,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   readonly statusText: any = {
     available: 'Disponible',
     inTransit: 'En tránsito',
-    sale: 'Vendido'
+    sale: 'Entregado'
   };
 
   readonly statusClass: any = {
