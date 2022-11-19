@@ -2233,7 +2233,7 @@ class InventoryController {
         select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta', 'createdAt'],
         populate: [{
           path: 'events',
-          select: ['_id'],
+          select: ['_id', 'module'],
           match: {
              changeLocation: true
           }
