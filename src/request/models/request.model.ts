@@ -130,15 +130,7 @@ export const requestSchema = new mongoose.Schema({
 requestSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestSchema.set<any>('expires', 30);
 
-requestSchema.index({ team: 1 });
 requestSchema.index({ team: 1, conectaID: 1});
-requestSchema.index({ origin: 1 });
-requestSchema.index({ destination: 1 });
-requestSchema.index({ channel: 1 });
-requestSchema.index({ createdBy: 1 });
-requestSchema.index({ 'advancePaymentInformation.files': 1 });
-requestSchema.index({ 'advancePaymentInformation.letters': 1 });
-requestSchema.index({ request: 1 });
 
 requestSchema.virtual('items', {
   ref: 'RequestItem', // The model to use

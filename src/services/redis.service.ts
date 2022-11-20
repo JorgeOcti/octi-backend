@@ -7,7 +7,7 @@ import GeneralUtils from '../utils/general.utils';
 export function createRedisClient(): Redis.Redis | Redis.Cluster{
   let client: Redis.Redis | Redis.Cluster;
   if (process.env.REDIS_CLUSTERED === "true") {
-    // console.log("REDIS CLUSTER ON");
+    console.log("REDIS CLUSTER ON");
     client = new Redis.Cluster([{
       host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
       port: 6379,
@@ -22,7 +22,7 @@ export function createRedisClient(): Redis.Redis | Redis.Cluster{
   }
   return client;
 }
-let client = createRedisClient();
+const client = createRedisClient();
 
 /* istanbul ignore next */
 client.on('error', (err: any) => {

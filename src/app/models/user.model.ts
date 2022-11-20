@@ -140,7 +140,6 @@ userSchema.set<any>('expires', 30);
 userSchema.index({ company: 1 });
 userSchema.index({ venue: 1 });
 userSchema.index({ userPermissions: 1 });
-userSchema.index({ userForms: 1 });
 userSchema.index({ venuesAccess: 1 });
 
 userSchema.plugin(passportLocalMongoose);

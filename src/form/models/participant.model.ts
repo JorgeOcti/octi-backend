@@ -494,76 +494,7 @@ const participantSchema = new mongoose.Schema({
 participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
-participantSchema.index({ team: 1, active: 1 });
-participantSchema.index({ team: 1, active: 1, createdAt: 1 });
-participantSchema.index({ team: 1, active: 1, createdAt: -1 });
-participantSchema.index({ team: 1, deliveryToCustomer: 1, _id: -1, form: 1, venue: 1, kind: 1, createdAt: 1, car: 1 });
-participantSchema.index({ team: 1, createdAt: -1, form: 1 });
-participantSchema.index({ createdAt: -1 });
-participantSchema.index({ createdAt: 1 });
-participantSchema.index({ 'answer._id': 1, 'section._id': 1, form: 1 });
-participantSchema.index({ team: 1, createdAt: 1 });
-participantSchema.index({ team: 1, form: 1 });
-participantSchema.index({ team: 1, form: 1, venue: 1 });
-participantSchema.index({ team: 1, form: 1, createdAt: 1 });
-participantSchema.index({ venue: 1 });
-participantSchema.index({ form: 1 });
-participantSchema.index({ company: 1 });
-participantSchema.index({ carrierBy: 1 });
-participantSchema.index({ user: 1 });
-participantSchema.index({ car: 1 });
-participantSchema.index({ shipping: 1 });
-participantSchema.index({ team: 1 });
-participantSchema.index({ sendTo: 1 });
-participantSchema.index({ receiveFrom: 1 });
-participantSchema.index({ deliveryToCustomer: 1 });
-participantSchema.index({ team: 1, venue: 1, createdAt: 1 });
-participantSchema.index({ team: 1, destination: 1 });
-participantSchema.index({
-  team: 1,
-  deliveryToCustomer: 1,
-  createdAt: 1
-});
-participantSchema.index({
-  car: 1,
-  team: 1,
-  form: 1,
-  venue: 1,
-  deliveryToCustomer: 1,
-  kind: 1
-});
-participantSchema.index({
-  car: 1,
-  team: 1,
-  venue: 1,
-  form: 1,
-  'deliveryInfo.name': 1,
-  'deliveryInfo.rut': 1,
-  'deliveryInfo.email': 1,
-  'deliveryInfo.order': 1,
-  deliveryToCustomer: 1,
-  kind: 1
-});
-participantSchema.index({
-  car: 1,
-  team: 1,
-  venue: 1,
-  form: 1,
-  'deliveryInfo.name': 1,
-  'deliveryInfo.rut': 1,
-  'deliveryInfo.email': 1,
-  'deliveryInfo.order': 1,
-  deliveryToCustomer: 1,
-  kind: 1,
-  createdAt: 1
-});
-
-participantSchema.index({ transmittal: 1 });
-participantSchema.index({ survey: 1, completed: 1 });
-participantSchema.index({ form: 1, user: 1 });
-participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
-participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
-
+// participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 
 participantSchema.plugin(mongoosePaginate);
 
