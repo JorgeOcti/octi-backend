@@ -17,6 +17,7 @@ export interface IStockState {
     types: any[];
     properties: any[];
   };
+  defaultSorted: any[];
   vinInStock: any;
   searching: boolean;
   message: string;
@@ -53,6 +54,22 @@ export function isLoadingAction(loading: boolean): IIsLoading {
     type: '/STOCK/IS_LOADING',
     payload: {
       loading
+    }
+  };
+}
+
+interface IChangeOrder {
+  type: '/STOCK/CHANGE_ORDER';
+  payload: {
+    order: any;
+  }
+}
+
+export function changeOrder(order: any) {
+  return {
+    type: '/STOCK/CHANGE_ORDER',
+    payload: {
+      order
     }
   };
 }
@@ -137,5 +154,6 @@ export function getStockAction() {
 export type StockReducerAction =
   ICancelRequest |
   IChangeFilter |
+  IChangeOrder |
   ILoadStock |
   IIsLoading;

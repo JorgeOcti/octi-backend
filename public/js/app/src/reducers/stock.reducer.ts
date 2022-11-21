@@ -18,6 +18,10 @@ const initialState: IStockState = {
     from: moment().subtract(30, 'days').startOf('day'),
     to: moment().endOf('day')
   },
+  defaultSorted: [{
+    dataField: 'daysInVenue',
+    order: 'desc'
+  }],
   dataFilters:{
     venues:[],
     colors:[],
@@ -83,6 +87,11 @@ export function stockReducer(state = initialState, action: StockReducerAction) {
         filter: action.payload.filter,
         searching: isSearching(action.payload.filter)
       };
+    case '/STOCK/CHANGE_ORDER':
+      return {
+        ...state,
+        defaultSorted: [action.payload.order]
+      }
     case '/STOCK/LOAD':
       let rangeOptions: any = state.rangeOptions;
       let filter: any = state.filter;

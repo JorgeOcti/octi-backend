@@ -9,7 +9,7 @@ import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
-import { changeFilter, changeFilterText, getStockAction, IStockState, StockReducerAction } from '../../actions/stock.actions';
+import { changeFilter, changeOrder, changeFilterText, getStockAction, IStockState, StockReducerAction } from '../../actions/stock.actions';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
@@ -34,6 +34,7 @@ interface IPropsType extends RouteComponentProps<{}> {
   getStockAction(): StockReducerAction;
 
   changeFilter(filter: IFilterStock): StockReducerAction;
+  changeOrder(order: any): StockReducerAction;
 
   changeFilterText(filter: IFilterStock): StockReducerAction;
 }
@@ -82,11 +83,6 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
 
   readonly columns: any[] = [];
 
-  readonly defaultSorted = [{
-    dataField: 'daysInVenue',
-    order: 'desc'
-  }];
-
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Stock Actual';
@@ -118,12 +114,15 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
     this.columns = [{
       dataField: 'vin',
       text: 'VIN',
-      headerStyle:{width: '170px'},
+      headerStyle: {width: '170px'},
       formatter: this.vinFormatter,
       // filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle text-primary',
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'brand',
       text: 'Marca',
@@ -131,7 +130,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle',
       headerStyle:{minWidth: '80px'},
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'denomination',
       text: 'Detalle',
@@ -139,7 +141,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.detailFormatter,
       headerClasses: 'middle pointer',
       // headerStyle:{maxWidth: '280px'},
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'status',
       text: 'Estado',
@@ -147,7 +152,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle',
       headerStyle:{minWidth: '100px'},
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'to',
       text: 'Sucursal',
@@ -155,7 +163,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.venueFormatter,
       classes: 'middle',
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'movements',
       text: 'Movimientos',
@@ -163,7 +174,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: this.movements,
       classes: 'middle',
       headerClasses: 'middle pointer',
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'daysInVenue',
       text: 'En Sucursal',
@@ -172,7 +186,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle',
       headerClasses: 'middle pointer',
       headerStyle:{minWidth: '110px'},
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }, {
       dataField: 'daysPermanence',
       text: 'Permanencia',
@@ -181,7 +198,10 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
       classes: 'middle',
       headerClasses: 'middle pointer',
       headerStyle:{minWidth: '125px'},
-      sort: true
+      sort: true,
+      onSort: (field: any, order: any) => {
+        this.props.changeOrder({dataField: field, order});
+      }
     }];
   }
 
@@ -241,7 +261,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, carsTable, dataFilters, filter, searching, message, rangeOptions } = this.props.stock;
+    const { loading, carsTable, dataFilters, filter, searching, message, rangeOptions, defaultSorted } = this.props.stock;
     return (
       <AppContainer title={
         <div
@@ -462,7 +482,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
                     columns={this.columns}
                     filter={filterFactory()}
                     pagination={paginationFactory(this.paginationOption)}
-                    defaultSorted={this.defaultSorted}
+                    defaultSorted={defaultSorted}
                   />
                 </div>
               </ShowIf>
@@ -635,9 +655,9 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
         if (!car.car)
           continue;
         let venue = (car as any).to ? (car as any).to : (car as any).from;
-        let receptionData = car.car?.meta?.location && car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venue._id ?
+        let receptionData = car.car?.meta?.location?.venue?._id ?
           moment(car.car.meta.location.checkedDate).format('YYYY-MM-DD') : '';
-        let receptionDays = car.car?.meta?.location && car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venue._id ?
+        let receptionDays = car.car?.meta?.location?.venue?._id === venue._id ?
           moment().diff(moment(car.car.meta.location.checkedDate), 'days') : '';
 
         data.push({
@@ -758,6 +778,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getStockAction: () => dispatch(getStockAction()),
+    changeOrder: (order: any) => dispatch(changeOrder(order)),
     changeFilter: (filter: IFilterStock) => dispatch(changeFilter(filter)),
     changeFilterText: (filter: IFilterStock) => dispatch(changeFilterText(filter))
   };
