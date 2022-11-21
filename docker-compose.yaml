@@ -1,9 +1,9 @@
-version: '3.2'
+version: '3.8'
 
 services:
   mongo:
     image: mongo:4.2.23
-    command: --wiredTigerCacheSizeGB 60
+    # command: --wiredTigerCacheSizeGB 60
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'osacontrol'
@@ -11,11 +11,12 @@ services:
     ports:
       - 27017:27017
     volumes:
+      - '/Users/gmunoz/backups/osa/andes/production/mongo:/backups'
       - mongo:/data/db
       - mongoConf:/data/configdb
 
   redis:
-    image: redis:5.0.3
+    image: redis:5.0.14
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -40,10 +41,12 @@ services:
       dockerfile: Dockerfile.development
       context: .
     image: andes:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 #    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
 #    command: ts-node-dev --trace-warnings --max_old_space_size=4096 src/server.ts
-    command: ts-node-dev src/server.ts
+    command: ts-node-dev --transpile-only --watch src src/server.ts
 #    ts-node-dev --transpile-only --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
 #    command: pm2 start pm2.development.json --no-daemon
 #    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
@@ -60,6 +63,7 @@ services:
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       SITE_URL: "http://localhost:3030/"
+      # MONGODB_URI: mongodb://osacontrol:osacontrol@host.docker.internal:27017/osaAndesProduction?authSource=admin
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
 #      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0

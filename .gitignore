@@ -53,3 +53,5 @@ buildcache
 
 /dist/
 /tools/
+
+updateAndesDBProduction.sh

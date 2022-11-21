@@ -329,8 +329,7 @@ const participantSchema = new mongoose.Schema({
   },
   form: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Form',
-    index: true
+    ref: 'Form'
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
@@ -345,14 +344,12 @@ const participantSchema = new mongoose.Schema({
 
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
+    ref: 'User'
   },
 
   car: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Car',
-    index: true
+    ref: 'Car'
   },
 
   venue: {

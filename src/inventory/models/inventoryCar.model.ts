@@ -98,8 +98,6 @@ const inventoryCarSchema = new mongoose.Schema({
   timestamps: true
 });
 
-inventoryCarSchema.index({ inventory: 1 });
-inventoryCarSchema.index({ venue: 1 });
 inventoryCarSchema.index({ status: 1 });
 inventoryCarSchema.index({ inventory: 1, car: 1 });
 inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });

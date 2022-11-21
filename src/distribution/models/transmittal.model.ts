@@ -86,7 +86,6 @@ transmittalSchema.virtual('items', {
 transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 
-transmittalSchema.index({ team: 1 });
 transmittalSchema.index({ type: 1 });
 transmittalSchema.index({ revision: 1 });
 transmittalSchema.index({ evidenceFullLoad: 1 });

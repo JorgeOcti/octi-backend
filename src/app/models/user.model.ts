@@ -30,7 +30,6 @@ const userSettingsSchema = new mongoose.Schema({
 export const baseUserSchema = new mongoose.Schema({
   username: {
     type: String,
-    unique: true
   },
   firstName: {
     type: String,
@@ -56,8 +55,6 @@ export const baseUserSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: [true, 'El email es requerido'],
-    unique: true,
-    index: true
   }
 });
 
@@ -138,6 +135,8 @@ userSchema.set<any>('redisCache', process.env.ENV === 'production');
 userSchema.set<any>('expires', 30);
 
 userSchema.index({ company: 1 });
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ venue: 1 });
 userSchema.index({ userPermissions: 1 });
 userSchema.index({ venuesAccess: 1 });
