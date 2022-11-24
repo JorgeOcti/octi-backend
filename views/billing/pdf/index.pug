@@ -69,7 +69,17 @@ body
           | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
       tr.item
         td(width="20%")
-          | 2 Gestión de Checklist
+          | 2 Gestión de Entregas
+        td(width="20%").text-right=invoice.deliveryCars
+        td(width="20%").text-right
+          | #{invoice.deliveryPrice} UF
+        td(width="20%").text-right
+          | #{(invoice.deliveryPrice * invoice.deliveryCars).toFixed(2)} UF
+        td(width="20%").text-right
+          | #{new Intl.NumberFormat("de-DE").format(((invoice.deliveryPrice * invoice.deliveryCars) * invoice.valueUF).toFixed(2))} CLP
+      tr.item
+        td(width="20%")
+          | 3 Gestión de Checklist
         td(width="20%").text-right=invoice.checklistCars
         td(width="20%").text-right
           | #{invoice.checklistPrice} UF
@@ -79,7 +89,7 @@ body
           | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
       tr.item
         td(width="20%")
-          | 3 Control de Solicitudes
+          | 4 Control de Solicitudes
         td(width="20%").text-right=invoice.requestCars
         td(width="20%").text-right
           | #{invoice.requestPrice} UF
@@ -93,10 +103,10 @@ body
             | 
         td.text-right
           strong
-            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
+            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
         td.text-right
           strong
-            | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
+            | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
 
 
 

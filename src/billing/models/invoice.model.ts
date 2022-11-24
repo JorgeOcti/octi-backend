@@ -46,6 +46,10 @@ const invoiceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  deliveryCars: {
+    type: Number,
+    default: 0
+  },
   requestCars: {
     type: Number,
     default: 0
@@ -55,6 +59,10 @@ const invoiceSchema = new mongoose.Schema({
     default: 0
   },
   checklistPrice: {
+    type: Number,
+    default: 0
+  },
+  deliveryPrice: {
     type: Number,
     default: 0
   },

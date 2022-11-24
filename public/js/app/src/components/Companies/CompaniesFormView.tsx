@@ -137,7 +137,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                     <label>Precio Inventario</label>
                     <input
                       type="number"
-                      name="fistName"
+                      name="inventoryPrice"
                       className="form-control"
                       maxLength={50}
                       defaultValue={tempCompany ? tempCompany.billing.inventoryPrice : '0.0'}
@@ -153,10 +153,29 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                     />
                   </div>
                   <div className="form-group">
+                    <label>Precio Entregas</label>
+                    <input
+                      type="number"
+                      name="requestDeliveryPrice"
+                      className="form-control"
+                      maxLength={50}
+                      defaultValue={tempCompany ? tempCompany.billing.deliveryPrice : '0.0'}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempCompanyAction({
+                          ...tempCompany,
+                          billing: {
+                            ...tempCompany.billing,
+                            deliveryPrice: parseFloat(e.target.value.trim())
+                          }
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
                     <label>Precio Checklist</label>
                     <input
                       type="number"
-                      name="fistName"
+                      name="checklistPrice"
                       className="form-control"
                       maxLength={50}
                       defaultValue={tempCompany ? tempCompany.billing.checklistPrice : '0.0'}

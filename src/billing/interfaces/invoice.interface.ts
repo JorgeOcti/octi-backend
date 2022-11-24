@@ -16,8 +16,10 @@ export interface IInvoice {
   inventoryPrice: number;
   checklistPrice: number;
   requestPrice: number;
+  deliveryPrice: number;
   inventoryCars: number;
   checklistCars: number;
+  deliveryCars: number;
   requestCars: number;
   totalUF: number;
   totalDolar: number;

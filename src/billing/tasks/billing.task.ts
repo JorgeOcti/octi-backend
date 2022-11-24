@@ -11,6 +11,7 @@ import ActivityHistory from '../models/activityHistory.model';
 import Invoice, { IInvoiceModel } from '../models/invoice.model';
 import { RequestItem } from '../../request/models';
 import { ChoicesTypeActivity } from '../models';
+import Participant from '../../form/models/participant.model';
 
 class BillingQueue {
 
@@ -35,6 +36,7 @@ class BillingQueue {
     this.calculateCarsInChecklist = this.calculateCarsInChecklist.bind(this);
     this.calculateCarsInInventory = this.calculateCarsInInventory.bind(this);
     this.calculateCarsInRequest = this.calculateCarsInRequest.bind(this);
+    this.calculateCarsInDelivery = this.calculateCarsInDelivery.bind(this);
     this.getUFPrice = this.getUFPrice.bind(this);
     this.getDolarPrice = this.getDolarPrice.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
@@ -78,17 +80,54 @@ class BillingQueue {
   }
 
   private async calculateCarsInChecklist(company: ICompany): Promise<number> {
-    const vinInChecklist = await ActivityHistory
+    const vinInChecklist = await Participant
+    .aggregate([{
+        $match: {
+          company: company._id,
+          deliveryToCustomer: false,
+          createdAt: {
+            $gte: moment()
+              // .subtract(1, 'month')
+              .subtract(1, 'day')
+              .startOf('month')
+              .toDate(),
+            $lte: moment()
+              // .subtract(1, 'month')
+              .subtract(1, 'day')
+              .endOf('month')
+              .toDate()
+          }
+        }
+      }, {
+        $group: {
+          _id: '$car'
+        }
+      }, {
+        $group: {
+          _id: 1,
+          count: {
+            $sum: 1
+          }
+        }
+      }]
+    );
+    return vinInChecklist.length ? vinInChecklist[0].count : 0;
+  }
+
+  private async calculateCarsInDelivery(company: ICompany): Promise<number> {
+    const vinInDelivery = await Participant
       .aggregate([{
           $match: {
             company: company._id,
-            type: ChoicesTypeActivity.checklist,
+            deliveryToCustomer: true,
             createdAt: {
               $gte: moment()
+                // .subtract(1, 'month')
                 .subtract(1, 'day')
                 .startOf('month')
                 .toDate(),
               $lte: moment()
+                // .subtract(1, 'month')
                 .subtract(1, 'day')
                 .endOf('month')
                 .toDate()
@@ -96,7 +135,7 @@ class BillingQueue {
           }
         }, {
           $group: {
-            _id: '$car.vin'
+            _id: '$car'
           }
         }, {
           $group: {
@@ -107,7 +146,7 @@ class BillingQueue {
           }
         }]
       );
-    return vinInChecklist.length ? vinInChecklist[0].count : 0;
+    return vinInDelivery.length ? vinInDelivery[0].count : 0;
   }
 
   private async calculateCarsInInventory(company: ICompany): Promise<number> {
@@ -118,10 +157,12 @@ class BillingQueue {
             type: ChoicesTypeActivity.inventory,
             createdAt: {
               $gte: moment()
+                // .subtract(1, 'month')
                 .subtract(1, 'day')
                 .startOf('month')
                 .toDate(),
               $lte: moment()
+                // .subtract(1, 'month')
                 .subtract(1, 'day')
                 .endOf('month')
                 .toDate()
@@ -129,7 +170,7 @@ class BillingQueue {
           }
         }, {
           $group: {
-            _id: '$car.vin'
+            _id: '$car'
           }
         }, {
           $group: {
@@ -150,10 +191,12 @@ class BillingQueue {
           company: company._id,
           createdAt: {
             $gte: moment()
+              // .subtract(1, 'month')
               .subtract(1, 'day')
               .startOf('month')
               .toDate(),
             $lte: moment()
+              // .subtract(1, 'month')
               .subtract(1, 'day')
               .endOf('month')
               .toDate()
@@ -265,10 +308,12 @@ class BillingQueue {
         const inventoryCars = await this.calculateCarsInInventory(company);
         const checklistCars = await this.calculateCarsInChecklist(company);
         const requestCars = await this.calculateCarsInRequest(company);
+        const deliveryCars = await this.calculateCarsInDelivery(company);
         const totalInventory = inventoryCars * company.billing.inventoryPrice;
         const totalChecklist = checklistCars * company.billing.checklistPrice;
+        const totalDelivery= deliveryCars * company.billing.deliveryPrice;
         const totalRequest = requestCars * company.billing.requestPrice;
-        const totalUF = totalInventory + totalChecklist + totalRequest;
+        const totalUF = totalInventory + totalChecklist + totalRequest + totalDelivery;
         const period = moment().format('YYYYMM');
         const invoice = new Invoice({
           team: company.team,
@@ -276,10 +321,12 @@ class BillingQueue {
           period,
           inventoryCars,
           checklistCars,
+          deliveryCars,
           requestCars,
           inventoryPrice: company.billing.inventoryPrice,
           checklistPrice: company.billing.checklistPrice,
           requestPrice: company.billing.requestPrice,
+          deliveryPrice: company.billing.deliveryPrice,
           totalUF,
           valueUF,
           // valueDolar,

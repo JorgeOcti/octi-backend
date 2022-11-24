@@ -96,6 +96,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                         <th className="middle">Período</th>
                         <th className="middle">Empresa</th>
                         <th className="middle hidden-xs">Inventario</th>
+                        <th className="middle hidden-xs">Entregas</th>
                         <th className="middle hidden-xs">Checklist</th>
                         <th className="middle hidden-xs">Solicitudes</th>
                         <th className="middle">Total</th>
@@ -120,6 +121,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                             </span>
                             </td>
                             <td className="middle text-muted hidden-xs">{invoice.inventoryCars}</td>
+                            <td className="middle text-muted hidden-xs">{invoice.deliveryCars}</td>
                             <td className="middle text-muted hidden-xs">{invoice.checklistCars}</td>
                             <td className="middle text-muted hidden-xs">{invoice.requestCars}</td>
                             <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>

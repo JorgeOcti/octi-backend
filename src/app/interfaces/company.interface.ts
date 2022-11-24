@@ -6,6 +6,7 @@ export interface IBillingCompany {
   checklistPrice: number;
   inventoryPrice: number;
   requestPrice: number;
+  deliveryPrice: number;
 }
 
 export interface IBillingNotifications {

@@ -41,6 +41,10 @@ const billingSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  deliveryPrice: {
+    type: Number,
+    default: 0
+  },
   active: {
     type: Boolean,
     default: false

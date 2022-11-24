@@ -164,7 +164,6 @@ const requestItemSchema = new mongoose.Schema({
 requestItemSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestItemSchema.set<any>('expires', 30);
 
-requestItemSchema.index({ team: 1 });
 requestItemSchema.index({ 'meta.status._id': 1 });
 requestItemSchema.index({ team: 1, 'meta.car.vin': -1, origin: 1, createdAt: 1 });
 requestItemSchema.index({ team: 1, 'meta.request.number': -1, destination: 1, createdAt: 1 });
@@ -186,10 +185,7 @@ requestItemSchema.index({
 });
 requestItemSchema.index({ car: 1, team: 1, _id: -1 });
 requestItemSchema.index({ company: 1 });
-requestItemSchema.index({ request: 1 });
-requestItemSchema.index({ car: 1 });
 requestItemSchema.index({ origin: 1 });
-requestItemSchema.index({ destination: 1 });
 requestItemSchema.index({ channel: 1 });
 requestItemSchema.index({ status: 1 });
 requestItemSchema.index({ reason: 1 });

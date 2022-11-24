@@ -105,6 +105,10 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                     }
                     {
                       window.user.isAdmin ?
+                        <th style={{width: '1%'}} className="width-10 hidden-xs">Entregas</th> : null
+                    }
+                    {
+                      window.user.isAdmin ?
                         <th style={{width: '1%'}} className="width-10 hidden-xs">Checklist</th> : null
                     }
                     {
@@ -145,7 +149,15 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                             window.user.isAdmin ?
                               <td className="middle text-center hidden-xs">
                                 {
-                                  company.billing.inventoryPrice ? `${company.billing.inventoryPrice?.toFixed(4)} UF` : '-'
+                                  company.billing.inventoryPrice ? `${company.billing.inventoryPrice?.toFixed(4)}UF` : '-'
+                                }
+                              </td> : null
+                          }
+                           {
+                            window.user.isAdmin ?
+                              <td className="middle text-center hidden-xs">
+                                {
+                                  company.billing.deliveryPrice ? `${company.billing.deliveryPrice?.toFixed(4)}UF` : '-'
                                 }
                               </td> : null
                           }
@@ -153,7 +165,7 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                             window.user.isAdmin ?
                               <td className="middle text-center hidden-xs">
                                 {
-                                  company.billing.checklistPrice ? `${company.billing.checklistPrice?.toFixed(4)} UF` : '-'
+                                  company.billing.checklistPrice ? `${company.billing.checklistPrice?.toFixed(4)}UF` : '-'
                                 }
                               </td> : null
                           }
@@ -161,7 +173,7 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                             window.user.isAdmin ?
                               <td className="middle text-center hidden-xs">
                                 {
-                                  company.billing.requestPrice ? `${company.billing.requestPrice?.toFixed(4)} UF` : '-'
+                                  company.billing.requestPrice ? `${company.billing.requestPrice?.toFixed(4)}UF` : '-'
                                 }
                               </td> : null
                           }
@@ -232,7 +244,8 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
         active: false,
         checklistPrice: 0.0,
         inventoryPrice: 0.0,
-        requestPrice: 0.0
+        requestPrice: 0.0,
+        deliveryPrice: 0.0
       },
       notifications: []
     });
