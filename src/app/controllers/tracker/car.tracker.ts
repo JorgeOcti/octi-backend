@@ -47,7 +47,7 @@ class CarTracker {
           }]);
         // logger.info(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
         
-        if (inventoryCar && inventoryCar.inventory && inventoryCar.updatedAt && inventoryCar.inventoriedBy) {
+        if (inventoryCar && inventoryCar.inventory) {
           const { inventory, car, venue, venueFound, inventoriedBy, updatedAt, status } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;
           let history: Partial<IHistory> = {
