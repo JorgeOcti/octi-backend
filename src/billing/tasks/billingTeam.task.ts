@@ -13,6 +13,7 @@ import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface'
 import * as fs from 'fs';
 import * as path from 'path';
 import GeneralUtils from '../../utils/general.utils';
+import { StatusHistory } from '../../app/models/history.types';
 
 class BillingTeamQueue {
 
@@ -187,6 +188,9 @@ class BillingTeamQueue {
             const histories = await History
               .find({
                 company: { $in: teamBilling.companies },
+                status: {
+                  $in: [StatusHistory.available, StatusHistory.inTransit, StatusHistory.sale]
+                },
                 executedAt: {
                   $gte: from,
                   $lte: to
