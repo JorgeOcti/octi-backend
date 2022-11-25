@@ -46,6 +46,7 @@ class CarTracker {
             }
           }]);
         // logger.info(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
+        
         if (inventoryCar && inventoryCar.inventory && inventoryCar.updatedAt && inventoryCar.inventoriedBy) {
           const { inventory, car, venue, venueFound, inventoriedBy, updatedAt, status } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;
@@ -63,6 +64,8 @@ class CarTracker {
           const statusDelegate: IStringKeyObject<StatusHistory> = {
             [ChoicesStatusCarInventory.found]: StatusHistory.available,
             [ChoicesStatusCarInventory.pending]: StatusHistory.unknown,
+            [ChoicesStatusCarInventory.missing]: StatusHistory.unknown,
+            [ChoicesStatusCarInventory.deleted]: StatusHistory.unknown,
             [ChoicesStatusCarInventory.leftover]: StatusHistory.available,
             [ChoicesStatusCarInventory.reported]: StatusHistory.available
           };

@@ -34,7 +34,8 @@ export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.found,
   ChoicesStatusCarInventory.leftover,
   ChoicesStatusCarInventory.missing,
-  ChoicesStatusCarInventory.reported
+  ChoicesStatusCarInventory.reported,
+  ChoicesStatusCarInventory.deleted
 ];
 
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Document {}
