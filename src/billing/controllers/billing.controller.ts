@@ -566,8 +566,8 @@ class BillingController {
             vin: history.car.vin,
             app: history.module,
             form: history?.participant?.name,
-            company: history.company.name,
-            user: history.user.email
+            company: history?.company.name,
+            user: history?.user?.email
           }).commit();
         });
 
