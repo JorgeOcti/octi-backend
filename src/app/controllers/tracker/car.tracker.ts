@@ -55,7 +55,9 @@ class CarTracker {
             ChoicesStatusCarInventory.deleted
           ].includes(inventoryCar.status as any)
         ) {
-          const { inventory, car, venue, venueFound, inventoriedBy, updatedAt, status } = inventoryCar;
+          const { 
+            inventory, car, venue, venueFound, inventoriedBy, labelBy, updatedAt, status
+          } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;
           let history: Partial<IHistory> = {
             status: StatusHistory.available,
@@ -65,7 +67,7 @@ class CarTracker {
             inventoryCar,
             team,
             company,
-            createdBy: inventoriedBy,
+            createdBy: inventoriedBy || labelBy,
             executedAt: updatedAt
           };
           const statusDelegate: IStringKeyObject<StatusHistory> = {
