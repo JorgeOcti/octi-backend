@@ -655,25 +655,28 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
         if (!car.car)
           continue;
         let venue = (car as any).to ? (car as any).to : (car as any).from;
-        let receptionData = car.car?.meta?.location?.venue?._id ?
-          moment(car.car.meta.location.checkedDate).format('YYYY-MM-DD') : '';
-        let receptionDays = car.car?.meta?.location?.venue?._id === venue._id ?
-          moment().diff(moment(car.car.meta.location.checkedDate), 'days') : '';
-
+        let daysInVenue = null;
+        let daysPermanence = moment().diff(moment(car.car.createdAt), 'days');
+        const venueFoundID = venue ? venue._id : '-';
+        let receptionVenue = null;
+        if (car.car?.meta?.location?.venue && car.car.meta.location.venue._id === venueFoundID) {
+          receptionVenue = car.car.meta.location.checkedDate;
+          daysInVenue = moment().diff(moment(receptionVenue), 'days');
+        }
         data.push({
           VIN: car.car.vin,
-          Patente: car.car.patent && car.car.patent.length ? car.car.patent : '-',
-          ['Nº interno']: car.car.internalNumber && car.car.internalNumber.length ? car.car.internalNumber : '-',
-          Marca: car.car.brand && car.car.brand.length ? car.car.brand : '-',
-          ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
+          Patente: car.car?.patent?.length ? car.car.patent : '-',
+          ['Nº interno']: car.car?.internalNumber?.length ? car.car.internalNumber : '-',
+          Marca: car.car?.brand?.length ? car.car.brand : '-',
+          ['Denominación']: car.car?.denomination?.length ? car.car.denomination : '-',
           Color: car.car.color && car.car.color.length ? car.car.color : '-',
-          Estado: this.statusHumanize(car.status as StatusHistory),
+          Estado: this.statusText[car.status],
           Tipo: car.car.type && car.car.type ? car.car.type : '-',
           Propiedad: car.car.property && car.car.property ? car.car.property : '-',
           Sucursal: venue ? venue.name : '-',
-          ['Última actualización']: moment(car.createdAt).format('YYYY-MM-DD'),
-          ['Fecha de recepción']: receptionData,
-          ['Fecha Recepción']: receptionDays
+          // ['Última actualización']: moment(car.createdAt).format('YYYY-MM-DD'),
+          ['En Sucursaln']: daysInVenue,
+          ['Permanencia']: daysPermanence
         });
       }
     }

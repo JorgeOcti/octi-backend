@@ -6,7 +6,7 @@ import { Options } from "daterangepicker";
 import {IFilterStock} from "../reducers/stock.reducer";
 
 export interface IStockState {
-  cars: IInventoryCar[];
+  cars: any[];
   carsTable: any[];
   filter: IFilterStock;
   dataFilters: {
