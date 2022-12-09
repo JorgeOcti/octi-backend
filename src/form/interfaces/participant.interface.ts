@@ -170,6 +170,7 @@ export interface IParticipant {
   deliveryInfo: IParticipantDeliveryInfo | IParticipantDeliveryInfoModel;
 
   active: boolean;
+  imported: boolean;
   updatedAt: Date;
   createdAt: Date;
 }

@@ -1,26 +1,28 @@
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
-import { Response } from 'express';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
-import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import FormModel, { IFormModel, KindForm, KindQuestion } from '../../form/models/form.model';
-import Kind from '../../form/models/kind.model';
-import Part from '../../form/models/part.model';
-import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
-import Position from '../../form/models/position.model';
-import { IAnyObject, IRequest } from '../../interfaces/global.interface';
-import { IParticipant } from '../../form/interfaces/participant.interface';
-import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/inventory.model';
-import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
-import Planning from '../../planning/models/planning.model';
-import logger from '../../services/logger.service';
+
 import CarModel, { Car, ChoicesStatusCar, ICarModel } from '../models/car.model';
+import FormModel, { IFormModel, KindForm, KindQuestion } from '../../form/models/form.model';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/inventory.model';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
+
+import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
+import { IParticipant } from '../../form/interfaces/participant.interface';
+import Kind from '../../form/models/kind.model';
+import { ObjectID } from 'bson';
+import Part from '../../form/models/part.model';
+import Planning from '../../planning/models/planning.model';
+import Position from '../../form/models/position.model';
+import { Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import { ObjectID } from 'bson';
 import conectaController from '../../request/controllers/conecta.controller';
+import logger from '../../services/logger.service';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -1405,9 +1407,6 @@ class CarController {
             }]
           },
           populate: [{
-            path: 'company',
-            select: ['name']
-          }, {
             path: 'venue',
             select: ['name']
           }, {

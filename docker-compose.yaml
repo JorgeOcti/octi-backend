@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mongo:
-    image: mongo:4.2.23
+    image: mongo:5.0.14
     # command: --wiredTigerCacheSizeGB 60
     restart: unless-stopped
     environment:

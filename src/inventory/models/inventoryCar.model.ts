@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+
 import {
   IInventoryCar
 } from '../interfaces/inventory.interface';
@@ -101,6 +102,7 @@ const inventoryCarSchema = new mongoose.Schema({
 
 inventoryCarSchema.index({ status: 1 });
 inventoryCarSchema.index({ inventory: 1, car: 1 });
+inventoryCarSchema.index({ inventory: 1, status: 1, venue: 1, venueFound: 1 });
 inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });
 
 const InventoryCar = mongoose.model<IInventoryCarModel>('InventoryCar', inventoryCarSchema);
