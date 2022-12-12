@@ -1,12 +1,14 @@
 import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
-import { HookNextFunction, PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as passportLocalMongoose from 'passport-local-mongoose';
-import { IUser } from '../interfaces';
-import usersHooks from './user.hooks';
+
+import { HookNextFunction, PaginateModel } from 'mongoose';
 import { UserTypes, userTypes } from './user.model.types';
+
+import { IUser } from '../interfaces';
 import UserServices from './user.services';
+import usersHooks from './user.hooks';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -58,7 +60,7 @@ export const baseUserSchema = new mongoose.Schema({
   }
 });
 
-export const userSchema = new mongoose.Schema<IUserModel>({
+export const userSchema = new mongoose.Schema<IUser>({
   ...baseUserSchema.obj,
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,

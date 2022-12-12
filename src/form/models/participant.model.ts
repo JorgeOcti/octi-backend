@@ -1,16 +1,19 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
 import {
   IParticipant,
   IParticipantAccesory,
   IParticipantAnswer,
-  IParticipantChoices, IParticipantDeliveryInfo,
+  IParticipantChoices,
+  IParticipantDeliveryInfo,
   IParticipantItems,
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
+import { KindForm, KindQuestion, kindForm, kindQuestion } from './form.model';
+
+import { PaginateModel } from 'mongoose';
 import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {
@@ -72,11 +75,9 @@ export const scaleSchema = new mongoose.Schema({
   name: String,
   minValue: {
     type: Number,
-    required: true
   },
   maxValue: {
     type: Number,
-    required: true
   },
   choices: [participantChoiceSchema],
   active: {
@@ -479,7 +480,10 @@ const participantSchema = new mongoose.Schema({
     type: participantDeliveryInfoSchema,
     default: {}
   },
-
+  imported: {
+    type: Boolean,
+    default: true
+  },
   active: {
     type: Boolean,
     default: true

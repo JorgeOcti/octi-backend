@@ -1,27 +1,30 @@
 import * as mongoose from 'mongoose';
-import { ICarModel } from '../../app/models/car.model';
-import { ICompanyModel } from '../../app/models/company.model';
-import { ITeamModel } from '../../app/models/team.model';
-import { IUserModel } from '../../app/models/user.model';
-import { IVenueModel } from '../../app/models/venue.model';
-import { IFormModel } from '../models/form.model';
+
+import { IDamageSelected, IDamages } from './damage.interface';
 import {
   IParticipantAccesoryModel,
   IParticipantAnswerModel,
-  IParticipantChoicesModel, IParticipantDeliveryInfoModel,
+  IParticipantChoicesModel,
+  IParticipantDeliveryInfoModel,
   IParticipantItemModel,
   IParticipantSectionModel,
   IScaleParticipantModel
 } from '../models/participant.model';
-import { IDamages, IDamageSelected } from './damage.interface';
-import { IParticipantFile } from './participantFile.interface';
+
+import { ICarModel } from '../../app/models/car.model';
 import { ICarrierModel } from '../../app/models/carrier.model';
-import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
-import { ITransmittalModel } from '../../distribution/models/transmittal.model';
-import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
-import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
+import { ICompanyModel } from '../../app/models/company.model';
+import { IFormModel } from '../models/form.model';
 import { IMilestone } from '../../distribution/interfaces';
 import { IMilestoneModel } from '../../distribution/models/milestone.model';
+import { IParticipantFile } from './participantFile.interface';
+import { ITeamModel } from '../../app/models/team.model';
+import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
+import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
+import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
+import { ITransmittalModel } from '../../distribution/models/transmittal.model';
+import { IUserModel } from '../../app/models/user.model';
+import { IVenueModel } from '../../app/models/venue.model';
 
 export interface IParticipantChoices {
   choice: string;
@@ -169,6 +172,7 @@ export interface IParticipant {
   deliveryToCustomer: boolean;
   deliveryInfo: IParticipantDeliveryInfo | IParticipantDeliveryInfoModel;
 
+  imported: boolean;
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

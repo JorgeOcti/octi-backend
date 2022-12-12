@@ -4,7 +4,6 @@ export * from './user.model';
 export * from './alert.model';
 export * from './group.model';
 export * from './venue.model';
-;
 export * from './region.model';
 export * from './carrier.model';
 export * from './company.model';

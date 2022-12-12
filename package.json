@@ -96,6 +96,7 @@
     "tempfile": "~2.0.0",
     "ts-node-dev": "~1.1.8",
     "uuid": "~3.3.2",
+    "xlsx": "^0.18.5",
     "xml2js": "~0.4.23",
     "yup": "~0.32.9"
   },
@@ -160,8 +161,8 @@
     "@types/yup": "~0.29.13",
     "chai": "~4.3.4",
     "chai-http": "~4.3.0",
-    "generate-template-files": "~3.2.1",
     "console-probe": "~3.3.2",
+    "generate-template-files": "~3.2.1",
     "mocha-typescript": "~1.1.17",
     "nyc": "~13.3.0",
     "prettier": "2.3.2",

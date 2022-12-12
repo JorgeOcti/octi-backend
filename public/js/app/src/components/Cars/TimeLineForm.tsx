@@ -1,7 +1,8 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import Row from '../Utils/Row';
 import * as moment from 'moment-timezone';
+
+import Row from '../Utils/Row';
 
 interface IPropsType {
   form: any;
@@ -38,7 +39,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
     return (
 
       <li style={{ marginRight: '0' }}>
-        <i className={`fa ${this.getIconDamage(form.hasDamages)} $ ${this.getColorByDamage(form.hasDamages)}`} />
+        <i className={`fa ${form.imported?'fa-cloud-upload':this.getIconDamage(form.hasDamages)} ${form.imported?'bg-orange':this.getColorByDamage(form.hasDamages)}`} />
         <div className='timeline-item'>
           <span className='time text-sm' style={{
             color: '#888'
