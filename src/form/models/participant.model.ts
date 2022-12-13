@@ -482,7 +482,7 @@ const participantSchema = new mongoose.Schema({
   },
   imported: {
     type: Boolean,
-    default: true
+    default: false
   },
   active: {
     type: Boolean,
