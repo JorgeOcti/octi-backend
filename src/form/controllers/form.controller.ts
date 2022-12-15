@@ -2275,7 +2275,7 @@ class FormController {
       };
       const options: PaginateOptions = {
         sort: {
-          createdAt: -1
+          createdAt: 1
         },
         customLabels: {
           totalDocs: 'total',
