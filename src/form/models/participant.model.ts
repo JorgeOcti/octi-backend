@@ -495,7 +495,9 @@ const participantSchema = new mongoose.Schema({
 participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
-// participantSchema.index({ team: 1, active: 1, createdAt: -1 });
+participantSchema.index({ team: 1, active: 1, createdAt: -1 });
+participantSchema.index({ team: 1, active: 1, createdAt: 1 });
+participantSchema.index({ team: 1, active: 1, number: 1 });
 
 participantSchema.plugin(mongoosePaginate);
 
