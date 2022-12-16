@@ -1432,7 +1432,7 @@ class CarController {
         }, {
           // reverse populate
           path: 'participants',
-          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages', 'kind'],
+          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages', 'kind', 'imported'],
           match: {
             $or: [{
               venue: {

@@ -55,3 +55,4 @@ buildcache
 /tools/
 
 updateAndesDBProduction.sh
+restoreAndesDBProduction.sh

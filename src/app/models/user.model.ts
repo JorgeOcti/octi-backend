@@ -60,7 +60,7 @@ export const baseUserSchema = new mongoose.Schema({
   }
 });
 
-export const userSchema = new mongoose.Schema<IUserModel>({
+export const userSchema = new mongoose.Schema<IUser>({
   ...baseUserSchema.obj,
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -1,48 +1,50 @@
-import * as excel from 'exceljs';
-import * as tempfile from 'tempfile';
-import { ObjectID } from 'bson';
-import { Response } from 'express';
-import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
 import * as Joi from 'joi';
+import * as QRCode from 'qrcode';
+import * as bluebird from 'bluebird';
+import * as excel from 'exceljs';
+import * as fs from 'fs';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
-import * as QRCode from 'qrcode';
-import CarModel from '../../app/models/car.model';
-import { ICarModel } from '../../app/models/car.model';
+import * as tempfile from 'tempfile';
+
+import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
+import ScaleModel, { IScaleModel } from '../models/scale.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
-import User from '../../app/models/user.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
 import Venue, { IVenueModel } from '../../app/models/venue.model';
+
+import ActivityHistory from '../../billing/models/activityHistory.model';
+import CarModel from '../../app/models/car.model';
+import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
+import { ChoicesTypeActivity } from '../../billing/models';
 import GPSPosition from '../models/gpsPosition.model';
-import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import GeneralUtils from '../../utils/general.utils';
+import { ICarModel } from '../../app/models/car.model';
+import { IFormTrigger } from '../interfaces';
+import { IOperationTypeModel } from '../../request/models';
+import { IParticipant } from '../interfaces/participant.interface';
+import { IVenueDay } from '../../app/interfaces/venueDay.interface';
+import { KindTrigger } from '../models/trigger.types';
+import { ObjectID } from 'bson';
+import ParticipantFile from '../models/participantFile.model';
+import RequestController from '../../request/controllers/request.controller';
+import RequestItem from '../../request/models/requestItem.model';
+import { Response } from 'express';
+import Transmittal from '../../distribution/models/transmittal.model';
+import TransmittalController from '../../distribution/controllers/transmittal.controller';
+import TransmittalItem from '../../distribution/models/transmittalItem.model';
+import TriggerHandler from './triggers/triggerHandler';
+import User from '../../app/models/user.model';
+import carTracker from '../../app/controllers/tracker/car.tracker';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
-import GeneralUtils from '../../utils/general.utils';
-import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
-import ParticipantFile from '../models/participantFile.model';
-import ScaleModel, { IScaleModel } from '../models/scale.model';
-import * as bluebird from 'bluebird';
-import { IParticipant } from '../interfaces/participant.interface';
-import { IVenueDay } from '../../app/interfaces/venueDay.interface';
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import TriggerHandler from './triggers/triggerHandler';
-import TransmittalItem from '../../distribution/models/transmittalItem.model';
-import TransmittalController from '../../distribution/controllers/transmittal.controller';
-import RequestController from '../../request/controllers/request.controller';
-import Transmittal from '../../distribution/models/transmittal.model';
-import RequestItem from '../../request/models/requestItem.model';
-import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
-import carTracker from '../../app/controllers/tracker/car.tracker';
-import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
-import { ChoicesTypeActivity } from '../../billing/models';
-import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
-import { IFormTrigger } from '../interfaces';
-import { KindTrigger } from '../models/trigger.types';
-import { PaginateOptions, PaginateResult } from 'mongoose';
-import { IOperationTypeModel } from '../../request/models';
 
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -2268,18 +2270,12 @@ class FormController {
         team,
         active: true,
         createdAt: {
-          $gte: moment().subtract(2, 'days').startOf('day').toDate()
+          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
         }
-        // form: { $in: activeForms.map((f) => f._id) },
-        /*deliveryToCustomer: true,
-        createdAt: {
-          $gte: moment().subtract(2, 'days').startOf('day').toDate(),
-          $lte: moment().endOf('day').toDate()
-        }*/
       };
       const options: PaginateOptions = {
         sort: {
-          createdAt: -1
+          number: 1
         },
         customLabels: {
           totalDocs: 'total',
