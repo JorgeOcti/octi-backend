@@ -2269,9 +2269,9 @@ class FormController {
       const filter = {
         team,
         active: true,
-        // createdAt: {
-        //   $gte: moment().startOf('day').subtract(2, 'days').toISOString()
-        // }
+        createdAt: {
+          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+        }
       };
       const options: PaginateOptions = {
         sort: {
