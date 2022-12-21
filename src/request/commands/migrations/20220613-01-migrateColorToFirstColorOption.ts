@@ -13,7 +13,7 @@ async function migrateFirstColor() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI, {});
   mongoose.set('debug', false);
   try {
     // 5bf2de34caf8ef7096105cda = Derco
@@ -22,8 +22,8 @@ async function migrateFirstColor() {
     const teams: string[] = [];
 
     let extraFilter: any = {};
-    if(teams.length){
-      extraFilter['team'] = { $in: teams.map((team)=>(mongoose.Types.ObjectId(team)))};
+    if (teams.length) {
+      extraFilter['team'] = { $in: teams.map((team) => (new mongoose.Types.ObjectId(team))) };
     }
     // const bulk = Car.collection.initializeOrderedBulkOp();
     const toUpdateCars: any[] = [];
@@ -33,7 +33,7 @@ async function migrateFirstColor() {
           ...extraFilter
         }
       }, {
-       $addFields: { firstColorOption: { $toString: '$color' } }
+        $addFields: { firstColorOption: { $toString: '$color' } }
       }, {
         $project: {
           '_id': 1,

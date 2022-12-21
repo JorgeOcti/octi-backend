@@ -4,6 +4,7 @@ import * as mongoose from 'mongoose';
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
 
 // Mongoose connect
+mongoose.set('strictQuery', true);
 (mongoose as any).Promise = bluebird;
 mongoose.connect(MONGODB_URI, { }, (err: any) => {
   if (err) {

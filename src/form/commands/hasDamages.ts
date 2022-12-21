@@ -12,7 +12,7 @@ async function updateVin2() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('debug', true);
-  await mongoose.connect(MONGODB_URI,  {});
+  await mongoose.connect(MONGODB_URI, {});
   const cursor = await Participant.find({}).cursor();
 
   await cursor.eachAsync(async (participant) => {
@@ -28,7 +28,7 @@ async function updateVin2() {
         }
       }
       console.log(hasDamages);
-      await Participant.update({_id: participant._id}, {$set: {hasDamages}});
+      await Participant.updateOne({ _id: participant._id }, { $set: { hasDamages } });
     } catch (error) {
       console.log("error");
     }
