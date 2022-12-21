@@ -10,7 +10,7 @@ import { IUser } from '../interfaces';
 import UserServices from './user.services';
 import usersHooks from './user.hooks';
 
-export interface IUserModel extends IUser, mongoose.Document {
+export interface IUserModel extends IUser, mongoose.Document<any> {
   comparePassword(candidatePassword: string): Promise<boolean>;
 
   generateToken(): string;

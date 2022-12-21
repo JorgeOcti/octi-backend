@@ -1,7 +1,7 @@
 import {ICompany, ITeam} from "./index";
 
 export interface IBaseBorder {
-  _id: any;
+  _id?: any;
   name: string;
   lat: number;
   lng: number;

@@ -1,11 +1,11 @@
-import { ITeamModel } from '../models/team.model';
 import { ICompany } from './company.interface';
 import { IForm } from '../../form/interfaces/form.interface';
 import { IGroup } from './group.interface';
 import { IPermission } from '../../billing/interfaces/permission.interface';
-import { ITeam } from './team.interface';
-import { IVenue } from './venue.interface';
 import { ISalesChannel } from '../../request/interfaces';
+import { ITeam } from './team.interface';
+import { ITeamModel } from '../models/team.model';
+import { IVenue } from './venue.interface';
 
 export interface IUserSettings {
   defaultChannel: ISalesChannel;
@@ -22,7 +22,7 @@ export interface IUser {
 
   venuesPermissions(inString?: boolean): any[];
 
-  _id: any;
+  _id?: any;
   username: string;
   firstName: string;
   lastName: string;

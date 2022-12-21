@@ -1,9 +1,9 @@
-import {ITeam} from '../../app/interfaces/team.interface';
-import {ITeamBilling} from "./teamBiling.interfaces";
 import {ICompany, IHistory} from "../../app/interfaces";
+
 import {IModule} from "./module.interface";
 import {ISubmodule} from "./submodule.interface";
-
+import {ITeam} from '../../app/interfaces/team.interface';
+import {ITeamBilling} from "./teamBiling.interfaces";
 
 interface IIFile {
   url: string;
@@ -29,7 +29,7 @@ interface IInvoiceTeamBillingCompany {
 }
 
 export interface IInvoiceTeamBilling {
-  _id: any;
+  _id?: any;
   team: ITeam;
   period: string;
   teamBilling: ITeamBilling;

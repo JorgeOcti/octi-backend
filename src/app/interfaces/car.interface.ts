@@ -1,10 +1,10 @@
 import { ICompany } from './company.interface';
+import { IHistory } from './history.interface';
 import { IInventoryCar } from '../../inventory/interfaces/inventory.interface';
 import { IParticipant } from '../../form/interfaces/participant.interface';
 import { ITeam } from './team.interface';
 import { IUser } from './user.interface';
 import { IVenue } from './venue.interface';
-import { IHistory } from './history.interface';
 
 export interface ICarLocation {
   venue: IVenue;
@@ -12,7 +12,7 @@ export interface ICarLocation {
 }
 
 export interface ICar {
-  _id: any;
+  _id?: any;
   meta: {
     location: Partial<ICarLocation>;
   };

@@ -1,11 +1,12 @@
-import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
-import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as mongoose from 'mongoose';
+import * as mongooseCrate from 'mongoose-crate';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+
 import { ICompany } from '../interfaces';
+import { PaginateModel } from 'mongoose';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
@@ -135,7 +136,7 @@ companySchema.index({ 'team': 1, deleted: 1 });
 
 companySchema.plugin(mongoosePaginate);
 
-companySchema.plugin(mongooseCrate, {
+companySchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

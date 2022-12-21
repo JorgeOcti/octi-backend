@@ -1,9 +1,10 @@
-import { IModule } from '../interfaces';
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-export interface IModuleModel extends IModule, mongoose.Document {
+import { IModule } from '../interfaces';
+import { PaginateModel } from 'mongoose';
+
+export interface IModuleModel extends IModule, mongoose.Document<any> {
 }
 
 const moduleSchema = new mongoose.Schema({

@@ -1,7 +1,7 @@
 import {ITeam} from '../../app/interfaces/team.interface';
 
 export interface IRequestStatus {
-  _id: any;
+  _id?: any;
   name: string;
   weigth: number;
   team: ITeam;

@@ -1,11 +1,12 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
 import { IVenue } from '../interfaces';
+import { PaginateModel } from 'mongoose';
 import { venueDaySchema } from './venueDay.model';
 import venuesHooks from './venue.hooks';
 
-export interface IVenueModel extends IVenue, mongoose.Document {}
+export interface IVenueModel extends IVenue, mongoose.Document<any> {}
 
 export enum ChoicesTypeVenue {
   distributor = 'distributor',

@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import {IBorder} from "../interfaces/border.interface";
 
-export interface IBorderModel extends IBorder, mongoose.Document {}
+import {IBorder} from "../interfaces/border.interface";
+import { PaginateModel } from 'mongoose';
+
+export interface IBorderModel extends IBorder, mongoose.Document<any> {}
 
 export const borderSchema = new mongoose.Schema({
   name: {

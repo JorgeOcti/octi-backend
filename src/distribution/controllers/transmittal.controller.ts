@@ -1,33 +1,34 @@
-import { IAnyObject, IRequest } from '../../interfaces/global.interface';
-import { Response } from 'express';
-import { PaginateOptions, PaginateResult } from 'mongoose';
-import Transmittal, { ITransmittalModel } from '../models/transmittal.model';
-import logger from '../../services/logger.service';
-import TransmittalItem from '../models/transmittalItem.model';
-import TransmittalFile from '../models/transmittalFile.model';
-import GeneralUtils from '../../utils/general.utils';
 import * as GraphicsMagick from 'gm';
-import Team from '../../app/models/team.model';
-import Car from '../../app/models/car.model';
-import RequestItem from '../../request/models/requestItem.model';
-import { io } from '../../server';
-import * as excel from 'exceljs';
-import * as moment from 'moment-timezone';
-import Milestone from '../models/milestone.model';
-import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
-import ScaleModel, { IScaleModel } from '../../form/models/scale.model';
-import redisClient from '../../services/redis.service';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
+import * as excel from 'exceljs';
 import * as fs from 'fs';
 import * as https from 'https';
-import { IUser } from '../../app/interfaces';
-import { ChoicesStatusTransmittal } from '../models/transmitall.types';
+import * as moment from 'moment-timezone';
 import * as mongoose from "mongoose";
-import Border from "../../app/models/border.model";
-import transmittalModel from "../models/transmittal.model";
-import { ChoicesStatusTransmittalItem } from '../models/transmittalItem.types';
 
+import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { PaginateOptions, PaginateResult, Types } from 'mongoose';
+import ScaleModel, { IScaleModel } from '../../form/models/scale.model';
+import Transmittal, { ITransmittalModel } from '../models/transmittal.model';
+
+import Border from "../../app/models/border.model";
+import Car from '../../app/models/car.model';
+import { ChoicesStatusTransmittal } from '../models/transmitall.types';
+import { ChoicesStatusTransmittalItem } from '../models/transmittalItem.types';
+import GeneralUtils from '../../utils/general.utils';
+import { IUser } from '../../app/interfaces';
+import Milestone from '../models/milestone.model';
+import RequestItem from '../../request/models/requestItem.model';
+import { Response } from 'express';
+import Team from '../../app/models/team.model';
+import TransmittalFile from '../models/transmittalFile.model';
+import TransmittalItem from '../models/transmittalItem.model';
+import { io } from '../../server';
+import logger from '../../services/logger.service';
+import redisClient from '../../services/redis.service';
+import transmittalModel from "../models/transmittal.model";
 
 class TransmittalController {
 
@@ -540,7 +541,9 @@ class TransmittalController {
     }
   }
 
-  private getForm(filter: any): Promise<IFormModel> {
+  private getForm(filter: any): Promise<mongoose.LeanDocument<IFormModel & {
+    _id: Types.ObjectId;
+}>> {
     const keyCache = `form-${filter._id}`;
     logger.debug(`keyCache ${keyCache}`);
     return new Promise((resolve, reject) => {
@@ -606,7 +609,7 @@ class TransmittalController {
               }]
             }])
             .lean()
-            .exec((err, form: IFormModel) => {
+            .exec((err, form) => {
               if (err) {
                 /* istanbul ignore next */
                 return reject(err);
@@ -858,7 +861,7 @@ class TransmittalController {
     }
   }
 
-  private getScales(filter: any): Promise<IScaleModel[]> {
+  private getScales(filter: any): Promise<mongoose.LeanDocument<IScaleModel & { _id: mongoose.Types.ObjectId; }>[]> {
     const keyCache = `scales-${JSON.stringify(filter)}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
@@ -878,7 +881,7 @@ class TransmittalController {
               '__v': false
             })
             .lean()
-            .exec((err, scales: IScaleModel[]) => {
+            .exec((err, scales) => {
               if (err) {
                 /* istanbul ignore next */
                 return reject(err);
@@ -1294,7 +1297,7 @@ class TransmittalController {
       // mongoose.set('debug', true);
       const transmittals = await TransmittalItem.aggregate([{
         $match: {
-          team: mongoose.Types.ObjectId(team),
+          team: team,
           createdAt: {
             $gte: moment.unix(Number(from)).toDate(),
             $lt: moment.unix(Number(to)).toDate()
@@ -1516,7 +1519,7 @@ class TransmittalController {
     try {
       let transmittals = await TransmittalItem.aggregate([{
         $match: {
-          team: mongoose.Types.ObjectId(team),
+          team: team,
           createdAt: {
             $gte: moment.unix(Number(from)).toDate(),
             $lt: moment.unix(Number(to)).toDate()

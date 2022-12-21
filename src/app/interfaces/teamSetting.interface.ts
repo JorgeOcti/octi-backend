@@ -1,6 +1,5 @@
 import { ITeam } from './team.interface';
 
-
 export interface IFormSettting {
   report: IReportSetting;
   vinMinCharacters: number;
@@ -74,7 +73,7 @@ export interface IReportSetting {
 }
 
 export interface ITeamSetting {
-  _id: any;
+  _id?: any;
   inventory: IInventorySetting;
   request: IRequestSetting;
   form: IFormSettting;

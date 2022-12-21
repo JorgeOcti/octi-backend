@@ -47,13 +47,13 @@ export interface IParticipantScale {
 }
 
 export interface IParticipantItems {
-  _id: any;
+  _id?: any;
   item: string;
   amount: boolean;
 }
 
 export interface IParticipantAccesory {
-  _id: any;
+  _id?: any;
   question: string;
   items: IParticipantItemModel[];
 }
@@ -119,7 +119,7 @@ export interface IParticipantDeliveryInfo {
 }
 
 export interface IParticipant {
-  _id: any;
+  _id?: any;
   number: number;
   name: string;
 
@@ -174,7 +174,6 @@ export interface IParticipant {
 
   imported: boolean;
   active: boolean;
-  imported: boolean;
   updatedAt: Date;
   createdAt: Date;
 }

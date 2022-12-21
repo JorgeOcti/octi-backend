@@ -1,7 +1,7 @@
 import { IModule } from './module.interface';
 
 export interface ISubmodule {
-  _id: any;
+  _id?: any;
   name: string;
   type: string;
   module: IModule;

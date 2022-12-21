@@ -1,14 +1,16 @@
 import * as bluebird from 'bluebird';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
+
 // @ts-ignore
 import { Server, Socket } from 'socket.io';
+import redisClient, {createRedisClient} from './services/redis.service';
+
+import GeneralUtils from './utils/general.utils';
+import app from './app';
 // @ts-ignore
 import { createAdapter } from "@socket.io/redis-adapter";
-import app from './app';
 import logger from './services/logger.service';
-import redisClient, {createRedisClient} from './services/redis.service';
-import GeneralUtils from './utils/general.utils';
 
 const mongooseRedisCache = require("mongoose-redis-cache");
 
@@ -17,7 +19,7 @@ const MONGODB_URI: string = process.env.MONGODB_URI || '';
 
 // Mongoose connect
 (mongoose as any).Promise = bluebird;
-mongoose.connect!(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true}, (err: any) => {
+mongoose.connect!(MONGODB_URI, {}, (err: any) => {
   if (err) {
     /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
@@ -34,6 +36,7 @@ mongoose.connect!(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true
 });
 // mongoose.set('debug', app.get('env') === 'development');
 // mongoose.set('debug', true);
+mongoose.set('strictQuery', true);
 mongoose.set('debug', false);
 const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
 const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {

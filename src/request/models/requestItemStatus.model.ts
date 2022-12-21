@@ -1,10 +1,11 @@
-import { IRequestItemStatus } from '../interfaces/requestItemStatus.interface';
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
+import { IRequestItemStatus } from '../interfaces/requestItemStatus.interface';
+import { PaginateModel } from 'mongoose';
 import requestItemStatusHooks from './requestItemStatus.hooks';
 
-export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document {}
+export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document<any> {}
 
 export const baseRequestItemStatusSchema = new mongoose.Schema({
   name: {

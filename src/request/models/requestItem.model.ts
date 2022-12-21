@@ -1,15 +1,17 @@
 import * as mongoose from 'mongoose';
-import { AggregatePaginateModel, PaginateModel } from 'mongoose';
-import { IRequestItem } from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import requestItemsHooks from './requestItem.hooks';
-import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
-import { requestSchema } from './request.model';
-import { baseRequestItemStatusSchema } from './';
-import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
-import { transmittalSchema } from '../../distribution/models/transmittal.model';
 
-export interface IRequestItemModel extends IRequestItem, mongoose.Document {
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
+import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
+
+import { IRequestItem } from '../interfaces/requestItem.interface';
+import { baseRequestItemStatusSchema } from './';
+import requestItemsHooks from './requestItem.hooks';
+import { requestSchema } from './request.model';
+import { transmittalSchema } from '../../distribution/models/transmittal.model';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
+export interface IRequestItemModel extends IRequestItem, mongoose.Document<any> {
   createdAt: Date;
   updatedAt: Date;
 }

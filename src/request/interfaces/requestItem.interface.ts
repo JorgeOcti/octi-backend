@@ -1,26 +1,26 @@
-import { ICarrierModel } from '../../app/models/carrier.model';
-import { ICarModel } from '../../app/models/car.model';
-import { ITeamModel } from '../../app/models/team.model';
-import { IUserModel } from '../../app/models/user.model';
-import { IVenueModel } from '../../app/models/venue.model';
-import { IReasonModel } from '../models/reason.model';
-import { IRequestModel } from '../models/request.model';
 import { ICar } from '../../app/interfaces/car.interface';
+import { ICarModel } from '../../app/models/car.model';
 import { ICarrier } from '../../app/interfaces/carrier.interface';
+import { ICarrierModel } from '../../app/models/carrier.model';
+import { ICompany } from '../../app/interfaces';
+import { ICompanyModel } from '../../app/models';
 import { IReason } from './reason.interface';
+import { IReasonModel } from '../models/reason.model';
 import { IRequest } from './request.interface';
-import { IRequestItemStatus } from './requestItemStatus.interface';
-import { ITeam } from '../../app/interfaces/team.interface';
-import { IUser } from '../../app/interfaces/user.interface';
-import { IVenue } from '../../app/interfaces/venue.interface';
 import { IRequestFile } from './requestFile.interface';
+import { IRequestItemStatus } from './requestItemStatus.interface';
 import { IRequestItemStatusModel } from '../models/requestItemStatus.model';
+import { IRequestModel } from '../models/request.model';
+import { ITeam } from '../../app/interfaces/team.interface';
+import { ITeamModel } from '../../app/models/team.model';
 import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
-import { ITransmittalModel } from '../../distribution/models/transmittal.model';
 import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
 import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
-import { ICompanyModel } from '../../app/models';
-import { ICompany } from '../../app/interfaces';
+import { ITransmittalModel } from '../../distribution/models/transmittal.model';
+import { IUser } from '../../app/interfaces/user.interface';
+import { IUserModel } from '../../app/models/user.model';
+import { IVenue } from '../../app/interfaces/venue.interface';
+import { IVenueModel } from '../../app/models/venue.model';
 
 export interface IRequestAnswer {
   questionId: any;
@@ -29,7 +29,7 @@ export interface IRequestAnswer {
 }
 
 export interface IRequestItem {
-  _id: any;
+  _id?: any;
   request: IRequest | IRequestModel;
   team: ITeam | ITeamModel;
   company: ICompanyModel | ICompany

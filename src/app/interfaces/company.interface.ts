@@ -30,7 +30,7 @@ export interface IBaseCompany {
 }
 
 export interface ICompany extends IBaseCompany {
-  _id: any;
+  _id?: any;
   users?: IUser[];
   team: ITeam;
   active: boolean;

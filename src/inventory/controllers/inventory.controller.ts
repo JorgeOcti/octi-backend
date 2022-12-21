@@ -1,44 +1,48 @@
+import * as GraphicsMagick from 'gm';
+import * as  Joi from 'joi';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
-import { ObjectID } from 'bson';
 import * as excel from 'exceljs';
-import { Alignment } from 'exceljs';
-import { Response } from 'express';
 import * as fs from 'fs';
-import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import { PaginateOptions } from 'mongoose';
 import * as tempfile from 'tempfile';
-import { queue } from '../../utils/queue';
-import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
-import Team from '../../app/models/team.model';
-import TeamSetting from '../../app/models/teamSetting.model';
-import { default as User, default as UserModel } from '../../app/models/user.model';
-import { default as Venue, default as VenueModel, IVenueModel } from '../../app/models/venue.model';
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
-import { IRequest } from '../../interfaces/global.interface';
-import { IInventoryCar } from '../interfaces/inventory.interface';
-import { IStockCar } from '../interfaces/stock.interface';
-import { io } from '../../server';
-import logger from '../../services/logger.service';
-import PushService from '../../services/push.service';
-import GeneralUtils from '../../utils/general.utils';
+
+import { default as Car, default as CarModel, ChoicesStatusCar, ICarModel } from '../../app/models/car.model';
 import {
-  ChoicesStatusInventory, default as Inventory, default as InventoryModel
+  ChoicesStatusInventory,
+  default as Inventory,
+  default as InventoryModel
 } from '../models/inventory.model';
+import { IVenueModel, default as Venue, default as VenueModel } from '../../app/models/venue.model';
 import InventoryCar, { ChoicesStatusCarInventory } from '../models/inventoryCar.model';
+import { PaginateOptions, PipelineStage } from 'mongoose';
+import { default as User, default as UserModel } from '../../app/models/user.model';
+
+import ActivityHistory from '../../billing/models/activityHistory.model';
+import { Alignment } from 'exceljs';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import GeneralUtils from '../../utils/general.utils';
+import History from '../../app/models/history.model';
+import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
+import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IRequest } from '../../interfaces/global.interface';
+import { IStockCar } from '../interfaces/stock.interface';
+import InventoryFile from '../models/inventoryFile.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import * as  Joi from 'joi';
+import { ObjectID } from 'bson';
+import PushService from '../../services/push.service';
+import { Response } from 'express';
+import { StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
-import InventoryFile from '../models/inventoryFile.model';
-import History from '../../app/models/history.model';
-import { StatusHistory } from '../../app/models/history.types';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import Team from '../../app/models/team.model';
+import TeamSetting from '../../app/models/teamSetting.model';
+import { io } from '../../server';
+import logger from '../../services/logger.service';
+import { queue } from '../../utils/queue';
 
 class InventoryController {
 
@@ -392,7 +396,7 @@ class InventoryController {
           $in: venuesPermissions
         }
       }, options);
-      const aggregate = [{
+      const aggregate:  PipelineStage[] = [{
         $match: {
           _id: {
             $in: paginatedInventories.docs.map(v => v._id)
@@ -1092,7 +1096,7 @@ class InventoryController {
         const inventoriesCars = await InventoryModel.aggregate([{
           $match: {
             team,
-            _id: mongoose.Types.ObjectId(id)
+            _id: new mongoose.Types.ObjectId(id)
           }
         }, {
           $lookup: {
@@ -1110,7 +1114,7 @@ class InventoryController {
                 cond: {
                   $and: [
                     {
-                      $in: ['$$cars._id', cars.map((car: string) => mongoose.Types.ObjectId(car))]
+                      $in: ['$$cars._id', cars.map((car: string) => new mongoose.Types.ObjectId(car))]
                     }, {
                       $ne: ['$$cars.images', []]
                     }
@@ -1474,8 +1478,8 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team: mongoose.Types.ObjectId(team),
-              _id: { $in: [mongoose.Types.ObjectId(id)] }
+              team: new mongoose.Types.ObjectId(team),
+              _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
           }, {
             $lookup: {
@@ -1577,8 +1581,8 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team: mongoose.Types.ObjectId(team),
-              _id: { $in: [mongoose.Types.ObjectId(id)] }
+              team: new mongoose.Types.ObjectId(team),
+              _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
           }, {
             $lookup: {
@@ -1653,8 +1657,8 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team: mongoose.Types.ObjectId(team),
-              _id: { $in: [mongoose.Types.ObjectId(id)] }
+              team: new mongoose.Types.ObjectId(team),
+              _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
           }, {
             $lookup: {

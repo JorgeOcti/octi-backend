@@ -2,7 +2,7 @@ import {ITeam} from '../../app/interfaces/team.interface';
 import {IUser} from '../../app/interfaces/user.interface';
 
 export interface IInventoryLabel {
-  _id: any;
+  _id?: any;
   team?: ITeam;
   name: string;
   description: string;

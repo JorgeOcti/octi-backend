@@ -1,11 +1,13 @@
 import * as mongoose from 'mongoose';
-import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import {ITransmittal} from '../interfaces/transmittal.interface';
-import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
+import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import { ChoicesStatusTransmittal, choicesStatusTransmittal } from './transmitall.types';
 
-export interface ITransmittalModel extends ITransmittal, mongoose.Document { }
+import {ITransmittal} from '../interfaces/transmittal.interface';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
+export interface ITransmittalModel extends ITransmittal, mongoose.Document<any> { }
 
 const transmittalTransporterSchema = new mongoose.Schema({
   carrier: {

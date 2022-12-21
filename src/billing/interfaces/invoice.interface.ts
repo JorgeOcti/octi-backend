@@ -1,5 +1,5 @@
-import {ITeam} from '../../app/interfaces/team.interface';
 import {ICompany} from '../../app/interfaces/company.interface';
+import {ITeam} from '../../app/interfaces/team.interface';
 
 interface IIFile {
   url: string;
@@ -9,7 +9,7 @@ interface IIFile {
 }
 
 export interface IInvoice {
-  _id: any;
+  _id?: any;
   team: ITeam;
   company: ICompany;
   period: string;

@@ -1,7 +1,7 @@
 import { ITeam } from './team.interface';
 
 export interface ISamlConfig {
-  _id: any;
+  _id?: any;
   team: ITeam;
   name: string;
   entryPoint: string;

@@ -1,13 +1,14 @@
-import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-import {IInvoice} from '../interfaces/invoice.interface';
-import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as mongoose from 'mongoose';
+import * as mongooseCrate from 'mongoose-crate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
+
+import {IInvoice} from '../interfaces/invoice.interface';
 import { PaginateModel } from 'mongoose';
 
-export interface IInvoiceModel extends IInvoice, mongoose.Document {
+export interface IInvoiceModel extends IInvoice, mongoose.Document<any> {
   attach(condition: string, file: any, error: (err: any) => void): void;
 }
 
@@ -98,7 +99,7 @@ const invoiceSchema = new mongoose.Schema({
    timestamps: true
 });
 
-invoiceSchema.plugin(mongooseCrate, {
+invoiceSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

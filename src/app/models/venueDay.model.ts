@@ -1,7 +1,8 @@
 import * as mongoose from 'mongoose';
+
 import { IVenueDay } from '../interfaces';
 
-export interface IVenueDayModel extends IVenueDay, mongoose.Document {}
+export interface IVenueDayModel extends IVenueDay, mongoose.Document<any> {}
 
 export const venueDaySchema = new mongoose.Schema({
   venue: {

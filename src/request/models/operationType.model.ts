@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
-import { IOperationType } from '../interfaces/operationType.interface';
-import { ICarModel } from '../../app/models/car.model';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-export interface IOperationTypeModel extends IOperationType, mongoose.Document {
+import { ICarModel } from '../../app/models/car.model';
+import { IOperationType } from '../interfaces/operationType.interface';
+import { PaginateModel } from 'mongoose';
+
+export interface IOperationTypeModel extends IOperationType, mongoose.Document<any> {
 }
 
 const operationTypeSchema = new mongoose.Schema({

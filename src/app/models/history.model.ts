@@ -1,10 +1,12 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IHistory } from '../interfaces';
-import { statusHistory, modulesHistory } from './history.types';
 
-export interface IHistoryModel extends IHistory, mongoose.Document {
+import { modulesHistory, statusHistory } from './history.types';
+
+import { IHistory } from '../interfaces';
+import { PaginateModel } from 'mongoose';
+
+export interface IHistoryModel extends IHistory, mongoose.Document<any> {
 }
 
 const historyAlertsSchema = new mongoose.Schema({

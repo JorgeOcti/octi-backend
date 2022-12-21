@@ -1,18 +1,19 @@
-import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
-import app from '../../app';
-import { queue } from '../../utils/queue';
-import ParticipantModel from '../../form/models/participant.model';
-import { IRequest } from '../../interfaces/global.interface';
-import logger from '../../services/logger.service';
+
+import { Request, Response } from 'express';
+
 import GeneralUtils from '../../utils/general.utils';
+import { IRequest } from '../../interfaces/global.interface';
+import ParticipantModel from '../../form/models/participant.model';
+import TeamSetting from '../models/teamSetting.model';
 import User from '../models/user.model';
 import UserModel from '../models/user.model';
 import Version from '../models/version.model';
-import TeamSetting from '../models/teamSetting.model';
-
+import app from '../../app';
+import logger from '../../services/logger.service';
+import { queue } from '../../utils/queue';
 
 class JWTController {
 
@@ -113,15 +114,15 @@ class JWTController {
                 _id: user.team._id,
                 name: user.team.name,
                 settings: {
-                  form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                  form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
                     vinMinCharacters: 17,
                     vinMaxCharacters: 17
                   }),
-                  helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                  helpNumber: GeneralUtils.getObjectProperty(teamSettings!, 'helpPhones', {
                     transmittal: ''
                   }),
-                  inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
-                  vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
+                  inventory: GeneralUtils.getObjectProperty(teamSettings!, 'inventory', {}),
+                  vocabulary: GeneralUtils.getObjectProperty(teamSettings!, 'vocabulary', {})
                 }
                 // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
               },
@@ -230,15 +231,15 @@ class JWTController {
             _id: user.team._id,
             name: user.team.name,
             settings: {
-              form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+              form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
                 vinMinCharacters: 17,
                 vinMaxCharacters: 17
               }),
-              helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+              helpNumber: GeneralUtils.getObjectProperty(teamSettings!, 'helpPhones', {
                 transmittal: ''
               }),
-              inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
-              vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
+              inventory: GeneralUtils.getObjectProperty(teamSettings!, 'inventory', {}),
+              vocabulary: GeneralUtils.getObjectProperty(teamSettings!, 'vocabulary', {})
             }
             // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
           },

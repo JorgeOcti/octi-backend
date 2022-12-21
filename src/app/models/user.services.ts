@@ -1,8 +1,9 @@
 import * as bcrypt from 'bcrypt';
-import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
+
 import { IUser } from '../interfaces';
 import { IUserModel } from './user.model';
+import { ObjectID } from 'bson';
 
 export default class UserServices {
 
@@ -61,9 +62,9 @@ export default class UserServices {
   }
 
   public generateToken(): string {
-    const { _id, firstName, lastName, company, venue } = this.user;
+    const { firstName, lastName, company, venue } = this.user;
     const userInfo = {
-      _id,
+      _id: this.user._id,
       firstName,
       lastName,
       company,

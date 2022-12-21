@@ -1,11 +1,12 @@
-import NullTriggerDelegate from "./nullTrigger.delegate";
-import {IFormTriggerModel} from "../../../models/trigger.model";
-import { IAnyObject } from '../../../../interfaces/global.interface';
-import logger from "../../../../services/logger.service";
-import TransmittalItem from "../../../../distribution/models/transmittalItem.model";
-import Transmittal from "../../../../distribution/models/transmittal.model";
-import {ChoicesStatusTransmittal} from "../../../../distribution/models/transmitall.types";
 import * as mongoose from 'mongoose';
+
+import {ChoicesStatusTransmittal} from "../../../../distribution/models/transmitall.types";
+import { IAnyObject } from '../../../../interfaces/global.interface';
+import {IFormTriggerModel} from "../../../models/trigger.model";
+import NullTriggerDelegate from "./nullTrigger.delegate";
+import Transmittal from "../../../../distribution/models/transmittal.model";
+import TransmittalItem from "../../../../distribution/models/transmittalItem.model";
+import logger from "../../../../services/logger.service";
 
 export default class TransmittalTriggerDelegate extends NullTriggerDelegate {
 
@@ -13,11 +14,11 @@ export default class TransmittalTriggerDelegate extends NullTriggerDelegate {
     try {
       logger.info(`TransmittalTriggerDelegate.trigger: ${trigger.kind} performing`);
 
-      let transmittalTypes = trigger.config.transmittalTypes.map((tt: string) => mongoose.Types.ObjectId(tt))
+      let transmittalTypes = trigger.config.transmittalTypes.map((tt: string) => new mongoose.Types.ObjectId(tt))
       let car = payload.participant.car
 
       let transmittalItems = await TransmittalItem.aggregate([{$match: {
-        car: mongoose.Types.ObjectId(car._id),
+        car: new mongoose.Types.ObjectId(car._id),
       }}, {$lookup: {
           from: 'transmittals',
           localField: 'transmittal',

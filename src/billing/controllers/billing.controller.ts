@@ -1,22 +1,24 @@
-import {Request, Response} from 'express';
-import {IRequest} from '../../interfaces/global.interface';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import Invoice, {IInvoiceModel} from '../models/invoice.model';
-import BillingQueue from '../tasks/billing.task';
 import * as HtmlPdf from 'html-pdf';
 import * as excel from 'exceljs';
-import * as tempfile from 'tempfile';
-import ActivityHistory from '../models/activityHistory.model';
 import * as moment from 'moment-timezone';
+import * as tempfile from 'tempfile';
+
+import Invoice, {IInvoiceModel} from '../models/invoice.model';
+import {PaginateOptions, PaginateResult} from 'mongoose';
+import {Request, Response} from 'express';
+
+import ActivityHistory from '../models/activityHistory.model';
+import BillingQueue from '../tasks/billing.task';
+import BillingTeamQueue from "../tasks/billingTeam.task";
 import {ChoicesTypeActivity} from '../models/activiHistory.types';
 import Company from '../../app/models/company.model';
+import History from '../../app/models/history.model';
+import {IRequest} from '../../interfaces/global.interface';
+import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
 import Module from '../models/module.model';
 import Submodule from '../models/submodule.model';
-import logger from '../../services/logger.service';
-import History from '../../app/models/history.model';
 import TeamBilling from "../models/teamBilling.model";
-import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
-import BillingTeamQueue from "../tasks/billingTeam.task";
+import logger from '../../services/logger.service';
 
 class BillingController {
 
@@ -558,7 +560,7 @@ class BillingController {
           $unwind: {path: '$user', preserveNullAndEmptyArrays: true}
         }]).cursor({
           batchSize: 50
-        }).exec();
+        })
 
         cursor.on('data', async (history: any) => {
           worksheet.addRow({

@@ -7,7 +7,7 @@ export interface IBaseRegion {
 }
 
 export interface IRegion {
-  _id: any;
+  _id?: any;
   name: string;
   code: string;
   team: ITeam;

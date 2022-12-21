@@ -494,10 +494,6 @@ const participantSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
-  },
-  imported: {
-    type: Boolean,
-    default: false
   }
 }, {
   timestamps: true

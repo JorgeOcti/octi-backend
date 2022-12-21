@@ -1,10 +1,11 @@
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
-import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import * as uuid from 'uuid';
-import * as s3Config from '../../../s3-config.json';
-import {IInventory} from '../interfaces/inventory.interface';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+
+import {IInventory} from '../interfaces/inventory.interface';
 import {PaginateModel} from 'mongoose';
 
 const fileSchema = new mongoose.Schema({
@@ -126,7 +127,7 @@ inventorySchema.index({team: 1, status: 1, venues: 1});
 inventorySchema.set<any>('redisCache', process.env.ENV === 'production');
 inventorySchema.set<any>('expires', 10);
 
-inventorySchema.plugin(mongooseCrate, {
+inventorySchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

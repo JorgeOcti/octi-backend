@@ -1238,25 +1238,25 @@ class CarController {
       // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
       const cursor = ParticipantModel.aggregate(aggregation).cursor({
         batchSize: 50
-      }).exec();
-
-      cursor.on('data', async (participant: any) => {
+      })
+      cursor.eachAsync(async (participant) => {
         const row = await this.processParticipant(participant);
         worksheet.addRow(row).commit();
       });
 
+      workbook.commit();
       // code to handle connection abort or finish query read process
-      cursor.on('end', async () => {
-        cursor.close();
-        workbook.commit();
-        // return res.status(200);
-      });
+      // cursor.on('end', async () => {
+      //   cursor.close();
+      //   workbook.commit();
+      //   // return res.status(200);
+      // });
 
-      cursor.on('error', (error: any) => {
-        cursor.close();
-        logger.error(error.message);
-        // return res.status(500).json(error);
-      });
+      // cursor.on('error', (error: any) => {
+      //   cursor.close();
+      //   logger.error(error.message);
+      //   // return res.status(500).json(error);
+      // });
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {

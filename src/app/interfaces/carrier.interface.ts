@@ -6,7 +6,7 @@ export interface IBaseCarrier {
 }
 
 export interface ICarrier extends IBaseCarrier {
-  _id: any;
+  _id?: any;
   team: ITeam;
   updatedAt: Date;
   createdAt: Date;

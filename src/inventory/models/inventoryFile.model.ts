@@ -1,8 +1,9 @@
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
-import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+
 import {IInventoryFile} from '../interfaces/inventoryFile.interface';
 
 const fileSchema = new mongoose.Schema({
@@ -20,7 +21,7 @@ const fileSchema = new mongoose.Schema({
   }
 });
 
-export interface IInventoryFileModel extends IInventoryFile, mongoose.Document {
+export interface IInventoryFileModel extends IInventoryFile, mongoose.Document<any> {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
 
@@ -45,7 +46,7 @@ export const inventoryFileSchema = new mongoose.Schema({
   timestamps: true
 });
 
-inventoryFileSchema.plugin(mongooseCrate, {
+inventoryFileSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

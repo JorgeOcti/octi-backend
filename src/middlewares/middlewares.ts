@@ -1,12 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { IRequest } from '../interfaces/global.interface';
-import logger from '../services/logger.service';
+
+import { NextFunction, Request, Response } from 'express';
 import User, { IUserModel } from '../app/models/user.model';
+
 import BaseSchema from 'yup/lib/schema';
-import redisClient from '../services/redis.service';
-import UserServices from '../app/models/user.services';
+import { IRequest } from '../interfaces/global.interface';
 import { IUser } from '../app/interfaces';
+import UserServices from '../app/models/user.services';
+import logger from '../services/logger.service';
+import redisClient from '../services/redis.service';
 
 class Middlewares {
 
@@ -25,7 +27,7 @@ class Middlewares {
     try {
       if (req.isAuthenticated() && req?.user) {
         /* istanbul ignore else */
-        const { user } = await this.addUserToRequest(req.user._id, req);
+        const { user } = await this.addUserToRequest(req.user._id.toString(), req);
         if (user && user?.team && user?.company && user?.venue && user?.userPermissions) {
           logger.debug(`Middlewares.checkIsLoggedIn: ${req.user.email} from ${req.originalUrl}`);
           req.user = user;

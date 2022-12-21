@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import {ITeamBilling} from '../interfaces';
 
-export interface ITeamBillingModel extends ITeamBilling, mongoose.Document {
+import {ITeamBilling} from '../interfaces';
+import {PaginateModel} from 'mongoose';
+
+export interface ITeamBillingModel extends ITeamBilling, mongoose.Document<any> {
 }
 
 export enum ChoicesTypeBilling {

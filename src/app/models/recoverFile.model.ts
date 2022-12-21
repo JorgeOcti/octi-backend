@@ -1,7 +1,8 @@
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
-import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as s3Config from '../../../s3-config.json';
+
 import { IRecoverFile } from '../interfaces';
 
 const fileSchema = new mongoose.Schema({
@@ -43,7 +44,7 @@ export const recoverFileSchema = new mongoose.Schema({
   timestamps: true
 });
 
-recoverFileSchema.plugin(mongooseCrate, {
+recoverFileSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

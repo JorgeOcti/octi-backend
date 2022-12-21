@@ -1,6 +1,6 @@
 import {ICompanyModel} from '../../app/models/company.model';
-import {IUserModel} from '../../app/models/user.model';
 import {IFormModel} from '../models/form.model';
+import {IUserModel} from '../../app/models/user.model';
 
 interface IIFile {
   url: string;
@@ -10,7 +10,7 @@ interface IIFile {
 }
 
 export interface IParticipantFile {
-  _id: any;
+  _id?: any;
   form: IFormModel;
   company: ICompanyModel;
   user: IUserModel;
