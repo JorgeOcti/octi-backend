@@ -299,8 +299,7 @@ async function importMassive() {
           }
         ])
         .allowDiskUse(true)
-        .cursor({ batchSize: 100 })
-        .exec();
+        .cursor()
 
       await carCursor.eachAsync(async (car: any) => {
         return new Promise((resolve, reject) => {

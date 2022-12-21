@@ -7,10 +7,10 @@ import * as https from 'https';
 import * as moment from 'moment';
 
 import Car, { default as CarModel, ChoicesStatusCar } from '../../app/models/car.model';
-import { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
 import { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
 import Request, { IRequestModel } from '../models/request.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
+import mongoose, { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
 
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
@@ -767,7 +767,7 @@ class RequestController {
     try {
       const baseAggregate: any[] = [{
         $match: {
-          team: team,
+          team: new mongoose.Types.ObjectId(team),
           $or: [{
             destination: {
               $in: venuesIds
@@ -1104,7 +1104,7 @@ class RequestController {
 
       const cursor = RequestItem.aggregate<IRequestItemModel>([{
         $match: {
-          team: team,
+          team: new mongoose.Types.ObjectId(team),
           'destination': {
             $in: req.user.venuesPermissions()
           }
@@ -1190,11 +1190,9 @@ class RequestController {
         $sort: { _id: 1 }
       }])
         .allowDiskUse(true)
-        .cursor({ batchSize: 40 })
-        // .exec();
+        .cursor()
 
-      cursor.on('data', async (item: any) => {
-        // console.log(item)
+      await cursor.eachAsync(async (item: any) => {
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
@@ -1242,18 +1240,8 @@ class RequestController {
         }).commit();
       });
 
-      // code to handle connection abort or finish query read process
-      cursor.on('end', async () => {
-        cursor.close();
-        workbook.commit();
-        return res.status(200);
-      });
-
-      cursor.on('error', (error: any) => {
-        cursor.close();
-        logger.error(error.message);
-        return res.status(500).json(error);
-      });
+      cursor.close();
+      workbook.commit();
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {

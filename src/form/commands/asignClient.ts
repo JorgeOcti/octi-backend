@@ -2,6 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
+
 import Form from '../models/form.model';
 import Participant from '../models/participant.model';
 
@@ -14,7 +15,7 @@ async function asignClient() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('debug', true);
-  await mongoose.connect(MONGODB_URI,  {useNewUrlParser: true,  useUnifiedTopology: true});
+  await mongoose.connect(MONGODB_URI,  {});
 
   // Derco
   /* fix form */
@@ -140,9 +141,9 @@ async function asignClient() {
     form: {
       $in: ['6318284300000000003b7676', '6058f9e53039dbadeeb7a559']
     }
-  }).batchSize(10).cursor();
+  }).cursor();
 
-  cursor.on('data', async (participant) => {
+  await cursor.eachAsync(async (participant) => {
     return new Promise(async (resolve, reject) => {
       try {
         for (const section of participant.sections) {
@@ -172,7 +173,7 @@ async function asignClient() {
                 }
               });
             }
-            resolve()
+            resolve({})
           }
         }
       } catch (error) {
@@ -182,19 +183,9 @@ async function asignClient() {
     });
   });
 
-  cursor.on('error', (error: any) => {
-    console.log(error);
-    cursor.close();
-    process.exit(1);
-  });
+  cursor.close();
+  process.exit(1);
 
-  cursor.on('end', async ()  => {
-    console.log('done');
-    setTimeout(() =>
-      process.exit(1),
-      2000
-    );
-  });
 }
 
 asignClient();

@@ -1297,7 +1297,7 @@ class TransmittalController {
       // mongoose.set('debug', true);
       const transmittals = await TransmittalItem.aggregate([{
         $match: {
-          team: team,
+          team: new mongoose.Types.ObjectId(team),
           createdAt: {
             $gte: moment.unix(Number(from)).toDate(),
             $lt: moment.unix(Number(to)).toDate()
@@ -1519,7 +1519,7 @@ class TransmittalController {
     try {
       let transmittals = await TransmittalItem.aggregate([{
         $match: {
-          team: team,
+          team: new mongoose.Types.ObjectId(team),
           createdAt: {
             $gte: moment.unix(Number(from)).toDate(),
             $lt: moment.unix(Number(to)).toDate()

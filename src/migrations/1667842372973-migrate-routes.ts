@@ -130,8 +130,8 @@ export async function up() {
         }
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: 100 })
-      .exec();
+      .cursor()
+
     const updates: any[] = [];
     await historiesCursor.eachAsync(async (history: any) => {
       return new Promise((resolve, reject) => {
@@ -350,8 +350,7 @@ export async function up() {
         }
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: 100 })
-      .exec();
+      .cursor();
 
     await carCursor.eachAsync(async (car: any) => {
       return new Promise((resolve, reject) => {

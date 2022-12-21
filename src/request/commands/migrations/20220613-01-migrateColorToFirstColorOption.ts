@@ -2,8 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import { IRequestItemModel } from '../../models';
+
 import { Car } from '../../../app/models';
+import { IRequestItemModel } from '../../models';
 import logger from '../../../services/logger.service';
 
 async function migrateFirstColor() {
@@ -42,10 +43,9 @@ async function migrateFirstColor() {
         $sort: { _id: 1 }
       }])
       .allowDiskUse(true)
-      .cursor({ batchSize: 40 })
-      .exec();
+      .cursor()
 
-    carsCursor.on('data', async (car: any) => {
+    await carsCursor.eachAsync(async (car: any) => {
       const action = {
         updateOne: {
           filter: { _id: car._id },
@@ -58,18 +58,10 @@ async function migrateFirstColor() {
       toUpdateCars.push(action);
     });
 
-    // code to handle connection abort or finish query read process
-    carsCursor.on('end', async () => {
-      carsCursor.close();
-      logger.info(`migrateFirstColor.end ${toUpdateCars.length}`);
-      await Car.bulkWrite(toUpdateCars);
-      process.exit(1);
-    });
-
-    carsCursor.on('error', (error: any) => {
-      carsCursor.close();
-      process.exit(1);
-    });
+    carsCursor.close();
+    logger.info(`toUpdateCars ${toUpdateCars.length}`);
+    await Car.bulkWrite(toUpdateCars);
+    process.exit(1);
 
 
   } catch (e) {

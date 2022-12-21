@@ -2,7 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
+
 import { Car, ChoicesStatusCar } from '../../models';
+
 // import carTracker from '../../controllers/tracker/car.tracker';
 import History from '../../models/history.model';
 import { ICar } from '../../interfaces';
@@ -14,14 +16,14 @@ async function fixTrackerCurrentHistory() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI, { });
   mongoose.set('debug', false);
   try {
     // 5bf2de34caf8ef7096105cda = Derco
     // 5bf2de35caf8ef7096105cdd = Salfa
     // const teams = ['5bf2de34caf8ef7096105cda'];
-    const teams: string[] = [mongoose.Types.ObjectId('5bf2de35caf8ef7096105cdd')];
-    const team: string = mongoose.Types.ObjectId('5bf2de35caf8ef7096105cdd');
+    const teams: any[] = [new mongoose.Types.ObjectId('5bf2de35caf8ef7096105cdd')];
+    const team: any = new mongoose.Types.ObjectId('5bf2de35caf8ef7096105cdd');
 
     let extraFilter: any = {};
     if (teams.length) {
@@ -64,9 +66,10 @@ async function fixTrackerCurrentHistory() {
         }
       }])
       .allowDiskUse(true)
-      .cursor({ batchSize: 5 })
-      .exec();
-    carCursor.on('data', async (car: ICar) => {
+      .cursor()
+
+
+    await carCursor.eachAsync(async (car: ICar) => {
       try {
         if (car?.vin?.length) {
           let { data: integrationData } = await conectaController.searchVinContecta(car.vin);
@@ -105,11 +108,7 @@ async function fixTrackerCurrentHistory() {
         console.log(e);
       }
     });
-    carCursor.on('end', async () => {
-      mongoose.set('debug', true);
-      console.log('terminado');
-      // process.exit(1);
-    });
+    console.log('terminado');
   } catch (e) {
     console.log('Ha ocurrido un error en fixTrackerCurrentHistory');
     console.log('error:', e);

@@ -558,11 +558,9 @@ class BillingController {
           }
         }, {
           $unwind: {path: '$user', preserveNullAndEmptyArrays: true}
-        }]).cursor({
-          batchSize: 50
-        })
+        }]).cursor()
 
-        cursor.on('data', async (history: any) => {
+        for await (const history of cursor) {
           worksheet.addRow({
             createdAt: moment(history.executedAt).toDate(),
             vin: history.car.vin,
@@ -571,23 +569,10 @@ class BillingController {
             company: history?.company.name,
             user: history?.user?.email
           }).commit();
-        });
+        }
 
-        // code to handle connection abort or finish query read process
-        cursor.on('end', async () => {
-          setTimeout(() => {
-            cursor.close();
-            workbook.commit();
-            // return res.status(200);
-          }, 1000);
-
-        });
-
-        cursor.on('error', (error: any) => {
-          cursor.close();
-          logger.error(error.message);
-          // return res.status(500).json(error);
-        });
+        cursor.close();
+        workbook.commit();
 
         // code to handle connection abort or finish of data send
         req.connection.on('close', async () => {
