@@ -37,6 +37,8 @@ RUN apt-get update && \
 
 WORKDIR /srv
 
+RUN npm install -g npm@latest
+
 RUN npm i -g typescript ts-node ts-node-dev pm2 ts-migrate-mongoose
 RUN touch /srv/s3-config.json
 RUN echo "{}" >> /srv/s3-config.json

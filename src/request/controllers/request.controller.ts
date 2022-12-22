@@ -17,7 +17,6 @@ import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 import { Column } from 'exceljs';
 import GeneralUtils from '../../utils/general.utils';
 import { ICar } from '../../app/interfaces';
-import { ObjectID } from 'bson';
 import Reason from '../models/reason.model';
 import RequestFile from '../models/requestFile.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
@@ -30,12 +29,6 @@ import { createRequestSalfaParams } from '../inputsSchema';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import requestItemsMeta from '../models/requestIteam.meta';
-
-// import * as mongoose from 'mongoose';
-
-
-
-// import * as mongoose from 'mongoose'
 
 class RequestController {
 
@@ -650,11 +643,11 @@ class RequestController {
         extraQuery.$or = [];
       }
       extraQuery.$or.push({
-        'meta.user._id': { $in: filters.users.map((userId: any) => new ObjectID(userId)) }
+        'meta.user._id': { $in: filters.users.map((userId: any) => new mongoose.Types.ObjectId(userId)) }
       });
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = { $in: filters.status.map((status: any) => new ObjectID(status)) };
+      extraQuery.status = { $in: filters.status.map((status: any) => new mongoose.Types.ObjectId(status)) };
     }
     if (filters.from) {
       if (!extraQuery.hasOwnProperty('createdAt')) {

@@ -11,13 +11,13 @@ import * as tempfile from 'tempfile';
 
 import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import { IAnyObject, IRequest } from '../../interfaces/global.interface';
-import { LeanDocument, PaginateOptions, PaginateResult, Types } from 'mongoose';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
 import Venue, { IVenueModel } from '../../app/models/venue.model';
+import mongoose, { LeanDocument, PaginateOptions, PaginateResult, Types } from 'mongoose';
 
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import CarModel from '../../app/models/car.model';
@@ -31,7 +31,6 @@ import { IOperationTypeModel } from '../../request/models';
 import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import { KindTrigger } from '../models/trigger.types';
-import { ObjectID } from 'bson';
 import ParticipantFile from '../models/participantFile.model';
 import RequestController from '../../request/controllers/request.controller';
 import RequestItem from '../../request/models/requestItem.model';
@@ -737,7 +736,7 @@ class FormController {
               const { reception } = answers;
               participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
               if (reception.images) {
-                participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+                participantObject.receptionImages = reception.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
               }
             }
             if ('receptionVenue' in answers) {
@@ -762,7 +761,7 @@ class FormController {
               const { shipping } = answers;
               participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
               if (shipping.images) {
-                participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+                participantObject.shippingImages = shipping.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
               }
             }
             if ('shippingVenue' in answers) {
@@ -785,7 +784,7 @@ class FormController {
             participantObject.conciliation = [true, 'true'].includes(conciliation.value);
             participantObject.conciliationText = form.conciliationText;
             if (conciliation.images) {
-              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+              participantObject.conciliationImages = conciliation.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
             }
           }
           const newParticipant = new Participant(participantObject);
@@ -853,11 +852,11 @@ class FormController {
                 newParticipant.deliveryInfo.order = comment;
               } else if (question?.kindUpdate === 'participant.clientSignature') {
                 newParticipant.deliveryInfo.signature = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [];
               } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
                 newParticipant.deliveryInfo.identifyCard = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [];
               }
               newAnswers.push({
@@ -875,9 +874,9 @@ class FormController {
                 risk: question.risk,
                 comment,
                 observe: question.observe,
-                answer: answer ? new ObjectID(answer.value) : null,
+                answer: answer ? new mongoose.Types.ObjectId(answer.value) : null,
                 images: answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [],
                 qualification,
                 na,
@@ -2110,7 +2109,7 @@ class FormController {
       const team = req.user.team._id;
 
       const form = await Form.findById('5b0487db835536612bab1b61');
-      const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
+      const answer = new mongoose.Types.ObjectId('5b64b2e8de5557c85fa14fa0');
 
       const days: string[] = [];
       const daysDict: any = {};

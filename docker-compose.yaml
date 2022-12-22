@@ -44,9 +44,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    # command: ts-node-dev --transpile-only --max_old_space_size=4096 --watch src src/server.ts
+    command: ts-node-dev --max_old_space_size=4096 --watch src src/server.ts
 #    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
 #    command: ts-node-dev --trace-warnings --max_old_space_size=4096 src/server.ts
-    command: ts-node-dev --max_old_space_size=4096 --watch src src/server.ts
 #    ts-node-dev --transpile-only --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
 #    command: pm2 start pm2.development.json --no-daemon
 #    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]

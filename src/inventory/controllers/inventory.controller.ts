@@ -32,7 +32,6 @@ import { IStockCar } from '../interfaces/stock.interface';
 import InventoryFile from '../models/inventoryFile.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import { ObjectID } from 'bson';
 import PushService from '../../services/push.service';
 import { Response } from 'express';
 import { StatusHistory } from '../../app/models/history.types';
@@ -876,7 +875,7 @@ class InventoryController {
                   update: true
                 });
               }
-              inventoryCar.images = images ? images.map((image: string) => (new ObjectID(image))) : [];
+              inventoryCar.images = images ? images.map((image: string) => (new mongoose.Types.ObjectId(image))) : [];
               inventoryCar.inventoriedBy = req.user._id;
               await inventoryCar.save();
 
@@ -1054,7 +1053,7 @@ class InventoryController {
         update: true
       });
       io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
-        _id: new ObjectID(),
+        _id: new mongoose.Types.ObjectId(),
         user: {
           _id: req.user._id,
           firstName: req.user.firstName,
@@ -1292,7 +1291,7 @@ class InventoryController {
           venueFound: venueId,
           comments: [],
           inventoriedBy: req.user._id,
-          images: images ? images.map((image: string) => (new ObjectID(image))) : [],
+          images: images ? images.map((image: string) => (new mongoose.Types.ObjectId(image))) : [],
           status: ChoicesStatusCarInventory.reported
         });
         await inventoryCar.save();

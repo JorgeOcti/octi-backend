@@ -118,7 +118,7 @@ if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
 
-logger.info(`Setting cookies ${JSON.stringify(cookieSetting)}`);
+// logger.info(`Setting cookies ${JSON.stringify(cookieSetting)}`);
 
 app.use(session({
   resave: false,

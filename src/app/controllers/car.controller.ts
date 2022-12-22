@@ -14,7 +14,6 @@ import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/par
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import { IParticipant } from '../../form/interfaces/participant.interface';
 import Kind from '../../form/models/kind.model';
-import { ObjectID } from 'bson';
 import Part from '../../form/models/part.model';
 import Planning from '../../planning/models/planning.model';
 import Position from '../../form/models/position.model';
@@ -993,13 +992,13 @@ class CarController {
         car: {
           $ne: null
         },
-        team: new ObjectID(team),
+        team: new mongoose.Types.ObjectId(team),
         venue: {
           $in: venuesPermissions
         },
         deliveryToCustomer: deliveries === '1',
         form: {
-          $in: targetForms.map(f => new ObjectID(f))
+          $in: targetForms.map(f => new mongoose.Types.ObjectId(f))
         }
       };
       if (from && to) {
@@ -1241,7 +1240,7 @@ class CarController {
       await cursor.eachAsync(async (participant) => {
         const row = await this.processParticipant(participant);
         worksheet.addRow(row).commit();
-      });
+      },{ parallel: 100});
 
       cursor.close();
       workbook.commit();
@@ -1557,7 +1556,7 @@ class CarController {
         const formArray = forms
           .split(',')
           .filter((form) => userForms.map(f => f.toString()).includes(form));
-        participantFilter.form = { $in: formArray.map((f: string) => new ObjectID(f)) };
+        participantFilter.form = { $in: formArray.map((f: string) => new mongoose.Types.ObjectId(f)) };
       }
 
       if (only_controls === '1') {

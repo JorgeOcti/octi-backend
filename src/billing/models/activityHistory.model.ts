@@ -1,8 +1,7 @@
-import {  ObjectId } from 'bson';
 import * as mongoose from 'mongoose';
+
 import {IActivityHistoryInterface} from '../interfaces/activityHistory.interface';
 import { choicesTypeActivity } from './activiHistory.types';
-
 
 const detailInventorySchema = new mongoose.Schema({
   name: {
@@ -24,7 +23,7 @@ const detailCarSchema = new mongoose.Schema({
 
 const responseCarSchema = new mongoose.Schema({
   item: {
-    type: ObjectId
+    type: mongoose.Types.ObjectId
   },
   number: {
     type: Number
