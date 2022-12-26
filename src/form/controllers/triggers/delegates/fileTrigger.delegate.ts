@@ -5,26 +5,15 @@ import * as fs from 'fs';
 import logger from '../../../../services/logger.service';
 import { IFormTriggerModel } from '../../../models/trigger.model';
 import * as moment from 'moment-timezone';
-import * as HtmlPdf from 'html-pdf';
+// import * as HtmlPdf from 'html-pdf';
 import ParticipantFile from '../../../models/participantFile.model';
 import * as path from 'path';
 import GeneralUtils from '../../../../utils/general.utils';
 import { IAnyObject } from '../../../../interfaces/global.interface';
+import puppeteer from 'puppeteer';
 
 export default class FileTriggerDelegate extends NullTriggerDelegate {
 
-  readonly pdfConfig: HtmlPdf.CreateOptions = {
-    format: 'Letter',
-    orientation: 'portrait',
-    border: {
-      top: '0.3in',
-      right: '0.5in',
-      bottom: '0.3in',
-      left: '0.5in'
-    },
-    type: 'pdf',
-    quality: '75'
-  };
 
   public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<IAnyObject> {
     try {
@@ -100,7 +89,7 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
         }
       });
 
-      const pdfPath = await this.createPDF(html, this.pdfConfig, filename);
+      const pdfPath = await this.createPDF(html, filename);
       const url = await this.uploadFile(pdfPath, filename);
 
       if (payload?.files) {
@@ -117,16 +106,40 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
     }
   }
 
-  private createPDF(html: string, options: HtmlPdf.CreateOptions, filename: string): Promise<string> {
-    return new Promise<string>(((resolve, reject) => {
-      HtmlPdf.create(html, options).toFile(`/tmp/${filename}`, (err: Error, file) => {
-        if (err !== null) {
-          reject(err);
-        } else {
-          resolve(file.filename);
-        }
-      });
-    }));
+  private async createPDF(html: string, filename: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const path = `/tmp/${filename}`;
+        // launch a new chrome instance
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+          headless: true,
+        });
+
+        // create a new page
+        const page = await browser.newPage();
+
+        await page.setContent(html, {
+          waitUntil: 'networkidle0'
+        })
+
+        await page.pdf({
+          path,
+          format: 'Letter',
+          printBackground: true,
+          margin: {
+            top: '0.3in',
+            right: '0.5in',
+            bottom: '0.3in',
+            left: '0.5in'
+          }
+        })
+        await browser.close();
+        resolve(path);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   private async uploadFile(filePath: string, filename: string): Promise<any> {

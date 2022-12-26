@@ -341,7 +341,7 @@ class InventoryController {
         .priority('high')
         .attempts(5)
         .save();
-      res.json({
+      return res.json({
         _id: inventory._id.toString(),
         message: 'Inventario creado satisfactoriamente',
         status: 200
@@ -354,7 +354,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(500).json({
+      return res.status(500).json({
         message: e,
         status: 500
       });

@@ -48,7 +48,7 @@ dotenv.config({
 });
 
 /* istanbul ignore next */
-const Sentry = require('@sentry/node');
+import * as Sentry from '@sentry/node';
 
 Sentry.init({ dsn: process.env.SENTRY_DNS });
 
@@ -153,7 +153,6 @@ if (app.get('env') !== 'testing') {
 app.use(Sentry.Handlers.requestHandler({
   user: ['id', 'username', 'email'],
   request: true,
-  transaction: 'fooHandler',
   flushTimeout: 4000 // default: 2000
 }));
 app.use(Middlewares.context);
@@ -261,6 +260,7 @@ interface IResponseError {
   error?: string;
   message?: string;
   status: number;
+  stack?: string;
 }
 
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -280,6 +280,7 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+  console.log(err.stack || err)
   logger.error(`Server.processError: session: ${JSON.stringify(req.session)}`);
   logger.error(`Server.processError: ${JSON.stringify({
     url: req.url,

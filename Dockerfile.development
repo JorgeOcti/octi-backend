@@ -1,7 +1,6 @@
-FROM node:16.15.1-bullseye-slim
+FROM node:18.12.1-bullseye-slim
+
 LABEL maintainer = "gmunoz@osacontrol.com"
-# phantom node 16 fix
-ENV OPENSSL_CONF=/dev/null
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -9,6 +8,8 @@ RUN apt-get update && \
         build-essential \
         cabextract \
         wget \
+        gnupg \
+        chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 \
         xfonts-utils \
         ca-certificates \
         fontconfig \
@@ -28,15 +29,13 @@ RUN apt-get update && \
     wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.8_all.deb && \
     fc-cache && \
-    # install phantomjs
-    PHANTOM_JS="phantomjs-2.1.1-linux-x86_64" && \
-    wget https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2 && \
-    tar -xvjf $PHANTOM_JS.tar.bz2 && \
-    mv $PHANTOM_JS /usr/local/share && \
-    ln -s /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin && \
     # clean
     apt-get clean && \
     rm -rf /var/lib/apt
+
+# # We don't need the standalone Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
 WORKDIR /srv
 

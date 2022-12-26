@@ -615,7 +615,7 @@ class TransmittalController {
                 return reject(err);
               }
               if (form) {
-                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
+                redisClient.setex(keyCache, 60, JSON.stringify(form));
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -886,7 +886,7 @@ class TransmittalController {
                 /* istanbul ignore next */
                 return reject(err);
               }
-              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
+              redisClient.setex(keyCache, 30, JSON.stringify(scales));
               return resolve(scales);
             });
         }

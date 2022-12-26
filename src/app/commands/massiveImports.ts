@@ -47,6 +47,7 @@ async function makeControl(currRow: any, form: IFormModel, user: IUserModel): Pr
         console.log('No existe el vehículo')
         process.exit(1);
       }
+
       const participantObject: mongoose.HydratedDocument<IParticipant> = {
         name: form.name,
         team,
@@ -158,7 +159,7 @@ async function importMassive() {
     const debug = false;
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(MONGODB_URI, {  });
     mongoose.set('debug', debug);
     new Damages();
     new Part();

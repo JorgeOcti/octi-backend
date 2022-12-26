@@ -1,6 +1,7 @@
-import {compileTemplate} from 'pug';
+import { compileTemplate } from 'pug';
 import * as pug from 'pug';
-import {IAnyObject} from '../interfaces/global.interface';
+import { IAnyObject } from '../interfaces/global.interface';
+import axios from 'axios';
 
 interface IGeneralutils {
   getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any): boolean;
@@ -22,6 +23,21 @@ class GeneralUtils implements IGeneralutils {
       return process.env[name] as string;
     } else {
       return defaultValue;
+    }
+  }
+
+  public async imageToBase64(url: string) {
+    if (url.length) {
+      try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        let raw = Buffer.from(response.data).toString('base64');
+        return "data:" + response.headers["content-type"] + ";base64," + raw;
+      } catch (e) {
+        console.log(e);
+        return ''
+      }
+    } else {
+      return ''
     }
   }
 

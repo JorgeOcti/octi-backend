@@ -41,7 +41,7 @@ yarn.lock
 
 # Optional eslint cache
 .eslintcache
-
+.cache
 # mongo dump
 dump/
 tsconfig.tsbuildinfo

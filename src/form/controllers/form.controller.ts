@@ -1,5 +1,5 @@
 import * as GraphicsMagick from 'gm';
-import * as HtmlPdf from 'html-pdf';
+// import * as HtmlPdf from 'html-pdf';
 import * as Joi from 'joi';
 import * as QRCode from 'qrcode';
 import * as bluebird from 'bluebird';
@@ -44,8 +44,8 @@ import carTracker from '../../app/controllers/tracker/car.tracker';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
+import puppeteer from 'puppeteer';
 
-// import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
@@ -71,34 +71,6 @@ class FormController {
     const team = req.user.team._id;
     try {
       logger.info(`FormController.pdf email: ${req.user.email}, participant: ${id}`);
-      const config: HtmlPdf.CreateOptions = {
-        directory: '/tmp',
-        format: 'Letter',
-        orientation: 'portrait',
-        border: {
-          top: '0.3in',
-          right: '0.5in',
-          bottom: '0.3in',
-          left: '0.5in'
-        },
-        /*
-        header: {
-          height: '2mm',
-          contents: `<div class="header">
-              Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
-          </div>`
-        },
-        footer: {
-          contents: {
-            default: `<div class="footer">
-                Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
-            </div>`
-          }
-        },
-        */
-        type: 'pdf',
-        quality: '75'
-      };
 
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await Participant
@@ -263,51 +235,44 @@ class FormController {
           }
         }
 
-
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
         if (debug) {
           return res.send(html);
         } else {
-          /*const browser = await puppeteer.launch();
+
+          // launch a new chrome instance
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+            headless: true,
+          })
+          // create a new page
           const page = await browser.newPage();
-          await page.goto(`http://localhost:3030/report/forms/pdf/${id}.pdf?debug=true`);
-          const buffer = await page.pdf({
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          })
+
+          const pdfBuffer = await page.pdf({
             format: 'Letter',
+            printBackground: true,
             margin: {
               top: '0.3in',
               right: '0.5in',
               bottom: '0.3in',
               left: '0.5in'
             }
-          });
-          res.type('application/pdf');
-          res.send(buffer);
-          browser.close();
-          */
-          HtmlPdf.create(html, config).toStream((err, pdfStream): any => {
-            if (err) {
-              console.log(err);
-              return res.sendStatus(500);
-            } else {
-              // set header
-              res.setHeader('Content-Type', 'application/pdf');
-              res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
-              // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
-              // send a status code of 200 OK
-              res.statusCode = 200;
-              // once we are done reading end the response
-              pdfStream.on('end', () => {
-                // done reading
-                return res.end();
-              });
-              // pipe the contents of the PDF directly to the response
-              pdfStream.pipe(res);
-            }
-          });
+          })
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
+          return res.send(pdfBuffer);
         }
       }
     } catch (e) {
+      console.log(e)
       // Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
@@ -2494,7 +2459,7 @@ class FormController {
                 reject(err);
               }
               if (form) {
-                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
+                redisClient.setex(keyCache, 60, JSON.stringify(form));
                 resolve(form);
               }
               reject('No se encontro formularío');
@@ -2587,7 +2552,7 @@ class FormController {
                 /* istanbul ignore next */
                 reject(err);
               }
-              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
+              redisClient.setex(keyCache, 30, JSON.stringify(scales));
               resolve(scales);
             });
         }

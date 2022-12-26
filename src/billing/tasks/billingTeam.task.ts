@@ -1,4 +1,3 @@
-import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
 
 import * as request from 'request';
@@ -14,24 +13,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import GeneralUtils from '../../utils/general.utils';
 import { StatusHistory } from '../../app/models/history.types';
+import puppeteer from 'puppeteer';
 
 class BillingTeamQueue {
 
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
 
-  public PDFconfig: HtmlPdf.CreateOptions = {
-    directory: 'tmp',
-    format: 'Letter',
-    orientation: 'portrait',
-    border: {
-      top: '0.3in',
-      right: '0.5in',
-      bottom: '0.3in',
-      left: '0.5in'
-    },
-    type: 'pdf',
-    quality: '75'
-  };
   readonly car: any;
 
   constructor() {
@@ -106,24 +93,48 @@ class BillingTeamQueue {
           select: ['_id', 'name']
         }]);
       if (newInvoice) {
-        HtmlPdf
-          .create(this.generateHTML(newInvoice), this.PDFconfig)
-          .toFile(`/tmp/invoice-${invoice._id}.pdf`, async (err, res) => {
-            if (err) return console.log(err);
-            invoice.attach('file', {
-              originalname: `invoice-${invoice._id}.pdf`,
-              team: `${newInvoice.team._id} ${newInvoice.team.name}`,
-              createdAt: moment(newInvoice.createdAt).subtract(1, 'month').format('YYYY-MM'),
-              path: res.filename
-            }, async (error: any) => {
-              if (error) {
-                console.log(error);
-              } else {
-                await invoice.update({ file: invoice.file });
-                this.sendEmail(invoice);
-              }
-            });
-          });
+        const filename = `invoice-${invoice._id}.pdf`
+        const path =`/tmp/${filename}`;
+        // launch a new chrome instance
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+          headless: true,
+        });
+
+        // create a new page
+        const page = await browser.newPage();
+
+        await page.setContent(this.generateHTML(newInvoice), {
+          waitUntil: 'networkidle0'
+        })
+
+        await page.pdf({
+          path,
+          format: 'Letter',
+          printBackground: true,
+          margin: {
+            top: '0.3in',
+            right: '0.5in',
+            bottom: '0.3in',
+            left: '0.5in'
+          }
+        })
+        await browser.close();
+        
+        invoice.attach('file', {
+          originalname: filename,
+          team: `${newInvoice.team._id} ${newInvoice.team.name}`,
+          createdAt: moment(newInvoice.createdAt).subtract(1, 'month').format('YYYY-MM'),
+          path
+        }, async (error: any) => {
+          if (error) {
+            /* istanbul ignore next */
+            console.log(error);
+          } else {
+            await invoice.update({ file: invoice.file });
+            this.sendEmail(invoice);
+          }
+        });
       }
     } catch (e) {
       // Raven.captureException(e);

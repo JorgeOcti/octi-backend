@@ -11,7 +11,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - '/Users/gmunoz/backups/osa/andes/production/mongo:/backups'
+      - '/Users/gonzalomunoz/backups/osa/andes/mongo:/backups'
       - mongo:/data/db
       - mongoConf:/data/configdb
 
@@ -40,12 +40,14 @@ services:
     build:
       dockerfile: Dockerfile.development
       context: .
+    # platform: linux/x86_64
+    # platform: linux/amd64
     image: andes:latest
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
-    # command: ts-node-dev --transpile-only --max_old_space_size=4096 --watch src src/server.ts
-    command: ts-node-dev --max_old_space_size=4096 --watch src src/server.ts
+    command: ts-node-dev --files  --respawn --transpile-only --max_old_space_size=4096 --watch src src/server.ts
+    # command: ts-node-dev --files --respawn --trace-warnings --max_old_space_size=4096 --watch src src/server.ts
 #    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
 #    command: ts-node-dev --trace-warnings --max_old_space_size=4096 src/server.ts
 #    ts-node-dev --transpile-only --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
@@ -60,6 +62,7 @@ services:
     env_file:
       - .env
     environment:
+      NODE_ENV: development
       SALFA_SOAP: http://wdp.salfa.cl:8440
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
@@ -78,6 +81,7 @@ services:
       - ./src:/srv/src
       - ./public:/srv/public
       - ./views:/srv/views
+      - ./.puppeteerrc.cjs:/srv/.puppeteerrc.cjs
       - ./nodemon.json:/srv/nodemon.json
       - ./tsconfig.json:/srv/tsconfig.json
     depends_on:
