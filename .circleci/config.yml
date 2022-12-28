@@ -90,13 +90,6 @@ jobs:
             if kubectl describe deployment/osa-andes ;then
               echo "Updating image on existing deployment"
 
-              # envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
-              # kubectl apply -f ${HOME}/patched-redis-volume.yaml
-
-              # envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
-              # kubectl apply -f ${HOME}/patched-redis-deployment.yaml
-              # kubectl rollout status deployment/redis
-
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
               kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
@@ -111,12 +104,8 @@ jobs:
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
 
-              envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
-              kubectl apply -f ${HOME}/patched-redis-volume.yaml
-
-              envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
-              kubectl apply -f ${HOME}/patched-redis-deployment.yaml
-              kubectl rollout status deployment/redis
+              envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
+              kubectl apply -f ${HOME}/patched-redis-cluster.yml
 
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
