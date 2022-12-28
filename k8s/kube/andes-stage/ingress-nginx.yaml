@@ -24,6 +24,7 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           service:        
             name: osa-andes-service
@@ -32,6 +33,7 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           service:
             name: osa-andes-service
