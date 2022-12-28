@@ -28,7 +28,8 @@ spec:
         backend:
           service:        
             name: osa-andes-service
-            port: 3030
+            port: 
+              number: 3030
   - host: andes-stage.osacontrol.cl
     http:
       paths:
@@ -37,4 +38,5 @@ spec:
         backend:
           service:
             name: osa-andes-service
-            port: 3030
+            port: 
+              number: 3030
