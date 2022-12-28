@@ -67,7 +67,7 @@ jobs:
           command: |
             if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
               echo "Cluster exists, loading configuration into kubectl"
-              kops export kubecfg --name ${KOPS_CLUSTER_NAME}
+              kops export kubecfg --name ${KOPS_CLUSTER_NAME} --admin
             else
               exit 1
             fi
