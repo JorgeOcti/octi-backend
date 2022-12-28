@@ -14,8 +14,8 @@ metadata:
 spec:
   tls:
   - hosts:
-    - andes-stage.osacontrol.com
-    - andes-stage.osacontrol.cl
+    - andes-prod.osacontrol.com
+    - andes-prod.osacontrol.cl
     secretName: letsencrypt-prod
   rules:
   - host: andes-prod.osacontrol.com
