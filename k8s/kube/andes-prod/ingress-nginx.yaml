@@ -14,11 +14,11 @@ metadata:
 spec:
   tls:
   - hosts:
-    - andes-prod.osacontrol.com
-    - andes-prod.osacontrol.cl
+    - andes.osacontrol.com
+    - andes.osacontrol.cl
     secretName: letsencrypt-prod
   rules:
-  - host: andes-prod.osacontrol.com
+  - host: andes.osacontrol.com
     http:
       paths:
       - path: /
@@ -28,7 +28,7 @@ spec:
             name: osa-andes-service
             port: 
               number: 3030
-  - host: andes-prod.osacontrol.cl
+  - host: andes.osacontrol.cl
     http:
       paths:
       - path: /

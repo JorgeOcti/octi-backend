@@ -5,9 +5,7 @@ metadata:
   namespace: andes-stage
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
-    certmanager.k8s.io/acme-challenge-type: "dns01"
-    certmanager.k8s.io/acme-dns01-provider: "route53"
+    cert-manager.io/issuer: letsencrypt-stage
     ingress.kubernetes.io/proxy-connect-timeout: "600"
     ingress.kubernetes.io/proxy-read-timeout: "600"
     ingress.kubernetes.io/proxy-send-timeout: "600"
@@ -18,7 +16,7 @@ spec:
   - hosts:
     - andes-stage.osacontrol.com
     - andes-stage.osacontrol.cl
-    secretName: letsencrypt-prod
+    secretName: letsencrypt-stage
   rules:
   - host: andes-stage.osacontrol.com
     http:
