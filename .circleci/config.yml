@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/python:2.7.14
+        user: root
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
@@ -23,6 +24,7 @@ jobs:
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
+            CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
             docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
             docker push $REGISTRY/osa/andes
 
