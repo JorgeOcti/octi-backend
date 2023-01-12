@@ -11,6 +11,7 @@ metadata:
     ingress.kubernetes.io/proxy-read-timeout: "600"
     ingress.kubernetes.io/proxy-send-timeout: "600"
     ingress.kubernetes.io/send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
     nginx.ingress.kubernetes.io/rewrite-target: /api-docs/$1
     nginx.ingress.kubernetes.io/use-regex: "true"
     certmanager.k8s.io/acme-dns01-provider: "route53"
