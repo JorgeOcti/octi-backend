@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
+
 import Form, { KindActionForm } from '../form/models/form.model';
 mongoose.set('strictQuery', false);
+
 mongoose.set('debug', true);
 
 /*

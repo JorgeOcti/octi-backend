@@ -1,7 +1,8 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
 import { ICar } from '../interfaces';
+import { PaginateModel } from 'mongoose';
 import { baseVenueSchema } from './venue.model';
 
 export enum ChoicesStatusCar {
@@ -32,7 +33,7 @@ const metaSchema = new mongoose.Schema({
   }
 });
 
-export interface ICarModel extends ICar, mongoose.Document {}
+export interface ICarModel extends ICar, mongoose.Document<any> {}
 
 export const baseCarSchema = new mongoose.Schema({
   vin: {

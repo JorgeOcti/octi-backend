@@ -1,28 +1,30 @@
 import * as mongoose from 'mongoose';
-import {IDamagesModel} from '../models/damages.model';
+
 import {IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSectionModel} from '../models/form.model';
-import {IScaleModel} from '../models/scale.model';
+
 import {ICompany} from '../../app/interfaces/company.interface';
-import {ITeam} from '../../app/interfaces/team.interface';
+import {IDamagesModel} from '../models/damages.model';
 import {IFormTriggerModel} from "../models/trigger.model";
 import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
 import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
+import {IScaleModel} from '../models/scale.model';
+import {ITeam} from '../../app/interfaces/team.interface';
 
 export interface IFormItems {
-  _id: any;
+  _id?: any;
   item: string;
   amount: boolean;
   fallback: boolean;
 }
 
 export interface IFormAccesory {
-  _id: any;
+  _id?: any;
   question: string;
   items: IFormItemModel[];
 }
 
 export interface IFormQuestion {
-  _id: any;
+  _id?: any;
   question: string;
   kindUpdate: string;
   shortName: string;
@@ -53,7 +55,7 @@ export interface IFormQuestion {
 }
 
 export interface IFormSection {
-  _id: any;
+  _id?: any;
   name: string;
   shortName: string;
 
@@ -85,7 +87,7 @@ export interface ITriggerConfig {
 }
 
 export interface IFormTrigger {
-  _id: any;
+  _id?: any;
   name: string;
   description: string;
   enabled: boolean;
@@ -94,7 +96,7 @@ export interface IFormTrigger {
 }
 
 export interface IForm {
-  _id: any;
+  _id?: any;
   name: string;
   team: ITeam | any;
   company: ICompany | any;

@@ -1,7 +1,6 @@
 import * as moment from 'moment';
 // import * as Raven from 'raven';
 import GeneralUtils from '../utils/general.utils';
-// import * as fileStreamRotator from 'file-stream-rotator';
 // import * as path from 'path';
 
 export interface Icolors {

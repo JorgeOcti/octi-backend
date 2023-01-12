@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
-import { IRequestStatus } from '../interfaces/requestStatus.interface';
-import { ICarModel } from '../../app/models/car.model';
 
-export interface IRequestStatusModel extends IRequestStatus, mongoose.Document {
+import { ICarModel } from '../../app/models/car.model';
+import { IRequestStatus } from '../interfaces/requestStatus.interface';
+import { PaginateModel } from 'mongoose';
+
+export interface IRequestStatusModel extends IRequestStatus, mongoose.Document<any> {
 }
 
 const requestStatusSchema = new mongoose.Schema({

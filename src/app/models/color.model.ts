@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IColor } from '../interfaces';
 
-export interface IColorModel extends IColor, mongoose.Document {
+import { IColor } from '../interfaces';
+import { PaginateModel } from 'mongoose';
+
+export interface IColorModel extends IColor, mongoose.Document<any> {
 }
 
 const carrierSchema = new mongoose.Schema({

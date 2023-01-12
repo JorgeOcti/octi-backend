@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IRegion } from '../interfaces';
 
-export interface IRegionModel extends IRegion, mongoose.Document {}
+import { IRegion } from '../interfaces';
+import { PaginateModel } from 'mongoose';
+
+export interface IRegionModel extends IRegion, mongoose.Document<any> {}
 const regionSchema = new mongoose.Schema({
   name: {
     type: String,

@@ -1,10 +1,12 @@
-import * as mongoose from 'mongoose';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
+
 import { Car, Venue } from '../app/models';
+
 import History from '../app/models/history.model';
-import { ModuleHistory } from '../app/models/history.types';
 import { ICarLocation } from '../app/interfaces';
 import InventoryCar from '../inventory/models/inventoryCar.model';
+import { ModuleHistory } from '../app/models/history.types';
 import Participant from '../form/models/participant.model';
 
 mongoose.set('strictQuery', false);
@@ -128,8 +130,8 @@ export async function up() {
         }
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: 100 })
-      .exec();
+      .cursor()
+
     const updates: any[] = [];
     await historiesCursor.eachAsync(async (history: any) => {
       return new Promise((resolve, reject) => {
@@ -348,8 +350,7 @@ export async function up() {
         }
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: 100 })
-      .exec();
+      .cursor();
 
     await carCursor.eachAsync(async (car: any) => {
       return new Promise((resolve, reject) => {

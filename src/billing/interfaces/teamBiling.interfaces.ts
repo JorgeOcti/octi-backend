@@ -3,9 +3,8 @@ import { IModule } from './module.interface';
 import { ISubmodule } from './submodule.interface';
 import { ITeam } from '../../app/interfaces/team.interface';
 
-
 export interface ITeamBillingSection {
-  _id: any;
+  _id?: any;
   name: string;
   start: number;
   end: number;
@@ -15,7 +14,7 @@ export interface ITeamBillingSection {
 }
 
 export interface ITeamBillingModules {
-  _id: any;
+  _id?: any;
   module: IModule;
   subModules: ISubmodule[];
   sections: ITeamBillingSection[];
@@ -25,7 +24,7 @@ export interface ITeamBillingModules {
 }
 
 export interface ITeamBillingNotification {
-  _id: any;
+  _id?: any;
   name: string;
   email: string;
   active: boolean;
@@ -34,7 +33,7 @@ export interface ITeamBillingNotification {
 }
 
 export interface ITeamBilling {
-  _id: any;
+  _id?: any;
   team: ITeam | any;
   name: string;
   rut: string;

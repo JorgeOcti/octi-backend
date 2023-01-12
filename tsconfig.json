@@ -15,7 +15,6 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
-    "jsx": "react",
     "lib": ["ES2021"],
     "target": "ES2021",
     "typeRoots": [
@@ -30,7 +29,7 @@
     ]
   },
   "include": [
-    "./src"
+    "src/**/*"
   ],
   "exclude": [
     "views",

@@ -1,26 +1,28 @@
-import {Request, Response} from 'express';
-import {IRequest} from '../../interfaces/global.interface';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import Invoice, {IInvoiceModel} from '../models/invoice.model';
-import BillingQueue from '../tasks/billing.task';
-import * as HtmlPdf from 'html-pdf';
 import * as excel from 'exceljs';
-import * as tempfile from 'tempfile';
-import ActivityHistory from '../models/activityHistory.model';
 import * as moment from 'moment-timezone';
-import {ChoicesTypeActivity} from '../models/activiHistory.types';
+import * as tempfile from 'tempfile';
+
+import Invoice, { IInvoiceModel } from '../models/invoice.model';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { Request, Response } from 'express';
+
+import ActivityHistory from '../models/activityHistory.model';
+import BillingQueue from '../tasks/billing.task';
+import BillingTeamQueue from "../tasks/billingTeam.task";
+import { ChoicesTypeActivity } from '../models/activiHistory.types';
 import Company from '../../app/models/company.model';
+import History from '../../app/models/history.model';
+import { IRequest } from '../../interfaces/global.interface';
+import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
 import Module from '../models/module.model';
 import Submodule from '../models/submodule.model';
-import logger from '../../services/logger.service';
-import History from '../../app/models/history.model';
 import TeamBilling from "../models/teamBilling.model";
-import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
-import BillingTeamQueue from "../tasks/billingTeam.task";
+import logger from '../../services/logger.service';
+import puppeteer from 'puppeteer';
 
 class BillingController {
 
-  readonly submodule:any;
+  readonly submodule: any;
 
   constructor() {
     this.index = this.index.bind(this);
@@ -57,36 +59,43 @@ class BillingController {
         const html = billing.generateHTML(invoice);
         // new BillingQueue().createPDF(invoice);
         if (debug) {
-          res.send(html);
+          return res.send(html);
         } else {
-          HtmlPdf.create(html, billing.PDFconfig).toStream((err, pdfStream) => {
-            if (err) {
-              console.log(err);
-              res.sendStatus(500);
-            } else {
-              // set header
-              res.setHeader('Content-Type', 'application/pdf');
-              res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
-              // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
-              // send a status code of 200 OK
-              res.statusCode = 200;
-              // once we are done reading end the response
-              pdfStream.on('end', () => {
-                // done reading
-                res.end();
-              });
-              // pipe the contents of the PDF directly to the response
-              pdfStream.pipe(res);
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+            headless: true,
+          })
+          // create a new page
+          const page = await browser.newPage();
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          })
+
+          const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+              top: '0.3in',
+              right: '0.5in',
+              bottom: '0.3in',
+              left: '0.5in'
             }
-          });
+          })
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
+          return res.send(pdfBuffer);
         }
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Invoice no encontrado.'
         });
       }
     } catch (e) {
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
@@ -104,36 +113,43 @@ class BillingController {
         const html = billing.generateHTML(invoice);
         // new BillingQueue().createPDF(invoice);
         if (debug) {
-          res.send(html);
+          return res.send(html);
         } else {
-          HtmlPdf.create(html, billing.PDFconfig).toStream((err, pdfStream) => {
-            if (err) {
-              console.log(err);
-              res.sendStatus(500);
-            } else {
-              // set header
-              res.setHeader('Content-Type', 'application/pdf');
-              res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
-              // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
-              // send a status code of 200 OK
-              res.statusCode = 200;
-              // once we are done reading end the response
-              pdfStream.on('end', () => {
-                // done reading
-                res.end();
-              });
-              // pipe the contents of the PDF directly to the response
-              pdfStream.pipe(res);
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+            headless: true,
+          })
+          // create a new page
+          const page = await browser.newPage();
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          })
+
+          const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+              top: '0.3in',
+              right: '0.5in',
+              bottom: '0.3in',
+              left: '0.5in'
             }
-          });
+          })
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
+          return res.send(pdfBuffer);
         }
       } else {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Invoice no encontrado.'
         });
       }
     } catch (e) {
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
@@ -285,24 +301,24 @@ class BillingController {
 
   private getCompaniesCorporateBilling(filter: any, options: PaginateOptions) {
     return Company.aggregate([{
-        $lookup: {
-          from: 'teams',
-          localField: 'team',
-          foreignField: '_id',
-          as: 'team'
-        }
-      }, {
-        $unwind: { path: '$team', preserveNullAndEmptyArrays: true }
-      }, {
-        $project: {
+      $lookup: {
+        from: 'teams',
+        localField: 'team',
+        foreignField: '_id',
+        as: 'team'
+      }
+    }, {
+      $unwind: { path: '$team', preserveNullAndEmptyArrays: true }
+    }, {
+      $project: {
+        _id: 1,
+        name: 1,
+        team: {
           _id: 1,
-          name: 1,
-          team: {
-            _id: 1,
-            name: 1
-          }
+          name: 1
         }
-      }, {
+      }
+    }, {
       $sort: {
         'team.name': 1,
         'name': 1,
@@ -314,8 +330,8 @@ class BillingController {
   public async apiListCompaniesCorporateBilling(req: IRequest, res: Response) {
     try {
       return res.json({
-          results: await this.getCompaniesCorporateBilling({}, {})
-        }
+        results: await this.getCompaniesCorporateBilling({}, {})
+      }
       );
     } catch (e) {
       /* istanbul ignore next  */
@@ -347,8 +363,8 @@ class BillingController {
   public async apiListModules(req: IRequest, res: Response) {
     try {
       return res.json({
-          results: await this.getModules({}, {})
-        }
+        results: await this.getModules({}, {})
+      }
       );
     } catch (e) {
       /* istanbul ignore next  */
@@ -358,7 +374,7 @@ class BillingController {
 
   public async apiListCorporateBilling(req: IRequest, res: Response) {
     try {
-      const {team} = req.user;
+      const { team } = req.user;
       const teamBiling = await TeamBilling.findOneOrCreate({
         team: team._id
       }, {
@@ -378,8 +394,8 @@ class BillingController {
 
   public async apiPatchCorporateBilling(req: IRequest, res: Response) {
     try {
-      const {team} = req.user;
-      const {businessName, modules, notifications, companies, name, rut, baseCost, textBaseCost} = req.body;
+      const { team } = req.user;
+      const { businessName, modules, notifications, companies, name, rut, baseCost, textBaseCost } = req.body;
       const teamBilling = await TeamBilling.findOneAndUpdate({
         team: team._id
       }, {
@@ -393,7 +409,7 @@ class BillingController {
           notifications,
           modules,
         }
-      }, {new: true});
+      }, { new: true });
       return res.json(teamBilling);
     } catch (e) {
       /* istanbul ignore next  */
@@ -404,13 +420,13 @@ class BillingController {
   private getOldestInvoiceCorporative(filter: any) {
     return InvoiceTeamBilling
       .findOne(filter)
-      .sort({createdAt: 1})
+      .sort({ createdAt: 1 })
   }
 
   private getLastInvoiceCorporative(filter: any) {
     return InvoiceTeamBilling
       .findOne(filter)
-      .sort({createdAt: -1})
+      .sort({ createdAt: -1 })
   }
 
   private getInvoiceCorporative(filter: any) {
@@ -433,19 +449,19 @@ class BillingController {
         path: 'companies.company',
         select: ['_id', 'name']
       })
-      .sort({createdAt: -1});
+      .sort({ createdAt: -1 });
   }
 
   public async apiInvoiceCorporative(req: IRequest, res: Response) {
     try {
-      const {team} = req.user;
-      const {period} = req.query as { period: string };
-      let filter: any = {team: team._id};
+      const { team } = req.user;
+      const { period } = req.query as { period: string };
+      let filter: any = { team: team._id };
       if (period) {
-        filter = {...filter, period};
+        filter = { ...filter, period };
       }
-      const oldestInvoice = await this.getOldestInvoiceCorporative({team: team._id});
-      const lastInvoice = await this.getLastInvoiceCorporative({team: team._id});
+      const oldestInvoice = await this.getOldestInvoiceCorporative({ team: team._id });
+      const lastInvoice = await this.getLastInvoiceCorporative({ team: team._id });
       return res.json({
         results: await this.getInvoiceCorporative(filter),
         oldestInvoice: oldestInvoice?.period,
@@ -460,12 +476,12 @@ class BillingController {
 
   public async exportDetail(req: IRequest, res: Response): Promise<any> {
     try {
-      const {period} = req.query;
-      const {team} = req.user;
+      const { period } = req.query;
+      const { team } = req.user;
       logger.info(`CarController.exportParticipants email: ${req.user.email}`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename=billing-${period}.xlsx`);
-       // Create Excel Stream with pipe to response object
+      // Create Excel Stream with pipe to response object
       const options = {
         stream: res,
         useStyles: true,
@@ -501,11 +517,11 @@ class BillingController {
       const invoices = await InvoiceTeamBilling.findOne({
         team: team._id,
         period
-      }, {histories: true});
+      }, { histories: true });
       if (invoices) {
         const cursor = History.aggregate([{
           $match: {
-            _id: {$in: invoices.histories},
+            _id: { $in: invoices.histories },
             // company: {
             //   $in: [
             //     new ObjectID('5b8da01ea9683b0bd74fcc53'), // Dercomaq
@@ -514,7 +530,7 @@ class BillingController {
             //     new ObjectID('5c1a80f84fba86565186a757') // Dercocenter
             //   ]
             // },
-            module: {$nin: ['import']},
+            module: { $nin: ['import'] },
             // executedAt: {
             //   $gte: new Date('2022-08-01T00:00:00.000Z' ),
             //   $lte: new Date( '2022-08-28T00:00:00.000Z' )
@@ -528,7 +544,7 @@ class BillingController {
             as: 'car'
           }
         }, {
-          $unwind: {path: '$car', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
         }, {
           $lookup: {
             from: 'companies',
@@ -537,7 +553,7 @@ class BillingController {
             as: 'company'
           }
         }, {
-          $unwind: {path: '$company', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$company', preserveNullAndEmptyArrays: true }
         }, {
           $lookup: {
             from: 'participants',
@@ -546,7 +562,7 @@ class BillingController {
             as: 'participant'
           }
         }, {
-          $unwind: {path: '$participant', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
         }, {
           $lookup: {
             from: 'users',
@@ -555,12 +571,10 @@ class BillingController {
             as: 'user'
           }
         }, {
-          $unwind: {path: '$user', preserveNullAndEmptyArrays: true}
-        }]).cursor({
-          batchSize: 50
-        }).exec();
+          $unwind: { path: '$user', preserveNullAndEmptyArrays: true }
+        }]).cursor()
 
-        cursor.on('data', async (history: any) => {
+        for await (const history of cursor) {
           worksheet.addRow({
             createdAt: moment(history.executedAt).toDate(),
             vin: history.car.vin,
@@ -569,30 +583,17 @@ class BillingController {
             company: history?.company.name,
             user: history?.user?.email
           }).commit();
-        });
+        }
 
-        // code to handle connection abort or finish query read process
-        cursor.on('end', async () => {
-          setTimeout(() => {
-            cursor.close();
-            workbook.commit();
-            // return res.status(200);
-          }, 1000);
-
-        });
-
-        cursor.on('error', (error: any) => {
-          cursor.close();
-          logger.error(error.message);
-          // return res.status(500).json(error);
-        });
+        cursor.close();
+        workbook.commit();
 
         // code to handle connection abort or finish of data send
         req.connection.on('close', async () => {
           cursor.close();
         });
       } else {
-        return res.status(404).json({message: 'No se encontró el periodo solicitado'});
+        return res.status(404).json({ message: 'No se encontró el periodo solicitado' });
       }
     } catch (e) {
       logger.error(e);

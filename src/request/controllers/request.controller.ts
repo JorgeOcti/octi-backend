@@ -1,43 +1,40 @@
+import * as GraphicsMagick from 'gm';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
-import { Column } from 'exceljs';
-import { Response } from 'express';
 import * as fs from 'fs';
 import * as https from 'https';
-import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
-import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
-import { ObjectID } from 'bson';
-import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
-import Team from '../../app/models/team.model';
+
+import Car, { default as CarModel, ChoicesStatusCar } from '../../app/models/car.model';
 import { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
+import Request, { IRequestModel } from '../models/request.model';
+import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
+import mongoose, { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
+
+import ActivityHistory from '../../billing/models/activityHistory.model';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import { Column } from 'exceljs';
+import GeneralUtils from '../../utils/general.utils';
+import { ICar } from '../../app/interfaces';
+import Reason from '../models/reason.model';
+import RequestFile from '../models/requestFile.model';
+import RequestItemStatus from '../models/requestItemStatus.model';
+import { Response } from 'express';
+import Team from '../../app/models/team.model';
+import User from '../../app/models/user.model';
+import Venue from '../../app/models/venue.model';
+import conectaController from './conecta.controller';
+import { createRequestSalfaParams } from '../inputsSchema';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
-import GeneralUtils from '../../utils/general.utils';
-import Request, { IRequestModel } from '../models/request.model';
-import User from '../../app/models/user.model';
-import RequestFile from '../models/requestFile.model';
-import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
-import RequestItemStatus from '../models/requestItemStatus.model';
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import Reason from '../models/reason.model';
-import { createRequestSalfaParams } from '../inputsSchema';
-import Venue from '../../app/models/venue.model';
 import requestItemsMeta from '../models/requestIteam.meta';
-import * as mongoose from 'mongoose';
-
-import { ICar } from '../../app/interfaces';
-import conectaController from './conecta.controller';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
-
-// import * as mongoose from 'mongoose'
 
 class RequestController {
 
   public itemPopulate: QueryPopulateOptions[] = [{
     path: 'car',
-    select :["event", "entry", "internalNumber", "patent", "engineNumber", "engineSize", "driveType", "color", "firstColorOption", "secondColorOption", "thirdColorOption", "invoice", "client", "bl", "isExhibition", "status", "createdBy", "_id", "team", "company", "vin", "vin2", "brand", "denomination", "type", "businessYear", "manufacturingYear", "countryOrigin", "createdAt", "updatedAt", "__v", "id", "material"
+    select: ["event", "entry", "internalNumber", "patent", "engineNumber", "engineSize", "driveType", "color", "firstColorOption", "secondColorOption", "thirdColorOption", "invoice", "client", "bl", "isExhibition", "status", "createdBy", "_id", "team", "company", "vin", "vin2", "brand", "denomination", "type", "businessYear", "manufacturingYear", "countryOrigin", "createdAt", "updatedAt", "__v", "id", "material"
     ]
   }, {
     path: 'request',
@@ -61,17 +58,17 @@ class RequestController {
   }, {
     path: 'origin',
     select: ['name'],
-      populate: [{
-        path: 'company',
-        select: ['name'],
-      }]
+    populate: [{
+      path: 'company',
+      select: ['name'],
+    }]
   }, {
     path: 'destination',
     select: ['name'],
-      populate: [{
-        path: 'company',
-        select: ['name'],
-      }]
+    populate: [{
+      path: 'company',
+      select: ['name'],
+    }]
   }, {
     path: 'transmittalItem',
     select: ['loadingDate', 'arrivalDate', 'revisions', 'origin', 'destination'],
@@ -114,17 +111,17 @@ class RequestController {
   private requestPopulate: QueryPopulateOptions[] = [{
     path: 'origin',
     select: ['name'],
-      populate: [{
-        path: 'company',
-        select: 'name'
-      }]
+    populate: [{
+      path: 'company',
+      select: 'name'
+    }]
   }, {
     path: 'destination',
     select: ['name'],
-      populate: [{
-        path: 'company',
-        select: 'name'
-      }]
+    populate: [{
+      path: 'company',
+      select: 'name'
+    }]
   }, {
     path: 'channel',
     select: ['name']
@@ -646,11 +643,11 @@ class RequestController {
         extraQuery.$or = [];
       }
       extraQuery.$or.push({
-        'meta.user._id': { $in: filters.users.map((userId: any) => new ObjectID(userId)) }
+        'meta.user._id': { $in: filters.users.map((userId: any) => new mongoose.Types.ObjectId(userId)) }
       });
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = { $in: filters.status.map((status: any) => new ObjectID(status)) };
+      extraQuery.status = { $in: filters.status.map((status: any) => new mongoose.Types.ObjectId(status)) };
     }
     if (filters.from) {
       if (!extraQuery.hasOwnProperty('createdAt')) {
@@ -702,12 +699,12 @@ class RequestController {
         extraQuery.$or = [];
       }
       transmittalsNumbers.forEach((transmittalNumber: any) => {
-          try {
-            extraQuery.$or.push({
-              'meta.transmittal.number': parseInt(transmittalNumber)
-            });
-          } catch (e) {
-          }
+        try {
+          extraQuery.$or.push({
+            'meta.transmittal.number': parseInt(transmittalNumber)
+          });
+        } catch (e) {
+        }
       });
     }
 
@@ -763,7 +760,7 @@ class RequestController {
     try {
       const baseAggregate: any[] = [{
         $match: {
-          team: mongoose.Types.ObjectId(team),
+          team: new mongoose.Types.ObjectId(team),
           $or: [{
             destination: {
               $in: venuesIds
@@ -780,7 +777,7 @@ class RequestController {
         $match: extraQuery
       }];
 
-      const aggregatePopulate = [{
+      const aggregatePopulate: PipelineStage[] = [{
         $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
       }, {
         $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
@@ -850,7 +847,7 @@ class RequestController {
         $lookup: { from: 'transmittalitems', localField: 'transmittalItem', foreignField: '_id', as: 'transmittalItem' }
       }, {
         $unwind: { path: '$transmittalItem', preserveNullAndEmptyArrays: true }
-      },{
+      }, {
         $lookup: { from: 'venues', localField: 'transmittalItem.origin', foreignField: '_id', as: 'transmittalItem.origin' }
       }, {
         $unwind: { path: '$transmittalItem.origin', preserveNullAndEmptyArrays: true }
@@ -858,7 +855,7 @@ class RequestController {
         $lookup: { from: 'companies', localField: 'transmittalItem.origin.company', foreignField: '_id', as: 'transmittalItem.origin.company' }
       }, {
         $unwind: { path: '$transmittalItem.origin.company', preserveNullAndEmptyArrays: true }
-      },{
+      }, {
         $lookup: { from: 'venues', localField: 'transmittalItem.destination', foreignField: '_id', as: 'transmittalItem.destination' }
       }, {
         $unwind: { path: '$transmittalItem.destination', preserveNullAndEmptyArrays: true }
@@ -1100,7 +1097,7 @@ class RequestController {
 
       const cursor = RequestItem.aggregate<IRequestItemModel>([{
         $match: {
-          team: mongoose.Types.ObjectId(team),
+          team: new mongoose.Types.ObjectId(team),
           'destination': {
             $in: req.user.venuesPermissions()
           }
@@ -1186,11 +1183,9 @@ class RequestController {
         $sort: { _id: 1 }
       }])
         .allowDiskUse(true)
-        .cursor({ batchSize: 40 })
-        .exec();
+        .cursor()
 
-      cursor.on('data', async (item: any) => {
-        // console.log(item)
+      await cursor.eachAsync(async (item: any) => {
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
@@ -1238,18 +1233,8 @@ class RequestController {
         }).commit();
       });
 
-      // code to handle connection abort or finish query read process
-      cursor.on('end', async () => {
-        cursor.close();
-        workbook.commit();
-        return res.status(200);
-      });
-
-      cursor.on('error', (error: any) => {
-        cursor.close();
-        logger.error(error.message);
-        return res.status(500).json(error);
-      });
+      cursor.close();
+      workbook.commit();
 
       // code to handle connection abort or finish of data send
       req.connection.on('close', async () => {
@@ -1299,7 +1284,7 @@ class RequestController {
         path: 'advancePaymentInformation.files'
       }, {
         path: 'advancePaymentInformation.letters'
-      },{
+      }, {
         path: 'items',
         select: ['_id']
       }],
@@ -1514,7 +1499,7 @@ class RequestController {
         $match: {
           team,
           $text: {
-            $search: search,
+            $search: search as string,
             $diacriticSensitive: false
           }
         }
@@ -1657,10 +1642,10 @@ class RequestController {
             if (requestItem.car?.material?.length) {
               integrationData = data
                 .find((conectaCar) => (
-                    conectaCar.material === requestItem!.car.material
-                  )
+                  conectaCar.material === requestItem!.car.material
+                )
                 );
-            } else if(data.length) {
+            } else if (data.length) {
               integrationData = data[0]
             }
             if (!foundVin) {
@@ -1763,7 +1748,7 @@ class RequestController {
         }
 
         let cancelRequest = false;
-        req.on('close', function() {
+        req.on('close', function () {
           cancelRequest = true;
         });
         requestItem = await RequestItem
@@ -1811,7 +1796,7 @@ class RequestController {
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(updateObject)} }`);
     try {
       let cancelRequest = false;
-      req.on('close', function() {
+      req.on('close', function () {
         cancelRequest = true;
       });
       const requestItem = await RequestItem.findOneAndUpdate({
@@ -1835,23 +1820,23 @@ class RequestController {
             }).save();
           }
         }
-        await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
+        await Car.updateOne({ _id: updateObject.car._id, team }, { $set: updateObject.car });
       }
       const item = await RequestItem
         .findOne({ _id: id, team })
         .populate(this.itemPopulate)
         .lean();
 
-      await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
+      await Request.updateOne({ _id: item?.request._id }, { $set: { updatedAt: moment() } });
       if (!cancelRequest) {
         io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-          idRequest: item.request._id,
+          idRequest: item?.request._id,
           item
         });
       }
       if (!cancelRequest) {
         io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-          idRequest: item.request._id,
+          idRequest: item?.request._id,
           item
         });
       }
@@ -2095,8 +2080,8 @@ class RequestController {
           ) {
             integrationData = data
               .find((conectaCar) => (
-                  conectaCar.material === material
-                )
+                conectaCar.material === material
+              )
               );
           } else if (data.length) {
             integrationData = data[0];
@@ -2170,7 +2155,7 @@ class RequestController {
                 excelData?.material?.length
                   ? conectaCar.material === integrationData?.material
                   : conectaCar.material === andesData.car.material
-                )
+              )
               );
           }
           if (!foundVin) {
@@ -2250,7 +2235,7 @@ class RequestController {
               material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
               color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
               firstColorOption: requestItem.car.firstColorOption,
-              secondColorOption:requestItem.car.secondColorOption,
+              secondColorOption: requestItem.car.secondColorOption,
               thirdColorOption: requestItem.car.thirdColorOption
             });
         }

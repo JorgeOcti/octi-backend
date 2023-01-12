@@ -1,11 +1,12 @@
-import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
-import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as mongoose from 'mongoose';
+import * as mongooseCrate from 'mongoose-crate';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+
 import { ISamlConfig } from '../interfaces';
+import { PaginateModel } from 'mongoose';
 
 export interface ISamlConfigModel extends ISamlConfig, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
@@ -62,7 +63,7 @@ const samlConfigSchema = new mongoose.Schema({
 
 samlConfigSchema.plugin(mongoosePaginate);
 
-samlConfigSchema.plugin(mongooseCrate, {
+samlConfigSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

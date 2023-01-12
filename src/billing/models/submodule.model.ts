@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
 import { ISubmodule } from '../interfaces';
+import { PaginateModel } from 'mongoose';
 import { modulesHistory } from '../../app/models/history.types';
 
-export interface ISubmoduleModel extends ISubmodule, mongoose.Document {}
+export interface ISubmoduleModel extends ISubmodule, mongoose.Document<any> {}
 
 const submoduleSchema = new mongoose.Schema({
   name: {

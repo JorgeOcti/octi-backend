@@ -1,9 +1,9 @@
 import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
-import Participant from '../models/participant.model';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
+import Participant from '../models/participant.model';
 
 async function updateVin2() {
   dotenv.config({
@@ -12,10 +12,10 @@ async function updateVin2() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('debug', true);
-  await mongoose.connect(MONGODB_URI,  {useNewUrlParser: true,  useUnifiedTopology: true});
-  const cursor = await Participant.find({}).batchSize(10).cursor();
+  await mongoose.connect(MONGODB_URI, {});
+  const cursor = await Participant.find({}).cursor();
 
-  cursor.on('data', async (participant) => {
+  await cursor.eachAsync(async (participant) => {
     console.log(participant._id);
     try {
       let hasDamages = false;
@@ -28,7 +28,7 @@ async function updateVin2() {
         }
       }
       console.log(hasDamages);
-      await Participant.update({_id: participant._id}, {$set: {hasDamages}});
+      await Participant.updateOne({ _id: participant._id }, { $set: { hasDamages } });
     } catch (error) {
       console.log("error");
     }
@@ -46,12 +46,7 @@ async function updateVin2() {
     // }
   });
 
-  cursor.on('end', async ()  => {
-    setTimeout(() =>
-      process.exit(1),
-      60000
-    );
-  });
+  process.exit(1),
 }
 
 updateVin2();

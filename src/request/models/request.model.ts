@@ -1,14 +1,17 @@
-import * as mongoose from 'mongoose';
-import { AggregatePaginateModel, PaginateModel } from 'mongoose';
-import { IRequest } from '../interfaces/request.interface';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
-import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as mongoose from 'mongoose';
+import * as mongooseCrate from 'mongoose-crate';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
 
-export interface IRequestModel extends IRequest, mongoose.Document {
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
+
+import { IRequest } from '../interfaces/request.interface';
+
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
+export interface IRequestModel extends IRequest, mongoose.Document<any> {
 }
 
 const metaSchema = new mongoose.Schema({
@@ -145,7 +148,7 @@ requestSchema.set('toJSON', { virtuals: true });
 requestSchema.plugin(mongoosePaginate);
 requestSchema.plugin(mongooseAggregatePaginate);
 
-requestSchema.plugin(mongooseCrate, {
+requestSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
     key: process.env.S3_KEY || s3Config.accessKeyId,
     secret: process.env.S3_SECRET || s3Config.secretAccessKey,

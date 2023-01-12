@@ -3,7 +3,7 @@ import {ITeam} from './team.interface';
 import {IUserModel} from "../models/user.model";
 
 export interface IAlert {
-  _id: any;
+  _id?: any;
   name: string;
   company: ICompany | any;
   team: ITeam | any;

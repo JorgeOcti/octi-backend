@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
-import {ISalesChannel} from '../interfaces/salesChannel.interface';
-import {ICarModel} from '../../app/models/car.model';
 
-export interface ISalesChannelModel extends ISalesChannel, mongoose.Document {}
+import {ICarModel} from '../../app/models/car.model';
+import {ISalesChannel} from '../interfaces/salesChannel.interface';
+import {PaginateModel} from 'mongoose';
+
+export interface ISalesChannelModel extends ISalesChannel, mongoose.Document<any> {}
 
 const salesChannelSchema = new mongoose.Schema({
   name: {

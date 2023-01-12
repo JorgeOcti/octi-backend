@@ -1,5 +1,5 @@
 import * as GraphicsMagick from 'gm';
-import * as HtmlPdf from 'html-pdf';
+// import * as HtmlPdf from 'html-pdf';
 import * as Joi from 'joi';
 import * as QRCode from 'qrcode';
 import * as bluebird from 'bluebird';
@@ -12,12 +12,12 @@ import * as tempfile from 'tempfile';
 import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import { IAnyObject, IRequest } from '../../interfaces/global.interface';
 import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
-import { PaginateOptions, PaginateResult } from 'mongoose';
 import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
 import Venue, { IVenueModel } from '../../app/models/venue.model';
+import mongoose, { LeanDocument, PaginateOptions, PaginateResult, Types } from 'mongoose';
 
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import CarModel from '../../app/models/car.model';
@@ -31,7 +31,6 @@ import { IOperationTypeModel } from '../../request/models';
 import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import { KindTrigger } from '../models/trigger.types';
-import { ObjectID } from 'bson';
 import ParticipantFile from '../models/participantFile.model';
 import RequestController from '../../request/controllers/request.controller';
 import RequestItem from '../../request/models/requestItem.model';
@@ -45,8 +44,8 @@ import carTracker from '../../app/controllers/tracker/car.tracker';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
+import puppeteer from 'puppeteer';
 
-// import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
@@ -72,34 +71,6 @@ class FormController {
     const team = req.user.team._id;
     try {
       logger.info(`FormController.pdf email: ${req.user.email}, participant: ${id}`);
-      const config: HtmlPdf.CreateOptions = {
-        directory: '/tmp',
-        format: 'Letter',
-        orientation: 'portrait',
-        border: {
-          top: '0.3in',
-          right: '0.5in',
-          bottom: '0.3in',
-          left: '0.5in'
-        },
-        /*
-        header: {
-          height: '2mm',
-          contents: `<div class="header">
-              Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
-          </div>`
-        },
-        footer: {
-          contents: {
-            default: `<div class="footer">
-                Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
-            </div>`
-          }
-        },
-        */
-        type: 'pdf',
-        quality: '75'
-      };
 
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await Participant
@@ -172,140 +143,136 @@ class FormController {
           select: ['triggers']
         }]).lean();
 
-      let template : string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+      let template: string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
 
       moment.locale('es');
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
-      const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-      const participantCompany = participant.user.venue && participant.user.venue.company || {};
+      if (participant) {
+        const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
+        const participantCompany = participant.user.venue && participant?.user.venue.company || {};
 
-      let context : any = {
-        css: css.replace(/(\r\n|\n|\r)/gm, ''),
-        participant,
-        qr: await QRCode.toDataURL(participant.car.vin, {
-          errorCorrectionLevel: 'H',
-          margin: 0,
-          rendererOpts: {
-            quality: 1
+        let context: any = {
+          css: css.replace(/(\r\n|\n|\r)/gm, ''),
+          participant,
+          qr: await QRCode.toDataURL(participant.car.vin, {
+            errorCorrectionLevel: 'H',
+            margin: 0,
+            rendererOpts: {
+              quality: 1
+            }
+          }),
+          moment,
+          origin: () => {
+            if (participant.reception && participant.receiveFrom) {
+              return participant.receiveFrom.name;
+            }
+            if (participant.shipping && participant.venue) {
+              return participant.venue.name;
+            }
+            return false;
+          },
+          destination: () => {
+            if (participant.reception && participant.venue) {
+              return participant.venue.name;
+            }
+            if (participant.shipping && participant.sendTo) {
+              return participant.sendTo.name;
+            }
+            return false;
+          },
+          carrier: () => {
+            if (participant.carrier && participant.carrierBy) {
+              return participant.carrierBy.name;
+            }
+            return false;
+          },
+          getAnswer: ((scale: any, answer: any) => {
+            if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+              const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+              return choice ? choice.choice : '';
+            }
+            return '';
+          }),
+          requireAccesory: ((scale: any, answer: any) => {
+            if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+              const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+              return choice ? choice.requireAccesories : false;
+            }
+            return false;
+          }),
+          getDamageItem: ((items: any, item: string) => {
+            if (item) {
+              const result = items.find((i: any) => i._id.toString() === item.toString());
+              if (result && result.hasOwnProperty('name')) {
+                return result.name;
+              }
+            }
+            return '-';
+          }),
+          logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
+          accesorySelected: (answer: any, item: any) => {
+            return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory: any) => {
+              return accesory.item === item._id.toString();
+            }) : false;
           }
-        }),
-        moment,
-        origin: () => {
-          if (participant.reception && participant.receiveFrom) {
-            return participant.receiveFrom.name;
-          }
-          if (participant.shipping && participant.venue) {
-            return participant.venue.name;
-          }
-          return false;
-        },
-        destination: () => {
-          if (participant.reception && participant.venue) {
-            return participant.venue.name;
-          }
-          if (participant.shipping && participant.sendTo) {
-            return participant.sendTo.name;
-          }
-          return false;
-        },
-        carrier: () => {
-          if (participant.carrier && participant.carrierBy) {
-            return participant.carrierBy.name;
-          }
-          return false;
-        },
-        getAnswer: ((scale: any, answer: any) => {
-          if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
-            return choice ? choice.choice : '';
-          }
-          return '';
-        }),
-        requireAccesory: ((scale: any, answer: any) => {
-          if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
-            return choice ? choice.requireAccesories : false;
-          }
-          return false;
-        }),
-        getDamageItem: ((items: any, item: string) => {
-          if (item) {
-            const result = items.find((i: any) => i._id.toString() === item.toString());
-            if (result && result.hasOwnProperty('name')) {
-              return result.name;
+        };
+
+        if (participant.form && participant.form.triggers && participant.form.triggers.length > 0) {
+          let fileTriggers: IFormTrigger[] = participant.form.triggers.filter((trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled);
+          if (fileTriggers.length) {
+            let trigger: IFormTrigger = fileTriggers[0];
+            template = path.join(__dirname, '../../../views/') + trigger.config.template;
+            let signature = participant?.sections.reduce((previousValue: any[], currenSection: IParticipantSectionModel) =>
+              previousValue.concat(currenSection.answers),
+              []
+            ).find((answer: IParticipantAnswerModel) => {
+              return answer._id.toString() === trigger.config.signature.toString()
+            }
+            );
+            if (signature) {
+              context.signature = signature.images.map((f: any) => f.file.url)[0];
             }
           }
-          return '-';
-        }),
-        logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
-        accesorySelected: (answer: any, item: any) => {
-          return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory: any) => {
-            return accesory.item === item._id.toString();
-          }) : false;
         }
-      };
 
-      if (participant.form && participant.form.triggers && participant.form.triggers.length > 0){
-        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled);
-        if (fileTriggers.length){
-          let trigger : IFormTrigger = fileTriggers[0];
-          template = path.join(__dirname, '../../../views/') + trigger.config.template;
-          let signature = participant?.sections.reduce((previousValue: any[], currenSection: IParticipantSectionModel) =>
-            previousValue.concat(currenSection.answers),
-            []
-          ).find((answer: IParticipantAnswerModel) => {
-            return answer._id.toString() === trigger.config.signature.toString()}
-          );
-          if (signature){
-            context.signature = signature.images.map((f :any) => f.file.url)[0];
-          }
+        const html = GeneralUtils.generateHtmlFromPugFile(template, context);
+
+        if (debug) {
+          return res.send(html);
+        } else {
+
+          // launch a new chrome instance
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
+            headless: true,
+          })
+          // create a new page
+          const page = await browser.newPage();
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          })
+
+          const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+              top: '0.3in',
+              right: '0.5in',
+              bottom: '0.3in',
+              left: '0.5in'
+            }
+          })
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
+          return res.send(pdfBuffer);
         }
-      }
-
-
-      const html = GeneralUtils.generateHtmlFromPugFile(template, context);
-
-      if (debug) {
-        return res.send(html);
-      } else {
-        /*const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(`http://localhost:3030/report/forms/pdf/${id}.pdf?debug=true`);
-        const buffer = await page.pdf({
-          format: 'Letter',
-          margin: {
-            top: '0.3in',
-            right: '0.5in',
-            bottom: '0.3in',
-            left: '0.5in'
-          }
-        });
-        res.type('application/pdf');
-        res.send(buffer);
-        browser.close();
-        */
-        HtmlPdf.create(html, config).toStream((err, pdfStream): any => {
-          if (err) {
-            console.log(err);
-            return res.sendStatus(500);
-          } else {
-            // set header
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
-            // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
-            // send a status code of 200 OK
-            res.statusCode = 200;
-            // once we are done reading end the response
-            pdfStream.on('end', () => {
-              // done reading
-              return res.end();
-            });
-            // pipe the contents of the PDF directly to the response
-            pdfStream.pipe(res);
-          }
-        });
       }
     } catch (e) {
+      console.log(e)
       // Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
@@ -323,7 +290,7 @@ class FormController {
         },
         deliveryToCustomer: deliveries === '1',
         active: true
-      },{
+      }, {
         _id: true,
         name: true,
       });
@@ -425,7 +392,6 @@ class FormController {
       const form = await this.getForm({
         _id: id,
         team
-
       });
       // generate array of scale ids
       const scalesIds: any[] = [];
@@ -735,7 +701,7 @@ class FormController {
               const { reception } = answers;
               participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
               if (reception.images) {
-                participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+                participantObject.receptionImages = reception.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
               }
             }
             if ('receptionVenue' in answers) {
@@ -760,7 +726,7 @@ class FormController {
               const { shipping } = answers;
               participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
               if (shipping.images) {
-                participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+                participantObject.shippingImages = shipping.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
               }
             }
             if ('shippingVenue' in answers) {
@@ -783,7 +749,7 @@ class FormController {
             participantObject.conciliation = [true, 'true'].includes(conciliation.value);
             participantObject.conciliationText = form.conciliationText;
             if (conciliation.images) {
-              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+              participantObject.conciliationImages = conciliation.images.map((image: string) => (new mongoose.Types.ObjectId(image)));
             }
           }
           const newParticipant = new Participant(participantObject);
@@ -851,11 +817,11 @@ class FormController {
                 newParticipant.deliveryInfo.order = comment;
               } else if (question?.kindUpdate === 'participant.clientSignature') {
                 newParticipant.deliveryInfo.signature = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [];
               } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
                 newParticipant.deliveryInfo.identifyCard = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [];
               }
               newAnswers.push({
@@ -873,9 +839,9 @@ class FormController {
                 risk: question.risk,
                 comment,
                 observe: question.observe,
-                answer: answer ? new ObjectID(answer.value) : null,
+                answer: answer ? new mongoose.Types.ObjectId(answer.value) : null,
                 images: answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                  answer.images.map((image: string) => (new mongoose.Types.ObjectId(image)))
                   : [],
                 qualification,
                 na,
@@ -1781,7 +1747,7 @@ class FormController {
     const sendingVenue: IVenueModel = recivedparticipant.venue;
 
     const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-    distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
@@ -1808,7 +1774,7 @@ class FormController {
     const venue = (reception as any).to as IVenueModel;
 
     const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
@@ -2108,7 +2074,7 @@ class FormController {
       const team = req.user.team._id;
 
       const form = await Form.findById('5b0487db835536612bab1b61');
-      const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
+      const answer = new mongoose.Types.ObjectId('5b64b2e8de5557c85fa14fa0');
 
       const days: string[] = [];
       const daysDict: any = {};
@@ -2147,7 +2113,7 @@ class FormController {
 
         for (const datum of cleanDispatch) {
           const day = datum._id;
-          daysDict[day].clean =  datum.count;
+          daysDict[day].clean = datum.count;
         }
 
         const notCleanDispatch = await Participant.aggregate([
@@ -2309,7 +2275,7 @@ class FormController {
             'type': true,
             'internalNumber': true
           }
-        },{
+        }, {
           path: 'form',
           select: {
             '_id': true,
@@ -2401,7 +2367,7 @@ class FormController {
     });
   }
 
-  private getForms(filter: any): Promise<IFormModel[]> {
+  private getForms<T>(filter: any): Promise<any> {
     return new Promise((resolve, reject) => {
       Form
         .find(filter, {
@@ -2409,17 +2375,19 @@ class FormController {
           name: 1
         })
         .lean()
-        .exec!((err, forms: IFormModel[]) => {
-        if (err) {
-          /* istanbul ignore next */
-          return reject(err);
-        }
-        return resolve(forms);
-      });
+        .exec!((err, forms) => {
+          if (err) {
+            /* istanbul ignore next */
+            reject(err);
+          }
+          resolve(forms);
+        });
     });
   }
 
-  private getForm(filter: any): Promise<IFormModel> {
+  private getForm(filter: any): Promise<LeanDocument<IFormModel & {
+    _id: Types.ObjectId;
+  }>> {
     const keyCache = `form-${filter._id}`;
     logger.debug(`keyCache ${keyCache}`);
     return new Promise((resolve, reject) => {
@@ -2485,16 +2453,16 @@ class FormController {
               }]
             }])
             .lean()
-            .exec((err, form: IFormModel) => {
+            .exec((err, form) => {
               if (err) {
                 /* istanbul ignore next */
-                return reject(err);
+                reject(err);
               }
               if (form) {
-                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
-                return resolve(form);
+                redisClient.setex(keyCache, 60, JSON.stringify(form));
+                resolve(form);
               }
-              return reject('No se encontro formularío');
+              reject('No se encontro formularío');
             });
         }
       });
@@ -2545,19 +2513,21 @@ class FormController {
           }]
         }])
         .exec!((err, form) => {
-        if (err) {
-          /* istanbul ignore next */
-          return reject(err);
-        }
-        if (form) {
-          return resolve(form);
-        }
-        return reject('No se encontro formularío');
-      });
+          if (err) {
+            /* istanbul ignore next */
+            return reject(err);
+          }
+          if (form) {
+            return resolve(form);
+          }
+          return reject('No se encontro formularío');
+        });
     });
   }
 
-  private getScales(filter: any): Promise<IScaleModel[]> {
+  private getScales(filter: any): Promise<LeanDocument<IScaleModel & {
+    _id: Types.ObjectId;
+  }>[]> {
     const keyCache = `scales-${JSON.stringify(filter)}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
@@ -2577,13 +2547,13 @@ class FormController {
               '__v': false
             })
             .lean()
-            .exec((err, scales: IScaleModel[]) => {
+            .exec((err, scales) => {
               if (err) {
                 /* istanbul ignore next */
-                return reject(err);
+                reject(err);
               }
-              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
-              return resolve(scales);
+              redisClient.setex(keyCache, 30, JSON.stringify(scales));
+              resolve(scales);
             });
         }
       });

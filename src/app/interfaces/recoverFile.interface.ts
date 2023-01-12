@@ -1,6 +1,6 @@
 import {ICompanyModel} from '../models/company.model';
-import {IUserModel} from '../models/user.model';
 import {ITeamModel} from '../models/team.model';
+import {IUserModel} from '../models/user.model';
 
 interface IIFile {
   url: string;
@@ -10,7 +10,7 @@ interface IIFile {
 }
 
 export interface IRecoverFile {
-  _id: any;
+  _id?: any;
   team: ITeamModel;
   company: ICompanyModel;
   user: IUserModel;

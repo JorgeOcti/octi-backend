@@ -1,5 +1,5 @@
 export interface IVersion {
-  _id: any;
+  _id?: any;
   description: string;
   android: string,
   ios: string,

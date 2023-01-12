@@ -1,10 +1,10 @@
-import { IUser } from './user.interface';
+import { ICompany } from './company.interface';
 import { ITeamSetting } from './teamSetting.interface';
 import { ITeamSettingModel } from '../models/teamSetting.model';
-import { ICompany } from './company.interface';
+import { IUser } from './user.interface';
 
 export interface ITeam {
-  _id: any;
+  _id?: any;
   name: string;
   formsNumber: number;
   requestNumber: number;

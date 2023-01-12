@@ -1,9 +1,10 @@
-import { IPermission } from '../interfaces';
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-export interface IPermissionModel extends IPermission, mongoose.Document {
+import { IPermission } from '../interfaces';
+import { PaginateModel } from 'mongoose';
+
+export interface IPermissionModel extends IPermission, mongoose.Document<any> {
 }
 
 const permissionSchema = new mongoose.Schema({

@@ -1,5 +1,5 @@
 export interface IModule {
-  _id: any;
+  _id?: any;
   name: string;
   updatedAt: Date;
   createdAt: Date;

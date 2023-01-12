@@ -2,6 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
+
 import RequestItem from '../../models/requestItem.model';
 import requestItemsHooks from '../../models/requestItem.hooks';
 
@@ -11,7 +12,7 @@ async function metaRequests() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI, {});
   mongoose.set('debug', false);
   try {
     const requestsItemsCursor = RequestItem
@@ -28,10 +29,9 @@ async function metaRequests() {
         }
       }])
       .allowDiskUse(true)
-      .cursor({ batchSize: 40 })
-      .exec();
+      .cursor()
 
-    requestsItemsCursor.on('data', async (requestITem: any) => {
+    await requestsItemsCursor.eachAsync(async (requestITem: any) => {
       // console.log(request.createdAt)
       try {
         await requestItemsHooks.postFindOneAndUpdateHandler(requestITem);
@@ -39,13 +39,7 @@ async function metaRequests() {
         console.log('error:', e);
       }
     });
-    requestsItemsCursor.on('end', async () => {
-      mongoose.set('debug', true);
-      console.log('Terminado');
-      // setTimeout(() => {
-      //   process.exit(1);
-      // }, 60000)
-    });
+    console.log('Terminado');
   } catch (e) {
     console.log(e);
     console.log('Ha ocurrido un error en metaRequests');

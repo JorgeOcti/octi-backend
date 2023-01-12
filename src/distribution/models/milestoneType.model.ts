@@ -1,10 +1,12 @@
 import * as mongoose from 'mongoose';
-import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
+
 import { IMilestoneType } from '../interfaces/milestoneType.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
-export interface IMilestoneTypeModel extends IMilestoneType, mongoose.Document {}
+export interface IMilestoneTypeModel extends IMilestoneType, mongoose.Document<any> {}
 
 const milestoneTypeSchema = new mongoose.Schema({
   team: {

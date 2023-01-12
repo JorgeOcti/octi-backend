@@ -1,11 +1,11 @@
 import * as bluebird from 'bluebird';
+import Redis, { Cluster } from 'ioredis';
 // import * as redis from 'redis';
-import * as Redis from 'ioredis';
 import GeneralUtils from '../utils/general.utils';
 
 
-export function createRedisClient(): Redis.Redis | Redis.Cluster{
-  let client: Redis.Redis | Redis.Cluster;
+export function createRedisClient(): Redis | Cluster{
+  let client: Redis | Cluster;
   if (process.env.REDIS_CLUSTERED === "true") {
     console.log("REDIS CLUSTER ON");
     client = new Redis.Cluster([{

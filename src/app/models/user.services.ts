@@ -1,8 +1,9 @@
 import * as bcrypt from 'bcrypt';
-import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
+
 import { IUser } from '../interfaces';
 import { IUserModel } from './user.model';
+import mongoose from 'mongoose';
 
 export default class UserServices {
 
@@ -56,14 +57,14 @@ export default class UserServices {
     if (inString) {
       return venuesPermissions;
     } else {
-      return venuesPermissions.map((id) => new ObjectID(id));
+      return venuesPermissions.map((id) => new mongoose.Types.ObjectId(id));
     }
   }
 
   public generateToken(): string {
-    const { _id, firstName, lastName, company, venue } = this.user;
+    const { firstName, lastName, company, venue } = this.user;
     const userInfo = {
-      _id,
+      _id: this.user._id,
       firstName,
       lastName,
       company,

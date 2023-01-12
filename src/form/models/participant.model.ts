@@ -207,21 +207,24 @@ const participantAnswersSchema = new mongoose.Schema({
     trim: true
   },
   answer: {
-    type: mongoose.Schema.Types.ObjectId
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
   },
   images: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
   }],
   comment: {
-    type: String
+    type: String,
+    default: ''
   },
   na: {
     type: Boolean,
     default: false
   },
   qualification: {
-    type: Number
+    type: Number,
+    default: 0
   },
   weight: {
     type: Number,
@@ -249,7 +252,10 @@ const participantAnswersSchema = new mongoose.Schema({
   minValue: Number,
   maxValue: Number,
   colors: [String],
-  score: Number,
+  score: {
+    type: Number,
+    default: -1
+  },
 
   requireSeverity: {
     type: Boolean,
@@ -278,7 +284,8 @@ const participantSectionsSchema = new mongoose.Schema({
   answers: [participantAnswersSchema],
 
   qualification: {
-    type: Number
+    type: Number,
+    default: 0
   },
   weight: {
     type: Number,

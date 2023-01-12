@@ -8,7 +8,7 @@ export interface IReasonQuestion {
 }
 
 export interface IReason {
-  _id: any;
+  _id?: any;
   name: string;
   team: ITeam;
   file: {

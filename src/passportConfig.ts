@@ -1,9 +1,10 @@
-import User from './app/models/user.model';
-import { MultiSamlStrategy } from 'passport-saml';
-import * as passportLocal from 'passport-local';
 import * as passport from 'passport';
-import middleware from './middlewares/middlewares';
+import * as passportLocal from 'passport-local';
+
+import { MultiSamlStrategy } from 'passport-saml';
+import User from './app/models/user.model';
 import logger from './services/logger.service';
+import middleware from './middlewares/middlewares';
 
 const LocalStrategy = passportLocal.Strategy;
 
@@ -44,7 +45,7 @@ passport.use('local', new LocalStrategy({ usernameField: 'username' }, async (us
     }, { _id: true, active: true, password: true });
     if(checkUser && checkUser.active && await checkUser.comparePassword(password)){
       logger.info(`Passport.verify: ${username} user authenticated successfully!.`);
-      const { user } = await middleware.addUserToRequest(checkUser._id);
+      const { user } = await middleware.addUserToRequest(checkUser._id.toString());
       done(undefined, user);
     } else {
       logger.error(`Passport.verify: ${username} password does not correspond to the user.`);

@@ -2,9 +2,10 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
+
+import { ITransmittalItem } from '../../interfaces';
 // import logger from '../../../services/logger.service';
 import TransmittalItem from '../../models/transmittalItem.model';
-import { ITransmittalItem } from '../../interfaces';
 
 async function migrateTransmittalItem() {
   dotenv.config({
@@ -12,7 +13,7 @@ async function migrateTransmittalItem() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI, {  });
   mongoose.set('debug', false);
   try {
     // 5bf2de34caf8ef7096105cda = Derco
@@ -22,7 +23,7 @@ async function migrateTransmittalItem() {
 
     let extraFilter: any = {};
     if (teams.length) {
-      extraFilter['team'] = { $in: teams.map((team) => (mongoose.Types.ObjectId(team))) };
+      extraFilter['team'] = { $in: teams.map((team) => (new mongoose.Types.ObjectId(team))) };
     }
     // const bulk = Car.collection.initializeOrderedBulkOp();
     // const toUpdateCars: any[] = [];
@@ -33,10 +34,9 @@ async function migrateTransmittalItem() {
         }
       }])
       .allowDiskUse(true)
-      .cursor({ batchSize: 10 })
-      .exec();
+      .cursor()
 
-    carsCursor.on('data', async (transmittalItem: ITransmittalItem) => {
+    await carsCursor.eachAsync(async (transmittalItem: ITransmittalItem) => {
       /* const action = {
         updateOne: {
           filter: { _id: car._id },
@@ -49,18 +49,7 @@ async function migrateTransmittalItem() {
       toUpdateCars.push(action); */
     });
 
-    // code to handle connection abort or finish query read process
-    carsCursor.on('end', async () => {
-      /* carsCursor.close();
-      logger.info(`migrateTransmittalItem.end ${toUpdateCars.length}`);
-      await Car.bulkWrite(toUpdateCars); */
-      // process.exit(1);
-    });
-
-    carsCursor.on('error', (error: any) => {
-      carsCursor.close();
-      process.exit(1);
-    });
+    process.exit(1);
   } catch (e) {
     console.log('Ha ocurrido un error en migrateTransmittalItem');
     console.log('error:', e);

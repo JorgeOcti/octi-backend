@@ -8,7 +8,7 @@ import { IVenueDay } from './venueDay.interface';
 
 export interface IBaseVenue {
   sendToDays: IVenueDay[];
-  _id: any;
+  _id?: any;
   name: string;
   code: string;
   abbreviation: string;
