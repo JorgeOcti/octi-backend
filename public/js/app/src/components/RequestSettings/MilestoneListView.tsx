@@ -271,7 +271,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className='middle'>
                                 <ShowIf condition={item.kind === 'form'}>
                                   <Checkbox
-                                    active={item.updateItems.arrivalDate}
+                                    active={item.updateItems?.arrivalDate}
                                     action={() => {
                                       this.props.updateMilestoneThunkAction({
                                         ...item,

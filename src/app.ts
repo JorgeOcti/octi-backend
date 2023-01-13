@@ -37,6 +37,7 @@ import logger from './services/logger.service';
 import { queue } from './utils/queue';
 import BillingTeamQueue from './billing/tasks/billingTeam.task';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
+import * as favicon from 'serve-favicon'
 
 import * as promBundle from "express-prom-bundle";
 
@@ -112,6 +113,8 @@ app.use(Middlewares.cleanStaticFiles);
 app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
 const staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
+
+app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')))
 
 app.use(metricsMiddleware);
 

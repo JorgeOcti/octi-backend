@@ -150,25 +150,25 @@ userSchema.post<IUserModel>('findOneAndUpdate', async (doc: any) => {
   await usersHooks.postFindOneAndUpdateHandler(doc);
 });
 
-userSchema.methods.fullName = function(): string {
+userSchema.methods.fullName = function(this: IUserModel): string {
   return new UserServices(this).fullName();
 };
 
 // validate user has permissions
-userSchema.methods.hasPermission = function(permission: string): boolean {
+userSchema.methods.hasPermission = function(this: IUserModel, permission: string): boolean {
   return new UserServices(this).hasPermission(permission);
 };
 
 // used by sockets
-userSchema.methods.generateToken = function(): string {
+userSchema.methods.generateToken = function(this: IUserModel): string {
   return new UserServices(this).generateToken();
 };
 
-userSchema.methods.venuesPermissions = function(inString?: boolean): any[] {
+userSchema.methods.venuesPermissions = function(this: IUserModel, inString?: boolean): any[] {
   return new UserServices(this).venuesPermissions(inString);
 };
 
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function(this: IUserModel, candidatePassword: string): Promise<boolean> {
   return await new UserServices(this).comparePassword(candidatePassword);
 };
 
