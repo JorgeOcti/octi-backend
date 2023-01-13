@@ -10,7 +10,7 @@ import Form, { IFormModel } from '../../form/models/form.model';
 import Damages from '../../form/models/damages.model';
 import History from '../../app/models/history.model';
 import { ICarLocation } from '../../app/interfaces/car.interface';
-import { IParticipant } from 'form/interfaces';
+// import { IParticipant } from 'form/interfaces';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
@@ -48,7 +48,8 @@ async function makeControl(currRow: any, form: IFormModel, user: IUserModel): Pr
         process.exit(1);
       }
 
-      const participantObject: mongoose.HydratedDocument<IParticipant> = {
+      // const participantObject: mongoose.HydratedDocument<IParticipant> = {
+      const participantObject: any = {
         name: form.name,
         team,
         company,
