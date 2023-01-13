@@ -12,7 +12,7 @@ async function metaCarLocation() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI);
   mongoose.set('debug', true);
   try {
     // const requestItems = await RequestItem.find({request: '6238d7949cd9b20010e557cc'}, {

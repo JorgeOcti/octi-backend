@@ -13,7 +13,7 @@ async function fixBilling() {
     });
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, {useNewUrlParser: true,  useUnifiedTopology: true});
+    await mongoose.connect(MONGODB_URI);
     Company.find();
     const team = await Team.findOne({ name: 'Salfa' })
       .populate([{

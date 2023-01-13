@@ -20,7 +20,7 @@ async function fixInventoryCars() {
     });
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(MONGODB_URI);
     mongoose.set('debug', false);
     // const team = mongoose.Types.ObjectId("5bf2de34caf8ef7096105cda");
     const toDelete = await InventoryCar.aggregate([

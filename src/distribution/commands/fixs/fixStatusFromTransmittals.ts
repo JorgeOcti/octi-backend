@@ -16,7 +16,7 @@ async function fixStatus() {
     });
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
+    await mongoose.connect(MONGODB_URI);
     mongoose.set('debug', true);
 
     const transmitalItems = await TransmittalItem.find({requestItem: {$ne: null}, revisions: {$ne: []}});

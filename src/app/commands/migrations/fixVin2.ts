@@ -10,7 +10,7 @@ async function fixVin2() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  await mongoose.connect(MONGODB_URI);
   mongoose.set('debug', true);
   const cars = await Car.find({vin2: {$exists: false}});
 
