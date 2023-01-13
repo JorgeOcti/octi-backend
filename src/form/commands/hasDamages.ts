@@ -46,7 +46,7 @@ async function updateVin2() {
     // }
   });
 
-  process.exit(1),
+  process.exit(1);
 }
 
 updateVin2();
