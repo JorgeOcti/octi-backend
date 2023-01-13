@@ -38,8 +38,14 @@ import { queue } from './utils/queue';
 import BillingTeamQueue from './billing/tasks/billingTeam.task';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
 
+import * as promBundle from "express-prom-bundle";
+
+const metricsMiddleware = promBundle({includeMethod: true, includePath: true})
+
 // Create Express server
 const app = express();
+
+
 
 const redisStore = connectRedis(session);
 
@@ -63,6 +69,7 @@ const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
 app.set('view cache', process.env.ENV === 'production');
 app.set('views', viewDirectory);
+
 
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
@@ -105,7 +112,9 @@ app.use(Middlewares.cleanStaticFiles);
 app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
 const staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
-//
+
+app.use(metricsMiddleware);
+
 app.locals.getVersionedPath = staticify.getVersionedPath;
 app.locals.moment = moment;
 
