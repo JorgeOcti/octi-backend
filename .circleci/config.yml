@@ -17,10 +17,15 @@ jobs:
             export AWS_REGION=sa-east-1
             aws configure set aws_access_key_id default_access_key
 
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 169428622952.dkr.ecr.sa-east-1.amazonaws.com
+            aws ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin 169428622952.dkr.ecr.sa-east-1.amazonaws.com
+
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
-            docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
-            docker push $REGISTRY/osa/andes
+
+            docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
+            docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
+
+            # docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
+            # docker push $REGISTRY/osa/andes
 
   deploy-AWS: &deploy-AWS
     docker:
