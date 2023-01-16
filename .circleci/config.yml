@@ -2,28 +2,17 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7.14
+      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
         user: root
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
-      - run: 
-          name: Install aws cli
-          command: |
-            pip install virtualenv
-            python -m virtualenv venv
-            . venv/bin/activate
-            pip install awscli
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
-            export AWS_REGION=us-east-1
-            aws configure set aws_access_key_id default_access_key
-            echo $DOCKER_PWD | $(aws ecr get-login --no-include-email --region us-east-1)
 
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
+            aws ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin 169428622952.dkr.ecr.sa-east-1.amazonaws.com
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
             docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
             docker push $REGISTRY/osa/andes
@@ -49,8 +38,8 @@ jobs:
             wget -O kops https://github.com/kubernetes/kops/releases/download/v1.22.4/kops-linux-amd64
             sudo chmod +x ./kops
             sudo mv ./kops /usr/local/bin/kops
-            echo "export KOPS_CLUSTER_NAME=${K8S_DOMAIN_AWS}" >> $BASH_ENV
-            echo "export KOPS_STATE_STORE=s3://${S3_BUCKET_NAME}" >> $BASH_ENV
+            echo "export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}" >> $BASH_ENV
+            echo "export KOPS_STATE_STORE=s3://${KOPS_STATE_STORE}" >> $BASH_ENV
       - run: 
           name: Install kubectl
           command: |
@@ -63,7 +52,7 @@ jobs:
             sudo pip install awscli
             echo "export AWS_ACCESS_KEY=$AWS_ACCESS_KEY">> $BASH_ENV
             echo "export AWS_SECRET_KEY=$AWS_SECRET_KEY">> $BASH_ENV
-            echo "export AWS_REGION=us-east-1" >> $BASH_ENV
+            echo "export AWS_REGION=sa-east-1" >> $BASH_ENV
       - run: 
           name: Create CLuster
           command: |
@@ -125,11 +114,15 @@ jobs:
     <<: *deploy-AWS
     environment:
       NAMESPACE: andes-prod
+      KOPS_CLUSTER_NAME: kops-production.osacontrol.com
+      KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 2
   deploy-staging:
     <<: *deploy-AWS
     environment:
       NAMESPACE: andes-stage
+      KOPS_CLUSTER_NAME: kops-stage.osacontrol.com
+      KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 1
 
 workflows:
