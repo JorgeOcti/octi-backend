@@ -21,11 +21,13 @@ jobs:
 
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
 
-            docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
-            docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
+            # docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
+            # docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
 
-            # docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
-            # docker push $REGISTRY/osa/andes
+            # docker buildx build --platform linux/amd64 -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest --push .
+            
+            docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
+            docker push $REGISTRY/osa/andes -a
 
   deploy-AWS: &deploy-AWS
     docker:
@@ -65,24 +67,29 @@ jobs:
               kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
               kubectl rollout status deployment/osa-andes
 
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
-              kubectl apply -f ${HOME}/patched-andes-celery.yaml
+              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
+              kubectl apply -f ${HOME}/patched-andes-service.yaml
 
             else
               echo "There's no deployments deployed in cluster"
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
 
               envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
               kubectl apply -f ${HOME}/patched-redis-cluster.yml
+
+              # kubectl rollout status StatefulSet/redis
+
+              # kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
 
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
               kubectl rollout status deployment/osa-andes
 
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
-              kubectl apply -f ${HOME}/patched-andes-celery.yaml
+              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
+              kubectl apply -f ${HOME}/patched-andes-service.yaml
+
+              # kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
 
             fi
 
@@ -92,7 +99,7 @@ jobs:
   deploy-production:
     <<: *deploy-AWS
     environment:
-      NAMESPACE: andes-prod
+      NAMESPACE: andes-production
       KOPS_CLUSTER_NAME: kops-production.osacontrol.com
       KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 2
