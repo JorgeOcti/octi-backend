@@ -139,7 +139,7 @@ workflows:
                 - develop
       - deploy-production:
           requires:
-              - build
+              - build-production
           filters:
             branches:
               only:
@@ -147,7 +147,7 @@ workflows:
           context: prod
       - deploy-staging:
           requires:
-              - build
+              - build-staging
           filters:
             branches:
               only:
