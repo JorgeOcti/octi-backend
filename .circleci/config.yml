@@ -2,91 +2,61 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7.14
+      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
+        user: root
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
-      - run: 
-          name: Install aws cli
-          command: |
-            pip install virtualenv
-            python -m virtualenv venv
-            . venv/bin/activate
-            pip install awscli
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
-            export AWS_REGION=us-east-1
-            aws configure set aws_access_key_id default_access_key
-            echo $DOCKER_PWD | $(aws ecr get-login --no-include-email --region us-east-1)
 
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
+            export AWS_REGION=sa-east-1
+            aws configure set aws_access_key_id default_access_key
+
+            aws ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin 169428622952.dkr.ecr.sa-east-1.amazonaws.com
+
+            CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
+
+            # docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
+            # docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
+
             docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
             docker push $REGISTRY/osa/andes
 
   deploy-AWS: &deploy-AWS
     docker:
-      - image: circleci/python:2.7.15-stretch
+      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
     working_directory: ~/repo
     steps:
       - attach_workspace:
           at: /tmp
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -qq -y wget curl gettext git
       - checkout
-      - run: 
-          name: Install kops
+      - run:
+          name: Deploying Andes
           command: |
-            sudo apt-get update
-            sudo apt-get install -qq -y wget curl gettext
-            wget -O kops https://github.com/kubernetes/kops/releases/download/v1.22.4/kops-linux-amd64
-            sudo chmod +x ./kops
-            sudo mv ./kops /usr/local/bin/kops
-            echo "export KOPS_CLUSTER_NAME=${K8S_DOMAIN_AWS}" >> $BASH_ENV
-            echo "export KOPS_STATE_STORE=s3://${S3_BUCKET_NAME}" >> $BASH_ENV
-      - run: 
-          name: Install kubectl
-          command: |
-            wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            sudo chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-      - run: 
-          name: Install aws cli
-          command: |
-            sudo pip install awscli
-            echo "export AWS_ACCESS_KEY=$AWS_ACCESS_KEY">> $BASH_ENV
-            echo "export AWS_SECRET_KEY=$AWS_SECRET_KEY">> $BASH_ENV
-            echo "export AWS_REGION=us-east-1" >> $BASH_ENV
-      - run: 
-          name: Create CLuster
-          command: |
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
+            export AWS_REGION=sa-east-1
+            aws configure set aws_access_key_id default_access_key
+
+            export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
+            export KOPS_STATE_STORE=s3://${KOPS_STATE_STORE}
+
             if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
               echo "Cluster exists, loading configuration into kubectl"
               kops export kubecfg --name ${KOPS_CLUSTER_NAME} --admin
             else
               exit 1
             fi
-            attempts=0
-            until kops validate cluster ; do
-              # wait up to 10 minutes for helthy cluster
-              if [ $attempts -lt 10 ];then
-                echo "Cluster not ready"
-                sleep 30
-                let attempts=attempts+1
-              else
-                echo "Attempts failed"
-                #exit 1
-              fi
-            done
+
+            kops validate cluster --wait 15m
+
             kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-            #push image for first run, or update existing.
-            # source /tmp/docker_image
-            # echo "Deploying IMage: ${DOCKER_IMAGE}"
+
             if kubectl describe deployment/osa-andes ;then
               echo "Updating image on existing deployment"
 
@@ -123,11 +93,15 @@ jobs:
     <<: *deploy-AWS
     environment:
       NAMESPACE: andes-prod
+      KOPS_CLUSTER_NAME: kops-production.osacontrol.com
+      KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 2
   deploy-staging:
     <<: *deploy-AWS
     environment:
       NAMESPACE: andes-stage
+      KOPS_CLUSTER_NAME: kops-stage.osacontrol.com
+      KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 1
 
 workflows:
