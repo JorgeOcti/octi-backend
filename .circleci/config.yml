@@ -56,22 +56,12 @@ jobs:
 
             kops validate cluster --wait 15m
 
-            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-
             if kubectl describe deployment/osa-andes ;then
               echo "Updating image on existing deployment"
-
-              envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-              kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-              kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
-              kubectl rollout status deployment/osa-andes
-
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
-              kubectl apply -f ${HOME}/patched-andes-service.yaml
-
             else
               echo "There's no deployments deployed in cluster"
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
+              kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
 
               envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
@@ -80,16 +70,18 @@ jobs:
               kubectl rollout status statefulset/redis
 
               echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
-
-              envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-              kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-              kubectl rollout status deployment/osa-andes
-
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
-              kubectl apply -f ${HOME}/patched-andes-service.yaml
-
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
             fi
+
+            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
+
+            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
+            kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
+
+            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
+            kubectl apply -f ${HOME}/patched-andes-service.yaml
+
+            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
 
             # block until deployment is running
             kubectl rollout status deployment/osa-andes
