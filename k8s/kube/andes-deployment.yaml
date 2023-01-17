@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: osa-andes
-        image: ${$REGISTRY}/osa/andes:${CIRCLE_SHA1}
+        image: ${REGISTRY}/osa/andes:${CIRCLE_SHA1}
         readinessProbe:
           failureThreshold: 3
           httpGet:
