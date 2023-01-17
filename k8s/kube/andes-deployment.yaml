@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: osa-andes
-        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
+        image: ${$REGISTRY}/osa/andes:${CIRCLE_SHA1}
         readinessProbe:
           failureThreshold: 3
           httpGet:
