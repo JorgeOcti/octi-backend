@@ -15,7 +15,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: andes-stafe.osacontrol.com
+  - host: andes-stage.osacontrol.com
     http:
       paths:
       - backend:
@@ -25,7 +25,7 @@ spec:
               number: 3030
         path: /
         pathType: Prefix
-  - host: andes-stafe.osacontrol.cl
+  - host: andes-stage.osacontrol.cl
     http:
       paths:
       - backend:
@@ -37,6 +37,6 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - andes-stafe.osacontrol.com
-    - andes-stafe.osacontrol.cl
+    - andes-stage.osacontrol.com
+    - andes-stage.osacontrol.cl
     secretName: letsencrypt-andes-stage
