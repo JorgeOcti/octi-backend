@@ -11,11 +11,11 @@ metadata:
     kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 20m
   name: api-ingress-andes
-  namespace: andes-stage
+  namespace: andes-production
 spec:
   ingressClassName: nginx
   rules:
-  - host: andes-stafe.osacontrol.com
+  - host: andes.osacontrol.com
     http:
       paths:
       - backend:
@@ -25,7 +25,7 @@ spec:
               number: 3030
         path: /
         pathType: Prefix
-  - host: andes-stafe.osacontrol.cl
+  - host: andes.osacontrol.cl
     http:
       paths:
       - backend:
@@ -37,6 +37,6 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - andes-stafe.osacontrol.com
-    - andes-stafe.osacontrol.cl
-    secretName: letsencrypt-andes-stage
+    - andes.osacontrol.com
+    - andes.osacontrol.cl
+    secretName: letsencrypt-andes-production
