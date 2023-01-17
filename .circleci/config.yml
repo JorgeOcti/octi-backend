@@ -78,9 +78,9 @@ jobs:
               envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
               kubectl apply -f ${HOME}/patched-redis-cluster.yml
 
-              # kubectl rollout status statefulset/redis
+              kubectl rollout status statefulset/redis
 
-              # echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
+              echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
 
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
@@ -89,8 +89,7 @@ jobs:
               envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
               kubectl apply -f ${HOME}/patched-andes-service.yaml
 
-              # kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
-
+              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
             fi
 
             # block until deployment is running
