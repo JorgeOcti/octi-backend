@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  build-AWS: &build-AWS
     docker:
       - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
         user: root
@@ -26,8 +26,8 @@ jobs:
 
             # docker buildx build --platform linux/amd64 -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest --push .
             
-            docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
-            docker push $REGISTRY/osa/andes -a
+            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest .
+            docker push $REGISTRY -a
 
   deploy-AWS: &deploy-AWS
     docker:
@@ -95,6 +95,14 @@ jobs:
             # block until deployment is running
             kubectl rollout status deployment/osa-andes
 
+  build-production:
+    <<: *build-AWS
+    environment:
+      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
+  build-staging:
+    <<: *build-AWS
+    environment:
+      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
   deploy-production:
     <<: *deploy-AWS
     environment:
@@ -102,6 +110,7 @@ jobs:
       KOPS_CLUSTER_NAME: kops-production.osacontrol.com
       KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 2
+      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
   deploy-staging:
     <<: *deploy-AWS
     environment:
@@ -109,17 +118,24 @@ jobs:
       KOPS_CLUSTER_NAME: kops-stage.osacontrol.com
       KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 1
+      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
+
 
 workflows:
   version: 2
   deploy:
     jobs:
-      - build:
+      - build-production:
           context: build
           filters:
             branches:
               only:
                 - master
+      - build-staging:
+          context: build
+          filters:
+            branches:
+              only:
                 - develop
       - deploy-production:
           requires:
