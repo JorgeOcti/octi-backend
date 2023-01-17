@@ -8,7 +8,6 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
-
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
@@ -99,10 +98,7 @@ jobs:
     <<: *build-AWS
     environment:
       REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
-  build-staging:
-    <<: *build-AWS
-    environment:
-      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
+
   deploy-production:
     <<: *deploy-AWS
     environment:
@@ -111,6 +107,12 @@ jobs:
       KOPS_STATE_STORE: andes-kops-state-store
       INSTANCE_NUMBER: 2
       REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
+
+  build-staging:
+    <<: *build-AWS
+    environment:
+      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
+
   deploy-staging:
     <<: *deploy-AWS
     environment:
