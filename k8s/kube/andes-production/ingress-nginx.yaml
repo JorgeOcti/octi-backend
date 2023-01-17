@@ -1,40 +1,42 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: api-ingress-andes
-  namespace: andes-production
   annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/issuer: letsencrypt-prod
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    cert-manager.io/cluster-issuer: letsencrypt-production
     ingress.kubernetes.io/proxy-connect-timeout: "600"
     ingress.kubernetes.io/proxy-read-timeout: "600"
     ingress.kubernetes.io/proxy-send-timeout: "600"
     ingress.kubernetes.io/send-timeout: "600"
     kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+  name: api-ingress-andes
+  namespace: andes-production
 spec:
-  tls:
-  - hosts:
-    - andes.osacontrol.com
-    - andes.osacontrol.cl
-    secretName: letsencrypt-prod
+  ingressClassName: nginx
   rules:
   - host: andes.osacontrol.com
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:        
+      - backend:
+          service:
             name: osa-andes-service
-            port: 
+            port:
               number: 3030
+        path: /
+        pathType: Prefix
   - host: andes.osacontrol.cl
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
+      - backend:
           service:
             name: osa-andes-service
-            port: 
+            port:
               number: 3030
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - andes.osacontrol.com
+    - andes.osacontrol.cl
+    secretName: letsencrypt-andes-production
