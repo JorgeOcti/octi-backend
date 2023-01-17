@@ -24,8 +24,8 @@ jobs:
             # docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
             # docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
 
-            docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
-            docker push $REGISTRY/osa/andes
+            docker buildx build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest --push .
+            # docker push $REGISTRY/osa/andes
 
   deploy-AWS: &deploy-AWS
     docker:
