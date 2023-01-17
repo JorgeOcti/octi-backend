@@ -56,7 +56,7 @@ jobs:
 
             kops validate cluster --wait 15m
 
-            if kubectl describe deployment/osa-andes ;then
+            if kubectl --namespace=$NAMESPACE describe deployment/osa-andes ;then
               echo "Updating image on existing deployment"
             else
               echo "There's no deployments deployed in cluster"
