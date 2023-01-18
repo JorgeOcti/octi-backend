@@ -54,5 +54,7 @@ buildcache
 /dist/
 /tools/
 
-updateAndesDBProduction.sh
-restoreAndesDBProduction.sh
+package-lock.json
+
+updateAndesProdToLocal.sh
+updateAndesProdToStage.sh
