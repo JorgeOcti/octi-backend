@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 
 // @ts-ignore
 import { Server, Socket } from 'socket.io';
-import redisClient, {createRedisClient} from './services/redis.service';
+import redisClient from './services/redis.service';
 
 import GeneralUtils from './utils/general.utils';
 import app from './app';
@@ -58,7 +58,12 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
 
 // @ts-ignore
 export const io = new Server(server);
-io.adapter(createAdapter(createRedisClient(), createRedisClient()));
+
+const pubClient = redisClient;
+const subClient = pubClient.duplicate();
+io.adapter(createAdapter(pubClient, subClient));
+
+// io.adapter(createAdapter(createRedisClient(), createRedisClient()));
 
 /* istanbul ignore next */
 io.use( async (socket: Socket, next: any) => {

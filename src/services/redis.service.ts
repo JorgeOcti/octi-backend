@@ -1,4 +1,4 @@
-import * as bluebird from 'bluebird';
+// import * as bluebird from 'bluebird';
 import Redis, { Cluster } from 'ioredis';
 // import * as redis from 'redis';
 import GeneralUtils from '../utils/general.utils';
@@ -8,7 +8,7 @@ export function createRedisClient(): Redis | Cluster{
   let client: Redis | Cluster;
   if (process.env.REDIS_CLUSTERED === "true") {
     console.log("REDIS CLUSTER ON");
-    client = new Redis.Cluster([{
+    client = new Cluster([{
       host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
       port: 6379,
     }]);
@@ -33,6 +33,6 @@ client.on('connect', () => {
   console.log('Redis Connected');
 });
 
-bluebird.promisifyAll(Redis);
+// bluebird.promisifyAll(Redis);
 
 export default client;
