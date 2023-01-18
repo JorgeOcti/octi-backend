@@ -54,13 +54,13 @@ COPY ./tsconfig.json /srv/tsconfig.json
 
 RUN export PYTHON=python3
 
-RUN npm ci
+RUN npm i
 
 RUN tsc --project tsconfig.json
 
 RUN rm -rf /srv/node_modules
 
-RUN npm --production ci && npm cache clean --force
+RUN npm --production i && npm cache clean --force
 
 EXPOSE 3000
 
