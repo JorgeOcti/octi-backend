@@ -25,9 +25,7 @@ async function addTeamToCompany() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, {
-    useMongoClient: true
-  });
+  await mongoose.connect(MONGODB_URI, {});
   mongoose.set('debug', false);
   const companies = await Company.find({deleted: false});
   try {

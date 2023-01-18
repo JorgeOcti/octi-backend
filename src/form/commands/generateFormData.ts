@@ -50,7 +50,7 @@ async function generateFormData() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, {useMongoClient: true});
+  await mongoose.connect(MONGODB_URI, {});
   // form 5b0487db835536612bab1b61
   // section 5b0487db835536612bab1b65
   // question 5b0487db835536612bab1b66

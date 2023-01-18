@@ -10,7 +10,7 @@ async function updateVin2() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, { useMongoClient: true });
+  await mongoose.connect(MONGODB_URI, { });
   const cars = await CarModel.find({
     $expr: { $and: [{ $lt: [{ $strLenCP: '$vin2' }, 6] }, { $gt: [{ $strLenCP: '$vin' }, 15] }] },
     // team: '5bf2de35caf8ef7096105cdd'

@@ -15,9 +15,7 @@ async function addedInventoryCar() {
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI, {
-    useMongoClient: true
-  });
+  await mongoose.connect(MONGODB_URI, {});
   mongoose.set('debug', true);
   try {
     const inventories : [any] = (await Inventory.find({}).lean() as [any]);
