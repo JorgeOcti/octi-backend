@@ -99,7 +99,7 @@ class AppController {
     const redirectTo = (req.session as any).redirectTo;
     if (req.isAuthenticated() && req?.user) {
       logger.debug(`AppController.processLogin: user: ${JSON.stringify(req.user)} redirectTo: ${redirectTo}`);
-       if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
+      if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
         delete (req.session as any).redirectTo;
         return res.redirect(redirectTo);
       } else {
@@ -238,7 +238,7 @@ class AppController {
       return res.status(404).render('404');
     }
     // close sesión
-    req.logout(()=>{});
+    req.logout(() => { });
     try {
       // validate link is valid
       const user = await UserModel
@@ -301,9 +301,9 @@ class AppController {
   }
 
   public logout(req: IRequest, res: Response) {
-    logger.info(`AppController.logout ${req?.user?`${req.user.email} `: ''}from: ${req.header('Referrer') ?? 'system'}`);
+    logger.info(`AppController.logout ${req?.user ? `${req.user.email} ` : ''}from: ${req.header('Referrer') ?? 'system'}`);
     // (req.session as any).redirectTo = req.url;
-    req.logout(()=>{});
+    req.logout(() => { });
     return res.redirect('/account/login/');
   }
 
@@ -379,16 +379,20 @@ class AppController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve({});
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .autoOrient()
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve({});
+            } else {
+              resolve({});
+            }
+          });
+      } catch {
+        resolve({});
+      }
     });
   }
 }

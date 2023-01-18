@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 
-import { HookNextFunction, PaginateModel } from 'mongoose';
+import { CallbackWithoutResultAndOptionalError, PaginateModel } from 'mongoose';
 import { UserTypes, userTypes } from './user.model.types';
 
 import { IUser } from '../interfaces';
@@ -175,7 +175,7 @@ userSchema.methods.comparePassword = async function(this: IUserModel, candidateP
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function(this: IUserModel, next: HookNextFunction) {
+userSchema.pre('save', function(this: IUserModel, next: CallbackWithoutResultAndOptionalError) {
   const user = this;
   if (!user.isModified('password')) {
     return next();

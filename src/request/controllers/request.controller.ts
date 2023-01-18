@@ -2411,7 +2411,7 @@ class RequestController {
             if (err) {
               logger.error(`RequestController.autoRotate err`);
               logger.error(err.message);
-              reject(err);
+              resolve({});
             } else {
               resolve({});
             }
@@ -2419,6 +2419,7 @@ class RequestController {
       } catch (e) {
         logger.error(`RequestController.autoRotate err 2`);
         logger.error(e.message);
+        resolve({});
       }
     });
   }
@@ -2430,17 +2431,22 @@ class RequestController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .resize(100, 100)
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve(true);
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .resize(100, 100)
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve(true);
+            } else {
+              resolve(true);
+            }
+          });
+      } catch {
+        resolve(true);
+      }
     });
+
   }
 }
 

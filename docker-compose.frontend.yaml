@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+
+ frontend:
+   build:
+     dockerfile: DockerFile.frontend
+     context: .
+   image: andes-frontend:latest
+  #  command: ['webpack', '--mode', 'development', '--watch']
+   command: ['npm', 'start']
+   volumes:
+     - ./src:/srv/src
+     - ./public/js/app:/srv/public/js/app
+     - /srv/public/js/app/node_modules
+     
+   environment:
+     NODE_ENV: development

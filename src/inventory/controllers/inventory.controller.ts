@@ -395,7 +395,7 @@ class InventoryController {
           $in: venuesPermissions
         }
       }, options);
-      const aggregate:  PipelineStage[] = [{
+      const aggregate: PipelineStage[] = [{
         $match: {
           _id: {
             $in: paginatedInventories.docs.map(v => v._id)
@@ -2238,7 +2238,7 @@ class InventoryController {
           path: 'events',
           select: ['_id', 'module'],
           match: {
-             changeLocation: true
+            changeLocation: true
           }
         }]
       }, {
@@ -2260,8 +2260,8 @@ class InventoryController {
         .find({
           company,
           status: ChoicesStatusInventory.finalized
-        },{
-          createdAt:true,
+        }, {
+          createdAt: true,
           finalizedAt: true
         })
         .sort({ createdAt: -1 })
@@ -2297,16 +2297,20 @@ class InventoryController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve({});
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .autoOrient()
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve({});
+            } else {
+              resolve({});
+            }
+          });
+      } catch {
+        resolve({});
+      }
     });
   }
 
@@ -2317,16 +2321,20 @@ class InventoryController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .resize(100, 100)
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve(true);
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .resize(100, 100)
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve(true);
+            } else {
+              resolve(true);
+            }
+          });
+      } catch {
+        resolve(true);
+      }
     });
   }
 

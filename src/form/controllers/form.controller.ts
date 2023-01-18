@@ -2354,16 +2354,20 @@ class FormController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve({});
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .autoOrient()
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve({});
+            } else {
+              resolve({});
+            }
+          });
+      } catch {
+        resolve({});
+      }
     });
   }
 

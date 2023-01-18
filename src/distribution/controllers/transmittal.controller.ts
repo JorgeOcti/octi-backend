@@ -362,16 +362,16 @@ class TransmittalController {
     if (number) {
       filter.number = number;
     }
-    if (drivers){
+    if (drivers) {
       let driversIds = drivers.split(",").map(d => new mongoose.Types.ObjectId(d))
-      filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": {$regex: plate.trim(), $options: 'i'}}];
-    } else if (!drivers && plate){
-      filter["transporter.patent"] = {$regex: plate.trim(), $options: 'i'};
+      filter["$or"] = [{ "transporter.driver": { $in: driversIds } }, { "transporter.patent": { $regex: plate.trim(), $options: 'i' } }];
+    } else if (!drivers && plate) {
+      filter["transporter.patent"] = { $regex: plate.trim(), $options: 'i' };
     }
 
-    if (types){
+    if (types) {
       let typeIds = types.split(",").map(t => new mongoose.Types.ObjectId(t))
-      filter["type"] = {$in: typeIds};
+      filter["type"] = { $in: typeIds };
     }
 
     if (from || to) {
@@ -543,7 +543,7 @@ class TransmittalController {
 
   private getForm(filter: any): Promise<mongoose.LeanDocument<IFormModel & {
     _id: Types.ObjectId;
-}>> {
+  }>> {
     const keyCache = `form-${filter._id}`;
     logger.debug(`keyCache ${keyCache}`);
     return new Promise((resolve, reject) => {
@@ -981,13 +981,13 @@ class TransmittalController {
         header: 'Color', key: 'color', width: 30
       }, {
         header: 'Observación', key: 'observation', width: 30
-      },{
+      }, {
         header: 'Marcó frontera', key: 'passBorder', width: 30
       }, {
         header: 'Fecha Carga', key: 'loadingDate', width: 30, style: {
           numFmt: 'dd/mm/yyyy hh:mm'
         },
-      },{
+      }, {
         header: 'Fecha Arribo', key: 'arrivalDate', width: 30, style: {
           numFmt: 'dd/mm/yyyy hh:mm'
         }
@@ -1007,16 +1007,16 @@ class TransmittalController {
       if (number) {
         filter.number = number;
       }
-      if (drivers){
+      if (drivers) {
         let driversIds = drivers.split(",").map(d => new mongoose.Types.ObjectId(d))
-        filter["$or"] = [{"transporter.driver": {$in: driversIds}}, {"transporter.patent": {$regex: plate.trim(), $options: 'i'}}];
-      } else if (!drivers && plate){
-        filter["transporter.patent"] = {$regex: plate.trim(), $options: 'i'};
+        filter["$or"] = [{ "transporter.driver": { $in: driversIds } }, { "transporter.patent": { $regex: plate.trim(), $options: 'i' } }];
+      } else if (!drivers && plate) {
+        filter["transporter.patent"] = { $regex: plate.trim(), $options: 'i' };
       }
 
-      if (types){
+      if (types) {
         let typeIds = types.split(",").map(t => new mongoose.Types.ObjectId(t))
-        filter["type"] = {$in: typeIds};
+        filter["type"] = { $in: typeIds };
       }
 
       if (from || to) {
@@ -1793,16 +1793,20 @@ class TransmittalController {
      brew install graphicsmagick
      * */
     return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, (err) => {
-          if (err) {
-            /* istanbul ignore next */
-            reject(err);
-          } else {
-            resolve({});
-          }
-        });
+      try {
+        GraphicsMagick(path)
+          .autoOrient()
+          .write(path, (err) => {
+            if (err) {
+              /* istanbul ignore next */
+              resolve({});
+            } else {
+              resolve({});
+            }
+          });
+      } catch {
+        resolve({});
+      }
     });
   }
 
@@ -1830,7 +1834,7 @@ class TransmittalController {
   public async apiGetBorders(req: IRequest, res: Response) {
     const company = req.user.company._id;
     try {
-      const borders =  await Border.find({company: company}, {name: 1, lat: 1, lng: 1});
+      const borders = await Border.find({ company: company }, { name: 1, lat: 1, lng: 1 });
       res.status(200).json({
         data: borders
       })
@@ -1859,7 +1863,7 @@ class TransmittalController {
           $in: [ChoicesStatusTransmittal.pending, ChoicesStatusTransmittal.inTransit]
         }
       });
-      if (transmittal){
+      if (transmittal) {
         transmittal.passBorder = true;
         transmittal.save()
         res.status(200).json({
