@@ -184,7 +184,7 @@ class AppController {
     }
     try {
       // prevent duplicate request
-      const csrfUsed = await (redisClient as any).getAsync(_csrf);
+      const csrfUsed = await redisClient.get(_csrf);
       /* istanbul ignore next */
       if (csrfUsed) {
         return res.redirect('/account/forgot-password/');

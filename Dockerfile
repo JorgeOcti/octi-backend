@@ -45,7 +45,6 @@ RUN touch /srv/ses-config.json
 RUN echo "{}" >> /srv/ses-config.json
 
 COPY ./package.json /srv/package.json
-COPY ./package-lock.json /srv/package-lock.json
 
 COPY ./src /srv/src
 COPY ./public /srv/public
