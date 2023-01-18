@@ -53,14 +53,14 @@ COPY ./pm2.json /srv/pm2.json
 COPY ./tsconfig.json /srv/tsconfig.json
 
 RUN export PYTHON=python3
-# RUN yarn install --prod
-RUN npm install
+
+RUN npm ci
 
 RUN tsc --project tsconfig.json
 
 RUN rm -rf /srv/node_modules
 
-RUN npm --production install
+RUN npm --production ci && npm cache clean --force
 
 EXPOSE 3000
 

@@ -50,7 +50,7 @@ RUN echo "{}" >> /srv/ses-config.json
 COPY ./package.json /srv/package.json
 
 RUN export PYTHON=python3
-RUN npm install
+RUN npm ci && npm cache clean --force
 
 EXPOSE 3000
 
