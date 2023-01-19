@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import OperationType, { IOperationTypeModel } from '../models/operationType.model';
 
@@ -20,7 +20,7 @@ class OperationTypeController {
     const object = req.body;
     try {
       const reason = await new OperationType({ ...object, team }).save();
-      io.to(`operation-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`operation-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -44,7 +44,7 @@ class OperationTypeController {
         await OperationType.updateMany({ team }, { $set: { default: false } });
       }
       const reason = await OperationType.findOneAndUpdate({ _id: id, team }, { $set: { ...update } }, {new: true});
-      io.to(`operation-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`operation-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json(reason);
@@ -62,7 +62,7 @@ class OperationTypeController {
     const { id } = req.params;
     try {
       const reason = await OperationType.findOneAndDelete({ _id: id, team });
-      io.to(`operation-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`operation-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

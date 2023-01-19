@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import PaymentMethodModel, { IPaymentMethodModel } from '../models/paymentMethod.model';
 
@@ -20,7 +20,7 @@ class PaymentMethodController {
     const object = req.body;
     try {
       const reason = await new PaymentMethodModel({ ...object, team }).save();
-      io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
+      socket().to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -41,7 +41,7 @@ class PaymentMethodController {
     const update = req.body;
     try {
       const reason = await PaymentMethodModel.findOneAndUpdate({ _id: id }, { $set: { ...update } });
-      io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
+      socket().to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -61,7 +61,7 @@ class PaymentMethodController {
     const { id } = req.params;
     try {
       const reason = await PaymentMethodModel.findOneAndDelete({ _id: id, team });
-      io.to(`payment-method-list-${team._id}`).emit('REFRESH', {
+      socket().to(`payment-method-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

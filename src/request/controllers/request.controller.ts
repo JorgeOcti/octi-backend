@@ -26,7 +26,7 @@ import User from '../../app/models/user.model';
 import Venue from '../../app/models/venue.model';
 import conectaController from './conecta.controller';
 import { createRequestSalfaParams } from '../inputsSchema';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import requestItemsMeta from '../models/requestIteam.meta';
 
@@ -413,10 +413,10 @@ class RequestController {
           }).save();
         }
         const updatedRequest = await Request.findById(newRequest._id).populate(this.requestPopulate);
-        io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
+        socket().to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
           request: updatedRequest
         });
-        io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
+        socket().to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
           request: updatedRequest
         });
         resolve({
@@ -584,10 +584,10 @@ class RequestController {
         }).save();
       }
       const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
-      io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
+      socket().to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
       });
-      io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
+      socket().to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
       });
       res.json({
@@ -1412,10 +1412,10 @@ class RequestController {
       if (request) {
         await RequestItem.find({ _id: id, team }).remove();
         await request.remove();
-        io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
+        socket().to(`request-list-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
         });
-        io.to(`request-detail-${team}`).emit('DELETE_REQUEST', {
+        socket().to(`request-detail-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
         });
         res.status(200).json({
@@ -1451,11 +1451,11 @@ class RequestController {
         .populate(this.itemPopulate);
       if (item) {
         await item.remove();
-        io.to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
+        socket().to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
           idRequest: item.request._id,
           item
         });
-        io.to(`request-detail-${team}`).emit('DELETE_REQUEST_ITEM', {
+        socket().to(`request-detail-${team}`).emit('DELETE_REQUEST_ITEM', {
           idRequest: item.request._id,
           item
         });
@@ -1463,10 +1463,10 @@ class RequestController {
         const itemsInRequest = await RequestItem.find({ request: item.request._id }).countDocuments();
         if (!itemsInRequest) {
           await Request.deleteOne({ _id: item.request._id });
-          io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
+          socket().to(`request-list-${team}`).emit('DELETE_REQUEST', {
             idRequest: item.request._id
           });
-          io.to(`request-detail-${team}`).emit('DELETE_REQUEST', {
+          socket().to(`request-detail-${team}`).emit('DELETE_REQUEST', {
             idRequest: item.request._id
           });
         }
@@ -1592,11 +1592,11 @@ class RequestController {
         }).save();
         const item = await RequestItem.findOne({ _id: newItem._id }).populate(this.itemPopulate);
         request.update({ $set: { updatedAt: moment() } });
-        io.to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
+        socket().to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
           item
         });
-        io.to(`request-detail-${team}`).emit('CREATE_REQUEST_ITEM', {
+        socket().to(`request-detail-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
           item
         });
@@ -1758,13 +1758,13 @@ class RequestController {
         if (requestItem) {
           await Request.update({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
           if (!cancelRequest) {
-            io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+            socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
               idRequest: requestItem.request._id,
               item: requestItem
             });
           }
           if (!cancelRequest) {
-            io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+            socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
               idRequest: requestItem.request._id,
               item: requestItem
             });
@@ -1829,13 +1829,13 @@ class RequestController {
 
       await Request.updateOne({ _id: item?.request._id }, { $set: { updatedAt: moment() } });
       if (!cancelRequest) {
-        io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+        socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
           idRequest: item?.request._id,
           item
         });
       }
       if (!cancelRequest) {
-        io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+        socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
           idRequest: item?.request._id,
           item
         });
@@ -2300,13 +2300,13 @@ class RequestController {
         .lean();
       if (requestItem) {
         await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment().toDate() } });
-        io
+        socket()
           .to(`request-list-${team._id}`)
           .emit('UPDATE_REQUEST_ITEM', {
             idRequest: requestItem.request._id,
             item: requestItem
           });
-        io
+        socket()
           .to(`request-detail-${team._id}`)
           .emit('UPDATE_REQUEST_ITEM', {
             idRequest: requestItem.request._id,

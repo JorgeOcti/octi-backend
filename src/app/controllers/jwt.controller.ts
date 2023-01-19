@@ -11,7 +11,7 @@ import TeamSetting from '../models/teamSetting.model';
 import User from '../models/user.model';
 import UserModel from '../models/user.model';
 import Version from '../models/version.model';
-import app from '../../app';
+// import app from '../../app';
 import logger from '../../services/logger.service';
 import { queue } from '../../utils/queue';
 
@@ -130,13 +130,13 @@ class JWTController {
             };
             return res.json({
               data: {
-                token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                token: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
                   expiresIn: '7 days'
                 }),
-                // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
                 //   expiresIn: '60 seconds'
                 // }),
-                refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                refreshToken: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
                   expiresIn: '30 days'
                 }),
                 iosVersion: version!.ios,
@@ -157,7 +157,7 @@ class JWTController {
   public async token(req: Request, res: Response) {
     const { refreshToken } = req.body;
     try {
-      const decode: any = jwt.verify(refreshToken, app.locals.secretKey);
+      const decode: any = jwt.verify(refreshToken,  process.env.SECRET_KEY!);
       const user = await User
         .findById(decode._id, {
           firstName: true,
@@ -247,13 +247,13 @@ class JWTController {
         };
         return res.json({
           data: {
-            token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+            token: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
               expiresIn: '7 days'
             }),
-            // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+            // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
             //   expiresIn: '60 seconds'
             // }),
-            refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+            refreshToken: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
               expiresIn: '30 days'
             }),
             iosVersion: version!.ios,
@@ -306,7 +306,7 @@ class JWTController {
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         await user.save();
         /* istanbul ignore next */
-        if (app.get('env') !== 'testing') {
+        if (process.env.ENV !== 'testing') {
           console.log('Se ha reestablecido ', username);
         }
         res.json({
@@ -315,7 +315,7 @@ class JWTController {
         });
       } else {
         /* istanbul ignore next */
-        if (app.get('env') !== 'testing') {
+        if (process.env.ENV !== 'testing') {
           console.log('No se encontro ', username);
         }
         res.json({

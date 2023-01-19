@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import Reason, { IReasonModel } from '../models/reason.model';
 
 class ReasonController {
@@ -67,7 +67,7 @@ class ReasonController {
     const object = req.body;
     try {
       const reason = await new Reason({...object, team}).save();
-      io.to(`reasons-list-${team._id}`).emit('REFRESH', {
+      socket().to(`reasons-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -88,7 +88,7 @@ class ReasonController {
     const update = req.body;
     try {
       const reason = await Reason.findOneAndUpdate({ _id: id }, { $set: { ...update } });
-      io.to(`reasons-list-${team._id}`).emit('REFRESH', {
+      socket().to(`reasons-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -108,7 +108,7 @@ class ReasonController {
     const { id } = req.params;
     try {
       const reason = await Reason.findOneAndDelete({ _id: id, team });
-      io.to(`reasons-list-${team._id}`).emit('REFRESH', {
+      socket().to(`reasons-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

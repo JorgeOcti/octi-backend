@@ -1,11 +1,11 @@
-import {Response} from "express";
-import Planning, {IPlanningModel} from "../models/planning.model";
-import {IRequest} from "../../interfaces/global.interface";
-import {PaginateOptions, PaginateResult} from "mongoose";
-import {IPlanning} from "../interfaces/planning.interface";
+import { Response } from "express";
+import Planning, { IPlanningModel } from "../models/planning.model";
+import { IRequest } from "../../interfaces/global.interface";
+import { PaginateOptions, PaginateResult } from "mongoose";
+import { IPlanning } from "../interfaces/planning.interface";
 import * as moment from "moment";
-import CarModel, {ChoicesStatusCar, ICarModel} from "../../app/models/car.model";
-import {io} from "../../server";
+import CarModel, { ChoicesStatusCar, ICarModel } from "../../app/models/car.model";
+import { socket } from "../../services/socket.service";
 
 class PlanningController {
 
@@ -30,7 +30,7 @@ class PlanningController {
   public async create(req: IRequest, res: Response) {
     const { company } = req.user;
     const team = req.user.team._id;
-    let {carsByDate} = req.body;
+    let { carsByDate } = req.body;
     try {
       const planningCars: Omit<IPlanning, "_id">[] = [];
       for (const item of carsByDate) {
@@ -57,7 +57,7 @@ class PlanningController {
             });
             await currentCar.save();
           }
-          if(currentCar){
+          if (currentCar) {
             planningCars.push({
               team,
               company,
@@ -69,7 +69,7 @@ class PlanningController {
         }
       }
       await Planning.insertMany(planningCars);
-      io.to(`planning-list-${team}`).emit('REFRESH', {
+      socket().to(`planning-list-${team}`).emit('REFRESH', {
         update: true
       });
       res.status(201)
@@ -88,7 +88,7 @@ class PlanningController {
 
   public async list(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {page, pageSize} = req.query as {page: string, pageSize: string};
+    const { page, pageSize } = req.query as { page: string, pageSize: string };
 
     // paginate options
     const options: PaginateOptions = {
@@ -101,7 +101,7 @@ class PlanningController {
       populate: [{
         path: 'car',
         select: ['vin', 'brand', 'denomination', 'color'],
-      },{
+      }, {
         path: 'createdBy',
         select: ['vin', 'brand', 'denomination', 'color']
       }],

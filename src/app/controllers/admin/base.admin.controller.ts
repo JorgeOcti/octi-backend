@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 // import * as Raven from 'raven';
 import { IAnyObject, IRequest } from '../../../interfaces/global.interface';
-import { io } from '../../../server';
+import { socket } from '../../../services/socket.service';
 
 export default abstract class BaseAdminController<T> {
 
@@ -42,7 +42,7 @@ export default abstract class BaseAdminController<T> {
         const result = new this.instanceModel(req.context.data);
         await result.save();
         if (req.context?.socketName) {
-          io.to(req.context.socketName).emit('REFRESH', {
+          socket().to(req.context.socketName).emit('REFRESH', {
             update: true,
             updatedBy: req.user._id
           });
@@ -76,7 +76,7 @@ export default abstract class BaseAdminController<T> {
           });
       if (result) {
         if(req.context?.socketName){
-          io.to(req.context.socketName).emit('REFRESH', {
+          socket().to(req.context.socketName).emit('REFRESH', {
             update: true,
             updatedBy: req.user._id
           });
@@ -115,7 +115,7 @@ export default abstract class BaseAdminController<T> {
       } else {
         await existInstance.remove();
         if(req.context?.socketName){
-          io.to(req.context.socketName).emit('REFRESH', {
+          socket().to(req.context.socketName).emit('REFRESH', {
             update: true,
             updatedBy: req.user._id
           });

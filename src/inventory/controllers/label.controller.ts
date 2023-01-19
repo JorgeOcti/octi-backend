@@ -1,8 +1,8 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import {IRequest} from '../../interfaces/global.interface';
-import {io} from '../../server';
-import InventoryLabel, {IInventoryLabelModel} from '../models/inventoryLabel.model';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import { IRequest } from '../../interfaces/global.interface';
+import { socket } from '../../services/socket.service';
+import InventoryLabel, { IInventoryLabelModel } from '../models/inventoryLabel.model';
 import TeamSetting from "../../app/models/teamSetting.model";
 
 class LabelController {
@@ -13,12 +13,12 @@ class LabelController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiList(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {page, pageSize} = req.query as {page: string; pageSize: string};
+    const { page, pageSize } = req.query as { page: string; pageSize: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -50,7 +50,7 @@ class LabelController {
           status: 400
         });
       } else {
-        const teamSettings = await TeamSetting.findOne({team});
+        const teamSettings = await TeamSetting.findOne({ team });
         return res.json({
           inventorySettings: teamSettings!.inventory,
           count: labels.total,
@@ -69,7 +69,7 @@ class LabelController {
 
   public async apiCreateLabel(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const {body} = req;
+    const { body } = req;
     try {
       const inventoryLabel = new InventoryLabel({
         name: body.name,
@@ -87,7 +87,7 @@ class LabelController {
         message: 'Etiqueta creada satisfactoriamente.',
         label: inventoryLabel
       };
-      io.to(`label-list-${team}`).emit('REFRESH', {
+      socket().to(`label-list-${team}`).emit('REFRESH', {
         update: true,
         updatedBy: req.user._id
       });
@@ -101,9 +101,9 @@ class LabelController {
   }
 
   public async apiUpdateLabel(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
-    const {body} = req;
+    const { body } = req;
     try {
       const inventoryLabel = await InventoryLabel.findOneAndUpdate({
         _id: id,
@@ -126,7 +126,7 @@ class LabelController {
           message: 'Etiqueta editada satisfactoriamente.',
           label: inventoryLabel
         };
-        io.to(`label-list-${team}`).emit('REFRESH', {
+        socket().to(`label-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -147,7 +147,7 @@ class LabelController {
   }
 
   public async apiDeleteLabel(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
     try {
       const inventoryLabel = await InventoryLabel.findOneAndRemove({
@@ -159,7 +159,7 @@ class LabelController {
           message: 'Etiqueta eliminada satisfactoriamente.',
           id: inventoryLabel._id
         };
-        io.to(`label-list-${team}`).emit('REFRESH', {
+        socket().to(`label-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });

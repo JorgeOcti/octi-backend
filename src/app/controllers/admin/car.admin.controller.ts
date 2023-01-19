@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult, Types } from 'mongoose';
 import { IRequest } from '../../../interfaces/global.interface';
-import { io } from '../../../server';
+import { socket } from '../../../services/socket.service';
 import Car, { ChoicesStatusCar, ICarModel } from '../../models/car.model';
 // import carTracker from '../tracker/car.tracker';
 import logger from '../../../services/logger.service';
@@ -142,7 +142,7 @@ class AdminCarController {
             });
           }
         });
-        io.to(req.user._id).emit('FINISH-IMPORT', { finish: true });
+        socket().to(req.user._id).emit('FINISH-IMPORT', { finish: true });
       }
       logger.info(`CarController.importCars: Finish importing`);
       res.json({

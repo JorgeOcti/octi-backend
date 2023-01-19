@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
-import { io } from '../../../server';
+import { socket } from '../../../services/socket.service';
 import * as moment from 'moment';
 import User from '../../models/user.model';
 import Venue, { IVenueModel } from '../../models/venue.model';
@@ -388,7 +388,7 @@ class AdminVenueController {
         await Venue.update({ _id: { $nin: receiveFrom }, team, sendTo: id }, { $pull: { sendTo: id } }, { multi: true });
         await Venue.update({ _id: { $in: sendTo }, team, receiveFrom: { $ne: id } }, { $push: { receiveFrom: id } }, { multi: true });
         await Venue.update({ _id: { $nin: sendTo }, team, receiveFrom: id }, { $pull: { receiveFrom: id } }, { multi: true });
-        io.to(`venue-list-${team}`).emit('REFRESH', {
+        socket().to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -502,7 +502,7 @@ class AdminVenueController {
           message: 'Sucursal editada satisfactoriamente.',
           venue
         };
-        io.to(`venue-list-${team}`).emit('REFRESH', {
+        socket().to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -577,7 +577,7 @@ class AdminVenueController {
               message: 'Sucursal eliminada satisfactoriamente.',
               id: venue._id
             };
-            io.to(`venue-list-${team}`).emit('REFRESH', {
+            socket().to(`venue-list-${team}`).emit('REFRESH', {
               update: true,
               updatedBy: req.user._id
             });

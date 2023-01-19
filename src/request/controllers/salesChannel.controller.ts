@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import Request from '../models/request.model';
 import SalesChannel, { ISalesChannelModel } from '../models/salesChannel.model';
@@ -24,7 +24,7 @@ class SalesChannelController {
     try {
       logger.info(`SalesChannelController.apiCreate email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       const reason = await new SalesChannel({ ...object, team }).save();
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -45,7 +45,7 @@ class SalesChannelController {
     try {
       logger.info(`SalesChannelController.apiUpdate email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
       const reason = await SalesChannel.findOneAndUpdate({ _id: id }, { $set: { ...update } });
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -64,7 +64,7 @@ class SalesChannelController {
     try {
       logger.info(`SalesChannelController.apiUpdate email: ${req.user.email}, params: ${JSON.stringify(req.params)}`);
       const reason = await SalesChannel.findOneAndDelete({ _id: id, team });
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

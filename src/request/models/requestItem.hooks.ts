@@ -1,5 +1,4 @@
 import Request from './request.model';
-import RequestItem, { IRequestItemModel } from './requestItem.model';
 import { Car, User, Venue } from '../../app/models';
 import RequestItemStatus from './requestItemStatus.model';
 import requestItemsMeta from './requestIteam.meta';
@@ -11,7 +10,7 @@ class RequestItemHooks {
     this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
   }
 
-  public async postFindOneAndUpdateHandler(doc: IRequestItemModel): Promise<void> {
+  public async postFindOneAndUpdateHandler(doc: any): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
         const [
@@ -40,10 +39,8 @@ class RequestItemHooks {
           console.log('meta', meta);
           console.log('doc', doc);
         }
-        await RequestItem.updateOne({ _id: doc._id }, {
-          $set: { meta }
-        });
-        // }
+        doc.meta = meta;
+        doc.save();
         resolve();
       } catch (e) {
         reject(e);

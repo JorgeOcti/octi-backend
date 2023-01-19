@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import RequestItemStatus, { IRequestItemStatusModel } from '../models/requestItemStatus.model';
 
@@ -19,7 +19,7 @@ class RequestItemStatusController {
     const object = req.body;
     try {
       const reason = await new RequestItemStatus({ ...object, team }).save();
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -43,7 +43,7 @@ class RequestItemStatusController {
         await RequestItemStatus.updateMany({ team }, { $set: { default: false } });
       }
       const reason = await RequestItemStatus.findOneAndUpdate({ _id: id, team }, { $set: { ...update } });
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -63,7 +63,7 @@ class RequestItemStatusController {
     const { id } = req.params;
     try {
       const reason = await RequestItemStatus.findOneAndDelete({ _id: id, team });
-      io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+      socket().to(`request-status-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

@@ -3,7 +3,7 @@ import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../../interfaces/global.interface';
 import Form, { IFormModel } from '../../models/form.model';
 import logger from '../../../services/logger.service';
-import { io } from '../../../server';
+import { socket } from '../../../services/socket.service';
 
 class AdminFormsController {
 
@@ -25,7 +25,7 @@ class AdminFormsController {
     const { body } = req;
     try {
       const form = await new Form({ ...body, team }).save();
-      io.to(`forms-list-${team._id}`).emit('REFRESH', {
+      socket().to(`forms-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -48,7 +48,7 @@ class AdminFormsController {
       const team = req.user.team._id;
       const { body } = req;
       const form = await Form.findOneAndUpdate({ _id: id, team }, { $set: { ...body } });
-      io.to(`forms-list-${team}`).emit('REFRESH', {
+      socket().to(`forms-list-${team}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -70,7 +70,7 @@ class AdminFormsController {
     const { id } = req.params;
     try {
       const form = await Form.findOneAndDelete({ _id: id, team });
-      io.to(`forms-list-${team._id}`).emit('REFRESH', {
+      socket().to(`forms-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({

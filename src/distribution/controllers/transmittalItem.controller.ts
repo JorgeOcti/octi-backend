@@ -3,7 +3,7 @@ import { Response } from 'express';
 import TransmittalItem from '../models/transmittalItem.model';
 import TransmittalController from './transmittal.controller';
 import logger from '../../services/logger.service';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import Transmittal from '../models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Car from '../../app/models/car.model';
@@ -49,7 +49,7 @@ class TransmittalItemController {
       const newTransmittalItem = await TransmittalItem
         .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true })
         .populate(TransmittalController.itemPopulate);
-      io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+      socket().to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
         transmittalItem: newTransmittalItem
       });
       res.json({
@@ -88,7 +88,7 @@ class TransmittalItemController {
           transmittalItem: transmittalItem._id
         });
       }
-      io.to(`transmittal-list-${team._id}`)
+      socket().to(`transmittal-list-${team._id}`)
         .emit('CREATE_TRANSMITTAL_ITEM', {
           transmittalItem: transmittalItemData
         });
@@ -115,7 +115,7 @@ class TransmittalItemController {
       if (transmittalItem) {
         await transmittalItem.remove();
         const transmittalItems = await TransmittalItem.find({ transmittal: transmittalItem.transmittal }).countDocuments();
-        io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
+        socket().to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
           transmittalItem
         });
         // clear assigned request item
@@ -130,7 +130,7 @@ class TransmittalItemController {
         if (transmittalItems === 0) {
           const transmittal = await Transmittal.findOne({ _id: transmittalItem.transmittal });
           await transmittal!.remove();
-          io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
+          socket().to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
             transmittal
           });
         }

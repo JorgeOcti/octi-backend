@@ -5,7 +5,7 @@ import { IAnyObject } from '../../../../interfaces/global.interface';
 import RequestItem from '../../../../request/models/requestItem.model';
 import RequestController from '../../../../request/controllers/request.controller';
 import User from '../../../../app/models/user.model';
-import { io } from '../../../../server';
+import { socket } from '../../../../services/socket.service';
 
 export default class RequestDelegate extends NullTriggerDelegate {
 
@@ -31,11 +31,11 @@ export default class RequestDelegate extends NullTriggerDelegate {
         .populate(RequestController.itemPopulate);
 
       if (requestItem) {
-        io.to(`request-list-${currentUser!.team}`).emit('UPDATE_REQUEST_ITEM', {
+        socket().to(`request-list-${currentUser!.team}`).emit('UPDATE_REQUEST_ITEM', {
           idRequest: requestItem.request._id,
           item: requestItem
         });
-        io.to(`request-detail-${currentUser!.team}`).emit('UPDATE_REQUEST_ITEM', {
+        socket().to(`request-detail-${currentUser!.team}`).emit('UPDATE_REQUEST_ITEM', {
           idRequest: requestItem.request._id,
           item: requestItem
         });

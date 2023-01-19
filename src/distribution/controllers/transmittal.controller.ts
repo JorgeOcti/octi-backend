@@ -25,7 +25,7 @@ import { Response } from 'express';
 import Team from '../../app/models/team.model';
 import TransmittalFile from '../models/transmittalFile.model';
 import TransmittalItem from '../models/transmittalItem.model';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import transmittalModel from "../models/transmittal.model";
@@ -195,7 +195,7 @@ class TransmittalController {
         });
       }
 
-      io.to(`transmittal-list-${team!._id}`).emit('CREATE_TRANSMITTAL', {
+      socket().to(`transmittal-list-${team!._id}`).emit('CREATE_TRANSMITTAL', {
         transmittal
       });
 
@@ -256,7 +256,7 @@ class TransmittalController {
           .populate(this.populate);
       }
 
-      io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+      socket().to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
         transmittal: newTransmittal
       });
       res.json({
@@ -1193,7 +1193,7 @@ class TransmittalController {
           const newTransmittal = await Transmittal
             .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { new: true })
             .populate(this.populate);
-          io.to(`transmittal-list-${user.team._id}`).emit('UPDATE_TRANSMITTAL', {
+          socket().to(`transmittal-list-${user.team._id}`).emit('UPDATE_TRANSMITTAL', {
             transmittal: newTransmittal
           });
         }

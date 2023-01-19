@@ -41,7 +41,7 @@ import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TriggerHandler from './triggers/triggerHandler';
 import User from '../../app/models/user.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import puppeteer from 'puppeteer';
@@ -913,11 +913,11 @@ class FormController {
                   .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
                   .populate(RequestController.itemPopulate);
                 if (requestItem) {
-                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                  socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
                     item: requestItem
                   });
-                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                  socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
                     item: requestItem
                   });
@@ -926,7 +926,7 @@ class FormController {
               // end update request when check item
 
 
-              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+              socket().to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
                 transmittalItem: transmittalItemData
               });
             }
@@ -993,17 +993,17 @@ class FormController {
                   select: ['firstName', 'lastName']
                 }]);
 
-              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+              socket().to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
                 transmittal: newTransmittal
               });
 
               if (requestItems.length) {
                 for (const requestItem of requestItems) {
-                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                  socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
                     item: requestItem
                   });
-                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                  socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
                     idRequest: requestItem.request._id,
                     item: requestItem
                   });
@@ -1031,7 +1031,7 @@ class FormController {
               await car.save();
 
               // send refresh with websocket to dashboard list
-              io.to(form.deliveryToCustomer ? `deliveries-view-${team._id}` : `dashboard-vin-view-${team._id}`)
+              socket().to(form.deliveryToCustomer ? `deliveries-view-${team._id}` : `dashboard-vin-view-${team._id}`)
                 .emit('REFRESH', {
                   update: true,
                   formId: form._id,
@@ -1044,7 +1044,7 @@ class FormController {
                 });
 
               // send refresh with websocket to dashboard detail
-              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await Participant
+              socket().to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await Participant
                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                 .populate([{
                   path: 'user',

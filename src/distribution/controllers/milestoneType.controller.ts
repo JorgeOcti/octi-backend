@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import MilestoneType, { IMilestoneTypeModel } from '../models/milestoneType.model';
 
@@ -20,7 +20,7 @@ class MilestoneTypeController {
     const object = req.body;
     try {
       const reason = await new MilestoneType({ ...object, team }).save();
-      io.to(`milestone-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`milestone-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json({
@@ -41,7 +41,7 @@ class MilestoneTypeController {
     const { body } = req;
     try {
       const milestoneType = await MilestoneType.findOneAndUpdate({ _id: id, team }, { $set: { ...body } }, { new: true });
-      io.to(`milestone-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`milestone-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json(milestoneType);
@@ -59,7 +59,7 @@ class MilestoneTypeController {
     const { id } = req.params;
     try {
       const milestoneType = await MilestoneType.findOneAndDelete({ _id: id, team });
-      io.to(`milestone-type-list-${team._id}`).emit('REFRESH', {
+      socket().to(`milestone-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
       res.status(200).json(milestoneType);

@@ -8,7 +8,7 @@ import * as uuid from 'uuid';
 import { IForm } from '../../../form/interfaces/form.interface';
 import { IRequest } from '../../../interfaces/global.interface';
 import { IPermission } from '../../../billing/interfaces/permission.interface';
-import { io } from '../../../server';
+import { socket } from '../../../services/socket.service';
 import User, { IUserModel } from '../../models/user.model';
 import { UserTypes } from '../../models/user.model.types';
 import Venue from '../../models/venue.model';
@@ -257,7 +257,7 @@ class AdminUsersController {
 
       // const errors = await newUser.validate();
       // console.log(errors);
-      io.to(`integration-list-${team}`).emit('REFRESH', {
+      socket().to(`integration-list-${team}`).emit('REFRESH', {
         update: true,
         updatedBy: req.user._id
       });
@@ -336,7 +336,7 @@ class AdminUsersController {
           message: 'Integración editada satisfactoriamente.',
           user
         };
-        io.to(`integration-list-${team}`).emit('REFRESH', {
+        socket().to(`integration-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -372,7 +372,7 @@ class AdminUsersController {
           message: 'Integración eliminada satisfactoriamente.',
           id: user._id
         };
-        io.to(`integration-list-${team}`).emit('REFRESH', {
+        socket().to(`integration-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -591,7 +591,7 @@ class AdminUsersController {
         newUser = newUser.toObject();
         // @ts-ignore
         delete newUser.password;
-        io.to(`user-list-${team}`).emit('REFRESH', {
+        socket().to(`user-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });
@@ -700,7 +700,7 @@ class AdminUsersController {
             user
           };
 
-          io.to(`user-list-${team}`).emit('REFRESH', {
+          socket().to(`user-list-${team}`).emit('REFRESH', {
             update: true,
             updatedBy: req.user._id
           });
@@ -741,7 +741,7 @@ class AdminUsersController {
           message: 'Usuario eliminado satisfactoriamente.',
           id: user._id
         };
-        io.to(`user-list-${team}`).emit('REFRESH', {
+        socket().to(`user-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
         });

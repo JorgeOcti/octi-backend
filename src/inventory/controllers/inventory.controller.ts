@@ -39,7 +39,7 @@ import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import Team from '../../app/models/team.model';
 import TeamSetting from '../../app/models/teamSetting.model';
-import { io } from '../../server';
+import { socket } from '../../services/socket.service';
 import logger from '../../services/logger.service';
 import { queue } from '../../utils/queue';
 
@@ -309,10 +309,10 @@ class InventoryController {
           usersIDs.map((user) => user._id.toString())
         );
       }
-      io.to(`inventory-list-${team}`).emit('REFRESH', {
+      socket().to(`inventory-list-${team}`).emit('REFRESH', {
         update: true
       });
-      io.to(`stock-${team}`).emit('REFRESH', {
+      socket().to(`stock-${team}`).emit('REFRESH', {
         update: true
       });
       const currentTeam = await Team.findById(req.user.team._id);
@@ -747,7 +747,7 @@ class InventoryController {
             }, {
               upsert: true
             });
-            io.to(`inventory-detail-${inventoryCar.inventory}`).emit('REFRESH', {
+            socket().to(`inventory-detail-${inventoryCar.inventory}`).emit('REFRESH', {
               update: true,
               venue: inventoryCar.venue
             });
@@ -787,7 +787,7 @@ class InventoryController {
       const { id } = req.params;
       const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
       if (inventoryFile) {
-        io.to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
+        socket().to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
           update: true,
           venue: req.user.venue._id
         });
@@ -858,7 +858,7 @@ class InventoryController {
               inventoryCar.venueFound = venueId;
               if (teamSettings!.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
                 inventoryCar.status = ChoicesStatusCarInventory.leftover;
-                io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                   title: 'Vehículo encontrado',
                   text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
                   status: ChoicesStatusCarInventory.leftover,
@@ -867,7 +867,7 @@ class InventoryController {
                 });
               } else {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
-                io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                   title: 'Vehículo encontrado',
                   text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
                   status: ChoicesStatusCarInventory.found,
@@ -879,7 +879,7 @@ class InventoryController {
               inventoryCar.inventoriedBy = req.user._id;
               await inventoryCar.save();
 
-              io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+              socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
               res.status(200).json({
@@ -947,10 +947,10 @@ class InventoryController {
         queue.create('finishInventory', {
           inventory: inventory._id
         }).priority('high').attempts(5).save();
-        io.to(`inventory-list-${team}`).emit('REFRESH', {
+        socket().to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
-        io.to(`stock-${team}`).emit('REFRESH', {
+        socket().to(`stock-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -997,10 +997,10 @@ class InventoryController {
       if (inventory) {
         await InventoryCar.find({ inventory }).remove();
         await inventory.remove();
-        io.to(`inventory-list-${team}`).emit('REFRESH', {
+        socket().to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
-        io.to(`stock-${team}`).emit('REFRESH', {
+        socket().to(`stock-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -1049,10 +1049,10 @@ class InventoryController {
       }, {
         upsert: true
       });
-      io.to(`inventory-detail-${inventory}`).emit('REFRESH', {
+      socket().to(`inventory-detail-${inventory}`).emit('REFRESH', {
         update: true
       });
-      io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
+      socket().to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
         _id: new mongoose.Types.ObjectId(),
         user: {
           _id: req.user._id,
@@ -1296,14 +1296,14 @@ class InventoryController {
         });
         await inventoryCar.save();
         const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
-        io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+        socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
           title: 'Vehículo reportado',
           text: textNotification,
           status: ChoicesStatusCarInventory.reported,
           venue: venueId,
           update: true
         });
-        io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+        socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -1353,11 +1353,11 @@ class InventoryController {
           }, {
             upsert: true
           });
-          io.to(`inventory-detail-${id}`).emit('REFRESH', {
+          socket().to(`inventory-detail-${id}`).emit('REFRESH', {
             update: true,
             venue: inventoryCar.venue
           });
-          io.to(`inventory-list-${team}`).emit('REFRESH', {
+          socket().to(`inventory-list-${team}`).emit('REFRESH', {
             update: true
           });
         }
@@ -1392,11 +1392,11 @@ class InventoryController {
                 isExhibition: true
               });
             }
-            io.to(`inventory-detail-${id}`).emit('REFRESH', {
+            socket().to(`inventory-detail-${id}`).emit('REFRESH', {
               update: true,
               venue: inventoryCar.venue
             });
-            io.to(`inventory-list-${team}`).emit('REFRESH', {
+            socket().to(`inventory-list-${team}`).emit('REFRESH', {
               update: true
             });
             res.json({
@@ -2193,7 +2193,7 @@ class InventoryController {
         return s;
       });
       await StockCar.insertMany(stockCars);
-      io.to(`stock-${team}`).emit('REFRESH', {
+      socket().to(`stock-${team}`).emit('REFRESH', {
         update: true
       });
       res.json({
