@@ -1,4 +1,4 @@
-FROM node:18.12.1-bullseye-slim
+FROM node:18.13.0-bullseye-slim
 
 LABEL maintainer = "gmunoz@osacontrol.com"
 
@@ -25,6 +25,7 @@ RUN apt-get update && \
     # install windows fonts
     wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.8_all.deb && \
+    rm ttf-mscorefonts-installer_3.8_all.deb && \
     fc-cache && \
     # clean
     apt-get clean && \

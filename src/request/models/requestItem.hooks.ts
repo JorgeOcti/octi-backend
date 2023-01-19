@@ -40,7 +40,7 @@ class RequestItemHooks {
           console.log('doc', doc);
         }
         doc.meta = meta;
-        doc.save();
+        await doc.save();
         resolve();
       } catch (e) {
         reject(e);
