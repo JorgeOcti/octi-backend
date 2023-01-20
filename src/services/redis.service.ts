@@ -7,16 +7,30 @@ export function createRedisClient(): Redis | Cluster {
   if (client) {
     return client.duplicate();
   } else {
-    if (process.env.REDIS_CLUSTERED === "true") {
+    if (process.env.REDIS_CLUSTERED === 'true') {
       // console.log("REDIS CLUSTER ON");
-      client = new Cluster([{
-        host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-        port: 6379
-      }]);
+      client = new Cluster(
+        [
+          {
+            host: GeneralUtils.getFromEnviroment(
+              'REDIS_SERVICE_SERVICE_HOST',
+              'localhost'
+            ),
+            port: 6379
+          }
+        ],
+        {
+          slotsRefreshTimeout: 2000,
+          enableReadyCheck: false
+        }
+      );
     } else {
       // console.log("REDIS CLUSTER OFF");
       client = new Redis({
-        host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        host: GeneralUtils.getFromEnviroment(
+          'REDIS_SERVICE_SERVICE_HOST',
+          'localhost'
+        ),
         port: 6379,
         db: 0,
         maxRetriesPerRequest: null,
