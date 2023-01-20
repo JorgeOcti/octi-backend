@@ -329,7 +329,7 @@ class BillingQueue {
       .subtract(1, 'month')
       .format('MMMM YYYY');
     for (const notification of company.notifications) {
-      emailQueue.create({
+      emailQueue.queue.add('email', {
         from: '',
         title: `Billing for ${invoice.company.name}`,
         to: `"${notification.name}"<${notification.email}`,
@@ -345,7 +345,7 @@ class BillingQueue {
           name: notification.name,
           company: invoice.company.name
         }
-      });
+      }, { attempts: 3, backoff: 1000 });
     }
   }
 

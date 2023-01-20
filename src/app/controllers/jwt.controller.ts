@@ -12,7 +12,6 @@ import Version from '../models/version.model';
 import emailQueue from '../tasks/email.task';
 
 class JWTController {
-
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
@@ -23,14 +22,24 @@ class JWTController {
   public async login(req: Request, res: Response): Promise<any> {
     logger.info(`login: {username: ${req.body.username}`);
     try {
-      if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
+      if (
+        req.body.username === null ||
+        req.body.username === undefined ||
+        req.body.password === null ||
+        req.body.password === undefined
+      ) {
         logger.error(`login: Authentication failed. Invalid user or password.`);
-        return res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
+        return res
+          .status(401)
+          .json({
+            message: 'Authentication failed. Invalid user or password.'
+          });
       } else {
-        const user = await User
-          .findOne({
+        const user = await User.findOne(
+          {
             email: req.body.username
-          }, {
+          },
+          {
             firstName: true,
             lastName: true,
             email: true,
@@ -45,27 +54,35 @@ class JWTController {
             active: true,
             isDriver: true,
             comparePasswordSync: true
-          })
-          .populate([{
+          }
+        ).populate([
+          {
             path: 'venue',
-            select: ['_id','name', 'lat', 'lng']
-          }, {
+            select: ['_id', 'name', 'lat', 'lng']
+          },
+          {
             path: 'team',
             select: ['_id', 'name']
-          }, {
+          },
+          {
             path: 'company',
-            select: ['_id','name']
-          }, {
+            select: ['_id', 'name']
+          },
+          {
             path: 'userPermissions',
-            select: ['_id','codeName']
-          }, {
+            select: ['_id', 'codeName']
+          },
+          {
             path: 'userForms',
-            select: ['_id','name'],
-            match: { active: true}
-          }]);
+            select: ['_id', 'name'],
+            match: { active: true }
+          }
+        ]);
 
         if (!user || !user.comparePassword(req.body.password)) {
-          logger.error(`login: Authentication failed. Invalid user or password.`);
+          logger.error(
+            `login: Authentication failed. Invalid user or password.`
+          );
           return res.status(401).json({
             message: 'Authentication failed. Invalid user or password.',
             status: 401
@@ -114,11 +131,23 @@ class JWTController {
                     vinMinCharacters: 17,
                     vinMaxCharacters: 17
                   }),
-                  helpNumber: GeneralUtils.getObjectProperty(teamSettings!, 'helpPhones', {
-                    transmittal: ''
-                  }),
-                  inventory: GeneralUtils.getObjectProperty(teamSettings!, 'inventory', {}),
-                  vocabulary: GeneralUtils.getObjectProperty(teamSettings!, 'vocabulary', {})
+                  helpNumber: GeneralUtils.getObjectProperty(
+                    teamSettings!,
+                    'helpPhones',
+                    {
+                      transmittal: ''
+                    }
+                  ),
+                  inventory: GeneralUtils.getObjectProperty(
+                    teamSettings!,
+                    'inventory',
+                    {}
+                  ),
+                  vocabulary: GeneralUtils.getObjectProperty(
+                    teamSettings!,
+                    'vocabulary',
+                    {}
+                  )
                 }
                 // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
               },
@@ -126,15 +155,23 @@ class JWTController {
             };
             return res.json({
               data: {
-                token: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
-                  expiresIn: '7 days'
-                }),
+                token: jwt.sign(
+                  { _id: userInfo._id },
+                  process.env.SECRET_KEY!,
+                  {
+                    expiresIn: '7 days'
+                  }
+                ),
                 // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
                 //   expiresIn: '60 seconds'
                 // }),
-                refreshToken: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
-                  expiresIn: '30 days'
-                }),
+                refreshToken: jwt.sign(
+                  { _id: userInfo._id },
+                  process.env.SECRET_KEY!,
+                  {
+                    expiresIn: '30 days'
+                  }
+                ),
                 iosVersion: version!.ios,
                 androidVersion: version!.android,
                 user: userInfo
@@ -146,47 +183,53 @@ class JWTController {
       }
     } catch (e) {
       console.error(e);
-      return res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
+      return res
+        .status(401)
+        .json({ message: 'Authentication failed. Invalid user or password.' });
     }
   }
 
   public async token(req: Request, res: Response) {
     const { refreshToken } = req.body;
     try {
-      const decode: any = jwt.verify(refreshToken,  process.env.SECRET_KEY!);
-      const user = await User
-        .findById(decode._id, {
-          firstName: true,
-          lastName: true,
-          email: true,
-          password: true,
-          updatedAt: true,
-          preferred: true,
-          venue: true,
-          team: true,
-          company: true,
-          userForms: true,
-          userPermissions: true,
-          active: true,
-          isDriver: true,
-          comparePasswordSync: true
-        })
-        .populate([{
+      const decode: any = jwt.verify(refreshToken, process.env.SECRET_KEY!);
+      const user = await User.findById(decode._id, {
+        firstName: true,
+        lastName: true,
+        email: true,
+        password: true,
+        updatedAt: true,
+        preferred: true,
+        venue: true,
+        team: true,
+        company: true,
+        userForms: true,
+        userPermissions: true,
+        active: true,
+        isDriver: true,
+        comparePasswordSync: true
+      }).populate([
+        {
           path: 'venue',
           select: ['name', 'lat', 'lng']
-        }, {
+        },
+        {
           path: 'team',
           select: ['name']
-        }, {
+        },
+        {
           path: 'company',
           select: ['name']
-        }, {
+        },
+        {
           path: 'userPermissions',
           select: ['codeName']
-        }, {
+        },
+        {
           path: 'userForms',
           select: ['name']
-        }]);
+        }
+      ]);
       if (!user || !user.active) {
         logger.error(`login: User is inactive`);
         return res.status(401).json({
@@ -231,11 +274,23 @@ class JWTController {
                 vinMinCharacters: 17,
                 vinMaxCharacters: 17
               }),
-              helpNumber: GeneralUtils.getObjectProperty(teamSettings!, 'helpPhones', {
-                transmittal: ''
-              }),
-              inventory: GeneralUtils.getObjectProperty(teamSettings!, 'inventory', {}),
-              vocabulary: GeneralUtils.getObjectProperty(teamSettings!, 'vocabulary', {})
+              helpNumber: GeneralUtils.getObjectProperty(
+                teamSettings!,
+                'helpPhones',
+                {
+                  transmittal: ''
+                }
+              ),
+              inventory: GeneralUtils.getObjectProperty(
+                teamSettings!,
+                'inventory',
+                {}
+              ),
+              vocabulary: GeneralUtils.getObjectProperty(
+                teamSettings!,
+                'vocabulary',
+                {}
+              )
             }
             // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
           },
@@ -249,9 +304,13 @@ class JWTController {
             // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
             //   expiresIn: '60 seconds'
             // }),
-            refreshToken: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
-              expiresIn: '30 days'
-            }),
+            refreshToken: jwt.sign(
+              { _id: userInfo._id },
+              process.env.SECRET_KEY!,
+              {
+                expiresIn: '30 days'
+              }
+            ),
             iosVersion: version!.ios,
             androidVersion: version!.android,
             user: userInfo
@@ -261,7 +320,9 @@ class JWTController {
       }
     } catch (e) {
       logger.error(`token: JWT error`);
-      logger.error(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
+      logger.error(
+        `{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`
+      );
       return res.status(401).json({
         message: e.message,
         status: 401
@@ -276,7 +337,7 @@ class JWTController {
       if (user) {
         const token = uuid.v4();
         const fullname = user.fullName();
-        emailQueue.create({
+        emailQueue.queue.add('email', {
           from: '',
           title: `Recovery password for ${fullname}`,
           to: `"${fullname}"<${user.email}>`,
@@ -297,7 +358,7 @@ class JWTController {
             fullname,
             url: `${process.env.SITE_URL}account/recovery/${token}/`
           }
-        }).priority('high').attempts(5).save();
+        }, { attempts: 3, backoff: 1000 });
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         await user.save();

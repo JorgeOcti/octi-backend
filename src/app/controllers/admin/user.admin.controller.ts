@@ -565,7 +565,7 @@ class AdminUsersController {
 
         // send welcome email
         const fullname: string = newUser.fullName();
-        emailQueue.create({
+        emailQueue.queue.add('email', {
           from: '',
           title: `Welcome email for ${fullname}`,
           to: `"${fullname}"<${newUser.email}>`,
@@ -586,7 +586,7 @@ class AdminUsersController {
             username: newUser.email,
             password
           }
-        })
+        }, { attempts: 3, backoff: 1000 });
 
         // prevent return password
         newUser = newUser.toObject();

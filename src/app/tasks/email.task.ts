@@ -21,7 +21,6 @@ class EmailQueue {
     });
     this.generateHTML = this.generateHTML.bind(this);
     this.process = this.process.bind(this);
-    this.create = this.create.bind(this);
   }
 
   public run() {
@@ -68,10 +67,6 @@ class EmailQueue {
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }
-  }
-
-  public create(data: any) {
-    this.queue.add('email', data, { attempts: 3, backoff: 1000 });
   }
 
 }

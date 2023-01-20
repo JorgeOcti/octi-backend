@@ -39,7 +39,7 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
         recipients = `"${context.fullname}"<${context.email}>`;
       }
 
-      emailQueue.create({
+      emailQueue.queue.add('email', {
         from: '',
         title: `"${context.subject} | ${context.fullname}`,
         to: recipients,
@@ -52,7 +52,7 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
           ...context,
           ...answers
         }
-      });
+      }, { attempts: 3, backoff: 1000 });
 
       logger.info(`EmailTriggerDelegate.trigger ${trigger.kind} executed`);
 

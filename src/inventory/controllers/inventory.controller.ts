@@ -1,50 +1,65 @@
-import * as GraphicsMagick from 'gm';
-import * as  Joi from 'joi';
+import emailQueue from '../../app/tasks/email.task';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
+import { Alignment } from 'exceljs';
+import { Response } from 'express';
 import * as fs from 'fs';
+import * as GraphicsMagick from 'gm';
 import * as https from 'https';
+import * as Joi from 'joi';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import { PaginateOptions, PipelineStage } from 'mongoose';
 import * as tempfile from 'tempfile';
-
-import { default as Car, default as CarModel, ChoicesStatusCar, ICarModel } from '../../app/models/car.model';
+import {
+  ChoicesStatusCar,
+  default as Car,
+  default as CarModel,
+  ICarModel
+} from '../../app/models/car.model';
+import History from '../../app/models/history.model';
+import { StatusHistory } from '../../app/models/history.types';
+import Team from '../../app/models/team.model';
+import TeamSetting from '../../app/models/teamSetting.model';
+import {
+  default as User,
+  default as UserModel
+} from '../../app/models/user.model';
+import {
+  default as Venue,
+  default as VenueModel,
+  IVenueModel
+} from '../../app/models/venue.model';
+import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import ActivityHistory from '../../billing/models/activityHistory.model';
+import { IRequest } from '../../interfaces/global.interface';
+import logger from '../../services/logger.service';
+import PushService from '../../services/push.service';
+import { socket } from '../../services/socket.service';
+import GeneralUtils from '../../utils/general.utils';
+import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IStockCar } from '../interfaces/stock.interface';
 import {
   ChoicesStatusInventory,
   default as Inventory,
   default as InventoryModel
 } from '../models/inventory.model';
-import { IVenueModel, default as Venue, default as VenueModel } from '../../app/models/venue.model';
-import InventoryCar, { ChoicesStatusCarInventory } from '../models/inventoryCar.model';
-import { PaginateOptions, PipelineStage } from 'mongoose';
-import { default as User, default as UserModel } from '../../app/models/user.model';
-
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import { Alignment } from 'exceljs';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
-import GeneralUtils from '../../utils/general.utils';
-import History from '../../app/models/history.model';
-import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
-import { IInventoryCar } from '../interfaces/inventory.interface';
-import { IRequest } from '../../interfaces/global.interface';
-import { IStockCar } from '../interfaces/stock.interface';
-import InventoryFile from '../models/inventoryFile.model';
-import InventoryFileModel from '../models/inventoryFile.model';
+import InventoryCar, {
+  ChoicesStatusCarInventory
+} from '../models/inventoryCar.model';
+import {
+  default as InventoryFile,
+  default as InventoryFileModel
+} from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import PushService from '../../services/push.service';
-import { Response } from 'express';
-import { StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
-import Team from '../../app/models/team.model';
-import TeamSetting from '../../app/models/teamSetting.model';
-import { socket } from '../../services/socket.service';
-import logger from '../../services/logger.service';
-import { queue } from '../../utils/queue';
+import historyQueue from '../../app/tasks/history.task';
+import inventoryQueue from '../taks/inventory.task';
 
 class InventoryController {
-
   constructor() {
     this.index = this.index.bind(this);
     this.test = this.test.bind(this);
@@ -86,18 +101,10 @@ class InventoryController {
   public test(req: IRequest, res: Response) {
     const { user, body } = req;
     const schema = Joi.object({
-      username: Joi.string()
-        .alphanum()
-        .min(3)
-        .max(30)
-        .required(),
-      password: Joi.string()/*.pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))*/,
-      access_token: [
-        Joi.string(),
-        Joi.number()
-      ]
-    })
-      .xor('password', 'access_token');
+      username: Joi.string().alphanum().min(3).max(30).required(),
+      password: Joi.string() /*.pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))*/,
+      access_token: [Joi.string(), Joi.number()]
+    }).xor('password', 'access_token');
     res.json({
       status: 'ok',
       user,
@@ -123,7 +130,9 @@ class InventoryController {
       if (!inventory) {
         return res.status(404).render('404');
       } else {
-        return res.render('app/index', { token: await req.user.generateToken() });
+        return res.render('app/index', {
+          token: await req.user.generateToken()
+        });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -136,9 +145,9 @@ class InventoryController {
   public async listInventoryCarFiles(req: IRequest, res: Response) {
     try {
       const { id: inventoryCarId } = req.params;
-      const inventoryCar = await InventoryCar
-        .findOne({ _id: inventoryCarId })
-        .populate({ path: 'files' });
+      const inventoryCar = await InventoryCar.findOne({
+        _id: inventoryCarId
+      }).populate({ path: 'files' });
       if (!inventoryCar) {
         res.status(404).json({ message: 'No encomtrado' });
       } else {
@@ -168,25 +177,33 @@ class InventoryController {
           let currentVenue: IVenueModel | null = await VenueModel.findOne({
             team,
             company,
-            $or: [{
-              name: venueRegExp
-            }, {
-              name: { $regex: venueRegExp }
-            }, {
-              name: venue.name
-            }]
+            $or: [
+              {
+                name: venueRegExp
+              },
+              {
+                name: { $regex: venueRegExp }
+              },
+              {
+                name: venue.name
+              }
+            ]
           });
           // if you are not in the company, try in the team
           if (!currentVenue) {
             currentVenue = await VenueModel.findOne({
               team,
-              $or: [{
-                name: venueRegExp
-              }, {
-                name: { $regex: venueRegExp }
-              }, {
-                name: venue.name
-              }]
+              $or: [
+                {
+                  name: venueRegExp
+                },
+                {
+                  name: { $regex: venueRegExp }
+                },
+                {
+                  name: venue.name
+                }
+              ]
             });
           }
           // if you are not in the company or in the team, it will be created
@@ -239,16 +256,15 @@ class InventoryController {
                     vin: currentCar.vin
                   }
                 });
-                queue
-                  .create('updateCar', {
+                inventoryQueue.queue.add(
+                  'updateCar',
+                  {
                     title: `updateCar ${car.vin}`,
                     currentCar: currentCar._id,
                     car
-                  })
-                  .delay(10000)
-                  .priority('high')
-                  .attempts(5)
-                  .save();
+                  },
+                  { attempts: 3, backoff: 1000 }
+                );
               }
             }
           }
@@ -294,14 +310,17 @@ class InventoryController {
       await InventoryCar.insertMany(inventoryCars);
 
       if (notification) {
-        const usersIDs = await UserModel.find({
-          venue: {
-            $in: venuesIDs
+        const usersIDs = await UserModel.find(
+          {
+            venue: {
+              $in: venuesIDs
+            },
+            team
           },
-          team
-        }, {
-          _id: true
-        });
+          {
+            _id: true
+          }
+        );
         PushService.massiveSend(
           'Nuevo inventario',
           `Se ha iniciado el inventario "${inventory.name}"`,
@@ -316,12 +335,15 @@ class InventoryController {
         update: true
       });
       const currentTeam = await Team.findById(req.user.team._id);
-      queue
-        .create('email', {
+      emailQueue.queue.add(
+        'email',
+        {
           from: '',
           title: `Inventory Notification`,
           to: `"soporte"<soporte@osacontrol.com>`,
-          subject: `${req.user.firstName} ha creado un inventario en ${currentTeam!.name}`,
+          subject: `${req.user.firstName} ha creado un inventario en ${
+            currentTeam!.name
+          }`,
           text: `Hola Soporte
 
           Se ha creado un nuevo inventario.
@@ -337,10 +359,9 @@ class InventoryController {
             user: req.user,
             env: process.env.ENV
           }
-        })
-        .priority('high')
-        .attempts(5)
-        .save();
+        },
+        { attempts: 3, backoff: 1000 }
+      );
       return res.json({
         _id: inventory._id.toString(),
         message: 'Inventario creado satisfactoriamente',
@@ -363,7 +384,7 @@ class InventoryController {
 
   public async list(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const { page, pageSize } = req.query as { page: string, pageSize: string };
+    const { page, pageSize } = req.query as { page: string; pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     // paginate options
     const options: PaginateOptions = {
@@ -389,138 +410,168 @@ class InventoryController {
       limit: parseInt(pageSize ? pageSize : '10', 10)
     };
     try {
-      const paginatedInventories = await InventoryModel.paginate({
-        team,
-        venues: {
-          $in: venuesPermissions
-        }
-      }, options);
-      const aggregate: PipelineStage[] = [{
-        $match: {
-          _id: {
-            $in: paginatedInventories.docs.map(v => v._id)
-          }
-        }
-      }, {
-        $lookup: {
-          from: 'inventorycars',
-          localField: '_id',
-          foreignField: 'inventory',
-          as: 'cars'
-        }
-      }, {
-        $unwind: '$cars'
-      }, {
-        $match: {
-          'cars.venue': {
+      const paginatedInventories = await InventoryModel.paginate(
+        {
+          team,
+          venues: {
             $in: venuesPermissions
-          },
-          'cars.status': {
-            $in: [
-              ChoicesStatusCarInventory.pending,
-              ChoicesStatusCarInventory.found,
-              ChoicesStatusCarInventory.missing,
-              ChoicesStatusCarInventory.leftover,
-              ChoicesStatusCarInventory.reported
-            ]
           }
-        }
-      }, {
-        $group: {
-          _id: {
-            category: '$_id',
-            status: '$status',
-            carStatus: '$cars.status',
-            name: '$name',
-            file: '$file',
-            backup: '$backup',
-            createdBy: '$createdBy',
-            createdAt: '$createdAt',
-            finalizedBy: '$finalizedBy',
-            finalizedAt: '$finalizedAt'
-          },
-          total: {
-            $sum: 1
-          }
-        }
-      }, {
-        $group: {
-          _id: '$_id.category',
-          name: {
-            $first: '$_id.name'
-          },
-          createdAt: {
-            $first: '$_id.createdAt'
-          },
-          file: {
-            $first: '$_id.file'
-          },
-          backup: {
-            $first: '$_id.backup'
-          },
-          finalizedAt: {
-            $first: '$_id.finalizedAt'
-          },
-          createdBy: {
-            $first: '$_id.createdBy'
-          },
-          finalizedBy: {
-            $first: '$_id.finalizedBy'
-          },
-          results: {
-            $push: {
-              status: '$_id.carStatus',
-              total: '$total'
+        },
+        options
+      );
+      const aggregate: PipelineStage[] = [
+        {
+          $match: {
+            _id: {
+              $in: paginatedInventories.docs.map((v) => v._id)
             }
-          },
-          status: {
-            $first: '$_id.status'
+          }
+        },
+        {
+          $lookup: {
+            from: 'inventorycars',
+            localField: '_id',
+            foreignField: 'inventory',
+            as: 'cars'
+          }
+        },
+        {
+          $unwind: '$cars'
+        },
+        {
+          $match: {
+            'cars.venue': {
+              $in: venuesPermissions
+            },
+            'cars.status': {
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              category: '$_id',
+              status: '$status',
+              carStatus: '$cars.status',
+              name: '$name',
+              file: '$file',
+              backup: '$backup',
+              createdBy: '$createdBy',
+              createdAt: '$createdAt',
+              finalizedBy: '$finalizedBy',
+              finalizedAt: '$finalizedAt'
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$_id.category',
+            name: {
+              $first: '$_id.name'
+            },
+            createdAt: {
+              $first: '$_id.createdAt'
+            },
+            file: {
+              $first: '$_id.file'
+            },
+            backup: {
+              $first: '$_id.backup'
+            },
+            finalizedAt: {
+              $first: '$_id.finalizedAt'
+            },
+            createdBy: {
+              $first: '$_id.createdBy'
+            },
+            finalizedBy: {
+              $first: '$_id.finalizedBy'
+            },
+            results: {
+              $push: {
+                status: '$_id.carStatus',
+                total: '$total'
+              }
+            },
+            status: {
+              $first: '$_id.status'
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'createdBy'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'finalizedBy',
+            foreignField: '_id',
+            as: 'finalizedBy'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            results: 1,
+            file: 1,
+            backup: 1,
+            'createdBy.firstName': 1,
+            'createdBy.lastName': 1,
+            'finalizedBy.firstName': 1,
+            'finalizedBy.lastName': 1,
+            status: 1,
+            createdAt: 1,
+            finalizedAt: 1
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
           }
         }
-      }, {
-        $lookup: {
-          from: 'users',
-          localField: 'createdBy',
-          foreignField: '_id',
-          as: 'createdBy'
-        }
-      }, {
-        $lookup: {
-          from: 'users',
-          localField: 'finalizedBy',
-          foreignField: '_id',
-          as: 'finalizedBy'
-        }
-      }, {
-        $project: {
-          '_id': 1,
-          'name': 1,
-          'results': 1,
-          'file': 1,
-          'backup': 1,
-          'createdBy.firstName': 1,
-          'createdBy.lastName': 1,
-          'finalizedBy.firstName': 1,
-          'finalizedBy.lastName': 1,
-          'status': 1,
-          'createdAt': 1,
-          'finalizedAt': 1
-        }
-      }, {
-        $sort: {
-          createdAt: -1
-        }
-      }];
+      ];
 
-      if (options.page && paginatedInventories.pages && paginatedInventories.pages < options.page) {
+      if (
+        options.page &&
+        paginatedInventories.pages &&
+        paginatedInventories.pages < options.page
+      ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-        logger.info(`InventoryController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
-        logger.debug(`InventoryController.apiList email: ${req.user.email}, aggregate: ${JSON.stringify(aggregate)}`);
-        logger.debug(`InventoryController.apiList email: ${req.user.email}, options: ${JSON.stringify(options)}`);
+        logger.info(
+          `InventoryController.apiList email: ${
+            req.user.email
+          }, query: ${JSON.stringify(req.query)}`
+        );
+        logger.debug(
+          `InventoryController.apiList email: ${
+            req.user.email
+          }, aggregate: ${JSON.stringify(aggregate)}`
+        );
+        logger.debug(
+          `InventoryController.apiList email: ${
+            req.user.email
+          }, options: ${JSON.stringify(options)}`
+        );
         const response: any[] = [];
         const [inventories, teamSettings] = await Promise.all([
           InventoryModel.aggregate(aggregate),
@@ -537,20 +588,31 @@ class InventoryController {
           response.push({
             _id: inventory._id,
             name: inventory.name,
-            file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
-            backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
-            createdBy: inventory.createdBy.length ? {
-              fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
-            } : {},
-            finalizedBy: inventory.finalizedBy.length ? {
-              fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
-            } : {},
-            results: inventory.results.reduce((acc: any, cur: any) => {
-              acc[cur.status] = cur.total;
-              return acc;
-            }, {
-              ...defaultResults
-            }),
+            file: req.user.hasPermission('viewFilesInventory')
+              ? inventory.file
+              : null,
+            backup: req.user.hasPermission('viewFilesInventory')
+              ? inventory.backup
+              : null,
+            createdBy: inventory.createdBy.length
+              ? {
+                  fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
+                }
+              : {},
+            finalizedBy: inventory.finalizedBy.length
+              ? {
+                  fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
+                }
+              : {},
+            results: inventory.results.reduce(
+              (acc: any, cur: any) => {
+                acc[cur.status] = cur.total;
+                return acc;
+              },
+              {
+                ...defaultResults
+              }
+            ),
             status: inventory.status,
             createdAt: inventory.createdAt,
             finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
@@ -585,7 +647,9 @@ class InventoryController {
     const team = req.user.team._id;
     const { id } = req.params;
     logger.info(`apiDetail`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`
+    );
     try {
       const updatedUser = await User.findById(req.user._id, { venue: true });
       if (!updatedUser) {
@@ -604,43 +668,62 @@ class InventoryController {
             },
             team
           })
-          .populate([{
-            path: 'cars',
-            match: {
-              status: {
-                $in: [ChoicesStatusCarInventory.pending, ChoicesStatusCarInventory.found]
-              }
-              //   venue: {
-              //     $in: venuesPermissions
-              //   }
-            },
-            populate: [{
-              path: 'car',
-              select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
-            }, {
-              path: 'venue',
-              select: ['name']
-            }]
-          }]).lean();
+          .populate([
+            {
+              path: 'cars',
+              match: {
+                status: {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found
+                  ]
+                }
+                //   venue: {
+                //     $in: venuesPermissions
+                //   }
+              },
+              populate: [
+                {
+                  path: 'car',
+                  select: [
+                    'vin',
+                    'vin2',
+                    'color',
+                    'denomination',
+                    'brand',
+                    'patent'
+                  ]
+                },
+                {
+                  path: 'venue',
+                  select: ['name']
+                }
+              ]
+            }
+          ])
+          .lean();
         if (inventory) {
           res.status(200).json({
             data: {
-              cars: inventory.cars
-                .map((car: IInventoryCar) => {
-                  return {
-                    ...car.car,
-                    _id: (car as any)._id,
-                    venue: car.venue,
-                    status: car.status
-                  };
-                }),
+              cars: inventory.cars.map((car: IInventoryCar) => {
+                return {
+                  ...car.car,
+                  _id: (car as any)._id,
+                  venue: car.venue,
+                  status: car.status
+                };
+              }),
               reasons: []
             },
             status: 200
           });
         } else {
-          logger.error(`apiDetail: No se ha encontrado el inventario solicitado.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+          logger.error(
+            `apiDetail: No se ha encontrado el inventario solicitado.`
+          );
+          logger.error(
+            `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+          );
           res.status(404).json({
             message: 'No se ha encontrado el inventario solicitado.',
             status: 404
@@ -677,7 +760,11 @@ class InventoryController {
           response.pipe(file);
           file.on('finish', () => {
             file.close();
-            resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+            resolve(
+              response.headers['content-length']
+                ? parseInt(response.headers['content-length'], 10)
+                : 0
+            );
           });
         });
       } catch (e) {
@@ -703,7 +790,11 @@ class InventoryController {
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
-        logger.info(`InventoryController.uploadFile email: ${req.user.email} inventory: ${id} file: ${JSON.stringify(file)}`);
+        logger.info(
+          `InventoryController.uploadFile email: ${
+            req.user.email
+          } inventory: ${id} file: ${JSON.stringify(file)}`
+        );
         const inventoryFile = new InventoryFileModel();
         /*
           {
@@ -739,18 +830,24 @@ class InventoryController {
         if (inventoryCardId) {
           const inventoryCar = await InventoryCar.findById(inventoryCardId);
           if (inventoryCar) {
-            await InventoryCar.updateOne({
-              _id: inventoryCar._id,
-              inventory: inventoryCar.inventory
-            }, {
-              $push: { files: inventoryFile._id }
-            }, {
-              upsert: true
-            });
-            socket().to(`inventory-detail-${inventoryCar.inventory}`).emit('REFRESH', {
-              update: true,
-              venue: inventoryCar.venue
-            });
+            await InventoryCar.updateOne(
+              {
+                _id: inventoryCar._id,
+                inventory: inventoryCar.inventory
+              },
+              {
+                $push: { files: inventoryFile._id }
+              },
+              {
+                upsert: true
+              }
+            );
+            socket()
+              .to(`inventory-detail-${inventoryCar.inventory}`)
+              .emit('REFRESH', {
+                update: true,
+                venue: inventoryCar.venue
+              });
           }
           console.log('**************', inventoryCardId);
         }
@@ -782,15 +879,20 @@ class InventoryController {
     }
   }
 
-  public async removeInventoryCarFile(req: IRequest, res: Response): Promise<any> {
+  public async removeInventoryCarFile(
+    req: IRequest,
+    res: Response
+  ): Promise<any> {
     try {
       const { id } = req.params;
       const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
       if (inventoryFile) {
-        socket().to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
-          update: true,
-          venue: req.user.venue._id
-        });
+        socket()
+          .to(`inventory-detail-${inventoryFile.inventory}`)
+          .emit('REFRESH', {
+            update: true,
+            venue: req.user.venue._id
+          });
       }
       res.json({});
     } catch (e) {
@@ -809,12 +911,18 @@ class InventoryController {
     const { id } = req.params;
     const { vin, images } = req.body;
     logger.info(`apiFoundCar`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(req.body)}}`
+    );
     try {
-      const updatedUser = await User.findById(req.user._id).populate([{
-        path: 'venue',
-        select: ['name']
-      }]);
+      const updatedUser = await User.findById(req.user._id).populate([
+        {
+          path: 'venue',
+          select: ['name']
+        }
+      ]);
       const teamSettings = await TeamSetting.findOne({ team });
       if (!updatedUser) {
         return res.status(404).json({
@@ -838,12 +946,17 @@ class InventoryController {
             inventory: id,
             car: car._id,
             status: {
-              $in: [ChoicesStatusCarInventory.found, ChoicesStatusCarInventory.leftover]
+              $in: [
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.leftover
+              ]
             }
           });
           if (inventoriedCar) {
             logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+            logger.error(
+              `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+            );
             res.status(200).json({
               message: 'Este vehículo ya ha sido inventariado',
               status: 200
@@ -856,26 +969,37 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
-              if (teamSettings!.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
+              if (
+                teamSettings!.inventory.leftoverDifferentVenue &&
+                inventoryCar.venue.toString() !== venueId.toString()
+              ) {
                 inventoryCar.status = ChoicesStatusCarInventory.leftover;
-                socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                  title: 'Vehículo encontrado',
-                  text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                  status: ChoicesStatusCarInventory.leftover,
-                  venue: venueId,
-                  update: true
-                });
+                socket()
+                  .to(`inventory-detail-${inventory._id}`)
+                  .emit('REFRESH', {
+                    title: 'Vehículo encontrado',
+                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                    status: ChoicesStatusCarInventory.leftover,
+                    venue: venueId,
+                    update: true
+                  });
               } else {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
-                socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                  title: 'Vehículo encontrado',
-                  text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                  status: ChoicesStatusCarInventory.found,
-                  venue: venueId,
-                  update: true
-                });
+                socket()
+                  .to(`inventory-detail-${inventory._id}`)
+                  .emit('REFRESH', {
+                    title: 'Vehículo encontrado',
+                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                    status: ChoicesStatusCarInventory.found,
+                    venue: venueId,
+                    update: true
+                  });
               }
-              inventoryCar.images = images ? images.map((image: string) => (new mongoose.Types.ObjectId(image))) : [];
+              inventoryCar.images = images
+                ? images.map(
+                    (image: string) => new mongoose.Types.ObjectId(image)
+                  )
+                : [];
               inventoryCar.inventoriedBy = req.user._id;
               await inventoryCar.save();
 
@@ -887,8 +1011,12 @@ class InventoryController {
                 status: 200
               });
             } else {
-              logger.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+              logger.error(
+                `apiFoundCar: Este vehículo no se encuentra en el inventario.`
+              );
+              logger.error(
+                `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+              );
               res.status(400).json({
                 message: 'Este vehículo no se encuentra en el inventario.',
                 status: 400
@@ -897,8 +1025,12 @@ class InventoryController {
           }
         } else {
           // if car no exist
-          logger.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+          logger.error(
+            `apiFoundCar: Este vehículo no se encuentra en el inventario.`
+          );
+          logger.error(
+            `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+          );
           res.status(400).json({
             message: 'Este vehículo no se encuentra en el inventario.',
             status: 400
@@ -906,7 +1038,9 @@ class InventoryController {
         }
       } else {
         // if inventory no exist
-        logger.error(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
+        logger.error(
+          `apiFoundCar: Este inventario no existe o ya no se encuentra activo.`
+        );
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
           message: 'Este inventario no existe o ya no se encuentra activo.',
@@ -917,7 +1051,9 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`apiFoundCar: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, error: ${e}}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${req.user.email}, error: ${e}}`
+      );
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
@@ -944,9 +1080,13 @@ class InventoryController {
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
-        queue.create('finishInventory', {
-          inventory: inventory._id
-        }).priority('high').attempts(5).save();
+        historyQueue.queue.add(
+          'finishInventory',
+          {
+            inventory: inventory._id
+          },
+          { attempts: 3, backoff: 1000 }
+        );
         socket().to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
@@ -965,7 +1105,6 @@ class InventoryController {
           status: 400
         });
       }
-
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`finishInventory: Async Error.`);
@@ -1015,7 +1154,6 @@ class InventoryController {
           status: 400
         });
       }
-
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`deleteInventory: Async Error.`);
@@ -1035,32 +1173,38 @@ class InventoryController {
     const { inventory } = req.params;
     const { _id, comment } = req.body;
     try {
-      await InventoryCar.update({
-        inventory,
-        _id
-      }, {
-        $push: {
-          comments: {
-            user: req.user._id,
-            comment,
-            createdAt: new Date()
+      await InventoryCar.update(
+        {
+          inventory,
+          _id
+        },
+        {
+          $push: {
+            comments: {
+              user: req.user._id,
+              comment,
+              createdAt: new Date()
+            }
           }
+        },
+        {
+          upsert: true
         }
-      }, {
-        upsert: true
-      });
+      );
       socket().to(`inventory-detail-${inventory}`).emit('REFRESH', {
         update: true
       });
-      socket().to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
-        _id: new mongoose.Types.ObjectId(),
-        user: {
-          _id: req.user._id,
-          firstName: req.user.firstName,
-          lastName: req.user.lastName
-        },
-        comment
-      });
+      socket()
+        .to(`inventory-comment-${_id}`)
+        .emit('NEW_COMMENT', {
+          _id: new mongoose.Types.ObjectId(),
+          user: {
+            _id: req.user._id,
+            firstName: req.user.firstName,
+            lastName: req.user.lastName
+          },
+          comment
+        });
       res.status(200).json({
         message: 'Comentario agregado satisfactoriamente.',
         status: 200
@@ -1085,81 +1229,102 @@ class InventoryController {
     const { cars } = req.body;
     const team = req.user.team._id;
     try {
-      const inventory = await InventoryModel.findOne({
-        _id: id,
-        team
-      }, {
-        name: true
-      });
+      const inventory = await InventoryModel.findOne(
+        {
+          _id: id,
+          team
+        },
+        {
+          name: true
+        }
+      );
       if (inventory) {
-        const inventoriesCars = await InventoryModel.aggregate([{
-          $match: {
-            team,
-            _id: new mongoose.Types.ObjectId(id)
-          }
-        }, {
-          $lookup: {
-            from: 'inventorycars',
-            localField: '_id',
-            foreignField: 'inventory',
-            as: 'cars'
-          }
-        }, {
-          $project: {
-            cars: {
-              $filter: {
-                input: '$cars',
-                as: 'cars',
-                cond: {
-                  $and: [
-                    {
-                      $in: ['$$cars._id', cars.map((car: string) => new mongoose.Types.ObjectId(car))]
-                    }, {
-                      $ne: ['$$cars.images', []]
-                    }
-                  ]
+        const inventoriesCars = await InventoryModel.aggregate([
+          {
+            $match: {
+              team,
+              _id: new mongoose.Types.ObjectId(id)
+            }
+          },
+          {
+            $lookup: {
+              from: 'inventorycars',
+              localField: '_id',
+              foreignField: 'inventory',
+              as: 'cars'
+            }
+          },
+          {
+            $project: {
+              cars: {
+                $filter: {
+                  input: '$cars',
+                  as: 'cars',
+                  cond: {
+                    $and: [
+                      {
+                        $in: [
+                          '$$cars._id',
+                          cars.map(
+                            (car: string) => new mongoose.Types.ObjectId(car)
+                          )
+                        ]
+                      },
+                      {
+                        $ne: ['$$cars.images', []]
+                      }
+                    ]
+                  }
                 }
               }
             }
+          },
+          {
+            $unwind: '$cars'
+          },
+          {
+            $replaceRoot: {
+              newRoot: '$cars'
+            }
+          },
+          {
+            $lookup: {
+              from: 'inventoryfiles',
+              localField: 'images',
+              foreignField: '_id',
+              as: 'images'
+            }
+          },
+          {
+            $lookup: {
+              from: 'cars',
+              localField: 'car',
+              foreignField: '_id',
+              as: 'car'
+            }
+          },
+          {
+            $unwind: '$car'
+          },
+          {
+            $lookup: {
+              from: 'venues',
+              localField: 'venue',
+              foreignField: '_id',
+              as: 'venue'
+            }
+          },
+          {
+            $unwind: '$venue'
+          },
+          {
+            $project: {
+              images: 1,
+              venue: 1,
+              car: 1
+            }
           }
-        }, {
-          $unwind: '$cars'
-        }, {
-          $replaceRoot: {
-            newRoot: '$cars'
-          }
-        }, {
-          $lookup: {
-            from: 'inventoryfiles',
-            localField: 'images',
-            foreignField: '_id',
-            as: 'images'
-          }
-        }, {
-          $lookup: {
-            from: 'cars',
-            localField: 'car',
-            foreignField: '_id',
-            as: 'car'
-          }
-        }, {
-          $unwind: '$car'
-        }, {
-          $lookup: {
-            from: 'venues',
-            localField: 'venue',
-            foreignField: '_id',
-            as: 'venue'
-          }
-        }, {
-          $unwind: '$venue'
-        }, {
-          $project: {
-            images: 1,
-            venue: 1,
-            car: 1
-          }
-        }]);
+        ]);
         const archive = archiver('zip', {
           zlib: {
             level: 0
@@ -1172,18 +1337,34 @@ class InventoryController {
         });
         const filename = `${inventory.name}.zip`;
         archive.on('end', () => {
-          console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+          console.log(
+            `${filename}: Archive wrote ${(
+              archive.pointer() /
+              (1024 * 1024)
+            ).toFixed(2)}MB`
+          );
         });
         res.attachment(filename);
         const imagesToDownload: any = [];
         const imagesToCompress: any = [];
         for (const car of inventoriesCars) {
           for (const image of car.images) {
-            const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-            imagesToDownload.push(() => this.downloadFile(image.file.url, destDirectory));
+            const destDirectory = `/tmp/${car._id}${image._id}.${
+              image.file.name.split('.')[image.file.name.split('.').length - 1]
+            }`;
+            imagesToDownload.push(() =>
+              this.downloadFile(image.file.url, destDirectory)
+            );
             imagesToCompress.push({
               destDirectory,
-              name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
+              name: `${car.car.vin}/IMAGE${image._id
+                .toString()
+                .substr(image._id.length - 10, 10)
+                .toUpperCase()}.${
+                image.file.name.split('.')[
+                  image.file.name.split('.').length - 1
+                ]
+              }`
             });
           }
         }
@@ -1193,7 +1374,12 @@ class InventoryController {
         let numb = 1;
         while (imagesToDownload.length) {
           console.log('promise', numb);
-          results = [...results, ...await bluebird.all(imagesToDownload.splice(0, 20).map((promise: any) => promise()))];
+          results = [
+            ...results,
+            ...(await bluebird.all(
+              imagesToDownload.splice(0, 20).map((promise: any) => promise())
+            ))
+          ];
           numb++;
         }
         // compress images
@@ -1213,7 +1399,10 @@ class InventoryController {
             }
           }, 7200000);
         });
-        res.setHeader('size', results.reduce((a: number, b: number) => a + b));
+        res.setHeader(
+          'size',
+          results.reduce((a: number, b: number) => a + b)
+        );
         archive.pipe(res);
         archive.finalize();
       } else {
@@ -1244,12 +1433,18 @@ class InventoryController {
     const { id } = req.params;
     const { vin, patent, denomination, brand, color, images } = req.body;
     logger.info(`reportCar`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(req.body)}}`
+    );
     try {
-      const updatedUser = await User.findById(req.user._id).populate([{
-        path: 'venue',
-        select: ['name']
-      }]);
+      const updatedUser = await User.findById(req.user._id).populate([
+        {
+          path: 'venue',
+          select: ['name']
+        }
+      ]);
       if (!updatedUser) {
         return res.status(404).json({
           message: 'No se ha encontrado el inventario solicitado.',
@@ -1265,25 +1460,23 @@ class InventoryController {
 
       let findCOnditions: any = {};
       let isVinAvailable = vin && vin.length > 0;
-      if (vin)
-        findCOnditions = { vin, team };
+      if (vin) findCOnditions = { vin, team };
       if (!isVinAvailable && patent && patent.length > 0)
         findCOnditions = { patent, team };
 
       if (inventory) {
-        const car = await CarModel.findOneOrCreate(findCOnditions,
-          {
-            vin,
-            vin2: vin.substr(vin.length - 6),
-            patent,
-            brand,
-            denomination,
-            color,
-            team,
-            company,
-            createdBy: req.user,
-            status: ChoicesStatusCar.inventory
-          });
+        const car = await CarModel.findOneOrCreate(findCOnditions, {
+          vin,
+          vin2: vin.substr(vin.length - 6),
+          patent,
+          brand,
+          denomination,
+          color,
+          team,
+          company,
+          createdBy: req.user,
+          status: ChoicesStatusCar.inventory
+        });
         const inventoryCar = new InventoryCar({
           car,
           inventory,
@@ -1291,7 +1484,9 @@ class InventoryController {
           venueFound: venueId,
           comments: [],
           inventoriedBy: req.user._id,
-          images: images ? images.map((image: string) => (new mongoose.Types.ObjectId(image))) : [],
+          images: images
+            ? images.map((image: string) => new mongoose.Types.ObjectId(image))
+            : [],
           status: ChoicesStatusCarInventory.reported
         });
         await inventoryCar.save();
@@ -1312,7 +1507,9 @@ class InventoryController {
           status: 200
         });
       } else {
-        logger.error(`reportCar: Este inventario ya no se encuentra disponible.`);
+        logger.error(
+          `reportCar: Este inventario ya no se encuentra disponible.`
+        );
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         res.status(404).json({
           message: 'Este inventario ya no se encuentra disponible.',
@@ -1339,20 +1536,30 @@ class InventoryController {
     const { id } = req.params;
     const { car, label, custom, carID } = req.body;
     logger.info(`setLabel`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+        req.params
+      )}}`
+    );
     try {
       if (label === 'deleted') {
         const inventoryCar = await InventoryCar.findById(car, { venue: true });
         if (inventoryCar) {
-          await InventoryCar.update({
-            _id: car,
-            inventory: id
-          }, {
-            status: ChoicesStatusCarInventory.deleted,
-            deletedBy: req.user._id
-          }, {
-            upsert: true
-          });
+          await InventoryCar.update(
+            {
+              _id: car,
+              inventory: id
+            },
+            {
+              status: ChoicesStatusCarInventory.deleted,
+              deletedBy: req.user._id
+            },
+            {
+              upsert: true
+            }
+          );
           socket().to(`inventory-detail-${id}`).emit('REFRESH', {
             update: true,
             venue: inventoryCar.venue
@@ -1371,26 +1578,35 @@ class InventoryController {
           team
         });
         if (newLabel) {
-          const inventoryCar = await InventoryCar.findById(car, { venue: true });
+          const inventoryCar = await InventoryCar.findById(car, {
+            venue: true
+          });
           if (inventoryCar) {
-            await InventoryCar.update({
-              _id: car,
-              inventory: id
-            }, {
-              status: newLabel.sendTo,
-              label: newLabel._id,
-              labelBy: req.user._id,
-              labelText: custom
-            }, {
-              upsert: true
-            });
+            await InventoryCar.update(
+              {
+                _id: car,
+                inventory: id
+              },
+              {
+                status: newLabel.sendTo,
+                label: newLabel._id,
+                labelBy: req.user._id,
+                labelText: custom
+              },
+              {
+                upsert: true
+              }
+            );
             if (newLabel.isExhibition) {
-              await CarModel.findOneAndUpdate({
-                _id: carID,
-                team
-              }, {
-                isExhibition: true
-              });
+              await CarModel.findOneAndUpdate(
+                {
+                  _id: carID,
+                  team
+                },
+                {
+                  isExhibition: true
+                }
+              );
             }
             socket().to(`inventory-detail-${id}`).emit('REFRESH', {
               update: true,
@@ -1427,17 +1643,20 @@ class InventoryController {
       logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
       if (updatedUser) {
-        const inventories = await InventoryModel.find({
-          team,
-          venues: updatedUser.venue,
-          status: {
-            $in: [ChoicesStatusInventory.inProcess]
+        const inventories = await InventoryModel.find(
+          {
+            team,
+            venues: updatedUser.venue,
+            status: {
+              $in: [ChoicesStatusInventory.inProcess]
+            }
+          },
+          {
+            _id: true,
+            name: true,
+            settings: true
           }
-        }, {
-          _id: true,
-          name: true,
-          settings: true
-        }).lean();
+        ).lean();
         res.json({
           data: inventories,
           status: 200
@@ -1469,34 +1688,47 @@ class InventoryController {
   public async detaill(req: IRequest, res: Response) {
     try {
       const { id } = req.params;
-      logger.info(`InventoryController.detail {email: ${req.user.email}, inventory: ${id} }`);
+      logger.info(
+        `InventoryController.detail {email: ${req.user.email}, inventory: ${id} }`
+      );
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
-      const [inventory, detailByVenues, detailByBrands, teamSettings, labels, detailInventory] = await Promise.all([
+      const [
+        inventory,
+        detailByVenues,
+        detailByBrands,
+        teamSettings,
+        labels,
+        detailInventory
+      ] = await Promise.all([
         InventoryModel.aggregate([
           {
             $match: {
               team: new mongoose.Types.ObjectId(team),
               _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'inventorycars',
               localField: '_id',
               foreignField: 'inventory',
               as: 'cars'
             }
-          }, {
+          },
+          {
             $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
-          }, {
+          },
+          {
             $match: {
               $or: [
                 {
                   'cars.venue': {
                     $in: venuesPermissions
                   }
-                }, {
+                },
+                {
                   'cars.venueFound': {
                     $in: venuesPermissions
                   }
@@ -1512,7 +1744,8 @@ class InventoryController {
                 ]
               }
             }
-          }, {
+          },
+          {
             $group: {
               _id: {
                 category: '$_id',
@@ -1527,7 +1760,8 @@ class InventoryController {
                 $sum: 1
               }
             }
-          }, {
+          },
+          {
             $group: {
               _id: '$_id.category',
               name: {
@@ -1552,54 +1786,63 @@ class InventoryController {
                 $first: '$_id.status'
               }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'users',
               localField: 'user',
               foreignField: '_id',
               as: 'userInfo'
             }
-          }, {
+          },
+          {
             $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
-          }, {
+          },
+          {
             $project: {
-              '_id': 1,
-              'name': 1,
-              'results': 1,
+              _id: 1,
+              name: 1,
+              results: 1,
               'userInfo.firstName': 1,
               'userInfo.lastName': 1,
-              'status': 1,
-              'createdAt': 1,
-              'finalizedAt': 1
+              status: 1,
+              createdAt: 1,
+              finalizedAt: 1
             }
-          }, {
+          },
+          {
             $sort: {
               createdAt: -1
             }
-          }]),
+          }
+        ]),
         InventoryModel.aggregate([
           {
             $match: {
               team: new mongoose.Types.ObjectId(team),
               _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'inventorycars',
               localField: '_id',
               foreignField: 'inventory',
               as: 'cars'
             }
-          }, {
+          },
+          {
             $unwind: '$cars'
-          }, {
+          },
+          {
             $match: {
               $or: [
                 {
                   'cars.venue': {
                     $in: venuesPermissions
                   }
-                }, {
+                },
+                {
                   'cars.venueFound': {
                     $in: venuesPermissions
                   }
@@ -1615,7 +1858,8 @@ class InventoryController {
                 ]
               }
             }
-          }, {
+          },
+          {
             $group: {
               _id: {
                 category: {
@@ -1633,7 +1877,8 @@ class InventoryController {
                 $sum: 1
               }
             }
-          }, {
+          },
+          {
             $group: {
               _id: '$_id.category',
               status: {
@@ -1643,39 +1888,46 @@ class InventoryController {
                 }
               }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'venues',
               localField: '_id',
               foreignField: '_id',
               as: 'info'
             }
-          }, {
+          },
+          {
             $unwind: '$info'
-          }]),
+          }
+        ]),
         InventoryModel.aggregate([
           {
             $match: {
               team: new mongoose.Types.ObjectId(team),
               _id: { $in: [new mongoose.Types.ObjectId(id)] }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'inventorycars',
               localField: '_id',
               foreignField: 'inventory',
               as: 'cars'
             }
-          }, {
+          },
+          {
             $unwind: '$cars'
-          }, {
+          },
+          {
             $match: {
               $or: [
                 {
                   'cars.venue': {
                     $in: venuesPermissions
                   }
-                }, {
+                },
+                {
                   'cars.venueFound': {
                     $in: venuesPermissions
                   }
@@ -1691,16 +1943,19 @@ class InventoryController {
                 ]
               }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'cars',
               localField: 'cars.car',
               foreignField: '_id',
               as: 'car'
             }
-          }, {
+          },
+          {
             $unwind: '$car'
-          }, {
+          },
+          {
             $group: {
               _id: {
                 car: '$car.brand',
@@ -1710,7 +1965,8 @@ class InventoryController {
                 $sum: 1
               }
             }
-          }, {
+          },
+          {
             $group: {
               _id: '$_id.car',
               status: {
@@ -1720,26 +1976,31 @@ class InventoryController {
                 }
               }
             }
-          }, {
+          },
+          {
             $lookup: {
               from: 'venues',
               localField: '_id',
               foreignField: '_id',
               as: 'info'
             }
-          }]),
+          }
+        ]),
         TeamSetting.findOne({ team }).lean(true),
-        InventoryLabel.find({
-          team,
-          active: true
-        }, {
-          name: true,
-          color: true,
-          affected: true,
-          sendTo: true,
-          isExhibition: true,
-          requireCustomText: true
-        }),
+        InventoryLabel.find(
+          {
+            team,
+            active: true
+          },
+          {
+            name: true,
+            color: true,
+            affected: true,
+            sendTo: true,
+            isExhibition: true,
+            requireCustomText: true
+          }
+        ),
         InventoryModel.findById(id, {
           name: true,
           status: true,
@@ -1747,67 +2008,94 @@ class InventoryController {
           venues: true,
           company: true,
           team: true
-        }).populate([{
-          path: 'cars',
-          match: {
-            $or: [
-              {
-                venue: {
+        })
+          .populate([
+            {
+              path: 'cars',
+              match: {
+                $or: [
+                  {
+                    venue: {
+                      $in: venuesPermissions
+                    }
+                  },
+                  {
+                    venueFound: {
+                      $in: venuesPermissions
+                    }
+                  }
+                ],
+                status: {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
+                }
+              },
+              populate: [
+                {
+                  path: 'car',
+                  select: [
+                    'vin',
+                    'vin2',
+                    'internalNumber',
+                    'color',
+                    'denomination',
+                    'brand',
+                    'venue',
+                    'patent',
+                    'internalNumber',
+                    'property',
+                    'type'
+                  ]
+                },
+                {
+                  path: 'label'
+                },
+                {
+                  path: 'venue',
+                  select: ['name']
+                },
+                {
+                  path: 'images'
+                },
+                {
+                  path: 'files'
+                },
+                {
+                  path: 'venueFound',
+                  select: ['name']
+                },
+                {
+                  path: 'inventoriedBy',
+                  select: ['firstName', 'lastName']
+                },
+                {
+                  path: 'comments.user',
+                  select: ['_id', 'firstName', 'lastName']
+                }
+              ],
+              select: { meta: false }
+            },
+            {
+              path: 'venues',
+              select: ['_id', 'name'],
+              match: {
+                _id: {
                   $in: venuesPermissions
                 }
-              }, {
-                venueFound: {
-                  $in: venuesPermissions
+              },
+              options: {
+                sort: {
+                  name: 1
                 }
               }
-            ],
-            status: {
-              $in: [
-                ChoicesStatusCarInventory.pending,
-                ChoicesStatusCarInventory.found,
-                ChoicesStatusCarInventory.missing,
-                ChoicesStatusCarInventory.leftover,
-                ChoicesStatusCarInventory.reported
-              ]
             }
-          },
-          populate: [{
-            path: 'car',
-            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-          }, {
-            path: 'label'
-          }, {
-            path: 'venue',
-            select: ['name']
-          }, {
-            path: 'images'
-          }, {
-            path: 'files'
-          }, {
-            path: 'venueFound',
-            select: ['name']
-          }, {
-            path: 'inventoriedBy',
-            select: ['firstName', 'lastName']
-          }, {
-            path: 'comments.user',
-            select: ['_id', 'firstName', 'lastName']
-          }],
-          select: { meta: false }
-        }, {
-          path: 'venues',
-          select: ['_id', 'name'],
-          match: {
-            _id: {
-              $in: venuesPermissions
-            }
-          },
-          options: {
-            sort: {
-              name: 1
-            }
-          }
-        }]).lean()
+          ])
+          .lean()
       ]);
 
       const detailByBrand: any[] = [];
@@ -1824,24 +2112,30 @@ class InventoryController {
       for (const db of detailByBrands) {
         detailByBrand.push({
           name: db._id ? db._id : 'Sin Marca',
-          results: db.status.reduce((acc: any, cur: any) => {
-            acc[cur.name] = cur.total;
-            return acc;
-          }, {
-            ...defaultResults
-          })
+          results: db.status.reduce(
+            (acc: any, cur: any) => {
+              acc[cur.name] = cur.total;
+              return acc;
+            },
+            {
+              ...defaultResults
+            }
+          )
         });
       }
       for (const dv of detailByVenues) {
         detailByVenue.push({
           _id: dv.info._id,
           name: dv.info.name,
-          results: dv.status.reduce((acc: any, cur: any) => {
-            acc[cur.name] = cur.total;
-            return acc;
-          }, {
-            ...defaultResults
-          })
+          results: dv.status.reduce(
+            (acc: any, cur: any) => {
+              acc[cur.name] = cur.total;
+              return acc;
+            },
+            {
+              ...defaultResults
+            }
+          )
         });
       }
       if (inventory && inventory.length) {
@@ -1849,19 +2143,26 @@ class InventoryController {
         const response = {
           _id: currentInventory._id,
           name: currentInventory.name,
-          createdBy: currentInventory.userInfo ? {
-            ...currentInventory.userInfo,
-            fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
-          } : {},
-          results: currentInventory.results.reduce((acc: any, cur: any) => {
-            acc[cur.status] = cur.total;
-            return acc;
-          }, {
-            ...defaultResults
-          }),
+          createdBy: currentInventory.userInfo
+            ? {
+                ...currentInventory.userInfo,
+                fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
+              }
+            : {},
+          results: currentInventory.results.reduce(
+            (acc: any, cur: any) => {
+              acc[cur.status] = cur.total;
+              return acc;
+            },
+            {
+              ...defaultResults
+            }
+          ),
           status: currentInventory.status,
           createdAt: currentInventory.createdAt,
-          finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
+          finalizedAt: currentInventory.finalizedAt
+            ? currentInventory.finalizedAt
+            : null
         };
 
         res.json({
@@ -1900,45 +2201,48 @@ class InventoryController {
     const { venues } = req.body;
     const team = req.user.team._id;
     if (venues && venues.length) {
-      venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v.toString()));
+      venuesPermissions = venuesPermissions.filter((v: any) =>
+        venues.includes(v.toString())
+      );
     }
     const total = 18;
     try {
-      const inventory: any = await InventoryCar.aggregate([{
-        $match: {
-          createdAt: {
-            $gte: moment()
-              .subtract(total, 'months')
-              .startOf('month')
-              .toDate()
-          },
-          venue: {
-            $in: venuesPermissions
-          }
-        }
-      }, {
-        $group: {
-          _id: {
-            status: '$status',
-            month: {
-              $dateToString: { format: '%Y-%m', date: '$createdAt' }
-            }
-          },
-          total: {
-            $sum: 1
-          }
-        }
-      }, {
-        $group: {
-          _id: '$_id.month',
-          results: {
-            $push: {
-              status: '$_id.status',
-              total: '$total'
+      const inventory: any = await InventoryCar.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: moment().subtract(total, 'months').startOf('month').toDate()
+            },
+            venue: {
+              $in: venuesPermissions
             }
           }
+        },
+        {
+          $group: {
+            _id: {
+              status: '$status',
+              month: {
+                $dateToString: { format: '%Y-%m', date: '$createdAt' }
+              }
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$_id.month',
+            results: {
+              $push: {
+                status: '$_id.status',
+                total: '$total'
+              }
+            }
+          }
         }
-      }]);
+      ]);
       const data: any = {};
       const defaultResults = {
         [ChoicesStatusCarInventory.pending]: 0,
@@ -1954,12 +2258,15 @@ class InventoryController {
         data[month] = { ...defaultResults };
       }
       for (const item of inventory) {
-        data[item._id] = item.results.reduce((acc: any, cur: any) => {
-          acc[cur.status] = cur.total;
-          return acc;
-        }, {
-          ...defaultResults
-        });
+        data[item._id] = item.results.reduce(
+          (acc: any, cur: any) => {
+            acc[cur.status] = cur.total;
+            return acc;
+          },
+          {
+            ...defaultResults
+          }
+        );
       }
       const teamSettings = await TeamSetting.findOne({ team });
       res.json({
@@ -1990,43 +2297,54 @@ class InventoryController {
       const worksheet = workbook.addWorksheet('Detalle', {
         properties: {
           // defaultRowHeight: 30
-        }, pageSetup: {
-          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        },
+        pageSetup: {
+          fitToPage: true,
+          fitToHeight: 100,
+          fitToWidth: 1
         }
       });
-      worksheet.views = [{
-        state: 'frozen',
-        xSplit: 3,
-        ySplit: 1,
-        topLeftCell: 'D2',
-        activeCell: 'D2'
-      }];
-      const columns: any[] = [{
-        header: 'VIN',
-        key: 'vin',
-        width: 30,
-        alignment: {
-          wrapText: true
+      worksheet.views = [
+        {
+          state: 'frozen',
+          xSplit: 3,
+          ySplit: 1,
+          topLeftCell: 'D2',
+          activeCell: 'D2'
         }
-      }, {
-        header: 'MARCA',
-        key: 'marca',
-        width: 30,
-        alignment: {
-          wrapText: true
+      ];
+      const columns: any[] = [
+        {
+          header: 'VIN',
+          key: 'vin',
+          width: 30,
+          alignment: {
+            wrapText: true
+          }
+        },
+        {
+          header: 'MARCA',
+          key: 'marca',
+          width: 30,
+          alignment: {
+            wrapText: true
+          }
+        },
+        {
+          header: 'MODELO',
+          key: 'modelo',
+          width: 40,
+          alignment: {
+            wrapText: true
+          }
         }
-      }, {
-        header: 'MODELO',
-        key: 'modelo',
-        width: 40,
-        alignment: {
-          wrapText: true
-        }
-      }];
+      ];
       const venues = await Venue.find({ team, deleted: false }).sort('name');
       for (const venue of venues) {
         columns.push({
-          header: venue.name, key: venue._id.toString(), width: 5,
+          header: venue.name,
+          key: venue._id.toString(),
+          width: 5,
           style: {
             alignment: {
               vertical: 'middle',
@@ -2068,19 +2386,22 @@ class InventoryController {
           bold: true
         };
       });
-      const cars = await CarModel.find({
-        team,
-        isExhibition: false,
-        createdAt: {
-          $gte: moment().subtract(6, 'months')
-          //   $lte: tf,
+      const cars = await CarModel.find(
+        {
+          team,
+          isExhibition: false,
+          createdAt: {
+            $gte: moment().subtract(6, 'months')
+            //   $lte: tf,
+          }
+        },
+        {
+          vin: true,
+          denomination: true,
+          color: true,
+          brand: true
         }
-      }, {
-        vin: true,
-        denomination: true,
-        color: true,
-        brand: true
-      }).populate({
+      ).populate({
         path: 'inventories',
         select: ['name', 'createdAt', 'venueFound', 'status'],
         match: {
@@ -2103,20 +2424,31 @@ class InventoryController {
             modelo: car.denomination
           };
           for (const inventory of inventories) {
-            carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
+            carData[inventory.venueFound] = carData.hasOwnProperty(
+              inventory.venueFound
+            )
+              ? carData[inventory.venueFound] + 1
+              : 1;
           }
           worksheet.addRow(carData);
         }
       }
       const tempFilePath = tempfile('.xlsx');
       await workbook.xlsx.writeFile(tempFilePath);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=detalle-inventarios.xlsx');
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename=detalle-inventarios.xlsx'
+      );
       return res.sendFile(tempFilePath);
     } catch (e) {
       console.log(e);
       return res.status(500).json({
-        message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
+        message:
+          'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
       });
     }
   }
@@ -2169,16 +2501,15 @@ class InventoryController {
               venue: currentVenue._id,
               car: currentCar._id
             });
-            queue
-              .create('updateCar', {
+            inventoryQueue.queue.add(
+              'updateCar',
+              {
                 title: `updateCar ${car.vin}`,
                 currentCar: currentCar._id,
                 car
-              })
-              .delay(10000)
-              .priority('high')
-              .attempts(5)
-              .save();
+              },
+              { attempts: 3, backoff: 1000 }
+            );
           }
         }
       }
@@ -2219,61 +2550,95 @@ class InventoryController {
     try {
       const { company } = req.user;
 
-      const historyCars = await History.find({
-        company,
-        current: true,
-        status: { $in: [StatusHistory.available, StatusHistory.inTransit, StatusHistory.sale] },
-        createdAt: {
-          $gt: moment().subtract(30, 'days')
-        }
-      }, {
-        status: true,
-        from: true,
-        to: true,
-        createdAt: true
-      }).populate([{
-        path: 'car',
-        select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type', 'meta', 'createdAt'],
-        populate: [{
-          path: 'events',
-          select: ['_id', 'module'],
-          match: {
-            changeLocation: true
+      const historyCars = await History.find(
+        {
+          company,
+          current: true,
+          status: {
+            $in: [
+              StatusHistory.available,
+              StatusHistory.inTransit,
+              StatusHistory.sale
+            ]
+          },
+          createdAt: {
+            $gt: moment().subtract(30, 'days')
           }
-        }]
-      }, {
-        path: 'from',
-        select: ['name'],
-        populate: [/*{
+        },
+        {
+          status: true,
+          from: true,
+          to: true,
+          createdAt: true
+        }
+      )
+        .populate([
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'vin2',
+              'internalNumber',
+              'color',
+              'denomination',
+              'brand',
+              'venue',
+              'patent',
+              'internalNumber',
+              'property',
+              'type',
+              'meta',
+              'createdAt'
+            ],
+            populate: [
+              {
+                path: 'events',
+                select: ['_id', 'module'],
+                match: {
+                  changeLocation: true
+                }
+              }
+            ]
+          },
+          {
+            path: 'from',
+            select: ['name'],
+            populate: [
+              /*{
           path: 'region',
           select: ['code', 'name']
-        }*/]
-      }, {
-        path: 'to',
-        select: ['name'],
-        populate: [/*{
+        }*/
+            ]
+          },
+          {
+            path: 'to',
+            select: ['name'],
+            populate: [
+              /*{
           path: 'region',
           select: ['code', 'name']
-        }*/]
-      }]).lean();
-      const inventories = await Inventory
-        .find({
+        }*/
+            ]
+          }
+        ])
+        .lean();
+      const inventories = await Inventory.find(
+        {
           company,
           status: ChoicesStatusInventory.finalized
-        }, {
+        },
+        {
           createdAt: true,
           finalizedAt: true
-        })
+        }
+      )
         .sort({ createdAt: -1 })
         .limit(2);
-      res
-        .status(200)
-        .json({
-          message: '',
-          cars: historyCars,
-          inventories
-        });
-
+      res.status(200).json({
+        message: '',
+        cars: historyCars,
+        inventories
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`inventory currentStock: Async Error.`);
@@ -2337,7 +2702,6 @@ class InventoryController {
       }
     });
   }
-
 }
 
 export default new InventoryController();

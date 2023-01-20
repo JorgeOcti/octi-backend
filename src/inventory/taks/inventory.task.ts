@@ -1,21 +1,28 @@
-import { Job, Queue } from 'kue';
+import * as Queue from 'bull';
 import CarModel from '../../app/models/car.model';
 import logger from '../../services/logger.service';
+import { createRedisClient } from '../../services/redis.service';
 
 class InventoryQueue {
-  private queue: Queue;
+  public queue: Queue.Queue;
+  readonly processJob: boolean = true;
 
-  constructor(queue: Queue) {
-    this.queue = queue;
-    this.updateCar = this.updateCar.bind(this);
+  constructor() {
+    this.queue = new Queue('updateCar', {
+      createClient: () => {
+        return createRedisClient();
+      },
+      prefix: '{andes}'
+    });
+    this.process = this.process.bind(this);
   }
 
   public run() {
-    this.queue.process('updateCar', this.updateCar);
+    this.queue.process('updateCar', this.process);
   }
 
-  private async updateCar(job?: Job, done?: (error?: Error | null, data?: object) => void) {
-    if (job && done) {
+  private async process(job: Queue.Job<any>, done: Queue.DoneCallback) {
+    if (this.processJob) {
       const { car } = job.data;
       try {
         const carToUpdate = await CarModel.findById(job.data.currentCar);
@@ -25,7 +32,10 @@ class InventoryQueue {
             update = true;
             carToUpdate.color = car.color;
           }
-          if (car.denomination && carToUpdate.denomination !== car.denomination) {
+          if (
+            car.denomination &&
+            carToUpdate.denomination !== car.denomination
+          ) {
             update = true;
             carToUpdate.denomination = car.denomination;
           }
@@ -47,11 +57,19 @@ class InventoryQueue {
           }
           if (update) {
             await carToUpdate.save();
-            logger.info(`InventoryQueue.updateCar ${job.data.currentCar} updated.`);
-            job.log(`InventoryQueue.updateCar.job ${job.data.currentCar} updated.`);
+            logger.info(
+              `InventoryQueue.updateCar ${job.data.currentCar} updated.`
+            );
+            job.log(
+              `InventoryQueue.updateCar.job ${job.data.currentCar} updated.`
+            );
           } else {
-            logger.info(`InventoryQueue.updateCar ${job.data.currentCar} no updated`);
-            job.log(`InventoryQueue.updateCar.${job.data.currentCar} car updated.`);
+            logger.info(
+              `InventoryQueue.updateCar ${job.data.currentCar} no updated`
+            );
+            job.log(
+              `InventoryQueue.updateCar.${job.data.currentCar} car updated.`
+            );
           }
         }
         done(null, {});
@@ -62,4 +80,5 @@ class InventoryQueue {
   }
 }
 
-export default InventoryQueue;
+const inventoryQueue = new InventoryQueue();
+export default inventoryQueue;

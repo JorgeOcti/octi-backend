@@ -180,7 +180,7 @@ class BillingTeamQueue {
   private sendEmail(invoice: IInvoiceTeamBillingModel): void {
     const period = moment(invoice.createdAt).format('MMMM YYYY');
     for (const notification of invoice.teamBilling.notifications) {
-      emailQueue.create({
+      emailQueue.queue.add('email', {
         from: '',
         title: `Billing for ${invoice.team.name}`,
         to: `"${notification.name}"<${notification.email}`,
@@ -196,7 +196,7 @@ class BillingTeamQueue {
           period,
           name: notification.name
         }
-      });
+      }, { attempts: 3, backoff: 1000 });
     }
   }
 

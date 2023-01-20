@@ -194,7 +194,7 @@ class AppController {
 
         const token = uuid.v4();
         const fullname = user.fullName();
-        emailQueue.create({
+        emailQueue.queue.add('email', {
           from: '',
           title: `Recovery password for ${fullname}`,
           to: `"${fullname}"<${user.email}>`,
@@ -215,7 +215,7 @@ class AppController {
             fullname,
             url: `${process.env.SITE_URL}account/recovery/${token}/`
           }
-        })
+        }, { attempts: 3, backoff: 1000 });
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         user.save();

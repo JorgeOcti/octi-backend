@@ -1,29 +1,38 @@
-import { Job, Queue } from 'kue';
+import * as Queue from 'bull';
 import InventoryCar from '../../inventory/models/inventoryCar.model';
+import { createRedisClient } from '../../services/redis.service';
 import carTracker from '../controllers/tracker/car.tracker';
 
 class HistoryQueue {
-  private queue: Queue;
+  public queue: Queue.Queue;
+  readonly processJob: boolean = true;
 
-  constructor(queue: Queue) {
-    this.queue = queue;
-    this.processFinishInventory = this.processFinishInventory.bind(this);
+  constructor() {
+    this.queue = new Queue('finishInventory', {
+      createClient: () => {
+        return createRedisClient();
+      },
+      prefix: '{andes}'
+    });
+    this.process = this.process.bind(this);
   }
 
   public run() {
-    this.queue.process('finishInventory', this.processFinishInventory);
+    this.queue.process('finishInventory', this.process);
   }
 
-  private async processFinishInventory(job: Job, done: (error?: Error | null, data?: object) => void) {
-    if (job) {
-      job.log('start processFinishInventory');
+  private async process(job: Queue.Job<any>, done: Queue.DoneCallback) {
+    if (this.processJob) {
+      job.log('start process');
       try {
-        const inventoryCarcursor = await InventoryCar
-          .find({
+        const inventoryCarcursor = await InventoryCar.find(
+          {
             inventory: job.data.inventory
-          }, {
+          },
+          {
             _id: true
-          })
+          }
+        )
           .batchSize(20)
           .cursor();
         inventoryCarcursor.on('data', async (inventoryCar) => {
@@ -36,7 +45,6 @@ class HistoryQueue {
         inventoryCarcursor.on('end', async () => {
           done(null, {});
         });
-
       } catch (e) {
         done(e);
       }
@@ -44,4 +52,5 @@ class HistoryQueue {
   }
 }
 
-export default HistoryQueue;
+const historyQueue = new HistoryQueue();
+export default historyQueue;
