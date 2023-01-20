@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import {
+import type {
   IParticipant,
   IParticipantAccesory,
   IParticipantAnswer,
@@ -11,9 +11,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import { KindForm, KindQuestion, kindForm, kindQuestion } from './form.model';
-
-import { PaginateModel } from 'mongoose';
+import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
 import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {

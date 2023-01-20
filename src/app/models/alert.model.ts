@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { IAlert } from '../interfaces';
+import type { IAlert } from '../interfaces/alert.interface';
 
 export interface IAlertModel extends IAlert, mongoose.Document<any> {}
 

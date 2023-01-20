@@ -1,9 +1,9 @@
 import * as mongoose from 'mongoose';
-import {
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type {
   IChoicesModel
 } from '../models/scale.model';
-import {ICompany} from '../../app/interfaces/company.interface';
-import {ITeam} from '../../app/interfaces/team.interface';
 
 export interface IChoices {
   choice: string;

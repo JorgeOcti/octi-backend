@@ -3,8 +3,8 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 import { modulesHistory, statusHistory } from './history.types';
 
-import { IHistory } from '../interfaces';
 import { PaginateModel } from 'mongoose';
+import type { IHistory } from '../interfaces/history.interface';
 
 export interface IHistoryModel extends IHistory, mongoose.Document<any> {
 }

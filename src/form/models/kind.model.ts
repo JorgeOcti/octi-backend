@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import {IKind} from '../interfaces/kind.interface';
+import type { IKind } from '../interfaces/kind.interface';
 
-export interface IKindModel extends IKind, mongoose.Document {}
+export interface IKindModel extends IKind, mongoose.Document { }
 export const kindSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,

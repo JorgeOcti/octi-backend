@@ -1,6 +1,6 @@
-import {AxiosError, AxiosResponse} from 'axios';
-import {Request} from 'express';
-import { IUser } from '../app/interfaces';
+import { AxiosError, AxiosResponse } from 'axios';
+import { Request } from 'express';
+import type { IUser } from '../app/interfaces/user.interface';
 
 export interface IResponseErrorData extends AxiosResponse {
   data: {

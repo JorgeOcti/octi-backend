@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
-import { ITeamSetting } from '../interfaces';
-import { ICarModel } from './car.model';
+import type { ITeamSetting } from '../interfaces/teamSetting.interface';
+import type { ICarModel } from './car.model';
 
 export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {
 }

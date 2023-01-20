@@ -1,11 +1,10 @@
 import * as mongoose from 'mongoose';
-
-import {
+import type {
   IInventoryCar
 } from '../interfaces/inventory.interface';
-import {IInventoryComment} from '../interfaces/inventoryComment.interface';
+import type { IInventoryComment } from '../interfaces/inventoryComment.interface';
 
-export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
+export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument { }
 
 const invetoryCommentCars = new mongoose.Schema({
   user: {
@@ -39,7 +38,7 @@ export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.deleted
 ];
 
-export interface IInventoryCarModel extends IInventoryCar, mongoose.Document {}
+export interface IInventoryCarModel extends IInventoryCar, mongoose.Document { }
 
 const inventoryCarSchema = new mongoose.Schema({
   inventory: {

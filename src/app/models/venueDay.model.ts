@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { IVenueDay } from '../interfaces';
+import type  { IVenueDay } from '../interfaces/venueDay.interface';
 
 export interface IVenueDayModel extends IVenueDay, mongoose.Document<any> {}
 

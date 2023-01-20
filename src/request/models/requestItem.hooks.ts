@@ -1,8 +1,10 @@
-import Request from './request.model';
-import { Car, User, Venue } from '../../app/models';
-import RequestItemStatus from './requestItemStatus.model';
-import requestItemsMeta from './requestIteam.meta';
+import { Car } from '../../app/models/car.model';
+import { User } from '../../app/models/user.model';
+import { Venue } from '../../app/models/venue.model';
 import Transmittal from '../../distribution/models/transmittal.model';
+import Request from './request.model';
+import requestItemsMeta from './requestIteam.meta';
+import RequestItemStatus from './requestItemStatus.model';
 
 class RequestItemHooks {
 

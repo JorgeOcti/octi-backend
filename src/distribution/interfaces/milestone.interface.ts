@@ -1,11 +1,11 @@
-import { IForm } from '../../form/interfaces/form.interface';
-import { IFormModel } from '../../form/models/form.model';
-import { IMilestoneType } from './milestoneType.interface';
-import { IMilestoneTypeModel } from '../models/milestoneType.model';
-import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
-import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
-import { ITeam } from '../../app/interfaces/team.interface';
-import { ITeamModel } from '../../app/models/team.model';
+import type { IForm } from '../../form/interfaces/form.interface';
+import type { IFormModel } from '../../form/models/form.model';
+import type { IMilestoneType } from './milestoneType.interface';
+import type { IMilestoneTypeModel } from '../models/milestoneType.model';
+import type { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
+import type { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { ITeamModel } from '../../app/models/team.model';
 
 export interface IMilestoneUpdateItems {
   arrivalDate: boolean;

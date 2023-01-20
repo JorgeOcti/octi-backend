@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "inlineSources": true,
     "outDir": "dist",
+    "allowJs": true,
     "tsBuildInfoFile": "./buildcache/buildcache",
     "noImplicitReturns": true,
     "noImplicitAny": true,

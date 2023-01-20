@@ -1,6 +1,6 @@
-import { IUserModel } from '../../app/models/user.model';
 import mongooseRaw from '../../mongoRaw';
 import requestItemsMeta from '../../request/models/requestIteam.meta';
+import { IUserModel } from '../schemas/user.schema';
 
 class UserHooks {
 

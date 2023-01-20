@@ -1,12 +1,11 @@
-import * as jwt from 'jsonwebtoken';
-
 import { NextFunction, Request, Response } from 'express';
-import User, { IUserModel } from '../app/models/user.model';
-
+import * as jwt from 'jsonwebtoken';
 import BaseSchema from 'yup/lib/schema';
-import { IRequest } from '../interfaces/global.interface';
-import { IUser } from '../app/interfaces';
+import type { IUser } from '../app/interfaces/user.interface';
+import User from '../app/models/user.model';
 import UserServices from '../app/models/user.services';
+import type { IUserModel } from '../app/schemas/user.schema';
+import type { IRequest } from '../interfaces/global.interface';
 import logger from '../services/logger.service';
 import redisClient from '../services/redis.service';
 
@@ -77,7 +76,7 @@ class Middlewares {
             status: 401
           });
         }
-      } else if ( headers?.authorization && headers.authorization.split(' ')[0] === 'JWT') {
+      } else if (headers?.authorization && headers.authorization.split(' ')[0] === 'JWT') {
         try {
           const decode: any = jwt.verify(headers.authorization.split(' ')[1], app.locals.secretKey);
           const { user } = await this.addUserToRequest(decode._id, req);

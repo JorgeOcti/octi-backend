@@ -1,19 +1,15 @@
+import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
-
-import { Request, Response } from 'express';
-
-import GeneralUtils from '../../utils/general.utils';
-import { IRequest } from '../../interfaces/global.interface';
 import ParticipantModel from '../../form/models/participant.model';
-import TeamSetting from '../models/teamSetting.model';
-import User from '../models/user.model';
-import UserModel from '../models/user.model';
-import Version from '../models/version.model';
-// import app from '../../app';
+import { IRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
-import { queue } from '../../utils/queue';
+import GeneralUtils from '../../utils/general.utils';
+import TeamSetting from '../models/teamSetting.model';
+import { default as User, default as UserModel } from '../models/user.model';
+import Version from '../models/version.model';
+import emailQueue from '../tasks/email.task';
 
 class JWTController {
 
@@ -280,7 +276,7 @@ class JWTController {
       if (user) {
         const token = uuid.v4();
         const fullname = user.fullName();
-        queue.create('email', {
+        emailQueue.create({
           from: '',
           title: `Recovery password for ${fullname}`,
           to: `"${fullname}"<${user.email}>`,

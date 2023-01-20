@@ -1,9 +1,9 @@
-import { ICompany } from './company.interface';
-import { IForm } from '../../form/interfaces/form.interface';
-import { IPermission } from '../../billing/interfaces/permission.interface';
-import { IVenue } from './venue.interface';
-import { ITeam } from './team.interface';
-import { IModule } from '../../billing/interfaces';
+import type { ICompany } from './company.interface';
+import type { IForm } from '../../form/interfaces/form.interface';
+import type { IPermission } from '../../billing/interfaces/permission.interface';
+import type { IVenue } from './venue.interface';
+import type { ITeam } from './team.interface';
+import type { IModule } from '../../billing/interfaces/module.interface';
 
 export interface IGroup {
   name: string;

@@ -1,9 +1,8 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import { ICarModel } from '../../app/models/car.model';
-import { IOperationType } from '../interfaces/operationType.interface';
 import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import { ICarModel } from '../../app/models/car.model';
+import type { IOperationType } from '../interfaces/operationType.interface';
 
 export interface IOperationTypeModel extends IOperationType, mongoose.Document<any> {
 }
@@ -23,7 +22,7 @@ const operationTypeSchema = new mongoose.Schema({
 operationTypeSchema.set('toObject', { virtuals: true });
 operationTypeSchema.set('toJSON', { virtuals: true });
 
-operationTypeSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+operationTypeSchema.statics.findOneOrCreate = function (condition: any, create: any): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
     model.findOne(condition, (err: any, result: ICarModel) => {

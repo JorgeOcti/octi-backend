@@ -1,4 +1,4 @@
-import {IUserModel} from '../../app/models/user.model';
+import { IUserModel } from '../../app/schemas/user.schema';
 
 export interface IInventoryComment {
   _id?: any;

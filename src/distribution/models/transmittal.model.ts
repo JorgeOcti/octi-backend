@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import {AggregatePaginateModel, PaginateModel} from 'mongoose';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import { ChoicesStatusTransmittal, choicesStatusTransmittal } from './transmitall.types';
 
-import {ITransmittal} from '../interfaces/transmittal.interface';
+import type { ITransmittal } from '../interfaces/transmittal.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface ITransmittalModel extends ITransmittal, mongoose.Document<any> { }
@@ -104,7 +104,7 @@ transmittalSchema.set<any>('expires', 30);
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
 
-export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>& AggregatePaginateModel<ITransmittalModel>;
+export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel> & AggregatePaginateModel<ITransmittalModel>;
 
 const Transmittal = mongoose.model<ITransmittalModel, TransmittalSchema>('Transmittal', transmittalSchema);
 

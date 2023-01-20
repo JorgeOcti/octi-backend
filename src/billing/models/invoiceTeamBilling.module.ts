@@ -1,13 +1,13 @@
-import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
+import * as s3Config from '../../../s3-config.json';
 
-import {IInvoiceTeamBilling} from '../interfaces/invoiceTeamBilling.interface';
 import { PaginateModel } from 'mongoose';
-import {teamBillingSchema} from "./teamBilling.model";
+import type { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
+import { teamBillingSchema } from "./teamBilling.model";
 
 export interface IInvoiceTeamBillingModel extends IInvoiceTeamBilling, mongoose.Document<any> {
   attach(condition: string, file: any, error: (err: any) => void): void;
@@ -131,8 +131,8 @@ const invoiceTeamBillingSchema = new mongoose.Schema({
     type: fileSchema,
     default: {}
   }
-},{
-   timestamps: true
+}, {
+  timestamps: true
 });
 
 invoiceTeamBillingSchema.plugin<any>(mongooseCrate, {

@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import { ITeam } from '../interfaces';
 import { PaginateModel } from 'mongoose';
+import type { ITeam } from '../interfaces/team.interface';
 
-export interface ITeamModel extends ITeam, mongoose.Document {}
+export interface ITeamModel extends ITeam, mongoose.Document { }
 
 const teamSchema = new mongoose.Schema({
   name: {

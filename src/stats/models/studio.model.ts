@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
 import { PaginateModel } from 'mongoose';
-import {IInvoiceModel} from "../../billing/models/invoice.model";
-import {StatsDashboardTypes} from './studio.types'
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import type { IInvoiceModel } from "../../billing/models/invoice.model";
+import { StatsDashboardTypes } from './studio.types';
 
 
 export const choicesStatsDashboardTypes = [
@@ -28,7 +28,7 @@ const studioSchema = new mongoose.Schema({
   },
   name: String,
   embedURL: String,
-},{
+}, {
   timestamps: true
 });
 

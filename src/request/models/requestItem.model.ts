@@ -2,14 +2,16 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
-import { baseCarSchema, baseUserSchema, baseVenueSchema } from '../../app/models';
+import { baseVenueSchema } from '../../app/models/venue.model';
+import { baseCarSchema } from '../../app/models/car.model';
 
-import { IRequestItem } from '../interfaces/requestItem.interface';
+import type { IRequestItem } from '../interfaces/requestItem.interface';
 import { baseRequestItemStatusSchema } from './requestItemStatus.model';
 import requestItemsHooks from './requestItem.hooks';
 import { requestSchema } from './request.model';
 import { transmittalSchema } from '../../distribution/models/transmittal.model';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { baseUserSchema } from '../../app/schemas/user.schema';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document<any> {
   createdAt: Date;

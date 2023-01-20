@@ -1,4 +1,5 @@
-import {ICompany, ITeam} from "./index";
+import type { ICompany } from "./company.interface";
+import type { ITeam } from "./team.interface";
 
 export interface IBaseBorder {
   _id?: any;

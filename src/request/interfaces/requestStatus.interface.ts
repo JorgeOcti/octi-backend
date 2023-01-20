@@ -1,4 +1,4 @@
-import {ITeam} from '../../app/interfaces/team.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
 
 export interface IRequestStatus {
   _id?: any;

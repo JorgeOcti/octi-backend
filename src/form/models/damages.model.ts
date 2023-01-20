@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IDamages } from '../interfaces/damage.interface';
+import type { IDamages } from '../interfaces/damage.interface';
 
 export interface IDamagesModel extends IDamages, mongoose.Document {}
 export const damagesSchema = new mongoose.Schema({

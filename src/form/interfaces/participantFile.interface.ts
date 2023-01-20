@@ -1,6 +1,6 @@
-import {ICompanyModel} from '../../app/models/company.model';
-import {IFormModel} from '../models/form.model';
-import {IUserModel} from '../../app/models/user.model';
+import type { ICompanyModel } from '../../app/models/company.model';
+import type { IUserModel } from '../../app/schemas/user.schema';
+import type { IFormModel } from '../models/form.model';
 
 interface IIFile {
   url: string;

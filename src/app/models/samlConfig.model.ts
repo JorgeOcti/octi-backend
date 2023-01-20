@@ -5,7 +5,7 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
 
-import { ISamlConfig } from '../interfaces';
+import type { ISamlConfig } from '../interfaces/samlConfig.interface';
 import { PaginateModel } from 'mongoose';
 
 export interface ISamlConfigModel extends ISamlConfig, mongoose.Document {

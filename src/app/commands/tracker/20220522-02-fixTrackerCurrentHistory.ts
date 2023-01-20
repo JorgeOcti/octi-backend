@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
-import { Car } from '../../models';
+import { Car } from '../../models/car.model';
 import History from '../../models/history.model';
-import { ICar } from '../../interfaces';
+import { ICar } from '../../interfaces/car.interface';
 import carTracker from '../../controllers/tracker/car.tracker';
 
 async function fixTrackerCurrentHistory() {

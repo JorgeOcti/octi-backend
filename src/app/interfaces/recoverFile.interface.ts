@@ -1,6 +1,6 @@
-import {ICompanyModel} from '../models/company.model';
-import {ITeamModel} from '../models/team.model';
-import {IUserModel} from '../models/user.model';
+import type { ICompanyModel } from '../models/company.model';
+import type { ITeamModel } from '../models/team.model';
+import type { IUserModel } from '../schemas/user.schema';
 
 interface IIFile {
   url: string;

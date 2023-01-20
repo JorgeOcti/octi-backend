@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import {IFormTrigger, ITriggerConfig} from '../interfaces/form.interface';
-import {KindTrigger} from './trigger.types';
+import type { IFormTrigger, ITriggerConfig } from '../interfaces/form.interface';
+import { KindTrigger } from './trigger.types';
 
 
 export const kindsTrigger = [
@@ -24,7 +24,7 @@ export const integrationTypes = [
   IntegrationType.conecta
 ];
 
-export interface ITriggerConfigModel extends ITriggerConfig, mongoose.Types.Subdocument {}
+export interface ITriggerConfigModel extends ITriggerConfig, mongoose.Types.Subdocument { }
 export const triggerConfigSchema = new mongoose.Schema({
   fullname: {
     type: mongoose.Schema.Types.Mixed
@@ -66,7 +66,7 @@ export const triggerConfigSchema = new mongoose.Schema({
     type: String
   },
 
- requestItemStatus: {
+  requestItemStatus: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RequestItemStatus'
   },
@@ -77,7 +77,7 @@ export const triggerConfigSchema = new mongoose.Schema({
 });
 
 
-export interface IFormTriggerModel extends IFormTrigger, mongoose.Document {}
+export interface IFormTriggerModel extends IFormTrigger, mongoose.Document { }
 export const formTriggerSchema = new mongoose.Schema({
   name: {
     type: String,

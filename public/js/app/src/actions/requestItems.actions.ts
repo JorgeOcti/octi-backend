@@ -45,7 +45,7 @@ import {
   ILoadUsersRequestItems
 } from './requestItems.types';
 import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
-import { IUser } from '../../../../../src/app/interfaces';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
 export function cancelRequestItemsAction(source: CancelTokenSource): ICancelRequestItems {

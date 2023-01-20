@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection } from '../interfaces/form.interface';
+import type { IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection } from '../interfaces/form.interface';
 import { formTriggerSchema } from './trigger.model';
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {

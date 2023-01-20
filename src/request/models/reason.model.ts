@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import { IReason } from '../interfaces/reason.interface';
 import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import type { IReason } from '../interfaces/reason.interface';
 
 export interface IReasonModel extends IReason, mongoose.Document<any> { }
 

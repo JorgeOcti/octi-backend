@@ -1,7 +1,7 @@
 import * as mongoose from "mongoose";
-import {IStockCar} from "../interfaces/stock.interface";
+import type { IStockCar } from "../interfaces/stock.interface";
 
-export interface IStockCarModel extends IStockCar, mongoose.Document {}
+export interface IStockCarModel extends IStockCar, mongoose.Document { }
 const stockCarSchema = new mongoose.Schema({
   car: {
     type: mongoose.Schema.Types.ObjectId,

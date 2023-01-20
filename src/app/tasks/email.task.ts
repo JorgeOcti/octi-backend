@@ -1,40 +1,46 @@
-import {Job, Queue} from 'kue';
+import * as Queue from 'bull';
+import * as he from 'he';
 import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
-// import logger from '../../services/logger.service';
-import {compileTemplate} from 'pug';
+import { compileTemplate } from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
-import * as he from 'he';
 import logger from '../../services/logger.service';
+import { createRedisClient } from '../../services/redis.service';
 
 class EmailQueue {
-  private queue: Queue;
+  public queue: Queue.Queue;
+  readonly processJob: boolean = true;
 
-  constructor(queue: Queue) {
-    this.queue = queue;
+  constructor() {
+    this.queue = new Queue('email', {
+      createClient: () => {
+        return createRedisClient();
+      },
+      prefix: '{andes}'
+    });
     this.generateHTML = this.generateHTML.bind(this);
-    this.processEmail = this.processEmail.bind(this);
+    this.process = this.process.bind(this);
+    this.create = this.create.bind(this);
   }
 
   public run() {
-    this.queue.process('email', this.processEmail);
+    this.queue.process('email', this.process);
   }
 
   private generateHTML(view: string, context: any): string {
-    const extension = view.includes('.pug', view.length-4) ? '': '.pug';
+    const extension = view.includes('.pug', view.length - 4) ? '' : '.pug';
     const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
     const pugCompile: compileTemplate = pug.compileFile(templatePath);
     return pugCompile(context);
   }
 
-  private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
-    if (job) {
-      job.log('start processEmail');
+  private process(job: Queue.Job<any>, done: Queue.DoneCallback) {
+    if (this.processJob) {
+      logger.info('start EmailQueue.process');
       // generate email
       const mail: Mail.Options = {
         from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
-        // to: job.data.to,
         to: job.data.to,
         bcc: job.data.bcc,
         subject: job.data.subject,
@@ -49,24 +55,26 @@ class EmailQueue {
           'X-Report-Abuse-To': 'abuse@osacontrol.com'
         }
       };
-      logger.info(`EmailQueue.processEmail: ${JSON.stringify(mail)}`);
-      job.log('send email');
+
+      logger.info(`EmailQueue.process: ${JSON.stringify(mail)}`);
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
         if (error) {
           console.log(error);
           done(error);
         }
+        logger.info(`Message ${info.messageId} sent: ${info.response}`);
         done(null, {});
-        // job.log(`Message ${info.messageId} sent: ${info.response}`);
-        /* istanbul ignore next */
-        // if (app.get('env') !== 'testing') {
-        //   console.log('Message %s sent: %s', info.messageId, info.response);
-        // }
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }
   }
+
+  public create(data: any) {
+    this.queue.add('email', data, { attempts: 3, backoff: 1000 });
+  }
+
 }
 
-export default EmailQueue;
+const emailQueue = new EmailQueue();
+export default emailQueue;

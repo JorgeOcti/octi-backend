@@ -4,7 +4,9 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
-import { Car, IUserModel, Venue } from '../../app/models';
+import Car from '../../app/models/car.model';
+import { IUserModel } from '../../app/schemas/user.schema';
+import { Venue } from '../../app/models/venue.model';
 import Form, { IFormModel } from '../../form/models/form.model';
 
 import Damages from '../../form/models/damages.model';

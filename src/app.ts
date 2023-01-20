@@ -1,52 +1,48 @@
 import * as bodyParser from 'body-parser';
-import * as Bull from 'bull';
+import * as Queue from 'bull';
 import { DoneCallback, Job } from 'bull';
 import * as compression from 'compression';
 import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
+import * as promBundle from "express-prom-bundle";
 import * as session from 'express-session';
 import { CookieOptions } from 'express-session';
-import * as kue from 'kue';
+import * as moment from 'moment-timezone';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
-import * as moment from 'moment-timezone';
-import { passport } from './passportConfig';
-import * as swaggerUi from 'swagger-ui-express';
-import * as swaggerJSDoc from 'swagger-jsdoc';
 import * as path from 'path';
 import * as responseTime from 'response-time';
+import * as favicon from 'serve-favicon';
 import * as Staticify from 'staticify';
+import * as swaggerJSDoc from 'swagger-jsdoc';
+import * as swaggerUi from 'swagger-ui-express';
 import AppController from './app/controllers/app.controller';
 import { appRouter, jwtRouter } from './app/router';
-import EmailQueue from './app/tasks/email.task';
+import emailQueue from './app/tasks/email.task';
+// import HistoryQueue from './app/tasks/history.task';
 import { billingRouter } from './billing/router';
 import BillingQueue from './billing/tasks/billing.task';
+import BillingTeamQueue from './billing/tasks/billingTeam.task';
+import { distributionRouter } from './distribution/router';
 import formRouter from './form/router';
 import { inventoryRouter } from './inventory/router';
-import InventoryQueue from './inventory/taks/inventory.task';
+// import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
+import { passport } from './passportConfig';
 import { planningRouter } from './planning/router';
 import { requestRouter } from './request/router';
-import redisClient, { createRedisClient } from './services/redis.service';
-import { distributionRouter } from './distribution/router';
-import { statsRouter } from './stats/router';
-import HistoryQueue from './app/tasks/history.task';
 import logger from './services/logger.service';
-import { queue } from './utils/queue';
-import BillingTeamQueue from './billing/tasks/billingTeam.task';
+import redisClient, { createRedisClient } from './services/redis.service';
+import { statsRouter } from './stats/router';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
-import * as favicon from 'serve-favicon'
 
-import * as promBundle from "express-prom-bundle";
 
 const metricsMiddleware = promBundle({includeMethod: true, includePath: true})
 
 // Create Express server
 const app = express();
-
-
 
 const redisStore = connectRedis(session);
 
@@ -95,7 +91,6 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // For parsing multipart/form-data
-// const upload = multer({dest:'/tmp/'});
 const upload = multer({
   limits: { fieldSize: 32 * 1024 * 1024 },
   storage: multer.diskStorage({
@@ -122,15 +117,15 @@ app.locals.getVersionedPath = staticify.getVersionedPath;
 app.locals.moment = moment;
 
 app.set('trust proxy', 1); // trust first proxy
+
 let cookieSetting: CookieOptions = {
   secure: process.env.ENV === 'production',
   maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
 };
+
 if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
-
-// logger.info(`Setting cookies ${JSON.stringify(cookieSetting)}`);
 
 app.use(session({
   resave: false,
@@ -139,7 +134,6 @@ app.use(session({
   cookie: {
     ...cookieSetting
   },
-  // proxy: process.env.ENV === 'production',
   store: new redisStore({ client: redisClient as any })
 }));
 
@@ -190,13 +184,13 @@ const swaggerDocs = swaggerJSDoc(options);
 app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { customSiteTitle: 'Documentación API OSA Andes' }));
 
 
-const billingQueue = new Bull('billing', {
+const billingQueue = new Queue('billing', {
   createClient: () => {
     return createRedisClient();
   },
   prefix: '{andes}'
 });
-const billingCorporateQueue = new Bull('billingCorporate', {
+const billingCorporateQueue = new Queue('billingCorporate', {
   createClient: () => {
     return createRedisClient();
   },
@@ -259,10 +253,10 @@ const billingCorporateQueue = new Bull('billingCorporate', {
 })();
 
 
-new EmailQueue(queue).run();
-new InventoryQueue(queue).run();
-new HistoryQueue(queue).run();
-kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
+emailQueue.run();
+// new InventoryQueue(queue).run();
+// new HistoryQueue(queue).run();
+
 
 // The error handler must be before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
@@ -301,10 +295,6 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
     message: err
   })}`);
   res.status(statusCode).render(statusCode.toString());
-  // res.json({
-  //   status: err.status,
-  //   error: err.message ? err.message : err.error
-  // });
   next();
 });
 

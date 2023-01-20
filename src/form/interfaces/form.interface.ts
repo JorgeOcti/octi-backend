@@ -1,14 +1,12 @@
 import * as mongoose from 'mongoose';
-
-import {IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSectionModel} from '../models/form.model';
-
-import {ICompany} from '../../app/interfaces/company.interface';
-import {IDamagesModel} from '../models/damages.model';
-import {IFormTriggerModel} from "../models/trigger.model";
-import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
-import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
-import {IScaleModel} from '../models/scale.model';
-import {ITeam} from '../../app/interfaces/team.interface';
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
+import type { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
+import type { IDamagesModel } from '../models/damages.model';
+import type { IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSectionModel } from '../models/form.model';
+import type { IScaleModel } from '../models/scale.model';
+import type { IFormTriggerModel } from "../models/trigger.model";
 
 export interface IFormItems {
   _id?: any;

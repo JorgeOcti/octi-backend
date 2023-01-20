@@ -1,9 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { IUserModel } from '../schemas/user.schema';
 
-import { IUser } from '../interfaces';
-import { IUserModel } from './user.model';
 import mongoose from 'mongoose';
+import type { IUser } from '../interfaces/user.interface';
 
 export default class UserServices {
 

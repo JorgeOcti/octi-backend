@@ -1,7 +1,7 @@
-import { ICar } from '../../app/interfaces';
-import logger from '../../services/logger.service';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
+import type { ICar } from '../../app/interfaces/car.interface';
+import logger from '../../services/logger.service';
 
 class ConectaController {
 

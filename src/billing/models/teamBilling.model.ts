@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import {ITeamBilling} from '../interfaces';
-import {PaginateModel} from 'mongoose';
+import type { ITeamBilling } from '../interfaces/teamBiling.interfaces';
 
 export interface ITeamBillingModel extends ITeamBilling, mongoose.Document<any> {
 }

@@ -1,7 +1,7 @@
-import { ICompany } from '../../app/interfaces/company.interface';
-import { IModule } from './module.interface';
-import { ISubmodule } from './submodule.interface';
-import { ITeam } from '../../app/interfaces/team.interface';
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { IModule } from './module.interface';
+import type { ISubmodule } from './submodule.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
 
 export interface ITeamBillingSection {
   _id?: any;

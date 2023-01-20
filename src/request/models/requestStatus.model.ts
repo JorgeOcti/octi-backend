@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
-
-import { ICarModel } from '../../app/models/car.model';
-import { IRequestStatus } from '../interfaces/requestStatus.interface';
 import { PaginateModel } from 'mongoose';
+import { ICarModel } from '../../app/models/car.model';
+import type { IRequestStatus } from '../interfaces/requestStatus.interface';
 
 export interface IRequestStatusModel extends IRequestStatus, mongoose.Document<any> {
 }
@@ -23,7 +22,7 @@ const requestStatusSchema = new mongoose.Schema({
   timestamps: true
 });
 
-requestStatusSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+requestStatusSchema.statics.findOneOrCreate = function (condition: any, create: any): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
     model.findOne(condition, (err: any, result: ICarModel) => {

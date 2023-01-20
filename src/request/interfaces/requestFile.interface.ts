@@ -1,6 +1,6 @@
-import { ICompanyModel } from '../../app/models/company.model';
-import { IIFile } from '../../interfaces/file.interface';
-import { IUserModel } from '../../app/models/user.model';
+import type { ICompanyModel } from '../../app/models/company.model';
+import type { IIFile } from '../../interfaces/file.interface';
+import type { IUserModel } from '../../app/schemas/user.schema';
 
 export interface IRequestFile {
   _id?: any;

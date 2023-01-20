@@ -2,17 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import * as GraphicsMagick from 'gm';
 import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
-// import * as Raven from 'raven';
 import * as uuid from 'uuid';
-import { queue } from '../../utils/queue';
-import { passport } from '../../passportConfig';
-
 import { IRequest } from '../../interfaces/global.interface';
+import { passport } from '../../passportConfig';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import RecoverFile from '../models/recoverFile.model';
 import UserModel, { User } from '../models/user.model';
+import emailQueue from '../tasks/email.task';
 
 class AppController {
 
@@ -193,9 +191,10 @@ class AppController {
 
       const user = await UserModel.findOne({ email: username });
       if (user) {
+
         const token = uuid.v4();
         const fullname = user.fullName();
-        queue.create('email', {
+        emailQueue.create({
           from: '',
           title: `Recovery password for ${fullname}`,
           to: `"${fullname}"<${user.email}>`,
@@ -216,7 +215,7 @@ class AppController {
             fullname,
             url: `${process.env.SITE_URL}account/recovery/${token}/`
           }
-        }).priority('high').attempts(5).save();
+        })
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         user.save();

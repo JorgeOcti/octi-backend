@@ -15,7 +15,7 @@ export interface Icolors {
 //   // date_format: 'YYYY/MM/DD',
 //   filename: logDirectory + '/access-%DATE%.log',
 //   frequency: 'daily',
-//   verbose: false
+//   verbose: falseF
 // });
 
 class LoggerService {

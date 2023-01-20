@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import {ICarrier} from '../interfaces';
-import {PaginateModel} from 'mongoose';
+import { PaginateModel } from 'mongoose';
+import type { ICarrier } from '../interfaces/carrier.interface';
 
-export interface ICarrierModel extends ICarrier, mongoose.Document<any> {}
+export interface ICarrierModel extends ICarrier, mongoose.Document<any> { }
 const carrierSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -24,4 +24,4 @@ carrierSchema.plugin(mongoosePaginate);
 export type CarrierSchema = mongoose.Model<ICarrierModel> & PaginateModel<ICarrierModel> & {};
 
 const Carrier = mongoose.model<ICarrierModel, CarrierSchema>('Carrier', carrierSchema);
-export  default Carrier;
+export default Carrier;

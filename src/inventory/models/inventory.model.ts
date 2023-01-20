@@ -4,9 +4,8 @@ import * as mongooseCrate from 'mongoose-crate';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
-
-import {IInventory} from '../interfaces/inventory.interface';
-import {PaginateModel} from 'mongoose';
+import type { IInventory } from '../interfaces/inventory.interface';
+import { PaginateModel } from 'mongoose';
 
 const fileSchema = new mongoose.Schema({
   url: {
@@ -115,14 +114,14 @@ const inventorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-inventorySchema.set('toObject', {virtuals: true});
-inventorySchema.set('toJSON', {virtuals: true});
+inventorySchema.set('toObject', { virtuals: true });
+inventorySchema.set('toJSON', { virtuals: true });
 
 inventorySchema.index({ team: 1 });
 inventorySchema.index({ users: 1 });
 inventorySchema.index({ createdBy: 1 });
 inventorySchema.index({ finalizedBy: 1 });
-inventorySchema.index({team: 1, status: 1, venues: 1});
+inventorySchema.index({ team: 1, status: 1, venues: 1 });
 
 inventorySchema.set<any>('redisCache', process.env.ENV === 'production');
 inventorySchema.set<any>('expires', 10);

@@ -1,8 +1,9 @@
 import NullTriggerDelegate from './nullTrigger.delegate';
 import { IFormTriggerModel } from '../../../models/trigger.model';
 import logger from '../../../../services/logger.service';
-import { queue } from '../../../../utils/queue';
+
 import { IAnyObject } from '../../../../interfaces/global.interface';
+import emailQueue from '../../../../app/tasks/email.task';
 
 export default class EmailTriggerDelegate extends NullTriggerDelegate {
 
@@ -38,7 +39,7 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
         recipients = `"${context.fullname}"<${context.email}>`;
       }
 
-      queue.create('email', {
+      emailQueue.create({
         from: '',
         title: `"${context.subject} | ${context.fullname}`,
         to: recipients,
@@ -51,7 +52,7 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
           ...context,
           ...answers
         }
-      }).priority('high').attempts(5).save();
+      });
 
       logger.info(`EmailTriggerDelegate.trigger ${trigger.kind} executed`);
 

@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import {IActivityHistoryInterface} from '../interfaces/activityHistory.interface';
+import type { IActivityHistoryInterface } from '../interfaces/activityHistory.interface';
 import { choicesTypeActivity } from './activiHistory.types';
 
 const detailInventorySchema = new mongoose.Schema({
@@ -30,7 +30,7 @@ const responseCarSchema = new mongoose.Schema({
   }
 });
 
-export interface IActivityHistorygModel extends IActivityHistoryInterface, mongoose.Document {}
+export interface IActivityHistorygModel extends IActivityHistoryInterface, mongoose.Document { }
 
 
 

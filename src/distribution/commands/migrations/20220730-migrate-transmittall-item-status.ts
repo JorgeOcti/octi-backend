@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
-import { ITransmittalItem } from '../../interfaces';
+import { ITransmittalItem } from '../../interfaces/transmittalItem.interface';
 // import logger from '../../../services/logger.service';
 import TransmittalItem from '../../models/transmittalItem.model';
 

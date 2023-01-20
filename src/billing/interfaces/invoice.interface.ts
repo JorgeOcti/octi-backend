@@ -1,5 +1,5 @@
-import {ICompany} from '../../app/interfaces/company.interface';
-import {ITeam} from '../../app/interfaces/team.interface';
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
 
 interface IIFile {
   url: string;

@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import { IColor } from '../interfaces';
 import { PaginateModel } from 'mongoose';
+import type { IColor } from '../interfaces/color.interface';
 
 export interface IColorModel extends IColor, mongoose.Document<any> {
 }

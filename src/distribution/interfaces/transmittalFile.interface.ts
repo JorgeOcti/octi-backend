@@ -1,12 +1,12 @@
-import {IIFile} from '../../interfaces/file.interface';
-import {IMilestone} from "./milestone.interface";
-import {IMilestoneModel} from "../models/milestone.model";
-import {ITeam} from "../../app/interfaces/team.interface";
-import {ITeamModel} from "../../app/models/team.model";
-import {ITransmittal} from "./transmittal.interface";
-import {ITransmittalModel} from "../models/transmittal.model";
-import {IUser} from "../../app/interfaces/user.interface";
-import {IUserModel} from "../../app/models/user.model";
+import type { ITeam } from "../../app/interfaces/team.interface";
+import type { IUser } from "../../app/interfaces/user.interface";
+import type { ITeamModel } from "../../app/models/team.model";
+import type { IUserModel } from "../../app/schemas/user.schema";
+import type { IIFile } from '../../interfaces/file.interface';
+import type { IMilestoneModel } from "../models/milestone.model";
+import type { ITransmittalModel } from "../models/transmittal.model";
+import type { IMilestone } from "./milestone.interface";
+import type { ITransmittal } from "./transmittal.interface";
 
 export interface ITransmittalFile {
   _id?: any;

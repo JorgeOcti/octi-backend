@@ -1,6 +1,6 @@
 import mongooseRaw from '../../mongoRaw';
-import { IVenueModel } from './venue.model';
 import requestItemsMeta from '../../request/models/requestIteam.meta';
+import type { IVenueModel } from './venue.model';
 
 class VenueHooks {
 

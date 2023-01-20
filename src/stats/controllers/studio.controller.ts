@@ -1,7 +1,7 @@
-import {Response} from "express";
-import {IRequest} from '../../interfaces/global.interface';
+import { Response } from "express";
+import type { IUser } from "../../app/interfaces/user.interface";
+import type { IRequest } from '../../interfaces/global.interface';
 import Studio from "../models/studio.model";
-import {IUser} from "../../app/interfaces";
 
 class StudioController {
 

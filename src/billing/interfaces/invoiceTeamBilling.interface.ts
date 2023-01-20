@@ -1,9 +1,10 @@
-import {ICompany, IHistory} from "../../app/interfaces";
+import type { ICompany } from "../../app/interfaces/company.interface";
+import type { IHistory } from "../../app/interfaces/history.interface";
 
-import {IModule} from "./module.interface";
-import {ISubmodule} from "./submodule.interface";
-import {ITeam} from '../../app/interfaces/team.interface';
-import {ITeamBilling} from "./teamBiling.interfaces";
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IModule } from "./module.interface";
+import type { ISubmodule } from "./submodule.interface";
+import type { ITeamBilling } from "./teamBiling.interfaces";
 
 interface IIFile {
   url: string;

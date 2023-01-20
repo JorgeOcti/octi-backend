@@ -1,17 +1,17 @@
-import {ICar} from "../../app/interfaces/car.interface";
-import {ICarModel} from "../../app/models/car.model";
-import {IParticipant} from "../../form/interfaces/participant.interface";
-import {IParticipantModel} from "../../form/models/participant.model";
-import {IRequest} from "../../request/interfaces/request.interface";
-import {IRequestItem} from "../../request/interfaces/requestItem.interface";
-import {IRequestItemModel} from "../../request/models/requestItem.model";
-import {IRequestModel} from "../../request/models/request.model";
-import {ITeam} from "../../app/interfaces/team.interface";
-import {ITeamModel} from "../../app/models/team.model";
-import {ITransmittal} from "./transmittal.interface";
-import {ITransmittalModel} from "../models/transmittal.model";
-import {IVenue} from "../../app/interfaces/venue.interface";
-import {IVenueModel} from "../../app/models/venue.model";
+import type { ICar } from "../../app/interfaces/car.interface";
+import type { ITeam } from "../../app/interfaces/team.interface";
+import type { IVenue } from "../../app/interfaces/venue.interface";
+import type { ICarModel } from "../../app/models/car.model";
+import type { ITeamModel } from "../../app/models/team.model";
+import type { IVenueModel } from "../../app/models/venue.model";
+import type { IParticipant } from "../../form/interfaces/participant.interface";
+import type { IParticipantModel } from "../../form/models/participant.model";
+import type { IRequest } from "../../request/interfaces/request.interface";
+import type { IRequestItem } from "../../request/interfaces/requestItem.interface";
+import type { IRequestModel } from "../../request/models/request.model";
+import type { IRequestItemModel } from "../../request/models/requestItem.model";
+import type { ITransmittalModel } from "../models/transmittal.model";
+import type { ITransmittal } from "./transmittal.interface";
 
 export interface ITransmittalItem {
   _id?: any;

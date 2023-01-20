@@ -1,10 +1,10 @@
-import { ICompany } from './company.interface';
-import { IHistory } from './history.interface';
-import { IInventoryCar } from '../../inventory/interfaces/inventory.interface';
-import { IParticipant } from '../../form/interfaces/participant.interface';
-import { ITeam } from './team.interface';
-import { IUser } from './user.interface';
-import { IVenue } from './venue.interface';
+import type { ICompany } from './company.interface';
+import type { IHistory } from './history.interface';
+import type { IInventoryCar } from '../../inventory/interfaces/inventory.interface';
+import type { IParticipant } from '../../form/interfaces/participant.interface';
+import type { ITeam } from './team.interface';
+import type { IUser } from './user.interface';
+import type { IVenue } from './venue.interface';
 
 export interface ICarLocation {
   venue: IVenue;

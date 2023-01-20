@@ -18,7 +18,7 @@ import Car from '../../app/models/car.model';
 import { ChoicesStatusTransmittal } from '../models/transmitall.types';
 import { ChoicesStatusTransmittalItem } from '../models/transmittalItem.types';
 import GeneralUtils from '../../utils/general.utils';
-import { IUser } from '../../app/interfaces';
+import type { IUser } from '../../app/interfaces/user.interface';
 import Milestone from '../models/milestone.model';
 import RequestItem from '../../request/models/requestItem.model';
 import { Response } from 'express';

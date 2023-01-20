@@ -1,7 +1,7 @@
-import {ICompany} from '../../app/interfaces/company.interface';
-import {ITeam} from '../../app/interfaces/team.interface';
-import {IUser} from '../../app/interfaces/user.interface';
-import {IVenue} from '../../app/interfaces/venue.interface';
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IUser } from '../../app/interfaces/user.interface';
+import type { IVenue } from '../../app/interfaces/venue.interface';
 
 export interface IGPSPosition {
   _id?: any;

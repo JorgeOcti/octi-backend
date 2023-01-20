@@ -1,5 +1,5 @@
-import { ITeam } from '../../app/interfaces/team.interface';
-import { ITeamModel } from '../../app/models/team.model';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { ITeamModel } from '../../app/models/team.model';
 
 export interface IMilestoneType {
   _id?: any;

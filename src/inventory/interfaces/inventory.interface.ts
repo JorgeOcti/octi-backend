@@ -1,13 +1,13 @@
 import * as mongoose from 'mongoose';
-import { IUserModel } from '../../app/models/user.model';
-import { ICar } from '../../app/interfaces/car.interface';
-import { ICompany } from '../../app/interfaces/company.interface';
-import { IIFile } from '../../interfaces/file.interface';
-import { IInventoryComment } from './inventoryComment.interface';
-import { IInventoryFile } from './inventoryFile.interface';
-import { IInventoryLabel } from './inventoryLabel.interface';
-import { ITeam } from '../../app/interfaces/team.interface';
-import { IVenue } from '../../app/interfaces/venue.interface';
+import type { ICar } from '../../app/interfaces/car.interface';
+import type { ICompany } from '../../app/interfaces/company.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IVenue } from '../../app/interfaces/venue.interface';
+import type { IUserModel } from '../../app/schemas/user.schema';
+import type { IIFile } from '../../interfaces/file.interface';
+import type { IInventoryComment } from './inventoryComment.interface';
+import type { IInventoryFile } from './inventoryFile.interface';
+import type { IInventoryLabel } from './inventoryLabel.interface';
 
 export interface IInventoryCar {
   car: ICar;

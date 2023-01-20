@@ -3,11 +3,11 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
-import { Car, ChoicesStatusCar } from '../../models';
+import { Car, ChoicesStatusCar } from '../../models/car.model';
 
 // import carTracker from '../../controllers/tracker/car.tracker';
 import History from '../../models/history.model';
-import { ICar } from '../../interfaces';
+import { ICar } from '../../interfaces/car.interface';
 import conectaController from '../../../request/controllers/conecta.controller';
 
 async function fixTrackerCurrentHistory() {

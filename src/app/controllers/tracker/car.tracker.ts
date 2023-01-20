@@ -1,15 +1,16 @@
-import { fromParticipantProps, importToSistemProps, InventoryCarProps } from './car.tracker.types';
-import History from '../../models/history.model';
-import { IHistory } from '../../interfaces/history.interface';
-import { ModuleHistory, StatusHistory } from '../../models/history.types';
-import logger from '../../../services/logger.service';
-import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
-import { IInventory } from '../../../inventory/interfaces/inventory.interface';
-import Participant from '../../../form/models/participant.model';
-import { Car, Venue } from '../../models';
-import { ICar } from '../../interfaces';
 import * as moment from 'moment-timezone';
+import Participant from '../../../form/models/participant.model';
 import { IStringKeyObject } from '../../../interfaces/global.interface';
+import { IInventory } from '../../../inventory/interfaces/inventory.interface';
+import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
+import logger from '../../../services/logger.service';
+import type { ICar } from '../../interfaces/car.interface';
+import type { IHistory } from '../../interfaces/history.interface';
+import { Car } from '../../models/car.model';
+import History from '../../models/history.model';
+import { ModuleHistory, StatusHistory } from '../../models/history.types';
+import { Venue } from '../../models/venue.model';
+import { fromParticipantProps, importToSistemProps, InventoryCarProps } from './car.tracker.types';
 
 class CarTracker {
 
@@ -46,7 +47,7 @@ class CarTracker {
             }
           }]);
         // logger.info(`CarTracker.fromInventoryCar: inventoryCar: ${JSON.stringify(inventoryCar)}`);
-        
+
         if (
           inventoryCar && inventoryCar.inventory &&
           ![
@@ -55,7 +56,7 @@ class CarTracker {
             ChoicesStatusCarInventory.deleted
           ].includes(inventoryCar.status as any)
         ) {
-          const { 
+          const {
             inventory, car, venue, venueFound, inventoriedBy, labelBy, updatedAt, status
           } = inventoryCar;
           const { team, company } = inventory as unknown as IInventory;

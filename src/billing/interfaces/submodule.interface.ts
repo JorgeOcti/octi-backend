@@ -1,4 +1,4 @@
-import { IModule } from './module.interface';
+import type { IModule } from './module.interface';
 
 export interface ISubmodule {
   _id?: any;

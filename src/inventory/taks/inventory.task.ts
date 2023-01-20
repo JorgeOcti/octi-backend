@@ -1,4 +1,4 @@
-import {Job, Queue} from 'kue';
+import { Job, Queue } from 'kue';
 import CarModel from '../../app/models/car.model';
 import logger from '../../services/logger.service';
 
@@ -16,7 +16,7 @@ class InventoryQueue {
 
   private async updateCar(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
-      const {car} = job.data;
+      const { car } = job.data;
       try {
         const carToUpdate = await CarModel.findById(job.data.currentCar);
         let update = false;

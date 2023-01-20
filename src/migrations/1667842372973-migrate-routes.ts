@@ -1,13 +1,12 @@
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-
-import { Car, Venue } from '../app/models';
-
+import type { ICarLocation } from '../app/interfaces/car.interface';
+import { Car } from '../app/models/car.model';
 import History from '../app/models/history.model';
-import { ICarLocation } from '../app/interfaces';
-import InventoryCar from '../inventory/models/inventoryCar.model';
 import { ModuleHistory } from '../app/models/history.types';
+import { Venue } from '../app/models/venue.model';
 import Participant from '../form/models/participant.model';
+import InventoryCar from '../inventory/models/inventoryCar.model';
 
 mongoose.set('strictQuery', false);
 mongoose.set('debug', false);

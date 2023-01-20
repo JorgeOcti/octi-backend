@@ -14,7 +14,8 @@
     "build": "tsc",
     "watch-ts": "tsc -w",
     "test": "ENV=testing ts-mocha -p tsconfig.json --recursive src/*.spec.ts src/**/*.spec.ts src/**/**/*.spec.ts --timeout 5000 --exit",
-    "test-with-coverage": "ENV=testing nyc --reporter=html --reporter=text mocha dist/*.spec.js dist/**/*.spec.js dist/**/**/*.spec.js --timeout 5000 --exit"
+    "test-with-coverage": "ENV=testing nyc --reporter=html --reporter=text mocha dist/*.spec.js dist/**/*.spec.js dist/**/**/*.spec.js --timeout 5000 --exit",
+    "madge": "madge --circular ./src --extensions ts --warning"
   },
   "author": "",
   "license": "ISC",
@@ -45,7 +46,6 @@
     "is-uuid": "~1.0.2",
     "joi": "~17.7.0",
     "jsonwebtoken": "~9.0.0",
-    "kue": "~0.11.6",
     "mime": "~1.6.0",
     "moment": "~2.29.4",
     "moment-timezone": "~0.5.40",
@@ -101,7 +101,6 @@
     "@types/he": "~1.1.2",
     "@types/joi": "~17.2.3",
     "@types/jsonwebtoken": "~9.0.1",
-    "@types/kue": "~0.11.11",
     "@types/mocha": "~10.0.1",
     "@types/mongoose-aggregate-paginate-v2": "~1.0.1",
     "@types/morgan": "~1.9.4",
@@ -131,5 +130,12 @@
     "ts-migrate-mongoose": "~2.4.12",
     "ts-mocha": "~10.0.0",
     "typescript": "~4.9.4"
+  },
+  "madge": {
+    "detectiveOptions": {
+      "ts": {
+        "skipTypeImports": true
+      }
+    }
   }
 }

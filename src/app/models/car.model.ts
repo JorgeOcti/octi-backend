@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import { ICar } from '../interfaces';
 import { PaginateModel } from 'mongoose';
+import type { ICar } from '../interfaces/car.interface';
 import { baseVenueSchema } from './venue.model';
 
 export enum ChoicesStatusCar {

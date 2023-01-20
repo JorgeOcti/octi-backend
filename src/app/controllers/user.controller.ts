@@ -1,13 +1,13 @@
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { IRequest } from '../../interfaces/global.interface';
-import logger from '../../services/logger.service';
-import UserModel from '../models/user.model';
-import User, { IUserModel } from '../models/user.model';
-import Venue from '../models/venue.model';
-import PushService from '../../services/push.service';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import Permission from "../../billing/models/permission.model";
+import { IRequest } from '../../interfaces/global.interface';
+import logger from '../../services/logger.service';
+import PushService from '../../services/push.service';
+import { default as User, default as UserModel } from '../models/user.model';
+import Venue from '../models/venue.model';
+import { IUserModel } from '../schemas/user.schema';
 
 class UserController {
 
@@ -171,11 +171,11 @@ class UserController {
 
   public async apiChangeVenue(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {venue} = req.body;
+    const { venue } = req.body;
     try {
       logger.info(`UserController.apiChangeVenue { email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
       const currentUser = await UserModel.findById(req.user._id);
-      const currentVenue = await Venue.findOne({_id: venue, team});
+      const currentVenue = await Venue.findOne({ _id: venue, team });
       if (currentUser && currentVenue && currentUser.venuesPermissions(true).includes(venue)) {
         currentUser.venue = currentVenue;
         currentUser.company = currentVenue.company;
@@ -222,7 +222,7 @@ class UserController {
 
     //TODO: Change to dinamic query instead of hardcoded
     let permissions = await Permission.find({
-      codeName: { $in: [ 'viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio', 'viewPlanificationStudio' ] }
+      codeName: { $in: ['viewInventoryStudio', 'viewDistributionStudio', 'viewChecklistStudio', 'viewPlanificationStudio'] }
     })
 
     logger.info(JSON.stringify(permissions))
@@ -239,7 +239,7 @@ class UserController {
     };
     const filter: any = {
       team,
-      userPermissions: {$in: permissions.map(p => p._id)}
+      userPermissions: { $in: permissions.map(p => p._id) }
     };
     try {
       const users = await this.getUsers(filter, options);
@@ -258,11 +258,11 @@ class UserController {
     }
   }
 
-  public async getPusherToken(req: IRequest, res: Response){
+  public async getPusherToken(req: IRequest, res: Response) {
     if (req.user._id === req.query['user_id'])
-      res.status(200).json(PushService.createAuthToken(req.user._id, ));
+      res.status(200).json(PushService.createAuthToken(req.user._id,));
     else
-      res.status(401).json({message: 'Authentication failed. User provided does not match with user_id.'});
+      res.status(401).json({ message: 'Authentication failed. User provided does not match with user_id.' });
   }
 }
 

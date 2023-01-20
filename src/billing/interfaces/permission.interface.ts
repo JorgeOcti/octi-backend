@@ -1,4 +1,4 @@
-import { ISubmodule } from './submodule.interface';
+import type { ISubmodule } from './submodule.interface';
 
 export interface IPermission {
   _id?: any;

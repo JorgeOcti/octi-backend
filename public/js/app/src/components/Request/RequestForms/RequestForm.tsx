@@ -21,7 +21,7 @@ import DateRangePickerField from '../../Utils/forms/DateRangePickerField';
 import { DecoratedFormProps } from 'redux-form/lib/reduxForm';
 import InputHiddenField from '../../Utils/forms/InputHiddenField';
 import ShowIf from '../../Utils/ShowIf';
-import { IRequestSetting } from '../../../../../../../src/app/interfaces';
+import { IRequestSetting } from '../../../../../../../src/app/interfaces/teamSetting.interface';
 import * as  swal from 'sweetalert';
 import MultiUploadFiles, { imageStatus } from '../../Utils/MultiUploadFiles';
 import { requestSettings } from '../defaults';

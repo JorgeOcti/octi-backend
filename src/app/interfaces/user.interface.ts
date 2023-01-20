@@ -1,11 +1,11 @@
-import { ICompany } from './company.interface';
-import { IForm } from '../../form/interfaces/form.interface';
-import { IGroup } from './group.interface';
-import { IPermission } from '../../billing/interfaces/permission.interface';
-import { ISalesChannel } from '../../request/interfaces';
-import { ITeam } from './team.interface';
-import { ITeamModel } from '../models/team.model';
-import { IVenue } from './venue.interface';
+import type { ICompany } from './company.interface';
+import type  { IForm } from '../../form/interfaces/form.interface';
+import type { IGroup } from './group.interface';
+import type { IPermission } from '../../billing/interfaces/permission.interface';
+import type { ISalesChannel } from '../../request/interfaces/salesChannel.interface';
+import type { ITeam } from './team.interface';
+import type { ITeamModel } from '../models/team.model';
+import type { IVenue } from './venue.interface';
 
 export interface IUserSettings {
   defaultChannel: ISalesChannel;

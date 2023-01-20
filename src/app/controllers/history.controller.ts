@@ -1,7 +1,7 @@
-import { IRequest } from '../../interfaces/global.interface';
 import { Response } from 'express';
+import type { IRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
-import { Car } from '../models';
+import { Car } from '../models/car.model';
 import History from '../models/history.model';
 
 class HistoryController {

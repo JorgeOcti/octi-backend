@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IChoices, IScale} from '../interfaces/scale.interface';
+import type { IChoices, IScale } from '../interfaces/scale.interface';
 
 export interface IChoicesModel extends IChoices, mongoose.Types.Subdocument {}
 export const choiceBackgroundColors = ['red', 'green', 'yellow', 'blue'];

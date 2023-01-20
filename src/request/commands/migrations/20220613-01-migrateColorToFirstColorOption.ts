@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 
-import { Car } from '../../../app/models';
-import { IRequestItemModel } from '../../models';
+import { Car } from '../../../app/models/car.model';
+import { IRequestItemModel } from '../../models/requestItem.model';
 import logger from '../../../services/logger.service';
 
 async function migrateFirstColor() {

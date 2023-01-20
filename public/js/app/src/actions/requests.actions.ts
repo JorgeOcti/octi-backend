@@ -45,7 +45,7 @@ import {
   REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
   REQUEST_LOAD_SETTINGS, ILoadItemsRequest, REQUEST_LOAD_ITEMS
 } from './requests.types';
-import { IRequestSetting } from '../../../../../src/app/interfaces';
+import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {

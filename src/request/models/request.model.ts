@@ -1,14 +1,11 @@
-import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
-import * as mongooseCrate from 'mongoose-crate';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-import * as s3Config from '../../../s3-config.json';
-import * as uuid from 'uuid';
-
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
-
-import { IRequest } from '../interfaces/request.interface';
-
+import * as mongooseCrate from 'mongoose-crate';
+import * as MongooseCrateS3 from 'mongoose-crate-s3';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import * as uuid from 'uuid';
+import * as s3Config from '../../../s3-config.json';
+import type { IRequest } from '../interfaces/request.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IRequestModel extends IRequest, mongoose.Document<any> {
@@ -133,7 +130,7 @@ export const requestSchema = new mongoose.Schema({
 requestSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestSchema.set<any>('expires', 30);
 
-requestSchema.index({ team: 1, conectaID: 1});
+requestSchema.index({ team: 1, conectaID: 1 });
 
 requestSchema.virtual('items', {
   ref: 'RequestItem', // The model to use
@@ -172,12 +169,12 @@ requestSchema.post<IRequestModel>("update", async (doc) => {
   // console.log(doc);
 });
 
-requestSchema.post<IRequestModel>("findOneAndUpdate", function(doc) {
+requestSchema.post<IRequestModel>("findOneAndUpdate", function (doc) {
   console.log('******************** REQUET findOneAndUpdate *******************');
   // console.log(doc);
 });
 
-export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel>  & AggregatePaginateModel<IRequestModel>;
+export type RequestSchema = mongoose.Model<IRequestModel> & PaginateModel<IRequestModel> & AggregatePaginateModel<IRequestModel>;
 
 const Request = mongoose.model<IRequestModel, RequestSchema>('Request', requestSchema);
 

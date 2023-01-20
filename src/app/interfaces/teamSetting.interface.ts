@@ -1,4 +1,4 @@
-import { ITeam } from './team.interface';
+import type { ITeam } from './team.interface';
 
 export interface IFormSettting {
   report: IReportSetting;

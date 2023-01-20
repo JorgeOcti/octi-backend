@@ -1,4 +1,4 @@
-import {IVenue} from "./venue.interface";
+import type {IVenue} from "./venue.interface";
 
 export interface IVenueDay {
   _id?: any;

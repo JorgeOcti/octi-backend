@@ -3,7 +3,8 @@ import { Dispatch } from 'redux';
 import ApiService from '../utils/axios';
 import { StatsDashboardTypes } from '../../../../../src/stats/models/studio.types';
 import { IStudio } from '../../../../../src/stats/interfaces/studio.interface';
-import { ITeam, IUser } from '../../../../../src/app/interfaces';
+import { ITeam } from '../../../../../src/app/interfaces/team.interface';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import * as swal from 'sweetalert';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
 

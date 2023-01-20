@@ -1,10 +1,9 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
+import { ICarModel } from '../../app/models/car.model';
+import type { IPaymentMethod } from '../interfaces/paymentMethod.interface';
 
-import {ICarModel} from '../../app/models/car.model';
-import {IPaymentMethod} from '../interfaces/paymentMethod.interface';
-import {PaginateModel} from 'mongoose';
-
-export interface IPaymentMethodModel extends IPaymentMethod, mongoose.Document<any> {}
+export interface IPaymentMethodModel extends IPaymentMethod, mongoose.Document<any> { }
 
 const paymentMethodSchema = new mongoose.Schema({
   name: {

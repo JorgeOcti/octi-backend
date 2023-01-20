@@ -7,7 +7,7 @@ import { IRegion } from '../../../../../src/app/interfaces/region.interface';
 import { IBaseVenue, IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
-import { IUser } from '../../../../../src/app/interfaces';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
 export interface IVenuesState {

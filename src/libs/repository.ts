@@ -1,4 +1,4 @@
-import {IRead, IWrite} from "../interfaces/repository.interfaces";
+import type { IRead, IWrite } from "../interfaces/repository.interfaces";
 
 export abstract class BaseRepository<T> implements IWrite<T>, IRead<T> {
 

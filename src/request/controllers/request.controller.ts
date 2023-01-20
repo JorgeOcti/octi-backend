@@ -1,34 +1,34 @@
-import * as GraphicsMagick from 'gm';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
 import * as fs from 'fs';
+import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 
-import Car, { default as CarModel, ChoicesStatusCar } from '../../app/models/car.model';
-import { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
+import mongoose, { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
+import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
+import type { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
 import Request, { IRequestModel } from '../models/request.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
-import mongoose, { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
 
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 import { Column } from 'exceljs';
-import GeneralUtils from '../../utils/general.utils';
-import { ICar } from '../../app/interfaces';
-import Reason from '../models/reason.model';
-import RequestFile from '../models/requestFile.model';
-import RequestItemStatus from '../models/requestItemStatus.model';
 import { Response } from 'express';
+import type { ICar } from '../../app/interfaces/car.interface';
 import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import Venue from '../../app/models/venue.model';
-import conectaController from './conecta.controller';
-import { createRequestSalfaParams } from '../inputsSchema';
-import { socket } from '../../services/socket.service';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import ActivityHistory from '../../billing/models/activityHistory.model';
 import logger from '../../services/logger.service';
+import { socket } from '../../services/socket.service';
+import GeneralUtils from '../../utils/general.utils';
+import { createRequestSalfaParams } from '../inputsSchema';
+import Reason from '../models/reason.model';
+import RequestFile from '../models/requestFile.model';
 import requestItemsMeta from '../models/requestIteam.meta';
+import RequestItemStatus from '../models/requestItemStatus.model';
+import conectaController from './conecta.controller';
 
 class RequestController {
 

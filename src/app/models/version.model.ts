@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IVersion } from '../interfaces';
+import type { IVersion } from '../interfaces/version.interface';
 
 export interface IVersionModel extends IVersion, mongoose.Document {}
 

@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as s3Config from '../../../s3-config.json';
 
-import { IRecoverFile } from '../interfaces';
+import type { IRecoverFile } from '../interfaces/recoverFile.interface';
 
 const fileSchema = new mongoose.Schema({
   url: {

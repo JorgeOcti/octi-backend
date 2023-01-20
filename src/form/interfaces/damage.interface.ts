@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
 
-import {IKind} from './kind.interface';
-import {IPart} from './part.interface';
-import {IParticipantFile} from './participantFile.interface';
-import {IPosition} from './position.interface';
-import {ITeam} from '../../app/interfaces/team.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IKind } from './kind.interface';
+import type { IPart } from './part.interface';
+import type { IParticipantFile } from './participantFile.interface';
+import type { IPosition } from './position.interface';
 
 export interface IDamages {
   _id?: any;

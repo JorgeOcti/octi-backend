@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import { ISubmodule } from '../interfaces';
+import type { ISubmodule } from '../interfaces/submodule.interface';
 import { PaginateModel } from 'mongoose';
 import { modulesHistory } from '../../app/models/history.types';
 

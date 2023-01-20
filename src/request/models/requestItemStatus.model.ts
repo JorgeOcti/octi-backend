@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-
-import { IRequestItemStatus } from '../interfaces/requestItemStatus.interface';
 import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import type { IRequestItemStatus } from '../interfaces/requestItemStatus.interface';
 import requestItemStatusHooks from './requestItemStatus.hooks';
 
 export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document<any> {}

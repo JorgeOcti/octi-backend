@@ -1,29 +1,24 @@
-import {
-  CarrierSchema,
-  CarSchema,
-  CompanySchema,
-  ImageSchema,
-  UserSchema,
-  VenueSchema,
-  ListControlsSchema,
-  ErrorSchema400,
-  ErrorSchema401,
-  PageSchema,
-  PageSizeSchema, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403, AuthorizationJWTSchema
-} from './core';
-import {
-  AccesorySchema,
-  AccessoryAnsweredSchema,
-  AnswerSchema,
-  ChoiseSchema,
-  DamagesSelectedSchema,
-  ParticipantSchema,
-  FormSchema,
-  KindSchema,
-  PartSchema,
-  PositionSchema,
-  SectionSchema
-} from './form';
+
+import { CarrierSchema } from './core/carrier.schema';
+import { CarSchema } from './core/car.schema';
+import { CompanySchema } from './core/company.schema';
+import { ImageSchema } from './core/image.schema';
+import { UserSchema } from './core/user.schema';
+import { VenueSchema } from './core/venue.schema';
+import { ListControlsSchema , ErrorSchema400, ErrorSchema401, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403} from './core/responses.schema';
+import {  PageSchema, PageSizeSchema, AuthorizationJWTSchema} from './core/parameters.schema';
+
+import { AccesorySchema } from './form/accesory.schema';
+import { AccessoryAnsweredSchema } from './form/accessoryAnswered.schema';
+import { AnswerSchema } from './form/answer.schema';
+import { ChoiseSchema } from './form/choice.schema';
+import { DamagesSelectedSchema } from './form/damagesSelected.schema';
+import { ParticipantSchema } from './form/participant.schema';
+import { FormSchema } from './form/form.schema';
+import { KindSchema } from './form/kind.schema';
+import { PartSchema } from './form/part.schema';
+import { PositionSchema } from './form/position.schema';
+import { SectionSchema } from './form/section.schema';
 
 export const swaggerDefinition = {
   openapi: '3.0.0',

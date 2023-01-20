@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 
-import { IDamageSelected, IDamages } from './damage.interface';
-import {
+import type { IDamageSelected, IDamages } from './damage.interface';
+import type {
   IParticipantAccesoryModel,
   IParticipantAnswerModel,
   IParticipantChoicesModel,
@@ -11,20 +11,20 @@ import {
   IScaleParticipantModel
 } from '../models/participant.model';
 
-import { ICarModel } from '../../app/models/car.model';
-import { ICarrierModel } from '../../app/models/carrier.model';
-import { ICompanyModel } from '../../app/models/company.model';
-import { IFormModel } from '../models/form.model';
-import { IMilestone } from '../../distribution/interfaces';
-import { IMilestoneModel } from '../../distribution/models/milestone.model';
-import { IParticipantFile } from './participantFile.interface';
-import { ITeamModel } from '../../app/models/team.model';
-import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
-import { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
-import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
-import { ITransmittalModel } from '../../distribution/models/transmittal.model';
-import { IUserModel } from '../../app/models/user.model';
-import { IVenueModel } from '../../app/models/venue.model';
+import type { ICarModel } from '../../app/models/car.model';
+import type { ICarrierModel } from '../../app/models/carrier.model';
+import type { ICompanyModel } from '../../app/models/company.model';
+import type { IFormModel } from '../models/form.model';
+import type { IMilestone } from '../../distribution/interfaces/milestone.interface';
+import type { IMilestoneModel } from '../../distribution/models/milestone.model';
+import type { IParticipantFile } from './participantFile.interface';
+import type { ITeamModel } from '../../app/models/team.model';
+import type { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
+import type { ITransmittalItem } from '../../distribution/interfaces/transmittalItem.interface';
+import type { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
+import type { ITransmittalModel } from '../../distribution/models/transmittal.model';
+import type { IUserModel } from '../../app/schemas/user.schema';
+import type { IVenueModel } from '../../app/models/venue.model';
 
 export interface IParticipantChoices {
   choice: string;

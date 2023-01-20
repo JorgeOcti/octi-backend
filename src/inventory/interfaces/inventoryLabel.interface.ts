@@ -1,5 +1,5 @@
-import {ITeam} from '../../app/interfaces/team.interface';
-import {IUser} from '../../app/interfaces/user.interface';
+import type { ITeam } from '../../app/interfaces/team.interface';
+import type { IUser } from '../../app/interfaces/user.interface';
 
 export interface IInventoryLabel {
   _id?: any;

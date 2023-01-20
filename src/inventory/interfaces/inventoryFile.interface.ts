@@ -1,7 +1,7 @@
-import { ICompanyModel } from '../../app/models/company.model';
-import { IIFile } from '../../interfaces/file.interface';
-import { IInventoryModel } from '../models/inventory.model';
-import { IUserModel } from '../../app/models/user.model';
+import type { ICompanyModel } from '../../app/models/company.model';
+import type { IUserModel } from '../../app/schemas/user.schema';
+import type { IIFile } from '../../interfaces/file.interface';
+import type { IInventoryModel } from '../models/inventory.model';
 
 export interface IInventoryFile {
   _id?: any;

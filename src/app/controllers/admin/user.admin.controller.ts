@@ -1,20 +1,21 @@
 import * as excel from 'exceljs';
 import { Alignment } from 'exceljs';
 import { Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import { queue } from '../../../utils/queue';
 import * as uuid from 'uuid';
+import { IPermission } from '../../../billing/interfaces/permission.interface';
 import { IForm } from '../../../form/interfaces/form.interface';
 import { IRequest } from '../../../interfaces/global.interface';
-import { IPermission } from '../../../billing/interfaces/permission.interface';
+import redisClient from '../../../services/redis.service';
 import { socket } from '../../../services/socket.service';
-import User, { IUserModel } from '../../models/user.model';
+import { IBaseVenue } from '../../interfaces/venue.interface';
+import User from '../../models/user.model';
 import { UserTypes } from '../../models/user.model.types';
 import Venue from '../../models/venue.model';
-import { IBaseVenue } from '../../interfaces';
-import * as jwt from 'jsonwebtoken';
-import redisClient from '../../../services/redis.service';
+import { IUserModel } from '../../schemas/user.schema';
+import emailQueue from '../../tasks/email.task';
 
 class AdminUsersController {
 
@@ -564,7 +565,7 @@ class AdminUsersController {
 
         // send welcome email
         const fullname: string = newUser.fullName();
-        queue.create('email', {
+        emailQueue.create({
           from: '',
           title: `Welcome email for ${fullname}`,
           to: `"${fullname}"<${newUser.email}>`,
@@ -585,7 +586,7 @@ class AdminUsersController {
             username: newUser.email,
             password
           }
-        }).priority('high').attempts(5).save();
+        })
 
         // prevent return password
         newUser = newUser.toObject();

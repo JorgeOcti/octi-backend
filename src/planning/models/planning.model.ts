@@ -1,9 +1,9 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { IPlanning } from '../interfaces/planning.interface';
+import type { IPlanning } from '../interfaces/planning.interface';
 
-export interface IPlanningModel extends IPlanning, mongoose.Document {}
+export interface IPlanningModel extends IPlanning, mongoose.Document { }
 
 const planningSchema = new mongoose.Schema({
   team: {
