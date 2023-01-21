@@ -16,8 +16,8 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
-    "lib": ["ES2021"],
-    "target": "ES2021",
+    "lib": ["ESNext"],
+    "target": "ESNext",
     "typeRoots": [
       "./node_modules/@types",
       "../node_modules/@types/",

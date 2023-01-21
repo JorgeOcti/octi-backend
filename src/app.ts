@@ -6,7 +6,7 @@ import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
-import * as promBundle from "express-prom-bundle";
+import * as promBundle from 'express-prom-bundle';
 import * as session from 'express-session';
 import { CookieOptions } from 'express-session';
 import * as moment from 'moment-timezone';
@@ -21,14 +21,14 @@ import * as swaggerUi from 'swagger-ui-express';
 import AppController from './app/controllers/app.controller';
 import { appRouter, jwtRouter } from './app/router';
 import emailQueue from './app/tasks/email.task';
-// import HistoryQueue from './app/tasks/history.task';
+import historyQueue from './app/tasks/history.task';
 import { billingRouter } from './billing/router';
 import BillingQueue from './billing/tasks/billing.task';
 import BillingTeamQueue from './billing/tasks/billingTeam.task';
 import { distributionRouter } from './distribution/router';
 import formRouter from './form/router';
 import { inventoryRouter } from './inventory/router';
-// import InventoryQueue from './inventory/taks/inventory.task';
+import inventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import { passport } from './passportConfig';
 import { planningRouter } from './planning/router';
@@ -38,8 +38,11 @@ import redisClient, { createRedisClient } from './services/redis.service';
 import { statsRouter } from './stats/router';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
 
-
-const metricsMiddleware = promBundle({includeMethod: true, includePath: true})
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+});
 
 // Create Express server
 const app = express();
@@ -66,7 +69,6 @@ const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
 app.set('view cache', process.env.ENV === 'production');
 app.set('views', viewDirectory);
-
 
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
@@ -109,7 +111,7 @@ app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
 const staticify = Staticify(staticDirectory);
 app.use(staticify.middleware);
 
-app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')))
+app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')));
 
 app.use(metricsMiddleware);
 
@@ -127,15 +129,17 @@ if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
 
-app.use(session({
-  resave: false,
-  saveUninitialized: false,
-  secret: (process.env.SECRET_KEY as string),
-  cookie: {
-    ...cookieSetting
-  },
-  store: new redisStore({ client: redisClient as any })
-}));
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.SECRET_KEY as string,
+    cookie: {
+      ...cookieSetting
+    },
+    store: new redisStore({ client: redisClient as any })
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -146,21 +150,36 @@ app.use('/health-check/', AppController.healthCheck);
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
   morgan.token('remote-addr', (req: express.Request): string => {
-    return (req.headers['x-real-ip'] as string) || (req.headers['x-forwarded-for'] as string) || req.connection.remoteAddress || '';
+    return (
+      (req.headers['x-real-ip'] as string) ||
+      (req.headers['x-forwarded-for'] as string) ||
+      req.connection.remoteAddress ||
+      ''
+    );
   });
   if (process.env.ENV === 'production') {
-    app.use(morgan('\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(
+      morgan(
+        '\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m'
+      )
+    );
   } else {
-    app.use(morgan('\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m\ - :res[content-length]\x1b[0m'));
+    app.use(
+      morgan(
+        '\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m'
+      )
+    );
   }
 }
 
 // The request handler must be the first middleware on the app
-app.use(Sentry.Handlers.requestHandler({
-  user: ['id', 'username', 'email'],
-  request: true,
-  flushTimeout: 4000 // default: 2000
-}));
+app.use(
+  Sentry.Handlers.requestHandler({
+    user: ['id', 'username', 'email'],
+    request: true,
+    flushTimeout: 4000 // default: 2000
+  })
+);
 app.use(Middlewares.context);
 
 // Routes
@@ -177,12 +196,20 @@ app.use('/api/v1', jwtRouter);
 const options: swaggerJSDoc.Options = {
   swaggerDefinition,
   // Paths to files containing OpenAPI definitions
-  apis: [path.join(__dirname, './**/router.ts'), path.join(__dirname, './**/router.js')]
+  apis: [
+    path.join(__dirname, './**/router.ts'),
+    path.join(__dirname, './**/router.js')
+  ]
 };
 
 const swaggerDocs = swaggerJSDoc(options);
-app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { customSiteTitle: 'Documentación API OSA Andes' }));
-
+app.use(
+  '/api-docs/',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocs, {
+    customSiteTitle: 'Documentación API OSA Andes'
+  })
+);
 
 const billingQueue = new Queue('billing', {
   createClient: () => {
@@ -243,8 +270,14 @@ const billingCorporateQueue = new Queue('billingCorporate', {
       done();
     });
     try {
-      await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
-      await billingCorporateQueue.add({}, { repeat: { cron: '0 1 * * *' }, jobId: 'billing' });
+      await billingQueue.add(
+        {},
+        { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' }
+      );
+      await billingCorporateQueue.add(
+        {},
+        { repeat: { cron: '0 1 * * *' }, jobId: 'billing' }
+      );
     } catch (error) {
       // console.log(error);
       console.log('No se pudo agrega tarea');
@@ -252,11 +285,9 @@ const billingCorporateQueue = new Queue('billingCorporate', {
   }
 })();
 
-
 emailQueue.run();
-// new InventoryQueue(queue).run();
-// new HistoryQueue(queue).run();
-
+inventoryQueue.run();
+historyQueue.run();
 
 // The error handler must be before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
@@ -269,33 +300,46 @@ interface IResponseError {
   stack?: string;
 }
 
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const err: IResponseError = {
-    message: 'Not Found',
-    status: 404
-  };
-  /* istanbul ignore next */
-  next(err);
-});
+app.use(
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const err: IResponseError = {
+      message: 'Not Found',
+      status: 404
+    };
+    /* istanbul ignore next */
+    next(err);
+  }
+);
 
 /* istanbul ignore next */
-app.use((err: IResponseError, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(
+  (
+    err: IResponseError,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
-  console.log(err.stack || err)
-  logger.error(`Server.processError: session: ${JSON.stringify(req.session)}`);
-  logger.error(`Server.processError: ${JSON.stringify({
-    url: req.url,
-    status: err.status,
-    statusCode,
-    message: err
-  })}`);
-  res.status(statusCode).render(statusCode.toString());
-  next();
-});
+    // render the error page
+    const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+    console.log(err.stack || err);
+    logger.error(
+      `Server.processError: session: ${JSON.stringify(req.session)}`
+    );
+    logger.error(
+      `Server.processError: ${JSON.stringify({
+        url: req.url,
+        status: err.status,
+        statusCode,
+        message: err
+      })}`
+    );
+    res.status(statusCode).render(statusCode.toString());
+    next();
+  }
+);
 
 export { app as default };
