@@ -195,7 +195,6 @@ app.use('/api/v1', jwtRouter);
 
 const options: swaggerJSDoc.Options = {
   swaggerDefinition,
-  // Paths to files containing OpenAPI definitions
   apis: [
     path.join(__dirname, './**/router.ts'),
     path.join(__dirname, './**/router.js')

@@ -46,7 +46,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
-    command: ts-node-dev --files --respawn --max_old_space_size=4096 --watch src src/server.ts
+    command: ts-node-dev --trace-warnings --transpile-only --debounce 1000 --files --respawn --max_old_space_size=4096 --watch src src/server.ts
     # command: ts-node-dev --files --respawn --transpile-only --max_old_space_size=4096 --watch src src/server.ts
     # command: ts-node-dev --files --respawn --trace-warnings --max_old_space_size=4096 --watch src src/server.ts
 #    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
@@ -68,6 +68,7 @@ services:
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       SITE_URL: "http://localhost:3030/"
+      SES_REGION: us-west-2
       # MONGODB_URI: mongodb://osacontrol:osacontrol@host.docker.internal:27017/osaAndesProduction?authSource=admin
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
 #      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
