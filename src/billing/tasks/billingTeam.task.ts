@@ -176,17 +176,24 @@ class BillingTeamQueue {
             return acc;
           }, {});
           for (const teamBilling of teamBillings) {
-            const now = moment();
-            const lastInvoice = await InvoiceTeamBilling
-              .findOne({
-                team: teamBilling.team._id
-              }).sort({
-                createdAt: -1
-              });
-            const from = lastInvoice ? lastInvoice.to : new Date(`${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`);
-            const to = new Date(`${now.endOf('month').subtract(3, 'days').format('YYYY-MM-DD')}T00:00:00.000Z`);
-            const histories = await History
-              .find({
+            const now = moment().startOf('day');
+            const lastInvoice = await InvoiceTeamBilling.findOne({
+              team: teamBilling.team._id
+            }).sort({
+              createdAt: -1
+            });
+            const from = lastInvoice
+              ? lastInvoice.to
+              : new Date(
+                  `${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`
+                );
+            let to = moment().endOf('month').subtract(3, 'days').startOf('day');
+            // If the script runs earlier than automatically scheduled
+            if (now.isBefore(to)) {
+              to = now;
+            }
+            const histories = await History.find(
+              {
                 company: { $in: teamBilling.companies },
                 status: {
                   $in: [StatusHistory.available, StatusHistory.inTransit, StatusHistory.sale]
