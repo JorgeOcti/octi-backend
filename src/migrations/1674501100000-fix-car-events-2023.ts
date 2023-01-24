@@ -14,11 +14,10 @@ mongoose.set('debug', true);
 // Make any changes you need to make to the database here
 export async function up() {
   await this.connect(mongoose);
-  // const cars = await Car.find({team: '5bf2de34caf8ef7096105cda'}, { _id: 1, history: 1 })
-  const cars = await Car.find({}, { _id: 1, history: 1 })
-  for (const car of cars) {
+  const carsCursor = Car.find({}, { _id: 1, history: 1 }).cursor()
+  await carsCursor.eachAsync(async (car: any) => {
     await carTracker.updateCurrentHistory(car)
-  }
+  });
 }
 
 // Make any changes that UNDO the up function side effects here (if possible)
