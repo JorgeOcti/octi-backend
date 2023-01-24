@@ -11,9 +11,14 @@ import * as tempfile from 'tempfile';
 
 import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import { IAnyObject, IRequest } from '../../interfaces/global.interface';
-import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
+import Milestone, {
+  ChoicesStepMilestone
+} from '../../distribution/models/milestone.model';
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import Participant, { IParticipantAnswerModel, IParticipantSectionModel } from '../models/participant.model';
+import Participant, {
+  IParticipantAnswerModel,
+  IParticipantSectionModel
+} from '../models/participant.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import UserModel, { IUserModel } from '../../app/models/user.model';
@@ -25,7 +30,7 @@ import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.
 import { ChoicesTypeActivity } from '../../billing/models';
 import GPSPosition from '../models/gpsPosition.model';
 import GeneralUtils from '../../utils/general.utils';
-import { ICarModel } from '../../app/models/car.model';
+import Car, { ICarModel } from '../../app/models/car.model';
 import { IFormTrigger } from '../interfaces';
 import { IOperationTypeModel } from '../../request/models';
 import { IParticipant } from '../interfaces/participant.interface';
@@ -50,7 +55,6 @@ import redisClient from '../../services/redis.service';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
-
   constructor() {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
@@ -64,14 +68,20 @@ class FormController {
     this.timingDashboard = this.timingDashboard.bind(this);
     this.getControls = this.getControls.bind(this);
     this.allControls = this.allControls.bind(this);
+    this.allControlsByVIN = this.allControlsByVIN.bind(this);
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const { debug, timezone } = req.query as { debug: string, timezone: string };
+    const { debug, timezone } = req.query as {
+      debug: string;
+      timezone: string;
+    };
     const { id } = req.params;
     const team = req.user.team._id;
     try {
-      logger.info(`FormController.pdf email: ${req.user.email}, participant: ${id}`);
+      logger.info(
+        `FormController.pdf email: ${req.user.email}, participant: ${id}`
+      );
       const config: HtmlPdf.CreateOptions = {
         directory: '/tmp',
         format: 'Letter',
@@ -102,22 +112,27 @@ class FormController {
       };
 
       const venuesPermissions = req.user.venuesPermissions();
-      const participant = await Participant
-        .findOne({
+      const participant = await Participant.findOne(
+        {
           _id: id,
           team,
-          $or: [{
-            venue: {
-              $in: venuesPermissions
+          $or: [
+            {
+              venue: {
+                $in: venuesPermissions
+              }
+            },
+            {
+              venue: {
+                $exists: false
+              }
+            },
+            {
+              venue: null
             }
-          }, {
-            venue: {
-              $exists: false
-            }
-          }, {
-            venue: null
-          }]
-        }, {
+          ]
+        },
+        {
           name: true,
           number: true,
           user: true,
@@ -134,52 +149,83 @@ class FormController {
           conciliationText: true,
           conciliationImages: true,
           createdAt: true
-        })
-        .populate([{
-          path: 'user',
-          select: ['firstName', 'lastName', 'venue'],
-          populate: [{
+        }
+      )
+        .populate([
+          {
+            path: 'user',
+            select: ['firstName', 'lastName', 'venue'],
+            populate: [
+              {
+                path: 'venue',
+                populate: [
+                  {
+                    path: 'company'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            path: 'receiveFrom',
+            select: 'name'
+          },
+          {
             path: 'venue',
-            populate: [{
-              path: 'company'
-            }]
-          }]
-        }, {
-          path: 'receiveFrom',
-          select: 'name'
-        }, {
-          path: 'venue',
-          select: 'name'
-        }, {
-          path: 'sendTo',
-          select: 'name'
-        }, {
-          path: 'carrierBy',
-          select: 'name'
-        }, {
-          path: 'car',
-          select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
-        }, {
-          path: 'sections.answers.images'
-        }, {
-          path: 'shippingImages'
-        }, {
-          path: 'receptionImages'
-        }, {
-          path: 'conciliationImages'
-        }, {
-          path: 'form',
-          select: ['triggers']
-        }]).lean();
+            select: 'name'
+          },
+          {
+            path: 'sendTo',
+            select: 'name'
+          },
+          {
+            path: 'carrierBy',
+            select: 'name'
+          },
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'internalNumber',
+              'engineNumber',
+              'brand',
+              'denomination',
+              'color',
+              'patent'
+            ]
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'shippingImages'
+          },
+          {
+            path: 'receptionImages'
+          },
+          {
+            path: 'conciliationImages'
+          },
+          {
+            path: 'form',
+            select: ['triggers']
+          }
+        ])
+        .lean();
 
-      let template : string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+      let template: string =
+        path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
 
       moment.locale('es');
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
-      const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-      const participantCompany = participant.user.venue && participant.user.venue.company || {};
+      const css = fs.readFileSync(
+        path.join(__dirname, '../../../views/') + 'form/carDetail/style.css',
+        'utf8'
+      );
+      const participantCompany =
+        (participant.user.venue && participant.user.venue.company) || {};
 
-      let context : any = {
+      let context: any = {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         participant,
         qr: await QRCode.toDataURL(participant.car.vin, {
@@ -214,54 +260,80 @@ class FormController {
           }
           return false;
         },
-        getAnswer: ((scale: any, answer: any) => {
+        getAnswer: (scale: any, answer: any) => {
           if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+            const choice = scale.choices.find(
+              (choice: any) =>
+                choice._id.toString() === answer.answer.toString()
+            );
             return choice ? choice.choice : '';
           }
           return '';
-        }),
-        requireAccesory: ((scale: any, answer: any) => {
+        },
+        requireAccesory: (scale: any, answer: any) => {
           if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+            const choice = scale.choices.find(
+              (choice: any) =>
+                choice._id.toString() === answer.answer.toString()
+            );
             return choice ? choice.requireAccesories : false;
           }
           return false;
-        }),
-        getDamageItem: ((items: any, item: string) => {
+        },
+        getDamageItem: (items: any, item: string) => {
           if (item) {
-            const result = items.find((i: any) => i._id.toString() === item.toString());
+            const result = items.find(
+              (i: any) => i._id.toString() === item.toString()
+            );
             if (result && result.hasOwnProperty('name')) {
               return result.name;
             }
           }
           return '-';
-        }),
-        logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
+        },
+        logo:
+          participantCompany.image &&
+          participantCompany.image.hasOwnProperty('url')
+            ? decodeURI(participantCompany.image.url)
+            : false,
         accesorySelected: (answer: any, item: any) => {
-          return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory: any) => {
-            return accesory.item === item._id.toString();
-          }) : false;
+          return item && answer.accesoriesAnswered
+            ? answer.accesoriesAnswered.find((accesory: any) => {
+                return accesory.item === item._id.toString();
+              })
+            : false;
         }
       };
 
-      if (participant.form && participant.form.triggers && participant.form.triggers.length > 0){
-        let fileTriggers : IFormTrigger[] = participant.form.triggers.filter( (trigger: IFormTrigger) => trigger.kind === KindTrigger.file && trigger.enabled);
-        if (fileTriggers.length){
-          let trigger : IFormTrigger = fileTriggers[0];
-          template = path.join(__dirname, '../../../views/') + trigger.config.template;
-          let signature = participant?.sections.reduce((previousValue: any[], currenSection: IParticipantSectionModel) =>
-            previousValue.concat(currenSection.answers),
-            []
-          ).find((answer: IParticipantAnswerModel) => {
-            return answer._id.toString() === trigger.config.signature.toString()}
-          );
-          if (signature){
-            context.signature = signature.images.map((f :any) => f.file.url)[0];
+      if (
+        participant.form &&
+        participant.form.triggers &&
+        participant.form.triggers.length > 0
+      ) {
+        let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
+          (trigger: IFormTrigger) =>
+            trigger.kind === KindTrigger.file && trigger.enabled
+        );
+        if (fileTriggers.length) {
+          let trigger: IFormTrigger = fileTriggers[0];
+          template =
+            path.join(__dirname, '../../../views/') + trigger.config.template;
+          let signature = participant?.sections
+            .reduce(
+              (previousValue: any[], currenSection: IParticipantSectionModel) =>
+                previousValue.concat(currenSection.answers),
+              []
+            )
+            .find((answer: IParticipantAnswerModel) => {
+              return (
+                answer._id.toString() === trigger.config.signature.toString()
+              );
+            });
+          if (signature) {
+            context.signature = signature.images.map((f: any) => f.file.url)[0];
           }
         }
       }
-
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
@@ -291,7 +363,10 @@ class FormController {
           } else {
             // set header
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
+            res.setHeader(
+              'Content-disposition',
+              `inline; filename=${participant._id.toString()}.pdf`
+            );
             // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
             // send a status code of 200 OK
             res.statusCode = 200;
@@ -315,18 +390,25 @@ class FormController {
     try {
       const team = req.user.team._id;
       const { deliveries } = req.query as Record<string, string>;
-      logger.info(`FormController.userForms: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
-      const forms = await Form.find({
-        team,
-        _id: {
-          $in: req.user.userForms.map((form) => form._id)
+      logger.info(
+        `FormController.userForms: email: ${
+          req.user.email
+        } query: ${JSON.stringify(req.query)}`
+      );
+      const forms = await Form.find(
+        {
+          team,
+          _id: {
+            $in: req.user.userForms.map((form) => form._id)
+          },
+          deliveryToCustomer: deliveries === '1',
+          active: true
         },
-        deliveryToCustomer: deliveries === '1',
-        active: true
-      },{
-        _id: true,
-        name: true,
-      });
+        {
+          _id: true,
+          name: true
+        }
+      );
       return res.json({
         results: forms,
         status: 200
@@ -348,16 +430,27 @@ class FormController {
     try {
       const filter = {
         team: team,
-        $and: [{
-          _id: {
-            $in: req.user.userForms.map((form) => form._id)
+        $and: [
+          {
+            _id: {
+              $in: req.user.userForms.map((form) => form._id)
+            }
+          },
+          {
+            active: true
           }
-        }, {
-          active: true
-        }]
+        ]
       };
-      logger.info(`FormController.list: email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
-      logger.debug(`FormController.list: email: ${req.user.email} filter: ${JSON.stringify(filter)}`);
+      logger.info(
+        `FormController.list: email: ${req.user.email} query: ${JSON.stringify(
+          req.query
+        )}`
+      );
+      logger.debug(
+        `FormController.list: email: ${req.user.email} filter: ${JSON.stringify(
+          filter
+        )}`
+      );
       const forms = await this.getForms(filter);
       return res.json({
         data: forms,
@@ -378,54 +471,67 @@ class FormController {
     const { id } = req.params;
     const team = req.user.team._id;
     try {
-      logger.info(`FormController.detail email: ${req.user.email}, form: ${id}`);
-      if (await User.find({ _id: req.user._id, userForms: id }).countDocuments() < 1) {
+      logger.info(
+        `FormController.detail email: ${req.user.email}, form: ${id}`
+      );
+      if (
+        (await User.find({
+          _id: req.user._id,
+          userForms: id
+        }).countDocuments()) < 1
+      ) {
         return res.status(403).json({
           message: 'No tienes permisos para esta operación'
         });
       }
       const user = (await UserModel.findById(req.user._id, {
         venue: true
-      }).populate([{
-        path: 'venue',
-        populate: [{
-          path: 'sendTo',
-          select: ['name'],
-          options: {
-            sort: {
-              name: 1
+      }).populate([
+        {
+          path: 'venue',
+          populate: [
+            {
+              path: 'sendTo',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            },
+            {
+              path: 'receiveFrom',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            },
+            {
+              path: 'receptionCarriers',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            },
+            {
+              path: 'shippingCarriers',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
             }
-          }
-        }, {
-          path: 'receiveFrom',
-          select: ['name'],
-          options: {
-            sort: {
-              name: 1
-            }
-          }
-        }, {
-          path: 'receptionCarriers',
-          select: ['name'],
-          options: {
-            sort: {
-              name: 1
-            }
-          }
-        }, {
-          path: 'shippingCarriers',
-          select: ['name'],
-          options: {
-            sort: {
-              name: 1
-            }
-          }
-        }]
-      }]) as IUserModel);
+          ]
+        }
+      ])) as IUserModel;
       const form = await this.getForm({
         _id: id,
         team
-
       });
       // generate array of scale ids
       const scalesIds: any[] = [];
@@ -482,7 +588,8 @@ class FormController {
               requireConciliation: false,
               value: 0,
               order: 1
-            }, {
+            },
+            {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
@@ -528,7 +635,8 @@ class FormController {
               requireConciliation: false,
               value: 0,
               order: 1
-            }, {
+            },
+            {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
@@ -547,7 +655,9 @@ class FormController {
         extraSection.questions.push({
           _id: 'carrier',
           question: form.carrierText,
-          carriers: form.reception ? user.venue.receptionCarriers : user.venue.shippingCarriers,
+          carriers: form.reception
+            ? user.venue.receptionCarriers
+            : user.venue.shippingCarriers,
           kind: KindQuestion.carrier,
           order: extraSection.questions.length + 1
         });
@@ -575,7 +685,8 @@ class FormController {
               requireConciliation: false,
               value: 0,
               order: 1
-            }, {
+            },
+            {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
@@ -677,7 +788,11 @@ class FormController {
         status: 400
       });
     }
-    logger.info(`FormController.complete email: ${req.user.email}, answers: ${JSON.stringify(answers)}`);
+    logger.info(
+      `FormController.complete email: ${
+        req.user.email
+      }, answers: ${JSON.stringify(answers)}`
+    );
     // validate vin in body
     if (!vin && !transmittal) {
       return res.status(400).json({
@@ -685,7 +800,9 @@ class FormController {
         status: 400
       });
     }
-    const updatedUser = await User.findById(req.user._id).populate([{ path: 'venue' }]);
+    const updatedUser = await User.findById(req.user._id).populate([
+      { path: 'venue' }
+    ]);
     if (!updatedUser) {
       return res.status(404).json({
         message: 'No se ha encontrado el formulario solicitado.',
@@ -733,9 +850,13 @@ class FormController {
             participantObject.receptionVenueText = form.receptionVenueText;
             if ('reception' in answers) {
               const { reception } = answers;
-              participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
+              participantObject.receptionConfirmation = [true, 'true'].includes(
+                reception.value
+              );
               if (reception.images) {
-                participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+                participantObject.receptionImages = reception.images.map(
+                  (image: string) => new ObjectID(image)
+                );
               }
             }
             if ('receptionVenue' in answers) {
@@ -758,9 +879,13 @@ class FormController {
             participantObject.shippingVenueText = form.shippingVenueText;
             if ('shipping' in answers) {
               const { shipping } = answers;
-              participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
+              participantObject.shippingConfirmation = [true, 'true'].includes(
+                shipping.value
+              );
               if (shipping.images) {
-                participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+                participantObject.shippingImages = shipping.images.map(
+                  (image: string) => new ObjectID(image)
+                );
               }
             }
             if ('shippingVenue' in answers) {
@@ -780,10 +905,14 @@ class FormController {
 
           if (form.conciliation && 'conciliation' in answers) {
             const conciliation = answers.conciliation;
-            participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+            participantObject.conciliation = [true, 'true'].includes(
+              conciliation.value
+            );
             participantObject.conciliationText = form.conciliationText;
             if (conciliation.images) {
-              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+              participantObject.conciliationImages = conciliation.images.map(
+                (image: string) => new ObjectID(image)
+              );
             }
           }
           const newParticipant = new Participant(participantObject);
@@ -802,11 +931,19 @@ class FormController {
               // calculate qualification and set vars of the answer
               const questionID = question._id.toString();
               // get selected answer
-              const answer = GeneralUtils.getObjectProperty(answers, questionID, null);
+              const answer = GeneralUtils.getObjectProperty(
+                answers,
+                questionID,
+                null
+              );
               // find choice selected
-              const choice = question.scale ? question.scale.choices.find((choice) => {
-                return answer ? choice._id.toString() === answer.value : false;
-              }) : null;
+              const choice = question.scale
+                ? question.scale.choices.find((choice) => {
+                    return answer
+                      ? choice._id.toString() === answer.value
+                      : false;
+                  })
+                : null;
               // calculate qualification
               let qualification = 0;
               if (choice) {
@@ -818,17 +955,29 @@ class FormController {
               if (choice && choice.na) {
                 na = true;
               } else {
-                sumQualifications += (qualification * question.weight);
+                sumQualifications += qualification * question.weight;
                 sumWeigths += question.weight;
               }
 
               // concat allImages
-              if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
+              if (
+                choice &&
+                choice.requireImage &&
+                answer &&
+                answer.images &&
+                answer.images.length
+              ) {
                 allImages = [...answer.images, ...allImages];
               }
 
               // delete images no used
-              if (choice && !choice.requireImage && answer && answer.images && answer.images.length) {
+              if (
+                choice &&
+                !choice.requireImage &&
+                answer &&
+                answer.images &&
+                answer.images.length
+              ) {
                 answer.images.forEach(async (image: string) => {
                   const deleteFile = await ParticipantFile.findById(image);
                   if (deleteFile) {
@@ -838,9 +987,13 @@ class FormController {
               }
 
               // generate answer
-              const comment = (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment
-                ? answer.comment
-                : '';
+              const comment =
+                (question.kind === KindQuestion.text ||
+                  (choice && choice.requireComment)) &&
+                answer &&
+                answer.comment
+                  ? answer.comment
+                  : '';
               if (question?.kindUpdate === 'participant.clientName') {
                 newParticipant.deliveryInfo.name = comment;
               } else if (question?.kindUpdate === 'participant.clientEmail') {
@@ -849,13 +1002,18 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
-              } else if (question?.kindUpdate === 'participant.clientSignature') {
-                newParticipant.deliveryInfo.signature = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+              } else if (
+                question?.kindUpdate === 'participant.clientSignature'
+              ) {
+                newParticipant.deliveryInfo.signature = answer?.images?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
-              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
-                newParticipant.deliveryInfo.identifyCard = answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+              } else if (
+                question?.kindUpdate === 'participant.clientIdentifyCard'
+              ) {
+                newParticipant.deliveryInfo.identifyCard = answer?.images
+                  ?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
               }
               newAnswers.push({
@@ -868,14 +1026,19 @@ class FormController {
                 accessories: question.accessories,
                 damages: question.damages,
                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                accesoriesAnswered: (question.kind === KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
-                  await this.processAccesoryItems(answer.accesories) : [],
+                accesoriesAnswered:
+                  (question.kind === KindQuestion.accessory ||
+                    (choice && choice.requireAccesories)) &&
+                  answer &&
+                  answer.accesories
+                    ? await this.processAccesoryItems(answer.accesories)
+                    : [],
                 risk: question.risk,
                 comment,
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
-                images: answer?.images?.length ?
-                  answer.images.map((image: string) => (new ObjectID(image)))
+                images: answer?.images?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
                   : [],
                 qualification,
                 na,
@@ -891,8 +1054,10 @@ class FormController {
               });
             }
             // calculate section qualification
-            const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
-            sumSectionQualifications += (sectionQualification * section.weight);
+            const sectionQualification = sumQualifications
+              ? sumQualifications / sumWeigths
+              : 0;
+            sumSectionQualifications += sectionQualification * section.weight;
             sumSectionWeigths += section.weight;
             // generate answer section
             newParticipant.sections.push({
@@ -906,17 +1071,25 @@ class FormController {
             });
           }
           // calculate participant qualification
-          const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
+          const formQualification = sumSectionQualifications
+            ? sumSectionQualifications / sumSectionWeigths
+            : 0;
           newParticipant.qualification = formQualification;
 
-          newParticipant.hasDamages = newParticipant.sections.some((section: any) => {
-            return section.answers.some((answer: any) => {
-              return answer.damagesSelected.length > 0;
-            });
-          });
+          newParticipant.hasDamages = newParticipant.sections.some(
+            (section: any) => {
+              return section.answers.some((answer: any) => {
+                return answer.damagesSelected.length > 0;
+              });
+            }
+          );
 
           try {
-            const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { new: true });
+            const updateTeam = await Team.findOneAndUpdate(
+              { _id: team._id },
+              { $inc: { formsNumber: 1 } },
+              { new: true }
+            );
 
             if (updateTeam) {
               newParticipant.number = updateTeam.formsNumber;
@@ -929,11 +1102,15 @@ class FormController {
               newParticipant.transmittalItem = transmittalItem;
               await newParticipant.save();
 
-              let transmittalItemData = await TransmittalItem
-                .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
-                .populate(TransmittalController.itemPopulate);
+              let transmittalItemData = await TransmittalItem.findOneAndUpdate(
+                { _id: transmittalItem },
+                { $push: { revisions: newParticipant._id } },
+                { new: true }
+              ).populate(TransmittalController.itemPopulate);
 
-              let transmittalObject = await Transmittal.findOne({ _id: transmittalItemData!!.transmittal });
+              let transmittalObject = await Transmittal.findOne({
+                _id: transmittalItemData!!.transmittal
+              });
 
               // update request when check item
               const milestone = await Milestone.findOne({
@@ -943,31 +1120,43 @@ class FormController {
               });
 
               if (milestone?.requestItemStatus) {
-                const requestItem = await RequestItem
-                  .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
-                  .populate(RequestController.itemPopulate);
+                const requestItem = await RequestItem.findOneAndUpdate(
+                  { transmittalItem },
+                  { $set: { status: milestone.requestItemStatus } },
+                  { new: true }
+                ).populate(RequestController.itemPopulate);
                 if (requestItem) {
-                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-                    idRequest: requestItem.request._id,
-                    item: requestItem
-                  });
-                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-                    idRequest: requestItem.request._id,
-                    item: requestItem
-                  });
+                  io.to(`request-list-${team._id}`).emit(
+                    'UPDATE_REQUEST_ITEM',
+                    {
+                      idRequest: requestItem.request._id,
+                      item: requestItem
+                    }
+                  );
+                  io.to(`request-detail-${team._id}`).emit(
+                    'UPDATE_REQUEST_ITEM',
+                    {
+                      idRequest: requestItem.request._id,
+                      item: requestItem
+                    }
+                  );
                 }
               }
               // end update request when check item
 
-
-              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
-                transmittalItem: transmittalItemData
-              });
+              io.to(`transmittal-list-${team._id}`).emit(
+                'UPDATE_TRANSMITTAL_ITEM',
+                {
+                  transmittalItem: transmittalItemData
+                }
+              );
             }
 
             if (transmittal && transmittal?.length) {
               // update request when check item
-              const updatedTransmittal = await Transmittal.findOne({ _id: transmittal });
+              const updatedTransmittal = await Transmittal.findOne({
+                _id: transmittal
+              });
               const milestone = await Milestone.findOne({
                 step: ChoicesStepMilestone.finishTransmittal,
                 team,
@@ -975,57 +1164,78 @@ class FormController {
               });
               let requestItems: any[];
 
-              await TransmittalItem
-                .updateMany({ transmittal: transmittal }, { $set: { arrivalDate: moment().toDate() } });
-              requestItems = await RequestItem
-                .find({ transmittal, team })
+              await TransmittalItem.updateMany(
+                { transmittal: transmittal },
+                { $set: { arrivalDate: moment().toDate() } }
+              );
+              requestItems = await RequestItem.find({ transmittal, team })
                 .populate(RequestController.itemPopulate)
                 .lean();
 
-
               if (milestone && milestone?.requestItemStatus) {
-                await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
-                requestItems = await RequestItem
-                  .find({ transmittal, team })
+                await RequestItem.updateMany(
+                  { transmittal },
+                  { $set: { status: milestone.requestItemStatus } }
+                );
+                requestItems = await RequestItem.find({ transmittal, team })
                   .populate(RequestController.itemPopulate)
                   .lean();
               }
-              const newTransmittal = await Transmittal
-                .findOneAndUpdate({
+              const newTransmittal = await Transmittal.findOneAndUpdate(
+                {
                   _id: transmittal
-                }, {
+                },
+                {
                   $set: {
                     status: ChoicesStatusTransmittal.completed
                   }
-                }, {
+                },
+                {
                   new: true
-                })
-                .populate([{
+                }
+              ).populate([
+                {
                   path: 'revision',
                   select: ['_id', 'hasDamages']
-                }, {
+                },
+                {
                   path: 'transporter.carrier',
                   select: ['name']
-                }, {
+                },
+                {
                   path: 'type',
                   select: ['name']
-                }, {
+                },
+                {
                   path: 'evidenceFullLoad',
                   select: ['file', 'thumbnail', 'milestone']
-                }, {
+                },
+                {
                   path: 'transporter.driver',
                   select: ['firstName', 'lastName']
-                }, {
+                },
+                {
                   path: 'items',
-                  select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
+                  select: [
+                    'car',
+                    'requestItem',
+                    'destination',
+                    'origin',
+                    'loadingDate',
+                    'arrivalDate',
+                    'observation'
+                  ],
                   populate: TransmittalController.itemPopulate
-                }, {
+                },
+                {
                   path: 'files',
                   select: ['file', 'thumbnail']
-                }, {
+                },
+                {
                   path: 'createdBy',
                   select: ['firstName', 'lastName']
-                }]);
+                }
+              ]);
 
               io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
                 transmittal: newTransmittal
@@ -1033,31 +1243,39 @@ class FormController {
 
               if (requestItems.length) {
                 for (const requestItem of requestItems) {
-                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-                    idRequest: requestItem.request._id,
-                    item: requestItem
-                  });
-                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-                    idRequest: requestItem.request._id,
-                    item: requestItem
-                  });
+                  io.to(`request-list-${team._id}`).emit(
+                    'UPDATE_REQUEST_ITEM',
+                    {
+                      idRequest: requestItem.request._id,
+                      item: requestItem
+                    }
+                  );
+                  io.to(`request-detail-${team._id}`).emit(
+                    'UPDATE_REQUEST_ITEM',
+                    {
+                      idRequest: requestItem.request._id,
+                      item: requestItem
+                    }
+                  );
                 }
               }
 
-
               // end update request when finish transmittal
-
             }
 
             // associate file to participant
             if (allImages.length) {
-              await ParticipantFile.update({
-                _id: { $in: allImages }
-              }, {
-                participant: newParticipant
-              }, {
-                multi: true
-              });
+              await ParticipantFile.update(
+                {
+                  _id: { $in: allImages }
+                },
+                {
+                  participant: newParticipant
+                },
+                {
+                  multi: true
+                }
+              );
             }
 
             if (car) {
@@ -1065,32 +1283,47 @@ class FormController {
               await car.save();
 
               // send refresh with websocket to dashboard list
-              io.to(form.deliveryToCustomer ? `deliveries-view-${team._id}` : `dashboard-vin-view-${team._id}`)
-                .emit('REFRESH', {
-                  update: true,
-                  formId: form._id,
-                  venueId: updatedUser.venue._id,
-                  car: newParticipant._id,
-                  notification: {
-                    title: 'Vehículo revisado',
-                    text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
-                  }
-                });
+              io.to(
+                form.deliveryToCustomer
+                  ? `deliveries-view-${team._id}`
+                  : `dashboard-vin-view-${team._id}`
+              ).emit('REFRESH', {
+                update: true,
+                formId: form._id,
+                venueId: updatedUser.venue._id,
+                car: newParticipant._id,
+                notification: {
+                  title: 'Vehículo revisado',
+                  text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                }
+              });
 
               // send refresh with websocket to dashboard detail
-              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await Participant
-                .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
-                .populate([{
-                  path: 'user',
-                  select: ['firstName', 'lastName']
-                }, {
-                  path: 'venue',
-                  select: ['name']
-                }, {
-                  path: 'company',
-                  select: ['name']
-                }])
-                .lean(true)
+              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(
+                `ADD_PARTICIPANT`,
+                await Participant.findById(newParticipant._id, {
+                  number: 1,
+                  name: 1,
+                  user: 1,
+                  venue: 1,
+                  createdAt: 1,
+                  qualification: 1
+                })
+                  .populate([
+                    {
+                      path: 'user',
+                      select: ['firstName', 'lastName']
+                    },
+                    {
+                      path: 'venue',
+                      select: ['name']
+                    },
+                    {
+                      path: 'company',
+                      select: ['name']
+                    }
+                  ])
+                  .lean(true)
               );
 
               await new ActivityHistory({
@@ -1118,7 +1351,6 @@ class FormController {
               let triggersHandler = new TriggerHandler(form, newParticipant);
               await triggersHandler.execute({});
             }
-
 
             return res.json({
               data: {
@@ -1171,7 +1403,11 @@ class FormController {
       const { company } = req.user;
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
       if (file) {
-        logger.info(`FormController.uploadFile email: ${req.user.email} form: ${id} file: ${JSON.stringify(file)}`);
+        logger.info(
+          `FormController.uploadFile email: ${
+            req.user.email
+          } form: ${id} file: ${JSON.stringify(file)}`
+        );
         try {
           const participantFile = new ParticipantFile();
           /*
@@ -1222,7 +1458,6 @@ class FormController {
           /* istanbul ignore next */
           return res.status(400).json(e);
         }
-
       } else {
         logger.error(`uploadFile: La imagen es obligatoria.`);
         return res.status(400).json({
@@ -1249,8 +1484,16 @@ class FormController {
     let { form } = req.body;
     const team = req.user.team._id;
     try {
-      logger.info(`FormController.changePreferred email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
-      const user = await UserModel.findOne({ _id: req.user._id, team, active: true });
+      logger.info(
+        `FormController.changePreferred email: ${
+          req.user.email
+        } body: ${JSON.stringify(req.body)}`
+      );
+      const user = await UserModel.findOne({
+        _id: req.user._id,
+        team,
+        active: true
+      });
       // validate exist user
       if (user) {
         form = await Form.findOne({ _id: form, team });
@@ -1264,7 +1507,9 @@ class FormController {
           });
         } else {
           logger.error(`changePreferred: Formulario no encontrado`);
-          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+          logger.error(
+            `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+          );
           res.status(400).json({
             message: 'Formulario no encontrado',
             status: 400
@@ -1295,48 +1540,56 @@ class FormController {
 
   public async damagesDashboard(req: IRequest, res: Response): Promise<any> {
     try {
-
       const team = req.user.team._id;
-      const damaged = await Participant.aggregate([{
-        $match: {
-          team,
-          'venue': {
-            $in: req.user.venuesPermissions()
-          },
-          'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': { $exists: true }
+      const damaged = await Participant.aggregate([
+        {
+          $match: {
+            team,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
+            'sections.answers.kind': 'damage',
+            'sections.answers.damagesSelected._id': { $exists: true }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+            },
+            count: { $sum: 1 }
+          }
         }
-      }, {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          count: { $sum: 1 }
-        }
-      }]);
+      ]);
 
-      const undamaged = await Participant.aggregate([{
-        $match: {
-          team,
-          'venue': {
-            $in: req.user.venuesPermissions()
-          },
-          'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': { $exists: false }
+      const undamaged = await Participant.aggregate([
+        {
+          $match: {
+            team,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
+            'sections.answers.kind': 'damage',
+            'sections.answers.damagesSelected._id': { $exists: false }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+            },
+            count: { $sum: 1 }
+          }
         }
-      }, {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-          },
-          count: { $sum: 1 }
-        }
-      }]);
+      ]);
 
       const allVenues: any[] = [];
       if (damaged) {
         damaged.forEach((item) => {
-          if (item._id.venue && !allVenues.includes(item._id.venue.toString())) {
+          if (
+            item._id.venue &&
+            !allVenues.includes(item._id.venue.toString())
+          ) {
             allVenues.push(item._id.venue.toString());
           }
         });
@@ -1356,12 +1609,13 @@ class FormController {
       });
 
       const damagesData: any = {};
-      venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
+      venues.forEach(
+        (venue) => (damagesData[venue] = { damaged: 0, undamaged: 0 })
+      );
 
       damaged.forEach((item) => {
         if (item._id.venue in damagesData) {
           damagesData[item._id.venue].damaged = item.count;
-
         }
       });
       undamaged.forEach((item) => {
@@ -1376,7 +1630,6 @@ class FormController {
         venues
       };
       res.json(data);
-
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
@@ -1390,7 +1643,6 @@ class FormController {
         status: 400
       });
     }
-
   }
 
   public participantWithDamages(participant: any): Promise<any> {
@@ -1404,32 +1656,42 @@ class FormController {
     });
   }
 
-  public async damagesDashboardPerDay(req: IRequest, res: Response): Promise<any> {
+  public async damagesDashboardPerDay(
+    req: IRequest,
+    res: Response
+  ): Promise<any> {
     try {
       const days = 15;
       moment.locale('es');
       moment.tz.setDefault('America/Santiago');
-      const participants = await Participant.find({
-        venue: {
-          $in: req.user.venuesPermissions()
+      const participants = await Participant.find(
+        {
+          venue: {
+            $in: req.user.venuesPermissions()
+          },
+          createdAt: {
+            $gte: moment().endOf('day').subtract(days, 'd').toDate()
+          },
+          kind: { $ne: KindForm.transmittal }
         },
-        createdAt: {
-          $gte: moment().endOf('day').subtract(days, 'd').toDate()
-        },
-        kind: { $ne: KindForm.transmittal }
-      }, {
-        _id: true,
-        venue: true,
-        // user: true,
-        createdAt: true,
-        'sections.answers.damagesSelected': true
-      }).populate([{
-        path: 'venue',
-        select: ['_id', 'name']
-      } /*,{
+        {
+          _id: true,
+          venue: true,
+          // user: true,
+          createdAt: true,
+          'sections.answers.damagesSelected': true
+        }
+      )
+        .populate([
+          {
+            path: 'venue',
+            select: ['_id', 'name']
+          } /*,{
         path: 'user',
         select: ['_id', 'email']
-      }*/]).lean();
+      }*/
+        ])
+        .lean();
       const data: any = {};
       for (let i = 0; i < days; i++) {
         const key = moment()
@@ -1450,7 +1712,7 @@ class FormController {
       while (promises.length) {
         participantsWithDamages = [
           ...participantsWithDamages,
-          ...await bluebird.all(promises.splice(0, 500))
+          ...(await bluebird.all(promises.splice(0, 500)))
         ];
       }
       for (const participant of participantsWithDamages) {
@@ -1478,7 +1740,9 @@ class FormController {
         //   };
         // }
         data[dayKey][participant.hasDamages ? 'damaged' : 'undamaged']++;
-        data[dayKey][venueId][participant.hasDamages ? 'damaged' : 'undamaged']++;
+        data[dayKey][venueId][
+          participant.hasDamages ? 'damaged' : 'undamaged'
+        ]++;
         // data[dayKey][venueId][userId][participant.hasDamages ? 'damaged' : 'undamaged']++;
       }
       res.json(data);
@@ -1498,21 +1762,24 @@ class FormController {
   }
 
   public async timingDerco(req: IRequest, res: Response): Promise<any> {
-
     try {
-
       const team = req.user.team._id;
       const userObject = await User.findOne({ _id: req.user._id });
 
       // Derco
-      if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
+      if (
+        userObject &&
+        userObject.team.toString() === '5bf2de34caf8ef7096105cda'
+      ) {
         const total = 2;
         // el lead time supuesto es de 48 horas
         const threshold = 60 * 24 * 3;
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        const reception = await Form.findOne({ _id: '5b0487db835536612bab1b61' });
+        const reception = await Form.findOne({
+          _id: '5b0487db835536612bab1b61'
+        });
         const cars = await CarModel.find({
           team,
           lastForm: { $ne: null }
@@ -1525,18 +1792,26 @@ class FormController {
 
         let receptions: any[] = [];
         for (let i = 0; i < total; i++) {
-          const aux = await Participant.find({
-            team,
-            form: reception!._id,
-            createdAt: {
-              $gt: moment().subtract((i + 1) * 30, 'days').toDate(),
-              $lt: moment().subtract(i * 30, 'days').toDate()
+          const aux = await Participant.find(
+            {
+              team,
+              form: reception!._id,
+              createdAt: {
+                $gt: moment()
+                  .subtract((i + 1) * 30, 'days')
+                  .toDate(),
+                $lt: moment()
+                  .subtract(i * 30, 'days')
+                  .toDate()
+              }
+            },
+            ['car', 'createdAt'],
+            {
+              sort: {
+                createdAt: -1
+              }
             }
-          }, ['car', 'createdAt'], {
-            sort: {
-              createdAt: -1
-            }
-          });
+          );
           receptions = receptions.concat(aux);
         }
 
@@ -1544,28 +1819,55 @@ class FormController {
         const worksheet = workbook.addWorksheet('Revisiones', {
           properties: {
             // defaultRowHeight: 30
-          }, pageSetup: {
-            fitToPage: true, fitToHeight: 100, fitToWidth: 1
+          },
+          pageSetup: {
+            fitToPage: true,
+            fitToHeight: 100,
+            fitToWidth: 1
           }
         });
 
-        worksheet.columns = [{
-          header: 'VIN', key: 'vin', width: 30
-        }, {
-          header: 'Marca', key: 'brand', width: 30
-        }, {
-          header: 'Fecha carga', key: 'createdAt', width: 30
-        }, {
-          header: 'Mes carga', key: 'createdAtMonth', width: 30
-        }, {
-          header: 'Fecha revisión', key: 'checkedAt', width: 30
-        }, {
-          header: 'Mes revisión', key: 'checkedAtMonth', width: 30
-        }, {
-          header: 'Delta tiempo', key: 'leadtime', width: 20
-        }, {
-          header: 'On time', key: 'ontime', width: 20
-        }
+        worksheet.columns = [
+          {
+            header: 'VIN',
+            key: 'vin',
+            width: 30
+          },
+          {
+            header: 'Marca',
+            key: 'brand',
+            width: 30
+          },
+          {
+            header: 'Fecha carga',
+            key: 'createdAt',
+            width: 30
+          },
+          {
+            header: 'Mes carga',
+            key: 'createdAtMonth',
+            width: 30
+          },
+          {
+            header: 'Fecha revisión',
+            key: 'checkedAt',
+            width: 30
+          },
+          {
+            header: 'Mes revisión',
+            key: 'checkedAtMonth',
+            width: 30
+          },
+          {
+            header: 'Delta tiempo',
+            key: 'leadtime',
+            width: 20
+          },
+          {
+            header: 'On time',
+            key: 'ontime',
+            width: 20
+          }
         ];
 
         for (const reception of receptions) {
@@ -1578,8 +1880,7 @@ class FormController {
             const t1 = moment(reception.createdAt).subtract(4, 'hours');
 
             const hour = parseInt(t0.format('HH'), 10);
-            if (hour >= 20 || hour <= 2)
-              continue;
+            if (hour >= 20 || hour <= 2) continue;
 
             const dm = t1.diff(t0, 'minutes');
 
@@ -1597,16 +1898,20 @@ class FormController {
                 ontime
               });
             }
-
           }
         }
 
         const tempFilePath = tempfile('.xlsx');
         await workbook.xlsx.writeFile(tempFilePath);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=revisiones-03-07-2019.xlsx');
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename=revisiones-03-07-2019.xlsx'
+        );
         return res.sendFile(tempFilePath);
-
       }
     } catch (e) {
       // Raven.captureException(e, { req });
@@ -1623,9 +1928,14 @@ class FormController {
     }
   }
 
-  private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
-
-    const receptionForm = await Form.findOne({ _id: '5b1ae5799ebea419025b3e41' });
+  private static async getDercoDeliveryParticipants(
+    team: ITeamModel,
+    from: moment.Moment,
+    to: moment.Moment
+  ): Promise<IParticipant[]> {
+    const receptionForm = await Form.findOne({
+      _id: '5b1ae5799ebea419025b3e41'
+    });
     return Participant.aggregate([
       {
         $match: {
@@ -1675,10 +1985,13 @@ class FormController {
       },
       { $unwind: '$to' }
     ]);
-
   }
 
-  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
+  private async getDeliveryParticipants(
+    team: ITeamModel,
+    from: moment.Moment,
+    to: moment.Moment
+  ): Promise<IParticipant[]> {
     const distributors = await Venue.find({ team, type: 'distributor' });
     const receivers = await Venue.find({ team, type: 'receiver' });
 
@@ -1759,15 +2072,21 @@ class FormController {
           car: 1,
           venue: 1,
           createdAt: 1,
-          'recived_participants': { '$arrayElemAt': ['$recived_participants', 0] }
+          recived_participants: { $arrayElemAt: ['$recived_participants', 0] }
         }
       }
     ]);
 
     return receptions.filter((reception, index) => {
-      return index === receptions.findIndex(obj => {
-        return obj.recived_participants._id.toString() === reception.recived_participants._id.toString();
-      });
+      return (
+        index ===
+        receptions.findIndex((obj) => {
+          return (
+            obj.recived_participants._id.toString() ===
+            reception.recived_participants._id.toString()
+          );
+        })
+      );
     });
   }
 
@@ -1775,15 +2094,23 @@ class FormController {
     return user && user.team.toString() === DERCO_TEAM;
   }
 
-  private static parseReception(reception: IParticipant, distributorTable: any): any {
-
-    const recivedparticipant: IParticipant = (reception as any).recived_participants as IParticipant;
+  private static parseReception(
+    reception: IParticipant,
+    distributorTable: any
+  ): any {
+    const recivedparticipant: IParticipant = (reception as any)
+      .recived_participants as IParticipant;
     const sendingVenue: IVenueModel = recivedparticipant.venue;
 
-    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-    distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
-      distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
-      5;
+    const daysLimit =
+      distributorTable[sendingVenue._id.toString()] &&
+      distributorTable[sendingVenue._id.toString()][
+        reception.venue._id.toString()
+      ]
+        ? distributorTable[sendingVenue._id.toString()][
+            reception.venue._id.toString()
+          ]
+        : 5;
     const threshold = daysLimit * 60 * 24;
     const t0 = moment(recivedparticipant.createdAt);
     const t1 = moment(reception.createdAt);
@@ -1801,16 +2128,21 @@ class FormController {
     };
   }
 
-  private static parseDercoReception(reception: IParticipant, distributorTable: any, dercoDistributionVenue: IVenueModel): any {
+  private static parseDercoReception(
+    reception: IParticipant,
+    distributorTable: any,
+    dercoDistributionVenue: IVenueModel
+  ): any {
     const car: ICarModel = (reception as any).related_car as ICarModel;
     // TODO: Get The real origin Venue
     const sendingVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
-    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
-      distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
-      5;
+    const daysLimit =
+      distributorTable[sendingVenue._id.toString()] &&
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()]
+        ? distributorTable[sendingVenue._id.toString()][venue._id.toString()]
+        : 5;
     const threshold = daysLimit * 60 * 24;
     const t0 = moment(car.createdAt);
     const t1 = moment(reception.createdAt);
@@ -1831,7 +2163,10 @@ class FormController {
     try {
       const { team } = req.user as { team: ITeamModel };
       const userObject = await User.findOne({ _id: req.user._id });
-      const distributors = await Venue.find({ team, type: 'distributor' }, {}).populate({
+      const distributors = await Venue.find(
+        { team, type: 'distributor' },
+        {}
+      ).populate({
         path: 'sendToDays.venue',
         select: ['_id']
       });
@@ -1839,12 +2174,15 @@ class FormController {
       const start: any = req.query.start;
       const to: any = req.query.end;
 
-      let startDate: any = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, 'months').startOf('month').startOf('day');
+      let startDate: any =
+        start && start !== ''
+          ? moment(start, 'YYYY-MM-DD')
+          : moment().subtract(3, 'months').startOf('month').startOf('day');
 
-      const toDate: any = to && to !== '' ? moment(to, 'YYYY-MM-DD') :
-        moment().endOf('month').endOf('day');
-
+      const toDate: any =
+        to && to !== ''
+          ? moment(to, 'YYYY-MM-DD')
+          : moment().endOf('month').endOf('day');
 
       const distributorTable: any = {};
       distributors.map((distributor: IVenueModel) => {
@@ -1860,28 +2198,46 @@ class FormController {
 
       const data: any = {};
 
-      for (let i: moment.Moment = startDate; i <= toDate; i = i.add(1, 'month')) {
+      for (
+        let i: moment.Moment = startDate;
+        i <= toDate;
+        i = i.add(1, 'month')
+      ) {
         const month = i.format('MM-YYYY');
         data[month] = [];
       }
 
-      startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, 'months').startOf('month').startOf('day');
+      startDate =
+        start && start !== ''
+          ? moment(start, 'YYYY-MM-DD')
+          : moment().subtract(3, 'months').startOf('month').startOf('day');
 
       const isDercoUser: boolean = FormController.isDercoUser(userObject!);
-      const receptions: IParticipant[] = isDercoUser ?
-        await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
-        await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
+      const receptions: IParticipant[] = isDercoUser
+        ? await FormController.getDercoDeliveryParticipants(
+            team,
+            startDate.toDate(),
+            toDate.toDate()
+          )
+        : await this.getDeliveryParticipants(
+            team,
+            startDate.toDate(),
+            toDate.toDate()
+          );
 
       for (const reception of receptions) {
-        const value: any = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
-          FormController.parseReception(reception, distributorTable);
+        const value: any = isDercoUser
+          ? FormController.parseDercoReception(
+              reception,
+              distributorTable,
+              distributors[0]
+            )
+          : FormController.parseReception(reception, distributorTable);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
       }
 
       return res.json(data);
-
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
@@ -1895,11 +2251,12 @@ class FormController {
         status: 400
       });
     }
-
   }
 
-  public async apiRevisionsGapExport(req: IRequest, res: Response): Promise<any> {
-
+  public async apiRevisionsGapExport(
+    req: IRequest,
+    res: Response
+  ): Promise<any> {
     if (!req.user.hasPermission('exportRevisionsGap')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -1911,49 +2268,97 @@ class FormController {
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
           // defaultRowHeight: 30
-        }, pageSetup: {
-          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        },
+        pageSetup: {
+          fitToPage: true,
+          fitToHeight: 100,
+          fitToWidth: 1
         }
       });
       worksheet.autoFilter = { from: 'A1', to: 'F1' };
 
-      worksheet.columns = [{
-        header: 'VIN', key: 'vin', width: 30
-      }, {
-        header: 'Marca', key: 'brand', width: 30
-      }, {
-        header: 'Total revisiones', key: 'participants', width: 30
-      }, {
-        header: 'Fecha despacho', key: 'p0CreatedAt', width: 30
-      }, {
-        header: 'Sucursal despacho', key: 'p0Venue', width: 30
-      }, {
-        header: 'Calificación despacho', key: 'p0Qualification', width: 30
-      }, {
-        header: 'Gas despacho', key: 'p0Gas', width: 30
-      }, {
-        header: 'Pintura despacho', key: 'p0Paint', width: 30
-      }, {
-        header: 'Lata despacho', key: 'p0SheetMetal', width: 30
-      }, {
-        header: 'Fecha recepción', key: 'p1CreatedAt', width: 30
-      }, {
-        header: 'Sucursal recepción', key: 'p1Venue', width: 30
-      }, {
-        header: 'Calificación recepción', key: 'p1Qualification', width: 30
-      }, {
-        header: 'Gas recepción', key: 'p1Gas', width: 30
-      }, {
-        header: 'Pintura recepción', key: 'p1Paint', width: 30
-      }, {
-        header: 'Lata recepción', key: 'p1SheetMetal', width: 30
-      }];
+      worksheet.columns = [
+        {
+          header: 'VIN',
+          key: 'vin',
+          width: 30
+        },
+        {
+          header: 'Marca',
+          key: 'brand',
+          width: 30
+        },
+        {
+          header: 'Total revisiones',
+          key: 'participants',
+          width: 30
+        },
+        {
+          header: 'Fecha despacho',
+          key: 'p0CreatedAt',
+          width: 30
+        },
+        {
+          header: 'Sucursal despacho',
+          key: 'p0Venue',
+          width: 30
+        },
+        {
+          header: 'Calificación despacho',
+          key: 'p0Qualification',
+          width: 30
+        },
+        {
+          header: 'Gas despacho',
+          key: 'p0Gas',
+          width: 30
+        },
+        {
+          header: 'Pintura despacho',
+          key: 'p0Paint',
+          width: 30
+        },
+        {
+          header: 'Lata despacho',
+          key: 'p0SheetMetal',
+          width: 30
+        },
+        {
+          header: 'Fecha recepción',
+          key: 'p1CreatedAt',
+          width: 30
+        },
+        {
+          header: 'Sucursal recepción',
+          key: 'p1Venue',
+          width: 30
+        },
+        {
+          header: 'Calificación recepción',
+          key: 'p1Qualification',
+          width: 30
+        },
+        {
+          header: 'Gas recepción',
+          key: 'p1Gas',
+          width: 30
+        },
+        {
+          header: 'Pintura recepción',
+          key: 'p1Paint',
+          width: 30
+        },
+        {
+          header: 'Lata recepción',
+          key: 'p1SheetMetal',
+          width: 30
+        }
+      ];
 
       const team = req.user.team._id;
 
       const periods = 6;
       for (let i = 0; i < periods; i++) {
-
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
 
@@ -1980,22 +2385,19 @@ class FormController {
         const sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
 
         for (const car of cars) {
-
           if (car.participants!.length > 0) {
-
-            const participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
+            const participants = car.participants!.sort((p0: any, p1: any) =>
+              p0.createdAt >= p1.createdAt ? 1 : 0
+            );
 
             let p0: any = null;
             let p1: any = null;
 
             // only one form
             if (participants.length < 2) {
-              if (participants[0].form.toString() === f0)
-                p0 = participants[0];
-
+              if (participants[0].form.toString() === f0) p0 = participants[0];
               else if (participants[0].form.toString() === f1)
                 p1 = participants[0];
-
             } else {
               const length = participants.length;
               p0 = participants[0];
@@ -2005,44 +2407,78 @@ class FormController {
             let choice0Gas = null;
             let choice1Gas = null;
             if (p0) {
-              const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === gasQuestion);
+              const answer0Gas = p0.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() === answer0Gas.answer.toString());
+                choice0Gas = answer0Gas.scale.choices.find(
+                  (c: any) => c._id.toString() === answer0Gas.answer.toString()
+                );
             }
 
             if (p1) {
-              const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === gasQuestion);
+              const answer1Gas = p1.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() === answer1Gas.answer.toString());
+                choice1Gas = answer1Gas.scale.choices.find(
+                  (c: any) => c._id.toString() === answer1Gas.answer.toString()
+                );
             }
 
             let choice0Paint = null;
             let choice1Paint = null;
             if (p0) {
-              const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === paintQuestion);
+              const answer0Paint = p0.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() === answer0Paint.answer.toString());
+                choice0Paint = answer0Paint.scale.choices.find(
+                  (c: any) =>
+                    c._id.toString() === answer0Paint.answer.toString()
+                );
             }
 
             if (p1) {
-              const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === paintQuestion);
+              const answer1Paint = p1.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() === answer1Paint.answer.toString());
+                choice1Paint = answer1Paint.scale.choices.find(
+                  (c: any) =>
+                    c._id.toString() === answer1Paint.answer.toString()
+                );
             }
 
             // lata
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() === answer0SheetMetal.answer.toString());
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find(
+                  (c: any) =>
+                    c._id.toString() === answer0SheetMetal.answer.toString()
+                );
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() === sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections
+                .map((s: any) => s.answers)
+                .reduce((x: any[], y: any[]) => [...x, ...y], [])
+                .find((a: any) => a._id.toString() === sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() === answer1SheetMetal.answer.toString());
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find(
+                  (c: any) =>
+                    c._id.toString() === answer1SheetMetal.answer.toString()
+                );
             }
 
             const row = {
@@ -2066,7 +2502,6 @@ class FormController {
 
             worksheet.addRow(row);
           }
-
         }
 
         /* formats */
@@ -2083,10 +2518,17 @@ class FormController {
 
         const tempFilePath = tempfile('.xlsx');
         await workbook.xlsx.writeFile(tempFilePath);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename=revisiones-${moment().format(
+            'YYYY-MM-DD'
+          )}.xlsx`
+        );
         return res.sendFile(tempFilePath);
-
       }
     } catch (e) {
       // Raven.captureException(e, { req });
@@ -2113,18 +2555,18 @@ class FormController {
       const days: string[] = [];
       const daysDict: any = {};
       if (form) {
-
         const total = 30 * 6;
         const t0 = moment().subtract(total, 'days');
         for (let i = 0; i < total; i++) {
-          const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
+          const day = moment()
+            .subtract(total - i, 'days')
+            .format('YYYY-MM-DD');
           daysDict[day] = {
-            'clean': 0,
-            'notClean': 0
+            clean: 0,
+            notClean: 0
           };
           days.push(day);
         }
-
 
         const cleanDispatch = await Participant.aggregate([
           {
@@ -2147,7 +2589,7 @@ class FormController {
 
         for (const datum of cleanDispatch) {
           const day = datum._id;
-          daysDict[day].clean =  datum.count;
+          daysDict[day].clean = datum.count;
         }
 
         const notCleanDispatch = await Participant.aggregate([
@@ -2198,49 +2640,60 @@ class FormController {
     try {
       logger.info(`FormController.deliveriesOfTheday email: ${req.user.email}`);
       const team = req.user.team._id;
-      const participas = await Participant.find({
-        team,
-        deliveryToCustomer: true,
-        createdAt: {
-          $gte: moment().subtract(2, 'days').startOf('day').toDate()
+      const participas = await Participant.find(
+        {
+          team,
+          deliveryToCustomer: true,
+          createdAt: {
+            $gte: moment().subtract(2, 'days').startOf('day').toDate()
+          }
+        },
+        {
+          _id: true,
+          name: true,
+          sections: true,
+          number: true,
+          createdAt: true
         }
-      }, {
-        '_id': true,
-        'name': true,
-        'sections': true,
-        'number': true,
-        'createdAt': true
-      }).populate([{
-        path: 'car',
-        select: {
-          '_id': true,
-          'vin': true,
-          'patent': true,
-          'color': true,
-          'denomination': true,
-          'brand': true,
-          'type': true,
-          'internalNumber': true
-        }
-      }, {
-        path: 'user',
-        select: {
-          '_id': true,
-          'firstName': true,
-          'lastName': true,
-          'email': true
-        }
-      }, {
-        path: 'venue',
-        select: {
-          '_id': true,
-          'name': true
-        }
-      }, {
-        path: 'sections.answers.images'
-      }, {
-        path: 'sections.answers.damagesSelected.images'
-      }]).lean();
+      )
+        .populate([
+          {
+            path: 'car',
+            select: {
+              _id: true,
+              vin: true,
+              patent: true,
+              color: true,
+              denomination: true,
+              brand: true,
+              type: true,
+              internalNumber: true
+            }
+          },
+          {
+            path: 'user',
+            select: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          {
+            path: 'venue',
+            select: {
+              _id: true,
+              name: true
+            }
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'sections.answers.damagesSelected.images'
+          }
+        ])
+        .lean();
       return res.json({
         data: participas,
         status: 200
@@ -2263,7 +2716,11 @@ class FormController {
   public async allControls(req: IRequest, res: Response): Promise<any> {
     try {
       logger.info(`FormController.allControls email: ${req.user.email}`);
-      logger.info(`FormController.allControls email: ${req.user.email} query: ${JSON.stringify(req.query)}`);
+      logger.info(
+        `FormController.allControls email: ${
+          req.user.email
+        } query: ${JSON.stringify(req.query)}`
+      );
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
       const filter = {
@@ -2288,59 +2745,70 @@ class FormController {
           pagingCounter: 'si'
         },
         select: {
-          '_id': true,
-          'name': true,
-          'sections': true,
-          'venue': true,
-          'receiveFrom': true,
-          'sendTo': true,
-          'number': true,
-          'createdAt': true
+          _id: true,
+          name: true,
+          sections: true,
+          venue: true,
+          receiveFrom: true,
+          sendTo: true,
+          number: true,
+          createdAt: true
         },
-        populate: [{
-          path: 'car',
-          select: {
-            '_id': true,
-            'vin': true,
-            'patent': true,
-            'color': true,
-            'denomination': true,
-            'brand': true,
-            'type': true,
-            'internalNumber': true
-          }
-        },{
-          path: 'form',
-          select: {
-            '_id': true,
-            'name': true,
-            'action': true,
-          }
-        }, {
-          path: 'user',
-          select: {
-            '_id': true,
-            'firstName': true,
-            'lastName': true,
-            'email': true
-          }
-        }, {
-          path: 'carrierBy',
-          select: {
-            '_id': true,
-            'name': true
+        populate: [
+          {
+            path: 'car',
+            select: {
+              _id: true,
+              vin: true,
+              patent: true,
+              color: true,
+              denomination: true,
+              brand: true,
+              type: true,
+              internalNumber: true
+            }
           },
-        }, {
-          path: 'sections.answers.images'
-        }, {
-          path: 'sections.answers.damagesSelected.images'
-        }],
+          {
+            path: 'form',
+            select: {
+              _id: true,
+              name: true,
+              action: true
+            }
+          },
+          {
+            path: 'user',
+            select: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          {
+            path: 'carrierBy',
+            select: {
+              _id: true,
+              name: true
+            }
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'sections.answers.damagesSelected.images'
+          }
+        ],
         lean: true,
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)
       };
       const participants = await this.getControls(filter, options);
-      if (options.page && participants.pages && participants.pages < options.page) {
+      if (
+        options.page &&
+        participants.pages &&
+        participants.pages < options.page
+      ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
@@ -2370,7 +2838,146 @@ class FormController {
     }
   }
 
-  private getControls(filter: any, options: PaginateOptions): Promise<PaginateResult<IOperationTypeModel>> {
+  public async allControlsByVIN(req: IRequest, res: Response): Promise<any> {
+    try {
+      logger.info(`FormController.allControls email: ${req.user.email}`);
+      logger.info(
+        `FormController.allControls email: ${
+          req.user.email
+        } query: ${JSON.stringify(req.query)}`
+      );
+      const team = req.user.team._id;
+      const { page, pageSize } = req.query as Record<string, string>;
+      const car = await Car.findOne(
+        { vin: req.params.vin, team },
+        { _id: true }
+      );
+      if (!car) {
+        return res.status(400).json({
+          message: 'Car not found.',
+          status: 400
+        });
+      }
+
+      const filter = {
+        team,
+        active: true,
+        createdAt: {
+          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+        }
+      };
+      const options: PaginateOptions = {
+        sort: {
+          number: 1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          hasNextPage: 'hasNextPage',
+          hasPrevPage: 'hasPrevPage',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        select: {
+          _id: true,
+          name: true,
+          sections: true,
+          venue: true,
+          receiveFrom: true,
+          sendTo: true,
+          number: true,
+          createdAt: true
+        },
+        populate: [
+          {
+            path: 'car',
+            select: {
+              _id: true,
+              vin: true,
+              patent: true,
+              color: true,
+              denomination: true,
+              brand: true,
+              type: true,
+              internalNumber: true
+            }
+          },
+          {
+            path: 'form',
+            select: {
+              _id: true,
+              name: true,
+              action: true
+            }
+          },
+          {
+            path: 'user',
+            select: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          {
+            path: 'carrierBy',
+            select: {
+              _id: true,
+              name: true
+            }
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'sections.answers.damagesSelected.images'
+          }
+        ],
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10)
+      };
+      const participants = await this.getControls(filter, options);
+      if (
+        options.page &&
+        participants.pages &&
+        participants.pages < options.page
+      ) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        return res.json({
+          count: participants.total,
+          pages: participants.pages,
+          hasPrevPage: participants.hasPrevPage,
+          hasNextPage: participants.hasNextPage,
+          data: participants.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      // Raven.captureException(e, { req });
+      /* istanbul ignore next */
+      logger.error(`allControls: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      return res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  private getControls(
+    filter: any,
+    options: PaginateOptions
+  ): Promise<PaginateResult<IOperationTypeModel>> {
     return new Promise((resolve, reject) => {
       Participant.paginate!(filter, options, (err, result) => {
         if (err) {
@@ -2403,13 +3010,10 @@ class FormController {
 
   private getForms(filter: any): Promise<IFormModel[]> {
     return new Promise((resolve, reject) => {
-      Form
-        .find(filter, {
-          _id: 1,
-          name: 1
-        })
-        .lean()
-        .exec!((err, forms: IFormModel[]) => {
+      Form.find(filter, {
+        _id: 1,
+        name: 1
+      }).lean().exec!((err, forms: IFormModel[]) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);
@@ -2429,61 +3033,76 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           logger.debug(`NEW CACHE`);
-          Form
-            .findOne(filter, {
-              'company': false,
-              'updatedAt': false,
-              'createdAt': false,
-              'active': false,
-              'sections.shortName': false,
-              'sections.questions.shortName': false,
-              '__v': false
-            })
-            .populate([{
-              path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback', 'severityOptions'],
-              populate: [{
-                path: 'positions',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
+          Form.findOne(filter, {
+            company: false,
+            updatedAt: false,
+            createdAt: false,
+            active: false,
+            'sections.shortName': false,
+            'sections.questions.shortName': false,
+            __v: false
+          })
+            .populate([
+              {
+                path: 'sections.questions.damages',
+                select: [
+                  'name',
+                  'positions',
+                  'kinds',
+                  'parts',
+                  'partFallback',
+                  'kindFallback',
+                  'severityOptions'
+                ],
+                populate: [
+                  {
+                    path: 'positions',
+                    select: ['name'],
+                    options: {
+                      sort: {
+                        name: 1
+                      }
+                    }
+                  },
+                  {
+                    path: 'kinds',
+                    select: ['name'],
+                    options: {
+                      sort: {
+                        name: 1
+                      }
+                    }
+                  },
+                  {
+                    path: 'parts',
+                    select: ['name'],
+                    options: {
+                      sort: {
+                        name: 1
+                      }
+                    }
+                  },
+                  {
+                    path: 'kindFallback',
+                    select: ['name'],
+                    options: {
+                      sort: {
+                        name: 1
+                      }
+                    }
+                  },
+                  {
+                    path: 'partFallback',
+                    select: ['name'],
+                    options: {
+                      sort: {
+                        name: 1
+                      }
+                    }
                   }
-                }
-              }, {
-                path: 'kinds',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }, {
-                path: 'parts',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }, {
-                path: 'kindFallback',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }, {
-                path: 'partFallback',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }]
-            }])
+                ]
+              }
+            ])
             .lean()
             .exec((err, form: IFormModel) => {
               if (err) {
@@ -2526,25 +3145,29 @@ class FormController {
 
   private getFormWithScale(filter: any): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
-      Form
-        .findOne(filter)
-        .populate([{
+      Form.findOne(filter).populate([
+        {
           path: 'sections.questions.scale'
-        }, {
+        },
+        {
           path: 'sections.questions.damages',
           select: ['name', 'positions', 'kinds', 'parts'],
-          populate: [{
-            path: 'positions',
-            select: ['name']
-          }, {
-            path: 'kinds',
-            select: ['name']
-          }, {
-            path: 'parts',
-            select: ['name']
-          }]
-        }])
-        .exec!((err, form) => {
+          populate: [
+            {
+              path: 'positions',
+              select: ['name']
+            },
+            {
+              path: 'kinds',
+              select: ['name']
+            },
+            {
+              path: 'parts',
+              select: ['name']
+            }
+          ]
+        }
+      ]).exec!((err, form) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);
@@ -2564,18 +3187,17 @@ class FormController {
         if (result) {
           resolve(JSON.parse(result));
         } else {
-          ScaleModel
-            .find(filter, {
-              'updatedAt': false,
-              'createdAt': false,
-              'active': false,
-              'company': false,
-              'minValue': false,
-              'maxValue': false,
-              'choices.na': false,
-              'team': false,
-              '__v': false
-            })
+          ScaleModel.find(filter, {
+            updatedAt: false,
+            createdAt: false,
+            active: false,
+            company: false,
+            minValue: false,
+            maxValue: false,
+            'choices.na': false,
+            team: false,
+            __v: false
+          })
             .lean()
             .exec((err, scales: IScaleModel[]) => {
               if (err) {
@@ -2592,7 +3214,11 @@ class FormController {
 
   public async createPosition(req: IRequest, res: Response): Promise<any> {
     try {
-      logger.info(`FormController.createPosition: email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
+      logger.info(
+        `FormController.createPosition: email: ${
+          req.user.email
+        } body: ${JSON.stringify(req.body)}`
+      );
       const { company, venue } = req.user;
       const team = req.user.team._id;
       const { lat, lng, accuracy, provider } = req.body;
@@ -2618,7 +3244,9 @@ class FormController {
       /* istanbul ignore next */
       logger.error(`FormController.createPosition: Error`);
       /* istanbul ignore next */
-      logger.error(`email: ${req.user.email} body: ${JSON.stringify(req.body)}`);
+      logger.error(
+        `email: ${req.user.email} body: ${JSON.stringify(req.body)}`
+      );
       /* istanbul ignore next */
       logger.error(e);
       res.status(400).json({

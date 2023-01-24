@@ -75,3 +75,17 @@ export const ErrorSchema403 = {
     }
   }
 };
+
+export const ErrorSchema404 = {
+  type: 'object',
+  properties: {
+    message: {
+      type: 'string',
+      example: 'No encontrado.'
+    },
+    status: {
+      type: 'integer',
+      example: 404
+    }
+  }
+};

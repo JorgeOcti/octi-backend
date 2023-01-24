@@ -8,6 +8,7 @@ import {
   ListControlsSchema,
   ErrorSchema400,
   ErrorSchema401,
+  ErrorSchema404,
   PageSchema,
   PageSizeSchema, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403, AuthorizationJWTSchema
 } from './core';
@@ -83,6 +84,7 @@ export const swaggerDefinition = {
       Error400: ErrorSchema400,
       Error401: ErrorSchema401,
       Error403: ErrorSchema403,
+      Error404: ErrorSchema404,
     },
     parameters: {
       AuthorizationJWT: AuthorizationJWTSchema,

@@ -27,13 +27,13 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *   get:
  *     tags:
  *     - Control de unidades
- *     summary: Listado de todas las unidades controladas
- *     description: Entrega todas las unidades controladas de los formularios que esten activos en el sistema.
+ *     summary: Listado de los controles de todas las unidades
+ *     description: Entrega todos los controles de los formularios que esten activos en el sistema.
  *     produces:
  *       - application/json
  *     parameters:
  *       - $ref: '#/components/parameters/DefaultPage'
- *       - $ref: '#/components/parameters/PageSize10'
+ *       - $ref: '#/components/parameters/PageSize100'
  *     responses:
  *       200:
  *         description: Respuesta exitosa
@@ -58,6 +58,55 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  */
 router.get('/api/v1/forms/controls/', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(FormListControls), FormController.allControls);
 
+/**
+ * @swagger
+ * /api/v1/forms/controls/{VIN}:
+ *   get:
+ *     tags:
+ *     - Control de unidades
+ *     summary: Listado de los controles de un vin especifico
+ *     description: Entrega todos los controles de los formularios que esten activos en el sistema del VIN especificado.
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: VIN
+ *         in: path
+ *         description: VIN de la unidad
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - $ref: '#/components/parameters/DefaultPage'
+ *       - $ref: '#/components/parameters/PageSize100'
+ *     responses:
+ *       200:
+ *         description: Respuesta exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/responses/ListControls'
+ *       400:
+ *         description: Error en la consulta
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/responses/Error400'
+ *       401:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/responses/Error401'
+*       404:
+ *         description: Error de autenticación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/responses/Error404'
+ *     security:
+ *       - ApiKeyAuth: []
+ */
+router.get('/api/v1/forms/controls/:vin', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(FormListControls), FormController.allControlsByVIN);
+
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 
 router.get('/report/forms/pdf/:id.pdf', Middlewares.isJWTAuthenticated, FormController.pdf);
@@ -65,9 +114,9 @@ router.get('/report/forms/pdf/:id.pdf', Middlewares.isJWTAuthenticated, FormCont
 // detail information of the form
 router.get('/api/v1/user-forms/', Middlewares.isJWTAuthenticated, FormController.userForms);
 router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
-router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
+router.get('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.detail);
 // answer form
-router.post('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.complete);
+router.post('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.complete);
 
 // admin forms
 router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiList);
