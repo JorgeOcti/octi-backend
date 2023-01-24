@@ -2844,7 +2844,7 @@ class FormController {
       logger.info(
         `FormController.allControlsByVIN email: ${
           req.user.email
-        } query: ${JSON.stringify(req.query)}`
+        } params: ${JSON.stringify(req.params)} query: ${JSON.stringify(req.query)}`
       );
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;

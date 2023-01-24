@@ -49,10 +49,11 @@ class CarTracker {
               team: true,
               company: true
             }
-          },{
+          },
+          {
             path: 'car',
             select: {
-              _id: true,
+              _id: true
             }
           }
         ]);
@@ -152,10 +153,11 @@ class CarTracker {
               sendTo: true,
               receiveFrom: true
             }
-          },{
+          },
+          {
             path: 'car',
             select: {
-              _id: true,
+              _id: true
             }
           }
         ]);
@@ -360,6 +362,22 @@ class CarTracker {
           }
         );
         if (lastHistory) {
+          const lastChangeLocation = await History.findOne(
+            {
+              car: car._id,
+              changeLocation: true
+            },
+            {
+              _id: true,
+              to: true,
+              executedAt: true
+            },
+            {
+              sort: {
+                executedAt: -1
+              }
+            }
+          );
           await History.updateMany(
             {
               car: car._id
@@ -378,21 +396,27 @@ class CarTracker {
               }
             }
           );
+          let updateCar: any = {
+            event: lastHistory._id
+          };
+          if (lastChangeLocation) {
+            updateCar = {
+              ...updateCar,
+              'meta.location': {
+                venue: await Venue.findOne(
+                  { _id: lastChangeLocation.to },
+                  { name: 1, team: 1, company: 1 }
+                ),
+                checkedDate: lastChangeLocation.executedAt
+              }
+            };
+          }
           await Car.updateOne(
             {
               _id: car._id
             },
             {
-              $set: {
-                event: lastHistory._id,
-                'meta.location': {
-                  venue: await Venue.findOne(
-                    { _id: lastHistory.to },
-                    { name: 1, team: 1, company: 1 }
-                  ),
-                  checkedDate: lastHistory.executedAt
-                }
-              }
+              $set: updateCar
             }
           );
         }
@@ -419,27 +443,11 @@ class CarTracker {
         const currentLocation = await History.findOne({
           changeLocation: true
         }).sort({ executedAt: -1 });
-        if (history?.to && currentLocation?.to !== history.to) {
+        if (history?.to && currentLocation?.to?.toString() !== history.to?.toString()) {
           history = {
             ...history,
             changeLocation: true
           };
-          await Car.updateOne(
-            {
-              car: history.car._id
-            },
-            {
-              $set: {
-                'meta.location': {
-                  venue: await Venue.findOne(
-                    { _id: history.to },
-                    { name: 1, team: 1, company: 1 }
-                  ),
-                  checkedDate: history.executedAt
-                }
-              }
-            }
-          );
         }
         await new History(history).save();
         // disable if create new database
