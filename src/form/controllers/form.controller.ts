@@ -2861,10 +2861,8 @@ class FormController {
 
       const filter = {
         team,
+        car: car._id,
         active: true,
-        createdAt: {
-          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
-        }
       };
       const options: PaginateOptions = {
         sort: {
