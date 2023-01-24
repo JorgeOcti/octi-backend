@@ -2840,9 +2840,9 @@ class FormController {
 
   public async allControlsByVIN(req: IRequest, res: Response): Promise<any> {
     try {
-      logger.info(`FormController.allControls email: ${req.user.email}`);
+      logger.info(`FormController.allControlsByVIN email: ${req.user.email}`);
       logger.info(
-        `FormController.allControls email: ${
+        `FormController.allControlsByVIN email: ${
           req.user.email
         } query: ${JSON.stringify(req.query)}`
       );
@@ -2960,7 +2960,7 @@ class FormController {
     } catch (e) {
       // Raven.captureException(e, { req });
       /* istanbul ignore next */
-      logger.error(`allControls: Async Error.`);
+      logger.error(`allControlsByVIN: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
