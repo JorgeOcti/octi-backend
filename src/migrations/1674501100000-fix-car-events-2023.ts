@@ -22,9 +22,10 @@ export async function up() {
     try {
       await carTracker.updateCurrentHistory(car);
     } catch (e) {
-      console.error(e);
+      console.log('Error updating car: ', car._id);
+      console.log(e);
     }
-  });
+  }, {parallel: 30});
 }
 
 // Make any changes that UNDO the up function side effects here (if possible)

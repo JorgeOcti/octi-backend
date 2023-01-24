@@ -33,7 +33,7 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *       - application/json
  *     parameters:
  *       - $ref: '#/components/parameters/DefaultPage'
- *       - $ref: '#/components/parameters/PageSize100'
+ *       - $ref: '#/components/parameters/PageSize10'
  *     responses:
  *       200:
  *         description: Respuesta exitosa
@@ -76,7 +76,7 @@ router.get('/api/v1/forms/controls/', Middlewares.isJWTAuthenticated, Middleware
  *         schema:
  *           type: string
  *       - $ref: '#/components/parameters/DefaultPage'
- *       - $ref: '#/components/parameters/PageSize100'
+ *       - $ref: '#/components/parameters/PageSize10'
  *     responses:
  *       200:
  *         description: Respuesta exitosa

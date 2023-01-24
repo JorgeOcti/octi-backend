@@ -89,8 +89,8 @@ export const swaggerDefinition = {
     parameters: {
       AuthorizationJWT: AuthorizationJWTSchema,
       DefaultPage: PageSchema,
-      PageSize10: PageSizeSchema(10),
-      PageSize100: PageSizeSchema(100)
+      PageSize10: PageSizeSchema(10, 100),
+      PageSize100: PageSizeSchema(100, 100)
     },
     securitySchemes: {
       ApiKeyAuth: {
