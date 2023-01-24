@@ -27,7 +27,7 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
  *   get:
  *     tags:
  *     - Control de unidades
- *     summary: Listado de los controles de todas las unidades
+ *     summary: Listado controles de todas las unidades
  *     description: Entrega todos los controles de los formularios que esten activos en el sistema.
  *     produces:
  *       - application/json
@@ -64,7 +64,7 @@ router.get('/api/v1/forms/controls/', Middlewares.isJWTAuthenticated, Middleware
  *   get:
  *     tags:
  *     - Control de unidades
- *     summary: Listado de los controles de un vin especifico
+ *     summary: Listado controles por un vin especifico
  *     description: Entrega todos los controles de los formularios que esten activos en el sistema del VIN especificado.
  *     produces:
  *       - application/json
