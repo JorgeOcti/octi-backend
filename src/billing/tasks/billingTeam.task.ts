@@ -187,11 +187,12 @@ class BillingTeamQueue {
               : new Date(
                   `${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`
                 );
-            let to = moment().endOf('month').subtract(3, 'days').startOf('day');
+            const to= now;
+            // let to = moment().endOf('month').subtract(3, 'days').startOf('day');
             // If the script runs earlier than automatically scheduled
-            if (now.isBefore(to)) {
-              to = now;
-            }
+            // if (now.isBefore(to)) {
+            //   to = now;
+            // }
             const histories = await History.find(
               {
                 company: { $in: teamBilling.companies },
