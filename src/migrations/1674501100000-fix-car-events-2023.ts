@@ -161,7 +161,7 @@ export async function up() {
           resolve({});
         } catch (error) {
           console.log(error);
-          reject(error);
+          // reject(error);
         }
       });
     }, { parallel: 100 });
@@ -173,7 +173,8 @@ export async function up() {
 
 
   const carsCursor = Car.find(
-    { team: { $in: ['5bf2de35caf8ef7096105cdd', '5bf2de34caf8ef7096105cda'] } },
+    // { team: { $in: ['5bf2de35caf8ef7096105cdd', '5bf2de34caf8ef7096105cda'] } },
+    {  },
     { _id: 1, history: 1 }
   ).cursor();
   await carsCursor.eachAsync(
