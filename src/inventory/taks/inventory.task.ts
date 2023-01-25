@@ -215,7 +215,7 @@ class InventoryQueue {
         console.log('inventoryCars', inventoryCars.length);
         await InventoryCar.insertMany(inventoryCars);
         if (moment().isSameOrAfter(refresh)) {
-          refresh = refresh.clone().add(2, 'seconds');
+          refresh = refresh.clone().add(3, 'seconds');
           socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
             update: true
           });

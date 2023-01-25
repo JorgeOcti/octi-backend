@@ -701,13 +701,13 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
         })
         .then((response: any) => {
           const { message } = response.data;
-          setTimeout(() => {
-            swal!('Envió inventario', message, 'success');
-          }, 200);
-          history.push('/inventory/');
-          this.setState({
-            sending: false
-          });
+          swal!('Envió inventario', message, 'success');
+          setTimeout(()=>{
+            this.setState({
+              sending: false
+            });
+            history.push('/inventory/');
+          }, 2000)
         })
         .catch((e) => {
           console.log('e', e);
