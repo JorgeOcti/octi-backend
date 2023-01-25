@@ -2988,12 +2988,12 @@ class FormController {
     });
   }
 
-  private getForms<T>(filter: any): Promise<any> {
+  private getForms(filter: any): Promise<any> {
     return new Promise((resolve, reject) => {
       Form.find(filter, {
         _id: 1,
         name: 1
-      }).lean().exec!((err, forms: IFormModel[]) => {
+      }).lean().exec!((err, forms) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);
