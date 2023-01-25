@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponse } from 'axios';
 import { Request } from 'express';
-// import type { IUser } from '../app/interfaces/user.interface';
+import type { IUser } from '../app/interfaces/user.interface';
 import type { IUserModel } from '../app/schemas/user.schema';
 
 export interface IResponseErrorData extends AxiosResponse {
@@ -29,7 +29,7 @@ export interface IResponsePaginateData<S> {
 }
 
 export interface IRequest extends Request {
-  user: IUserModel;
+  user: IUserModel | IUser;
   files: Express.Multer.File[];
 }
 
