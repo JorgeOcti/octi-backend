@@ -163,10 +163,11 @@ class BillingCoporateListView extends TrackingBasePage<IPropsType, IStateType> {
                                 return 0;
                               }).map((section) => {
                                 if (totalInModule > 0) {
-                                  const totalInSection = totalInModule >= section.end ? section.end : totalInModule;
+                                  const maxSection = (section.end - section.start) +1;
+                                  const totalInSection = totalInModule >= maxSection ? maxSection : totalInModule;
                                   totalInModule = totalInModule - totalInSection;
                                   return (
-                                    <div key={index} className={'text-muted'}>
+                                    <div key={section._id} className={'text-muted'}>
                                       {new Intl.NumberFormat('de-DE').format(totalInSection)} a {new Intl.NumberFormat('de-DE').format(section.price)} USD
                                     </div>
                                   );
