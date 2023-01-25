@@ -74,7 +74,7 @@ class InventoryQueue {
           return currentVenue._id.toString();
         })
       );
-      let refresh = moment().subtract(2, 'seconds');
+      let refresh = moment().subtract(4, 'seconds');
 
       const inventory = new Inventory({
         name,
