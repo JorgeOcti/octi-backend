@@ -92,7 +92,6 @@ class InventoryQueue {
       });
       await inventory.save();
 
-
       const updateCars: any[] = [];
       for (const venue of carsByVenue) {
         const inventoryCars: Partial<IInventoryCar>[] = [];
@@ -215,7 +214,7 @@ class InventoryQueue {
         );
         console.log('inventoryCars', inventoryCars.length);
         await InventoryCar.insertMany(inventoryCars);
-        if(moment().isSameOrAfter(refresh.clone().add(2, 'seconds'))){
+        if (moment().isSameOrAfter(refresh.clone().add(2, 'seconds'))) {
           refresh = moment();
           socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
             update: true
@@ -227,6 +226,15 @@ class InventoryQueue {
       }
 
       // mongoose.set('debug', true);
+      await Inventory.findByIdAndUpdate(inventory._id, {
+        status: ChoicesStatusInventory.inProcess
+      });
+      socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
+        update: true
+      });
+      socket().to(`stock-${team._id.toString()}`).emit('REFRESH', {
+        update: true
+      });
 
       await Promise.all([
         await ActivityHistory.insertMany(activityHistories),
@@ -239,10 +247,6 @@ class InventoryQueue {
         )
       ]);
       this.queue.addBulk(updateCars);
-      await Inventory.findByIdAndUpdate(inventory._id, {
-        venues: venuesIDs,
-        status: ChoicesStatusInventory.inProcess
-      });
       // mongoose.set('debug', false);
       done(null, {});
     } catch (e) {
@@ -262,43 +266,38 @@ class InventoryQueue {
     venuesIDs: string[],
     team: any
   ) {
-    socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
-      update: true
-    });
-    socket().to(`stock-${team._id.toString()}`).emit('REFRESH', {
-      update: true
-    });
-    if (process.env.ENV === 'production' && notification) {
-      const usersIDs = await User.find(
-        {
-          venue: {
-            $in: venuesIDs
+    return new Promise(async (resolve) => {
+      if (process.env.ENV === 'production' && notification) {
+        const usersIDs = await User.find(
+          {
+            venue: {
+              $in: venuesIDs
+            },
+            team
           },
-          team
-        },
-        {
-          _id: true
-        }
-      );
-      pushService.massiveSend(
-        'Nuevo inventario',
-        `Se ha iniciado el inventario "${inventory.name}"`,
-        'Ya puedes empezar a escanear',
-        usersIDs.map((user) => user._id.toString())
-      );
-    }
-    if (process.env.ENV === 'production') {
-      const currentTeam = await Team.findById(user.team._id);
-      emailQueue.queue.add(
-        'email',
-        {
-          from: '',
-          title: `Inventory Notification`,
-          to: `"Soporte"<soporte@osacontrol.com>`,
-          subject: `${user.firstName} ha creado un inventario en ${
-            currentTeam!.name
-          }`,
-          text: `Hola Soporte
+          {
+            _id: true
+          }
+        );
+        pushService.massiveSend(
+          'Nuevo inventario',
+          `Se ha iniciado el inventario "${inventory.name}"`,
+          'Ya puedes empezar a escanear',
+          usersIDs.map((user) => user._id.toString())
+        );
+      }
+      if (process.env.ENV === 'production') {
+        const currentTeam = await Team.findById(user.team._id);
+        emailQueue.queue.add(
+          'email',
+          {
+            from: '',
+            title: `Inventory Notification`,
+            to: `"Soporte"<soporte@osacontrol.com>`,
+            subject: `${user.firstName} ha creado un inventario en ${
+              currentTeam!.name
+            }`,
+            text: `Hola Soporte
 
           Se ha creado un nuevo inventario.
 
@@ -307,16 +306,18 @@ class InventoryQueue {
           ENV: ${process.env.ENV}
 
           En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
-          view: 'alerts/inventoryNotification',
-          context: {
-            team: currentTeam,
-            user: user,
-            env: process.env.ENV
-          }
-        },
-        { attempts: 3, backoff: 1000 }
-      );
-    }
+            view: 'alerts/inventoryNotification',
+            context: {
+              team: currentTeam,
+              user: user,
+              env: process.env.ENV
+            }
+          },
+          { attempts: 3, backoff: 1000 }
+        );
+      }
+      resolve({});
+    });
   }
 
   private async checkExistVenue(
