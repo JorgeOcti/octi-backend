@@ -70,5 +70,5 @@ class PushService {
   }
 
 }
-
-export default new PushService();
+const pushService = new PushService();;
+export default pushService;

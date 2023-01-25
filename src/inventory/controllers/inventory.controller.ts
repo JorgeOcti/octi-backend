@@ -162,208 +162,223 @@ class InventoryController {
   }
 
   public async create(req: IRequest, res: Response) {
-    const { company, team } = req.user;
     const { name, manualPhoto, reportPhoto } = req.body;
     let { carsByVenue, notification } = req.body;
     carsByVenue = JSON.parse(carsByVenue);
     notification = notification === 'true';
+    console.log(JSON.stringify(req.user));
     try {
-      const inventoryCars: Partial<IInventoryCar>[] = [];
-      const activityHistories: IActivityHistoryInterface[] = [];
-      const venuesIDs: string[] = [];
-      for (const venue of carsByVenue) {
-        if (venue.name && venue.name.trim().length) {
-          const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
-          let currentVenue: IVenueModel | null = await VenueModel.findOne({
-            team,
-            company,
-            $or: [
-              {
-                name: venueRegExp
-              },
-              {
-                name: { $regex: venueRegExp }
-              },
-              {
-                name: venue.name
-              }
-            ]
-          });
-          // if you are not in the company, try in the team
-          if (!currentVenue) {
-            currentVenue = await VenueModel.findOne({
-              team,
-              $or: [
-                {
-                  name: venueRegExp
-                },
-                {
-                  name: { $regex: venueRegExp }
-                },
-                {
-                  name: venue.name
-                }
-              ]
-            });
-          }
-          // if you are not in the company or in the team, it will be created
-          if (!currentVenue) {
-            currentVenue = new VenueModel({
-              name: venue.name.trim(),
-              team,
-              company
-            });
-            await currentVenue.save();
-          }
-          venuesIDs.push(currentVenue._id.toString());
-          if (venue.cars && venue.cars.length) {
-            for (const car of venue.cars) {
-              let currentCar: ICarModel | null = await CarModel.findOne({
-                team,
-                vin: car.vin.trim()
-              });
-              if (currentCar === null && car.vin && car.vin.trim().length) {
-                currentCar = new CarModel({
-                  team,
-                  company,
-                  vin: car.vin,
-                  vin2: car.vin.substr(car.vin.length - 6),
-                  color: car.color,
-                  type: car.type,
-                  property: car.property,
-                  denomination: car.denomination,
-                  brand: car.brand,
-                  patent: car.patent,
-                  createdBy: req.user,
-                  status: ChoicesStatusCar.active
-                });
-                await currentCar.save();
-              }
-              if (currentVenue && currentCar) {
-                inventoryCars.push({
-                  venue: currentVenue._id,
-                  car: currentCar._id,
-                  comments: [],
-                  images: []
-                });
-                activityHistories.push({
-                  team,
-                  company,
-                  user: req.user._id,
-                  type: ChoicesTypeActivity.inventory,
-                  car: {
-                    _id: currentCar._id,
-                    vin: currentCar.vin
-                  }
-                });
-                inventoryQueue.queue.add(
-                  'updateCar',
-                  {
-                    title: `updateCar ${car.vin}`,
-                    currentCar: currentCar._id,
-                    car
-                  },
-                  { attempts: 3, backoff: 1000 }
-                );
-              }
-            }
-          }
-        }
-      }
-      const inventory = new InventoryModel({
-        name,
-        company,
-        team,
-        venues: venuesIDs,
-        createdBy: req.user._id,
-        status: ChoicesStatusInventory.inProcess,
-        settings: {
-          photos: {
-            manual: manualPhoto,
-            report: reportPhoto
-          }
-        }
-      });
-      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
-      if (file) {
-        file.team = team;
-        await inventory.attach('file', file);
-      }
-      const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
-      if (backup) {
-        backup.team = team;
-        await inventory.attach('backup', backup);
-      }
-      await inventory.save();
-      inventoryCars.map((i) => {
-        i.inventory = inventory._id;
-        return i;
-      });
-      activityHistories.map((a) => {
-        a.inventory = {
-          _id: inventory._id,
-          name: inventory.name
-        };
-        return a;
-      });
-      await ActivityHistory.insertMany(activityHistories);
-      await InventoryCar.insertMany(inventoryCars);
+      inventoryQueue.queue.add('create', {
+       userID: req.user._id,
+       name,
+       manualPhoto,
+       reportPhoto,
+       carsByVenue,
+       notification
+      }, { removeOnComplete: true });
 
-      if (notification) {
-        const usersIDs = await UserModel.find(
-          {
-            venue: {
-              $in: venuesIDs
-            },
-            team
-          },
-          {
-            _id: true
-          }
-        );
-        PushService.massiveSend(
-          'Nuevo inventario',
-          `Se ha iniciado el inventario "${inventory.name}"`,
-          'Ya puedes empezar a escanear',
-          usersIDs.map((user) => user._id.toString())
-        );
-      }
-      socket().to(`inventory-list-${team}`).emit('REFRESH', {
-        update: true
-      });
-      socket().to(`stock-${team}`).emit('REFRESH', {
-        update: true
-      });
-      const currentTeam = await Team.findById(req.user.team._id);
-      emailQueue.queue.add(
-        'email',
-        {
-          from: '',
-          title: `Inventory Notification`,
-          to: `"soporte"<soporte@osacontrol.com>`,
-          subject: `${req.user.firstName} ha creado un inventario en ${
-            currentTeam!.name
-          }`,
-          text: `Hola Soporte
+    //   const inventoryCars: Partial<IInventoryCar>[] = [];
+    //   const activityHistories: IActivityHistoryInterface[] = [];
+    //   const venuesIDs: string[] = [];
 
-          Se ha creado un nuevo inventario.
+    //   for (const venue of carsByVenue) {
+    //     if (venue.name && venue.name.trim().length) {
+    //       const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
+    //       let currentVenue: IVenueModel | null = await VenueModel.findOne({
+    //         team,
+    //         company,
+    //         $or: [
+    //           {
+    //             name: venueRegExp
+    //           },
+    //           {
+    //             name: { $regex: venueRegExp }
+    //           },
+    //           {
+    //             name: venue.name
+    //           }
+    //         ]
+    //       });
+    //       // if you are not in the company, try in the team
+    //       if (!currentVenue) {
+    //         currentVenue = await VenueModel.findOne({
+    //           team,
+    //           $or: [
+    //             {
+    //               name: venueRegExp
+    //             },
+    //             {
+    //               name: { $regex: venueRegExp }
+    //             },
+    //             {
+    //               name: venue.name
+    //             }
+    //           ]
+    //         });
+    //       }
+    //       // if you are not in the company or in the team, it will be created
+    //       if (!currentVenue) {
+    //         currentVenue = new VenueModel({
+    //           name: venue.name.trim(),
+    //           team,
+    //           company
+    //         });
+    //         await currentVenue.save();
+    //       }
+    //       venuesIDs.push(currentVenue._id.toString());
 
-          Team: ${team.name}
-          Usuario: ${req.user.firstName} ${req.user.lastName}
-          ENV: ${process.env.ENV}
+    //       if (venue.cars && venue.cars.length) {
+    //         for (const car of venue.cars) {
+    //           let currentCar: ICarModel | null = await CarModel.findOne({
+    //             team,
+    //             vin: car.vin.trim()
+    //           });
+    //           if (currentCar === null && car.vin && car.vin.trim().length) {
+    //             currentCar = new CarModel({
+    //               team,
+    //               company,
+    //               vin: car.vin,
+    //               vin2: car.vin.substr(car.vin.length - 6),
+    //               color: car.color,
+    //               type: car.type,
+    //               property: car.property,
+    //               denomination: car.denomination,
+    //               brand: car.brand,
+    //               patent: car.patent,
+    //               createdBy: req.user,
+    //               status: ChoicesStatusCar.active
+    //             });
+    //             await currentCar.save();
+    //           }
+    //           if (currentVenue && currentCar) {
+    //             inventoryCars.push({
+    //               venue: currentVenue._id,
+    //               car: currentCar._id,
+    //               comments: [],
+    //               images: []
+    //             });
+    //             activityHistories.push({
+    //               team,
+    //               company,
+    //               user: req.user._id,
+    //               type: ChoicesTypeActivity.inventory,
+    //               car: {
+    //                 _id: currentCar._id,
+    //                 vin: currentCar.vin
+    //               }
+    //             });
+    //             inventoryQueue.queue.add(
+    //               'updateCar',
+    //               {
+    //                 title: `updateCar ${car.vin}`,
+    //                 currentCar: currentCar._id,
+    //                 car
+    //               },
+    //               { attempts: 3, backoff: 1000 }
+    //             );
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    //   const inventory = new InventoryModel({
+    //     name,
+    //     company,
+    //     team,
+    //     venues: venuesIDs,
+    //     createdBy: req.user._id,
+    //     status: ChoicesStatusInventory.inProcess,
+    //     settings: {
+    //       photos: {
+    //         manual: manualPhoto,
+    //         report: reportPhoto
+    //       }
+    //     }
+    //   });
+    //   const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    //   if (file) {
+    //     file.team = team;
+    //     await inventory.attach('file', file);
+    //   }
+    //   const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
+    //   if (backup) {
+    //     backup.team = team;
+    //     await inventory.attach('backup', backup);
+    //   }
 
-          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
-          view: 'alerts/inventoryNotification',
-          context: {
-            team: currentTeam,
-            user: req.user,
-            env: process.env.ENV
-          }
-        },
-        { attempts: 3, backoff: 1000 }
-      );
+
+    //   await inventory.save();
+    //   inventoryCars.map((i) => {
+    //     i.inventory = inventory._id;
+    //     return i;
+    //   });
+    //   activityHistories.map((a) => {
+    //     a.inventory = {
+    //       _id: inventory._id,
+    //       name: inventory.name
+    //     };
+    //     return a;
+    //   });
+    //   await ActivityHistory.insertMany(activityHistories);
+    //   await InventoryCar.insertMany(inventoryCars);
+
+    //   if (process.env.ENV === 'production' && notification) {
+    //     const usersIDs = await UserModel.find(
+    //       {
+    //         venue: {
+    //           $in: venuesIDs
+    //         },
+    //         team
+    //       },
+    //       {
+    //         _id: true
+    //       }
+    //     );
+    //     PushService.massiveSend(
+    //       'Nuevo inventario',
+    //       `Se ha iniciado el inventario "${inventory.name}"`,
+    //       'Ya puedes empezar a escanear',
+    //       usersIDs.map((user) => user._id.toString())
+    //     );
+    //   }
+    //   socket().to(`inventory-list-${team}`).emit('REFRESH', {
+    //     update: true
+    //   });
+    //   socket().to(`stock-${team}`).emit('REFRESH', {
+    //     update: true
+    //   });
+    //   if(process.env.ENV === 'production'){
+    //     const currentTeam = await Team.findById(req.user.team._id);
+    //     emailQueue.queue.add(
+    //       'email',
+    //       {
+    //         from: '',
+    //         title: `Inventory Notification`,
+    //         to: `"Soporte"<soporte@osacontrol.com>`,
+    //         subject: `${req.user.firstName} ha creado un inventario en ${
+    //           currentTeam!.name
+    //         }`,
+    //         text: `Hola Soporte
+
+    //         Se ha creado un nuevo inventario.
+
+    //         Team: ${team.name}
+    //         Usuario: ${req.user.firstName} ${req.user.lastName}
+    //         ENV: ${process.env.ENV}
+
+    //         En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
+    //         view: 'alerts/inventoryNotification',
+    //         context: {
+    //           team: currentTeam,
+    //           user: req.user,
+    //           env: process.env.ENV
+    //         }
+    //       },
+    //       { attempts: 3, backoff: 1000 }
+    //     );
+    //   }
       return res.json({
-        _id: inventory._id.toString(),
+        // _id: inventory._id.toString(),
         message: 'Inventario creado satisfactoriamente',
         status: 200
       });
