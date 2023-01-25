@@ -74,7 +74,7 @@ class InventoryQueue {
           return currentVenue._id.toString();
         })
       );
-      let refresh = moment().subtract(4, 'seconds');
+      let refresh = moment();
 
       const inventory = new Inventory({
         name,
@@ -214,8 +214,8 @@ class InventoryQueue {
         );
         console.log('inventoryCars', inventoryCars.length);
         await InventoryCar.insertMany(inventoryCars);
-        if (moment().isSameOrAfter(refresh.clone().add(2, 'seconds'))) {
-          refresh = moment();
+        if (moment().isSameOrAfter(refresh)) {
+          refresh = refresh.clone().add(2, 'seconds');
           socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
             update: true
           });
