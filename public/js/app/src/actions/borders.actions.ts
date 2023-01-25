@@ -1,5 +1,5 @@
 import {IBaseBorder, IBorder} from "../../../../../src/app/interfaces/border.interface";
-import {ICompany} from "../../../../../src/app/interfaces";
+import {ICompany} from "../../../../../src/app/interfaces/company.interface";
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from "axios";
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";

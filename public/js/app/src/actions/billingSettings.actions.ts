@@ -12,7 +12,8 @@ import {
 } from './billingSettings.types';
 import Axios, { AxiosError, CancelTokenSource } from 'axios';
 import { ICompany } from '../../../../../src/app/interfaces/company.interface';
-import { IModule, ITeamBilling } from '../../../../../src/billing/interfaces';
+import { IModule } from '../../../../../src/billing/interfaces/module.interface';
+import { ITeamBilling } from '../../../../../src/billing/interfaces/teamBiling.interfaces';
 import { IInvoiceTeamBilling } from '../../../../../src/billing/interfaces/invoiceTeamBilling.interface';
 import { Moment } from 'moment';
 

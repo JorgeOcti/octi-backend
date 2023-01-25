@@ -8,7 +8,7 @@ import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
-import { ISalesChannel } from '../../../../../src/request/interfaces';
+import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
 export interface IUsersState {

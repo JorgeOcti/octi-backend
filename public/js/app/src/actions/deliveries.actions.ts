@@ -12,7 +12,8 @@ import {
   LOADING_DELIVERIES
 } from './deliveries.types';
 import { AxiosError, CancelTokenSource, default as Axios } from 'axios';
-import { IForm, IParticipant } from '../../../../../src/form/interfaces';
+import { IParticipant } from '../../../../../src/form/interfaces/participant.interface';
+import { IForm } from '../../../../../src/form/interfaces/form.interface';
 
 export default class DeliveriesActions {
 

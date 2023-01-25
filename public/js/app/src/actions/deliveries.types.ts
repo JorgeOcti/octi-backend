@@ -1,5 +1,6 @@
 import { CancelTokenSource } from 'axios';
-import { IForm, IParticipant } from '../../../../../src/form/interfaces';
+import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import { IParticipant } from '../../../../../src/form/interfaces/participant.interface';
 import { ThunkDispatch } from 'redux-thunk';
 
 export const LOADING_DELIVERIES = '@deliveries/LOADING_DELIVERIES';

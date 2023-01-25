@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import logger from '../../../../services/logger.service';
 import { IFormTriggerModel } from '../../../models/trigger.model';
 import * as moment from 'moment-timezone';
-// import * as HtmlPdf from 'html-pdf';
 import ParticipantFile from '../../../models/participantFile.model';
 import * as path from 'path';
 import GeneralUtils from '../../../../utils/general.utils';

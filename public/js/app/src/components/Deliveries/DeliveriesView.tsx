@@ -16,7 +16,7 @@ import DeliveriesCarDetail from './DeliveriesCarDetail';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as daterangepicker from 'daterangepicker';
-import { IForm } from '../../../../../../src/form/interfaces';
+import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import { io } from 'socket.io-client';
 import { IWindow } from '../../interfaces/window';

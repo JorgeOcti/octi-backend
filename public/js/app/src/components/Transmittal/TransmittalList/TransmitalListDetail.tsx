@@ -20,7 +20,7 @@ import UploadTransmittalFile from './UploadTransmittalFile';
 import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 import { debounce } from 'throttle-debounce';
-import {IMilestone} from "../../../../../../../src/distribution/interfaces";
+import {IMilestone} from "../../../../../../../src/distribution/interfaces/milestone.interface";
 import {ChoicesStatusTransmittal} from "../../../../../../../src/distribution/models/transmitall.types";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {

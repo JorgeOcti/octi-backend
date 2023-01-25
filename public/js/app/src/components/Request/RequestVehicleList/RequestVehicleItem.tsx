@@ -4,7 +4,7 @@ import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
-import { IRequestItem } from '../../../../../../../src/request/interfaces';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import { updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import { IWindow } from '../../../interfaces/window';

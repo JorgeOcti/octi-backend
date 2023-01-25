@@ -53,6 +53,7 @@ buildcache
 
 /dist/
 /tools/
+.cache
 
 package-lock.json
 

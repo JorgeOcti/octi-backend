@@ -1,20 +1,20 @@
-import * as fs from 'fs';
 import * as moment from 'moment-timezone';
-import * as mongoose from 'mongoose';
-import * as path from 'path';
-import puppeteer from 'puppeteer';
 import * as request from 'request';
-import { Car } from '../../app/models/car.model';
+import TeamBilling from '../models/teamBilling.model';
 import History from '../../app/models/history.model';
-import { StatusHistory } from '../../app/models/history.types';
-import emailQueue from '../../app/tasks/email.task';
-import GeneralUtils from '../../utils/general.utils';
-import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
+import Submodule from '../models/submodule.model';
+import puppeteer from 'puppeteer';
 import InvoiceTeamBilling, {
   IInvoiceTeamBillingModel
 } from '../models/invoiceTeamBilling.module';
-import Submodule from '../models/submodule.model';
-import TeamBilling from '../models/teamBilling.model';
+import * as mongoose from 'mongoose';
+import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
+import * as fs from 'fs';
+import * as path from 'path';
+import GeneralUtils from '../../utils/general.utils';
+import { StatusHistory } from '../../app/models/history.types';
+import Car from '../../app/models/car.model';
+import emailQueue from '../../app/tasks/email.task';
 
 class BillingTeamQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -27,6 +27,8 @@ class BillingTeamQueue {
     this.getDolarPrice = this.getDolarPrice.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
     this.car = new Car({});
+    /*this.createPDF = this.createPDF.bind(this);
+    this.sendEmail = this.sendEmail.bind(this);*/
   }
 
   private getUFPrice(): Promise<number> {
@@ -180,23 +182,27 @@ class BillingTeamQueue {
   private sendEmail(invoice: IInvoiceTeamBillingModel): void {
     const period = moment(invoice.createdAt).format('MMMM YYYY');
     for (const notification of invoice.teamBilling.notifications) {
-      emailQueue.queue.add('email', {
-        from: '',
-        title: `Billing for ${invoice.team.name}`,
-        to: `"${notification.name}"<${notification.email}`,
-        subject: `Billing ${invoice.team.name} - ${period}`,
-        text: ``,
-        attachments: {
-          filename: `${invoice.team.name} ${period}.pdf`,
-          path: decodeURI(invoice.file.url)
+      emailQueue.queue.add(
+        'email',
+        {
+          from: '',
+          title: `Billing for ${invoice.team.name}`,
+          to: `"${notification.name}"<${notification.email}`,
+          subject: `Billing ${invoice.team.name} - ${period}`,
+          text: ``,
+          attachments: {
+            filename: `${invoice.team.name} ${period}.pdf`,
+            path: decodeURI(invoice.file.url)
+          },
+          view: 'billing/corporate-email',
+          context: {
+            invoice,
+            period,
+            name: notification.name
+          }
         },
-        view: 'billing/corporate-email',
-        context: {
-          invoice,
-          period,
-          name: notification.name
-        }
-      }, { attempts: 3, backoff: 1000 });
+        { attempts: 3, backoff: 1000 }
+      );
     }
   }
 
@@ -228,7 +234,7 @@ class BillingTeamQueue {
             return acc;
           }, {});
           for (const teamBilling of teamBillings) {
-            const now = moment();
+            const now = moment().startOf('day');
             const lastInvoice = await InvoiceTeamBilling.findOne({
               team: teamBilling.team._id
             }).sort({
@@ -239,12 +245,12 @@ class BillingTeamQueue {
               : new Date(
                   `${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`
                 );
-            const to = new Date(
-              `${now
-                .endOf('month')
-                .subtract(3, 'days')
-                .format('YYYY-MM-DD')}T00:00:00.000Z`
-            );
+            const to = now;
+            // let to = moment().endOf('month').subtract(3, 'days').startOf('day');
+            // If the script runs earlier than automatically scheduled
+            // if (now.isBefore(to)) {
+            //   to = now;
+            // }
             const histories = await History.find(
               {
                 company: { $in: teamBilling.companies },

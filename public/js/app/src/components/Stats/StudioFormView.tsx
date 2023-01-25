@@ -5,7 +5,8 @@ import {
   IStatsDashboardState, ITempStudio,
 } from "../../actions/statsDashboard.actions";
 import {IWindow} from "../../interfaces/window";
-import {IBaseVenue, IUser, IVenue} from "../../../../../../src/app/interfaces";
+import {IUser} from "../../../../../../src/app/interfaces/user.interface";
+import {IBaseVenue, IVenue} from "../../../../../../src/app/interfaces/venue.interface";
 import {IStudio} from "../../../../../../src/stats/interfaces/studio.interface";
 import {ErrorInfo} from "react";
 import * as Raven from "raven-js";

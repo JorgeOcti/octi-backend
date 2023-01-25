@@ -31,7 +31,7 @@ import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 import {ITransmittalItem} from '../../../../../src/distribution/interfaces/transmittalItem.interface';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
-import {IMilestone} from "../../../../../src/distribution/interfaces";
+import {IMilestone} from "../../../../../src/distribution/interfaces/milestone.interface";
 
 export default class TransmittalActions {
   private api: ApiService;

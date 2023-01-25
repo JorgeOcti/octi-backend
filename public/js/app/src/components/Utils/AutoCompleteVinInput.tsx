@@ -2,7 +2,7 @@ import * as React from 'react';
 import { RefObject } from 'react';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
-import { IRequestItem } from '../../../../../../src/request/interfaces';
+import { IRequestItem } from '../../../../../../src/request/interfaces/requestItem.interface';
 import ApiService from '../../utils/axios';
 import { AxiosError, AxiosResponse } from 'axios';
 import { hasPermission, parseReplicableURL } from '../../utils/common';

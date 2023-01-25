@@ -19,11 +19,12 @@ import TransmitalListDetail from './TransmitalListDetail';
 import { Dispatch } from 'redux';
 import ModalView from '../../Modal/ModalView';
 import { debounce } from 'throttle-debounce';
-import {IMilestone, IMilestoneType} from '../../../../../../../src/distribution/interfaces';
+import {IMilestone} from '../../../../../../../src/distribution/interfaces/milestone.interface';
+import {IMilestoneType} from '../../../../../../../src/distribution/interfaces/milestoneType.interface';
 import DateRangeInput from "../../Utils/DateRangeInput";
-import {IUser} from "../../../../../../../src/app/interfaces";
+import {IUser} from "../../../../../../../src/app/interfaces/user.interface";
 import BootstrapSelect from "../../Utils/BootstrapSelect";
-import {IForm} from "../../../../../../../src/form/interfaces";
+import {IForm} from "../../../../../../../src/form/interfaces/form.interface";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   router: any;

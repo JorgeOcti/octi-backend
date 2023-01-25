@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ShowIf from '../../Utils/ShowIf';
 import { ChoicesStatusTransmittal } from '../../../../../../../src/distribution/models/transmitall.types';
-import { ITransmittal } from '../../../../../../../src/distribution/interfaces';
+import { ITransmittal } from '../../../../../../../src/distribution/interfaces/transmittal.interface';
 
 interface IPropsType {
   transmittal: ITransmittal;

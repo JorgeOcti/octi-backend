@@ -18,6 +18,7 @@ RUN apt-get update && \
         libssl-dev \
         libxft-dev \
         python3 \
+        nano \
         graphicsmagick \
         gettext \
         git-core \

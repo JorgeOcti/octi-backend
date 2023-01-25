@@ -24,7 +24,7 @@ import {
 } from './form.types';
 import * as swal from 'sweetalert';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
-import {IMilestoneType} from "../../../../../src/distribution/interfaces";
+import {IMilestoneType} from "../../../../../src/distribution/interfaces/milestoneType.interface";
 
 export function cancelFormAction(source: CancelTokenSource): ICancelForm {
   return {

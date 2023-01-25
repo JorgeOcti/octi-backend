@@ -1,13 +1,23 @@
-
 import { CarrierSchema } from './core/carrier.schema';
 import { CarSchema } from './core/car.schema';
 import { CompanySchema } from './core/company.schema';
 import { ImageSchema } from './core/image.schema';
 import { UserSchema } from './core/user.schema';
 import { VenueSchema } from './core/venue.schema';
-import { ListControlsSchema , ErrorSchema400, ErrorSchema401, ListCompaniesSchema, ListVenuesSchema, ErrorSchema403} from './core/responses.schema';
-import {  PageSchema, PageSizeSchema, AuthorizationJWTSchema} from './core/parameters.schema';
-
+import {
+  ListControlsSchema,
+  ErrorSchema400,
+  ErrorSchema401,
+  ListCompaniesSchema,
+  ListVenuesSchema,
+  ErrorSchema403,
+  ErrorSchema404
+} from './core/responses.schema';
+import {
+  PageSchema,
+  PageSizeSchema,
+  AuthorizationJWTSchema
+} from './core/parameters.schema';
 import { AccesorySchema } from './form/accesory.schema';
 import { AccessoryAnsweredSchema } from './form/accessoryAnswered.schema';
 import { AnswerSchema } from './form/answer.schema';
@@ -48,7 +58,6 @@ export const swaggerDefinition = {
       name: 'support',
       // url: 'https://www.osacontrol.com',
       email: 'soporte@osacontrol.com'
-
     }
   },
   components: {
@@ -78,12 +87,13 @@ export const swaggerDefinition = {
       Error400: ErrorSchema400,
       Error401: ErrorSchema401,
       Error403: ErrorSchema403,
+      Error404: ErrorSchema404
     },
     parameters: {
       AuthorizationJWT: AuthorizationJWTSchema,
       DefaultPage: PageSchema,
-      PageSize10: PageSizeSchema(10),
-      PageSize100: PageSizeSchema(100)
+      PageSize10: PageSizeSchema(10, 100),
+      PageSize100: PageSizeSchema(100, 100)
     },
     securitySchemes: {
       ApiKeyAuth: {
@@ -93,13 +103,16 @@ export const swaggerDefinition = {
       }
     }
   },
-  servers: [{
-    url: process.env.SITE_URL,
-    description: 'OSA server Production'
-  }, {
-    url: 'https://andes-stage.osacontrol.com/',
-    description: 'OSA server Stage'
-  }],
+  servers: [
+    {
+      url: process.env.SITE_URL,
+      description: 'OSA server Production'
+    },
+    {
+      url: 'https://andes-stage.osacontrol.com/',
+      description: 'OSA server Stage'
+    }
+  ],
   externalDocs: {
     url: 'https://sites.google.com/osacontrol.com/doc-osa-api/inicio',
     description: 'Find more info here'

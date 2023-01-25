@@ -3,7 +3,7 @@ import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
 import ShowIf from '../Utils/ShowIf';
 import * as moment from 'moment-timezone';
-import { IParticipant } from '../../../../../../src/form/interfaces';
+import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import * as H from 'history';
 
 interface IPropsType<S = H.LocationState> {

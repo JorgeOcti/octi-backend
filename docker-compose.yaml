@@ -11,9 +11,9 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - '/Users/gonzalomunoz/backups/osa/andes/mongo:/backups'
       - mongo:/data/db
       - mongoConf:/data/configdb
+      - '~/backups/osa/andes/mongo:/backups'
 
   redis:
     image: redis:5.0.14
@@ -23,43 +23,18 @@ services:
     volumes:
       - redis:/data
 
-#  build:
-#    build:
-#      dockerfile: Dockerfile.development
-#      context: .
-#    image: andes:latest
-#    restart: unless-stopped
-#    command: ['tsc', '-w', '--project', 'tsconfig.json']
-#    volumes:
-#      - ./buildcache:/srv/buildcache
-#      - ./dist:/srv/dist
-#      - ./src:/srv/src
-#      - ./tsconfig.json:/srv/tsconfig.json
-
   backend:
     build:
       dockerfile: Dockerfile.development
       context: .
     # platform: linux/x86_64
     # platform: linux/amd64
-    image: andes:latest
+    image: osa-andes:latest
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     command: ts-node-dev --trace-warnings --transpile-only --debounce 1000 --files --respawn --max_old_space_size=4096 --watch src src/server.ts
     # command: ts-node-dev --files --respawn --transpile-only --max_old_space_size=4096 --watch src src/server.ts
-    # command: ts-node-dev --files --respawn --trace-warnings --max_old_space_size=4096 --watch src src/server.ts
-#    command: ts-node-dev --inspect=127.0.0.1:9229 --max_old_space_size=4096 src/server.ts
-#    command: ts-node-dev --trace-warnings --max_old_space_size=4096 src/server.ts
-#    ts-node-dev --transpile-only --watch --max_old_space_size=4096 --ignore-watch public --ignore-watch dist src/server.ts
-#    command: pm2 start pm2.development.json --no-daemon
-#    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 500M
-    # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
-    # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env
     environment:
@@ -86,24 +61,27 @@ services:
       - ./.puppeteerrc.cjs:/srv/.puppeteerrc.cjs
       - ./nodemon.json:/srv/nodemon.json
       - ./tsconfig.json:/srv/tsconfig.json
-      - /srv/node_modules
+      - backend-modules:/srv/node_modules
     depends_on:
       - redis
       - mongo
 
-#  frontend:
-#    build:
-#      dockerfile: DockerFile.frontend
-#      context: .
-#    image: andes-frontend:latest
-#    command: ['webpack', '--mode', 'development', '--watch']
-#    volumes:
-#      - ./src:/srv/src
-#      - ./public/js/app:/srv/public/js/app
-#    environment:
-#      NODE_ENV: development
+  # frontend:
+  #   build:
+  #     dockerfile: DockerFile.frontend
+  #     context: .
+  #   image: andes-frontend:latest
+  #   command: ['webpack', '--mode', 'development', '--watch']
+  #   volumes:
+  #     - ./src:/srv/src
+  #     - ./public/js/app:/srv/public/js/app
+  #     - frontend-modules:/srv/public/js/app/node_modules
+  #   environment:
+  #    NODE_ENV: development
 
 volumes:
   mongo:
   mongoConf:
+  backend-modules:
+  frontend-modules:
   redis:

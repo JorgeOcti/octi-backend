@@ -1,7 +1,7 @@
 import { CancelTokenSource } from 'axios';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
-import {IMilestoneType} from "../../../../../src/distribution/interfaces";
+import {IMilestoneType} from "../../../../../src/distribution/interfaces/milestoneType.interface";
 
 export const FORM_CANCEL_STATUS = '/FORM/CANCEL_STATUS';
 export const FORM_IS_LOADING = '/FORM/IS_LOADING';

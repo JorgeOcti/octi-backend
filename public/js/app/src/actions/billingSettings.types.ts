@@ -1,5 +1,6 @@
 import { CancelTokenSource } from 'axios';
-import { IModule, ITeamBilling } from '../../../../../src/billing/interfaces';
+import { ITeamBilling } from '../../../../../src/billing/interfaces/teamBiling.interfaces';
+import { IModule } from '../../../../../src/billing/interfaces/module.interface';
 import { ICompany } from '../../../../../src/app/interfaces/company.interface';
 import { IInvoiceTeamBilling } from '../../../../../src/billing/interfaces/invoiceTeamBilling.interface';
 import { Moment } from 'moment';

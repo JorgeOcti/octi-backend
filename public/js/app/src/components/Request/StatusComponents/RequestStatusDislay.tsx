@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IRequestItem } from '../../../../../../../src/request/interfaces';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import ShowIf from '../../Utils/ShowIf';
 import { getColorForPercentage } from '../RequestList/RequestDetail';
 

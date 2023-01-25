@@ -14,7 +14,7 @@ import * as Raven from 'raven-js';
 import BillingSettingsForm from './form/BillingSettingsForm';
 import ModalView from '../../Modal/ModalView';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
-import { IForm } from '../../../../../../../src/form/interfaces';
+import { IForm } from '../../../../../../../src/form/interfaces/form.interface';
 import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
 import BillingMenu from '../BillingMenu';

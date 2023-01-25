@@ -10,7 +10,7 @@ export const PageSchema = {
   }
 };
 
-export const PageSizeSchema = (size: number) => ({
+export const PageSizeSchema = (size: number, maximum: number) => ({
   'name': 'pageSize',
   'in': 'query',
   'description': `Por defecto es ${size}, se utiliza para seleccionar la cantidad de resultados por página a consultar.`,
@@ -18,7 +18,7 @@ export const PageSizeSchema = (size: number) => ({
   'schema': {
     'type': 'integer',
     'minimum': 1,
-    'maximum': size
+    'maximum': maximum
     // 'format': 'int64'
   }
 });
