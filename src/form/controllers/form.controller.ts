@@ -832,7 +832,7 @@ class FormController {
               );
               if (reception.images) {
                 participantObject.receptionImages = reception.images.map(
-                  (image: string) => new ObjectID(image)
+                  (image: string) => new mongoose.Types.ObjectId(image)
                 );
               }
             }
@@ -861,7 +861,7 @@ class FormController {
               );
               if (shipping.images) {
                 participantObject.shippingImages = shipping.images.map(
-                  (image: string) => new ObjectID(image)
+                  (image: string) => new mongoose.Types.ObjectId(image)
                 );
               }
             }
@@ -888,7 +888,7 @@ class FormController {
             participantObject.conciliationText = form.conciliationText;
             if (conciliation.images) {
               participantObject.conciliationImages = conciliation.images.map(
-                (image: string) => new ObjectID(image)
+                (image: string) => new mongoose.Types.ObjectId(image)
               );
             }
           }
@@ -983,14 +983,14 @@ class FormController {
                 question?.kindUpdate === 'participant.clientSignature'
               ) {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
-                  ? answer.images.map((image: string) => new ObjectID(image))
+                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [];
               } else if (
                 question?.kindUpdate === 'participant.clientIdentifyCard'
               ) {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
-                  ? answer.images.map((image: string) => new ObjectID(image))
+                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [];
               }
               newAnswers.push({
@@ -1013,9 +1013,9 @@ class FormController {
                 risk: question.risk,
                 comment,
                 observe: question.observe,
-                answer: answer ? new ObjectID(answer.value) : null,
+                answer: answer ? new mongoose.Types.ObjectId(answer.value) : null,
                 images: answer?.images?.length
-                  ? answer.images.map((image: string) => new ObjectID(image))
+                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [],
                 qualification,
                 na,
