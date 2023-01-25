@@ -17,7 +17,7 @@ import * as QRCode from 'qrcode';
 import * as tempfile from 'tempfile';
 import carTracker from '../../app/controllers/tracker/car.tracker';
 import type { IVenueDay } from '../../app/interfaces/venueDay.interface';
-import CarModel, { ICarModel } from '../../app/models/car.model';
+import Car, { ICarModel } from '../../app/models/car.model';
 import Team, { ITeamModel } from '../../app/models/team.model';
 import {
   default as User,
@@ -791,7 +791,7 @@ class FormController {
       let car: any = null;
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
-        car = await CarModel.findOne({
+        car = await Car.findOne({
           $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
           team
         });
@@ -1756,7 +1756,7 @@ class FormController {
         const reception = await Form.findOne({
           _id: '5b0487db835536612bab1b61'
         });
-        const cars = await CarModel.find({
+        const cars = await Car.find({
           team,
           lastForm: { $ne: null }
         });
@@ -2338,7 +2338,7 @@ class FormController {
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
 
-        const cars = await CarModel.find({
+        const cars = await Car.find({
           team,
           lastForm: { $exists: true },
           createdAt: {

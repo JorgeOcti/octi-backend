@@ -87,8 +87,7 @@ export async function up() {
         }
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: 100 })
-      .exec();
+      .cursor({ batchSize: 100 });
 
     await carCursor.eachAsync(async (car: any) => {
       return new Promise((resolve, reject) => {
