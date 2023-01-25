@@ -1,4 +1,5 @@
 import * as Queue from 'bull';
+import moment = require('moment');
 // import * as mongoose from 'mongoose';
 import { ICar } from '../../app/interfaces/car.interface';
 import CarModel, { Car, ChoicesStatusCar } from '../../app/models/car.model';
@@ -64,9 +65,16 @@ class InventoryQueue {
     ])) as IUserModel;
     try {
       const { company, team } = user;
-      const inventoryCars: Partial<IInventoryCar>[] = [];
       const activityHistories: IActivityHistoryInterface[] = [];
-      const venuesIDs: string[] = [];
+
+      const venuesIDs: string[] = await Promise.all(
+        carsByVenue.map(async (venue: any) => {
+          const { name } = venue;
+          const currentVenue = await this.checkExistVenue(name, team, company);
+          return currentVenue._id.toString();
+        })
+      );
+      let refresh = moment();
 
       const inventory = new Inventory({
         name,
@@ -87,10 +95,9 @@ class InventoryQueue {
 
       const updateCars: any[] = [];
       for (const venue of carsByVenue) {
+        const inventoryCars: Partial<IInventoryCar>[] = [];
         const { name } = venue;
         const currentVenue = await this.checkExistVenue(name, team, company);
-
-        venuesIDs.push(currentVenue._id.toString());
 
         let vins: string[] = venue?.cars
           ?.filter((car: Partial<ICar>) => car.vin?.length)
@@ -206,22 +213,23 @@ class InventoryQueue {
           },
           { parallel: 20 }
         );
+        console.log('inventoryCars', inventoryCars.length);
+        await InventoryCar.insertMany(inventoryCars);
+        if(moment().isSameOrAfter(refresh.clone().add(2, 'seconds'))){
+          refresh = moment();
+          socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
+            update: true
+          });
+          socket().to(`stock-${team._id.toString()}`).emit('REFRESH', {
+            update: true
+          });
+        }
       }
 
       // mongoose.set('debug', true);
-      await Inventory.findByIdAndUpdate(inventory._id, {
-        venues: venuesIDs
-      });
-      socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
-        update: true
-      });
-      socket().to(`stock-${team._id.toString()}`).emit('REFRESH', {
-        update: true
-      });
-      console.log('inventoryCars', inventoryCars.length);
+
       await Promise.all([
         await ActivityHistory.insertMany(activityHistories),
-        await InventoryCar.insertMany(inventoryCars),
         await this.sendNotification(
           notification,
           inventory,
@@ -361,37 +369,61 @@ class InventoryQueue {
     return venue;
   }
 
-  private async processUpdateCar(job: Queue.Job<any>, done: Queue.DoneCallback) {
+  private async processUpdateCar(
+    job: Queue.Job<any>,
+    done: Queue.DoneCallback
+  ) {
     if (this.processJob) {
       const { car } = job.data;
       try {
         const carToUpdate = await CarModel.findById(job.data.currentCar);
         let update = false;
         if (carToUpdate) {
-          if (car.color?.length && carToUpdate.color?.trim()?.toUpperCase() !== car.color?.trim()?.toUpperCase()) {
+          if (
+            car.color?.length &&
+            carToUpdate.color?.trim()?.toUpperCase() !==
+              car.color?.trim()?.toUpperCase()
+          ) {
             update = true;
             carToUpdate.color = car.color;
           }
           if (
             car.denomination?.length &&
-            carToUpdate.denomination?.trim()?.toUpperCase() !== car.denomination?.trim()?.toUpperCase()
+            carToUpdate.denomination?.trim()?.toUpperCase() !==
+              car.denomination?.trim()?.toUpperCase()
           ) {
             update = true;
             carToUpdate.denomination = car.denomination;
           }
-          if (car.brand?.length && carToUpdate.brand?.trim()?.toUpperCase() !== car.brand?.trim()?.toUpperCase()) {
+          if (
+            car.brand?.length &&
+            carToUpdate.brand?.trim()?.toUpperCase() !==
+              car.brand?.trim()?.toUpperCase()
+          ) {
             update = true;
             carToUpdate.brand = car.brand;
           }
-          if (car.property?.length && carToUpdate.property?.trim()?.toUpperCase() !== car.property?.trim()?.toUpperCase()) {
+          if (
+            car.property?.length &&
+            carToUpdate.property?.trim()?.toUpperCase() !==
+              car.property?.trim()?.toUpperCase()
+          ) {
             update = true;
             carToUpdate.property = car.property;
           }
-          if (car.type?.length && carToUpdate.type?.trim()?.toUpperCase() !== car.type?.trim()?.toUpperCase()) {
+          if (
+            car.type?.length &&
+            carToUpdate.type?.trim()?.toUpperCase() !==
+              car.type?.trim()?.toUpperCase()
+          ) {
             update = true;
             carToUpdate.type = car.type;
           }
-          if (car.patent?.length && carToUpdate.patent?.trim()?.toUpperCase() !== car.patent?.trim()?.toUpperCase()) {
+          if (
+            car.patent?.length &&
+            carToUpdate.patent?.trim()?.toUpperCase() !==
+              car.patent?.trim()?.toUpperCase()
+          ) {
             update = true;
             carToUpdate.patent = car.patent;
           }

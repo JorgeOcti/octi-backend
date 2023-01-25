@@ -447,7 +447,10 @@ class InventoryController {
           }
         },
         {
-          $unwind: '$cars'
+          $unwind: {
+            path: '$cars',
+            preserveNullAndEmptyArrays: true
+          }
         },
         {
           $match: {
