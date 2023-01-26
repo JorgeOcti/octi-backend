@@ -154,10 +154,13 @@ class BillingTeamQueue {
     }
   }
 
-  public async processBilling(filter: any = {}): Promise<any> {
+  public async processBilling(filter: any = {}, run?:boolean): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        if (moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'))) {
+        run = run || moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
+        // const run = moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'))
+        // const run = true;
+        if (run) {
           mongoose.set('debug', true);
           console.log('START billing');
           // const valueUF = 28662.81; /*await this.getUFPrice();*/

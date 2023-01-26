@@ -85,7 +85,7 @@ async function loadModulesAndSubmodules() {
     }, { upsert: true, new: true });*/
     await new BillingTeamQueue().processBilling({
 
-    });
+    }, true);
   } catch (e) {
     console.log('Ha ocurrido un error en loadModulesAndSubmodules');
     console.log('error:', e);
