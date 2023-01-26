@@ -40,8 +40,8 @@ class BillingTeamQueue {
     this.getDolarPrice = this.getDolarPrice.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
     this.car = new Car({});
-    /*this.createPDF = this.createPDF.bind(this);
-    this.sendEmail = this.sendEmail.bind(this);*/
+    this.createPDF = this.createPDF.bind(this);
+    this.sendEmail = this.sendEmail.bind(this);
   }
 
   private getUFPrice(): Promise<number> {
