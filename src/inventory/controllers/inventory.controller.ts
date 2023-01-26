@@ -454,18 +454,22 @@ class InventoryController {
         },
         {
           $match: {
-            'cars.venue': {
-              $in: venuesPermissions
-            },
-            'cars.status': {
-              $in: [
-                ChoicesStatusCarInventory.pending,
-                ChoicesStatusCarInventory.found,
-                ChoicesStatusCarInventory.missing,
-                ChoicesStatusCarInventory.leftover,
-                ChoicesStatusCarInventory.reported
-              ]
-            }
+            $or:[{
+              'cars.venue': {
+                $in: venuesPermissions
+              },
+              'cars.status': {
+                $in: [
+                  ChoicesStatusCarInventory.pending,
+                  ChoicesStatusCarInventory.found,
+                  ChoicesStatusCarInventory.missing,
+                  ChoicesStatusCarInventory.leftover,
+                  ChoicesStatusCarInventory.reported
+                ]
+              }
+            }, {
+              createdBy: req.user._id
+            }]
           }
         },
         {

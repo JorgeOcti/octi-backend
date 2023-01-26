@@ -21,7 +21,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
   dispatch: Dispatch<AlertReduxAction>;
 
-  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  loadDataAction(
+    title: string,
+    body: JSX.Element,
+    footer: JSX.Element
+  ): ModalReduxAction;
 }
 
 interface IStateType {
@@ -102,32 +106,40 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     // }
   }
 
-  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+  public componentDidUpdate(
+    prevProps: Readonly<IPropsType>,
+    prevState: Readonly<IStateType>,
+    snapshot?: any
+  ): void {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
   public componentDidMount(): void {
     super.componentDidMount();
     const $reportPhoto: any = $('#report-photo');
-    $reportPhoto.TouchSpin({
-      initval: 1,
-      min: 0,
-      max: 3
-    }).on('change', () => {
-      this.setState({
-        reportPhoto: parseInt($reportPhoto.val(), 10)
+    $reportPhoto
+      .TouchSpin({
+        initval: 1,
+        min: 0,
+        max: 3
+      })
+      .on('change', () => {
+        this.setState({
+          reportPhoto: parseInt($reportPhoto.val(), 10)
+        });
       });
-    });
     const $manualPhoto: any = $('#manual-photo');
-    $manualPhoto.TouchSpin({
-      initval: 1,
-      min: 0,
-      max: 3
-    }).on('change', () => {
-      this.setState({
-        manualPhoto: parseInt($manualPhoto.val(), 10)
+    $manualPhoto
+      .TouchSpin({
+        initval: 1,
+        min: 0,
+        max: 3
+      })
+      .on('change', () => {
+        this.setState({
+          manualPhoto: parseInt($manualPhoto.val(), 10)
+        });
       });
-    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -139,175 +151,223 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      loadingSettings, carsByVenue, name,
-      sending, notification, backupFile,
-      backupUri, loading
+      loadingSettings,
+      carsByVenue,
+      name,
+      sending,
+      notification,
+      backupFile,
+      backupUri,
+      loading
     } = this.state;
     let carsInSettings = 0;
     return (
-      <AppContainer title='' cMenu='2' cSubMenu='2.1' cAction='Creación'>
-        <section className='content'>
-          <div className='box'>
-            <div className='box-header with-border'>
-              <h3 className='box-title'>Creando Inventario</h3>
+      <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Creando Inventario</h3>
             </div>
-            <div className='box-body margin'>
-              <div className='row'>
-                <div className='col col-md-6'>
-                  <div className='form-group'>
-                    <label htmlFor='name'>Nombre</label>
-                    <input type='text' className='form-control' id='name' value={name} onChange={this.handleChangeName} />
+            <div className="box-body margin">
+              <div className="row">
+                <div className="col col-md-6">
+                  <div className="form-group">
+                    <label htmlFor="name">Nombre</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      value={name}
+                      onChange={this.handleChangeName}
+                    />
                   </div>
                 </div>
               </div>
-              {
-                carsByVenue.length ?
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <div className='form-group'>
-                        <label>Configuración cargada</label>
-                        <div className='box-group' id='accordion' style={{ margin: '2px 0 10px 0' }}>
-                          {
-                            carsByVenue.map((venue: any, index) => {
-                              carsInSettings += venue.cars.length;
-                              return (
-                                <VenueDetail index={index} venue={venue} key={venue.name} deleteVenue={this.deleteVenue} />
-                              );
-                            })
-                          }
-                        </div>
+              {carsByVenue.length ? (
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Configuración cargada</label>
+                      <div
+                        className="box-group"
+                        id="accordion"
+                        style={{ margin: '2px 0 10px 0' }}>
+                        {carsByVenue.map((venue: any, index) => {
+                          carsInSettings += venue.cars.length;
+                          return (
+                            <VenueDetail
+                              index={index}
+                              venue={venue}
+                              key={venue.name}
+                              deleteVenue={this.deleteVenue}
+                            />
+                          );
+                        })}
                       </div>
-                    </div>
-                    <div className='col-md-6'>
-                      <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de unidades:</strong> {carsInSettings}</p>
-                    </div>
-                    <div className='col-md-6 text-right'>
-                      <button className='btn btn-sm btn-primary' onClick={this.downloadTemplate}>
-                        <i className='fa fa-fw fa-download' /> Descargar Formato
-                      </button>
-                      <button className='btn btn-sm btn-default' onClick={this.clickUploadFile} style={{ marginLeft: '5px' }}>
-                        <i className='fa fa-fw fa-cogs' /> Cambiar configuración
-                      </button>
-                    </div>
-                    <div className='col-md-12'>
-                      <div className='form-group' style={{ marginBottom: '0px' }}>
-                        <label>Archivo de respaldo</label>
-                      </div>
-                      <div className='preview-files'>
-                        {
-                          backupFile && backupUri ?
-                            <div className='file'>
-                              <i className='fa fa-minus-circle text-red pointer' onClick={this.clearBackup} />
-                              <a
-                                href={backupUri}
-                                className='zoom-in'
-                                data-toggle='lightbox'
-                                data-title={`Vista previa de la imagen`}
-                                data-footer={(backupFile as unknown as File).name}
-                              >
-                                <img
-                                  src={backupUri}
-                                  data-toggle='tooltip'
-                                  data-placement='bottom'
-                                  title={(backupFile as unknown as File).name}
-                                />
-                              </a>
-                            </div>
-                            : backupFile ?
-                              <div className='file'>
-                                <i className='fa fa-minus-circle text-red pointer' onClick={this.clearBackup} />
-                                <div className={`icon type-${getIconFromExtension(getExtension((backupFile as unknown as File).name))}`} />
-                                <div
-                                  className='name-file'
-                                  data-toggle='tooltip'
-                                  data-placement='bottom'
-                                  title={(backupFile as unknown as File).name}
-                                >
-                                  {(backupFile as unknown as File).name}
-                                </div>
-                              </div>
-                              : <div
-                                className='add-file'
-                                onClick={this.clickUploadBackup}
-                              >
-                                <i className='fa fa-plus' />
-                                AGREGAR ARCHIVO
-                              </div>
-                        }
-                      </div>
-                      <input
-                        type='file'
-                        onChange={this.handleChangeInputBackup}
-                        style={{ display: 'None' }}
-                        ref={this.inputBackup}
-                      />
-                    </div>
-                  </div> :
-                  <div className='row'>
-                    <div className='col col-md-12'>
-                      <div className='form-group'>
-                        <label>Importar configuración</label>
-                        <div
-                          className='upload-file text-center pointer'
-                          onClick={this.clickUploadFile}
-                          onDrop={this.handleDrop}
-                          onDragOver={this.dragOverHandler}
-                          onDragEnd={this.dragEndHandler}
-                          onDragLeave={this.dragLeaveHandler}
-                          style={{
-                            backgroundColor: '#EEEEEE',
-                            border: this.state.canDrop ? '1px solid #979797' : '1px dashed #979797',
-                            padding: '40px 20px',
-                            color: this.state.canDrop ? '#aebccb' : '#6e7a89',
-                            borderRadius: '5px'
-                          }}>
-                          <i className='fa fa-2x fa-cloud-upload' /><br />
-                          Prueba soltando el excel aquí, o haz click para seleccionar el excel a cargar.
-                        </div>
-                      </div>
-                    </div>
-                    <div className='col-md-12 text-right'>
-                      <button
-                        className='btn btn-sm btn-primary'
-                        onClick={this.downloadTemplate}
-                      >
-                        <i className='fa fa-fw fa-download' /> Descargar Formato
-                      </button>
                     </div>
                   </div>
-              }
+                  <div className="col-md-6">
+                    <p>
+                      <strong>Total de sucursales:</strong> {carsByVenue.length}
+                    </p>
+                    <p>
+                      <strong>Total de unidades:</strong> {carsInSettings}
+                    </p>
+                  </div>
+                  <div className="col-md-6 text-right">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={this.downloadTemplate}>
+                      <i className="fa fa-fw fa-download" /> Descargar Formato
+                    </button>
+                    <button
+                      className="btn btn-sm btn-default"
+                      onClick={this.clickUploadFile}
+                      style={{ marginLeft: '5px' }}>
+                      <i className="fa fa-fw fa-cogs" /> Cambiar configuración
+                    </button>
+                  </div>
+                  <div className="col-md-12">
+                    <div className="form-group" style={{ marginBottom: '0px' }}>
+                      <label>Archivo de respaldo</label>
+                    </div>
+                    <div className="preview-files">
+                      {backupFile && backupUri ? (
+                        <div className="file">
+                          <i
+                            className="fa fa-minus-circle text-red pointer"
+                            onClick={this.clearBackup}
+                          />
+                          <a
+                            href={backupUri}
+                            className="zoom-in"
+                            data-toggle="lightbox"
+                            data-title={`Vista previa de la imagen`}
+                            data-footer={(backupFile as unknown as File).name}>
+                            <img
+                              src={backupUri}
+                              data-toggle="tooltip"
+                              data-placement="bottom"
+                              title={(backupFile as unknown as File).name}
+                            />
+                          </a>
+                        </div>
+                      ) : backupFile ? (
+                        <div className="file">
+                          <i
+                            className="fa fa-minus-circle text-red pointer"
+                            onClick={this.clearBackup}
+                          />
+                          <div
+                            className={`icon type-${getIconFromExtension(
+                              getExtension((backupFile as unknown as File).name)
+                            )}`}
+                          />
+                          <div
+                            className="name-file"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                            title={(backupFile as unknown as File).name}>
+                            {(backupFile as unknown as File).name}
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="add-file"
+                          onClick={this.clickUploadBackup}>
+                          <i className="fa fa-plus" />
+                          AGREGAR ARCHIVO
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      onChange={this.handleChangeInputBackup}
+                      style={{ display: 'None' }}
+                      ref={this.inputBackup}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="row">
+                  <div className="col col-md-12">
+                    <div className="form-group">
+                      <label>Importar configuración</label>
+                      <div
+                        className="upload-file text-center pointer"
+                        onClick={this.clickUploadFile}
+                        onDrop={this.handleDrop}
+                        onDragOver={this.dragOverHandler}
+                        onDragEnd={this.dragEndHandler}
+                        onDragLeave={this.dragLeaveHandler}
+                        style={{
+                          backgroundColor: '#EEEEEE',
+                          border: this.state.canDrop
+                            ? '1px solid #979797'
+                            : '1px dashed #979797',
+                          padding: '40px 20px',
+                          color: this.state.canDrop ? '#aebccb' : '#6e7a89',
+                          borderRadius: '5px'
+                        }}>
+                        <i className="fa fa-2x fa-cloud-upload" />
+                        <br />
+                        Prueba soltando el excel aquí, o haz click para
+                        seleccionar el excel a cargar.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-12 text-right">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={this.downloadTemplate}>
+                      <i className="fa fa-fw fa-download" /> Descargar Formato
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <input
-                type='file'
+                type="file"
                 onChange={this.handleChangeInputFile}
                 style={{ display: 'None' }}
-                ref={this.inputFile} accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
+                ref={this.inputFile}
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
               />
-              <div className='row'>
-                <div className='col-md-12'>
-                  <div className='form-group' style={{ marginBottom: '0px', marginTop: '10px' }}>
+              <div className="row">
+                <div className="col-md-12">
+                  <div
+                    className="form-group"
+                    style={{ marginBottom: '0px', marginTop: '10px' }}>
                     <label>Configuraciones</label>
                   </div>
                 </div>
-                <div className='col-md-12 no-padding'>
-                  <div className='col-sm-12 col-md-8 col-lg-6'>
-                    <div className='form-horizontal'>
-                      <div className='form-group' style={{ marginRight: '0', marginLeft: '0' }}>
-                        <div className='col-sm-6 col-md-8 col-lg-8 no-padding'>
+                <div className="col-md-12 no-padding">
+                  <div className="col-sm-12 col-md-8 col-lg-6">
+                    <div className="form-horizontal">
+                      <div
+                        className="form-group"
+                        style={{ marginRight: '0', marginLeft: '0' }}>
+                        <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
                           <span
-                            className='control-label'
+                            className="control-label"
                             style={{
                               paddingLeft: '0',
                               textAlign: 'left',
                               fontWeight: 600
-                            }}
-                          >
-                          Nº imágenes al inventariar
-                        </span><br />
-                          <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al ingresar unidad digitando el VIN.</span>
+                            }}>
+                            Nº imágenes al inventariar
+                          </span>
+                          <br />
+                          <span className={'text-sm text-muted'}>
+                            Cantidad de fotografías solicitadas al ingresar
+                            unidad digitando el VIN.
+                          </span>
                         </div>
-                        <input id='manual-photo' type='text' className='col-sm-6 col-md-4 col-lg-4 form-control' />
+                        <input
+                          id="manual-photo"
+                          type="text"
+                          className="col-sm-6 col-md-4 col-lg-4 form-control"
+                        />
                       </div>
                     </div>
                     {/*<div className="checkbox">*/}
@@ -323,23 +383,32 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     {/*</div>*/}
                   </div>
                 </div>
-                <div className='col-sm-12 col-md-8 col-lg-6'>
-                  <div className='form-horizontal'>
-                    <div className='form-group' style={{ marginRight: '0', marginLeft: '0' }}>
-                      <div className='col-sm-6 col-md-8 col-lg-8 no-padding'>
+                <div className="col-sm-12 col-md-8 col-lg-6">
+                  <div className="form-horizontal">
+                    <div
+                      className="form-group"
+                      style={{ marginRight: '0', marginLeft: '0' }}>
+                      <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
                         <span
-                          className='control-label'
+                          className="control-label"
                           style={{
                             paddingLeft: '0',
                             textAlign: 'left',
                             fontWeight: 600
-                          }}
-                        >
-                        Nº imágenes al reportar
-                      </span><br />
-                        <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al reportar una unidad.</span>
+                          }}>
+                          Nº imágenes al reportar
+                        </span>
+                        <br />
+                        <span className={'text-sm text-muted'}>
+                          Cantidad de fotografías solicitadas al reportar una
+                          unidad.
+                        </span>
                       </div>
-                      <input id='report-photo' type='text' className='col-sm-6 col-md-4 col-lg-4 form-control' />
+                      <input
+                        id="report-photo"
+                        type="text"
+                        className="col-sm-6 col-md-4 col-lg-4 form-control"
+                      />
                     </div>
                   </div>
                   {/*<input*/}
@@ -352,13 +421,15 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                   {/*/>*/}
                   {/*<span>Cantidad de imágenes al reportar</span>*/}
                 </div>
-                <div className='col-md-8 col-sm-12'>
-                  <div className='checkbox'>
-                    <label style={{ paddingLeft: '0', fontWeight: 600 }} onClick={this.handleChangeNotification}>
+                <div className="col-md-8 col-sm-12">
+                  <div className="checkbox">
+                    <label
+                      style={{ paddingLeft: '0', fontWeight: 600 }}
+                      onClick={this.handleChangeNotification}>
                       <Checkbox
                         active={notification}
                         action={this.handleChangeNotification}
-                        classes='icheck-in-checkbox'
+                        classes="icheck-in-checkbox"
                         style={{ marginTop: '-4px', marginRight: '5px' }}
                       />
                       Enviar notificaciones push
@@ -367,24 +438,31 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className='box-footer text-right'>
-              <button className='btn btn-sm btn-default' onClick={() => this.props.history.push('/inventory/')}>Cancelar</button>
-              <button className='btn btn-sm btn-primary' style={{ marginLeft: '5px' }} onClick={this.sendCreate} disabled={sending}>
-                {
-                  sending || loading ?
-                    <React.Fragment>
-                      <i className='fa fa-fw fa-spin fa-spinner' /> Creando...
-                    </React.Fragment>
-                    : 'Crear'
-                }
+            <div className="box-footer text-right">
+              <button
+                className="btn btn-sm btn-default"
+                onClick={() => this.props.history.push('/inventory/')}>
+                Cancelar
+              </button>
+              <button
+                className="btn btn-sm btn-primary"
+                style={{ marginLeft: '5px' }}
+                onClick={this.sendCreate}
+                disabled={sending}>
+                {sending || loading ? (
+                  <React.Fragment>
+                    <i className="fa fa-fw fa-spin fa-spinner" /> Creando...
+                  </React.Fragment>
+                ) : (
+                  'Crear'
+                )}
               </button>
             </div>
-            {
-              sending || loading || loadingSettings ?
-                <div className='overlay'>
-                  <i className='fa fa-spinner fa-spin text-purple' />
-                </div> : null
-            }
+            {sending || loading || loadingSettings ? (
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple" />
+              </div>
+            ) : null}
           </div>
         </section>
       </AppContainer>
@@ -407,7 +485,9 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     }).then((willDelete) => {
       if (willDelete) {
         this.setState({
-          carsByVenue: carsByVenue.filter((venue: any) => venue.name !== venueName)
+          carsByVenue: carsByVenue.filter(
+            (venue: any) => venue.name !== venueName
+          )
         });
       }
     });
@@ -447,17 +527,19 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   private downloadTemplate(): void {
     /* headers worksheet */
-    const data = [{
-      sucursal: '',
-      NInterno: '',
-      vin: '',
-      marca: '',
-      patente: '',
-      denominacion: '',
-      color: '',
-      propiedad: '',
-      tipo: ''
-    }];
+    const data = [
+      {
+        sucursal: '',
+        NInterno: '',
+        vin: '',
+        marca: '',
+        patente: '',
+        denominacion: '',
+        color: '',
+        propiedad: '',
+        tipo: ''
+      }
+    ];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
     /* add to workbook */
@@ -472,7 +554,11 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     this.setState({
       loadingSettings: true
     });
-    if (['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type)) {
+    if (
+      [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ].includes(file.type)
+    ) {
       const reader = new FileReader();
       const rABS = !!reader.readAsBinaryString;
       reader.onload = (e: any) => {
@@ -484,21 +570,32 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
           const workbook: XLSX.WorkBook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array'
           });
-          const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
+          const excelData = workbook.Sheets.hasOwnProperty('Autos')
+            ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos)
+            : [];
           const carsByVenue: any = {};
           if (excelData.length >= 1) {
             excelData.forEach((item: any) => {
-              if (item.hasOwnProperty('vin') && item.vin && item.hasOwnProperty('sucursal') && item.sucursal) {
+              if (
+                item.hasOwnProperty('vin') &&
+                item.vin &&
+                item.hasOwnProperty('sucursal') &&
+                item.sucursal
+              ) {
                 const vinWarning = item.vin.length < 17;
                 const patentWarning = item.patente && item.patente.length < 6;
                 const car = {
                   vin: item.vin.trim(),
                   internalNumber: item.NInterno ? item.NInterno.trim() : '',
                   color: item.color ? item.color.trim() : '',
-                  denomination: item.denominacion ? item.denominacion.trim() : '',
+                  denomination: item.denominacion
+                    ? item.denominacion.trim()
+                    : '',
                   brand: item.marca ? item.marca.trim() : '',
                   patent: item.patente ? item.patente.trim() : '',
-                  property: item.propiedad ? item.propiedad.trim().toUpperCase() : '',
+                  property: item.propiedad
+                    ? item.propiedad.trim().toUpperCase()
+                    : '',
                   type: item.tipo ? item.tipo.trim() : '',
                   hasWarnings: vinWarning || patentWarning,
                   warning: {
@@ -524,13 +621,19 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
             for (const cv in carsByVenue) {
               if (carsByVenue.hasOwnProperty(cv)) {
                 const existVenue = venues.some((venue: any) => {
-                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase();
+                  return (
+                    venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
+                  );
                 });
                 carsByVenueArray.push({
                   name: cv.trim(),
                   warningNoExist: !existVenue,
                   cars: carsByVenue[cv].cars.sort((x: any, y: any) => {
-                    return (x.hasWarnings === y.hasWarnings) ? 0 : x.hasWarnings ? -1 : 1;
+                    return x.hasWarnings === y.hasWarnings
+                      ? 0
+                      : x.hasWarnings
+                      ? -1
+                      : 1;
                   })
                 });
               }
@@ -561,7 +664,11 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
         this.inputFile.current.value = '';
       }
     } else {
-      swal!('Importador de configuración', 'Este archivo no cumple con los requisitos mínimos o no tiene autos.', 'error');
+      swal!(
+        'Importador de configuración',
+        'Este archivo no cumple con los requisitos mínimos o no tiene autos.',
+        'error'
+      );
       this.setState({
         loadingSettings: false
       });
@@ -587,12 +694,18 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  private handleChangeInputBackup(e: React.ChangeEvent<HTMLInputElement>): void {
+  private handleChangeInputBackup(
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void {
     const { files } = e.target;
     if (files && files.length) {
       const file = files[0];
       if (!this.validateSize(file.size)) {
-        swal!('Envió inventario', 'El archivo supera los 10Mb permitidos.', 'error');
+        swal!(
+          'Envió inventario',
+          'El archivo supera los 10Mb permitidos.',
+          'error'
+        );
       } else {
         if (new RegExp('\\bimage\\b').test(file.type)) {
           const reader = new FileReader();
@@ -662,7 +775,8 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
   private getVenues() {
     this.setState({ loading: true });
     const api: ApiService = new ApiService();
-    api.getVenues({ page: 1, pageSize: 200, noPopulate: true })
+    api
+      .getVenues({ page: 1, pageSize: 200, noPopulate: true })
       .then((response: AxiosResponse): void => {
         this.setState({
           venues: response.data.results,
@@ -675,18 +789,34 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const { carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto } = this.state;
+    const {
+      carsByVenue,
+      name,
+      notification,
+      file,
+      backupFile,
+      manualPhoto,
+      reportPhoto
+    } = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
     });
     if (!name.trim().length) {
-      swal!('Envió inventario', 'El nombre del inventario es obligatorio.', 'error');
+      swal!(
+        'Envió inventario',
+        'El nombre del inventario es obligatorio.',
+        'error'
+      );
       this.setState({
         sending: false
       });
     } else if (!carsByVenue.length) {
-      swal!('Envió inventario', 'No se ha importado la configuración o no contiene sucursales.', 'error');
+      swal!(
+        'Envió inventario',
+        'No se ha importado la configuración o no contiene sucursales.',
+        'error'
+      );
       this.setState({
         sending: false
       });
@@ -697,21 +827,32 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
       api.getSource();
       api
         .createInventory({
-          carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
+          carsByVenue,
+          name,
+          notification,
+          file,
+          backupFile,
+          manualPhoto,
+          reportPhoto
         })
         .then((response: any) => {
           const { message } = response.data;
           swal!('Envió inventario', message, 'success');
-          setTimeout(()=>{
+          setTimeout(() => {
             this.setState({
               sending: false
             });
+            swal.close();
             history.push('/inventory/');
-          }, 2000)
+          }, 2000);
         })
         .catch((e) => {
           console.log('e', e);
-          swal!('Envió inventario', 'Se produjo un error al crear el inventario.', 'error');
+          swal!(
+            'Envió inventario',
+            'Se produjo un error al crear el inventario.',
+            'error'
+          );
           this.setState({
             sending: false
           });
@@ -729,8 +870,12 @@ const mapStateToProps = (state: { alerts: IAlertsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) =>
+      dispatch(loadDataAction(title, body, footer))
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(InventoryCreateView);
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(InventoryCreateView);

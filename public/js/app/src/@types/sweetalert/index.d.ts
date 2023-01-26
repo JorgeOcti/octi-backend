@@ -9,6 +9,7 @@
 declare module 'sweetalert' {
   namespace Swal {
     export interface Settings {
+      close: (namespace?: string) => void;
       (...params: any): Promise<any>;
     }
   }

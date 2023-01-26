@@ -91,6 +91,12 @@ class InventoryQueue {
         }
       });
       await inventory.save();
+      socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
+        update: true
+      });
+      socket().to(`stock-${team._id.toString()}`).emit('REFRESH', {
+        update: true
+      });
 
       const updateCars: any[] = [];
       for (const venue of carsByVenue) {
