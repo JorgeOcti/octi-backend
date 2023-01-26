@@ -7,6 +7,8 @@ import * as path from 'path';
 import Submodule from '../../../billing/models/submodule.model';*/
 import BillingTeamQueue from "../../../billing/tasks/billingTeam.task";
 
+// node dist/app/commands/migrations/loadModulesAndSubmodules.js
+
 async function loadModulesAndSubmodules() {
 
   dotenv.config({
@@ -85,7 +87,8 @@ async function loadModulesAndSubmodules() {
     }, { upsert: true, new: true });*/
     await new BillingTeamQueue().processBilling({
 
-    });
+    }, true);
+    process.exit(1);
   } catch (e) {
     console.log('Ha ocurrido un error en loadModulesAndSubmodules');
     console.log('error:', e);

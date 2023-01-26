@@ -27,8 +27,8 @@ class BillingTeamQueue {
     this.getDolarPrice = this.getDolarPrice.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
     this.car = new Car({});
-    /*this.createPDF = this.createPDF.bind(this);
-    this.sendEmail = this.sendEmail.bind(this);*/
+    this.createPDF = this.createPDF.bind(this);
+    this.sendEmail = this.sendEmail.bind(this);
   }
 
   private getUFPrice(): Promise<number> {
@@ -206,14 +206,11 @@ class BillingTeamQueue {
     }
   }
 
-  public async processBilling(filter: any = {}): Promise<any> {
+  public async processBilling(filter: any = {}, run?:boolean): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        if (
-          moment()
-            .startOf('day')
-            .isSame(moment().endOf('month').startOf('day').subtract(3, 'days'))
-        ) {
+        run = run || moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
+        if (run) {
           mongoose.set('debug', true);
           console.log('START billing');
           // const valueUF = 28662.81; /*await this.getUFPrice();*/
