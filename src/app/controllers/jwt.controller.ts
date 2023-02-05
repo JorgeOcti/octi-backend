@@ -105,8 +105,7 @@ class JWTController {
               $lt: tomorrow.toDate()
             }
           }).countDocuments(async (err, count) => {
-            const teamSettings = await TeamSetting.findOne({ team: user.team });
-            logger.debug(JSON.stringify(teamSettings));
+            const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
             const version = await Version.findOne({}, ['ios', 'android'], {
               sort: {
                 createdAt: -1
@@ -129,7 +128,9 @@ class JWTController {
                 settings: {
                   form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
                     vinMinCharacters: 17,
-                    vinMaxCharacters: 17
+                    vinMaxCharacters: 17,
+                    plateMinCharacters: 6,
+                    plateMaxCharacters: 6
                   }),
                   helpNumber: GeneralUtils.getObjectProperty(
                     teamSettings!,
@@ -248,8 +249,7 @@ class JWTController {
             $lt: tomorrow.toDate()
           }
         }).countDocuments();
-        const teamSettings = await TeamSetting.findOne({ team: user.team });
-        logger.debug(JSON.stringify(teamSettings));
+        const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
         const version = await Version.findOne({}, ['ios', 'android'], {
           sort: {
             createdAt: -1
@@ -272,7 +272,9 @@ class JWTController {
             settings: {
               form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
                 vinMinCharacters: 17,
-                vinMaxCharacters: 17
+                vinMaxCharacters: 17,
+                plateMinCharacters: 6,
+                plateMaxCharacters: 6
               }),
               helpNumber: GeneralUtils.getObjectProperty(
                 teamSettings!,
