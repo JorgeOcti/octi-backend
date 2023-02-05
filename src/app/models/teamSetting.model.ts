@@ -61,6 +61,14 @@ const formSettingSchema = new mongoose.Schema({
     type: Number,
     default: 17
   },
+  plateMinCharacters: {
+    type: Number,
+    default: 6
+  },
+  plateMaxCharacters: {
+    type: Number,
+    default: 6
+  },
   report: {
     type: reportSettingSchema
   }
