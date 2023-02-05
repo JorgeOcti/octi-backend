@@ -756,6 +756,7 @@ class FormController {
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal } = req.body;
+    let carId = req.body.id;
     const { company, team } = req.user;
     logger.info(`FormController.complete email: ${req.user.email}`);
     // validate answers in body
@@ -771,9 +772,9 @@ class FormController {
       }, answers: ${JSON.stringify(answers)}`
     );
     // validate vin in body
-    if (!vin && !transmittal) {
+    if (!vin && !transmittal && !id) {
       return res.status(400).json({
-        message: 'Debes enviar el vin o OT',
+        message: 'Debes enviar el vin o OT o id',
         status: 400
       });
     }
@@ -795,6 +796,9 @@ class FormController {
           $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
           team
         });
+      }
+      if (carId) {
+        car = await Car.findOne({_id: carId})
       }
 
       if (car || transmittal) {
