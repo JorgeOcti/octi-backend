@@ -5,6 +5,8 @@ export interface IFormSettting {
   report: IReportSetting;
   vinMinCharacters: number;
   vinMaxCharacters: number;
+  plateMinCharacters: number;
+  plateMaxCharacters: number;
 }
 
 export interface IInventorySetting {
