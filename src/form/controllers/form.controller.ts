@@ -777,6 +777,7 @@ class FormController {
   }
 
   public async complete(req: IRequest, res: Response): Promise<any> {
+    logger.debug(JSON.stringify(req.body));
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal } = req.body;
     let carId = req.body.id;
@@ -819,8 +820,7 @@ class FormController {
           $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
           team
         });
-      }
-      if (carId) {
+      } else if (carId) {
         car = await Car.findOne({_id: carId})
       }
 
