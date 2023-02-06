@@ -819,8 +819,7 @@ class FormController {
           $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
           team
         });
-      }
-      if (carId) {
+      } else if (carId) {
         car = await Car.findOne({_id: carId})
       }
 
