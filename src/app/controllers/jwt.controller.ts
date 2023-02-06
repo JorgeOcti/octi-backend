@@ -91,7 +91,7 @@ class JWTController {
               $lt: tomorrow.toDate()
             }
           }).countDocuments(async (err, count) => {
-            const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
+            const teamSettings = await TeamSetting.findOne({ team: user.team });
             const version = await Version.findOne({}, ['ios', 'android'], {
               sort: {
                 createdAt: -1
@@ -209,7 +209,7 @@ class JWTController {
             $lt: tomorrow.toDate()
           }
         }).countDocuments();
-        const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
+        const teamSettings = await TeamSetting.findOne({ team: user.team });
         const version = await Version.findOne({}, ['ios', 'android'], {
           sort: {
             createdAt: -1
