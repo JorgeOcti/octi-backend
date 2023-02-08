@@ -258,7 +258,7 @@ class BillingTeamQueue {
                     StatusHistory.sale
                   ]
                 },
-                executedAt: {
+                createdAt: {
                   $gte: from,
                   $lte: to
                 }
@@ -276,7 +276,7 @@ class BillingTeamQueue {
                 }
               ])
               .sort({
-                executedAt: 1
+                createdAt: 1
               });
             const usedVINS: any[] = [];
             const countByModule: any = {};

@@ -177,9 +177,18 @@ class UserController {
       const currentUser = await UserModel.findById(req.user._id);
       const currentVenue = await Venue.findOne({ _id: venue, team });
       if (currentUser && currentVenue && currentUser.venuesPermissions(true).includes(venue)) {
-        currentUser.venue = currentVenue;
-        currentUser.company = currentVenue.company;
-        await currentUser.save();
+        // currentUser.venue = currentVenue;
+        // currentUser.company = currentVenue.company;
+        await User.updateOne({_id: currentUser._id}, {
+          $set: {
+            venue: currentVenue._id,
+            company: currentVenue.company
+          },
+          $addToSet: {
+            venuesAccess: { $each: [currentUser.venue]}
+          }
+        })
+        // await currentUser.save();
         return res.status(200).json({
           message: 'Usuario editado satisfactoriamente.',
           status: 200

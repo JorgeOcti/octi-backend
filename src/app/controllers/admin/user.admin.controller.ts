@@ -519,7 +519,7 @@ class AdminUsersController {
     const team = req.user.team._id;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
-      res.status(400).json({
+      return res.status(400).json({
         message: 'firstName, lastName, email and venue are required',
         status: 400
       });
@@ -528,7 +528,7 @@ class AdminUsersController {
       // validate existe user
       const existUser = await User.find({ $or: [{ email }, { username: email }] });
       if (existUser.length) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Usuario ya existe con este email.',
           status: 400
         });
@@ -596,14 +596,14 @@ class AdminUsersController {
           update: true,
           updatedBy: req.user._id
         });
-        res.status(201).json({
+        return res.status(201).json({
           message: 'Usuario agregado satisfactoriamente.',
           user: newUser
         });
       }
     } catch (e) {
       /* istanbul ignore next  */
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
