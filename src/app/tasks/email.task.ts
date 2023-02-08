@@ -33,7 +33,7 @@ class EmailQueue {
       job.log('start processEmail');
       // generate email
       const mail: Mail.Options = {
-        from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
+        from: `"${job.data.from?.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
         // to: job.data.to,
         to: job.data.to,
         bcc: job.data.bcc,
@@ -49,7 +49,12 @@ class EmailQueue {
           'X-Report-Abuse-To': 'abuse@osacontrol.com'
         }
       };
-      logger.info(`EmailQueue.processEmail: ${JSON.stringify(mail)}`);
+      logger.info(`EmailQueue.processEmail: ${JSON.stringify({
+        from: mail.from,
+        to: mail.to,
+        subject: mail.subject,
+        text: mail.text,
+      })}`);
       job.log('send email');
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
@@ -57,6 +62,7 @@ class EmailQueue {
           console.log(error);
           done(error);
         }
+        console.log('Message %s sent: %s', info.messageId, info.response);
         done(null, {});
         // job.log(`Message ${info.messageId} sent: ${info.response}`);
         /* istanbul ignore next */
