@@ -491,6 +491,18 @@ const participantSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
+  },
+  rawBody: {
+    type: Object,
+    default: {}
+  },
+  rawAnswers: {
+    type: Object,
+    default: {}
+  },
+  keyRawAnswers: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
@@ -500,8 +512,9 @@ participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
+participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
-participantSchema.index({ team: 1, active: 1, number: 1 });
+participantSchema.index({ car: 1, form: 1, venue: 1, keyRawAnswers: 1, createdAt: 1 });
 
 participantSchema.plugin(mongoosePaginate);
 
