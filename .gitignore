@@ -55,7 +55,5 @@ buildcache
 /tools/
 .cache
 
-package-lock.json
-
 updateAndesProdToLocal.sh
 updateAndesProdToStage.sh
