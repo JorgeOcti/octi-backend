@@ -831,13 +831,16 @@ class FormController {
         });
         if (form) {
           const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
+          const today = moment().startOf('day');
+          const tomorrow = moment(today).add(1, 'days');
           const existControl = await Participant.findOne({
             car: car._id,
             form: form._id,
             venue: updatedUser.venue,
             keyRawAnswers,
             createdAt: {
-              $gt: moment().startOf('day').toDate()
+              $gte: today.toDate(),
+              $lt: tomorrow.toDate()
             }
           })
           if(existControl) {
