@@ -1,4 +1,5 @@
 import * as GraphicsMagick from 'gm';
+import * as crypto from 'crypto';
 import * as HtmlPdf from 'html-pdf';
 import * as Joi from 'joi';
 import * as QRCode from 'qrcode';
@@ -14,7 +15,7 @@ import { IAnyObject, IRequest } from '../../interfaces/global.interface';
 import Milestone, {
   ChoicesStepMilestone
 } from '../../distribution/models/milestone.model';
-import { PaginateOptions, PaginateResult } from 'mongoose';
+import { PaginateOptions, PaginateResult} from 'mongoose';
 import Participant, {
   IParticipantAnswerModel,
   IParticipantSectionModel
@@ -777,7 +778,6 @@ class FormController {
   }
 
   public async complete(req: IRequest, res: Response): Promise<any> {
-    logger.debug(JSON.stringify(req.body));
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal } = req.body;
     let carId = req.body.id;
@@ -830,6 +830,39 @@ class FormController {
           team
         });
         if (form) {
+          const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
+          const today = moment().startOf('day');
+          const tomorrow = moment(today).add(1, 'days');
+          const existControl = await Participant.findOne({
+            car: car._id,
+            form: form._id,
+            venue: updatedUser.venue,
+            keyRawAnswers,
+            createdAt: {
+              $gte: today.toDate(),
+              $lt: tomorrow.toDate()
+            }
+          })
+          if(existControl) {
+            const today = moment().startOf('day');
+            const count = await Participant.find({
+              user: req.user,
+              createdAt: {
+                $gt: today.toDate()
+              }
+            }).countDocuments();
+
+            return res.json({
+              data: {
+                id,
+                count,
+                vin,
+                qualification: 0,
+                exist: true
+              },
+              status: 200
+            });
+          }
           // initialize participant
           const participantObject: any = {
             name: form.name,
@@ -844,7 +877,10 @@ class FormController {
             venue: updatedUser.venue,
             active: form.active,
             kind: transmittal ? KindForm.transmittal : form.kind,
-            deliveryInfo: {}
+            deliveryInfo: {},
+            rawAnswers: answers,
+            rawBody: req.body,
+            keyRawAnswers
           };
 
           if (form.reception) {
