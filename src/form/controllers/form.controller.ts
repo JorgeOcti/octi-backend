@@ -835,7 +835,7 @@ class FormController {
           if (car)
             searchVal.push({car: car._id})
           if (transmittal)
-            searchVal.push({transmittal})
+            searchVal.push({transmittal: new ObjectID(transmittal)})
 
           const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
           const today = moment().startOf('day');
