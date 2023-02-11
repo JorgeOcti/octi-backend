@@ -830,11 +830,18 @@ class FormController {
           team
         });
         if (form) {
+
+          let searchVal : any[] = [];
+          if (car)
+            searchVal.push({car: car._id})
+          if (transmittal)
+            searchVal.push({transmittal})
+
           const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
           const existControl = await Participant.findOne({
-            car: car._id,
+            $or: searchVal,
             form: form._id,
             venue: updatedUser.venue,
             keyRawAnswers,
