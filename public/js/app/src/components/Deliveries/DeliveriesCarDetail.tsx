@@ -190,7 +190,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                     {/*<div className='col-md-6'>*/}
                       {
                         participant?.deliveryInfo?.identifyCard?.map((image: any, index: number) => (
-                          <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none' }}>
+                          <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none', paddingRight: '10px' }}>
                             <a href={decodeURI(image.file.url)}
                                data-toggle='lightbox'
                                data-gallery={`images-${participant._id}`}
@@ -211,6 +211,28 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
                         ))
                       }
                     {/*</div>*/}
+                    {
+                        participant?.deliveryInfo?.plateEvidence?.map((image: any, index: number) => (
+                                <div key={image._id} className={'images-25'} style={{ display: index === 0 ? '' : 'none' }}>
+                                  <a href={decodeURI(image.file.url)}
+                                    data-toggle='lightbox'
+                                    data-gallery={`images-${participant._id}`}
+                                    data-title={`Evidencia patente ${participant?.deliveryInfo?.name}`}
+                                    data-footer={`Entrega ${participant.number}`}
+                                    >
+                                    <button
+                                      className='btn btn-xs btn-default'
+                                      data-toggle='tooltip'
+                                      data-placement='top'
+                                      title='Ver Automovil y patente.'
+                                      >
+                                      <i className='fa fa-fw fa-car' />
+                                    </button>
+                                    {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+                                  </a>
+                                </div>
+                                ))
+                      }
                   </div>
                 </td>
                 <td className='middle-center hidden-xs hidden-sm'>
