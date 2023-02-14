@@ -1049,20 +1049,21 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
-              } else if (
-                question?.kindUpdate === 'participant.clientSignature'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientSignature') {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
                   ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
-              } else if (
-                question?.kindUpdate === 'participant.clientIdentifyCard'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
                   ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
-              }
+              } else if (question?.kindUpdate === 'participant.plateEvidence')
+                newParticipant.deliveryInfo.plateEvidence = answer?.images
+                  ?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
+                  : [];
+
               newAnswers.push({
                 _id: question._id,
                 question: question.question,

@@ -116,6 +116,7 @@ export interface IParticipantDeliveryInfo {
   order: string;
   signature: IParticipantFile[];
   identifyCard: IParticipantFile[];
+  plateEvidence: IParticipantFile[];
 }
 
 export interface IParticipant {
