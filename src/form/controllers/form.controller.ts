@@ -830,11 +830,18 @@ class FormController {
           team
         });
         if (form) {
+
+          let searchVal : any[] = [];
+          if (car)
+            searchVal.push({car: car._id})
+          if (transmittal)
+            searchVal.push({transmittal: new ObjectID(transmittal)})
+
           const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
           const existControl = await Participant.findOne({
-            car: car._id,
+            $or: searchVal,
             form: form._id,
             venue: updatedUser.venue,
             keyRawAnswers,
@@ -1042,20 +1049,21 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
-              } else if (
-                question?.kindUpdate === 'participant.clientSignature'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientSignature') {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
                   ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
-              } else if (
-                question?.kindUpdate === 'participant.clientIdentifyCard'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
                   ? answer.images.map((image: string) => new ObjectID(image))
                   : [];
-              }
+              } else if (question?.kindUpdate === 'participant.plateEvidence')
+                newParticipant.deliveryInfo.plateEvidence = answer?.images
+                  ?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
+                  : [];
+
               newAnswers.push({
                 _id: question._id,
                 question: question.question,

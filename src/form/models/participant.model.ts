@@ -317,7 +317,11 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   identifyCard: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
-  }]
+  }],
+  plateEvidence: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
 });
 
 export interface IParticipantModel extends IParticipant, mongoose.Document {
