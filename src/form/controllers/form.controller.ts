@@ -1,4 +1,7 @@
 import * as GraphicsMagick from 'gm';
+import * as crypto from 'crypto';
+import * as Joi from 'joi';
+import * as QRCode from 'qrcode';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
 import { Response } from 'express';
@@ -46,6 +49,7 @@ import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
 import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
+import { PaginateOptions, PaginateResult} from 'mongoose';
 import Participant, {
   IParticipantAnswerModel,
   IParticipantSectionModel
@@ -754,7 +758,6 @@ class FormController {
   }
 
   public async complete(req: IRequest, res: Response): Promise<any> {
-    logger.debug(JSON.stringify(req.body));
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal } = req.body;
     let carId = req.body.id;
@@ -807,6 +810,46 @@ class FormController {
           team
         });
         if (form) {
+
+          let searchVal : any[] = [];
+          if (car)
+            searchVal.push({car: car._id})
+          if (transmittal)
+            searchVal.push({transmittal: new ObjectID(transmittal)})
+
+          const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
+          const today = moment().startOf('day');
+          const tomorrow = moment(today).add(1, 'days');
+          const existControl = await Participant.findOne({
+            $or: searchVal,
+            form: form._id,
+            venue: updatedUser.venue,
+            keyRawAnswers,
+            createdAt: {
+              $gte: today.toDate(),
+              $lt: tomorrow.toDate()
+            }
+          })
+          if(existControl) {
+            const today = moment().startOf('day');
+            const count = await Participant.find({
+              user: req.user,
+              createdAt: {
+                $gt: today.toDate()
+              }
+            }).countDocuments();
+
+            return res.json({
+              data: {
+                id,
+                count,
+                vin,
+                qualification: 0,
+                exist: true
+              },
+              status: 200
+            });
+          }
           // initialize participant
           const participantObject: any = {
             name: form.name,
@@ -821,7 +864,10 @@ class FormController {
             venue: updatedUser.venue,
             active: form.active,
             kind: transmittal ? KindForm.transmittal : form.kind,
-            deliveryInfo: {}
+            deliveryInfo: {},
+            rawAnswers: answers,
+            rawBody: req.body,
+            keyRawAnswers
           };
 
           if (form.reception) {
@@ -983,20 +1029,21 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
-              } else if (
-                question?.kindUpdate === 'participant.clientSignature'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientSignature') {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
                   ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [];
-              } else if (
-                question?.kindUpdate === 'participant.clientIdentifyCard'
-              ) {
+              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
                   ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [];
-              }
+              } else if (question?.kindUpdate === 'participant.plateEvidence')
+                newParticipant.deliveryInfo.plateEvidence = answer?.images
+                  ?.length
+                  ? answer.images.map((image: string) => new ObjectID(image))
+                  : [];
+
               newAnswers.push({
                 _id: question._id,
                 question: question.question,

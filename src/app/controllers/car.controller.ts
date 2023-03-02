@@ -1513,6 +1513,8 @@ class CarController {
         path: 'deliveryInfo.identifyCard',
       }, {
         path: 'deliveryInfo.signature',
+      }, {
+        path: 'deliveryInfo.plateEvidence',
       }],
       sort: {
         _id: -1
