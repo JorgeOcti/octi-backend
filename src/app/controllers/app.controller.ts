@@ -57,7 +57,7 @@ class AppController {
   }
 
   public processLoginSoo(req: IRequest, res: Response, next: NextFunction): void {
-    passport.authenticate('multy-saml', (err, user) => {
+    passport.authenticate('multy-saml', (err: any, user: any) => {
       /* istanbul ignore if */
       if (err) {
         console.log(err);
@@ -105,7 +105,7 @@ class AppController {
       }
     } else {
       const { username } = req.body;
-      passport.authenticate('local', async (err, user) => {
+      passport.authenticate('local', async (err: any, user: any) => {
         /* istanbul ignore if */
         if (err) {
           logger.debug(`AppController.processLogin.authenticate: Wrong username or password.`);

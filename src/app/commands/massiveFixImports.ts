@@ -13,7 +13,6 @@ import Form, { IFormModel } from '../../form/models/form.model';
 import Damages from '../../form/models/damages.model';
 import History from '../models/history.model';
 // import { ICarLocation } from '../interfaces/car.interface';
-import { IParticipant } from 'form/interfaces/participant.interface';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
@@ -54,7 +53,7 @@ async function makeControl(
         console.log('No existe el vehículo');
         process.exit(1);
       }
-      const participantObject: mongoose.HydratedDocument<IParticipant> = {
+      const participantObject: any = {
         name: form.name,
         team,
         company,
@@ -200,10 +199,7 @@ async function importMassive() {
     const debug = false;
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+    await mongoose.connect(MONGODB_URI, {});
     mongoose.set('debug', debug);
     new Damages();
     new Part();

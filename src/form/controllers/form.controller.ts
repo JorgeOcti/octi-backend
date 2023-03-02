@@ -1,11 +1,10 @@
-import * as GraphicsMagick from 'gm';
-import * as crypto from 'crypto';
-import * as Joi from 'joi';
-import * as QRCode from 'qrcode';
 import * as bluebird from 'bluebird';
+import { ObjectID } from 'bson';
+import * as crypto from 'crypto';
 import * as excel from 'exceljs';
 import { Response } from 'express';
 import * as fs from 'fs';
+import * as GraphicsMagick from 'gm';
 import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import mongoose, {
@@ -49,7 +48,6 @@ import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
 import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
-import { PaginateOptions, PaginateResult} from 'mongoose';
 import Participant, {
   IParticipantAnswerModel,
   IParticipantSectionModel
