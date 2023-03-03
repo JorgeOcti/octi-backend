@@ -1384,6 +1384,11 @@ class FormController {
                   vin: car.vin
                 }
               }).save();
+
+              if (form.triggers && form.triggers.length) {
+                let triggersHandler = new TriggerHandler(form, newParticipant);
+                await triggersHandler.execute({});
+              }
             }
             const today = moment().startOf('day');
             const tomorrow = moment(today).add(1, 'days');
@@ -1394,11 +1399,6 @@ class FormController {
                 $lt: tomorrow.toDate()
               }
             }).countDocuments();
-
-            if (form.triggers && form.triggers.length) {
-              let triggersHandler = new TriggerHandler(form, newParticipant);
-              await triggersHandler.execute({});
-            }
 
             return res.json({
               data: {
