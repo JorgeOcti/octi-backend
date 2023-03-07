@@ -39,7 +39,7 @@ class EmailQueue {
       logger.info('start EmailQueue.process');
       // generate email
       const mail: Mail.Options = {
-        from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
+        from: `"${job.data.from?.length ? job.data.from : 'OSA Andes'}"<soporte@osacontrol.com>`,
         to: job.data.to,
         bcc: job.data.bcc,
         subject: job.data.subject,
@@ -54,8 +54,21 @@ class EmailQueue {
           'X-Report-Abuse-To': 'abuse@osacontrol.com'
         }
       };
-
-      logger.info(`EmailQueue.process: ${JSON.stringify(mail)}`);
+      logger.info(`EmailQueue.processEmailTXT: ${JSON.stringify({
+        from: mail.from,
+        to: mail.to,
+        subject: mail.subject,
+        text: mail.text,
+        attachments: mail.attachments,
+      })}`);
+      logger.info(`EmailQueue.processEmailHTML: ${JSON.stringify({
+        from: mail.from,
+        to: mail.to,
+        subject: mail.subject,
+        html: mail.html,
+        attachments: mail.attachments,
+      })}`);
+      job.log('send email');
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
         if (error) {
@@ -63,6 +76,7 @@ class EmailQueue {
           done(error);
         }
         logger.info(`Message ${info.messageId} sent: ${info.response}`);
+
         done(null, {});
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });

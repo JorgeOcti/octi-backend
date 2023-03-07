@@ -116,6 +116,7 @@ export interface IParticipantDeliveryInfo {
   order: string;
   signature: IParticipantFile[];
   identifyCard: IParticipantFile[];
+  plateEvidence: IParticipantFile[];
 }
 
 export interface IParticipant {
@@ -171,6 +172,10 @@ export interface IParticipant {
 
   deliveryToCustomer: boolean;
   deliveryInfo: IParticipantDeliveryInfo | IParticipantDeliveryInfoModel;
+
+  rawAnswers: Object;
+  rawBody: Object;
+  keyRawAnswers: string;
 
   imported: boolean;
   active: boolean;

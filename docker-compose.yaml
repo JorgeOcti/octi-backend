@@ -11,6 +11,7 @@ services:
     ports:
       - 27017:27017
     volumes:
+#      - '/Users/gmunoz/backups/osa/andes/production/mongo:/backups'
       - mongo:/data/db
       - mongoConf:/data/configdb
       - '~/backups/osa/andes/mongo:/backups'
