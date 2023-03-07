@@ -242,7 +242,7 @@ class BillingTeamQueue {
               : new Date(
                   `${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`
                 );
-            const to = now;
+            const to = moment();
             // let to = moment().endOf('month').subtract(3, 'days').startOf('day');
             // If the script runs earlier than automatically scheduled
             // if (now.isBefore(to)) {
@@ -258,7 +258,7 @@ class BillingTeamQueue {
                     StatusHistory.sale
                   ]
                 },
-                executedAt: {
+                createdAt: {
                   $gte: from,
                   $lte: to
                 }
@@ -276,7 +276,7 @@ class BillingTeamQueue {
                 }
               ])
               .sort({
-                executedAt: 1
+                createdAt: 1
               });
             const usedVINS: any[] = [];
             const countByModule: any = {};

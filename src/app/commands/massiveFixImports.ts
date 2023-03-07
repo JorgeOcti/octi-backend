@@ -3,21 +3,23 @@ import * as dotenv from 'dotenv';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import Car from '../../app/models/car.model';
-import { IUserModel } from '../../app/schemas/user.schema';
-import { IVenueModel, Venue } from '../../app/models/venue.model';
+
+import Car from '../models/car.model';
+import { IUserModel } from '../schemas/user.schema';
+import {  IVenueModel } from '../models/venue.model';
+import Venue from '../models/venue.model';
 import Form, { IFormModel } from '../../form/models/form.model';
+
 import Damages from '../../form/models/damages.model';
-import History from '../../app/models/history.model';
-import { ICarLocation } from '../../app/interfaces/car.interface';
-// import { IParticipant } from 'form/interfaces';
+import History from '../models/history.model';
+// import { ICarLocation } from '../interfaces/car.interface';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
-import Team from '../../app/models/team.model';
-import User from '../../app/models/user.model';
-import carTracker from '../../app/controllers/tracker/car.tracker';
+import Team from '../models/team.model';
+import User from '../models/user.model';
+// import carTracker from '../controllers/tracker/car.tracker';
 const reader = require('xlsx');
 
 // async function wait(ms: number) {
@@ -51,8 +53,6 @@ async function makeControl(
         console.log('No existe el vehículo');
         process.exit(1);
       }
-
-      // const participantObject: mongoose.HydratedDocument<IParticipant> = {
       const participantObject: any = {
         name: form.name,
         team,
@@ -156,9 +156,29 @@ async function makeControl(
         //   }
         // }, { timestamps: false })
         // await Participant.create(participantObject, { timestamps: false });
+        const existParticipant = await Participant.findOne({
+          createdAt: participantObject.createdAt,
+          user: user._id,
+          car: car._id,
+          // venue: '639780224e5d4600cc76b563'
+          venue: '63fe66c4078da800128e4f04'
+        })
+        if(existParticipant) {
+        await History.updateOne({ participant: existParticipant._id }, {$set:{
+          from: '63fe66c4078da800128e4f04',
+          to: '63fe66c4078da800128e4f04',
+        }})
+      }
+
+        // console.log("existParticipant", existParticipant)
         resolve({
-          insertOne: {
-            document: participantObject
+          updateOne: {
+            filter: {
+              createdAt: participantObject.createdAt,
+              user: user._id,
+              car: car._id,
+            },
+            update: participantObject
           }
         });
       } else {
@@ -179,7 +199,7 @@ async function importMassive() {
     const debug = false;
     const MONGODB_URI: string = process.env.MONGODB_URI || '';
     (mongoose as any).Promise = bluebird;
-    await mongoose.connect(MONGODB_URI, {  });
+    await mongoose.connect(MONGODB_URI, {});
     mongoose.set('debug', debug);
     new Damages();
     new Part();
@@ -204,7 +224,7 @@ async function importMassive() {
     // INGRESO NOVICIADO # 63989de20000000000b837a0
     // INGRESO LONQUÉN # 63989dfe0000000000b837fe
     const form = await Form.findOne({
-      _id: '63989de20000000000b837a0'
+      _id: '6295342faf30b42d87b6e7dc'
     }).populate([
       {
         path: 'sections.questions.scale'
@@ -245,7 +265,7 @@ async function importMassive() {
     // CD LONQUÉN SCHIAPPACASSE 63977ffc6ea6ad00c32cfc22
     const venue = await Venue.findOne(
       {
-        _id: '639780224e5d4600cc76b563'
+        _id: '63fe66c4078da800128e4f04'
       },
       {
         _id: 1
@@ -255,8 +275,8 @@ async function importMassive() {
     const vins = [];
     const makeControls = [];
     for (const row of workSheet) {
+      console.log(row.vin);
       if (form && user && venue && !debug) {
-        console.log(row.vin);
         vins.push(row.vin);
         makeControls.push(makeControl(row, form, user, venue));
       }
@@ -265,172 +285,32 @@ async function importMassive() {
       const controls = await Promise.all(makeControls.splice(0, 100));
       bulkParticipants = [...bulkParticipants, ...controls]
     }
-    if (bulkParticipants.length > 0) {
+    console.log("bulkParticipants.length", bulkParticipants.length);
+    const execute = true;
+    if (execute && bulkParticipants.length > 0) {
       while (bulkParticipants.length) {
         console.log(bulkParticipants.length);
         const bulk = await Participant.bulkWrite(
           bulkParticipants.splice(0, 100)
         );
-        const carTrackers = []
-        for (const participant of Object.values(bulk.insertedIds)) {
-          carTrackers.push(carTracker.fromParticipant({ id: participant }));
-        }
-        await Promise.all(carTrackers);
+        console.log(bulk);
+        // const carTrackers = []
+        // for (const participant of Object.values(bulk.insertedIds)) {
+        //   carTrackers.push({
+        //     updateOne: {
+        //       filter: {
+        //         participant,
+        //       },
+        //       update: {
+
+        //       }
+        //     }
+        //   });
+        // }
+        // await History.bulkWrite(carTrackers);
       }
     }
     console.log('Done');
-
-    const fixCarLocations = false;
-    if (fixCarLocations && user) {
-      console.log('Fixing car locations');
-      const locationByID: any = {};
-      const historiesToUpdate: any[] = [];
-      const carsToUpdate: any[] = [];
-      const { team } = user;
-      await Venue.find({
-        team,
-        active: true,
-        deleted: false
-      })
-        .cursor()
-        .eachAsync(
-          async (venue) => {
-            return new Promise(async (resolve, reject) => {
-              try {
-                locationByID[venue._id.toString()] = {
-                  _id: venue._id,
-                  name: venue.name,
-                  company: venue.company,
-                  team: venue.team
-                };
-                resolve({});
-              } catch (error) {
-                console.log(error);
-                reject();
-              }
-            });
-          },
-          { parallel: 1 }
-        );
-
-      const carCursor = Car.aggregate([
-        {
-          $match: {
-            event: {
-              $exists: true
-            },
-            team,
-            vin: {
-              $in: vins
-            }
-          }
-        },
-        {
-          $lookup: {
-            from: 'histories',
-            localField: '_id',
-            foreignField: 'car',
-            as: 'events'
-          }
-        },
-        {
-          $project: {
-            events: {
-              $filter: {
-                input: '$events',
-                as: 'event',
-                cond: {
-                  $in: ['$$event.status', ['available', 'inTransit', 'sale']]
-                }
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            'events._id': 1,
-            'events.to': 1,
-            'events.executedAt': 1
-          }
-        }
-      ])
-        .allowDiskUse(true)
-        .cursor()
-
-      await carCursor.eachAsync(
-        async (car: any) => {
-          return new Promise((resolve, reject) => {
-            console.log('carsToUpdate', carsToUpdate.length);
-            console.log('historiesToUpdate', historiesToUpdate.length);
-            try {
-              let currentLocation: Partial<ICarLocation> = {};
-              let lastEventID: any;
-              const { events } = car;
-              const sortedEvents = events.sort((a: any, b: any) => {
-                return (
-                  moment(a.executedAt).unix() - moment(b.executedAt).unix()
-                );
-              });
-              for (const event of sortedEvents) {
-                if (
-                  locationByID.hasOwnProperty(event?.to) &&
-                  (!currentLocation.hasOwnProperty('venue') ||
-                    currentLocation?.venue?._id?.toString() !==
-                      event.to.toString())
-                ) {
-                  currentLocation = {
-                    venue: locationByID[event.to],
-                    checkedDate: event.executedAt
-                  };
-                  lastEventID = event._id;
-                  historiesToUpdate.push({
-                    updateOne: {
-                      filter: { _id: event._id },
-                      update: {
-                        $set: {
-                          changeLocation: true
-                        }
-                      }
-                    }
-                  });
-                }
-              }
-              if (currentLocation) {
-                carsToUpdate.push({
-                  updateOne: {
-                    filter: { _id: car._id },
-                    update: {
-                      $set: {
-                        event: lastEventID,
-                        'meta.location': currentLocation
-                      }
-                    }
-                  }
-                });
-              }
-              // if(carsToUpdate.length > 2){
-              //   console.log('---------');
-              //   // console.log(sortedEvents);
-              //   console.log(carsToUpdate[carsToUpdate.length-1].updateOne.update);
-              // }
-
-              // if(historiesToUpdate.length < 3){
-              //   console.log(historiesToUpdate[historiesToUpdate.length -1].updateOne.update);
-              // }
-              resolve({});
-            } catch (error) {
-              console.log(error);
-              reject(error);
-            }
-          });
-        },
-        { parallel: 100 }
-      );
-
-      await History.bulkWrite(historiesToUpdate);
-      await Car.bulkWrite(carsToUpdate);
-      console.log('termino');
-    }
 
     process.exit(1);
   } catch (e) {
