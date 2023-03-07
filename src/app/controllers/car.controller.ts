@@ -244,15 +244,14 @@ class CarController {
               team,
               status: ChoicesStatusInventory.inProcess
             }, {
-              'cars.car': true,
-              'cars.status': true,
-              'cars.venue': true
+              'cars': true,
             }).populate([{
               path: 'cars',
               populate: [{
                 path: 'venue',
                 select: ['name']
-              }]
+              }],
+              select: ['car', 'status', 'venue']
             }]);
             if (inventoriedCar) {
               const carsInInventory: any[] = [];
