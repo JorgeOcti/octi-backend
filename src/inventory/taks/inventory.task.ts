@@ -195,8 +195,8 @@ class InventoryQueue {
                   vin: car.vin
                 },
                 inventory: {
-                  _id: inventory._id,
-                  name: inventory.name
+                  _id: inventoryID,
+                  name: job.data.name
                 }
               });
             } catch (error) {
