@@ -20,9 +20,7 @@ import {
 import History from '../../app/models/history.model';
 import { StatusHistory } from '../../app/models/history.types';
 import TeamSetting from '../../app/models/teamSetting.model';
-import {
-  default as User
-} from '../../app/models/user.model';
+import { default as User } from '../../app/models/user.model';
 import {
   default as Venue,
   default as VenueModel,
@@ -78,6 +76,7 @@ class InventoryController {
     this.dashboard = this.dashboard.bind(this);
     this.currentStock = this.currentStock.bind(this);
     this.loadStock = this.loadStock.bind(this);
+    this.checkExistVenue = this.checkExistVenue.bind(this);
     this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
   }
 
@@ -142,16 +141,64 @@ class InventoryController {
         _id: inventoryCarId
       }).populate({ path: 'files' });
       if (!inventoryCar) {
-        res.status(404).json({ message: 'No encomtrado' });
+        return res.status(404).json({ message: 'No encomtrado' });
       } else {
-        res.json(inventoryCar);
+        return res.json(inventoryCar);
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).send(e);
-      }
+      return res.status(500).send(e);
     }
+  }
+
+  private async checkExistVenue(
+    name: string,
+    team: any,
+    company: any
+  ): Promise<IVenueModel> {
+    const venueRegExp = new RegExp(`^${name.trim()}$`, 'i');
+    let venue: IVenueModel | null = await Venue.findOne({
+      team,
+      company,
+      $or: [
+        {
+          name: venueRegExp
+        },
+        {
+          name: { $regex: venueRegExp }
+        },
+        {
+          name: name
+        }
+      ]
+    });
+    // if you are not in the company, try in the team
+    if (!venue) {
+      venue = await Venue.findOne({
+        team,
+        $or: [
+          {
+            name: venueRegExp
+          },
+          {
+            name: { $regex: venueRegExp }
+          },
+          {
+            name: name
+          }
+        ]
+      });
+    }
+    // if you are not in the company or in the team, it will be created
+    if (!venue) {
+      venue = new Venue({
+        name: name.trim(),
+        team,
+        company
+      });
+      await venue.save();
+    }
+    return venue;
   }
 
   public async create(req: IRequest, res: Response) {
@@ -159,11 +206,45 @@ class InventoryController {
     let { carsByVenue, notification } = req.body;
     carsByVenue = JSON.parse(carsByVenue);
     notification = notification === 'true';
-    console.log(JSON.stringify(req.user));
     try {
+      const { company, team } = req.user;
+
+      const venuesIDs: string[] = await Promise.all(
+        carsByVenue.map(async (venue: any) => {
+          const { name } = venue;
+          const currentVenue = await this.checkExistVenue(name, team, company);
+          return currentVenue._id.toString();
+        })
+      );
+      const inventory = new Inventory({
+        name,
+        company: company._id,
+        team: team._id,
+        venues: venuesIDs,
+        createdBy: req.user._id,
+        status: ChoicesStatusInventory.pending,
+        settings: {
+          photos: {
+            manual: manualPhoto,
+            report: reportPhoto
+          }
+        }
+      });
+      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+      if (file) {
+        file.team = team;
+        await inventory.attach('file', file);
+      }
+      const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
+      if (backup) {
+        backup.team = team;
+        await inventory.attach('backup', backup);
+      }
+      await inventory.save();
       inventoryQueue.queue.add(
         'create',
         {
+          inventoryID: inventory._id,
           userID: req.user._id,
           name,
           manualPhoto,
@@ -454,22 +535,25 @@ class InventoryController {
         },
         {
           $match: {
-            $or:[{
-              'cars.venue': {
-                $in: venuesPermissions
+            $or: [
+              {
+                'cars.venue': {
+                  $in: venuesPermissions
+                },
+                'cars.status': {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
+                }
               },
-              'cars.status': {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
-                ]
+              {
+                createdBy: req.user._id
               }
-            }, {
-              createdBy: req.user._id
-            }]
+            ]
           }
         },
         {
@@ -975,7 +1059,7 @@ class InventoryController {
             logger.error(
               `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
             );
-            res.status(200).json({
+            return res.status(200).json({
               message: 'Este vehículo ya ha sido inventariado',
               status: 200
             });
@@ -1024,7 +1108,7 @@ class InventoryController {
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
-              res.status(200).json({
+              return res.status(200).json({
                 vin: car.vin,
                 status: 200
               });
@@ -1035,7 +1119,7 @@ class InventoryController {
               logger.error(
                 `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
               );
-              res.status(400).json({
+              return res.status(400).json({
                 message: 'Este vehículo no se encuentra en el inventario.',
                 status: 400
               });
@@ -1049,7 +1133,7 @@ class InventoryController {
           logger.error(
             `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
           );
-          res.status(400).json({
+          return res.status(400).json({
             message: 'Este vehículo no se encuentra en el inventario.',
             status: 400
           });
@@ -1060,7 +1144,7 @@ class InventoryController {
           `apiFoundCar: Este inventario no existe o ya no se encuentra activo.`
         );
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-        res.status(404).json({
+        return res.status(404).json({
           message: 'Este inventario no existe o ya no se encuentra activo.',
           status: 404
         });
@@ -1075,7 +1159,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: e,
         status: 400
       });
@@ -1111,14 +1195,14 @@ class InventoryController {
         socket().to(`stock-${team}`).emit('REFRESH', {
           update: true
         });
-        res.json({
+        return res.json({
           message: 'Se ha finalizado correctamente el inventario.',
           status: 200
         });
       } else {
         logger.error(`finishInventory: No se ha encontrado el inventario`);
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-        res.status(400).json({
+        return res.status(400).json({
           message: 'No se ha encontrado el inventario',
           status: 400
         });
@@ -1131,7 +1215,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
       });
@@ -1160,14 +1244,14 @@ class InventoryController {
         socket().to(`stock-${team}`).emit('REFRESH', {
           update: true
         });
-        res.json({
+        return res.json({
           message: 'Se ha eliminado correctamente el inventario.',
           status: 200
         });
       } else {
         logger.error(`deleteInventory: No se ha encontrado el inventario`);
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-        res.status(400).json({
+        return res.status(400).json({
           message: 'No se ha encontrado el inventario',
           status: 400
         });
@@ -1223,7 +1307,7 @@ class InventoryController {
           },
           comment
         });
-      res.status(200).json({
+      return res.status(200).json({
         message: 'Comentario agregado satisfactoriamente.',
         status: 200
       });
@@ -1235,7 +1319,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
       });
@@ -1519,7 +1603,7 @@ class InventoryController {
         socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
           update: true
         });
-        res.json({
+        return res.json({
           message: 'Se ha generado el reporte correctamente.',
           vin,
           status: 200
@@ -1529,7 +1613,7 @@ class InventoryController {
           `reportCar: Este inventario ya no se encuentra disponible.`
         );
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-        res.status(404).json({
+        return res.status(404).json({
           message: 'Este inventario ya no se encuentra disponible.',
           status: 404
         });
@@ -1586,7 +1670,7 @@ class InventoryController {
             update: true
           });
         }
-        res.json({
+        return res.json({
           message: 'Opción procesada correctamente.',
           status: 200
         });
@@ -1633,12 +1717,12 @@ class InventoryController {
             socket().to(`inventory-list-${team}`).emit('REFRESH', {
               update: true
             });
-            res.json({
-              message: 'Opción procesada correctamente.',
-              status: 200
-            });
           }
         }
+        return res.json({
+          message: 'Opción procesada correctamente.',
+          status: 200
+        });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -1648,7 +1732,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(500).json({
+      return res.status(500).json({
         message: e,
         status: 500
       });
@@ -1675,7 +1759,7 @@ class InventoryController {
             settings: true
           }
         ).lean();
-        res.json({
+        return res.json({
           data: inventories,
           status: 200
         });
@@ -1683,7 +1767,7 @@ class InventoryController {
         logger.error(`apiList: Usuario no encontrado`);
         logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
         /* istanbul ignore next */
-        res.status(400).json({
+        return res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
@@ -1696,7 +1780,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: e,
         status: 400
       });
@@ -2183,7 +2267,7 @@ class InventoryController {
             : null
         };
 
-        res.json({
+        return res.json({
           summary: response,
           inventorySettings: teamSettings!.inventory,
           labels,
@@ -2194,7 +2278,7 @@ class InventoryController {
         });
       } else {
         console.log('inventory', inventory);
-        res.status(404).json({
+        return res.status(404).json({
           message: 'Inventario no encontrado',
           status: 404
         });
@@ -2205,9 +2289,14 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
-      logger.error(e);
+      logger.error(e, true, {
+        user: req.user,
+        extra: {
+          body: req.body
+        }
+      });
       /* istanbul ignore next */
-      res.status(400).json({
+      return res.status(400).json({
         message: e,
         status: 400
       });
