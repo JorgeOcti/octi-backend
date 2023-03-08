@@ -166,6 +166,9 @@ class InventoryQueue {
             status: ChoicesStatusCar.active
           });
         }
+
+        await Car.insertMany(createCars);
+
         carCursor = Car.find({
           team: team._id,
           vin: {
