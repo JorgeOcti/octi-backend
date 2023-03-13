@@ -9,6 +9,7 @@ import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
 import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
+import { Dictionary } from 'lodash';
 
 export interface IVenuesState {
   venues: IVenue[];
@@ -21,6 +22,7 @@ export interface IVenuesState {
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
   searchText: string;
+  filters: Dictionary<string>
   pagination: {
     count: number;
     page: number;
@@ -72,6 +74,24 @@ export function changePageAction(page: number): IChangePage {
     type: '/VENUES/CHANGE_PAGE',
     payload: {
       page
+    }
+  };
+}
+
+interface IChangeFilter {
+  type: '/VENUES/CHANGE_FILTER';
+  payload: {
+    filter: string;
+    value: string
+  };
+}
+
+export function changeFilterAction(filter: string, value: string): IChangeFilter {
+  return {
+    type: '/VENUES/CHANGE_FILTER',
+    payload: {
+      filter,
+      value
     }
   };
 }
@@ -207,7 +227,7 @@ export function getVenuesAction(nextPage: number) {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => { venues: IVenuesState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    const { searchText } = state.venues;
+    const { searchText, filters } = state.venues;
     if (nextPage && nextPage !== state.venues.pagination.page) {
       dispatch(isLoadingAction(true));
     }
@@ -231,7 +251,7 @@ export function getVenuesAction(nextPage: number) {
       .catch((err: AxiosError): void => {
         api.errorHandler(err);
       });
-    api.getVenues({ page, search: searchText })
+    api.getVenues({ page, search: searchText, company: filters.company })
       .then((response: AxiosResponse) => {
         dispatch(loadVenuesAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
@@ -291,7 +311,7 @@ export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
 export function updateVenueAction() {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => { venues: IVenuesState }) => {
     const state = getState();
-    const { tempVenue } = state.venues;
+    const { tempVenue, filters } = state.venues;
     const $venue = $(`#venue-${tempVenue._id}`);
     const api: ApiService = new ApiService();
     api.updateVenue(tempVenue)
@@ -402,6 +422,7 @@ export type VenueReduxAction =
   IChangeSearchVenue |
   IChangeTempVenue |
   IChangeVenue |
+  IChangeFilter |
   ILoadCompaniesVenue |
   ILoadAllVenue |
   ILoadCarriers |

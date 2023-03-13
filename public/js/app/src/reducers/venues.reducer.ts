@@ -27,6 +27,9 @@ const initialState: IVenuesState = {
     shippingCarriers: [],
     receptionCarriers: []
   },
+  filters: {
+    company: ''
+  },
   pagination: {
     count: 0,
     page: 1,
@@ -111,6 +114,13 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           count: state.pagination.count - 1
         }
       };
+    case '/VENUES/CHANGE_FILTER':
+      return {
+        ...state,
+        filters: {
+          [action.payload.filter]: action.payload.value
+        }
+      }
     case '/VENUES/LOAD_VENUES':
       return {
         ...state,

@@ -257,14 +257,14 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                       Transportistas de envio <i
                       className="fa fa-info-circle text-black"
                       data-toggle="tooltip" data-placement="top"
-                      title="Usuarios asignados a esta sucursal, pueden enviar de estos transportista."
+                      title="Usuarios asignados a esta sucursal pueden enviar de estos transportista."
                     />
                     </label>
                     <BootstrapSelect
                       noneSelectedText="Seleccione"
                       displayItems={2}
                       search={true}
-                      selectedText="sucursales seleccionadas."
+                      selectedText="transportistas seleccionadas."
                       selected={tempVenue.shippingCarriers.map((carrier) => carrier._id)}
                       allOption={true}
                       selectAll={(value: boolean) => this.handleSelectCarriers('shippingCarriers', true, value)}
@@ -308,14 +308,14 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                       Transportistas de recepción <i
                       className="fa fa-info-circle text-black"
                       data-toggle="tooltip" data-placement="top"
-                      title="Usuarios asignados a esta sucursal, pueden receocionar de estos transportista."
+                      title="Usuarios asignados a esta sucursal pueden recepcionar de estos transportistas."
                     />
                     </label>
                     <BootstrapSelect
                       noneSelectedText="Seleccione"
                       displayItems={2}
                       search={true}
-                      selectedText="sucursales seleccionadas."
+                      selectedText="transportistas seleccionadas."
                       selected={tempVenue.receptionCarriers.map((carrier) => carrier._id)}
                       allOption={true}
                       selectAll={(value: boolean) => this.handleSelectCarriers('receptionCarriers', true, value)}

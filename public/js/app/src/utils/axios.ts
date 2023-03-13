@@ -198,9 +198,9 @@ export default class ApiService {
     );
   }
 
-  public getVenues({page, pageSize, noPopulate, filted, search}:{ page: number, pageSize?: number, noPopulate?: boolean, filted?: boolean, search?:string }): AxiosPromise {
+  public getVenues({page, pageSize, noPopulate, company, filted, search}:{ page: number, company?: string, pageSize?: number, noPopulate?: boolean, filted?: boolean, search?:string, }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
+      `/api/admin/venues?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${company ? `&company=${company}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
   public getCompanyVenues(): AxiosPromise {

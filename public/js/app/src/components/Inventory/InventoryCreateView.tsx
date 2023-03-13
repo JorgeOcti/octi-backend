@@ -613,8 +613,10 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 // cars.push(car);
               } else {
                 /* tslint:disable:no-console */
+                // swal!('Error en archivo de configuracion', `Revise la linea ${item.__rowNum__}`, 'error');
                 console.log('Error en linea:');
                 console.log(item.__rowNum__);
+                return;
               }
             });
             const carsByVenueArray: any[] = [];
