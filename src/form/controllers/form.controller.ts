@@ -801,9 +801,6 @@ class FormController {
       } else if (carId) {
         car = await Car.findOne({_id: carId})
       }
-      if (carId) {
-        car = await Car.findOne({_id: carId})
-      }
 
       if (car || transmittal) {
         const form = await this.getFormWithScale({
