@@ -256,6 +256,12 @@ appRouter.put('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserCont
 //create cars
 appRouter.post('/api/v1/cars/', Middlewares.isJWTAuthenticated, CarController.createCar);
 
+// Car history
+appRouter.get('/api/v1/cars/:id', Middlewares.isJWTAuthenticated, CarController.apiCarDetail);
+
+//Participant detail
+appRouter.get('/api/v1/participant/:id/', Middlewares.isJWTAuthenticated, CarController.apiParticipantDetail);
+
 // Get User Pusher Token
 appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserController.getPusherToken);
 
