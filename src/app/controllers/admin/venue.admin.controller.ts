@@ -149,6 +149,7 @@ class AdminVenueController {
         noPopulate: any;
         filted: any;
         search: string;
+        company: string;
       };
     // paginate options
     const options: PaginateOptions = {
