@@ -1297,7 +1297,8 @@ class CarController {
           sendTo: true,
           shippingVenueText: true,
           conciliationImages: true,
-          createdAt: true
+          createdAt: true,
+          kind: true,
         })
         .populate([{
           path: 'carrierBy',
