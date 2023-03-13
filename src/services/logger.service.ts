@@ -1,6 +1,10 @@
 import * as moment from 'moment';
+import * as Sentry from '@sentry/node';
 // import * as Raven from 'raven';
 import GeneralUtils from '../utils/general.utils';
+import type {
+  CaptureContext,
+} from '@sentry/types';
 // import * as path from 'path';
 
 export interface Icolors {
@@ -19,7 +23,6 @@ export interface Icolors {
 // });
 
 class LoggerService {
-
   public colors: Icolors;
   protected message: string;
   protected env: string;
@@ -55,16 +58,32 @@ class LoggerService {
 
   /* istanbul ignore next */
   public debug(message: string): void {
-    this.logger('DEBUG', 'production', message, this.colors.brightBlack, this.colors.brightBlack);
-    this.logger('DEBUG', 'development', message, this.colors.brightBlack, this.colors.brightBlack);
+    this.logger(
+      'DEBUG',
+      'production',
+      message,
+      this.colors.brightBlack,
+      this.colors.brightBlack
+    );
+    this.logger(
+      'DEBUG',
+      'development',
+      message,
+      this.colors.brightBlack,
+      this.colors.brightBlack
+    );
   }
 
   /* istanbul ignore next */
-  public error(message: string, propagate?: boolean): void {
+  public error(
+    message: string,
+    propagate?: boolean,
+    context?: CaptureContext
+  ): void {
     this.logger('ERROR', 'production', message, this.colors.brighRed);
     this.logger('ERROR', 'development', message, this.colors.brighRed);
     if (propagate) {
-      // Raven.captureException(new Error(message));
+      Sentry.captureException(message, context);
     }
   }
 
@@ -74,14 +93,20 @@ class LoggerService {
     // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
     if (process.env.ENV === 'production') {
       // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
-      return moment().format('x')
+      return moment().format('x');
     } else {
-       return moment().format('x')
+      return moment().format('x');
     }
   }
 
   /* istanbul ignore next */
-  private logger(type: string, env: string, message: string, color: string, textColor?: string) {
+  private logger(
+    type: string,
+    env: string,
+    message: string,
+    color: string,
+    textColor?: string
+  ) {
     if (this.env === env) {
       this.message = message;
       if (!textColor) {
@@ -89,9 +114,17 @@ class LoggerService {
       }
       if (process.env.ENV === 'production') {
         // console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
-        console.log(`${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${this.colors.reset}`);
+        console.log(
+          `${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${
+            this.colors.reset
+          }`
+        );
       } else {
-        console.log(`${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${this.colors.reset}`);
+        console.log(
+          `${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${
+            this.colors.reset
+          }`
+        );
       }
       // this.writeLog(type);
     }
@@ -99,7 +132,7 @@ class LoggerService {
 
   /* istanbul ignore next */
   // private writeLog(type: string) {
-    // accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
+  // accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
   // }
 }
 

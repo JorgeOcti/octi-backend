@@ -618,6 +618,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
               }
             });
             const carsByVenueArray: any[] = [];
+            const venuesNotFound: string[] = [];
             for (const cv in carsByVenue) {
               if (carsByVenue.hasOwnProperty(cv)) {
                 const existVenue = venues.some((venue: any) => {
@@ -625,6 +626,9 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
                   );
                 });
+                if (!existVenue && !venuesNotFound.includes(cv.toLocaleUpperCase())) {
+                  venuesNotFound.push(cv.toLocaleUpperCase());
+                }
                 carsByVenueArray.push({
                   name: cv.trim(),
                   warningNoExist: !existVenue,
@@ -638,11 +642,18 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 });
               }
             }
-            this.setState({
-              file,
-              carsByVenue: carsByVenueArray,
-              loadingSettings: false
-            });
+            if (venuesNotFound.length > 0) {
+              swal!('Sucursales no configuradas', `No se encontraron las siguientes sucursales:\n\n - ${venuesNotFound.join("\n- ")}\n\n Estas sucursales no existen o no tienes acceso a ellas.\n\nVuelve a subir el archivo con las sucursales correctas, o solicita la configuración de una nueva sucursal o acceso a una existente escribiéndonos a  soporte@osacontrol.com`, 'error');
+              this.setState({
+                loadingSettings: false
+              });
+            } else {
+              this.setState({
+                file,
+                carsByVenue: carsByVenueArray,
+                loadingSettings: false
+              });
+            }
           } else {
             swal!(
               'Importador de configuración',
@@ -776,7 +787,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     this.setState({ loading: true });
     const api: ApiService = new ApiService();
     api
-      .getVenues({ page: 1, pageSize: 200, noPopulate: true })
+      .getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true })
       .then((response: AxiosResponse): void => {
         this.setState({
           venues: response.data.results,

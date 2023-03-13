@@ -29,6 +29,8 @@ interface IInventoryQueueData {
   reportPhoto: boolean;
   notification: boolean;
   carsByVenue: any[];
+  venuesIDs: string[];
+  inventoryID: any;
 }
 
 class InventoryQueue {
@@ -57,7 +59,10 @@ class InventoryQueue {
     job: Queue.Job<IInventoryQueueData>,
     done: Queue.DoneCallback
   ) {
-    const { userID, name, manualPhoto, reportPhoto } = job.data;
+    const { userID, venuesIDs, inventoryID } = job.data;
+    logger.info(
+      `InventoryQueue.processCreateInventory userID: ${userID}`
+    );
     let { carsByVenue, notification } = job.data;
     let user = (await User.findById(userID).populate([
       { path: 'company' },
@@ -67,30 +72,9 @@ class InventoryQueue {
       const { company, team } = user;
       const activityHistories: IActivityHistoryInterface[] = [];
 
-      const venuesIDs: string[] = await Promise.all(
-        carsByVenue.map(async (venue: any) => {
-          const { name } = venue;
-          const currentVenue = await this.checkExistVenue(name, team, company);
-          return currentVenue._id.toString();
-        })
-      );
       let refresh = moment();
 
-      const inventory = new Inventory({
-        name,
-        company: company._id,
-        team: team._id,
-        venues: venuesIDs,
-        createdBy: user!._id,
-        status: ChoicesStatusInventory.pending,
-        settings: {
-          photos: {
-            manual: manualPhoto,
-            report: reportPhoto
-          }
-        }
-      });
-      await inventory.save();
+      const inventory = await Inventory.findById(inventoryID);
       socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
         update: true
       });
@@ -127,7 +111,7 @@ class InventoryQueue {
           async (car) => {
             try {
               inventoryCars.push({
-                inventory: inventory._id,
+                inventory: inventory!._id,
                 venue: currentVenue._id,
                 car: car._id,
                 comments: [],
@@ -143,8 +127,8 @@ class InventoryQueue {
                   vin: car.vin
                 },
                 inventory: {
-                  _id: inventory._id,
-                  name: inventory.name
+                  _id: inventoryID,
+                  name: job.data.name
                 }
               });
               vinsCreated.push(car.vin);
@@ -161,7 +145,7 @@ class InventoryQueue {
               console.log(error);
             }
           },
-          { parallel: 20 }
+          { parallel: 1 }
         );
 
         const createCars = [];
@@ -182,6 +166,9 @@ class InventoryQueue {
             status: ChoicesStatusCar.active
           });
         }
+
+        await Car.insertMany(createCars);
+
         carCursor = Car.find({
           team: team._id,
           vin: {
@@ -192,7 +179,7 @@ class InventoryQueue {
           async (car) => {
             try {
               inventoryCars.push({
-                inventory: inventory._id,
+                inventory: inventory!._id,
                 venue: currentVenue._id,
                 car: car._id,
                 comments: [],
@@ -208,15 +195,15 @@ class InventoryQueue {
                   vin: car.vin
                 },
                 inventory: {
-                  _id: inventory._id,
-                  name: inventory.name
+                  _id: inventoryID,
+                  name: job.data.name
                 }
               });
             } catch (error) {
               console.log(error);
             }
           },
-          { parallel: 20 }
+          { parallel: 1 }
         );
         console.log('inventoryCars', inventoryCars.length);
         await InventoryCar.insertMany(inventoryCars);
@@ -232,7 +219,7 @@ class InventoryQueue {
       }
 
       // mongoose.set('debug', true);
-      await Inventory.findByIdAndUpdate(inventory._id, {
+      await Inventory.findByIdAndUpdate(inventoryID, {
         status: ChoicesStatusInventory.inProcess
       });
       socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
@@ -246,13 +233,13 @@ class InventoryQueue {
         await ActivityHistory.insertMany(activityHistories),
         await this.sendNotification(
           notification,
-          inventory,
+          inventoryID,
           user,
           venuesIDs,
           team
         )
       ]);
-      this.queue.addBulk(updateCars);
+      await this.queue.addBulk(updateCars);
       // mongoose.set('debug', false);
       done(null, {});
     } catch (e) {
