@@ -60,9 +60,7 @@ class InventoryQueue {
     done: Queue.DoneCallback
   ) {
     const { userID, venuesIDs, inventoryID } = job.data;
-    logger.info(
-      `InventoryQueue.processCreateInventory userID: ${userID}`
-    );
+    logger.info(`InventoryQueue.processCreateInventory userID: ${userID}`);
     let { carsByVenue, notification } = job.data;
     let user = (await User.findById(userID).populate([
       { path: 'company' },
@@ -83,6 +81,7 @@ class InventoryQueue {
       });
 
       const updateCars: any[] = [];
+      let totalInventoryCars = 0;
       for (const venue of carsByVenue) {
         const inventoryCars: Partial<IInventoryCar>[] = [];
         const { name } = venue;
@@ -91,6 +90,9 @@ class InventoryQueue {
         let vins: string[] = venue?.cars
           ?.filter((car: Partial<ICar>) => car.vin?.length)
           .map((car: Partial<ICar>) => car?.vin);
+
+        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vins: ${vins.length}}`)
+
         const dataByVIN = venue?.cars.reduce((acc: any, cur: any) => {
           return {
             ...acc,
@@ -105,10 +107,10 @@ class InventoryQueue {
           }
         }).cursor();
 
-        const vinsCreated: string[] = [];
+        const vinsLoaded: string[] = [];
 
         await carCursor.eachAsync(
-          async (car) => {
+          (car) => {
             try {
               inventoryCars.push({
                 inventory: inventory!._id,
@@ -131,7 +133,7 @@ class InventoryQueue {
                   name: job.data.name
                 }
               });
-              vinsCreated.push(car.vin);
+              vinsLoaded.push(car.vin);
               vins = vins.filter((vin) => vin !== car.vin);
               updateCars.push({
                 name: 'updateCar',
@@ -144,9 +146,12 @@ class InventoryQueue {
             } catch (error) {
               console.log(error);
             }
+            return;
           },
           { parallel: 1 }
         );
+        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
+        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vinsLoaded: ${vinsLoaded.length}}`)
 
         const createCars = [];
         for (const vin of vins) {
@@ -166,6 +171,7 @@ class InventoryQueue {
             status: ChoicesStatusCar.active
           });
         }
+        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, createCars: ${createCars.length}}`)
 
         await Car.insertMany(createCars);
 
@@ -175,8 +181,9 @@ class InventoryQueue {
             $in: vins
           }
         }).cursor();
+
         await carCursor.eachAsync(
-          async (car) => {
+          (car) => {
             try {
               inventoryCars.push({
                 inventory: inventory!._id,
@@ -202,11 +209,15 @@ class InventoryQueue {
             } catch (error) {
               console.log(error);
             }
+            return;
           },
           { parallel: 1 }
         );
-        console.log('inventoryCars', inventoryCars.length);
+        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
+
+        totalInventoryCars += inventoryCars.length;
         await InventoryCar.insertMany(inventoryCars);
+
         if (moment().isSameOrAfter(refresh)) {
           refresh = refresh.clone().add(3, 'seconds');
           socket().to(`inventory-list-${team._id.toString()}`).emit('REFRESH', {
@@ -217,6 +228,8 @@ class InventoryQueue {
           });
         }
       }
+
+      logger.info(`InventoryQueue.processCreateInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${totalInventoryCars}}`)
 
       // mongoose.set('debug', true);
       await Inventory.findByIdAndUpdate(inventoryID, {
@@ -422,16 +435,16 @@ class InventoryQueue {
             carToUpdate.patent = car.patent;
           }
           // mongoose.set('debug', true);
-          if (update) {
-            await carToUpdate.save();
-            logger.info(
-              `InventoryQueue.updateCar ${job.data.car.vin} updated.`
-            );
-          } else {
-            logger.info(
-              `InventoryQueue.updateCar ${job.data.car.vin} no updated`
-            );
-          }
+          // if (update) {
+          //   await carToUpdate.save();
+          //   logger.info(
+          //     `InventoryQueue.updateCar ${job.data.car.vin} updated.`
+          //   );
+          // } else {
+          //   logger.info(
+          //     `InventoryQueue.updateCar ${job.data.car.vin} no updated`
+          //   );
+          // }
           // mongoose.set('debug', false);
         }
         done(null, {});

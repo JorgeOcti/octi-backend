@@ -49,7 +49,7 @@
     "mime": "~1.6.0",
     "moment": "~2.29.4",
     "moment-timezone": "~0.5.40",
-    "mongoose": "~6.8.4",
+    "mongoose": "~6.10.3",
     "mongoose-aggregate-paginate-v2": "~1.0.6",
     "mongoose-crate": "git+https://github.com/gmunozc/mongoose-crate.git#master",
     "mongoose-crate-s3": "~1.2.0",
