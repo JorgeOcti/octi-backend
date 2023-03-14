@@ -40,7 +40,7 @@ async function updateVin2() {
     //     });
     //   });
     //   console.log(participant.hasDamages);
-    //   await Participant.update({_id: participant}, {$set: {hasDamages}});
+    //   await Participant.updateOne({_id: participant}, {$set: {hasDamages}});
     // } catch (error) {
     //   console.log(error);
     // }

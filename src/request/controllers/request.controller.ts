@@ -1459,7 +1459,7 @@ class RequestController {
           idRequest: item.request._id,
           item
         });
-        await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
+        await Request.updateOne({ _id: item.request._id }, { $set: { updatedAt: moment() } });
         const itemsInRequest = await RequestItem.find({ request: item.request._id }).countDocuments();
         if (!itemsInRequest) {
           await Request.deleteOne({ _id: item.request._id });
@@ -1591,7 +1591,9 @@ class RequestController {
           createdBy: req.user
         }).save();
         const item = await RequestItem.findOne({ _id: newItem._id }).populate(this.itemPopulate);
-        request.update({ $set: { updatedAt: moment() } });
+
+        await Request.updateOne({ _id: request._id }, { $set: { updatedAt: moment() } });
+
         socket().to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
           item
@@ -1756,7 +1758,7 @@ class RequestController {
           .populate(this.itemPopulate)
           .lean();
         if (requestItem) {
-          await Request.update({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
+          await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
           if (!cancelRequest) {
             socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
               idRequest: requestItem.request._id,

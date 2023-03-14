@@ -24,6 +24,7 @@ export interface ITransmittalItem {
   origin: IVenue | IVenueModel;
   revisions: IParticipant[] | IParticipantModel[];
   observation: string;
+  status: string;
   loadingDate: Date;
   arrivalDate: Date;
 }

@@ -312,7 +312,8 @@ class BillingQueue {
               /* istanbul ignore next */
               console.log(error);
             } else {
-              await invoice.update({ file: invoice.file });
+              invoice.file = invoice.file;
+              await invoice.save();
               this.sendEmail(invoice, company);
             }
           }

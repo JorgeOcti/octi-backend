@@ -30,36 +30,26 @@ export default class TransmittalItemServices {
     if (transmittalItem) {
       /* shipped */
       if (transmittalItem.transmittal.status === ChoicesStatusTransmittal.pending && moment(transmittalItem.car.shippingDate).isValid()) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.shipped
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.shipped
       }
       /* pending */
       else if (transmittalItem.transmittal.status === ChoicesStatusTransmittal.pending && moment(transmittalItem.loadingDate).isValid()) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.pending
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.pending
       }
       /* loaded */
       else if (
         transmittalItem.transmittal.status === ChoicesStatusTransmittal.pending && moment(transmittalItem.loadingDate).isValid() ||
         transmittalItem.transmittal.status === ChoicesStatusTransmittal.inTransit
       ) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.loaded
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.loaded
       }
       /* documented */
       else if (transmittalItem.transmittal.status === ChoicesStatusTransmittal.inTransit) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.documented
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.documented
       }
       /* arrived */
       else if (transmittalItem.transmittal.status === ChoicesStatusTransmittal.completed) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.arrived
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.arrived
       }
       /* received */
       else if (
@@ -67,12 +57,11 @@ export default class TransmittalItemServices {
         transmittalItem.transmittal.evidenceFullLoad.length &&
         moment(transmittalItem.transmittal.evidenceFullLoad[0].createdAt).isValid()
       ) {
-        await transmittalItem.update({
-          status: ChoicesStatusTransmittalItem.received
-        });
+        transmittalItem.status = ChoicesStatusTransmittalItem.received;
       } else {
         console.error('No valid status found');
       }
+      await transmittalItem.save();
     }
     return transmittalItem;
   }

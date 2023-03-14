@@ -1177,11 +1177,11 @@ class InventoryController {
     try {
       const inventory = await InventoryModel.findOne({ _id: id, team });
       if (inventory) {
-        await inventory.update({
-          status: ChoicesStatusInventory.finalized,
-          finalizedAt: new Date(),
-          finalizedBy: req.user._id
-        });
+        inventory.status = ChoicesStatusInventory.finalized;
+        inventory.finalizedAt = new Date();
+        inventory.finalizedBy = req.user._id;
+        await inventory.save();
+
         historyQueue.queue.add(
           'finishInventory',
           {
@@ -1275,7 +1275,7 @@ class InventoryController {
     const { inventory } = req.params;
     const { _id, comment } = req.body;
     try {
-      await InventoryCar.update(
+      await InventoryCar.updateOne(
         {
           inventory,
           _id
@@ -1649,7 +1649,7 @@ class InventoryController {
       if (label === 'deleted') {
         const inventoryCar = await InventoryCar.findById(car, { venue: true });
         if (inventoryCar) {
-          await InventoryCar.update(
+          await InventoryCar.updateOne(
             {
               _id: car,
               inventory: id
@@ -1684,7 +1684,7 @@ class InventoryController {
             venue: true
           });
           if (inventoryCar) {
-            await InventoryCar.update(
+            await InventoryCar.updateOne(
               {
                 _id: car,
                 inventory: id

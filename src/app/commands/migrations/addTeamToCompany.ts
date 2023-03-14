@@ -51,57 +51,57 @@ async function addTeamToCompany() {
         await company.save();
       }
       // assing teams
-      // await Car.update({company}, {team}, {multi: true});
+      // await Car.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('cars').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assing teams
-      // await Inventory.update({company}, {team}, {multi: true});
+      // await Inventory.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('inventories').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assing teams
-      // await Form.update({company}, {team}, {multi: true});
+      // await Form.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('forms').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assing participants
-      // await Participant.update({company}, {team}, {multi: true});
+      // await Participant.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('participants').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assing teams
-      // await Scale.update({company}, {team}, {multi: true});
+      // await Scale.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('scales').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assign Venues
-      // await User.update({company}, {team}, {multi: true});
+      // await User.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('users').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assign Venues
-      // await Venue.update({company}, {team}, {multi: true});
+      // await Venue.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('venues').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // assign alerts
-      // await Alert.update({company}, {team}, {multi: true});
+      // await Alert.updateMany({company}, {team}, {multi: true});
       await mongoose.connection.db.collection('alerts').updateMany(
         {company: company._id},
         {$set: {team: team._id}}
       );
       // fix venues
-      await User.update({deleted: {$exists: false}}, {deleted: false}, {multi: true});
+      await User.updateMany({deleted: {$exists: false}}, {deleted: false}, {multi: true});
       // fix companies
-      await Company.update({deleted: {$exists: false}}, {deleted: false}, {multi: true});
+      await Company.updateMany({deleted: {$exists: false}}, {deleted: false}, {multi: true});
     }
   } catch (e) {
     console.log('Ha ocurrido un error en addTeamToCompany');

@@ -149,25 +149,25 @@ async function asignClient() {
         for (const section of participant.sections) {
           for (const answer of section.answers) {
             if (answer.kindUpdate === 'participant.clientName') {
-              await Participant.update({ _id: participant._id }, {
+              await Participant.updateOne({ _id: participant._id }, {
                 $set: {
                   'deliveryInfo.name': answer.comment
                 }
               });
             } else if (answer.kindUpdate === 'participant.clientEmail') {
-              await Participant.update({ _id: participant._id }, {
+              await Participant.updateOne({ _id: participant._id }, {
                 $set: {
                   'deliveryInfo.email': answer.comment
                 }
               });
             } else if (answer.kindUpdate === 'participant.clientRut') {
-              await Participant.update({ _id: participant._id }, {
+              await Participant.updateOne({ _id: participant._id }, {
                 $set: {
                   'deliveryInfo.rut': answer.comment
                 }
               });
             } else if (answer.kindUpdate === 'participant.order') {
-              await Participant.update({ _id: participant._id }, {
+              await Participant.updateOne({ _id: participant._id }, {
                 $set: {
                   'deliveryInfo.order': answer.comment
                 }

@@ -1287,7 +1287,7 @@ class FormController {
 
             // associate file to participant
             if (allImages.length) {
-              await ParticipantFile.update(
+              await ParticipantFile.updateOne(
                 {
                   _id: { $in: allImages }
                 },

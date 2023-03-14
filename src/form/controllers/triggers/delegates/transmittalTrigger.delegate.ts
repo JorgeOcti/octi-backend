@@ -31,7 +31,7 @@ export default class TransmittalTriggerDelegate extends NullTriggerDelegate {
         }}]);
 
       for (const transmittalItem of transmittalItems){
-        await TransmittalItem.update({_id: transmittalItem._id}, {$set: {arrivalDate: Date.now()}})
+        await TransmittalItem.updateOne({_id: transmittalItem._id}, {$set: {arrivalDate: Date.now()}})
 
         let allItems = await TransmittalItem.count({
           transmittal: transmittalItem.transmittal,
@@ -39,7 +39,7 @@ export default class TransmittalTriggerDelegate extends NullTriggerDelegate {
         });
 
         if (allItems == 0){
-          await Transmittal.update({
+          await Transmittal.updateOne({
             _id: transmittalItem.transmittal},
             { $set: { status:  ChoicesStatusTransmittal.completed_by_reception}
           })

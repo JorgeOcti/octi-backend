@@ -443,22 +443,22 @@ class AdminVenueController {
         }).save();
         // reverse assing send to and reveive from
         const id = newVenue._id;
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $in: receiveFrom }, team, sendTo: { $ne: id } },
           { $push: { sendTo: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $nin: receiveFrom }, team, sendTo: id },
           { $pull: { sendTo: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $in: sendTo }, team, receiveFrom: { $ne: id } },
           { $push: { receiveFrom: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $nin: sendTo }, team, receiveFrom: id },
           { $pull: { receiveFrom: id } },
           { multi: true }
@@ -599,28 +599,28 @@ class AdminVenueController {
       ]);
       if (venue) {
         // fix the "company" to users in this venue
-        await User.update(
+        await User.updateMany(
           { venue: id },
           { company: venue.company._id },
           { multi: true }
         );
         // reverse assing send to and reveive from
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $in: receiveFrom }, team, sendTo: { $ne: id } },
           { $push: { sendTo: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $nin: receiveFrom }, team, sendTo: id },
           { $pull: { sendTo: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $in: sendTo }, team, receiveFrom: { $ne: id } },
           { $push: { receiveFrom: id } },
           { multi: true }
         );
-        await Venue.update(
+        await Venue.updateMany(
           { _id: { $nin: sendTo }, team, receiveFrom: id },
           { $pull: { receiveFrom: id } },
           { multi: true }
@@ -711,14 +711,14 @@ class AdminVenueController {
                 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignadas.'
             });
           } else {
-            await venue.remove();
+            await Venue.deleteOne({ _id: venue._id });
             // clear venues
-            await Venue.update(
+            await Venue.updateMany(
               { team, sendTo: id },
               { $pull: { sendTo: id } },
               { multi: true }
             );
-            await Venue.update(
+            await Venue.updateMany(
               { team, receiveFrom: id },
               { $pull: { receiveFrom: id } },
               { multi: true }

@@ -81,11 +81,11 @@ async function fixDuplicatesCar() {
               firstCar = carByVIN;
             } else {
               await Promise.all([
-                InventoryCar.update({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
-                RequestItem.update({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
-                Participant.update({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
-                StockCar.update({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
-                Planning.update({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
+                InventoryCar.updateOne({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
+                RequestItem.updateOne({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
+                Participant.updateOne({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
+                StockCar.updateOne({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
+                Planning.updateOne({ car: carByVIN._id }, { $set: { car: firstCar._id } }),
                 Car.findByIdAndDelete(carByVIN._id)
               ]);
             }*/

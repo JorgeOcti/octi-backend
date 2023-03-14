@@ -694,7 +694,7 @@ class AdminUsersController {
 
           // Delete user from responsible where has not access
           let user_venues = user?.venuesAccess.map((v: IBaseVenue) => v._id).concat([user.venue._id]);
-          await Venue.update({ responsible: user?._id, _id: { $nin: user_venues } }, { $pull: { 'responsible': user?._id } });
+          await Venue.updateMany({ responsible: user?._id, _id: { $nin: user_venues } }, { $pull: { 'responsible': user?._id } });
 
           const response = {
             message: 'Usuario editado satisfactoriamente.',
@@ -736,7 +736,7 @@ class AdminUsersController {
       if (user) {
 
         // Delete user from venue responsible where has not access
-        await Venue.update({ responsible: user?._id }, { $pull: { 'responsible': user?._id } });
+        await Venue.updateMany({ responsible: user?._id }, { $pull: { 'responsible': user?._id } });
 
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',

@@ -29,7 +29,8 @@ async function updateArribalDate() {
     }]);
     for (const transmittalItem of transmittalItems) {
       if(transmittalItem?.transmittal?.revision){
-        await transmittalItem.update({arrivalDate: transmittalItem?.transmittal?.revision.createdAt})
+        transmittalItem.arrivalDate = transmittalItem?.transmittal?.revision.createdAt;
+        await transmittalItem.save();
       }
     }
   } catch (e) {

@@ -17,7 +17,8 @@ async function updateLoadingDate() {
     mongoose.set('debug', true);
     const transmittalItems = await TransmittalItem.find({});
     for (const transmittalItem of transmittalItems) {
-      await transmittalItem.update({loadingDate: (transmittalItem as any).createdAt})
+      transmittalItem.loadingDate = (transmittalItem as any).createdAt;
+      await transmittalItem.save();
     }
   } catch (e) {
     console.log(e);

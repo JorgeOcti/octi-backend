@@ -71,13 +71,13 @@ export async function up() {
           for (const section of participant.sections) {
             for (const answer of section.answers) {
               if (answer.kindUpdate === 'participant.clientSignature') {
-                await Participant.update({ _id: participant._id }, {
+                await Participant.updateOne({ _id: participant._id }, {
                   $set: {
                     'deliveryInfo.signature': answer.images
                   }
                 });
               } else if (answer.kindUpdate === 'participant.clientIdentifyCard') {
-                await Participant.update({ _id: participant._id }, {
+                await Participant.updateOne({ _id: participant._id }, {
                   $set: {
                     'deliveryInfo.identifyCard': answer.images
                   }
