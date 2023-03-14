@@ -1,13 +1,18 @@
-import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
-import {Dispatch} from 'redux';
+import {
+  AxiosError,
+  AxiosResponse,
+  CancelTokenSource,
+  default as Axios
+} from 'axios';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import {ICompany} from '../../../../../src/app/interfaces/company.interface';
-import {IForm} from '../../../../../src/form/interfaces/form.interface';
-import {IPermission} from '../../../../../src/billing/interfaces/permission.interface';
-import {IUser} from '../../../../../src/app/interfaces/user.interface';
-import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
+import { ICompany } from '../../../../../src/app/interfaces/company.interface';
+import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import { IPermission } from '../../../../../src/billing/interfaces/permission.interface';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
+import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
-import {showModal, statusFooterButttonsModal} from '../utils/common';
+import { showModal, statusFooterButttonsModal } from '../utils/common';
 import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
 
@@ -22,6 +27,9 @@ export interface IUsersState {
   tempUser: ITempUser;
   source: CancelTokenSource | null;
   searchText: string;
+  filters: {
+    venues: string[];
+  };
   pagination: {
     count: number;
     page: number;
@@ -76,6 +84,22 @@ export function changePageAction(page: number): IChangePage {
   };
 }
 
+interface IFilterVenues {
+  type: '/USERS/FILTER_VENUES';
+  payload: {
+    venues: string[];
+  };
+}
+
+export function filterVenuesAction(venues: string[]): IFilterVenues {
+  return {
+    type: '/USERS/FILTER_VENUES',
+    payload: {
+      venues
+    }
+  };
+}
+
 export interface ITempUser {
   _id?: string;
   firstName?: string;
@@ -100,8 +124,8 @@ interface IChangeTempUser {
   };
   meta: {
     debounce: {
-      time: number
-    }
+      time: number;
+    };
   };
 }
 
@@ -113,7 +137,6 @@ export function changeTempUserAction(user: ITempUser): IChangeTempUser {
     },
     meta: {
       debounce: {
-
         time: 100
       }
     }
@@ -125,11 +148,15 @@ interface ILoadUsers {
   payload: {
     users: any;
     count: number;
-    pages: number
+    pages: number;
   };
 }
 
-export function loadUserAction(users: any, count: number, pages: number): ILoadUsers {
+export function loadUserAction(
+  users: any,
+  count: number,
+  pages: number
+): ILoadUsers {
   return {
     type: '/USERS/LOAD_USERS',
     payload: {
@@ -157,12 +184,16 @@ export function changeUserAction(user: IUser): IChangeUser {
 }
 
 export function createUserAction() {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
     dispatch(isLoadingAction(true));
     const state = getState();
-    const {tempUser} = state.users;
+    const { tempUser } = state.users;
     const api: ApiService = new ApiService();
-    api.createUser(tempUser)
+    api
+      .createUser(tempUser)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -180,12 +211,16 @@ export function createUserAction() {
 }
 
 export function updateUserAction() {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
     // dispatch(isLoadingAction(true));
     const state = getState();
-    const {tempUser} = state.users;
+    const { tempUser } = state.users;
     const api: ApiService = new ApiService();
-    api.updateUser(tempUser)
+    api
+      .updateUser(tempUser)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -197,7 +232,9 @@ export function updateUserAction() {
         setTimeout(() => {
           $(`#user-${tempUser._id}`).removeClass('editing-item');
         }, 1000);
-        dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any);
+        dispatch(
+          getUsersAction(state.users.pagination.page, UserTypes.common) as any
+        );
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
@@ -209,10 +246,14 @@ export function updateUserAction() {
 }
 
 export function createIntegrationAction(user: any) {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
     dispatch(isLoadingAction(true));
     const api: ApiService = new ApiService();
-    api.createIntegration(user)
+    api
+      .createIntegration(user)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -230,11 +271,15 @@ export function createIntegrationAction(user: any) {
 }
 
 export function updateIntegrationAction(user: any) {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
     // dispatch(isLoadingAction(true));
     const api: ApiService = new ApiService();
     const state = getState();
-    api.updateIntegration(user)
+    api
+      .updateIntegration(user)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -246,7 +291,12 @@ export function updateIntegrationAction(user: any) {
         setTimeout(() => {
           $(`#user-${user._id}`).removeClass('editing-item');
         }, 1000);
-        dispatch(getUsersAction(state.users.pagination.page, UserTypes.integration) as any);
+        dispatch(
+          getUsersAction(
+            state.users.pagination.page,
+            UserTypes.integration
+          ) as any
+        );
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
@@ -296,7 +346,9 @@ interface ILoadPermissionsUser {
   };
 }
 
-export function loadPermissionsUserAction(permissions: IPermission[]): ILoadPermissionsUser {
+export function loadPermissionsUserAction(
+  permissions: IPermission[]
+): ILoadPermissionsUser {
   return {
     type: '/USERS/LOAD_PERMISSIONS',
     payload: {
@@ -328,7 +380,9 @@ interface ILoadCompaniesUser {
   };
 }
 
-export function loadCompaniesUserAction(companies: ICompany[]): ILoadCompaniesUser {
+export function loadCompaniesUserAction(
+  companies: ICompany[]
+): ILoadCompaniesUser {
   return {
     type: '/USERS/LOAD_COMPANIES',
     payload: {
@@ -344,7 +398,9 @@ interface ILoadChannelsUser {
   };
 }
 
-export function loadChannelsUserAction(channels: ISalesChannel[]): ILoadChannelsUser {
+export function loadChannelsUserAction(
+  channels: ISalesChannel[]
+): ILoadChannelsUser {
   return {
     type: '/USERS/LOAD_CHANNELS',
     payload: {
@@ -353,8 +409,15 @@ export function loadChannelsUserAction(channels: ISalesChannel[]): ILoadChannels
   };
 }
 
-export function getUsersAction(nextPage: number, type: UserTypes, search?: string) {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+export function getUsersAction(
+  nextPage: number,
+  type: UserTypes,
+  search?: string
+) {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
     const api: ApiService = new ApiService();
     const state = getState();
 
@@ -369,42 +432,57 @@ export function getUsersAction(nextPage: number, type: UserTypes, search?: strin
       dispatch(changePageAction(nextPage));
     }
     Axios.all([
-      api.getUsers({ page, type, search: state.users.searchText }),
+      api.getUsers({
+        page,
+        type,
+        venue: state.users.filters.venues.length
+          ? state.users.filters.venues[0]
+          : undefined,
+        search: state.users.searchText
+      }),
       api.getCompanies(1, 200),
       api.getVenues({ page: 1, pageSize: 200, noPopulate: false }),
       api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
       api.getForms(1, 200)
     ])
-      .then(Axios.spread((users, companies, venues, channeles, permissions, forms) => {
-        dispatch(loadUserAction(users.data.results, users.data.count, users.data.pages));
-        dispatch(loadCompaniesUserAction(companies.data.results));
-        dispatch(loadChannelsUserAction(channeles.data.results));
-        dispatch(loadVenuesUserAction(venues.data.results));
-        dispatch(loadPermissionsUserAction(permissions.data.results));
-        dispatch(loadFormsUserAction(forms.data.results));
-        dispatch(isLoadingAction(false));
-      }))
+      .then(
+        Axios.spread(
+          (users, companies, venues, channeles, permissions, forms) => {
+            dispatch(
+              loadUserAction(
+                users.data.results,
+                users.data.count,
+                users.data.pages
+              )
+            );
+            dispatch(loadCompaniesUserAction(companies.data.results));
+            dispatch(loadChannelsUserAction(channeles.data.results));
+            dispatch(loadVenuesUserAction(venues.data.results));
+            dispatch(loadPermissionsUserAction(permissions.data.results));
+            dispatch(loadFormsUserAction(forms.data.results));
+            dispatch(isLoadingAction(false));
+          }
+        )
+      )
       .catch((err: AxiosError): void => {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });
 
-
-
-      // .then((response: AxiosResponse): void => {
-      //   dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
-      //   dispatch(isLoadingAction(false));
-      // })
-      // .catch((err: AxiosError): void => {
-      //   // if the request is canceled
-      //   if (Axios.isCancel(err)) {
-      //     dispatch(isLoadingAction(true));
-      //   } else {
-      //     dispatch(isLoadingAction(false));
-      //     api.errorHandler(err);
-      //   }
-      // });
+    // .then((response: AxiosResponse): void => {
+    //   dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
+    //   dispatch(isLoadingAction(false));
+    // })
+    // .catch((err: AxiosError): void => {
+    //   // if the request is canceled
+    //   if (Axios.isCancel(err)) {
+    //     dispatch(isLoadingAction(true));
+    //   } else {
+    //     dispatch(isLoadingAction(false));
+    //     api.errorHandler(err);
+    //   }
+    // });
   };
 }
 
@@ -427,14 +505,14 @@ export function removeUserAction(id: string): IDeleteUser {
 export function deleteUserAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
-    api.deleteUser(id)
+    api
+      .deleteUser(id)
       .then((response: AxiosResponse): void => {
         swal!(response.data.message, {
           icon: 'success'
         });
         // effect when removing user
-        $(`#user-${id}`)
-          .addClass('deleted-item');
+        $(`#user-${id}`).addClass('deleted-item');
         setTimeout(() => {
           dispatch(removeUserAction(id));
         }, 1000);
@@ -449,14 +527,14 @@ export function deleteUserAction(id: string) {
 export function deleteIntegrationAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
-    api.deleteIntegration(id)
+    api
+      .deleteIntegration(id)
       .then((response: AxiosResponse): void => {
         swal!(response.data.message, {
           icon: 'success'
         });
         // effect when removing user
-        $(`#user-${id}`)
-          .addClass('deleted-item');
+        $(`#user-${id}`).addClass('deleted-item');
         setTimeout(() => {
           dispatch(removeUserAction(id));
         }, 1000);
@@ -469,16 +547,17 @@ export function deleteIntegrationAction(id: string) {
 }
 
 export type UserReduxAction =
-  IIsLoading |
-  ILoadUsers |
-  IChangePage |
-  IDeleteUser |
-  IChangeSearchUser |
-  ICancelRequest |
-  IChangeTempUser |
-  ILoadChannelsUser |
-  IChangeUser |
-  ILoadVenuesUser |
-  ILoadPermissionsUser |
-  ILoadFormsUser |
-  ILoadCompaniesUser;
+  | IIsLoading
+  | ILoadUsers
+  | IFilterVenues
+  | IChangePage
+  | IDeleteUser
+  | IChangeSearchUser
+  | ICancelRequest
+  | IChangeTempUser
+  | ILoadChannelsUser
+  | IChangeUser
+  | ILoadVenuesUser
+  | ILoadPermissionsUser
+  | ILoadFormsUser
+  | ILoadCompaniesUser;

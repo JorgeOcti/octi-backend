@@ -1,9 +1,6 @@
-import {
-  IUsersState,
-  UserReduxAction
-} from '../actions/users.actions';
+import { IUsersState, UserReduxAction } from '../actions/users.actions';
 
-import {IUser} from '../../../../../src/app/interfaces/user.interface';
+import { IUser } from '../../../../../src/app/interfaces/user.interface';
 
 const initialState: IUsersState = {
   users: [],
@@ -27,6 +24,9 @@ const initialState: IUsersState = {
     userForms: [],
     venuesAccess: []
   },
+  filters: {
+    venues: []
+  },
   source: null,
   pagination: {
     count: 0,
@@ -35,7 +35,10 @@ const initialState: IUsersState = {
   }
 };
 
-export function usersReducer(state = initialState, action: UserReduxAction): IUsersState {
+export function usersReducer(
+  state = initialState,
+  action: UserReduxAction
+): IUsersState {
   switch (action.type) {
     case '/USERS/IS_LOADING':
       return {
@@ -46,6 +49,14 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
       return {
         ...state,
         venues: action.payload.venues
+      };
+    case '/USERS/FILTER_VENUES':
+      return {
+        ...state,
+        filters: {
+          ...state.filters,
+          venues: action.payload.venues
+        }
       };
     case '/USERS/LOAD_PERMISSIONS':
       return {
@@ -80,7 +91,9 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
     case '/USERS/CHANGE_USER':
       return {
         ...state,
-        users: state.users.map((user) => (user._id === action.payload.user._id ? action.payload.user : user))
+        users: state.users.map((user) =>
+          user._id === action.payload.user._id ? action.payload.user : user
+        )
       };
     case '/USERS/LOAD_USERS':
       return {
@@ -100,7 +113,9 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
     case '/USERS/DELETE_USER':
       return {
         ...state,
-        users: state.users.filter((user: IUser) => user._id !== action.payload.id),
+        users: state.users.filter(
+          (user: IUser) => user._id !== action.payload.id
+        ),
         pagination: {
           ...state.pagination,
           count: state.pagination.count - 1

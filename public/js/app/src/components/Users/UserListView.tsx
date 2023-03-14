@@ -15,6 +15,7 @@ import {
   changeTempUserAction,
   createUserAction,
   deleteUserAction,
+  filterVenuesAction,
   getUsersAction,
   ITempUser,
   IUsersState,
@@ -24,7 +25,11 @@ import {
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
-import { hasPermission, showModal, statusFooterButttonsModal } from '../../utils/common';
+import {
+  hasPermission,
+  showModal,
+  statusFooterButttonsModal
+} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
@@ -35,12 +40,17 @@ import { Socket } from 'socket.io-client/build/esm/socket';
 import { UserTypes } from '../../../../../../src/app/models/user.model.types';
 import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
+import BootstrapSelect from '../Utils/BootstrapSelect';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(page: number, type: UserTypes, search?: string): UserReduxAction;
+  getUsersAction(
+    page: number,
+    type: UserTypes,
+    search?: string
+  ): UserReduxAction;
 
   createUserAction(): UserReduxAction;
 
@@ -48,9 +58,15 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
   deleteUserAction(id?: string): UserReduxAction;
 
+  filterVenuesAction(venues: string[]): UserReduxAction;
+
   changeTempUserAction(user: ITempUser): UserReduxAction;
 
-  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  loadDataAction(
+    title: string,
+    body: JSX.Element,
+    footer: JSX.Element
+  ): ModalReduxAction;
 
   changeSearchUserAction(searchText: string): UserReduxAction;
 }
@@ -87,6 +103,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     this.processChangePassword = this.processChangePassword.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
     this.cloneUser = this.cloneUser.bind(this);
+    this.filterVenues = this.filterVenues.bind(this);
+    this.filterAllVenues = this.filterAllVenues.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
@@ -124,7 +142,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+  public componentDidUpdate(
+    prevProps: Readonly<IPropsType>,
+    prevState: Readonly<IStateType>,
+    snapshot?: any
+  ): void {
     if (this.props.users.pagination !== prevProps.users.pagination) {
       window.scrollTo(0, 0);
     }
@@ -186,182 +208,268 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           exporing: false
         });
         if (!Axios.isCancel(err)) {
-          swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+          swal!(
+            'Exportar usuarios',
+            'Ha ocurrido un error al general el excel.',
+            'error'
+          );
         }
       });
   }
 
   public render(): React.ReactElement<IPropsType> {
     const { exporing } = this.state;
-    const {
-      loading, users, pagination, searchText
-    } = this.props.users;
+    const { loading, users, pagination, searchText, filters, venues } =
+      this.props.users;
     return (
-      <AppContainer title='' cMenu='10' cSubMenu='10.5' cAction='Listado'>
-        <section className='content'>
-          <div className='box'>
-            <div className='box-header with-border'>
-              <h3 className='box-title'>Usuarios <small>{pagination.count}</small></h3>
-              <div className='box-tools pull-right'>
-                {
-                  hasPermission(window.user, 'addUser') ?
-                    <button className='btn btn-sm btn-success' onClick={this.createUser}><i className='fa fa-plus' /> Crear usuario</button>
-                    : null
-                }
+      <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">
+                Usuarios <small>{pagination.count}</small>
+              </h3>
+              <div className="box-tools pull-right">
+                {hasPermission(window.user, 'addUser') ? (
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.createUser}>
+                    <i className="fa fa-plus" /> Crear usuario
+                  </button>
+                ) : null}
                 <button
-                  className='btn btn-sm btn-primary hidden-xs'
+                  className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}
                   disabled={exporing}
-                  style={{ marginLeft: '5px' }}
-                >
-                  {
-                    exporing ?
-                      <React.Fragment>
-                        <i className='fa fa-spin fa-spinner' /> Exportando
-                      </React.Fragment>
-                      : <React.Fragment>
-                        <i className='fa fa-fw fa-download' /> Exportar
-                      </React.Fragment>
-                  }
+                  style={{ marginLeft: '5px' }}>
+                  {exporing ? (
+                    <React.Fragment>
+                      <i className="fa fa-spin fa-spinner" /> Exportando
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <i className="fa fa-fw fa-download" /> Exportar
+                    </React.Fragment>
+                  )}
                 </button>
               </div>
             </div>
-            <div className='box-body no-padding'>
-              <div className='row'>
-                <div className='col-md-12'>
-                  <div className='input-group input-group-sm'
-                       style={{ padding: '10px' }}
-                  >
+            <div className="box-body no-padding">
+              <div className="row">
+                <div className="col-md-8">
+                  <div
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
                     <input
-                      type='text'
+                      type="text"
                       value={searchText}
-                      className='form-control pull-right'
+                      className="form-control pull-right"
                       onChange={this.onChangeSearch}
-                      name={"search-user"}
-                      placeholder='Buscar' />
-                    <div className='input-group-btn'>
-                      <button className='btn btn-default'><i className='fa fa-search' /></button>
+                      name={'search-user'}
+                      placeholder="Buscar"
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-search" />
+                      </button>
                     </div>
                   </div>
                 </div>
+                <div className="col-md-4">
+                  <div style={{ padding: '10px' }}>
+                    <BootstrapSelect
+                      sm={true}
+                      noneSelectedText="Todas las sucursales"
+                      displayItems={2}
+                      selectedText="sucursales seleccionadas."
+                      selected={filters.venues}
+                      autoClouse={false}
+                      search={true}
+                      allOption={false}
+                      selectAll={this.filterAllVenues}
+                      options={venues.map((venue: any) => ({
+                        value: venue._id,
+                        text: venue.name.toUpperCase()
+                      }))}
+                      // onClick={() => {
+                      //   console.log('click');
+                      // }}
+                      onClick={this.filterVenues}
+                    />
+                  </div>
+                </div>
               </div>
-              <table className='table table-andes table-striped'>
+              <table className="table table-andes table-striped">
                 <thead>
                   <tr>
                     <th style={{ width: '26%' }}>Usuario</th>
-                    <th style={{ width: '30%' }} className='hidden-xs'>Sucursal</th>
-                    <th style={{ width: '20%' }} className='hidden-xs'>Formularios</th>
-                    <th style={{ width: '20%' }} className='hidden-xs'>Último login</th>
-                    {
-                      hasPermission(window.user, 'changeUser') ?
-                        <th style={{ width: '1%' }} className='width-10' /> : null
-                    }
-                    {
-                      hasPermission(window.user, 'addUser') ?
-                        <th style={{ width: '1%' }} className='width-10' /> : null
-                    }
-                    {
-                      window.user.isAdmin || (hasPermission(window.user, 'changeUser')) ?
-                        <th style={{ width: '1%' }} className='width-10' /> : null
-                    }
-                    {
-                      hasPermission(window.user, 'deleteUser') ?
-                        <th style={{ width: '1%' }} className='width-10' /> : null
-                    }
+                    <th style={{ width: '30%' }} className="hidden-xs">
+                      Sucursal
+                    </th>
+                    <th style={{ width: '20%' }} className="hidden-xs">
+                      Formularios
+                    </th>
+                    <th style={{ width: '20%' }} className="hidden-xs">
+                      Último login
+                    </th>
+                    {hasPermission(window.user, 'changeUser') ? (
+                      <th style={{ width: '1%' }} className="width-10" />
+                    ) : null}
+                    {hasPermission(window.user, 'addUser') ? (
+                      <th style={{ width: '1%' }} className="width-10" />
+                    ) : null}
+                    {window.user.isAdmin ||
+                    hasPermission(window.user, 'changeUser') ? (
+                      <th style={{ width: '1%' }} className="width-10" />
+                    ) : null}
+                    {hasPermission(window.user, 'deleteUser') ? (
+                      <th style={{ width: '1%' }} className="width-10" />
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody>
-                {
-                  !loading && users.length === 0 && users ? <tr>
-                    <td colSpan={6}>No se han encontrado resultados.</td>
-                  </tr> : null
-                }
-                {
-                  users.map((user: IUser) => {
+                  {!loading && users.length === 0 && users ? (
+                    <tr>
+                      <td colSpan={6}>No se han encontrado resultados.</td>
+                    </tr>
+                  ) : null}
+                  {users.map((user: IUser) => {
                     const forms = user.userForms;
                     return (
                       <tr
                         key={user._id}
                         id={`user-${user._id}`}
-                        className={'background-transition'}
-                      >
-                        <td className='middle'>
-                          <strong className={"text-primary"}>
-                            <CopyText value={`${user.firstName?.toUpperCase()} ${user.lastName?.toUpperCase()}`}>
-                              {user.firstName?.toUpperCase()} {user.lastName?.toUpperCase()}
+                        className={'background-transition'}>
+                        <td className="middle">
+                          <strong className={'text-primary'}>
+                            <CopyText
+                              value={`${user.firstName?.toUpperCase()} ${user.lastName?.toUpperCase()}`}>
+                              {user.firstName?.toUpperCase()}{' '}
+                              {user.lastName?.toUpperCase()}
                             </CopyText>
-                          </strong><br />
-                          <span className='text-muted text-sm'><CopyText value={user?.email}><i className='fa fa-email'></i>{user.email}</CopyText></span>
-                          <div className='hidden-lg hidden-md hidden-sm text-sm'>
-                            <span
-                              className='text-sm text-muted'>{user.venue ? user.venue.name : ''} - {user.company?.name?.length? user.company.name?.toUpperCase() : ''}</span>
+                          </strong>
+                          <br />
+                          <span className="text-muted text-sm">
+                            <CopyText value={user?.email}>
+                              <i className="fa fa-email"></i>
+                              {user.email}
+                            </CopyText>
+                          </span>
+                          <div className="hidden-lg hidden-md hidden-sm text-sm">
+                            <span className="text-sm text-muted">
+                              {user.venue ? user.venue.name : ''} -{' '}
+                              {user.company?.name?.length
+                                ? user.company.name?.toUpperCase()
+                                : ''}
+                            </span>
                           </div>
                         </td>
-                        <td className='middle hidden-xs  text-muted'><strong>{user.venue.name?.length ? user.venue.name.toUpperCase() : ''}</strong><br />
-                          <span className='text-sm text-muted'>{user.company?.name?.length ? user.company.name?.toUpperCase() : ''}</span>
+                        <td className="middle hidden-xs  text-muted">
+                          <strong>
+                            {user.venue.name?.length
+                              ? user.venue.name.toUpperCase()
+                              : ''}
+                          </strong>
+                          <br />
+                          <span className="text-sm text-muted">
+                            {user.company?.name?.length
+                              ? user.company.name?.toUpperCase()
+                              : ''}
+                          </span>
                         </td>
-                        <td className='middle hidden-xs text-muted text-sm'>
+                        <td className="middle hidden-xs text-muted text-sm">
                           <ul style={{ marginBottom: 0, paddingLeft: 0 }}>
                             <ShowIf condition={!!forms.length}>
-                              {
-                                forms.map((form, index) => {
-                                  return (
-                                    <React.Fragment key={`${form._id}-${index}`}>
-                                      {/*{index > 0 ?*/}
-                                      {/*  <br /> : null}*/}
-                                      <li>{form.name?.toUpperCase()}</li>
-                                    </React.Fragment>
-                                  );
-                                })
-                              }
+                              {forms.map((form, index) => {
+                                return (
+                                  <React.Fragment key={`${form._id}-${index}`}>
+                                    {/*{index > 0 ?*/}
+                                    {/*  <br /> : null}*/}
+                                    <li>{form.name?.toUpperCase()}</li>
+                                  </React.Fragment>
+                                );
+                              })}
                             </ShowIf>
                           </ul>
                         </td>
-                        <td className='middle hidden-xs text-muted text-sm'>{user.lastLogin ? moment(user.lastLogin).format('LLL') : '-'}</td>
-                        {
-                          hasPermission(window.user, 'changeUser') ?
-                            <td className='middle-center text-yellow pointer' onClick={() => this.changePassword(user)}>
-                              <i className='fa fa-lock' /></td> : null
-                        }
-                        {
-                          hasPermission(window.user, 'addUser') ?
-                            <td className='middle-center text-blue pointer' onClick={() => this.cloneUser(user)}>
-                              <i className='fa fa-clone' /></td> : null
-                        }
-                        {
-                          window.user.isAdmin || (hasPermission(window.user, 'changeUser') && !user.isAdmin) ?
-                            <td className='middle-center text-blue pointer' onClick={() => this.updateUser(user)}><i
-                              className='fa fa-pencil' /></td> : <td></td>
-                        }
-                        {
-                          hasPermission(window.user, 'deleteUser') ?
-                            <td className='middle-center text-red pointer' onClick={() => this.deleteUser(user)}><i
-                              className='fa fa-minus-circle' /></td> : null
-                        }
+                        <td className="middle hidden-xs text-muted text-sm">
+                          {user.lastLogin
+                            ? moment(user.lastLogin).format('LLL')
+                            : '-'}
+                        </td>
+                        {hasPermission(window.user, 'changeUser') ? (
+                          <td
+                            className="middle-center text-yellow pointer"
+                            onClick={() => this.changePassword(user)}>
+                            <i className="fa fa-lock" />
+                          </td>
+                        ) : null}
+                        {hasPermission(window.user, 'addUser') ? (
+                          <td
+                            className="middle-center text-blue pointer"
+                            onClick={() => this.cloneUser(user)}>
+                            <i className="fa fa-clone" />
+                          </td>
+                        ) : null}
+                        {window.user.isAdmin ||
+                        (hasPermission(window.user, 'changeUser') &&
+                          !user.isAdmin) ? (
+                          <td
+                            className="middle-center text-blue pointer"
+                            onClick={() => this.updateUser(user)}>
+                            <i className="fa fa-pencil" />
+                          </td>
+                        ) : (
+                          <td></td>
+                        )}
+                        {hasPermission(window.user, 'deleteUser') ? (
+                          <td
+                            className="middle-center text-red pointer"
+                            onClick={() => this.deleteUser(user)}>
+                            <i className="fa fa-minus-circle" />
+                          </td>
+                        ) : null}
                       </tr>
                     );
-                  })
-                }
+                  })}
                 </tbody>
               </table>
             </div>
-            {
-              pagination.pages > 1 &&
-              <div className='box-footer text-right'>
-                <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+            {pagination.pages > 1 && (
+              <div className="box-footer text-right">
+                <Paginator
+                  changePage={this.changePage}
+                  page={pagination.page}
+                  pages={pagination.pages}
+                />
               </div>
-            }
-            {
-              users.length === 0 && loading &&
-              <div className='overlay'>
-                <i className='fa fa-spinner fa-spin text-purple' />
+            )}
+            {users.length === 0 && loading && (
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple" />
               </div>
-            }
+            )}
           </div>
           <ModalView />
         </section>
       </AppContainer>
     );
+  }
+
+  private filterAllVenues(selected: boolean): void {
+    this.props.filterVenuesAction(
+      selected ? this.props.users.venues.map((v) => v._id) : []
+    );
+  }
+
+  private filterVenues(venue: string) {
+    const { filters } = this.props.users;
+    if (filters.venues.includes(venue)) {
+      this.props.filterVenuesAction([]);
+    } else {
+      this.props.filterVenuesAction([venue]);
+    }
+    this.debounceOnChangeSearch();
   }
 
   private cloneUser(user: IUser): void {
@@ -390,8 +498,18 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           user={tmpUser}
         />,
         <React.Fragment>
-          <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
-          <button type='button' className='btn btn-sm btn-primary' onClick={this.processCreateUser}>Crear</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={this.processCreateUser}>
+            Crear
+          </button>
         </React.Fragment>
       );
     }, 400);
@@ -438,8 +556,18 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           permissions={permissions}
         />,
         <React.Fragment>
-          <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
-          <button type='button' className='btn btn-sm btn-primary' onClick={this.processCreateUser}>Crear</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={this.processCreateUser}>
+            Crear
+          </button>
         </React.Fragment>
       );
     }, 400);
@@ -471,16 +599,24 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
-        <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user} />,
+        <UserFormChangePasswordView
+          changeTempUser={changeTempUser}
+          users={this.props.users}
+          user={user}
+        />,
         <React.Fragment>
           <button
-            type='button'
-            className='btn btn-sm btn-default'
-            data-dismiss='modal'
-          >
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal">
             Cancelar
           </button>
-          <button type='button' className='btn btn-sm btn-primary' onClick={this.processChangePassword}>Cambiar</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={this.processChangePassword}>
+            Cambiar
+          </button>
         </React.Fragment>
       );
     }, 400);
@@ -491,7 +627,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     statusFooterButttonsModal(true);
     if (password && password.trim().length >= 6 && _id) {
       const api: ApiService = new ApiService();
-      api.changePasswordUser(_id, password)
+      api
+        .changePasswordUser(_id, password)
         .then((response) => {
           statusFooterButttonsModal(false);
           showModal(false);
@@ -504,7 +641,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           api.errorHandler(err);
         });
     } else {
-      swal!('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+      swal!(
+        'Cambiar contraseña',
+        'La contraseña debe tener al menos 6 caracteres.',
+        'error'
+      );
       statusFooterButttonsModal(false);
     }
   }
@@ -529,8 +670,18 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           user={user}
         />,
         <React.Fragment>
-          <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
-          <button type='button' className='btn btn-sm btn-primary' onClick={this.processUpdateUser}>Editar</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-default"
+            data-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={this.processUpdateUser}>
+            Editar
+          </button>
         </React.Fragment>
       );
     }, 400);
@@ -553,36 +704,60 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeTempUser({
-                           _id,
-                           firstName,
-                           lastName,
-                           email,
-                           venue,
-                           userPermissions,
-                           preferred,
-                           userForms,
-                           company,
-                           venuesAccess,
-                           password,
-                           isAdmin,
-                           isDriver,
-                           settings
-                         }: ITempUser) {
+    _id,
+    firstName,
+    lastName,
+    email,
+    venue,
+    userPermissions,
+    preferred,
+    userForms,
+    company,
+    venuesAccess,
+    password,
+    isAdmin,
+    isDriver,
+    settings
+  }: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
-      isDriver: typeof isDriver === 'boolean' ? isDriver : this.props.users.tempUser.isDriver,
+      isAdmin:
+        typeof isAdmin === 'boolean'
+          ? isAdmin
+          : this.props.users.tempUser.isAdmin,
+      isDriver:
+        typeof isDriver === 'boolean'
+          ? isDriver
+          : this.props.users.tempUser.isDriver,
       password: password ? password : '',
       settings: settings ?? this.props.users.tempUser.settings,
       email: email ? email : this.props.users.tempUser.email,
-      userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
+      userPermissions: userPermissions
+        ? userPermissions
+        : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
-      preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
-      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null,
-      venuesAccess: venuesAccess ? venuesAccess : venuesAccess === undefined ? this.props.users.tempUser.venuesAccess : [],
-      company: company ? company : company === undefined ? this.props.users.tempUser.company : null
+      preferred: preferred
+        ? preferred
+        : preferred === undefined
+        ? this.props.users.tempUser.preferred
+        : null,
+      venue: venue
+        ? venue
+        : venue === undefined
+        ? this.props.users.tempUser.venue
+        : null,
+      venuesAccess: venuesAccess
+        ? venuesAccess
+        : venuesAccess === undefined
+        ? this.props.users.tempUser.venuesAccess
+        : [],
+      company: company
+        ? company
+        : company === undefined
+        ? this.props.users.tempUser.company
+        : null
     };
     this.props.changeTempUserAction(tempUser);
   }
@@ -591,7 +766,9 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el usuario ${user.firstName || ''} ${user.lastName || ''}`,
+      text: `Vas a eliminar el usuario ${user.firstName || ''} ${
+        user.lastName || ''
+      }`,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -623,14 +800,23 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getUsersAction: (nextPage: number, type: UserTypes, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
+    getUsersAction: (nextPage: number, type: UserTypes, search?: string) =>
+      dispatch(getUsersAction(nextPage, type, search)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
-    changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
+    filterVenuesAction: (venues: string[]) =>
+      dispatch(filterVenuesAction(venues)),
+    changeTempUserAction: (user: ITempUser) =>
+      dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),
     updateUserAction: () => dispatch(updateUserAction()),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    changeSearchUserAction: (searchText: string) => dispatch(changeSearchUserAction(searchText))
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) =>
+      dispatch(loadDataAction(title, body, footer)),
+    changeSearchUserAction: (searchText: string) =>
+      dispatch(changeSearchUserAction(searchText))
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UserListView);
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(UserListView);
