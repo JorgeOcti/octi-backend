@@ -211,7 +211,7 @@ class BorderController {
         team
       });
       if (border) {
-        await border.remove();
+        await Border.findOneAndRemove({_id: id, team});
         res.status(200).json({
           message: 'Sucursal eliminada satisfactoriamente.',
           id: border._id

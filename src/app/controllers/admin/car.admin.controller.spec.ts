@@ -50,12 +50,13 @@ describe('admin cars', () => {
   });
 
   after( (done) => {
-    Car.find({denomination: 'Prueba'}).remove((err) => {
+    Car.deleteMany({denomination: 'Prueba'}, (err) => {
       if (err) {
         console.log(err);
       }
       done();
     });
+
   });
 
   it('it should enter in list cars', (done) => {

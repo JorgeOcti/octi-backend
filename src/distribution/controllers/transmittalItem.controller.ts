@@ -113,7 +113,7 @@ class TransmittalItemController {
     try {
       const transmittalItem = await TransmittalItem.findOne({ _id: id });
       if (transmittalItem) {
-        await transmittalItem.remove();
+        await transmittalItem.deleteOne({ _id: id });
         const transmittalItems = await TransmittalItem.find({ transmittal: transmittalItem.transmittal }).countDocuments();
         socket().to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
           transmittalItem
@@ -129,10 +129,10 @@ class TransmittalItemController {
         // clean transmittal
         if (transmittalItems === 0) {
           const transmittal = await Transmittal.findOne({ _id: transmittalItem.transmittal });
-          await transmittal!.remove();
           socket().to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
             transmittal
           });
+          await Transmittal.deleteOne({_id: transmittalItem.transmittal});
         }
 
       }

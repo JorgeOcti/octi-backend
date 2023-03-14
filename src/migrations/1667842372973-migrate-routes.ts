@@ -65,7 +65,7 @@ export async function up() {
       }
       );
     }
-    await History.remove({ _id: { $in: duplicates } });
+    await History.deleteMany({ _id: { $in: duplicates } });
   }
 
   if (fixHistoryLocations) {

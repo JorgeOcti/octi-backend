@@ -113,7 +113,7 @@ export default abstract class BaseAdminController<T> {
           status: 400
         });
       } else {
-        await existInstance.remove();
+        await this.instanceModel.findOneAndRemove(req.context.filter);
         if(req.context?.socketName){
           socket().to(req.context.socketName).emit('REFRESH', {
             update: true,

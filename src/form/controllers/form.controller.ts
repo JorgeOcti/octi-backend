@@ -1006,7 +1006,7 @@ class FormController {
                 answer.images.forEach(async (image: string) => {
                   const deleteFile = await ParticipantFile.findById(image);
                   if (deleteFile) {
-                    await deleteFile.remove();
+                    await ParticipantFile.deleteOne({_id: image});
                   }
                 });
               }
@@ -3178,9 +3178,9 @@ class FormController {
     return newAccesories;
   }
 
-  private getFormWithScale(filter: any): Promise<IFormModel> {
-    return new Promise((resolve, reject) => {
-      Form.findOne(filter).populate([
+  private async getFormWithScale(filter: any): Promise<IFormModel> {
+    return new Promise(async (resolve, reject) => {
+      const form = await Form.findOne(filter).populate([
         {
           path: 'sections.questions.scale'
         },
@@ -3202,16 +3202,11 @@ class FormController {
             }
           ]
         }
-      ]).exec!((err, form) => {
-        if (err) {
-          /* istanbul ignore next */
-          return reject(err);
-        }
-        if (form) {
-          return resolve(form);
-        }
-        return reject('No se encontro formularío');
-      });
+      ]);
+      if (form) {
+        return resolve(form);
+      }
+      return reject('No se encontro formularío');
     });
   }
 

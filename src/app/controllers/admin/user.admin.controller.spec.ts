@@ -36,7 +36,7 @@ describe('admin users', () => {
   });
 
   after((done) => {
-    User.find({firstName: 'Prueba'}).remove((err) => {
+    User.deleteMany({firstName: 'Prueba'}, (err) => {
       if (err) {
         console.log(err);
       }

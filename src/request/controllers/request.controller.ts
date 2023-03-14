@@ -1410,8 +1410,8 @@ class RequestController {
           team
         });
       if (request) {
-        await RequestItem.find({ _id: id, team }).remove();
-        await request.remove();
+        await RequestItem.deleteMany({ request: id, team });
+        await Request.deleteOne({ _id: id, team });
         socket().to(`request-list-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
         });
@@ -1450,7 +1450,7 @@ class RequestController {
         })
         .populate(this.itemPopulate);
       if (item) {
-        await item.remove();
+        await RequestItem.deleteOne({ _id: id, team })
         socket().to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
           idRequest: item.request._id,
           item

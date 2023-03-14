@@ -1236,8 +1236,11 @@ class InventoryController {
         team
       });
       if (inventory) {
-        await InventoryCar.find({ inventory }).remove();
-        await inventory.remove();
+        await InventoryCar.deleteMany({ inventory });
+        await inventory.deleteOne({
+          _id: id,
+          team
+        });
         socket().to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
