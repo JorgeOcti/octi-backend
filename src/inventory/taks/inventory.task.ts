@@ -1,6 +1,6 @@
 import * as Queue from 'bull';
 import moment = require('moment');
-// import * as mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 import { ICar } from '../../app/interfaces/car.interface';
 import CarModel, { Car, ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
@@ -434,18 +434,18 @@ class InventoryQueue {
             update = true;
             carToUpdate.patent = car.patent;
           }
-          // mongoose.set('debug', true);
-          // if (update) {
-          //   await carToUpdate.save();
-          //   logger.info(
-          //     `InventoryQueue.updateCar ${job.data.car.vin} updated.`
-          //   );
-          // } else {
-          //   logger.info(
-          //     `InventoryQueue.updateCar ${job.data.car.vin} no updated`
-          //   );
-          // }
-          // mongoose.set('debug', false);
+          mongoose.set('debug', true);
+          if (update) {
+            await carToUpdate.save();
+            logger.info(
+              `InventoryQueue.updateCar ${job.data.car.vin} updated.`
+            );
+          } else {
+            logger.info(
+              `InventoryQueue.updateCar ${job.data.car.vin} no updated`
+            );
+          }
+          mongoose.set('debug', false);
         }
         done(null, {});
       } catch (e) {
