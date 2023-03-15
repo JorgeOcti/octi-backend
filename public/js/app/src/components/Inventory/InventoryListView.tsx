@@ -352,7 +352,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
     } else if (option === 'inProcess') {
       return <span className='label label-primary'><i className='fa fa-fw fa-spin fa-spinner' /> En progreso</span>;
     } else {
-      return <span className='label label-warning'>Pendiente</span>;
+      return <span className='label label-warning'><i className='fa fa-fw fa-spin fa-spinner' /> Creando inventario...</span>;
     }
   }
 
