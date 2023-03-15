@@ -7,25 +7,24 @@ import requestItemsMeta from './requestIteam.meta';
 import RequestItemStatus from './requestItemStatus.model';
 
 class RequestItemHooks {
-
   constructor() {
-    this.postFindOneAndUpdateHandler = this.postFindOneAndUpdateHandler.bind(this);
+    this.postFindOneAndUpdateHandler =
+      this.postFindOneAndUpdateHandler.bind(this);
   }
 
   public async postFindOneAndUpdateHandler(doc: any): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
-        const [
-          request, car, user, origin, destination, status, transmittal
-        ] = await Promise.all([
-          Request.findById(doc?.request, { meta: false }),
-          Car.findById(doc.car),
-          User.findById(doc.createdBy),
-          Venue.findById(doc.origin),
-          Venue.findById(doc.destination),
-          RequestItemStatus.findById(doc.status),
-          Transmittal.findById(doc.transmittal)
-        ]);
+        const [request, user, origin, destination, status, transmittal] =
+          await Promise.all([
+            Request.findById(doc?.request, { meta: false }),
+            User.findById(doc.createdBy),
+            Venue.findById(doc.origin),
+            Venue.findById(doc.destination),
+            RequestItemStatus.findById(doc.status),
+            Transmittal.findById(doc.transmittal)
+          ]);
+        const car = doc.car ? Car.findById(doc.car) : null;
         // await RequestItem.updateOne({ _id: doc._id }, { $unset: { meta: {} } });
         const meta = requestItemsMeta.processMeta({
           request,
@@ -45,6 +44,7 @@ class RequestItemHooks {
         await doc.save();
         resolve();
       } catch (e) {
+        console.error(e);
         reject(e);
       }
     });
