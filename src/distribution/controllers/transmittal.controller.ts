@@ -720,7 +720,7 @@ class TransmittalController {
           resolve(JSON.parse(result));
         } else {
           logger.debug(`NEW CACHE`);
-          const form = FormModel.findOne(filter, {
+          const form = await FormModel.findOne(filter, {
             company: false,
             updatedAt: false,
             createdAt: false,
