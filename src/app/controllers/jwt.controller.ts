@@ -96,89 +96,84 @@ class JWTController {
           await user.save();
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
-          ParticipantModel.find({
+          const count = await ParticipantModel.find({
             user,
             createdAt: {
               $gte: today.toDate(),
               $lt: tomorrow.toDate()
             }
-          }).countDocuments(async (err: any, count: any) => {
-            const teamSettings = await TeamSetting.findOne({
-              team: user.team
-            }).lean();
-            const version = await Version.findOne({}, ['ios', 'android'], {
-              sort: {
-                createdAt: -1
+          }).countDocuments();
+          const teamSettings = await TeamSetting.findOne({
+            team: user.team
+          }).lean();
+          const version = await Version.findOne({}, ['ios', 'android'], {
+            sort: {
+              createdAt: -1
+            }
+          });
+          const userInfo = {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            preferred: user.preferred,
+            userPermissions: user.userPermissions,
+            userForms: user.userForms,
+            isDriver: user.isDriver || false,
+            venue: user.venue,
+            company: user.company,
+            team: {
+              _id: user.team._id,
+              name: user.team.name,
+              settings: {
+                form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
+                  vinMinCharacters: 17,
+                  vinMaxCharacters: 17,
+                  plateMinCharacters: 6,
+                  plateMaxCharacters: 6
+                }),
+                helpNumber: GeneralUtils.getObjectProperty(
+                  teamSettings!,
+                  'helpPhones',
+                  {
+                    transmittal: ''
+                  }
+                ),
+                inventory: GeneralUtils.getObjectProperty(
+                  teamSettings!,
+                  'inventory',
+                  {}
+                ),
+                vocabulary: GeneralUtils.getObjectProperty(
+                  teamSettings!,
+                  'vocabulary',
+                  {}
+                )
               }
-            });
-            const userInfo = {
-              _id: user._id,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              preferred: user.preferred,
-              userPermissions: user.userPermissions,
-              userForms: user.userForms,
-              isDriver: user.isDriver || false,
-              venue: user.venue,
-              company: user.company,
-              team: {
-                _id: user.team._id,
-                name: user.team.name,
-                settings: {
-                  form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
-                    vinMinCharacters: 17,
-                    vinMaxCharacters: 17,
-                    plateMinCharacters: 6,
-                    plateMaxCharacters: 6
-                  }),
-                  helpNumber: GeneralUtils.getObjectProperty(
-                    teamSettings!,
-                    'helpPhones',
-                    {
-                      transmittal: ''
-                    }
-                  ),
-                  inventory: GeneralUtils.getObjectProperty(
-                    teamSettings!,
-                    'inventory',
-                    {}
-                  ),
-                  vocabulary: GeneralUtils.getObjectProperty(
-                    teamSettings!,
-                    'vocabulary',
-                    {}
-                  )
+              // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+            },
+            count
+          };
+          return res.json({
+            data: {
+              token: jwt.sign({ _id: userInfo._id }, process.env.SECRET_KEY!, {
+                expiresIn: '7 days'
+              }),
+              // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
+              //   expiresIn: '60 seconds'
+              // }),
+              refreshToken: jwt.sign(
+                { _id: userInfo._id },
+                process.env.SECRET_KEY!,
+                {
+                  expiresIn: '30 days'
                 }
-                // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
-              },
-              count
-            };
-            return res.json({
-              data: {
-                token: jwt.sign(
-                  { _id: userInfo._id },
-                  process.env.SECRET_KEY!,
-                  {
-                    expiresIn: '7 days'
-                  }
-                ),
-                // token: jwt.sign(userInfo, req. process.env.SECRET_KEY!, {
-                //   expiresIn: '60 seconds'
-                // }),
-                refreshToken: jwt.sign(
-                  { _id: userInfo._id },
-                  process.env.SECRET_KEY!,
-                  {
-                    expiresIn: '30 days'
-                  }
-                ),
-                iosVersion: version!.ios,
-                androidVersion: version!.android,
-                user: userInfo
-              },
-              status: 200
-            });
+              ),
+              iosVersion: version!.ios,
+              androidVersion: version!.android,
+              user: userInfo
+            },
+            status: 200
           });
         }
       }
