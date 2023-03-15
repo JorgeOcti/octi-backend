@@ -673,7 +673,7 @@ class TransmittalController {
         for (let i = 0; i < milestones.length; i++) {
           let milestone = milestones[i].toObject();
           let form = await this.fillFormSections(
-            milestone.form.toString(),
+            milestone.form,
             req.user
           );
           milestones[i] = { ...milestone, ...form };
@@ -801,7 +801,7 @@ class TransmittalController {
     });
   }
 
-  public async fillFormSections(formID: String, user: IUser) {
+  public async fillFormSections(formID: any, user: IUser) {
     try {
       if (!formID) {
         return {};

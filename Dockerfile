@@ -38,6 +38,8 @@ ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
 WORKDIR /srv
 
+RUN rm -rf /srv/node_modules
+
 RUN npm install -g npm@latest
 
 RUN npm i -g typescript ts-node ts-node-dev pm2 ts-migrate-mongoose
