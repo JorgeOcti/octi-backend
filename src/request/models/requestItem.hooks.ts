@@ -15,47 +15,49 @@ class RequestItemHooks {
   public async postFindOneAndUpdateHandler(doc: any): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
-        const [request, user, car, origin, destination, status, transmittal] =
-          await Promise.all([
-            doc?.request
-              ? Request.findById(doc?.request, { meta: false })
-              : new Promise((resolve) => resolve(null)),
-            doc?.createdBy
-              ? User.findById(doc.createdBy)
-              : new Promise((resolve) => resolve(null)),
-            doc?.car
-              ? Car.findById(doc.car)
-              : new Promise((resolve) => resolve(null)),
-            doc?.origin
-              ? Venue.findById(doc?.origin, { meta: false })
-              : new Promise((resolve) => resolve(null)),
-            doc?.destination
-              ? Venue.findById(doc?.destination, { meta: false })
-              : new Promise((resolve) => resolve(null)),
-            doc?.status
-              ? RequestItemStatus.findById(doc?.status, { meta: false })
-              : new Promise((resolve) => resolve(null)),
-            doc?.transmittal
-              ? Transmittal.findById(doc?.transmittal, { meta: false })
-              : new Promise((resolve) => resolve(null))
-          ]);
-        // await RequestItem.updateOne({ _id: doc._id }, { $unset: { meta: {} } });
-        const meta = requestItemsMeta.processMeta({
-          request,
-          transmittal,
-          car,
-          user,
-          origin,
-          destination,
-          status
-        });
-        // if (transmittal) {
-        if (doc?._id?.toString() === '62addbba0596900010143714') {
-          console.log('meta', meta);
-          console.log('doc', doc);
+        if(doc){
+          const [request, user, car, origin, destination, status, transmittal] =
+            await Promise.all([
+              doc?.request
+                ? Request.findById(doc?.request, { meta: false })
+                : new Promise((resolve) => resolve(null)),
+              doc?.createdBy
+                ? User.findById(doc.createdBy)
+                : new Promise((resolve) => resolve(null)),
+              doc?.car
+                ? Car.findById(doc.car)
+                : new Promise((resolve) => resolve(null)),
+              doc?.origin
+                ? Venue.findById(doc?.origin, { meta: false })
+                : new Promise((resolve) => resolve(null)),
+              doc?.destination
+                ? Venue.findById(doc?.destination, { meta: false })
+                : new Promise((resolve) => resolve(null)),
+              doc?.status
+                ? RequestItemStatus.findById(doc?.status, { meta: false })
+                : new Promise((resolve) => resolve(null)),
+              doc?.transmittal
+                ? Transmittal.findById(doc?.transmittal, { meta: false })
+                : new Promise((resolve) => resolve(null))
+            ]);
+          // await RequestItem.updateOne({ _id: doc._id }, { $unset: { meta: {} } });
+          const meta = requestItemsMeta.processMeta({
+            request,
+            transmittal,
+            car,
+            user,
+            origin,
+            destination,
+            status
+          });
+          // if (transmittal) {
+          if (doc?._id?.toString() === '62addbba0596900010143714') {
+            console.log('meta', meta);
+            console.log('doc', doc);
+          }
+          doc.meta = meta;
+          await doc.save();
         }
-        doc.meta = meta;
-        await doc.save();
         resolve();
       } catch (e) {
         console.error(e);
