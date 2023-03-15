@@ -15,16 +15,30 @@ class RequestItemHooks {
   public async postFindOneAndUpdateHandler(doc: any): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
-        const [request, user, origin, destination, status, transmittal] =
+        const [request, user, car, origin, destination, status, transmittal] =
           await Promise.all([
-            Request.findById(doc?.request, { meta: false }),
-            User.findById(doc.createdBy),
-            Venue.findById(doc.origin),
-            Venue.findById(doc.destination),
-            RequestItemStatus.findById(doc.status),
-            Transmittal.findById(doc.transmittal)
+            doc?.request
+              ? Request.findById(doc?.request, { meta: false })
+              : new Promise((resolve) => resolve(null)),
+            doc?.createdBy
+              ? User.findById(doc.createdBy)
+              : new Promise((resolve) => resolve(null)),
+            doc?.car
+              ? Car.findById(doc.car)
+              : new Promise((resolve) => resolve(null)),
+            doc?.origin
+              ? Venue.findById(doc?.origin, { meta: false })
+              : new Promise((resolve) => resolve(null)),
+            doc?.destination
+              ? Venue.findById(doc?.destination, { meta: false })
+              : new Promise((resolve) => resolve(null)),
+            doc?.status
+              ? RequestItemStatus.findById(doc?.status, { meta: false })
+              : new Promise((resolve) => resolve(null)),
+            doc?.transmittal
+              ? Transmittal.findById(doc?.transmittal, { meta: false })
+              : new Promise((resolve) => resolve(null))
           ]);
-        const car = doc.car ? Car.findById(doc.car) : null;
         // await RequestItem.updateOne({ _id: doc._id }, { $unset: { meta: {} } });
         const meta = requestItemsMeta.processMeta({
           request,
