@@ -50,7 +50,7 @@ class RequestItemHooks {
           status
         });
         // if (transmittal) {
-        if (doc._id.toString() === '62addbba0596900010143714') {
+        if (doc?._id?.toString() === '62addbba0596900010143714') {
           console.log('meta', meta);
           console.log('doc', doc);
         }
