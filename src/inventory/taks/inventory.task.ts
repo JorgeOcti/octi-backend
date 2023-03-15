@@ -1,8 +1,6 @@
 import * as Queue from 'bull';
 import moment = require('moment');
-// import * as mongoose from 'mongoose';
-import { ICar } from '../../app/interfaces/car.interface';
-import CarModel, { Car, ChoicesStatusCar } from '../../app/models/car.model';
+import CarModel, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import Venue, { IVenueModel } from '../../app/models/venue.model';
@@ -88,11 +86,11 @@ class InventoryQueue {
         const { name } = venue;
         const currentVenue = await this.checkExistVenue(name, team, company);
 
-        let vins: string[] = venue?.cars
-          ?.filter((car: Partial<ICar>) => car.vin?.length)
-          .map((car: Partial<ICar>) => car?.vin);
+        // let vins: string[] = venue?.cars
+        //   ?.filter((car: Partial<ICar>) => car.vin?.length)
+        //   .map((car: Partial<ICar>) => car?.vin);
 
-        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vins: ${vins.length}}`)
+        // logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vins: ${vins.length}}`)
 
         const dataByVIN = venue?.cars.reduce((acc: any, cur: any) => {
           return {
@@ -101,121 +99,64 @@ class InventoryQueue {
           };
         }, {});
 
-        let carCursor = Car.find({
-          team: team._id,
-          vin: {
-            $in: vins
+        for (const car of venue.cars) {
+          let currentCar= await CarModel.findOne({
+            team,
+            vin: car.vin.trim()
+          });
+          if (!currentCar) {
+            currentCar = new CarModel({
+              team,
+              company,
+              vin: car.vin,
+              vin2: car.vin.substr(car.vin.length - 6),
+              color: car.color,
+              type: car.type,
+              property: car.property,
+              denomination: car.denomination,
+              brand: car.brand,
+              patent: car.patent,
+              createdBy: user._id,
+              status: ChoicesStatusCar.active
+            });
+            await currentCar.save();
+          } else {
+            updateCars.push({
+              name: 'updateCar',
+              data: {
+                title: `updateCar ${car.vin}`,
+                currentCar: currentCar._id,
+                car: dataByVIN[car.vin]
+              }
+            });
           }
-        }).cursor();
-
-        const vinsLoaded: string[] = [];
-
-        await carCursor.eachAsync(
-          (car) => {
-            try {
-              inventoryCars.push({
-                inventory: inventory!._id,
-                venue: currentVenue._id,
-                car: car._id,
-                comments: [],
-                images: []
-              });
-              activityHistories.push({
-                team: team._id,
-                company: company._id,
-                user: user._id,
-                type: ChoicesTypeActivity.inventory,
-                car: {
-                  _id: car._id,
-                  vin: car.vin
-                },
-                inventory: {
-                  _id: inventoryID,
-                  name: job.data.name
-                }
-              });
-              vinsLoaded.push(car.vin);
-              updateCars.push({
-                name: 'updateCar',
-                data: {
-                  title: `updateCar ${car.vin}`,
-                  currentCar: car._id,
-                  car: dataByVIN[car.vin]
-                }
-              });
-            } catch (error) {
-              console.log(error);
-            }
-            return;
-          },
-          { parallel: 1 }
-        );
-        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
-        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vinsLoaded: ${vinsLoaded.length}}`)
-        vins = vins.filter((vin) =>!vinsLoaded.includes(vin));
-        const createCars = [];
-        for (const vin of vins) {
-          const car = dataByVIN[vin];
-          createCars.push({
+          inventoryCars.push({
+            inventory: inventory!._id,
+            venue: currentVenue._id,
+            car: currentCar._id,
+            comments: [],
+            images: []
+          });
+          activityHistories.push({
             team: team._id,
             company: company._id,
-            vin: car.vin,
-            vin2: car.vin.substr(car.vin.length - 6),
-            color: car.color,
-            type: car.type,
-            property: car.property,
-            denomination: car.denomination,
-            brand: car.brand,
-            patent: car.patent,
-            createdBy: user._id,
-            status: ChoicesStatusCar.active
+            user: user._id,
+            type: ChoicesTypeActivity.inventory,
+            car: {
+              _id: currentCar._id,
+              vin: currentCar.vin
+            },
+            inventory: {
+              _id: inventoryID,
+              name: job.data.name
+            }
           });
         }
-        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, createCars: ${createCars.length}}`)
 
-        await Car.insertMany(createCars);
-
-        carCursor = Car.find({
-          team: team._id,
-          vin: {
-            $in: vins
-          }
-        }).cursor();
-
-        await carCursor.eachAsync(
-          (car) => {
-            try {
-              inventoryCars.push({
-                inventory: inventory!._id,
-                venue: currentVenue._id,
-                car: car._id,
-                comments: [],
-                images: []
-              });
-              activityHistories.push({
-                team: team._id,
-                company: company._id,
-                user: user._id,
-                type: ChoicesTypeActivity.inventory,
-                car: {
-                  _id: car._id,
-                  vin: car.vin
-                },
-                inventory: {
-                  _id: inventoryID,
-                  name: job.data.name
-                }
-              });
-            } catch (error) {
-              console.log(error);
-            }
-            return;
-          },
-          { parallel: 1 }
-        );
         logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
 
         totalInventoryCars += inventoryCars.length;
+        await ActivityHistory.insertMany(activityHistories);
         await InventoryCar.insertMany(inventoryCars);
 
         if (moment().isSameOrAfter(refresh)) {
