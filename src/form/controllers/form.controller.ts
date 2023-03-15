@@ -1,5 +1,4 @@
 import * as bluebird from 'bluebird';
-import { ObjectID } from 'bson';
 import * as crypto from 'crypto';
 import * as excel from 'exceljs';
 import { Response } from 'express';
@@ -813,7 +812,7 @@ class FormController {
           if (car)
             searchVal.push({car: car._id})
           if (transmittal)
-            searchVal.push({transmittal: new ObjectID(transmittal)})
+            searchVal.push({transmittal: new Types.ObjectId(transmittal)})
 
           const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
           const today = moment().startOf('day');
@@ -880,7 +879,7 @@ class FormController {
               );
               if (reception.images) {
                 participantObject.receptionImages = reception.images.map(
-                  (image: string) => new mongoose.Types.ObjectId(image)
+                  (image: string) => new Types.ObjectId(image)
                 );
               }
             }
@@ -1039,7 +1038,7 @@ class FormController {
               } else if (question?.kindUpdate === 'participant.plateEvidence')
                 newParticipant.deliveryInfo.plateEvidence = answer?.images
                   ?.length
-                  ? answer.images.map((image: string) => new ObjectID(image))
+                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
                   : [];
 
               newAnswers.push({

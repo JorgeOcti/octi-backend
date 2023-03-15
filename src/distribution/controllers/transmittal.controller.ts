@@ -451,7 +451,7 @@ class TransmittalController {
     if (drivers) {
       let driversIds = drivers
         .split(',')
-        .map((d) => new mongoose.Types.ObjectId(d));
+        .map((d) => new Types.ObjectId(d));
       filter['$or'] = [
         { 'transporter.driver': { $in: driversIds } },
         { 'transporter.patent': { $regex: plate.trim(), $options: 'i' } }
@@ -461,7 +461,7 @@ class TransmittalController {
     }
 
     if (types) {
-      let typeIds = types.split(',').map((t) => new mongoose.Types.ObjectId(t));
+      let typeIds = types.split(',').map((t) => new Types.ObjectId(t));
       filter['type'] = { $in: typeIds };
     }
 
@@ -708,13 +708,9 @@ class TransmittalController {
     }
   }
 
-  private async getForm(filter: any): Promise<
-    mongoose.LeanDocument<
-      IFormModel & {
-        _id: Types.ObjectId;
-      }
-    >
-  > {
+  private async getForm(
+    filter: any
+  ): Promise<mongoose.LeanDocument<IFormModel> | null> {
     const keyCache = `form-${filter._id}`;
     logger.debug(`keyCache ${keyCache}`);
     return new Promise(async (resolve, reject) => {
@@ -816,230 +812,232 @@ class TransmittalController {
         team: user.team
       });
 
-      const team = user.team;
-      // generate array of scale ids
-      const scalesIds: any[] = [];
-      form.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          const scaleID = question.scale ? question.scale.toString() : null;
-          if (scaleID && !scalesIds.includes(scaleID)) {
-            scalesIds.push(scaleID);
-          }
-        });
-      });
-
-      const extra: IAnyObject = {
-        accessories: []
-      };
-      const extraSection: any = {
-        _id: 'extraSection',
-        name: '',
-        questions: [],
-        weight: 0,
-        order: form.sections.length + 1
-      };
-      const extraScales: any = [];
-      const response: any = {};
-
-      if (form.shippingVenue) {
-        extraSection.questions.push({
-          _id: 'shippingVenue',
-          question: form.shippingVenueText,
-          venues: user.venue.sendTo,
-          kind: KindQuestion.venue,
-          order: extraSection.questions.length + 1
-        });
-      }
-      if (form.shipping) {
-        extraSection.questions.push({
-          _id: 'shipping',
-          question: form.shippingText,
-          scale: 'shipping',
-          kind: KindQuestion.scale,
-          order: extraSection.questions.length + 1
-        });
-        extraScales.push({
-          _id: 'shipping',
-          name: 'shipping',
-          choices: [
-            {
-              _id: 'false',
-              choice: 'No',
-              backgroundColor: 'red',
-              requireImage: form.shippingImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 0,
-              order: 1
-            },
-            {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: false,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 1,
-              order: 2
+      if (form) {
+        const team = user.team;
+        // generate array of scale ids
+        const scalesIds: any[] = [];
+        form.sections.forEach((section) => {
+          section.questions.forEach((question) => {
+            const scaleID = question.scale ? question.scale.toString() : null;
+            if (scaleID && !scalesIds.includes(scaleID)) {
+              scalesIds.push(scaleID);
             }
-          ]
+          });
         });
-      }
 
-      if (form.receptionVenue) {
-        extraSection.questions.push({
-          _id: 'receptionVenue',
-          question: form.receptionVenueText,
-          venues: user.venue.receiveFrom,
-          kind: KindQuestion.venue,
-          order: extraSection.questions.length + 1
-        });
-      }
-      if (form.reception) {
-        extraSection.questions.push({
-          _id: 'reception',
-          question: form.receptionText,
-          scale: 'reception',
-          kind: KindQuestion.scale,
-          order: extraSection.questions.length + 1
-        });
-        extraScales.push({
-          _id: 'reception',
-          name: 'reception',
-          choices: [
-            {
-              _id: 'false',
-              choice: 'No',
-              backgroundColor: 'red',
-              requireImage: form.receptionImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 0,
-              order: 1
-            },
-            {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: false,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 1,
-              order: 2
-            }
-          ]
-        });
-      }
+        const extra: IAnyObject = {
+          accessories: []
+        };
+        const extraSection: any = {
+          _id: 'extraSection',
+          name: '',
+          questions: [],
+          weight: 0,
+          order: form.sections.length + 1
+        };
+        const extraScales: any = [];
+        const response: any = {};
 
-      if (form.carrier && (form.reception || form.shipping)) {
-        extraSection.questions.push({
-          _id: 'carrier',
-          question: form.carrierText,
-          carriers: form.reception
-            ? user.venue.receptionCarriers
-            : user.venue.shippingCarriers,
-          kind: KindQuestion.carrier,
-          order: extraSection.questions.length + 1
+        if (form.shippingVenue) {
+          extraSection.questions.push({
+            _id: 'shippingVenue',
+            question: form.shippingVenueText,
+            venues: user.venue.sendTo,
+            kind: KindQuestion.venue,
+            order: extraSection.questions.length + 1
+          });
+        }
+        if (form.shipping) {
+          extraSection.questions.push({
+            _id: 'shipping',
+            question: form.shippingText,
+            scale: 'shipping',
+            kind: KindQuestion.scale,
+            order: extraSection.questions.length + 1
+          });
+          extraScales.push({
+            _id: 'shipping',
+            name: 'shipping',
+            choices: [
+              {
+                _id: 'false',
+                choice: 'No',
+                backgroundColor: 'red',
+                requireImage: form.shippingImage,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 0,
+                order: 1
+              },
+              {
+                _id: 'true',
+                choice: 'Si',
+                backgroundColor: 'green',
+                requireImage: false,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 1,
+                order: 2
+              }
+            ]
+          });
+        }
+
+        if (form.receptionVenue) {
+          extraSection.questions.push({
+            _id: 'receptionVenue',
+            question: form.receptionVenueText,
+            venues: user.venue.receiveFrom,
+            kind: KindQuestion.venue,
+            order: extraSection.questions.length + 1
+          });
+        }
+        if (form.reception) {
+          extraSection.questions.push({
+            _id: 'reception',
+            question: form.receptionText,
+            scale: 'reception',
+            kind: KindQuestion.scale,
+            order: extraSection.questions.length + 1
+          });
+          extraScales.push({
+            _id: 'reception',
+            name: 'reception',
+            choices: [
+              {
+                _id: 'false',
+                choice: 'No',
+                backgroundColor: 'red',
+                requireImage: form.receptionImage,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 0,
+                order: 1
+              },
+              {
+                _id: 'true',
+                choice: 'Si',
+                backgroundColor: 'green',
+                requireImage: false,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 1,
+                order: 2
+              }
+            ]
+          });
+        }
+
+        if (form.carrier && (form.reception || form.shipping)) {
+          extraSection.questions.push({
+            _id: 'carrier',
+            question: form.carrierText,
+            carriers: form.reception
+              ? user.venue.receptionCarriers
+              : user.venue.shippingCarriers,
+            kind: KindQuestion.carrier,
+            order: extraSection.questions.length + 1
+          });
+        }
+
+        if (form.conciliation) {
+          extraSection.questions.push({
+            _id: 'conciliation',
+            question: form.conciliationText,
+            scale: 'conciliation',
+            kind: KindQuestion.scale,
+            order: extraSection.questions.length + 1
+          });
+          extraScales.push({
+            _id: 'conciliation',
+            name: 'conciliation',
+            choices: [
+              {
+                _id: 'false',
+                choice: 'No',
+                backgroundColor: 'red',
+                requireImage: false,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 0,
+                order: 1
+              },
+              {
+                _id: 'true',
+                choice: 'Si',
+                backgroundColor: 'green',
+                requireImage: form.conciliationImage,
+                requireComment: false,
+                requireAccesories: false,
+                requireConciliation: false,
+                value: 1,
+                order: 2
+              }
+            ]
+          });
+        }
+
+        let scales = await this.getScales({
+          _id: {
+            $in: scalesIds
+          },
+          team
         });
+
+        scales = [...scales, ...extraScales];
+        if (extraSection.questions.length) {
+          (form as any).sections = [...form.sections, extraSection];
+        }
+        const baseQuestion = {
+          _id: '',
+          question: '',
+          scale: null,
+          risk: '',
+          observe: '',
+          accessories: null,
+          damages: null,
+          venues: [],
+          carriers: [],
+          conciliation: false,
+          kind: '',
+          weight: 0,
+          order: 0,
+          optional: false,
+          hint: ''
+        };
+        // get scales from db
+
+        return {
+          form: {
+            _id: form._id,
+            name: form.name,
+            description: form.description,
+            // norrmalize questions in sections
+            sections: form.sections.map((section) => {
+              return {
+                _id: section._id,
+                name: section.name,
+                questions: section.questions.map((question) => {
+                  return {
+                    ...baseQuestion,
+                    ...question
+                  };
+                }),
+                weight: section.weight,
+                order: section.order
+              };
+            })
+          },
+          scales,
+          extra,
+          ...response
+        };
       }
-
-      if (form.conciliation) {
-        extraSection.questions.push({
-          _id: 'conciliation',
-          question: form.conciliationText,
-          scale: 'conciliation',
-          kind: KindQuestion.scale,
-          order: extraSection.questions.length + 1
-        });
-        extraScales.push({
-          _id: 'conciliation',
-          name: 'conciliation',
-          choices: [
-            {
-              _id: 'false',
-              choice: 'No',
-              backgroundColor: 'red',
-              requireImage: false,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 0,
-              order: 1
-            },
-            {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: form.conciliationImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false,
-              value: 1,
-              order: 2
-            }
-          ]
-        });
-      }
-
-      let scales = await this.getScales({
-        _id: {
-          $in: scalesIds
-        },
-        team
-      });
-
-      scales = [...scales, ...extraScales];
-      if (extraSection.questions.length) {
-        (form as any).sections = [...form.sections, extraSection];
-      }
-      const baseQuestion = {
-        _id: '',
-        question: '',
-        scale: null,
-        risk: '',
-        observe: '',
-        accessories: null,
-        damages: null,
-        venues: [],
-        carriers: [],
-        conciliation: false,
-        kind: '',
-        weight: 0,
-        order: 0,
-        optional: false,
-        hint: ''
-      };
-      // get scales from db
-
-      return {
-        form: {
-          _id: form._id,
-          name: form.name,
-          description: form.description,
-          // norrmalize questions in sections
-          sections: form.sections.map((section) => {
-            return {
-              _id: section._id,
-              name: section.name,
-              questions: section.questions.map((question) => {
-                return {
-                  ...baseQuestion,
-                  ...question
-                };
-              }),
-              weight: section.weight,
-              order: section.order
-            };
-          })
-        },
-        scales,
-        extra,
-        ...response
-      };
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiOnlyMe:`, e);
@@ -1049,7 +1047,7 @@ class TransmittalController {
   private async getScales(
     filter: any
   ): Promise<
-    mongoose.LeanDocument<IScaleModel & { _id: mongoose.Types.ObjectId }>[]
+    mongoose.LeanDocument<IScaleModel & { _id: Types.ObjectId }>[]
   > {
     const keyCache = `scales-${JSON.stringify(filter)}`;
     return new Promise((resolve, reject) => {
@@ -1067,10 +1065,9 @@ class TransmittalController {
             'choices.na': false,
             team: false,
             __v: false
-          })
-            .lean()
-            redisClient.setex(keyCache, 30, JSON.stringify(scales));
-            resolve(scales);
+          }).lean();
+          redisClient.setex(keyCache, 30, JSON.stringify(scales));
+          resolve(scales);
         }
       });
     });
@@ -1242,7 +1239,7 @@ class TransmittalController {
       if (drivers) {
         let driversIds = drivers
           .split(',')
-          .map((d) => new mongoose.Types.ObjectId(d));
+          .map((d) => new Types.ObjectId(d));
         filter['$or'] = [
           { 'transporter.driver': { $in: driversIds } },
           { 'transporter.patent': { $regex: plate.trim(), $options: 'i' } }
@@ -1254,7 +1251,7 @@ class TransmittalController {
       if (types) {
         let typeIds = types
           .split(',')
-          .map((t) => new mongoose.Types.ObjectId(t));
+          .map((t) => new Types.ObjectId(t));
         filter['type'] = { $in: typeIds };
       }
 
@@ -1581,7 +1578,7 @@ class TransmittalController {
       const transmittals = await TransmittalItem.aggregate([
         {
           $match: {
-            team: new mongoose.Types.ObjectId(team),
+            team: new Types.ObjectId(team),
             createdAt: {
               $gte: moment.unix(Number(from)).toDate(),
               $lt: moment.unix(Number(to)).toDate()
@@ -1829,7 +1826,7 @@ class TransmittalController {
       let transmittals = await TransmittalItem.aggregate([
         {
           $match: {
-            team: new mongoose.Types.ObjectId(team),
+            team: new Types.ObjectId(team),
             createdAt: {
               $gte: moment.unix(Number(from)).toDate(),
               $lt: moment.unix(Number(to)).toDate()
@@ -2204,7 +2201,7 @@ class TransmittalController {
     logger.info(`TransmittalController.apiRegisterBorderPass`);
     try {
       let transmittal = await transmittalModel.findOne({
-        _id: new mongoose.Types.ObjectId(id),
+        _id: new Types.ObjectId(id),
         team,
         'transporter.driver': req.user._id,
         status: {
