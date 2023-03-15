@@ -48,7 +48,7 @@ export function usersReducer(
     case '/USERS/LOAD_VENUES':
       return {
         ...state,
-        venues: action.payload.venues
+        venues: action.payload.venues.sort((a, b) => a.company.name.localeCompare(b.company.name))
       };
     case '/USERS/FILTER_VENUES':
       return {

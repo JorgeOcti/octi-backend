@@ -13,7 +13,6 @@ import UserModel, { User } from '../models/user.model';
 import emailQueue from '../tasks/email.task';
 
 class AppController {
-
   constructor() {
     this.index = this.index.bind(this);
     this.healthCheck = this.healthCheck.bind(this);
@@ -56,7 +55,11 @@ class AppController {
     }
   }
 
-  public processLoginSoo(req: IRequest, res: Response, next: NextFunction): void {
+  public processLoginSoo(
+    req: IRequest,
+    res: Response,
+    next: NextFunction
+  ): void {
     passport.authenticate('multy-saml', (err: any, user: any) => {
       /* istanbul ignore if */
       if (err) {
@@ -93,11 +96,21 @@ class AppController {
 
   public processLogin(req: IRequest, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
-    logger.info(`AppController.processLogin: session: ${JSON.stringify(req.session)}`);
+    logger.info(
+      `AppController.processLogin: session: ${JSON.stringify(req.session)}`
+    );
     const redirectTo = (req.session as any).redirectTo;
     if (req.isAuthenticated() && req?.user) {
-      logger.debug(`AppController.processLogin: user: ${JSON.stringify(req.user)} redirectTo: ${redirectTo}`);
-      if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
+      logger.debug(
+        `AppController.processLogin: user: ${JSON.stringify(
+          req.user
+        )} redirectTo: ${redirectTo}`
+      );
+      if (
+        redirectTo?.length &&
+        !redirectTo.includes('logout') &&
+        !redirectTo.includes('undefined')
+      ) {
         delete (req.session as any).redirectTo;
         return res.redirect(redirectTo);
       } else {
@@ -108,54 +121,81 @@ class AppController {
       passport.authenticate('local', async (err: any, user: any) => {
         /* istanbul ignore if */
         if (err) {
-          logger.debug(`AppController.processLogin.authenticate: Wrong username or password.`);
+          logger.debug(
+            `AppController.processLogin.authenticate: Wrong username or password.`
+          );
           logger.error(err);
           // return next(err); // will generate a 500 error
           return res.render('app/login', {
-            username, error: 'Ha ocurrido un error.'
+            username,
+            error: 'Ha ocurrido un error.'
           });
         }
         /* istanbul ignore if */
         if (!user) {
-          logger.debug(`AppController.processLogin.authenticate: User not found.`);
+          logger.debug(
+            `AppController.processLogin.authenticate: User not found.`
+          );
           return res.render('app/login', {
-            username, error: 'Usuario o contraseña incorrecta.'
+            username,
+            error: 'Usuario o contraseña incorrecta.'
           });
         }
         req.login(user, async (loginErr) => {
           /* istanbul ignore if */
           if (loginErr) {
-            logger.debug(`AppController.processLogin.authenticate: We could not authenticate.`);
+            logger.debug(
+              `AppController.processLogin.authenticate: We could not authenticate.`
+            );
             logger.error(loginErr);
             return res.render('app/login', {
-              username, error: 'Usuario o contraseña incorrecta.'
+              username,
+              error: 'Usuario o contraseña incorrecta.'
             });
           } else {
-            await User.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
+            await User.updateOne(
+              { _id: user._id },
+              { $set: { lastLogin: new Date() } }
+            );
             try {
               user = await UserModel.findById(user._id).populate({
                 path: 'userPermissions',
                 select: ['codeName']
               });
-              if (redirectTo?.length && !redirectTo.includes('logout') && !redirectTo.includes('undefined')) {
-                logger.debug(`AppController.processLogin.login.redirectTo ${redirectTo}`);
+              if (
+                redirectTo?.length &&
+                !redirectTo.includes('logout') &&
+                !redirectTo.includes('undefined')
+              ) {
+                logger.debug(
+                  `AppController.processLogin.login.redirectTo ${redirectTo}`
+                );
                 delete (req.session as any).redirectTo;
                 return res.redirect(redirectTo);
               } else if (user.hasPermission('viewRequest')) {
-                logger.debug(`AppController.processLogin.login.redirectTo /requests/vehicles/`);
+                logger.debug(
+                  `AppController.processLogin.login.redirectTo /requests/vehicles/`
+                );
                 return res.redirect('/requests/vehicles/');
               } else if (user.hasPermission('viewInventory')) {
-                logger.debug(`AppController.processLogin.login.redirectTo /inventory/`);
+                logger.debug(
+                  `AppController.processLogin.login.redirectTo /inventory/`
+                );
                 return res.redirect('/inventory/');
               } else {
-                logger.debug(`AppController.processLogin.login.redirectTo /cars/`);
+                logger.debug(
+                  `AppController.processLogin.login.redirectTo /cars/`
+                );
                 return res.redirect('/cars/');
               }
             } catch (e) {
-              logger.debug(`AppController.processLogin.authenticate: Wrong username or password`);
+              logger.debug(
+                `AppController.processLogin.authenticate: Wrong username or password`
+              );
               logger.error(e);
               return res.render('app/login', {
-                username, error: 'Usuario o contraseña incorrecta.'
+                username,
+                error: 'Usuario o contraseña incorrecta.'
               });
             }
           }
@@ -163,7 +203,6 @@ class AppController {
       })(req, res, next);
     }
   }
-
 
   public forgotPassword(req: Request, res: Response) {
     /* istanbul ignore if */
@@ -191,15 +230,16 @@ class AppController {
 
       const user = await UserModel.findOne({ email: username });
       if (user) {
-
         const token = uuid.v4();
         const fullname = user.fullName();
-        emailQueue.queue.add('email', {
-          from: '',
-          title: `Recovery password for ${fullname}`,
-          to: `"${fullname}"<${user.email}>`,
-          subject: `Recuperación de tu cuenta en OSA Andes`,
-          text: `Hola ${fullname}
+        emailQueue.queue.add(
+          'email',
+          {
+            from: '',
+            title: `Recovery password for ${fullname}`,
+            to: `"${fullname}"<${user.email}>`,
+            subject: `Recuperación de tu cuenta en OSA Andes`,
+            text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
 
@@ -210,12 +250,14 @@ class AppController {
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
 
             © 2021 OSA SpA. Todos los derechos reservados.`,
-          view: 'account/forgotPassword',
-          context: {
-            fullname,
-            url: `${process.env.SITE_URL}account/recovery/${token}/`
-          }
-        }, { attempts: 3, backoff: 1000 });
+            view: 'account/forgotPassword',
+            context: {
+              fullname,
+              url: `${process.env.SITE_URL}account/recovery/${token}/`
+            }
+          },
+          { attempts: 3, backoff: 1000 }
+        );
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         user.save();
@@ -237,13 +279,12 @@ class AppController {
       return res.status(404).render('404');
     }
     // close sesión
-    req.logout(() => { });
+    req.logout(() => {});
     try {
       // validate link is valid
-      const user = await UserModel
-        .findOne({
-          passwordResetToken: token
-        });
+      const user = await UserModel.findOne({
+        passwordResetToken: token
+      });
       return res.render('app/recovery', {
         csrfToken: req.csrfToken(),
         user
@@ -254,7 +295,11 @@ class AppController {
     }
   }
 
-  public async processRecovery(req: Request, res: Response, next: NextFunction) {
+  public async processRecovery(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     const { token } = req.params;
     const { password, password2 } = req.body;
     /* istanbul ignore next */
@@ -265,7 +310,11 @@ class AppController {
       return res.redirect(`/`);
     }
     /* istanbul ignore next */
-    if (!password.trim().length || !password2.trim().length || password !== password2) {
+    if (
+      !password.trim().length ||
+      !password2.trim().length ||
+      password !== password2
+    ) {
       return res.redirect(`/account/recovery/${token}`);
     }
     try {
@@ -281,13 +330,8 @@ class AppController {
             return next(loginErr);
           } else {
             user.lastLogin = new Date();
-            user.save((err: any) => {
-              if (err) {
-                console.log(err); // handle errors!
-              } else {
-                return res.redirect('/');
-              }
-            });
+            user.save();
+            return res.redirect('/');
           }
         });
       } else {
@@ -300,9 +344,13 @@ class AppController {
   }
 
   public logout(req: IRequest, res: Response) {
-    logger.info(`AppController.logout ${req?.user ? `${req.user.email} ` : ''}from: ${req.header('Referrer') ?? 'system'}`);
+    logger.info(
+      `AppController.logout ${req?.user ? `${req.user.email} ` : ''}from: ${
+        req.header('Referrer') ?? 'system'
+      }`
+    );
     // (req.session as any).redirectTo = req.url;
-    req.logout(() => { });
+    req.logout(() => {});
     return res.redirect('/account/login/');
   }
 
@@ -311,7 +359,11 @@ class AppController {
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
-        logger.info(`AppController.recoverFile email: ${req.user.email} file: ${JSON.stringify(file)}`);
+        logger.info(
+          `AppController.recoverFile email: ${
+            req.user.email
+          } file: ${JSON.stringify(file)}`
+        );
         const recoverFile = new RecoverFile();
         /*
           {
@@ -361,7 +413,6 @@ class AppController {
         /* istanbul ignore next */
         res.status(400).json(e);
       }
-
     } else {
       logger.error(`uploadFile: La imagen es obligatoria.`);
       res.status(400).json({
@@ -398,4 +449,3 @@ class AppController {
 
 const appController = new AppController();
 export default appController;
-

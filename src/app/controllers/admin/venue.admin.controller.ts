@@ -154,7 +154,7 @@ class AdminVenueController {
     // paginate options
     const options: PaginateOptions = {
       sort: {
-        name: 1
+        name: 1,
       },
       customLabels: {
         totalDocs: 'total',

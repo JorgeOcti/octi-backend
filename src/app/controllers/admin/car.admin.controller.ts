@@ -120,28 +120,27 @@ class AdminCarController {
           }
         }
 
-        await Car.insertMany(carsToInsert, async (err, data) => {
-          for (let car of data){
-            logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
-            let history = await new History({
-              status: StatusHistory.created,
-              module: ModuleHistory.import,
-              car: car._id,
-              team: team._id,
-              company: company._id,
-              createdBy: car.createdBy,
-              executedAt: car.createdAt,
-              current: true
-            }).save();
-            await Car.updateOne({
-              _id: car
-            }, {
-              $set: {
-                event: history._id
-              }
-            });
-          }
-        });
+        const data = await Car.insertMany(carsToInsert);
+        for (let car of data){
+          logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
+          let history = await new History({
+            status: StatusHistory.created,
+            module: ModuleHistory.import,
+            car: car._id,
+            team: team._id,
+            company: company._id,
+            createdBy: car.createdBy,
+            executedAt: car.createdAt,
+            current: true
+          }).save();
+          await Car.updateOne({
+            _id: car
+          }, {
+            $set: {
+              event: history._id
+            }
+          });
+        }
         socket().to(req.user._id).emit('FINISH-IMPORT', { finish: true });
       }
       logger.info(`CarController.importCars: Finish importing`);

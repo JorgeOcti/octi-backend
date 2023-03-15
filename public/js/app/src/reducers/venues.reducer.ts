@@ -70,7 +70,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
     case '/VENUES/LOAD_ALL_VENUES':
       return {
         ...state,
-        allVenues: action.payload.allVenues
+        allVenues: action.payload.allVenues.sort((a, b) => a.company.name.localeCompare(b.company.name))
       };
     case '/VENUES/LOAD_CARRIERS':
       return {

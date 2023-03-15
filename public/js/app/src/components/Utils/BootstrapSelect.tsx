@@ -5,6 +5,7 @@ import {RefObject} from 'react';
 interface IOption {
   value: string;
   text: any;
+  rend?: any;
   className?: string;
 }
 
@@ -160,7 +161,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
                     <li key={option.value} className={`${isSelected ? 'selected' : ''}`} onClick={() => onClick(option.value)}>
                       <a role="option" tabIndex={0} className={`${isSelected ? 'selected' : ''}`} style={{background: '#FFF'}}>
                         <span className="glyphicon glyphicon-ok check-mark" />
-                        <span className={option.className ? option.className : ''}>{option.text}</span>
+                        <span className={option.className ? option.className : ''}>{option.rend?option.rend:option.text}</span>
                       </a>
                     </li>
                   );

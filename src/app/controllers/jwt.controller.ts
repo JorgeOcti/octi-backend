@@ -29,11 +29,9 @@ class JWTController {
         req.body.password === undefined
       ) {
         logger.error(`login: Authentication failed. Invalid user or password.`);
-        return res
-          .status(401)
-          .json({
-            message: 'Authentication failed. Invalid user or password.'
-          });
+        return res.status(401).json({
+          message: 'Authentication failed. Invalid user or password.'
+        });
       } else {
         const user = await User.findOne(
           {
@@ -104,8 +102,10 @@ class JWTController {
               $gte: today.toDate(),
               $lt: tomorrow.toDate()
             }
-          }).countDocuments(async (err, count) => {
-            const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
+          }).countDocuments(async (err: any, count: any) => {
+            const teamSettings = await TeamSetting.findOne({
+              team: user.team
+            }).lean();
             const version = await Version.findOne({}, ['ios', 'android'], {
               sort: {
                 createdAt: -1
@@ -249,7 +249,9 @@ class JWTController {
             $lt: tomorrow.toDate()
           }
         }).countDocuments();
-        const teamSettings = await TeamSetting.findOne({ team: user.team }).lean();
+        const teamSettings = await TeamSetting.findOne({
+          team: user.team
+        }).lean();
         const version = await Version.findOne({}, ['ios', 'android'], {
           sort: {
             createdAt: -1
@@ -339,12 +341,14 @@ class JWTController {
       if (user) {
         const token = uuid.v4();
         const fullname = user.fullName();
-        emailQueue.queue.add('email', {
-          from: '',
-          title: `Recovery password for ${fullname}`,
-          to: `"${fullname}"<${user.email}>`,
-          subject: `Recuperación de tu cuenta en OSA Andes`,
-          text: `Hola ${fullname}
+        emailQueue.queue.add(
+          'email',
+          {
+            from: '',
+            title: `Recovery password for ${fullname}`,
+            to: `"${fullname}"<${user.email}>`,
+            subject: `Recuperación de tu cuenta en OSA Andes`,
+            text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
 
@@ -355,12 +359,14 @@ class JWTController {
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
 
             © 2021 OSA SpA. Todos los derechos reservados.`,
-          view: 'account/forgotPassword',
-          context: {
-            fullname,
-            url: `${process.env.SITE_URL}account/recovery/${token}/`
-          }
-        }, { attempts: 3, backoff: 1000 });
+            view: 'account/forgotPassword',
+            context: {
+              fullname,
+              url: `${process.env.SITE_URL}account/recovery/${token}/`
+            }
+          },
+          { attempts: 3, backoff: 1000 }
+        );
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         await user.save();

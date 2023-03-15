@@ -289,7 +289,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       selectAll={this.filterAllVenues}
                       options={venues.map((venue: any) => ({
                         value: venue._id,
-                        text: venue.name.toUpperCase()
+                        rend: <><strong>{venue.company.name.toUpperCase()}</strong> {venue.name.toUpperCase()}</>,
+                        text: `${venue.company.name.toUpperCase()} ${venue.name.toUpperCase()}`
                       }))}
                       // onClick={() => {
                       //   console.log('click');

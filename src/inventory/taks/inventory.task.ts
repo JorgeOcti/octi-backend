@@ -135,7 +135,6 @@ class InventoryQueue {
                 }
               });
               vinsLoaded.push(car.vin);
-              vins = vins.filter((vin) => vin !== car.vin);
               updateCars.push({
                 name: 'updateCar',
                 data: {
@@ -153,7 +152,7 @@ class InventoryQueue {
         );
         logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
         logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, vinsLoaded: ${vinsLoaded.length}}`)
-
+        vins = vins.filter((vin) =>!vinsLoaded.includes(vin));
         const createCars = [];
         for (const vin of vins) {
           const car = dataByVIN[vin];

@@ -22,11 +22,6 @@ async function addlabel() {
       sendTo: ChoicesStatusCarInventory.found,
       updatedBy: '5af487b4f6a4c95ccd991466'
     });
-    inventoryLabel.validate((err) => {
-      if (err) {
-        console.log(err);
-      }
-    });
     await inventoryLabel.save();
   } catch (e) {
     console.log('e', e);

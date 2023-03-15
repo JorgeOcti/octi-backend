@@ -245,7 +245,8 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                       selectAll={(value: boolean) => this.handleSelectVenuesSendToDays( true, value)}
                       options={allVenues.map((venue: any) => ({
                         value: venue._id,
-                        text: venue.name
+                        rend: <><strong>{venue.company.name.toUpperCase()}</strong> {venue.name.toUpperCase()}</>,
+                        text: `${venue.company.name.toUpperCase()} ${venue.name.toUpperCase()}`
                       }))}
                       onClick={(value: string) => this.handleSelectVenuesSendToDays(false, value)}
                     />
@@ -296,7 +297,8 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                       selectAll={(value: boolean) => this.handleSelectVenues('receiveFrom', true, value)}
                       options={allVenues.map((venue: any) => ({
                         value: venue._id,
-                        text: venue.name
+                        rend: <><strong>{venue.company.name.toUpperCase()}</strong> {venue.name.toUpperCase()}</>,
+                        text: `${venue.company.name.toUpperCase()} ${venue.name.toUpperCase()}`
                       }))}
                       onClick={(value: string) => this.handleSelectVenues('receiveFrom', false, value)}
                     />

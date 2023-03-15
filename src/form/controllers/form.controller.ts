@@ -3037,22 +3037,17 @@ class FormController {
     });
   }
 
-  private getForms(filter: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      Form.find(filter, {
+  private async getForms(filter: any): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const forms = await Form.find(filter, {
         _id: 1,
         name: 1
-      }).lean().exec!((err, forms) => {
-        if (err) {
-          /* istanbul ignore next */
-          return reject(err);
-        }
-        return resolve(forms);
-      });
+      }).lean()
+      return resolve(forms);
     });
   }
 
-  private getForm(filter: any): Promise<
+  private async getForm(filter: any): Promise<
     LeanDocument<
       IFormModel & {
         _id: Types.ObjectId;
@@ -3061,14 +3056,14 @@ class FormController {
   > {
     const keyCache = `form-${filter._id}`;
     logger.debug(`keyCache ${keyCache}`);
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
           logger.debug(`FROM CACHE`);
           resolve(JSON.parse(result));
         } else {
           logger.debug(`NEW CACHE`);
-          Form.findOne(filter, {
+          const form = await Form.findOne(filter, {
             company: false,
             updatedAt: false,
             createdAt: false,
@@ -3138,18 +3133,12 @@ class FormController {
                 ]
               }
             ])
-            .lean()
-            .exec((err, form) => {
-              if (err) {
-                /* istanbul ignore next */
-                reject(err);
-              }
-              if (form) {
-                redisClient.setex(keyCache, 60, JSON.stringify(form));
-                resolve(form);
-              }
-              reject('No se encontro formularío');
-            });
+            .lean();
+            if (form) {
+              redisClient.setex(keyCache, 60, JSON.stringify(form));
+              resolve(form);
+            }
+            reject('No se encontro formularío');
         }
       });
     });
@@ -3210,7 +3199,7 @@ class FormController {
     });
   }
 
-  private getScales(filter: any): Promise<
+  private async getScales(filter: any): Promise<
     LeanDocument<
       IScaleModel & {
         _id: Types.ObjectId;
@@ -3218,12 +3207,12 @@ class FormController {
     >[]
   > {
     const keyCache = `scales-${JSON.stringify(filter)}`;
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
           resolve(JSON.parse(result));
         } else {
-          ScaleModel.find(filter, {
+          const scales = await ScaleModel.find(filter, {
             updatedAt: false,
             createdAt: false,
             active: false,
@@ -3235,14 +3224,8 @@ class FormController {
             __v: false
           })
             .lean()
-            .exec((err, scales) => {
-              if (err) {
-                /* istanbul ignore next */
-                reject(err);
-              }
-              redisClient.setex(keyCache, 30, JSON.stringify(scales));
-              resolve(scales);
-            });
+            redisClient.setex(keyCache, 30, JSON.stringify(scales));
+            resolve(scales);
         }
       });
     });
