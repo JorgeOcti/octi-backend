@@ -74,6 +74,7 @@ const billingNotificationsSchema = new mongoose.Schema({
 const companySchema = new mongoose.Schema({
   name: {
     type: String,
+    uppercase: true,
     trim: true,
     required: true
   },
