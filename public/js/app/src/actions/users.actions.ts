@@ -100,6 +100,39 @@ export function filterVenuesAction(venues: string[]): IFilterVenues {
   };
 }
 
+export function changeStatusUserAction(user: IUser) {
+  return (
+    dispatch: Dispatch<UserReduxAction>,
+    getState: () => { users: IUsersState }
+  ) => {
+    const state = getState();
+    const api: ApiService = new ApiService();
+    api
+      .changeStatusUser(user._id, !user.active)
+      .then((response: AxiosResponse) => {
+          const $user = $(`#user-${user._id}`);
+          $user.addClass('editing-item');
+          dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any)
+          setTimeout(() => {
+            $user.removeClass('editing-item');
+          }, 1000);
+          // swal!(response.data.message, {
+          //   icon: 'success'
+          // });
+
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export interface ITempUser {
   _id?: string;
   firstName?: string;

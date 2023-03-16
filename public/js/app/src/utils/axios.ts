@@ -88,6 +88,12 @@ export default class ApiService {
       });
   }
 
+  public changeStatusUser(userId: any, active: boolean): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/users/change-status/${userId}/`
+      , {active});
+  }
+
   public updateUser(user: ITempUser): AxiosPromise {
     return this.instance.patch(
       `/api/admin/users/${user._id}/`

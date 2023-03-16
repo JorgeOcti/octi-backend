@@ -70,6 +70,7 @@ appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.
 appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiCreateUser);
 appRouter.post('/api/admin/users/change-password/', Middlewares.isLoggedIn, AdminUsersController.apiChangePasswordUser);
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateUser);
+appRouter.patch('/api/admin/users/change-status/:id/', Middlewares.isLoggedIn, AdminUsersController.apiChangeStatusUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
 

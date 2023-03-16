@@ -12,6 +12,7 @@ import { IUser } from '../../../../../../src/app/interfaces/user.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import {
   changeSearchUserAction,
+  changeStatusUserAction,
   changeTempUserAction,
   createUserAction,
   deleteUserAction,
@@ -41,6 +42,7 @@ import { UserTypes } from '../../../../../../src/app/models/user.model.types';
 import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
 import BootstrapSelect from '../Utils/BootstrapSelect';
+import BootstrapSwitch from '../Utils/BootstrapSwitch';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -57,6 +59,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   updateUserAction(): UserReduxAction;
 
   deleteUserAction(id?: string): UserReduxAction;
+
+  changeStatusUserAction(user: IUser): UserReduxAction;
 
   filterVenuesAction(venues: string[]): UserReduxAction;
 
@@ -147,7 +151,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     prevState: Readonly<IStateType>,
     snapshot?: any
   ): void {
-    if (this.props.users.pagination !== prevProps.users.pagination) {
+    if (this.props.users.pagination.page !== prevProps.users.pagination.page) {
       window.scrollTo(0, 0);
     }
   }
@@ -289,7 +293,12 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       selectAll={this.filterAllVenues}
                       options={venues.map((venue: any) => ({
                         value: venue._id,
-                        rend: <><strong>{venue.company.name.toUpperCase()}</strong> {venue.name.toUpperCase()}</>,
+                        rend: (
+                          <>
+                            <strong>{venue.company.name.toUpperCase()}</strong>{' '}
+                            {venue.name.toUpperCase()}
+                          </>
+                        ),
                         text: `${venue.company.name.toUpperCase()} ${venue.name.toUpperCase()}`
                       }))}
                       // onClick={() => {
@@ -313,6 +322,10 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                     <th style={{ width: '20%' }} className="hidden-xs">
                       Último login
                     </th>
+                    {window.user.isAdmin ||
+                    hasPermission(window.user, 'changeUser') ? (
+                      <th style={{ width: '1%' }} className="width-10" />
+                    ) : null}
                     {hasPermission(window.user, 'changeUser') ? (
                       <th style={{ width: '1%' }} className="width-10" />
                     ) : null}
@@ -323,9 +336,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                     hasPermission(window.user, 'changeUser') ? (
                       <th style={{ width: '1%' }} className="width-10" />
                     ) : null}
-                    {hasPermission(window.user, 'deleteUser') ? (
-                      <th style={{ width: '1%' }} className="width-10" />
-                    ) : null}
+
                   </tr>
                 </thead>
                 <tbody>
@@ -341,8 +352,16 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                         key={user._id}
                         id={`user-${user._id}`}
                         className={'background-transition'}>
-                        <td className="middle">
-                          <strong className={'text-primary'}>
+                        <td
+                          className={`middle ${
+                            user.active ? '' : 'line-through'
+                          }`}>
+                          <strong
+                            className={`middle ${
+                              user.active
+                                ? 'text-primary'
+                                : 'text-muted line-through'
+                            }`}>
                             <CopyText
                               value={`${user.firstName?.toUpperCase()} ${user.lastName?.toUpperCase()}`}>
                               {user.firstName?.toUpperCase()}{' '}
@@ -365,7 +384,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                             </span>
                           </div>
                         </td>
-                        <td className="middle hidden-xs  text-muted">
+
+                        <td
+                          className={`middle hidden-xs text-muted ${
+                            user.active ? '' : 'line-through'
+                          }`}>
                           <strong>
                             {user.venue.name?.length
                               ? user.venue.name.toUpperCase()
@@ -378,7 +401,10 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                               : ''}
                           </span>
                         </td>
-                        <td className="middle hidden-xs text-muted text-sm">
+                        <td
+                          className={`middle hidden-xs text-muted text-sm ${
+                            user.active ? '' : 'line-through'
+                          }`}>
                           <ul style={{ marginBottom: 0, paddingLeft: 0 }}>
                             <ShowIf condition={!!forms.length}>
                               {forms.map((form, index) => {
@@ -393,11 +419,27 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                             </ShowIf>
                           </ul>
                         </td>
-                        <td className="middle hidden-xs text-muted text-sm">
+                        <td
+                          className={`middle hidden-xs text-muted text-sm ${
+                            user.active ? '' : 'line-through'
+                          }`}>
                           {user.lastLogin
                             ? moment(user.lastLogin).format('LLL')
                             : '-'}
                         </td>
+                        {window.user.isAdmin ||
+                        hasPermission(window.user, 'changeUser') ? (
+                          <td
+                            className="middle-center"
+                            style={{ paddingTop: '15px' }}>
+                            <BootstrapSwitch
+                              checked={user.active}
+                              onChange={() => {
+                                 this.props.changeStatusUserAction(user);
+                              }}
+                            />
+                          </td>
+                        ) : null}
                         {hasPermission(window.user, 'changeUser') ? (
                           <td
                             className="middle-center text-yellow pointer"
@@ -423,13 +465,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                         ) : (
                           <td></td>
                         )}
-                        {hasPermission(window.user, 'deleteUser') ? (
-                          <td
-                            className="middle-center text-red pointer"
-                            onClick={() => this.deleteUser(user)}>
-                            <i className="fa fa-minus-circle" />
-                          </td>
-                        ) : null}
+
                       </tr>
                     );
                   })}
@@ -810,6 +846,7 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),
     updateUserAction: () => dispatch(updateUserAction()),
+    changeStatusUserAction: (user: IUser) => dispatch(changeStatusUserAction(user)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) =>
       dispatch(loadDataAction(title, body, footer)),
     changeSearchUserAction: (searchText: string) =>
