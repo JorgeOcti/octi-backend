@@ -21,6 +21,8 @@ export const choicesStatusCarInventory = [
 export const baseVenueSchema = new mongoose.Schema({
   name: {
     type: String,
+    uppercase: true,
+    trim: true,
     required: true
   },
   team: {

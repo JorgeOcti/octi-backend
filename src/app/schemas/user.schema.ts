@@ -29,13 +29,19 @@ const userSettingsSchema = new mongoose.Schema({
 export const baseUserSchema = new mongoose.Schema({
   username: {
     type: String,
+    lowercase: true,
+    trim: true
   },
   firstName: {
     type: String,
-    default: ''
+    uppercase: true,
+    trim: true,
+    default: '',
   },
   lastName: {
     type: String,
+    uppercase: true,
+    trim: true,
     default: ''
   },
   team: {
@@ -52,6 +58,7 @@ export const baseUserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
+    lowercase: true,
     trim: true,
     required: [true, 'El email es requerido'],
   }
