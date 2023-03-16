@@ -309,7 +309,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <table className="table table-andes table-striped">
+              <table className="table table-andes table-hover table-striped">
                 <thead>
                   <tr>
                     <th style={{ width: '26%' }}>Usuario</th>

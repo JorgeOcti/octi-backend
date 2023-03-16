@@ -287,7 +287,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 participants.length ?
                   <div className='table-responsive' style={{ border: 0 }}>
-                    <table className='table table-andes table-striped'>
+                    <table className='table table-andes table-striped table-hover'>
                       <thead>
                       <tr>
                         <th style={{ width: '18%' }} className='middle'>Detalle</th>

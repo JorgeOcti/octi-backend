@@ -19,7 +19,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (props: IPropsT
   const { participants, highlight, history, carLoading, printPdf } = props;
   return (
     <div className='table-responsive' style={{ border: 0 }}>
-      <table className='table table-andes table-striped'>
+      <table className='table table-andes table-hover table-striped'>
         <thead>
         <tr>
           <th style={{ width: '18%' }} className='middle'>Detalle</th>

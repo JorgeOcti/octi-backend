@@ -35,7 +35,6 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import { debounce } from 'throttle-debounce';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
-import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
 import Row from '../Utils/Row';
 import BootstrapSelect from '../Utils/BootstrapSelect';
@@ -417,7 +416,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>
               <div className="box-body no-padding">
-                <table className="table table-andes table-striped">
+                <table className="table table-andes table-striped table-hover">
                   <thead>
                     <tr>
                       <th style={{ width: '40%' }} className="middle">
