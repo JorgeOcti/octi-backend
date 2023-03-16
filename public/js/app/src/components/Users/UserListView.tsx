@@ -336,7 +336,6 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                     hasPermission(window.user, 'changeUser') ? (
                       <th style={{ width: '1%' }} className="width-10" />
                     ) : null}
-
                   </tr>
                 </thead>
                 <tbody>
@@ -435,7 +434,24 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                             <BootstrapSwitch
                               checked={user.active}
                               onChange={() => {
-                                 this.props.changeStatusUserAction(user);
+                                swal({
+                                  title: '¿Estás seguro?',
+                                  text: `Vas a ${
+                                    user.active ? 'DESACTIVAR' : 'ACTIVAR'
+                                  } a ${user.firstName} ${user.lastName} `,
+                                  icon: 'warning',
+                                  dangerMode: true,
+                                  buttons: {
+                                    cancel: 'Cancelar' as any,
+                                    confirm: {
+                                      text: 'Sí'
+                                    }
+                                  }
+                                }).then((willDelete: any) => {
+                                  if (willDelete) {
+                                    this.props.changeStatusUserAction(user);
+                                  }
+                                });
                               }}
                             />
                           </td>
@@ -465,7 +481,6 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                         ) : (
                           <td></td>
                         )}
-
                       </tr>
                     );
                   })}
@@ -846,7 +861,8 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),
     updateUserAction: () => dispatch(updateUserAction()),
-    changeStatusUserAction: (user: IUser) => dispatch(changeStatusUserAction(user)),
+    changeStatusUserAction: (user: IUser) =>
+      dispatch(changeStatusUserAction(user)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) =>
       dispatch(loadDataAction(title, body, footer)),
     changeSearchUserAction: (searchText: string) =>
