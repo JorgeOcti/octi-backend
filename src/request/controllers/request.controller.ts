@@ -6,9 +6,21 @@ import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 
-import mongoose, { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, QueryPopulateOptions } from 'mongoose';
-import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
-import type { IRequest, IStringKeyObject } from '../../interfaces/global.interface';
+import mongoose, {
+  CustomLabels,
+  PaginateOptions,
+  PaginateResult,
+  PipelineStage,
+  QueryPopulateOptions
+} from 'mongoose';
+import Car, {
+  ChoicesStatusCar,
+  default as CarModel
+} from '../../app/models/car.model';
+import type {
+  IRequest,
+  IStringKeyObject
+} from '../../interfaces/global.interface';
 import Request, { IRequestModel } from '../models/request.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 
@@ -31,119 +43,224 @@ import RequestItemStatus from '../models/requestItemStatus.model';
 import conectaController from './conecta.controller';
 
 class RequestController {
-
-  public itemPopulate: QueryPopulateOptions[] = [{
-    path: 'car',
-    select: ["event", "entry", "internalNumber", "patent", "engineNumber", "engineSize", "driveType", "color", "firstColorOption", "secondColorOption", "thirdColorOption", "invoice", "client", "bl", "isExhibition", "status", "createdBy", "_id", "team", "company", "vin", "vin2", "brand", "denomination", "type", "businessYear", "manufacturingYear", "countryOrigin", "createdAt", "updatedAt", "__v", "id", "material"
-    ]
-  }, {
-    path: 'request',
-    populate: [{
-      path: 'createdBy',
-      select: ['firstName', 'lastName']
-    }, {
-      path: 'advancePaymentInformation.files'
-    }]
-  }, {
-    path: 'files'
-  }, {
-    path: 'reason',
-    select: ['name']
-  }, {
-    path: 'status',
-    select: ['name', 'weigth']
-  }, {
-    path: 'carrier',
-    select: ['name']
-  }, {
-    path: 'origin',
-    select: ['name'],
-    populate: [{
-      path: 'company',
-      select: ['name'],
-    }]
-  }, {
-    path: 'destination',
-    select: ['name'],
-    populate: [{
-      path: 'company',
-      select: ['name'],
-    }]
-  }, {
-    path: 'transmittalItem',
-    select: ['loadingDate', 'arrivalDate', 'revisions', 'origin', 'destination'],
-    populate: [{
+  public itemPopulate: QueryPopulateOptions[] = [
+    {
+      path: 'car',
+      select: [
+        'event',
+        'entry',
+        'internalNumber',
+        'patent',
+        'engineNumber',
+        'engineSize',
+        'driveType',
+        'color',
+        'firstColorOption',
+        'secondColorOption',
+        'thirdColorOption',
+        'invoice',
+        'client',
+        'bl',
+        'isExhibition',
+        'status',
+        'createdBy',
+        '_id',
+        'team',
+        'company',
+        'vin',
+        'vin2',
+        'brand',
+        'denomination',
+        'type',
+        'businessYear',
+        'manufacturingYear',
+        'countryOrigin',
+        'createdAt',
+        'updatedAt',
+        '__v',
+        'id',
+        'material'
+      ]
+    },
+    {
+      path: 'request',
+      populate: [
+        {
+          path: 'createdBy',
+          select: ['firstName', 'lastName']
+        },
+        {
+          path: 'advancePaymentInformation.files'
+        }
+      ]
+    },
+    {
+      path: 'files'
+    },
+    {
+      path: 'reason',
+      select: ['name']
+    },
+    {
+      path: 'status',
+      select: ['name', 'weigth']
+    },
+    {
+      path: 'carrier',
+      select: ['name']
+    },
+    {
       path: 'origin',
       select: ['name'],
-      populate: [{
-        path: 'company',
-        select: ['name'],
-      }]
-    }, {
+      populate: [
+        {
+          path: 'company',
+          select: ['name']
+        }
+      ]
+    },
+    {
       path: 'destination',
       select: ['name'],
-      populate: [{
-        path: 'company',
-        select: ['name'],
-      }]
-    }, {
-      path: 'revisions',
-      select: ['createdAt']
-    }]
-  }, {
-    path: 'transmittal',
-    select: ['number', 'revision', 'status', 'transporter.patent'],
-    populate: [{
-      path: 'revision',
-      select: ['createdAt']
-    }, {
-      path: 'type',
-      select: ['name']
-    }, {
-      path: 'transporter.carrier',
-      select: ['name']
-    }, {
-      path: 'transporter.driver',
-      select: ['firstName', 'lastName']
-    }]
-  }];
-
-  private requestPopulate: QueryPopulateOptions[] = [{
-    path: 'origin',
-    select: ['name'],
-    populate: [{
-      path: 'company',
-      select: 'name'
-    }]
-  }, {
-    path: 'destination',
-    select: ['name'],
-    populate: [{
-      path: 'company',
-      select: 'name'
-    }]
-  }, {
-    path: 'channel',
-    select: ['name']
-  }, {
-    path: 'createdBy',
-    select: ['firstName', 'lastName']
-  }, {
-    path: 'advancePaymentInformation.files'
-  }, {
-    path: 'advancePaymentInformation.letters'
-  }, {
-    path: 'items',
-    select: [
-      'request', 'transmittal', 'transmittalItem', 'assigned', 'team', 'origin', 'position', 'destination', 'answers', 'car', 'files', 'carrier', 'reason', 'status', 'priority', 'observation', 'equipment', 'washed', 'review', 'body', 'uploadDate', 'estimatedArrival', 'createdBy', 'order', 'code'
-    ],
-    options: {
-      sort: {
-        _id: 1
-      }
+      populate: [
+        {
+          path: 'company',
+          select: ['name']
+        }
+      ]
     },
-    populate: this.itemPopulate
-  }];
+    {
+      path: 'transmittalItem',
+      select: [
+        'loadingDate',
+        'arrivalDate',
+        'revisions',
+        'origin',
+        'destination'
+      ],
+      populate: [
+        {
+          path: 'origin',
+          select: ['name'],
+          populate: [
+            {
+              path: 'company',
+              select: ['name']
+            }
+          ]
+        },
+        {
+          path: 'destination',
+          select: ['name'],
+          populate: [
+            {
+              path: 'company',
+              select: ['name']
+            }
+          ]
+        },
+        {
+          path: 'revisions',
+          select: ['createdAt']
+        }
+      ]
+    },
+    {
+      path: 'transmittal',
+      select: ['number', 'revision', 'status', 'transporter.patent'],
+      populate: [
+        {
+          path: 'revision',
+          select: ['createdAt']
+        },
+        {
+          path: 'type',
+          select: ['name']
+        },
+        {
+          path: 'transporter.carrier',
+          select: ['name']
+        },
+        {
+          path: 'transporter.driver',
+          select: ['firstName', 'lastName']
+        }
+      ]
+    }
+  ];
+
+  private requestPopulate: QueryPopulateOptions[] = [
+    {
+      path: 'origin',
+      select: ['name'],
+      populate: [
+        {
+          path: 'company',
+          select: 'name'
+        }
+      ]
+    },
+    {
+      path: 'destination',
+      select: ['name'],
+      populate: [
+        {
+          path: 'company',
+          select: 'name'
+        }
+      ]
+    },
+    {
+      path: 'channel',
+      select: ['name']
+    },
+    {
+      path: 'createdBy',
+      select: ['firstName', 'lastName']
+    },
+    {
+      path: 'advancePaymentInformation.files'
+    },
+    {
+      path: 'advancePaymentInformation.letters'
+    },
+    {
+      path: 'items',
+      select: [
+        'request',
+        'transmittal',
+        'transmittalItem',
+        'assigned',
+        'team',
+        'origin',
+        'position',
+        'destination',
+        'answers',
+        'car',
+        'files',
+        'carrier',
+        'reason',
+        'status',
+        'priority',
+        'observation',
+        'equipment',
+        'washed',
+        'review',
+        'body',
+        'uploadDate',
+        'estimatedArrival',
+        'createdBy',
+        'order',
+        'code'
+      ],
+      options: {
+        sort: {
+          _id: 1
+        }
+      },
+      populate: this.itemPopulate
+    }
+  ];
 
   readonly aggregateCustomLabels: CustomLabels = {
     totalDocs: 'total',
@@ -182,7 +299,8 @@ class RequestController {
     this.apiImport = this.apiImport.bind(this);
     this.createRequest = this.createRequest.bind(this);
     this.searchVin = this.searchVin.bind(this);
-    conectaController.searchVinContecta = conectaController.searchVinContecta.bind(this);
+    conectaController.searchVinContecta =
+      conectaController.searchVinContecta.bind(this);
     this.checkItemMassAllocation = this.checkItemMassAllocation.bind(this);
     this.processItemMassAllocation = this.processItemMassAllocation.bind(this);
   }
@@ -190,7 +308,8 @@ class RequestController {
   public async integration(req: IRequest, res: Response) {
     let { query } = req;
     logger.info(`RequestController.integration`);
-    query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
+    query['conectaID'] =
+      query['6154722a94bba10012230aae'] || query['conectaID'];
     try {
       await createRequestSalfaParams.validate(query, {
         stripUnknown: true
@@ -226,7 +345,9 @@ class RequestController {
 
   public async validateContectaID(req: IRequest, res: Response) {
     try {
-      let { body: { conectaID } } = req;
+      let {
+        body: { conectaID }
+      } = req;
       const { team } = req.user;
       if (conectaID?.length) {
         const existConectId = await Request.findOne({ team, conectaID });
@@ -298,15 +419,18 @@ class RequestController {
       try {
         const { company, team } = createdBy;
         const { cars, number, channel, sellerText, operationType } = request;
-        const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
-          team,
-          default: true
-        }, {
-          name: 'Pendiente',
-          default: true,
-          team,
-          weigth: 10
-        });
+        const defaultItemStatus = await RequestItemStatus.findOneOrCreate(
+          {
+            team,
+            default: true
+          },
+          {
+            name: 'Pendiente',
+            default: true,
+            team,
+            weigth: 10
+          }
+        );
         const newRequest: IRequestModel = await new Request({
           team,
           company,
@@ -412,7 +536,9 @@ class RequestController {
             createdBy: user
           }).save();
         }
-        const updatedRequest = await Request.findById(newRequest._id).populate(this.requestPopulate);
+        const updatedRequest = await Request.findById(newRequest._id).populate(
+          this.requestPopulate
+        );
         socket().to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
           request: updatedRequest
         });
@@ -426,7 +552,11 @@ class RequestController {
         /* istanbul ignore next */
         logger.error(`RequestController.createRequest: Async Error.`);
         /* istanbul ignore next */
-        logger.error(`{user: {_id: ${createdBy._id}, email: ${createdBy.email}}, user: ${JSON.stringify(createdBy)}`);
+        logger.error(
+          `{user: {_id: ${createdBy._id}, email: ${
+            createdBy.email
+          }}, user: ${JSON.stringify(createdBy)}`
+        );
         logger.error(e);
         reject(e);
       }
@@ -438,20 +568,31 @@ class RequestController {
       const { team } = req.user;
       const { requests } = req.body;
       if (requests?.length) {
-        const requestsNumbers = requests.map((request: any) => parseInt(request.number));
-        const existsRequest = await Request.find({ team, number: { $in: requestsNumbers } });
+        const requestsNumbers = requests.map((request: any) =>
+          parseInt(request.number)
+        );
+        const existsRequest = await Request.find({
+          team,
+          number: { $in: requestsNumbers }
+        });
         const updateTeam = await Team.findOne({ _id: team._id });
         const maxRequest = Math.max(...requestsNumbers);
         const minRequest = Math.min(...requestsNumbers);
 
         if (existsRequest.length) {
           res.status(400).json({
-            message: `Solicitudes número ${existsRequest.map((e) => e.number).join(',')} ya ${existsRequest.length > 1 ? 'existen' : 'existe'}`,
+            message: `Solicitudes número ${existsRequest
+              .map((e) => e.number)
+              .join(',')} ya ${
+              existsRequest.length > 1 ? 'existen' : 'existe'
+            }`,
             status: 400
           });
         } else if (minRequest < updateTeam!.requestNumber) {
           res.status(400).json({
-            message: `El número de solicitud no puede ser menor que ${updateTeam!.requestNumber}`,
+            message: `El número de solicitud no puede ser menor que ${
+              updateTeam!.requestNumber
+            }`,
             status: 400
           });
         } else {
@@ -459,7 +600,10 @@ class RequestController {
             await this.createRequest(req.user, request);
           });
 
-          await Team.findOneAndUpdate({ _id: team._id }, { $set: { requestNumber: maxRequest } });
+          await Team.findOneAndUpdate(
+            { _id: team._id },
+            { $set: { requestNumber: maxRequest } }
+          );
           res.status(200).json({
             message: 'Actualización realizada satisfactoriamente',
             status: 200
@@ -482,7 +626,11 @@ class RequestController {
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     logger.info(`RequestController.apiCreate`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(req.body)} }`
+    );
     const { company, team } = req.user;
     const {
       cars,
@@ -505,16 +653,23 @@ class RequestController {
           message: `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${existConectId.number}.`
         });
       }
-      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
-        team,
-        default: true
-      }, {
-        name: 'Pendiente',
-        default: true,
-        team,
-        weigth: 10
-      });
-      const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
+      const defaultItemStatus = await RequestItemStatus.findOneOrCreate(
+        {
+          team,
+          default: true
+        },
+        {
+          name: 'Pendiente',
+          default: true,
+          team,
+          weigth: 10
+        }
+      );
+      const updateTeam = await Team.findOneAndUpdate(
+        { _id: team._id },
+        { $inc: { requestNumber: 1 } },
+        { new: true }
+      );
 
       const request = await new Request({
         team,
@@ -583,7 +738,9 @@ class RequestController {
           createdBy: req.user
         }).save();
       }
-      const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
+      const newRequest = await Request.findById(request._id).populate(
+        this.requestPopulate
+      );
       socket().to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
       });
@@ -598,7 +755,11 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiCreate: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}`
+      );
       logger.error(e);
       res.status(500).json(e);
     }
@@ -608,33 +769,34 @@ class RequestController {
     logger.info(`RequestController.apiListItems email ${req.user.email}`);
     logger.debug(`RequestController.apiListItems: ${JSON.stringify(req.body)}`);
     const team = req.user.team._id;
-    const {
-      page,
-      pageSize,
-      orderBy,
-      orderType,
-      filters
-    } = req.body as {
-      page: string; pageSize: string; search: string;
-      orderBy: string; orderType: string; filters: any;
+    const { page, pageSize, orderBy, orderType, filters } = req.body as {
+      page: string;
+      pageSize: string;
+      search: string;
+      orderBy: string;
+      orderType: string;
+      filters: any;
     };
 
     const requestNumbers = filters.request
       .replace(/[^0-9\-,]/g, '')
       .split(',')
-      .filter((requestNumber: string) => (requestNumber.length));
+      .filter((requestNumber: string) => requestNumber.length);
 
-    const transmittalsNumbers = filters.transmittal ? filters.transmittal
-      .replace(/[^0-9\-,]/g, '')
-      .split(',')
-      .filter((transmitttalNumber: string) => (transmitttalNumber.length)) : [];
+    const transmittalsNumbers = filters.transmittal
+      ? filters.transmittal
+          .replace(/[^0-9\-,]/g, '')
+          .split(',')
+          .filter((transmitttalNumber: string) => transmitttalNumber.length)
+      : [];
 
     let venuesIds: any[];
     const extraQuery: any = {};
 
     if (filters.venues && filters.venues.length) {
-      venuesIds = req.user.venuesPermissions()
-        .filter(venue => (filters.venues.includes(venue.toString())));
+      venuesIds = req.user
+        .venuesPermissions()
+        .filter((venue) => filters.venues.includes(venue.toString()));
     } else {
       venuesIds = req.user.venuesPermissions();
     }
@@ -643,11 +805,19 @@ class RequestController {
         extraQuery.$or = [];
       }
       extraQuery.$or.push({
-        'meta.user._id': { $in: filters.users.map((userId: any) => new mongoose.Types.ObjectId(userId)) }
+        'meta.user._id': {
+          $in: filters.users.map(
+            (userId: any) => new mongoose.Types.ObjectId(userId)
+          )
+        }
       });
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = { $in: filters.status.map((status: any) => new mongoose.Types.ObjectId(status)) };
+      extraQuery.status = {
+        $in: filters.status.map(
+          (status: any) => new mongoose.Types.ObjectId(status)
+        )
+      };
     }
     if (filters.from) {
       if (!extraQuery.hasOwnProperty('createdAt')) {
@@ -667,7 +837,7 @@ class RequestController {
         extraQuery.$or = [];
       }
       requestNumbers.forEach((requestNumber: any) => {
-        if (requestNumber.includes('-') && requestNumber.split("-")[1].length) {
+        if (requestNumber.includes('-') && requestNumber.split('-')[1].length) {
           /*extraQuery.$or.push({
             'code': {
               $regex: requestNumber,
@@ -675,16 +845,14 @@ class RequestController {
             }
           });*/
           extraQuery.$or.push({
-            'code': requestNumber
+            code: requestNumber
           });
         } else {
           try {
             extraQuery.$or.push({
               'meta.request.number': parseInt(requestNumber)
             });
-          } catch (e) {
-
-          }
+          } catch (e) {}
         }
       });
       // extraQuery['meta.request.code'] = {
@@ -703,30 +871,29 @@ class RequestController {
           extraQuery.$or.push({
             'meta.transmittal.number': parseInt(transmittalNumber)
           });
-        } catch (e) {
-        }
+        } catch (e) {}
       });
     }
 
     if (filters.entry?.length) {
-      extraQuery['meta.car.entry'] = { '$regex': filters.entry, '$options': 'i' };
+      extraQuery['meta.car.entry'] = { $regex: filters.entry, $options: 'i' };
     }
     if (filters.text) {
       extraQuery.$or = [];
       extraQuery.$or.push({
-        'meta.car.vin': { '$regex': filters.text, '$options': 'i' }
+        'meta.car.vin': { $regex: filters.text, $options: 'i' }
       });
       extraQuery.$or.push({
-        'meta.car.brand': { '$regex': filters.text, '$options': 'i' }
+        'meta.car.brand': { $regex: filters.text, $options: 'i' }
       });
       extraQuery.$or.push({
-        'meta.car.color': { '$regex': filters.text, '$options': 'i' }
+        'meta.car.color': { $regex: filters.text, $options: 'i' }
       });
       extraQuery.$or.push({
-        'meta.car.denomination': { '$regex': filters.text, '$options': 'i' }
+        'meta.car.denomination': { $regex: filters.text, $options: 'i' }
       });
       extraQuery.$or.push({
-        'meta.car.material': { '$regex': filters.text, '$options': 'i' }
+        'meta.car.material': { $regex: filters.text, $options: 'i' }
       });
     }
     if (filters.sellerText && filters.sellerText.length) {
@@ -734,7 +901,7 @@ class RequestController {
         extraQuery.$or = [];
       }
       extraQuery.$or.push({
-        'meta.request.sellerText': { '$regex': filters.sellerText, '$options': 'i' }
+        'meta.request.sellerText': { $regex: filters.sellerText, $options: 'i' }
       });
     }
     if (filters.properties && filters.properties.length) {
@@ -758,194 +925,374 @@ class RequestController {
     }
 
     try {
-      const baseAggregate: any[] = [{
-        $match: {
-          team: new mongoose.Types.ObjectId(team),
-          $or: [{
-            destination: {
-              $in: venuesIds
-            }
-            // ...extraQuery
-          }, {
-            origin: {
-              $in: venuesIds
-            }
-            // ...extraQuery
-          }]
+      const baseAggregate: any[] = [
+        {
+          $match: {
+            team: new mongoose.Types.ObjectId(team),
+            $or: [
+              {
+                destination: {
+                  $in: venuesIds
+                }
+                // ...extraQuery
+              },
+              {
+                origin: {
+                  $in: venuesIds
+                }
+                // ...extraQuery
+              }
+            ]
+          }
+        },
+        {
+          $match: extraQuery
         }
-      }, {
-        $match: extraQuery
-      }];
+      ];
 
-      const aggregatePopulate: PipelineStage[] = [{
-        $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-      }, {
-        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-      }, {
-        $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'companies', localField: 'origin.company', foreignField: '_id', as: 'origin.company' }
-      }, {
-        $unwind: { path: '$origin.company', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-      }, {
-        $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'companies', localField: 'destination.company', foreignField: '_id', as: 'destination.company' }
-      }, {
-        $unwind: { path: '$destination.company', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-      }, {
-        $unwind: { path: '$request', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
-      }, {
-        $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: {
-          from: 'requestfiles',
-          localField: 'request.advancePaymentInformation.files',
-          foreignField: '_id',
-          as: 'request.advancePaymentInformation.files'
+      const aggregatePopulate: PipelineStage[] = [
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        {
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'origin',
+            foreignField: '_id',
+            as: 'origin'
+          }
+        },
+        {
+          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'origin.company',
+            foreignField: '_id',
+            as: 'origin.company'
+          }
+        },
+        {
+          $unwind: { path: '$origin.company', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'destination',
+            foreignField: '_id',
+            as: 'destination'
+          }
+        },
+        {
+          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'destination.company',
+            foreignField: '_id',
+            as: 'destination.company'
+          }
+        },
+        {
+          $unwind: {
+            path: '$destination.company',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'requests',
+            localField: 'request',
+            foreignField: '_id',
+            as: 'request'
+          }
+        },
+        {
+          $unwind: { path: '$request', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'request.createdBy',
+            foreignField: '_id',
+            as: 'request.createdBy'
+          }
+        },
+        {
+          $unwind: {
+            path: '$request.createdBy',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'requestfiles',
+            localField: 'request.advancePaymentInformation.files',
+            foreignField: '_id',
+            as: 'request.advancePaymentInformation.files'
+          }
+        },
+        {
+          $lookup: {
+            from: 'requestfiles',
+            localField: 'request.advancePaymentInformation.letters',
+            foreignField: '_id',
+            as: 'request.advancePaymentInformation.letters'
+          }
+        },
+        {
+          $lookup: {
+            from: 'requestitemstatuses',
+            localField: 'status',
+            foreignField: '_id',
+            as: 'status'
+          }
+        },
+        {
+          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'reasons',
+            localField: 'reason',
+            foreignField: '_id',
+            as: 'reason'
+          }
+        },
+        {
+          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'transmittals',
+            localField: 'transmittal',
+            foreignField: '_id',
+            as: 'transmittal'
+          }
+        },
+        {
+          $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'milestonetypes',
+            localField: 'transmittal.type',
+            foreignField: '_id',
+            as: 'transmittal.type'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittal.type',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'transmittal.transporter.driver',
+            foreignField: '_id',
+            as: 'transmittal.transporter.driver'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittal.transporter.driver',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'carriers',
+            localField: 'transmittal.transporter.carrier',
+            foreignField: '_id',
+            as: 'transmittal.transporter.carrier'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittal.transporter.carrier',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'transmittalitems',
+            localField: 'transmittalItem',
+            foreignField: '_id',
+            as: 'transmittalItem'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittalItem',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'transmittalItem.origin',
+            foreignField: '_id',
+            as: 'transmittalItem.origin'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittalItem.origin',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'transmittalItem.origin.company',
+            foreignField: '_id',
+            as: 'transmittalItem.origin.company'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittalItem.origin.company',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'transmittalItem.destination',
+            foreignField: '_id',
+            as: 'transmittalItem.destination'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittalItem.destination',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'companies',
+            localField: 'transmittalItem.destination.company',
+            foreignField: '_id',
+            as: 'transmittalItem.destination.company'
+          }
+        },
+        {
+          $unwind: {
+            path: '$transmittalItem.destination.company',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: { requestNumber: { $toString: '$request.number' } }
+        },
+        {
+          $addFields: {
+            transmittalNumber: { $toString: '$transmittal.number' }
+          }
+        },
+        {
+          $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+        },
+        {
+          $project: {
+            _id: 1,
+            'transmittalItem._id': 1,
+            'transmittalItem.origin._id': 1,
+            'transmittalItem.origin.name': 1,
+            'transmittalItem.origin.company._id': 1,
+            'transmittalItem.origin.company.name': 1,
+            'transmittalItem.destination._id': 1,
+            'transmittalItem.destination.name': 1,
+            'transmittalItem.destination.company._id': 1,
+            'transmittalItem.destination.company.name': 1,
+            'transmittal._id': 1,
+            'transmittal.revision': 1,
+            'transmittal.type._id': 1,
+            'transmittal.type.name': 1,
+            'transmittal.number': 1,
+            'transmittal.status': 1,
+            'transmittal.transporter.carrier._id': 1,
+            'transmittal.transporter.carrier.name': 1,
+            'transmittal.transporter.driver._id': 1,
+            'transmittal.transporter.driver.firstName': 1,
+            'transmittal.transporter.driver.lastName': 1,
+            'transmittal.transporter.patent': 1,
+            'request._id': 1,
+            'request.number': 1,
+            'request.conectaID': 1,
+            'request.sellerText': 1,
+            'request.advancePaymentInformation': 1,
+            priority: 1,
+            observation: 1,
+            equipment: 1,
+            washed: 1,
+            review: 1,
+            body: 1,
+            'files._id': 1,
+            requestNumber: 1,
+            'status._id': 1,
+            'status.name': 1,
+            'status.weigth': 1,
+            'car._id': 1,
+            'car.vin': 1,
+            'car.brand': 1,
+            'car.color': 1,
+            'car.firstColorOption': 1,
+            'car.secondColorOption': 1,
+            'car.thirdColorOption': 1,
+            'car.material': 1,
+            'car.entry': 1,
+            'car.invoice': 1,
+            'car.patent': 1,
+            'car.property': 1,
+            'car.type': 1,
+            'car.client': 1,
+            'car.bl': 1,
+            'car.denomination': 1,
+            'car.internalNumber': 1,
+            'origin._id': 1,
+            'origin.name': 1,
+            'origin.company._id': 1,
+            'origin.company.name': 1,
+            'destination._id': 1,
+            'destination.name': 1,
+            'destination.company._id': 1,
+            'destination.company.name': 1,
+            'reason._id': 1,
+            'reason.name': 1,
+            uploadDate: 1,
+            code: 1,
+            estimatedArrival: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
         }
-      }, {
-        $lookup: {
-          from: 'requestfiles',
-          localField: 'request.advancePaymentInformation.letters',
-          foreignField: '_id',
-          as: 'request.advancePaymentInformation.letters'
-        }
-      }, {
-        $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-      }, {
-        $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-      }, {
-        $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'transmittals', localField: 'transmittal', foreignField: '_id', as: 'transmittal' }
-      }, {
-        $unwind: { path: '$transmittal', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'milestonetypes', localField: 'transmittal.type', foreignField: '_id', as: 'transmittal.type' }
-      }, {
-        $unwind: { path: '$transmittal.type', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'users', localField: 'transmittal.transporter.driver', foreignField: '_id', as: 'transmittal.transporter.driver' }
-      }, {
-        $unwind: { path: '$transmittal.transporter.driver', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'carriers', localField: 'transmittal.transporter.carrier', foreignField: '_id', as: 'transmittal.transporter.carrier' }
-      }, {
-        $unwind: { path: '$transmittal.transporter.carrier', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'transmittalitems', localField: 'transmittalItem', foreignField: '_id', as: 'transmittalItem' }
-      }, {
-        $unwind: { path: '$transmittalItem', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'transmittalItem.origin', foreignField: '_id', as: 'transmittalItem.origin' }
-      }, {
-        $unwind: { path: '$transmittalItem.origin', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'companies', localField: 'transmittalItem.origin.company', foreignField: '_id', as: 'transmittalItem.origin.company' }
-      }, {
-        $unwind: { path: '$transmittalItem.origin.company', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'transmittalItem.destination', foreignField: '_id', as: 'transmittalItem.destination' }
-      }, {
-        $unwind: { path: '$transmittalItem.destination', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'companies', localField: 'transmittalItem.destination.company', foreignField: '_id', as: 'transmittalItem.destination.company' }
-      }, {
-        $unwind: { path: '$transmittalItem.destination.company', preserveNullAndEmptyArrays: true }
-      }, {
-        $addFields: { requestNumber: { $toString: '$request.number' } }
-      }, {
-        $addFields: { transmittalNumber: { $toString: '$transmittal.number' } }
-      }, {
-        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
-      }, {
-        $project: {
-          '_id': 1,
-          'transmittalItem._id': 1,
-          'transmittalItem.origin._id': 1,
-          'transmittalItem.origin.name': 1,
-          'transmittalItem.origin.company._id': 1,
-          'transmittalItem.origin.company.name': 1,
-          'transmittalItem.destination._id': 1,
-          'transmittalItem.destination.name': 1,
-          'transmittalItem.destination.company._id': 1,
-          'transmittalItem.destination.company.name': 1,
-          'transmittal._id': 1,
-          'transmittal.revision': 1,
-          'transmittal.type._id': 1,
-          'transmittal.type.name': 1,
-          'transmittal.number': 1,
-          'transmittal.status': 1,
-          'transmittal.transporter.carrier._id': 1,
-          'transmittal.transporter.carrier.name': 1,
-          'transmittal.transporter.driver._id': 1,
-          'transmittal.transporter.driver.firstName': 1,
-          'transmittal.transporter.driver.lastName': 1,
-          'transmittal.transporter.patent': 1,
-          'request._id': 1,
-          'request.number': 1,
-          'request.conectaID': 1,
-          'request.sellerText': 1,
-          'request.advancePaymentInformation': 1,
-          'priority': 1,
-          'observation': 1,
-          'equipment': 1,
-          'washed': 1,
-          'review': 1,
-          'body': 1,
-          'files._id': 1,
-          'requestNumber': 1,
-          'status._id': 1,
-          'status.name': 1,
-          'status.weigth': 1,
-          'car._id': 1,
-          'car.vin': 1,
-          'car.brand': 1,
-          'car.color': 1,
-          'car.firstColorOption': 1,
-          'car.secondColorOption': 1,
-          'car.thirdColorOption': 1,
-          'car.material': 1,
-          'car.entry': 1,
-          'car.invoice': 1,
-          'car.patent': 1,
-          'car.property': 1,
-          'car.type': 1,
-          'car.client': 1,
-          'car.bl': 1,
-          'car.denomination': 1,
-          'car.internalNumber': 1,
-          'origin._id': 1,
-          'origin.name': 1,
-          'origin.company._id': 1,
-          'origin.company.name': 1,
-          'destination._id': 1,
-          'destination.name': 1,
-          'destination.company._id': 1,
-          'destination.company.name': 1,
-          'reason._id': 1,
-          'reason.name': 1,
-          'uploadDate': 1,
-          'code': 1,
-          'estimatedArrival': 1,
-          'createdAt': 1,
-          'updatedAt': 1
-        }
-      }];
-      logger.info(`RequestController.apiListItems: extraQuery ${JSON.stringify(extraQuery)}`);
-      logger.debug(`RequestController.apiListItems: baseAggregate ${JSON.stringify(baseAggregate)}`);
-      const requestsItemsAggregate = RequestItem.aggregate(baseAggregate).allowDiskUse(true);
+      ];
+      logger.info(
+        `RequestController.apiListItems: extraQuery ${JSON.stringify(
+          extraQuery
+        )}`
+      );
+      logger.debug(
+        `RequestController.apiListItems: baseAggregate ${JSON.stringify(
+          baseAggregate
+        )}`
+      );
+      const requestsItemsAggregate =
+        RequestItem.aggregate(baseAggregate).allowDiskUse(true);
       const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '20', 10),
@@ -953,8 +1300,15 @@ class RequestController {
         sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 },
         lean: true
       };
-      const requestsItems = await RequestItem.aggregatePaginate(requestsItemsAggregate, options);
-      if (options.page && requestsItems.pages && requestsItems.pages < options.page) {
+      const requestsItems = await RequestItem.aggregatePaginate(
+        requestsItemsAggregate,
+        options
+      );
+      if (
+        options.page &&
+        requestsItems.pages &&
+        requestsItems.pages < options.page
+      ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 400
@@ -965,11 +1319,14 @@ class RequestController {
           pages: requestsItems.pages,
           hasPrevious: requestsItems.hasPrevious,
           hasNext: requestsItems.hasNext,
-          results: await RequestItem.aggregate([{
-            $match: {
-              _id: { $in: requestsItems.docs.map((d) => d._id) }
-            }
-          }, ...aggregatePopulate]),
+          results: await RequestItem.aggregate([
+            {
+              $match: {
+                _id: { $in: requestsItems.docs.map((d) => d._id) }
+              }
+            },
+            ...aggregatePopulate
+          ]),
           status: 200
         });
       }
@@ -977,7 +1334,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiListItems: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       return res.status(500).json(e);
     }
@@ -987,8 +1350,14 @@ class RequestController {
     const team = req.user.team._id;
     try {
       logger.info(`RequestController.exportExcel email: ${req.user.email}`);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=${moment().format('YYYYMMDD')}-solicitudes.xlsx`);
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=${moment().format('YYYYMMDD')}-solicitudes.xlsx`
+      );
       const options = {
         stream: res,
         useStyles: true,
@@ -998,239 +1367,449 @@ class RequestController {
       const worksheet = workbook.addWorksheet('Solicitudes', {
         properties: {
           // defaultRowHeight: 30
-        }, pageSetup: {
-          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        },
+        pageSetup: {
+          fitToPage: true,
+          fitToHeight: 100,
+          fitToWidth: 1
         }
       });
 
       /* headers */
       const questionColumns: Partial<Column>[] = [];
 
-      const reasons = await Reason.find({ team }, {
-        'questions.name': true,
-        'questions._id': true
-      });
+      const reasons = await Reason.find(
+        { team },
+        {
+          'questions.name': true,
+          'questions._id': true
+        }
+      );
       for (const reason of reasons) {
         for (const question of reason.questions) {
           questionColumns.push({
-            header: question.name, key: question._id, width: 10
+            header: question.name,
+            key: question._id,
+            width: 10
           });
         }
       }
-      worksheet.columns = [{
-        header: 'CODIGO', key: 'code', width: 10
-      }, {
-        header: 'Nª SOLICITUD', key: 'request', width: 10
-      }, {
-        header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-      }, {
-        header: 'CANAL', key: 'channel', width: 20
-      }, {
-        header: 'PRIORIDAD', key: 'priority', width: 20
-      }, {
-        header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
-      }, {
-        header: 'SOLICITANTE', key: 'createdBy', width: 20
-      }, {
-        header: 'VENDEDOR', key: 'seller', width: 20
-      }, {
-        header: 'MOTIVO', key: 'reason', width: 20
-      }, {
-        header: 'GRUPO', key: 'group', width: 20
-      }, {
-        header: 'PROPIEDAD', key: 'property', width: 20
-      }, {
-        header: 'MARCA', key: 'brand', width: 20
-      }, {
-        header: 'MODELO', key: 'denomination', width: 20
-      }, {
-        header: 'MATERIAL', key: 'material', width: 20
-      }, {
-        header: 'COLOR', key: 'color', width: 20
-      }, {
-        header: 'COLOR 1', key: 'firstColorOption', width: 20
-      }, {
-        header: 'COLOR 2', key: 'secondColorOption', width: 20
-      }, {
-        header: 'COLOR 3', key: 'thirdColorOption', width: 20
-      }, {
-        header: 'ESTADO', key: 'status', width: 20
-      }, {
-        header: 'VIN/ID', key: 'vin', width: 20
-      }, {
-        header: 'CDO', key: 'cdo', width: 20
-      }, {
-        header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
-      }, {
-        header: 'PRE-LAVADO', key: 'washed', width: 10
-      }, {
-        header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
-      }, {
-        header: 'CARROCERO', key: 'body', width: 10
-      }, {
-        header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
-      }, {
-        header: 'DESTINO', key: 'destination', width: 20
-      }, {
-        header: 'TRANSPORTISTA', key: 'carrier', width: 20
-      }, {
-        header: 'NOMBRE CLIENTE', key: 'customerName', width: 20
-      }, {
-        header: 'RUT CLIENTE', key: 'customerRut', width: 20
-      }, {
-        header: 'EMAIL CLIENTE', key: 'customerEmail', width: 20
-      }, {
-        header: 'METHODO DE PAGO', key: 'paymentMethod', width: 20
-      }, {
-        header: 'TICKET', key: 'paymentNumber', width: 20
-      }, {
-        header: 'ID Conecta', key: 'conectaID', width: 20
-      }, {
-        header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-      }, {
-        header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-      }, {
-        header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
-      }, {
-        header: 'OBSERVACIÓN', key: 'observation', width: 21
-      }, ...questionColumns];
+      worksheet.columns = [
+        {
+          header: 'CODIGO',
+          key: 'code',
+          width: 10
+        },
+        {
+          header: 'Nª SOLICITUD',
+          key: 'request',
+          width: 10
+        },
+        {
+          header: 'FECHA SOLICITUD',
+          key: 'created',
+          width: 21,
+          style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        },
+        {
+          header: 'CANAL',
+          key: 'channel',
+          width: 20
+        },
+        {
+          header: 'PRIORIDAD',
+          key: 'priority',
+          width: 20
+        },
+        {
+          header: 'SUCURSAL (CREACION)',
+          key: 'origin',
+          width: 20
+        },
+        {
+          header: 'SOLICITANTE',
+          key: 'createdBy',
+          width: 20
+        },
+        {
+          header: 'VENDEDOR',
+          key: 'seller',
+          width: 20
+        },
+        {
+          header: 'MOTIVO',
+          key: 'reason',
+          width: 20
+        },
+        {
+          header: 'GRUPO',
+          key: 'group',
+          width: 20
+        },
+        {
+          header: 'PROPIEDAD',
+          key: 'property',
+          width: 20
+        },
+        {
+          header: 'MARCA',
+          key: 'brand',
+          width: 20
+        },
+        {
+          header: 'MODELO',
+          key: 'denomination',
+          width: 20
+        },
+        {
+          header: 'MATERIAL',
+          key: 'material',
+          width: 20
+        },
+        {
+          header: 'COLOR',
+          key: 'color',
+          width: 20
+        },
+        {
+          header: 'COLOR 1',
+          key: 'firstColorOption',
+          width: 20
+        },
+        {
+          header: 'COLOR 2',
+          key: 'secondColorOption',
+          width: 20
+        },
+        {
+          header: 'COLOR 3',
+          key: 'thirdColorOption',
+          width: 20
+        },
+        {
+          header: 'ESTADO',
+          key: 'status',
+          width: 20
+        },
+        {
+          header: 'VIN/ID',
+          key: 'vin',
+          width: 20
+        },
+        {
+          header: 'CDO',
+          key: 'cdo',
+          width: 20
+        },
+        {
+          header: 'ACCESORIZACIÓN',
+          key: 'equipment',
+          width: 10
+        },
+        {
+          header: 'PRE-LAVADO',
+          key: 'washed',
+          width: 10
+        },
+        {
+          header: 'INSPECCIÓN Pre-entrega',
+          key: 'review',
+          width: 10
+        },
+        {
+          header: 'CARROCERO',
+          key: 'body',
+          width: 10
+        },
+        {
+          header: 'EQUIPAMIENTO',
+          key: 'equipment_2',
+          width: 10
+        },
+        {
+          header: 'DESTINO',
+          key: 'destination',
+          width: 20
+        },
+        {
+          header: 'TRANSPORTISTA',
+          key: 'carrier',
+          width: 20
+        },
+        {
+          header: 'NOMBRE CLIENTE',
+          key: 'customerName',
+          width: 20
+        },
+        {
+          header: 'RUT CLIENTE',
+          key: 'customerRut',
+          width: 20
+        },
+        {
+          header: 'EMAIL CLIENTE',
+          key: 'customerEmail',
+          width: 20
+        },
+        {
+          header: 'METHODO DE PAGO',
+          key: 'paymentMethod',
+          width: 20
+        },
+        {
+          header: 'TICKET',
+          key: 'paymentNumber',
+          width: 20
+        },
+        {
+          header: 'ID Conecta',
+          key: 'conectaID',
+          width: 20
+        },
+        {
+          header: 'FECHA CARGA',
+          key: 'uploadDate',
+          width: 21,
+          style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        },
+        {
+          header: 'FECHA LLEGADA',
+          key: 'estimatedArrival',
+          width: 21,
+          style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        },
+        {
+          header: 'FECHA ACTUALIZACION',
+          key: 'updated',
+          width: 21,
+          style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        },
+        {
+          header: 'OBSERVACIÓN',
+          key: 'observation',
+          width: 21
+        },
+        ...questionColumns
+      ];
 
-      const cursor = RequestItem.aggregate<IRequestItemModel>([{
-        $match: {
-          team: new mongoose.Types.ObjectId(team),
-          'destination': {
-            $in: req.user.venuesPermissions()
+      const cursor = RequestItem.aggregate<IRequestItemModel>([
+        {
+          $match: {
+            team: new mongoose.Types.ObjectId(team),
+            destination: {
+              $in: req.user.venuesPermissions()
+            }
           }
+        },
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        {
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'createdBy'
+          }
+        },
+        {
+          $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'origin',
+            foreignField: '_id',
+            as: 'origin'
+          }
+        },
+        {
+          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'destination',
+            foreignField: '_id',
+            as: 'destination'
+          }
+        },
+        {
+          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'requests',
+            localField: 'request',
+            foreignField: '_id',
+            as: 'request'
+          }
+        },
+        {
+          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+        },
+        {
+          $lookup: {
+            from: 'requestitemstatuses',
+            localField: 'status',
+            foreignField: '_id',
+            as: 'status'
+          }
+        },
+        {
+          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'carriers',
+            localField: 'carrier',
+            foreignField: '_id',
+            as: 'carrier'
+          }
+        },
+        {
+          $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'reasons',
+            localField: 'reason',
+            foreignField: '_id',
+            as: 'reason'
+          }
+        },
+        {
+          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $lookup: {
+            from: 'saleschannels',
+            localField: 'request.channel',
+            foreignField: '_id',
+            as: 'request.channel'
+          }
+        },
+        {
+          $unwind: {
+            path: '$request.channel',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'paymentmethods',
+            localField: 'request.advancePaymentInformation.method',
+            foreignField: '_id',
+            as: 'request.advancePaymentInformation.method'
+          }
+        },
+        {
+          $unwind: {
+            path: '$request.advancePaymentInformation.method',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            code: 1,
+            request: 1,
+            priority: 1,
+            observation: 1,
+            equipment: 1,
+            washed: 1,
+            answers: 1,
+            review: 1,
+            body: 1,
+            'status._id': 1,
+            'status.name': 1,
+            'carrier._id': 1,
+            'carrier.name': 1,
+            'status.weigth': 1,
+            'createdBy._id': 1,
+            'createdBy.firstName': 1,
+            'createdBy.lastName': 1,
+            car: 1,
+            'origin._id': 1,
+            'origin.name': 1,
+            'destination._id': 1,
+            'destination.name': 1,
+            'reason._id': 1,
+            'reason.name': 1,
+            uploadDate: 1,
+            estimatedArrival: 1,
+            createdAt: 1,
+            updatedAt: 1
+          }
+        },
+        {
+          $sort: { _id: 1 }
         }
-      }, {
-        $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-      }, {
-        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
-      }, {
-        $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-      }, {
-        $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-      }, {
-        $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-      }, {
-        $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-      }, {
-        $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-      }, {
-        $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-      }, {
-        $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-      }, {
-        $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
-      }, {
-        $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: {
-          from: 'paymentmethods',
-          localField: 'request.advancePaymentInformation.method',
-          foreignField: '_id',
-          as: 'request.advancePaymentInformation.method'
-        }
-      }, {
-        $unwind: { path: '$request.advancePaymentInformation.method', preserveNullAndEmptyArrays: true }
-      }, {
-        $project: {
-          '_id': 1,
-          'code': 1,
-          'request': 1,
-          'priority': 1,
-          'observation': 1,
-          'equipment': 1,
-          'washed': 1,
-          'answers': 1,
-          'review': 1,
-          'body': 1,
-          'status._id': 1,
-          'status.name': 1,
-          'carrier._id': 1,
-          'carrier.name': 1,
-          'status.weigth': 1,
-          'createdBy._id': 1,
-          'createdBy.firstName': 1,
-          'createdBy.lastName': 1,
-          'car': 1,
-          'origin._id': 1,
-          'origin.name': 1,
-          'destination._id': 1,
-          'destination.name': 1,
-          'reason._id': 1,
-          'reason.name': 1,
-          'uploadDate': 1,
-          'estimatedArrival': 1,
-          'createdAt': 1,
-          'updatedAt': 1
-        }
-      }, {
-        $sort: { _id: 1 }
-      }])
+      ])
         .allowDiskUse(true)
-        .cursor()
+        .cursor();
 
       await cursor.eachAsync(async (item: any) => {
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
         }
-        worksheet.addRow({
-          ...extraAnswers,
-          request: item.request.number,
-          code: item.code,
-          created: item.createdAt,
-          updated: item.updatedAt,
-          observation: item.observation,
-          fleet: item.request.fleet ? 'Si' : 'No',
-          priority: item.priority ? 'Si' : 'No',
-          createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
-          seller: item.request.sellerText,
-          channel: item.request.channel ? item.request.channel.name : '',
-          reason: item.reason?.name ?? '',
-          group: '',
-          property: item.car.property,
-          brand: item.car.brand,
-          denomination: item.car.denomination,
-          material: item.car.material,
-          vin: item.car.vin,
-          cdo: item.car.internalNumber,
-          color: item.car.color,
-          firstColorOption: item.car.firstColorOption,
-          secondColorOption: item.car.secondColorOption,
-          thirdColorOption: item.car.thirdColorOption,
-          destination: item.destination?.name ?? '',
-          origin: item.origin?.name ?? '',
-          status: item.status?.name ?? '',
-          equipment: item.equipment ? 'Si' : 'No',
-          body: item.body ? 'Si' : 'No',
-          washed: item.washed ? 'Si' : 'No',
-          review: item.review ? 'Si' : 'No',
-          carrier: item.carrier ? item.carrier.name : '',
-          conectaID: item.request?.conectaID ?? '',
-          customerName: item.request?.customerInformation?.name ?? '',
-          customerRut: item.request?.customerInformation?.rut ?? '',
-          customerEmail: item.request?.customerInformation?.email ?? '',
-          paymentMethod: item.request?.advancePaymentInformation?.method?.name ?? '',
-          paymentNumber: item.request?.advancePaymentInformation?.number ?? '',
-          uploadDate: item.uploadDate,
-          estimatedArrival: item.estimatedArrival
-        }).commit();
+        worksheet
+          .addRow({
+            ...extraAnswers,
+            request: item.request.number,
+            code: item.code,
+            created: item.createdAt,
+            updated: item.updatedAt,
+            observation: item.observation,
+            fleet: item.request.fleet ? 'Si' : 'No',
+            priority: item.priority ? 'Si' : 'No',
+            createdBy: item.createdBy
+              ? `${item.createdBy.firstName} ${item.createdBy.lastName}`
+              : '-',
+            seller: item.request.sellerText,
+            channel: item.request.channel ? item.request.channel.name : '',
+            reason: item.reason?.name ?? '',
+            group: '',
+            property: item?.car?.property,
+            brand: item?.car?.brand,
+            denomination: item?.car?.denomination,
+            material: item?.car?.material,
+            vin: item?.car?.vin,
+            cdo: item?.car?.internalNumber,
+            color: item?.car?.color,
+            firstColorOption: item?.car?.firstColorOption,
+            secondColorOption: item?.car?.secondColorOption,
+            thirdColorOption: item?.car?.thirdColorOption,
+            destination: item.destination?.name ?? '',
+            origin: item.origin?.name ?? '',
+            status: item.status?.name ?? '',
+            equipment: item.equipment ? 'Si' : 'No',
+            body: item.body ? 'Si' : 'No',
+            washed: item.washed ? 'Si' : 'No',
+            review: item.review ? 'Si' : 'No',
+            carrier: item.carrier ? item.carrier.name : '',
+            conectaID: item.request?.conectaID ?? '',
+            customerName: item.request?.customerInformation?.name ?? '',
+            customerRut: item.request?.customerInformation?.rut ?? '',
+            customerEmail: item.request?.customerInformation?.email ?? '',
+            paymentMethod:
+              item.request?.advancePaymentInformation?.method?.name ?? '',
+            paymentNumber:
+              item.request?.advancePaymentInformation?.number ?? '',
+            uploadDate: item.uploadDate,
+            estimatedArrival: item.estimatedArrival
+          })
+          .commit();
+        return;
       });
 
       cursor.close();
@@ -1240,14 +1819,19 @@ class RequestController {
       req.connection.on('close', async () => {
         cursor.close();
       });
-
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
       logger.error(`RequestController.exportExcel: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       return res.status(500).json(e);
     }
@@ -1255,39 +1839,47 @@ class RequestController {
 
   public async apiList(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const {
-      page,
-      pageSize,
-      search,
-      orderBy,
-      orderType
-    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    const { page, pageSize, search, orderBy, orderType } = req.query as {
+      page: string;
+      pageSize: string;
+      search: string;
+      orderBy: string;
+      orderType: string;
+    };
     // paginate options
     const options: PaginateOptions = {
       sort: {
         [orderBy]: orderType === 'ascending' ? 1 : -1
       },
       // populate: this.requestPopulate,
-      populate: [{
-        path: 'origin',
-        select: ['name']
-      }, {
-        path: 'destination',
-        select: ['name']
-      }, {
-        path: 'channel',
-        select: ['name']
-      }, {
-        path: 'createdBy',
-        select: ['firstName', 'lastName']
-      }, {
-        path: 'advancePaymentInformation.files'
-      }, {
-        path: 'advancePaymentInformation.letters'
-      }, {
-        path: 'items',
-        select: ['_id']
-      }],
+      populate: [
+        {
+          path: 'origin',
+          select: ['name']
+        },
+        {
+          path: 'destination',
+          select: ['name']
+        },
+        {
+          path: 'channel',
+          select: ['name']
+        },
+        {
+          path: 'createdBy',
+          select: ['firstName', 'lastName']
+        },
+        {
+          path: 'advancePaymentInformation.files'
+        },
+        {
+          path: 'advancePaymentInformation.letters'
+        },
+        {
+          path: 'items',
+          select: ['_id']
+        }
+      ],
       select: { meta: false },
       customLabels: {
         totalDocs: 'total',
@@ -1314,9 +1906,21 @@ class RequestController {
       // add here conditions tu search
     }
     try {
-      logger.info(`RequestController.apiList email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
-      logger.debug(`RequestController.apiList filter: ${req.user.email}, body: ${JSON.stringify(filter)}`);
-      logger.debug(`RequestController.apiList options: ${req.user.email}, body: ${JSON.stringify(options)}`);
+      logger.info(
+        `RequestController.apiList email: ${
+          req.user.email
+        }, query: ${JSON.stringify(req.query)}`
+      );
+      logger.debug(
+        `RequestController.apiList filter: ${
+          req.user.email
+        }, body: ${JSON.stringify(filter)}`
+      );
+      logger.debug(
+        `RequestController.apiList options: ${
+          req.user.email
+        }, body: ${JSON.stringify(options)}`
+      );
       const requests = await this.getRequets(filter, options);
       /* istanbul ignore if  */
       if (options.page && requests.pages && requests.pages < options.page) {
@@ -1348,12 +1952,10 @@ class RequestController {
     const team = req.user.team._id;
     const { id } = req.params;
     try {
-      const request = await Request
-        .findOne({
-          _id: id,
-          team
-        })
-        .populate(this.requestPopulate);
+      const request = await Request.findOne({
+        _id: id,
+        team
+      }).populate(this.requestPopulate);
       if (request) {
         res.json(request);
       } else {
@@ -1366,7 +1968,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1378,12 +1986,10 @@ class RequestController {
     const team = req.user.team._id;
     const { id } = req.params;
     try {
-      const requestItems = await RequestItem
-        .find({
-          car: id,
-          team
-        })
-        .populate(this.itemPopulate);
+      const requestItems = await RequestItem.find({
+        car: id,
+        team
+      }).populate(this.itemPopulate);
       if (requestItems) {
         res.json(requestItems);
       } else {
@@ -1393,7 +1999,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDetail: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1404,11 +2016,10 @@ class RequestController {
     const team = req.user.team._id;
     const { id } = req.params;
     try {
-      const request = await Request
-        .findOne({
-          _id: id,
-          team
-        });
+      const request = await Request.findOne({
+        _id: id,
+        team
+      });
       if (request) {
         await RequestItem.deleteMany({ request: id, team });
         await Request.deleteOne({ _id: id, team });
@@ -1432,7 +2043,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequest: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1443,14 +2060,12 @@ class RequestController {
     try {
       const team = req.user.team._id;
       const { id } = req.params;
-      const item = await RequestItem
-        .findOne({
-          _id: id,
-          team
-        })
-        .populate(this.itemPopulate);
+      const item = await RequestItem.findOne({
+        _id: id,
+        team
+      }).populate(this.itemPopulate);
       if (item) {
-        await RequestItem.deleteOne({ _id: id, team })
+        await RequestItem.deleteOne({ _id: id, team });
         socket().to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
           idRequest: item.request._id,
           item
@@ -1459,8 +2074,13 @@ class RequestController {
           idRequest: item.request._id,
           item
         });
-        await Request.updateOne({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-        const itemsInRequest = await RequestItem.find({ request: item.request._id }).countDocuments();
+        await Request.updateOne(
+          { _id: item.request._id },
+          { $set: { updatedAt: moment() } }
+        );
+        const itemsInRequest = await RequestItem.find({
+          request: item.request._id
+        }).countDocuments();
         if (!itemsInRequest) {
           await Request.deleteOne({ _id: item.request._id });
           socket().to(`request-list-${team}`).emit('DELETE_REQUEST', {
@@ -1484,7 +2104,13 @@ class RequestController {
       /* istanbul ignore next */
       logger.error(`RequestController.apiDeleteRequestItem: Async Error.`);
       /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(
+        `{user: {_id: ${req.user._id}, email: ${
+          req.user.email
+        }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
+          req.params
+        )}`
+      );
       logger.error(e);
       res.status(500).json(e);
     }
@@ -1495,54 +2121,62 @@ class RequestController {
     const team = req.user.team._id;
     const { search } = req.query;
     try {
-      const cars = await Car.aggregate([{
-        $match: {
-          team,
-          $text: {
-            $search: search as string,
-            $diacriticSensitive: false
+      const cars = await Car.aggregate([
+        {
+          $match: {
+            team,
+            $text: {
+              $search: search as string,
+              $diacriticSensitive: false
+            }
+          }
+        },
+        {
+          $project: {
+            vin: 1,
+            brand: 1,
+            denomination: 1,
+            material: 1,
+            score: {
+              $meta: 'textScore'
+            }
+          }
+        },
+        {
+          $match: {
+            score: {
+              $gt: 0.5
+            }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              brand: '$brand',
+              denomination: '$denomination',
+              material: '$material',
+              score: '$score'
+            }
+          }
+        },
+        {
+          $sort: {
+            '_id.score': -1
+          }
+        },
+        {
+          $limit: 100
+        },
+        {
+          $project: {
+            brand: '$_id.brand',
+            denomination: '$_id.denomination',
+            material: '$_id.material',
+            score: '$_id.score',
+            _id: false
           }
         }
-      }, {
-        $project: {
-          vin: 1,
-          brand: 1,
-          denomination: 1,
-          material: 1,
-          score: {
-            $meta: 'textScore'
-          }
-        }
-      }, {
-        $match: {
-          score: {
-            $gt: 0.5
-          }
-        }
-      }, {
-        $group: {
-          _id: {
-            brand: '$brand',
-            denomination: '$denomination',
-            material: '$material',
-            score: '$score'
-          }
-        }
-      }, {
-        $sort: {
-          '_id.score': -1
-        }
-      }, {
-        $limit: 100
-      }, {
-        $project: {
-          brand: '$_id.brand',
-          denomination: '$_id.denomination',
-          material: '$_id.material',
-          score: '$_id.score',
-          _id: false
-        }
-      }]);
+      ]);
       res.json({
         cars
       });
@@ -1558,14 +2192,21 @@ class RequestController {
 
   public async apiCreateItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreateItem`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(req.body)} }`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(req.body)} }`
+    );
     const { company } = req.user;
     const team = req.user.team._id;
     const { car, idRequest } = req.body;
     try {
       const request = await Request.findOne({ _id: idRequest, team });
       if (request) {
-        const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
+        const defaultItemStatus = await RequestItemStatus.findOneOrCreate(
+          { team, default: true },
+          { name: 'En proceso', default: true, team }
+        );
         const newCar = await new Car({
           team,
           company,
@@ -1590,9 +2231,14 @@ class RequestController {
           status: defaultItemStatus,
           createdBy: req.user
         }).save();
-        const item = await RequestItem.findOne({ _id: newItem._id }).populate(this.itemPopulate);
+        const item = await RequestItem.findOne({ _id: newItem._id }).populate(
+          this.itemPopulate
+        );
 
-        await Request.updateOne({ _id: request._id }, { $set: { updatedAt: moment() } });
+        await Request.updateOne(
+          { _id: request._id },
+          { $set: { updatedAt: moment() } }
+        );
 
         socket().to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
@@ -1626,11 +2272,17 @@ class RequestController {
     const { id } = req.params;
     const { vin } = req.body as IStringKeyObject<any>;
     try {
-      let requestItem = await RequestItem
-        .findOne({ _id: id, team })
-        .populate(this.itemPopulate);
+      let requestItem = await RequestItem.findOne({ _id: id, team }).populate(
+        this.itemPopulate
+      );
       if (requestItem) {
-        logger.info(`RequestController.apiPatchItemVin ${req.user.email} \x1b[90m params ${JSON.stringify(req.params)} body ${JSON.stringify(req.body)}`);
+        logger.info(
+          `RequestController.apiPatchItemVin ${
+            req.user.email
+          } \x1b[90m params ${JSON.stringify(req.params)} body ${JSON.stringify(
+            req.body
+          )}`
+        );
         let integrationData: ICar | undefined;
         if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
           if (vin?.length >= 6) {
@@ -1642,13 +2294,12 @@ class RequestController {
             }
             const foundVin = !!data.length;
             if (requestItem.car?.material?.length) {
-              integrationData = data
-                .find((conectaCar) => (
+              integrationData = data.find(
+                (conectaCar) =>
                   conectaCar.material === requestItem!.car.material
-                )
-                );
+              );
             } else if (data.length) {
-              integrationData = data[0]
+              integrationData = data[0];
             }
             if (!foundVin) {
               return res.status(400).json({
@@ -1665,35 +2316,65 @@ class RequestController {
         const car = vin.length > 0 ? await Car.findOne({ vin, team }) : false;
         // si el vehículo ya existe
         if (car && vin?.length) {
-          const existOtherRequestWithCar = car ? await RequestItem.findOne({
-            team,
-            car,
-            _id: { $ne: requestItem._id }
-          }) : false;
+          const existOtherRequestWithCar = car
+            ? await RequestItem.findOne({
+                team,
+                car,
+                _id: { $ne: requestItem._id }
+              })
+            : false;
           if (existOtherRequestWithCar) {
             return res.status(400).json({
               message: 'VIN ya asignado en otra solicitud.'
             });
           }
-          await Car.updateOne({ _id: car._id, team }, {
-            brand: integrationData?.brand?.length ? integrationData?.brand : car.brand,
-            denomination: integrationData?.denomination?.length ? integrationData?.denomination : car.denomination,
-            material: integrationData?.material?.length ? integrationData?.material : car.material,
-            color: integrationData?.color?.length ? integrationData?.color : car.color
-          });
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+          await Car.updateOne(
+            { _id: car._id, team },
+            {
+              brand: integrationData?.brand?.length
+                ? integrationData?.brand
+                : car.brand,
+              denomination: integrationData?.denomination?.length
+                ? integrationData?.denomination
+                : car.denomination,
+              material: integrationData?.material?.length
+                ? integrationData?.material
+                : car.material,
+              color: integrationData?.color?.length
+                ? integrationData?.color
+                : car.color
+            }
+          );
+          await RequestItem.updateOne(
+            { _id: requestItem._id },
+            { car: car._id }
+          );
         }
         // si la solicitud no tenía vin
         else if (requestItem.car.vin.length === 0) {
           console.log('1 Vehíulo no tenía VIN');
-          await Car.updateOne({ _id: requestItem.car._id, team }, {
-            vin,
-            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color
-          });
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: requestItem.car._id });
+          await Car.updateOne(
+            { _id: requestItem.car._id, team },
+            {
+              vin,
+              brand: integrationData?.brand?.length
+                ? integrationData?.brand
+                : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length
+                ? integrationData?.denomination
+                : requestItem.car.denomination,
+              material: integrationData?.material?.length
+                ? integrationData?.material
+                : requestItem.car.material,
+              color: integrationData?.color?.length
+                ? integrationData?.color
+                : requestItem.car.color
+            }
+          );
+          await RequestItem.updateOne(
+            { _id: requestItem._id },
+            { car: requestItem.car._id }
+          );
         }
         // si el vehículo tenia vin y ahora se le elimina
         else if (requestItem.car.vin.length > 0 && vin.length === 0) {
@@ -1714,30 +2395,55 @@ class RequestController {
             status: ChoicesStatusCar.pending,
             createdBy: req.user
           }).save();
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+          await RequestItem.updateOne(
+            { _id: requestItem._id },
+            { car: newCar._id }
+          );
         }
         // si le cambias el VIN al vehículo
         else if (requestItem.car.vin.length > 0 && vin.length > 0) {
           console.log('3 Cambio de VIN');
           if (car) {
             console.log('3 vehículo existe');
-            await Car.updateOne({ _id: car._id }, {
-              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color
-            });
-            await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+            await Car.updateOne(
+              { _id: car._id },
+              {
+                brand: integrationData?.brand?.length
+                  ? integrationData?.brand
+                  : requestItem.car.brand,
+                denomination: integrationData?.denomination?.length
+                  ? integrationData?.denomination
+                  : requestItem.car.denomination,
+                material: integrationData?.material?.length
+                  ? integrationData?.material
+                  : requestItem.car.material,
+                color: integrationData?.color?.length
+                  ? integrationData?.color
+                  : requestItem.car.color
+              }
+            );
+            await RequestItem.updateOne(
+              { _id: requestItem._id },
+              { car: car._id }
+            );
           } else {
             const newCar = await new Car({
               team,
               company,
               vin,
               vin2: vin.trim().substr(vin.length - 6),
-              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+              brand: integrationData?.brand?.length
+                ? integrationData?.brand
+                : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length
+                ? integrationData?.denomination
+                : requestItem.car.denomination,
+              material: integrationData?.material?.length
+                ? integrationData?.material
+                : requestItem.car.material,
+              color: integrationData?.color?.length
+                ? integrationData?.color
+                : requestItem.car.color,
               firstColorOption: requestItem.car.firstColorOption,
               secondColorOption: requestItem.car.secondColorOption,
               thirdColorOption: requestItem.car.thirdColorOption,
@@ -1745,7 +2451,10 @@ class RequestController {
               createdBy: req.user
             }).save();
             console.log('3 crea vehiculo');
-            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+            await RequestItem.updateOne(
+              { _id: requestItem._id },
+              { car: newCar._id }
+            );
           }
         }
 
@@ -1753,23 +2462,29 @@ class RequestController {
         req.on('close', function () {
           cancelRequest = true;
         });
-        requestItem = await RequestItem
-          .findOne({ _id: id, team })
+        requestItem = await RequestItem.findOne({ _id: id, team })
           .populate(this.itemPopulate)
           .lean();
         if (requestItem) {
-          await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment() } });
+          await Request.updateOne(
+            { _id: requestItem.request._id },
+            { $set: { updatedAt: moment() } }
+          );
           if (!cancelRequest) {
-            socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-              idRequest: requestItem.request._id,
-              item: requestItem
-            });
+            socket()
+              .to(`request-list-${team._id}`)
+              .emit('UPDATE_REQUEST_ITEM', {
+                idRequest: requestItem.request._id,
+                item: requestItem
+              });
           }
           if (!cancelRequest) {
-            socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-              idRequest: requestItem.request._id,
-              item: requestItem
-            });
+            socket()
+              .to(`request-detail-${team._id}`)
+              .emit('UPDATE_REQUEST_ITEM', {
+                idRequest: requestItem.request._id,
+                item: requestItem
+              });
           }
           res.status(200).json({
             ...requestItem
@@ -1795,19 +2510,29 @@ class RequestController {
     const { team, company } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}, body: ${JSON.stringify(updateObject)} }`);
+    logger.info(
+      `{user: {_id: ${req.user._id}, email: ${
+        req.user.email
+      }, body: ${JSON.stringify(updateObject)} }`
+    );
     try {
       let cancelRequest = false;
       req.on('close', function () {
         cancelRequest = true;
       });
-      const requestItem = await RequestItem.findOneAndUpdate({
-        _id: id,
-        team
-      }, { $set: { ...updateObject } }).populate([{ path: 'car' }, { path: 'request' }]);
+      const requestItem = await RequestItem.findOneAndUpdate(
+        {
+          _id: id,
+          team
+        },
+        { $set: { ...updateObject } }
+      ).populate([{ path: 'car' }, { path: 'request' }]);
       if (Object.keys(updateObject.car).length) {
         if (requestItem) {
-          const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
+          const existActivity = await ActivityHistory.findOne({
+            team,
+            'request.item': requestItem._id
+          });
           if (!existActivity) {
             await new ActivityHistory({
               team,
@@ -1822,14 +2547,19 @@ class RequestController {
             }).save();
           }
         }
-        await Car.updateOne({ _id: updateObject.car._id, team }, { $set: updateObject.car });
+        await Car.updateOne(
+          { _id: updateObject.car._id, team },
+          { $set: updateObject.car }
+        );
       }
-      const item = await RequestItem
-        .findOne({ _id: id, team })
+      const item = await RequestItem.findOne({ _id: id, team })
         .populate(this.itemPopulate)
         .lean();
 
-      await Request.updateOne({ _id: item?.request._id }, { $set: { updatedAt: moment() } });
+      await Request.updateOne(
+        { _id: item?.request._id },
+        { $set: { updatedAt: moment() } }
+      );
       if (!cancelRequest) {
         socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
           idRequest: item?.request._id,
@@ -1856,7 +2586,10 @@ class RequestController {
     }
   }
 
-  private getRequets(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestModel>> {
+  private getRequets(
+    filter: any,
+    options: PaginateOptions
+  ): Promise<PaginateResult<IRequestModel>> {
     return new Promise((resolve, reject) => {
       Request.paginate!(filter, options, (err, result) => {
         if (err) {
@@ -1871,9 +2604,10 @@ class RequestController {
     const { id } = req.params;
     const team = req.user.team._id;
     try {
-      const requestItems = await RequestItem
-        .findOne({ _id: id, team })
-        .populate(this.itemPopulate);
+      const requestItems = await RequestItem.findOne({
+        _id: id,
+        team
+      }).populate(this.itemPopulate);
       if (requestItems) {
         const archive = archiver('zip', {
           zlib: {
@@ -1887,14 +2621,21 @@ class RequestController {
         });
         const filename = `attachments_${requestItems._id}.zip`;
         archive.on('end', () => {
-          console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+          console.log(
+            `${filename}: Archive wrote ${(
+              archive.pointer() /
+              (1024 * 1024)
+            ).toFixed(2)}MB`
+          );
         });
         res.attachment(filename);
         const filesToDownload: any = [];
         const filesToCompress: any = [];
         for (const file of requestItems.files) {
           const destDirectory = `/tmp/${file._id}_${file.file.name}`;
-          filesToDownload.push(() => this.downloadFile(decodeURI(file.file.url), destDirectory));
+          filesToDownload.push(() =>
+            this.downloadFile(decodeURI(file.file.url), destDirectory)
+          );
           filesToCompress.push({
             destDirectory,
             name: file.file.name
@@ -1906,7 +2647,12 @@ class RequestController {
         let numb = 1;
         while (filesToDownload.length) {
           console.log('promise', numb);
-          results = [...results, ...await bluebird.all(filesToDownload.splice(0, 20).map((promise: any) => promise()))];
+          results = [
+            ...results,
+            ...(await bluebird.all(
+              filesToDownload.splice(0, 20).map((promise: any) => promise())
+            ))
+          ];
           numb++;
         }
         // compress files
@@ -1927,7 +2673,10 @@ class RequestController {
           }, 7200000);
         });
         console.log('results', results);
-        res.setHeader('size', results.reduce((a: number, b: number) => a + b));
+        res.setHeader(
+          'size',
+          results.reduce((a: number, b: number) => a + b)
+        );
         archive.pipe(res);
         archive.finalize();
       } else {
@@ -1962,7 +2711,11 @@ class RequestController {
           response.pipe(file);
           file.on('finish', () => {
             file.close();
-            resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+            resolve(
+              response.headers['content-length']
+                ? parseInt(response.headers['content-length'], 10)
+                : 0
+            );
           });
         });
       } catch (e) {
@@ -1985,7 +2738,11 @@ class RequestController {
     const { team } = req.user;
     const { vin, material } = req.query as IStringKeyObject<string>;
     try {
-      logger.info(`RequestController.searchVin\x1b[90m query: ${JSON.stringify(req.query)}`);
+      logger.info(
+        `RequestController.searchVin\x1b[90m query: ${JSON.stringify(
+          req.query
+        )}`
+      );
       if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
         // const data = await conectaController.searchVinContecta('014688');
         if (vin?.length > 5) {
@@ -1993,48 +2750,73 @@ class RequestController {
           if (material?.length > 4 && !['undefined'].includes(material)) {
             data = data.filter((car) => car.material.toString() === material);
           }
-          logger.info(`RequestController.searchVin\x1b[90m data: ${JSON.stringify(data)}`);
+          logger.info(
+            `RequestController.searchVin\x1b[90m data: ${JSON.stringify(data)}`
+          );
           return res.json({ data });
         } else {
-          logger.debug(`RequestController.searchVin\x1b[90m: There are no records.`);
-          return res.json({ data: [], meta: { info: 'There are no records.' } });
+          logger.debug(
+            `RequestController.searchVin\x1b[90m: There are no records.`
+          );
+          return res.json({
+            data: [],
+            meta: { info: 'There are no records.' }
+          });
         }
       } else {
-        logger.debug(`RequestController.searchVin\x1b[90m error: team has no integration`);
-        return res.json({ data: [], meta: { info: 'team has no integration.' } });
+        logger.debug(
+          `RequestController.searchVin\x1b[90m error: team has no integration`
+        );
+        return res.json({
+          data: [],
+          meta: { info: 'team has no integration.' }
+        });
       }
     } catch (e) {
-      logger.error(`RequestController.searchVin\x1b[90m error: ${JSON.stringify(e)}`);
+      logger.error(
+        `RequestController.searchVin\x1b[90m error: ${JSON.stringify(e)}`
+      );
       logger.error(e);
       return res.json({ data: [], meta: { info: e } });
     }
   }
 
-
-
   public async preMassAllocation(req: IRequest, res: Response) {
     try {
       const { team } = req.user;
       const { items } = req.body;
-      logger.info(`RequestController.preMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
-      const results = await RequestItem
-        .find({
+      logger.info(
+        `RequestController.preMassAllocation ${
+          req.user.email
+        } \x1b[90m${JSON.stringify(req.body)}`
+      );
+      const results = await RequestItem.find(
+        {
           team: team._id,
           $or: items.map((item: any) => ({
             code: item.code
           }))
-        }, {
+        },
+        {
           code: true,
           car: true,
           createdAt: true
-        })
-        .populate([{
+        }
+      ).populate([
+        {
           path: 'car',
           select: [
-            'vin', 'brand', 'denomination', 'material', 'color',
-            'firstColorOption', 'secondColorOption', 'thirdColorOption'
+            'vin',
+            'brand',
+            'denomination',
+            'material',
+            'color',
+            'firstColorOption',
+            'secondColorOption',
+            'thirdColorOption'
           ]
-        }]);
+        }
+      ]);
       return res.json({
         results,
         status: 200
@@ -2050,20 +2832,22 @@ class RequestController {
       const { team } = req.user;
       // let { vin, _id: id, material } = req.body;
       let { andesData, excelData } = req.body;
-      logger.info(`RequestController.checkItemMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
-      const item = await RequestItem
-        .findOne({
-          _id: andesData._id,
-          team
-        })
-        .populate([{
+      logger.info(
+        `RequestController.checkItemMassAllocation ${
+          req.user.email
+        } \x1b[90m${JSON.stringify(req.body)}`
+      );
+      const item = await RequestItem.findOne({
+        _id: andesData._id,
+        team
+      }).populate([
+        {
           path: 'car'
-        }]);
+        }
+      ]);
       const errors: { message: string }[] = [];
       let integrationData: ICar | undefined;
-      const vin = excelData?.vin?.length
-        ? excelData.vin
-        : item?.car.vin ?? '';
+      const vin = excelData?.vin?.length ? excelData.vin : item?.car.vin ?? '';
       if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
         if (vin?.length >= 6) {
           let { data } = await conectaController.searchVinContecta(vin);
@@ -2073,18 +2857,15 @@ class RequestController {
               message: 'Mas de una coincidencia'
             });
           }
-          const material = excelData?.material?.length && !['undefined'].includes(excelData?.material)
-            ? excelData.material
-            : item.car.material
-            ?? '';
-          if (
-            material.length
-          ) {
-            integrationData = data
-              .find((conectaCar) => (
-                conectaCar.material === material
-              )
-              );
+          const material =
+            excelData?.material?.length &&
+            !['undefined'].includes(excelData?.material)
+              ? excelData.material
+              : item.car.material ?? '';
+          if (material.length) {
+            integrationData = data.find(
+              (conectaCar) => conectaCar.material === material
+            );
           } else if (data.length) {
             integrationData = data[0];
           }
@@ -2117,7 +2898,10 @@ class RequestController {
     }
   }
 
-  public async processItemMassAllocation(req: IRequest, res: Response): Promise<any> {
+  public async processItemMassAllocation(
+    req: IRequest,
+    res: Response
+  ): Promise<any> {
     const { team, company } = req.user;
     try {
       if (!req.user.hasPermission('massAllocation')) {
@@ -2125,23 +2909,36 @@ class RequestController {
           message: 'No tienes permisos para esta operación'
         });
       }
-      logger.debug(`RequestController.processItemMassAllocation ${req.user.email} \x1b[90m${JSON.stringify(req.body)}`);
-      let { item: { excelData, andesData, integrationData } } = req.body;
+      logger.debug(
+        `RequestController.processItemMassAllocation ${
+          req.user.email
+        } \x1b[90m${JSON.stringify(req.body)}`
+      );
+      let {
+        item: { excelData, andesData, integrationData }
+      } = req.body;
       const errors = [];
-      const vin = excelData?.vin?.length && integrationData?.vin?.length
-        ? integrationData?.vin
-        : excelData.vin?.trim().toUpperCase() ?? '';
-      let requestItem = await RequestItem
-        .findOne({
-          _id: andesData._id,
-          team
-        }).populate([{
+      const vin =
+        excelData?.vin?.length && integrationData?.vin?.length
+          ? integrationData?.vin
+          : excelData.vin?.trim().toUpperCase() ?? '';
+      let requestItem = await RequestItem.findOne({
+        _id: andesData._id,
+        team
+      }).populate([
+        {
           path: 'car'
-        }]);
+        }
+      ]);
       // si existe la solicitud y el team es salfa
       if (requestItem) {
-        if (vin.length >= 6 && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-          let { data: conectaData } = await conectaController.searchVinContecta(vin);
+        if (
+          vin.length >= 6 &&
+          team._id.toString() === '5bf2de35caf8ef7096105cdd'
+        ) {
+          let { data: conectaData } = await conectaController.searchVinContecta(
+            vin
+          );
           const foundVin = !!conectaData.length;
           if (conectaData.length > 1) {
             errors.push({
@@ -2149,16 +2946,16 @@ class RequestController {
             });
           }
           if (
-            andesData.car.material?.length && !['undefined'].includes(andesData.car.material) ||
-            integrationData?.material?.length && !['undefined'].includes(integrationData?.material)
+            (andesData.car.material?.length &&
+              !['undefined'].includes(andesData.car.material)) ||
+            (integrationData?.material?.length &&
+              !['undefined'].includes(integrationData?.material))
           ) {
-            conectaData = conectaData
-              .filter((conectaCar) => (
-                excelData?.material?.length
-                  ? conectaCar.material === integrationData?.material
-                  : conectaCar.material === andesData.car.material
-              )
-              );
+            conectaData = conectaData.filter((conectaCar) =>
+              excelData?.material?.length
+                ? conectaCar.material === integrationData?.material
+                : conectaCar.material === andesData.car.material
+            );
           }
           if (!foundVin) {
             errors.push({
@@ -2166,12 +2963,16 @@ class RequestController {
             });
           }
           if (!conectaData.length) {
-            logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Vin no encontrado en conecta.`);
+            logger.debug(
+              `RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Vin no encontrado en conecta.`
+            );
             errors.push({
               message: 'Vin no encontrado en conecta.'
             });
           } else if (vin.length && foundVin && !conectaData.length) {
-            logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`);
+            logger.debug(
+              `RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`
+            );
             errors.push({
               message: 'Material no corresponde a VIN.'
             });
@@ -2183,17 +2984,24 @@ class RequestController {
         // mongoose.set('debug', true);
         // logger.debug(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m code: ${requestItem.code}`);
         // previene vehículos sin vin
-        const car = vin.length > 0 ? await Car.findOne({ vin: vin, team }) : false;
-        const existOtherRequestWithCar = car ? await RequestItem.findOne({
-          team,
-          car,
-          _id: { $ne: requestItem._id }
-        }).populate([{
-          path: 'car'
-        }]) : false;
+        const car =
+          vin.length > 0 ? await Car.findOne({ vin: vin, team }) : false;
+        const existOtherRequestWithCar = car
+          ? await RequestItem.findOne({
+              team,
+              car,
+              _id: { $ne: requestItem._id }
+            }).populate([
+              {
+                path: 'car'
+              }
+            ])
+          : false;
         // si el vehículo ya existe en otra solicitud
         if (car && existOtherRequestWithCar) {
-          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo ya existe en otra solicitud. Se asigna vehículo sin vin a solicitud donde existia el vehículo y se asigna vin a solicitud.`);
+          logger.info(
+            `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo ya existe en otra solicitud. Se asigna vehículo sin vin a solicitud donde existia el vehículo y se asigna vin a solicitud.`
+          );
           const newCar = await new Car({
             team,
             company,
@@ -2210,40 +3018,71 @@ class RequestController {
             createdBy: req.user
           }).save();
           // asigno nuevo vehículo sin vin a la solicitud en la que estaba
-          await RequestItem.updateOne({ _id: existOtherRequestWithCar._id }, { car: newCar._id });
+          await RequestItem.updateOne(
+            { _id: existOtherRequestWithCar._id },
+            { car: newCar._id }
+          );
           // asigno vehículo existente a la solicitud
-          await Car.updateOne({ _id: car._id }, {
-            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
-            firstColorOption: existOtherRequestWithCar.car.firstColorOption,
-            secondColorOption: existOtherRequestWithCar.car.secondColorOption,
-            thirdColorOption: existOtherRequestWithCar.car.thirdColorOption
-          });
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+          await Car.updateOne(
+            { _id: car._id },
+            {
+              brand: integrationData?.brand?.length
+                ? integrationData?.brand
+                : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length
+                ? integrationData?.denomination
+                : requestItem.car.denomination,
+              material: integrationData?.material?.length
+                ? integrationData?.material
+                : requestItem.car.material,
+              color: integrationData?.color?.length
+                ? integrationData?.color
+                : requestItem.car.color,
+              firstColorOption: existOtherRequestWithCar.car.firstColorOption,
+              secondColorOption: existOtherRequestWithCar.car.secondColorOption,
+              thirdColorOption: existOtherRequestWithCar.car.thirdColorOption
+            }
+          );
+          await RequestItem.updateOne(
+            { _id: requestItem._id },
+            { car: car._id }
+          );
         }
         // si la solicitud no tenía vin
         else if (requestItem.car.vin.length === 0) {
-          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo no tenía VIN y la solicitud tampoco. Solo se actualiza información del vehículo`);
-          await Car
-            .updateOne({
+          logger.info(
+            `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo no tenía VIN y la solicitud tampoco. Solo se actualiza información del vehículo`
+          );
+          await Car.updateOne(
+            {
               _id: requestItem.car._id,
               team
-            }, {
+            },
+            {
               vin: vin,
-              brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-              denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-              material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-              color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+              brand: integrationData?.brand?.length
+                ? integrationData?.brand
+                : requestItem.car.brand,
+              denomination: integrationData?.denomination?.length
+                ? integrationData?.denomination
+                : requestItem.car.denomination,
+              material: integrationData?.material?.length
+                ? integrationData?.material
+                : requestItem.car.material,
+              color: integrationData?.color?.length
+                ? integrationData?.color
+                : requestItem.car.color,
               firstColorOption: requestItem.car.firstColorOption,
               secondColorOption: requestItem.car.secondColorOption,
               thirdColorOption: requestItem.car.thirdColorOption
-            });
+            }
+          );
         }
         // si la solicitud tenia vin y ahora se elimina
         else if (requestItem.car.vin.length > 0 && vin.length === 0) {
-          logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo tenía VIN y ahora se le quita. Se le asigna a la solicitud un vehículo nuevo sin VIN.`);
+          logger.info(
+            `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Vehículo tenía VIN y ahora se le quita. Se le asigna a la solicitud un vehículo nuevo sin VIN.`
+          );
           const newCar = await new Car({
             team,
             vin: '',
@@ -2259,20 +3098,33 @@ class RequestController {
             status: ChoicesStatusCar.pending,
             createdBy: req.user
           }).save();
-          await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+          await RequestItem.updateOne(
+            { _id: requestItem._id },
+            { car: newCar._id }
+          );
         }
         // si la solicitud tenía VIN y el vehículo no tenía otra solicitud
         else if (requestItem.car.vin.length > 0 && vin.length > 0) {
-          logger.info(`RequestController.processItemMassAllocation ${req.user.email}\x1b[90m code: ${requestItem.code} Solicitud tenía VIN y el vehículo no tenía estaba en otra solicitud.`);
+          logger.info(
+            `RequestController.processItemMassAllocation ${req.user.email}\x1b[90m code: ${requestItem.code} Solicitud tenía VIN y el vehículo no tenía estaba en otra solicitud.`
+          );
           const updateItems = {
             team,
             company,
             vin: vin,
             vin2: vin.substr(vin.length - 6),
-            brand: integrationData?.brand?.length ? integrationData?.brand : requestItem.car.brand,
-            denomination: integrationData?.denomination?.length ? integrationData?.denomination : requestItem.car.denomination,
-            material: integrationData?.material?.length ? integrationData?.material : requestItem.car.material,
-            color: integrationData?.color?.length ? integrationData?.color : requestItem.car.color,
+            brand: integrationData?.brand?.length
+              ? integrationData?.brand
+              : requestItem.car.brand,
+            denomination: integrationData?.denomination?.length
+              ? integrationData?.denomination
+              : requestItem.car.denomination,
+            material: integrationData?.material?.length
+              ? integrationData?.material
+              : requestItem.car.material,
+            color: integrationData?.color?.length
+              ? integrationData?.color
+              : requestItem.car.color,
             firstColorOption: requestItem.car.firstColorOption,
             secondColorOption: requestItem.car.secondColorOption,
             thirdColorOption: requestItem.car.thirdColorOption,
@@ -2280,40 +3132,50 @@ class RequestController {
             createdBy: req.user
           };
           if (car) {
-            logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Se actualiza vehículo y se asigna en la solicitud.`);
+            logger.info(
+              `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} Se actualiza vehículo y se asigna en la solicitud.`
+            );
             await Car.updateOne({ _id: car._id }, updateItems);
-            await RequestItem.updateOne({ _id: requestItem._id }, { car: car._id });
+            await RequestItem.updateOne(
+              { _id: requestItem._id },
+              { car: car._id }
+            );
           } else {
-            logger.info(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} No existía vehículo, se crea y se asigna en la solicitud.`);
+            logger.info(
+              `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} No existía vehículo, se crea y se asigna en la solicitud.`
+            );
             const newCar = await new Car(updateItems).save();
-            await RequestItem.updateOne({ _id: requestItem._id }, { car: newCar._id });
+            await RequestItem.updateOne(
+              { _id: requestItem._id },
+              { car: newCar._id }
+            );
           }
         } else {
-          logger.error(`RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} VIN no pudo ser procesado.`);
+          logger.error(
+            `RequestController.processItemMassAllocation ${req.user.email} code: ${requestItem.code} VIN no pudo ser procesado.`
+          );
         }
       }
       // mongoose.set('debug', false);
-      requestItem = await RequestItem
-        .findOne({
-          _id: andesData._id,
-          team: team._id
-        })
+      requestItem = await RequestItem.findOne({
+        _id: andesData._id,
+        team: team._id
+      })
         .populate(this.itemPopulate)
         .lean();
       if (requestItem) {
-        await Request.updateOne({ _id: requestItem.request._id }, { $set: { updatedAt: moment().toDate() } });
-        socket()
-          .to(`request-list-${team._id}`)
-          .emit('UPDATE_REQUEST_ITEM', {
-            idRequest: requestItem.request._id,
-            item: requestItem
-          });
-        socket()
-          .to(`request-detail-${team._id}`)
-          .emit('UPDATE_REQUEST_ITEM', {
-            idRequest: requestItem.request._id,
-            item: requestItem
-          });
+        await Request.updateOne(
+          { _id: requestItem.request._id },
+          { $set: { updatedAt: moment().toDate() } }
+        );
+        socket().to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+          idRequest: requestItem.request._id,
+          item: requestItem
+        });
+        socket().to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+          idRequest: requestItem.request._id,
+          item: requestItem
+        });
       }
       return res.status(200).json({
         ...requestItem
@@ -2330,7 +3192,11 @@ class RequestController {
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
-        logger.info(`RequestController.uploadFile email: ${req.user.email} file: ${JSON.stringify(file)}`);
+        logger.info(
+          `RequestController.uploadFile email: ${
+            req.user.email
+          } file: ${JSON.stringify(file)}`
+        );
         const requestFile = new RequestFile();
         /*
           {
@@ -2355,7 +3221,9 @@ class RequestController {
           try {
             await this.autoRotate(file.path);
           } catch (e) {
-            logger.error('RequestController.uploadFile: Error making autoRotate');
+            logger.error(
+              'RequestController.uploadFile: Error making autoRotate'
+            );
           }
         }
         await requestFile.attach('file', file);
@@ -2365,7 +3233,9 @@ class RequestController {
             await this.resizeImage(file.path);
             await requestFile.attach('thumbnail', file);
           } catch (e) {
-            logger.error('RequestController.uploadFile: Error making thumbnail');
+            logger.error(
+              'RequestController.uploadFile: Error making thumbnail'
+            );
           }
         }
 
@@ -2448,7 +3318,6 @@ class RequestController {
         resolve(true);
       }
     });
-
   }
 }
 
