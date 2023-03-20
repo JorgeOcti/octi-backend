@@ -269,7 +269,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       value={searchText}
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
-                      name={'search-user'}
+                      autoComplete="off"
+                      // name={'search-user'}
                       placeholder="Buscar"
                     />
                     <div className="input-group-btn">
@@ -569,7 +570,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
-    const value = e.target.value.trim();
+    const value = e.target.value;
     this.props.changeSearchUserAction(value);
     this.debounceOnChangeSearch();
   }

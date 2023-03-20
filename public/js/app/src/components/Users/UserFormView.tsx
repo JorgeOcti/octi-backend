@@ -1,16 +1,17 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {ICompany} from '../../../../../../src/app/interfaces/company.interface';
-import {IForm} from '../../../../../../src/form/interfaces/form.interface';
-import {IPermission} from '../../../../../../src/billing/interfaces/permission.interface';
-import {IUser} from '../../../../../../src/app/interfaces/user.interface';
-import {IVenue} from '../../../../../../src/app/interfaces/venue.interface';
-import {IUsersState} from '../../actions/users.actions';
-import {IWindow} from '../../interfaces/window';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { ICompany } from '../../../../../../src/app/interfaces/company.interface';
+import { IForm } from '../../../../../../src/form/interfaces/form.interface';
+import { IPermission } from '../../../../../../src/billing/interfaces/permission.interface';
+import { IUser } from '../../../../../../src/app/interfaces/user.interface';
+import { IVenue } from '../../../../../../src/app/interfaces/venue.interface';
+import { IUsersState } from '../../actions/users.actions';
+import { IWindow } from '../../interfaces/window';
 import Checkbox from '../Utils/CheckBox';
-import {hasPermission} from '../../utils/common';
+import { hasPermission } from '../../utils/common';
+import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType {
   users: IUsersState;
@@ -26,12 +27,13 @@ declare let window: IWindow;
 
 interface IStateType {
   error: Error | null;
+  companiesOpen: string[];
 }
 
 class UserFormView extends React.Component<IPropsType, IStateType> {
-
-  readonly state = {
-    error: null
+  readonly state: IStateType = {
+    error: null,
+    companiesOpen: []
   };
 
   constructor(props: IPropsType) {
@@ -44,35 +46,39 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.changeIsDriver = this.changeIsDriver.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
+    this.toogleCompanies = this.toogleCompanies.bind(this);
   }
 
   public componentDidMount() {
-    const {changeTempUser, companies} = this.props;
-    const {tempUser} = this.props.users;
+    const { changeTempUser, companies } = this.props;
+    const { tempUser } = this.props.users;
     const chosenOptions = {
       no_results_text: 'Sin resultados para:'
     };
-    ($('#id-forms') as any).chosen(chosenOptions)
+    ($('#id-forms') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
         this.addForm(e.target.value);
       });
-    ($('#id-form-default') as any).chosen(chosenOptions)
+    ($('#id-form-default') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
-        changeTempUser({preferred: e.target.value});
+        changeTempUser({ preferred: e.target.value });
       });
-    ($('#id-venue') as any).chosen(chosenOptions)
+    ($('#id-venue') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
-        changeTempUser({venue: e.target.value});
+        changeTempUser({ venue: e.target.value });
       });
-    ($('#id-company') as any).chosen(chosenOptions)
+    ($('#id-company') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
         changeTempUser({
-          company: companies.find((company) => (
-            company._id === e.target.value
-          ))
+          company: companies.find((company) => company._id === e.target.value)
         });
       });
-    ($('#id-channel') as any).chosen(chosenOptions)
+    ($('#id-channel') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
         changeTempUser({
           settings: {
@@ -81,19 +87,20 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
           }
         });
       });
-    ($('#id-permissions') as any).chosen(chosenOptions)
+    ($('#id-permissions') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
-          this.addPermission(e.target.value);
-        });
-    ($('#id-venues-access') as any).chosen(chosenOptions)
+        this.addPermission(e.target.value);
+      });
+    ($('#id-venues-access') as any)
+      .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
         this.addVenueAccess(e.target.value);
       });
-
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -110,15 +117,44 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {changeTempUser, venues, permissions, forms, create, companies} = this.props;
-    const {tempUser, channels} = this.props.users;
+    const { changeTempUser, venues, permissions, forms, create, companies } =
+      this.props;
+    const { tempUser, channels } = this.props.users;
     const userPermissions: IPermission[] = [];
     const selectPermissions: IPermission[] = [];
     const userForms: IForm[] = [];
     const selectForms: IForm[] = [];
-    const idsUserPermissions = tempUser && tempUser.userPermissions.length ? tempUser.userPermissions.map((userPermission) => userPermission._id) : [];
-    const idsUserVenueAccess = tempUser && tempUser.venuesAccess.length ? tempUser.venuesAccess.map((venue) => venue._id) : [];
-    const idsUserForms = tempUser && tempUser.userForms.length ? tempUser.userForms.map((userForm) => userForm._id) : [];
+    const idsUserPermissions =
+      tempUser && tempUser.userPermissions.length
+        ? tempUser.userPermissions.map((userPermission) => userPermission._id)
+        : [];
+    const idsUserVenueAccess =
+      tempUser && tempUser.venuesAccess.length
+        ? tempUser.venuesAccess.map((venue) => venue._id)
+        : [];
+    const idsUserForms =
+      tempUser && tempUser.userForms.length
+        ? tempUser.userForms.map((userForm) => userForm._id)
+        : [];
+    const venuesByCompany = Object.values(
+      venues.reduce((acc: any, venue: any) => {
+        if (!acc[venue.company._id]) {
+          acc[venue.company._id] = {
+            _id: venue.company._id,
+            name: venue.company.name,
+            venues: []
+          };
+        }
+        if (!acc[venue.company._id].venues.includes(venue._id)) {
+          acc[venue.company._id].venues.push({
+            _id: venue._id,
+            name: venue.name
+          });
+        }
+        return acc;
+      }, {})
+    );
+    // console.log('venuesByCompany', venuesByCompany);
     permissions.forEach((permission) => {
       if (idsUserPermissions.includes(permission._id)) {
         userPermissions.push(permission);
@@ -135,15 +171,31 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     });
     return (
       <React.Fragment>
-        <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
-          <li className="active"><a data-toggle="tab" href="#general">General</a></li>
-          {
-            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin)  ?
-              <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
-              : null
-          }
-          <li><a data-toggle="tab" href="#access">Accesos</a></li>
-          <li ><a data-toggle="tab" href="#request">Solicitudes</a></li>
+        <ul className="nav nav-tabs" style={{ marginBottom: '15px' }}>
+          <li className="active">
+            <a data-toggle="tab" href="#general">
+              General
+            </a>
+          </li>
+          {window.user.isAdmin ||
+          (hasPermission(window.user, 'changeTeamPermissions') &&
+            !this.props.user?.isAdmin) ? (
+            <li>
+              <a data-toggle="tab" href="#permissions">
+                Permisos
+              </a>
+            </li>
+          ) : null}
+          <li>
+            <a data-toggle="tab" href="#access">
+              Accesos
+            </a>
+          </li>
+          <li>
+            <a data-toggle="tab" href="#request">
+              Solicitudes
+            </a>
+          </li>
         </ul>
         <div className="tab-content">
           <div id="general" className="tab-pane fade in active">
@@ -157,7 +209,9 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="form-control"
                     maxLength={50}
                     defaultValue={tempUser ? tempUser.firstName : undefined}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      changeTempUser({ firstName: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -170,7 +224,9 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="form-control"
                     maxLength={50}
                     defaultValue={tempUser ? tempUser.lastName : undefined}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      changeTempUser({ lastName: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -184,7 +240,9 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="form-control"
                     maxLength={80}
                     defaultValue={tempUser ? tempUser.email : undefined}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      changeTempUser({ email: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -195,16 +253,19 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="chosen-select form-control"
                     id="id-company"
                     name="venue"
-                    defaultValue={tempUser && tempUser.company ? tempUser.company._id : undefined}
-                    onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
-                    <option value="" />
-                    {
-                      companies.map((company) => (
-                        <option key={company._id} value={company._id}>{company.name}</option>
-                      ))
+                    defaultValue={
+                      tempUser && tempUser.company
+                        ? tempUser.company._id
+                        : undefined
                     }
+                    onChange={undefined}
+                    data-placeholder={'Seleccione...'}>
+                    <option value="" />
+                    {companies.map((company) => (
+                      <option key={company._id} value={company._id}>
+                        {company.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -215,20 +276,24 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     className="chosen-select form-control"
                     id="id-venue"
                     name="venue"
-                    defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
-                    onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
-                    <option value="" />
-                    {
-                      venues
-                        .filter((venue) => (
-                          venue.company && tempUser.company && tempUser.company._id === venue.company._id
-                        ))
-                        .map((venue) => (
-                          <option key={venue._id} value={venue._id}>{venue.name}</option>
-                        ))
+                    defaultValue={
+                      tempUser && tempUser.venue ? tempUser.venue : undefined
                     }
+                    onChange={undefined}
+                    data-placeholder={'Seleccione...'}>
+                    <option value="" />
+                    {venues
+                      .filter(
+                        (venue) =>
+                          venue.company &&
+                          tempUser.company &&
+                          tempUser.company._id === venue.company._id
+                      )
+                      .map((venue) => (
+                        <option key={venue._id} value={venue._id}>
+                          {venue.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -238,48 +303,49 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <select
                     id="id-forms"
                     className="chosen-select form-control"
-                    style={{minWidth: '200px'}}
+                    style={{ minWidth: '200px' }}
                     onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
+                    data-placeholder={'Seleccione...'}>
                     <option value="" />
-                    {
-                      selectForms.map((form) => {
-                        return (
-                          <option key={form._id} value={form._id}>{form.name}</option>
-                        );
-                      })
-                    }
+                    {selectForms.map((form) => {
+                      return (
+                        <option key={form._id} value={form._id}>
+                          {form.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>
               <div className="col-md-12">
                 <table className="table table-striped">
                   <thead>
-                  <tr>
-                    <th style={{width: '90%'}}>Name</th>
-                    <th style={{width: '10%'}}/>
-                  </tr>
+                    <tr>
+                      <th style={{ width: '90%' }}>Name</th>
+                      <th style={{ width: '10%' }} />
+                    </tr>
                   </thead>
                   <tbody>
-                  {
-                    userForms.length ? userForms.map((form: any) => {
-                      return (
-                        <tr key={form._id}>
-                          <td>{form.name}</td>
-                          <td
-                            className="text-center text-red pointer"
-                            onClick={() => this.deleteForm(form._id)}
-                          >
-                            <i className="fa fa-minus-circle"/>
-                          </td>
-                        </tr>
-                      );
-                      }) :
+                    {userForms.length ? (
+                      userForms.map((form: any) => {
+                        return (
+                          <tr key={form._id}>
+                            <td>{form.name}</td>
+                            <td
+                              className="text-center text-red pointer"
+                              onClick={() => this.deleteForm(form._id)}>
+                              <i className="fa fa-minus-circle" />
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
                       <tr>
-                        <td colSpan={2}>Aún no se han seleccionado permisos.</td>
+                        <td colSpan={2}>
+                          Aún no se han seleccionado permisos.
+                        </td>
                       </tr>
-                  }
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -289,19 +355,22 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <select
                     id="id-form-default"
                     className="chosen-select form-control"
-                    style={{minWidth: '200px'}}
-                    defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
-                    onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
-                    <option value="" />
-                    {
-                      userForms.map((form) => {
-                        return (
-                          <option key={form._id} value={form._id}>{form.name}</option>
-                        );
-                      })
+                    style={{ minWidth: '200px' }}
+                    defaultValue={
+                      tempUser && tempUser.preferred
+                        ? tempUser.preferred
+                        : undefined
                     }
+                    onChange={undefined}
+                    data-placeholder={'Seleccione...'}>
+                    <option value="" />
+                    {userForms.map((form) => {
+                      return (
+                        <option key={form._id} value={form._id}>
+                          {form.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>
@@ -311,155 +380,249 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     active={tempUser && tempUser.isDriver}
                     action={this.changeIsDriver}
                     classes="icheck-in-checkbox"
-                    style={{marginTop: '-4px', marginRight: '5px'}}
+                    style={{ marginTop: '-4px', marginRight: '5px' }}
                   />
                   Es Conductor
                 </div>
               </div>
-              {
-                window.user.isAdmin ?
-                  <div className="col-md-12">
-                    <div className="checkbox">
-                      <Checkbox
-                        active={tempUser && tempUser.isAdmin}
-                        action={this.changeIsAdmin}
-                        classes="icheck-in-checkbox"
-                        style={{marginTop: '-4px', marginRight: '5px'}}
-                      />
-                      Es ADMIN
-                    </div>
+              {window.user.isAdmin ? (
+                <div className="col-md-12">
+                  <div className="checkbox">
+                    <Checkbox
+                      active={tempUser && tempUser.isAdmin}
+                      action={this.changeIsAdmin}
+                      classes="icheck-in-checkbox"
+                      style={{ marginTop: '-4px', marginRight: '5px' }}
+                    />
+                    Es ADMIN
                   </div>
-                  : null
-              }
+                </div>
+              ) : null}
             </div>
           </div>
-          {
-            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin) ?
-              <div id="permissions" className="tab-pane fade">
-                <div className="row">
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <label>Permisos</label>
-                      <select
-                        id="id-permissions"
-                        className="chosen-select form-control"
-                        style={{minWidth: '200px'}}
-                        data-placeholder={'Seleccione...'}
-                      >
-                        <option value=""/>
-                        {
-                          selectPermissions.map((permission) => {
-                            return (
-                              <option key={permission._id} value={permission._id}>{permission.name}</option>
-                            );
-                          })
-                        }
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-12">
-                    <table className="table table-striped">
-                      <thead>
-                      <tr>
-                        <th style={{width: '20%'}}>Code</th>
-                        <th style={{width: '70%'}}>Name</th>
-                        <th style={{width: '10%'}}/>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      {
-                        userPermissions.length ?
-                          userPermissions.map((permission: any) => {
-                            return (
-                              <tr key={permission._id}>
-                                <td>{permission.codeName}</td>
-                                <td>{permission.name}</td>
-                                <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}>
-                                  <i className="fa fa-minus-circle"/>
-                                </td>
-                              </tr>
-                            );
-                          })
-                          : <tr>
-                            <td colSpan={3}>Aún no se han seleccionado permisos.</td>
-                          </tr>
-                      }
-                      </tbody>
-                    </table>
+          {window.user.isAdmin ||
+          (hasPermission(window.user, 'changeTeamPermissions') &&
+            !this.props.user?.isAdmin) ? (
+            <div id="permissions" className="tab-pane fade">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Permisos</label>
+                    <select
+                      id="id-permissions"
+                      className="chosen-select form-control"
+                      style={{ minWidth: '200px' }}
+                      data-placeholder={'Seleccione...'}>
+                      <option value="" />
+                      {selectPermissions.map((permission) => {
+                        return (
+                          <option key={permission._id} value={permission._id}>
+                            {permission.name}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                 </div>
-              </div>
-              : null
-          }
-          <div id="access" className="tab-pane fade">
-            <div className="row">
-              <div className="col-md-12">
-                <div className="form-group">
-                  <label>Sucursales adicionales</label>
-                  <select
-                    id="id-venues-access"
-                    className="chosen-select form-control"
-                    style={{minWidth: '200px'}}
-                    onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
-                    <option value="" />
-                    {
-                      venues
-                        .filter((venue) => (
-                          !idsUserVenueAccess.includes(venue._id) && venue._id !== tempUser.venue)
-                        )
-                        .map((venue) => {
+                <div className="col-md-12">
+                  <table className="table table-striped">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '20%' }}>Code</th>
+                        <th style={{ width: '70%' }}>Name</th>
+                        <th style={{ width: '10%' }} />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userPermissions.length ? (
+                        userPermissions.map((permission: any) => {
                           return (
-                            <option key={venue._id} value={venue._id}>
-                              {venue.name}{venue.company ? ` - ${venue.company.name}` : ''}
-                            </option>
+                            <tr key={permission._id}>
+                              <td>{permission.codeName}</td>
+                              <td>{permission.name}</td>
+                              <td
+                                className="text-center text-red pointer"
+                                onClick={() =>
+                                  this.deletePermission(permission._id)
+                                }>
+                                <i className="fa fa-minus-circle" />
+                              </td>
+                            </tr>
                           );
                         })
-                    }
-                  </select>
+                      ) : (
+                        <tr>
+                          <td colSpan={3}>
+                            Aún no se han seleccionado permisos.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            </div>
+          ) : null}
+          <div id="access" className="tab-pane fade">
+            <div className="row">
+              {/* <div className="col-md-12">
+                <div className="form-group">
+                  <label>Sucursales adicionales</label>
+                   <select
+                    id="id-venues-access"
+                    className="chosen-select form-control"
+                    style={{ minWidth: '200px' }}
+                    onChange={undefined}
+                    data-placeholder={'Seleccione...'}>
+                    <option value="" />
+                    {venues
+                      .filter(
+                        (venue) =>
+                          !idsUserVenueAccess.includes(venue._id) &&
+                          venue._id !== tempUser.venue
+                      )
+                      .map((venue) => {
+                        return (
+                          <option key={venue._id} value={venue._id}>
+                            {venue.name}
+                            {venue.company ? ` - ${venue.company.name}` : ''}
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
+              </div> */}
               <div className="col-md-12">
+                {venuesByCompany.map((company: any) => {
+                  const venuesSelected = company.venues.filter((venue: any) =>
+                    idsUserVenueAccess.includes(venue._id)
+                  );
+                  return (
+                    <div key={company._id}>
+                      <div
+                        className="company"
+                        style={{
+                          padding: '10px',
+                          borderBottom: '1px solid #f4f4f4'
+                        }}>
+                        {/* <Checkbox
+                          active={
+                            venuesSelected.length === company.venues.length
+                          }
+                          action={() => {
+                            console.log(
+                              'idsUserVenueAccess',
+                              idsUserVenueAccess
+                            );
+                          }}
+                          classes="icheck-in-checkbox"
+                          style={{ marginTop: '-4px', marginRight: '5px' }}
+                        /> */}
+                        <strong className="text-primary">{company.name}</strong>{' '}
+                        ({venuesSelected.length} de {company.venues.length}{' '}
+                        sucursales)
+                        <div
+                          className="pointer"
+                          style={{ float: 'right' }}
+                          onClick={() => this.toogleCompanies(company._id)}>
+                          {this.state.companiesOpen.includes(company._id) ? (
+                            <i className="fa fa-chevron-up" />
+                          ) : (
+                            <i className="fa fa-chevron-down" />
+                          )}
+                        </div>
+                      </div>
+                      <ShowIf
+                        condition={this.state.companiesOpen.includes(
+                          company._id
+                        )}>
+                        {company.venues.map((venue: any) => {
+                          return (
+                            <div
+                              key={venue._id}
+                              // className="text-muted"
+                              style={{
+                                marginLeft: '10px',
+                                padding: '10px',
+                                borderBottom: '1px solid #f8f8f8'
+                              }}>
+                              <Checkbox
+                                active={idsUserVenueAccess.includes(venue._id)}
+                                action={() => {
+                                  idsUserVenueAccess.includes(venue._id)
+                                    ? this.deleteVenueAccess(venue._id)
+                                    : this.addVenueAccess(venue._id);
+                                }}
+                                classes="icheck-in-checkbox"
+                                style={{
+                                  marginTop: '-4px',
+                                  marginRight: '5px'
+                                }}
+                              />
+                              {venue.name}
+                            </div>
+                          );
+                        })}
+                      </ShowIf>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* <div className="col-md-12">
                 <table className="table table-striped">
                   <thead>
-                  <tr>
-                    <th style={{width: '90%'}}>Sucursal</th>
-                    <th style={{width: '10%'}}/>
-                  </tr>
+                    <tr>
+                      <th style={{ width: '90%' }}>Sucursal</th>
+                      <th style={{ width: '10%' }} />
+                    </tr>
                   </thead>
                   <tbody>
-                    {
-                      tempUser.venue ?
-                        venues
-                          .filter((venue: any) => (venue._id === tempUser.venue))
+                    {tempUser.venue
+                      ? venues
+                          .filter((venue: any) => venue._id === tempUser.venue)
                           .map((venue: any) => (
                             <tr key={venue._id} className="bg-aqua-active">
-                              <td colSpan={2}>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</td>
+                              <td colSpan={2}>
+                                {venue.name}
+                                {venue.company
+                                  ? ` - ${venue.company.name}`
+                                  : ''}
+                              </td>
                             </tr>
                           ))
-                        : null
-                    }
-                    {
-                      tempUser.venuesAccess.length ?
-                        tempUser.venuesAccess
-                          .filter((venue: any) => (venue._id !== tempUser.venue))
-                          .map((venue: any) => {
+                      : null}
+                    {tempUser.venuesAccess.length ? (
+                      tempUser.venuesAccess
+                        .filter((venue: any) => venue._id !== tempUser.venue)
+                        .map((venue: any) => {
                           return (
                             <tr key={venue._id}>
-                              <td>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</td>
-                              <td className="text-center text-red pointer" onClick={() => this.deleteVenueAccess(venue._id)}><i
-                                className="fa fa-minus-circle"/></td>
+                              <td>
+                                {venue.name}
+                                {venue.company
+                                  ? ` - ${venue.company.name}`
+                                  : ''}
+                              </td>
+                              <td
+                                className="text-center text-red pointer"
+                                onClick={() =>
+                                  this.deleteVenueAccess(venue._id)
+                                }>
+                                <i className="fa fa-minus-circle" />
+                              </td>
                             </tr>
                           );
-                        }) :
-                        <tr>
-                          <td colSpan={2}>Aún no se han seleccionado sucursales adicionales.</td>
-                        </tr>
-                    }
+                        })
+                    ) : (
+                      <tr>
+                        <td colSpan={2}>
+                          Aún no se han seleccionado sucursales adicionales.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
-              </div>
+              </div> */}
             </div>
           </div>
           <div id="request" className="tab-pane fade">
@@ -473,14 +636,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     name="channel"
                     defaultValue={tempUser?.settings?.defaultChannel}
                     onChange={undefined}
-                    data-placeholder={'Seleccione...'}
-                  >
+                    data-placeholder={'Seleccione...'}>
                     <option value="" />
-                    {
-                      channels.map((channel) => (
-                        <option key={channel._id} value={channel._id}>{channel.name}</option>
-                      ))
-                    }
+                    {channels.map((channel) => (
+                      <option key={channel._id} value={channel._id}>
+                        {channel.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -490,21 +652,28 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       </React.Fragment>
     );
   }
+  private toogleCompanies(companyId: string) {
+    this.setState({
+      companiesOpen: this.state.companiesOpen.includes(companyId)
+        ? this.state.companiesOpen.filter((id) => id !== companyId)
+        : [...this.state.companiesOpen, companyId]
+    });
+  }
 
   private changeIsAdmin() {
-    const {isAdmin} = this.props.users.tempUser;
-    this.props.changeTempUser({isAdmin: !isAdmin});
+    const { isAdmin } = this.props.users.tempUser;
+    this.props.changeTempUser({ isAdmin: !isAdmin });
   }
 
   private changeIsDriver() {
-    const {isDriver} = this.props.users.tempUser;
-    this.props.changeTempUser({isDriver: !isDriver});
+    const { isDriver } = this.props.users.tempUser;
+    this.props.changeTempUser({ isDriver: !isDriver });
   }
 
   private addVenueAccess(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
-    const {venues} = this.props;
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
+    const { venues } = this.props;
     const findVenue = venues.find((venue) => venue._id === id);
     if (findVenue) {
       changeTempUser({
@@ -514,18 +683,22 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteVenueAccess(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
     changeTempUser({
-      venuesAccess: tempUser ? tempUser.venuesAccess.filter((venue) => venue._id !== id) : []
+      venuesAccess: tempUser
+        ? tempUser.venuesAccess.filter((venue) => venue._id !== id)
+        : []
     });
   }
 
   private addPermission(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
-    const {permissions} = this.props;
-    const findPermision = permissions.find((permission) => permission._id === id);
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
+    const { permissions } = this.props;
+    const findPermision = permissions.find(
+      (permission) => permission._id === id
+    );
     if (findPermision) {
       changeTempUser({
         userPermissions: [findPermision, ...tempUser.userPermissions]
@@ -534,17 +707,19 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private deletePermission(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
     changeTempUser({
-      userPermissions: tempUser ? tempUser.userPermissions.filter((permission) => permission._id !== id) : []
+      userPermissions: tempUser
+        ? tempUser.userPermissions.filter((permission) => permission._id !== id)
+        : []
     });
   }
 
   private addForm(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
-    const {forms} = this.props;
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
+    const { forms } = this.props;
     const findForm = forms.find((form) => form._id === id);
     if (findForm) {
       changeTempUser({
@@ -554,10 +729,12 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteForm(id: string) {
-    const {changeTempUser} = this.props;
-    const {tempUser} = this.props.users;
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
     changeTempUser({
-      userForms: tempUser ? tempUser.userForms.filter((form) => form._id !== id) : []
+      userForms: tempUser
+        ? tempUser.userForms.filter((form) => form._id !== id)
+        : []
     });
   }
 }
@@ -568,10 +745,13 @@ const mapStateToProps = (state: { users: IUsersState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UserFormView);
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(UserFormView);

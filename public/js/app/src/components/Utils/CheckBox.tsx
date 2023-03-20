@@ -69,7 +69,9 @@ class Checkbox extends React.Component<IPropsType, IStateType> {
         onMouseOver={this.mouseOver}
         onMouseOut={this.mouseOut}
         onClick={action}
-        style={style ? style : {}}
+        style={style ? style : {
+          background: '#CCC'
+        }}
       >
       </div>
     );
