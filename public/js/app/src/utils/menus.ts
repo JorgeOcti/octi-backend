@@ -47,12 +47,12 @@ if (hasPermission(window.user, 'viewChecklistStudio')) {
   });
 }
 
-dashboardItems.push({
-  id: '1.3',
-  icon: 'fa-circle-o',
-  text: 'Reporte revisiones',
-  url: '/revision-report/'
-});
+// dashboardItems.push({
+//   id: '1.3',
+//   icon: 'fa-circle-o',
+//   text: 'Reporte revisiones',
+//   url: '/revision-report/'
+// });
 
 if (hasPermission(window.user, 'viewDashboardDamages')) {
   dashboardItems.push({
