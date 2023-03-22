@@ -66,6 +66,10 @@ export const baseUserSchema = new mongoose.Schema({
 
 export const userSchema = new mongoose.Schema<IUser>({
   ...baseUserSchema.obj,
+  companiesAccess: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  }],
   venuesAccess: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'

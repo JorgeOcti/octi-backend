@@ -40,6 +40,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.addPermission = this.addPermission.bind(this);
     this.deletePermission = this.deletePermission.bind(this);
+    this.addCompanyAccess = this.addCompanyAccess.bind(this);
+    this.deleteCompanyAccess = this.deleteCompanyAccess.bind(this);
     this.addVenueAccess = this.addVenueAccess.bind(this);
     this.deleteVenueAccess = this.deleteVenueAccess.bind(this);
     this.changeIsAdmin = this.changeIsAdmin.bind(this);
@@ -125,36 +127,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     const userForms: IForm[] = [];
     const selectForms: IForm[] = [];
     const idsUserPermissions =
-      tempUser && tempUser.userPermissions.length
-        ? tempUser.userPermissions.map((userPermission) => userPermission._id)
-        : [];
+      tempUser?.userPermissions?.map((userPermission) => userPermission._id) ??
+      [];
     const idsUserVenueAccess =
-      tempUser && tempUser.venuesAccess.length
-        ? tempUser.venuesAccess.map((venue) => venue._id)
-        : [];
+      tempUser?.venuesAccess?.map((venue) => venue._id) ?? [];
     const idsUserForms =
-      tempUser && tempUser.userForms.length
-        ? tempUser.userForms.map((userForm) => userForm._id)
-        : [];
-    const venuesByCompany = Object.values(
-      venues.reduce((acc: any, venue: any) => {
-        if (!acc[venue.company._id]) {
-          acc[venue.company._id] = {
-            _id: venue.company._id,
-            name: venue.company.name,
-            venues: []
-          };
-        }
-        if (!acc[venue.company._id].venues.includes(venue._id)) {
-          acc[venue.company._id].venues.push({
-            _id: venue._id,
-            name: venue.name
-          });
-        }
-        return acc;
-      }, {})
-    );
-    // console.log('venuesByCompany', venuesByCompany);
+      tempUser?.userForms?.map((userForm) => userForm._id) ?? [];
+
     permissions.forEach((permission) => {
       if (idsUserPermissions.includes(permission._id)) {
         userPermissions.push(permission);
@@ -169,6 +148,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         selectForms.push(form);
       }
     });
+
     return (
       <React.Fragment>
         <ul className="nav nav-tabs" style={{ marginBottom: '15px' }}>
@@ -493,7 +473,10 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div> */}
               <div className="col-md-12">
-                {venuesByCompany.map((company: any) => {
+                {companies.map((company: any) => {
+                  const hasCompany = tempUser.companiesAccess.some(
+                    (c) => c._id === company._id
+                  );
                   const venuesSelected = company.venues.filter((venue: any) =>
                     idsUserVenueAccess.includes(venue._id)
                   );
@@ -505,19 +488,16 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                           padding: '10px',
                           borderBottom: '1px solid #f4f4f4'
                         }}>
-                        {/* <Checkbox
-                          active={
-                            venuesSelected.length === company.venues.length
-                          }
+                        <Checkbox
+                          active={hasCompany}
                           action={() => {
-                            console.log(
-                              'idsUserVenueAccess',
-                              idsUserVenueAccess
-                            );
+                            hasCompany
+                              ? this.deleteCompanyAccess(company._id)
+                              : this.addCompanyAccess(company._id);
                           }}
                           classes="icheck-in-checkbox"
                           style={{ marginTop: '-4px', marginRight: '5px' }}
-                        /> */}
+                        />
                         <strong className="text-primary">{company.name}</strong>{' '}
                         ({venuesSelected.length} de {company.venues.length}{' '}
                         sucursales)
@@ -542,7 +522,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                               key={venue._id}
                               // className="text-muted"
                               style={{
-                                marginLeft: '10px',
+                                marginLeft: '25px',
                                 padding: '10px',
                                 borderBottom: '1px solid #f8f8f8'
                               }}>
@@ -652,6 +632,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       </React.Fragment>
     );
   }
+
   private toogleCompanies(companyId: string) {
     this.setState({
       companiesOpen: this.state.companiesOpen.includes(companyId)
@@ -670,25 +651,89 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempUser({ isDriver: !isDriver });
   }
 
-  private addVenueAccess(id: string) {
+  private addCompanyAccess(id: string) {
+    const { changeTempUser } = this.props;
+    const { tempUser, companies, venues } = this.props.users;
+    const findVenues = venues.filter((venue) => venue.company._id === id);
+    const company = companies.find((company) => company._id === id);
+    const venuesAccess = [
+      ...findVenues,
+      ...tempUser.venuesAccess.filter((venue) => venue.company._id !== company?._id)
+    ];
+    const companiesAccess = [company, ...tempUser.companiesAccess];
+    // console.log('addCompanyAccess', {
+    //   venuesAccess,
+    //   companiesAccess
+    // });
+    if (company && findVenues) {
+      changeTempUser({
+        venuesAccess,
+        companiesAccess
+      });
+    }
+  }
+
+  private deleteCompanyAccess(id: string) {
     const { changeTempUser } = this.props;
     const { tempUser } = this.props.users;
-    const { venues } = this.props;
+    const venuesAccess = tempUser.venuesAccess.filter(
+      (venue) => venue.company._id !== id
+    );
+    const companiesAccess = tempUser.companiesAccess.filter(
+      (company) => company._id !== id
+    );
+    // console.log('deleteCompanyAccess', {
+    //   venuesAccess,
+    //   companiesAccess
+    // });
+    changeTempUser({
+      venuesAccess,
+      companiesAccess
+    });
+  }
+
+  private addVenueAccess(id: string) {
+    const { changeTempUser } = this.props;
+    const { tempUser, venues, companies } = this.props.users;
     const findVenue = venues.find((venue) => venue._id === id);
-    if (findVenue) {
+    const company = companies.find((company) =>
+      company.venues.some((venue) => venue._id === id)
+    );
+    const venuesAccess = [...tempUser.venuesAccess, findVenue];
+    const companiesAccess = [...tempUser.companiesAccess, company];
+    // console.log('addVenueAccess', {
+    //   venuesAccess,
+    //   companiesAccess
+    // });
+    if (company?.venues?.length === venuesAccess.filter((venue)=>venue?.company?._id === company?._id).length) {
       changeTempUser({
-        venuesAccess: [findVenue, ...tempUser.venuesAccess]
+        venuesAccess,
+        companiesAccess
+      });
+    } else {
+      changeTempUser({
+        venuesAccess
       });
     }
   }
 
   private deleteVenueAccess(id: string) {
     const { changeTempUser } = this.props;
-    const { tempUser } = this.props.users;
+    const { tempUser, venues } = this.props.users;
+    const findVenue = venues.find((venue) => venue._id === id);
+    const venuesAccess = tempUser?.venuesAccess?.filter((venue) => venue._id !== id) ?? [];
+    const companiesAccess = tempUser.companiesAccess.filter(
+      (company) => company._id !== findVenue?.company?._id
+    );
+    // console.log('deleteVenueAccess', {
+    //   venuesAccess,
+    //   companiesAccess
+    // });
     changeTempUser({
-      venuesAccess: tempUser
-        ? tempUser.venuesAccess.filter((venue) => venue._id !== id)
-        : []
+      venuesAccess,
+      companiesAccess: tempUser.companiesAccess.filter(
+        (company) => company._id !== findVenue?.company?._id
+      )
     });
   }
 

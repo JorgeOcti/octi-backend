@@ -592,6 +592,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       isDriver: false,
       venue: '',
       userPermissions: [],
+      companiesAccess: [],
       venuesAccess: [],
       userForms: [],
       settings: {}
@@ -767,6 +768,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     userForms,
     company,
     venuesAccess,
+    companiesAccess,
     password,
     isAdmin,
     isDriver,
@@ -805,6 +807,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
         ? venuesAccess
         : venuesAccess === undefined
         ? this.props.users.tempUser.venuesAccess
+        : [],
+      companiesAccess: companiesAccess
+        ? companiesAccess
+        : companiesAccess === undefined
+        ? this.props.users.tempUser.companiesAccess
         : [],
       company: company
         ? company

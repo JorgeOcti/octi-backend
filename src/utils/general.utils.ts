@@ -4,13 +4,20 @@ import { IAnyObject } from '../interfaces/global.interface';
 import axios from 'axios';
 
 interface IGeneralutils {
-  getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any): boolean;
+  getObjectProperty(
+    obj: IAnyObject,
+    attribute: string,
+    defaultValue: any
+  ): boolean;
   getFromEnviroment(name: string, defaultValue: string): string;
 }
 
 class GeneralUtils implements IGeneralutils {
-
-  public getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any): any {
+  public getObjectProperty(
+    obj: IAnyObject,
+    attribute: string,
+    defaultValue: any
+  ): any {
     if (obj.hasOwnProperty(attribute)) {
       return obj[attribute];
     } else {
@@ -31,13 +38,13 @@ class GeneralUtils implements IGeneralutils {
       try {
         const response = await axios.get(url, { responseType: 'arraybuffer' });
         let raw = Buffer.from(response.data).toString('base64');
-        return "data:" + response.headers["content-type"] + ";base64," + raw;
+        return 'data:' + response.headers['content-type'] + ';base64,' + raw;
       } catch (e) {
         console.log(e);
-        return ''
+        return '';
       }
     } else {
-      return ''
+      return '';
     }
   }
 
@@ -50,7 +57,10 @@ class GeneralUtils implements IGeneralutils {
     }
   }
 
-  public getFileFromRequest(files: Express.Multer.File[], name: string): Express.Multer.File | undefined {
+  public getFileFromRequest(
+    files: Express.Multer.File[],
+    name: string
+  ): Express.Multer.File | undefined {
     if (files && files.length) {
       return files.find((file: Express.Multer.File) => file.fieldname === name);
     }

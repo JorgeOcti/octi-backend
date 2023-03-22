@@ -1,5 +1,5 @@
 import type { ICompany } from './company.interface';
-import type  { IForm } from '../../form/interfaces/form.interface';
+import type { IForm } from '../../form/interfaces/form.interface';
 import type { IGroup } from './group.interface';
 import type { IPermission } from '../../billing/interfaces/permission.interface';
 import type { ISalesChannel } from '../../request/interfaces/salesChannel.interface';
@@ -30,7 +30,8 @@ export interface IUser {
   company: ICompany | any;
   venue: IVenue | any;
   settings: IUserSettings;
-  venuesAccess: IVenue | any;
+  venuesAccess: IVenue[] | any[];
+  companiesAccess: ICompany[] | any[];
   preferred: IForm | any;
   email: string;
   password: string;

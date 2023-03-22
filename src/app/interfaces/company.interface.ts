@@ -1,5 +1,6 @@
 import type { ITeam } from './team.interface';
 import type { IUser } from './user.interface';
+import { IVenue } from './venue.interface';
 
 export interface IBillingCompany {
   active: boolean;
@@ -33,6 +34,7 @@ export interface ICompany extends IBaseCompany {
   _id?: any;
   users?: IUser[];
   team: ITeam;
+  venues: IVenue[];
   active: boolean;
   deleted: boolean;
   updatedAt: Date;

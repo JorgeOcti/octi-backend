@@ -291,7 +291,7 @@ historyQueue.run();
 // The error handler must be before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
 
-// Error handlers
+// Error handlersF
 interface IResponseError {
   error?: string;
   message?: string;

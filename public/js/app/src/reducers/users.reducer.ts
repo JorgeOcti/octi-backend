@@ -22,7 +22,8 @@ const initialState: IUsersState = {
     settings: {},
     userPermissions: [],
     userForms: [],
-    venuesAccess: []
+    venuesAccess: [],
+    companiesAccess: []
   },
   filters: {
     venues: []
@@ -48,7 +49,8 @@ export function usersReducer(
     case '/USERS/LOAD_VENUES':
       return {
         ...state,
-        venues: action.payload.venues.sort((a, b) => a.company.name.localeCompare(b.company.name))
+        venues: action.payload.venues.sort((a, b) => a.company.name.localeCompare(b.company.name)),
+        companies: action.payload.companies
       };
     case '/USERS/FILTER_VENUES':
       return {

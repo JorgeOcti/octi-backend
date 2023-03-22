@@ -553,6 +553,10 @@ class AdminUsersController {
               select: ['name']
             }
           ]
+        },
+        {
+          path: 'companiesAccess',
+          select: ['name']
         }
       ];
     }
@@ -750,7 +754,7 @@ class AdminUsersController {
         { new: true }
       );
       const response = {
-        message: 'Cambio de estado satisfactoriamente.',
+        message: 'Cambio de estado satisfactoriamente.'
       };
 
       socket().to(`user-list-${team}`).emit('REFRESH', {
@@ -785,6 +789,7 @@ class AdminUsersController {
       preferred,
       company,
       venuesAccess,
+      companiesAccess,
       isAdmin,
       isDriver,
       settings
@@ -829,6 +834,7 @@ class AdminUsersController {
               : [],
           venue,
           venuesAccess,
+          companiesAccess,
           isDriver
         };
         if (
@@ -870,6 +876,10 @@ class AdminUsersController {
                 select: ['name']
               }
             ]
+          },
+          {
+            path: 'companiesAccess',
+            select: ['name']
           },
           {
             path: 'userPermissions',

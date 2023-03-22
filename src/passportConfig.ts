@@ -9,20 +9,24 @@ import middleware from './middlewares/middlewares';
 const LocalStrategy = passportLocal.Strategy;
 
 passport.serializeUser((user: any, done) => {
-  logger.debug(`Passport.serializeUser ${JSON.stringify({
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    email: user?.email
-  })}`);
+  logger.debug(
+    `Passport.serializeUser ${JSON.stringify({
+      firstName: user?.firstName,
+      lastName: user?.lastName,
+      email: user?.email
+    })}`
+  );
   done(null, user);
 });
 
 passport.deserializeUser(async (user: any, done: any) => {
-  logger.debug(`Passport.deserializeUser ${JSON.stringify({
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    email: user?.email
-  })}`);
+  logger.debug(
+    `Passport.deserializeUser ${JSON.stringify({
+      firstName: user?.firstName,
+      lastName: user?.lastName,
+      email: user?.email
+    })}`
+  );
   try {
     done(null, user);
   } catch (e) {
@@ -34,44 +38,80 @@ passport.deserializeUser(async (user: any, done: any) => {
  * Sign in using Email and Password.
  */
 // passport.use(new LocalStrategy(User.authenticate()));
-passport.use('local', new LocalStrategy({ usernameField: 'username' }, async (username, password, done) => {
-  logger.info(`Passport.verify: ${JSON.stringify({
-    username
-  })}`);
-  try{
-    const checkUser = await User.findOne({
-      username: username.toLowerCase(),
-      active: true
-    }, { _id: true, active: true, password: true });
-    if(checkUser && checkUser.active && await checkUser.comparePassword(password)){
-      logger.info(`Passport.verify: ${username} user authenticated successfully!.`);
-      const { user } = await middleware.addUserToRequest(checkUser._id.toString());
-      done(undefined, user);
-    } else {
-      logger.error(`Passport.verify: ${username} password does not correspond to the user.`);
-      done(undefined, false, { message: `${username} password does not correspond to the user..` });
+passport.use(
+  'local',
+  new LocalStrategy(
+    { usernameField: 'username' },
+    async (username, password, done) => {
+      logger.info(
+        `Passport.verify: ${JSON.stringify({
+          username
+        })}`
+      );
+      try {
+        const checkUser = await User.findOne(
+          {
+            username: username.toLowerCase(),
+            active: true
+          },
+          { _id: true, active: true, password: true }
+        );
+        if (
+          checkUser &&
+          checkUser.active &&
+          (await checkUser.comparePassword(password))
+        ) {
+          logger.info(
+            `Passport.verify: ${username} user authenticated successfully!.`
+          );
+          const { user } = await middleware.addUserToRequest(
+            checkUser._id.toString()
+          );
+          done(undefined, user);
+        } else {
+          logger.error(
+            `Passport.verify: ${username} password does not correspond to the user.`
+          );
+          done(undefined, false, {
+            message: `${username} password does not correspond to the user..`
+          });
+        }
+      } catch (e) {
+        logger.error(
+          `Passport.verify: oops an error occurred in your code!. URL made safe, user was sent at login!`
+        );
+        console.error(e);
+      }
     }
-  } catch (e) {
-    logger.error(`Passport.verify: oops an error occurred in your code!. URL made safe, user was sent at login!`);
-    console.error(e);
-  }
-}));
+  )
+);
 
-passport.use('local-without-password', new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  console.log('passportLocal.verify()');
-  User.findOne({
-    username: username.toLowerCase(),
-    active: true
-  }, (err: any, user: any) => {
-    if (err) {
-      return done(err);
+passport.use(
+  'local-without-password',
+  new LocalStrategy(
+    { usernameField: 'username' },
+    (username, password, done) => {
+      console.log('passportLocal.verify()');
+      User.findOne(
+        {
+          username: username.toLowerCase(),
+          active: true
+        },
+        (err: any, user: any) => {
+          if (err) {
+            return done(err);
+          }
+          if (!user) {
+            return done(undefined, false, {
+              message: `username ${username} not found.`
+            });
+          }
+          return done(undefined, user);
+        }
+      );
     }
-    if (!user) {
-      return done(undefined, false, { message: `username ${username} not found.` });
-    }
-    return done(undefined, user);
-  });
-}));
+  )
+);
 
 /**
  * Sign in using SAML
@@ -87,11 +127,15 @@ const fetchSamlConfig = (request: any, done: any) => {
   // return done(null, JSON.parse(org.config));
   // });
   return done(null, {
-    entryPoint: 'https://osacontrolcom-dev.onelogin.com/trust/saml2/http-post/sso/6e86090a-7440-445b-9d8e-c38e6c74ac86',
+    entryPoint:
+      'https://osacontrolcom-dev.onelogin.com/trust/saml2/http-post/sso/6e86090a-7440-445b-9d8e-c38e6c74ac86',
     issuer: 'andes',
-    authnContext: ['urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'],
+    authnContext: [
+      'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport'
+    ],
     callbackUrl: 'http://localhost:3030/sso/callback',
-    cert: '-----BEGIN CERTIFICATE-----\n' +
+    cert:
+      '-----BEGIN CERTIFICATE-----\n' +
       'MIIDzzCCAregAwIBAgIUZm9qQPacIWTsaLcw1Uij7w0e1S8wDQYJKoZIhvcNAQEF\n' +
       'BQAwQTEMMAoGA1UECgwDb3NhMRUwEwYDVQQLDAxPbmVMb2dpbiBJZFAxGjAYBgNV\n' +
       'BAMMEU9uZUxvZ2luIEFjY291bnQgMB4XDTIyMDMwMjE5MzUyNVoXDTI3MDMwMjE5\n' +
@@ -117,28 +161,33 @@ const fetchSamlConfig = (request: any, done: any) => {
   });
 };
 
-
-passport.use('multy-saml', new MultiSamlStrategy({
-    passReqToCallback: true, // makes req available in callback
-    forceAuthn: true,
-    getSamlOptions(request, done) {
-      console.log('getSamlOptions');
-      fetchSamlConfig(request, done);
-    }
-  },
-  (req, profile, done) => {
-    console.log('verify', profile);
-    User.findOne({
-      username: profile?.nameID?.toLowerCase(),
-      active: true
-    }, (err: any, user: any) => {
-      if (err) {
-        return done(err);
+passport.use(
+  'multy-saml',
+  new MultiSamlStrategy(
+    {
+      passReqToCallback: true, // makes req available in callback
+      forceAuthn: true,
+      getSamlOptions(request, done) {
+        console.log('getSamlOptions');
+        fetchSamlConfig(request, done);
       }
-      return done(null, user);
-    });
-  }
-));
-
+    },
+    (req, profile, done) => {
+      console.log('verify', profile);
+      User.findOne(
+        {
+          username: profile?.nameID?.toLowerCase(),
+          active: true
+        },
+        (err: any, user: any) => {
+          if (err) {
+            return done(err);
+          }
+          return done(null, user);
+        }
+      );
+    }
+  )
+);
 
 export { passport };

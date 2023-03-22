@@ -19,9 +19,9 @@ import { UserTypes } from '../../../../../src/app/models/user.model.types';
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
+  companies: ICompany[];
   forms: IForm[];
   channels: ISalesChannel[];
-  companies: ICompany[];
   permissions: IPermission[];
   loading: boolean;
   tempUser: ITempUser;
@@ -110,16 +110,17 @@ export function changeStatusUserAction(user: IUser) {
     api
       .changeStatusUser(user._id, !user.active)
       .then((response: AxiosResponse) => {
-          const $user = $(`#user-${user._id}`);
-          $user.addClass('editing-item');
-          dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any)
-          setTimeout(() => {
-            $user.removeClass('editing-item');
-          }, 1000);
-          // swal!(response.data.message, {
-          //   icon: 'success'
-          // });
-
+        const $user = $(`#user-${user._id}`);
+        $user.addClass('editing-item');
+        dispatch(
+          getUsersAction(state.users.pagination.page, UserTypes.common) as any
+        );
+        setTimeout(() => {
+          $user.removeClass('editing-item');
+        }, 1000);
+        // swal!(response.data.message, {
+        //   icon: 'success'
+        // });
       })
       .catch((err: AxiosError) => {
         // if the request is canceled
@@ -141,6 +142,7 @@ export interface ITempUser {
   email?: string;
   venue?: string | null;
   venuesAccess: IVenue[];
+  companiesAccess: ICompany[];
   userForms: IForm[];
   settings: Dictionary<any>;
   isAdmin: boolean;
@@ -360,6 +362,7 @@ interface ILoadVenuesUser {
   type: '/USERS/LOAD_VENUES';
   payload: {
     venues: IVenue[];
+    companies: ICompany[];
   };
 }
 
@@ -367,7 +370,25 @@ export function loadVenuesUserAction(venues: IVenue[]): ILoadVenuesUser {
   return {
     type: '/USERS/LOAD_VENUES',
     payload: {
-      venues
+      venues,
+      companies: Object.values(
+        venues.reduce((acc: any, venue: any) => {
+          if (!acc[venue.company._id]) {
+            acc[venue.company._id] = {
+              _id: venue.company._id,
+              name: venue.company.name,
+              venues: []
+            };
+          }
+          if (!acc[venue.company._id].venues.includes(venue._id)) {
+            acc[venue.company._id].venues.push({
+              _id: venue._id,
+              name: venue.name
+            });
+          }
+          return acc;
+        }, {})
+      )
     }
   };
 }
@@ -473,30 +494,28 @@ export function getUsersAction(
           : undefined,
         search: state.users.searchText
       }),
-      api.getCompanies(1, 200),
-      api.getVenues({ page: 1, pageSize: 200, noPopulate: false }),
+      // api.getCompanies(1, 200),
+      api.getVenues({ page: 1, pageSize: 500, noPopulate: false }),
       api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
       api.getForms(1, 200)
     ])
       .then(
-        Axios.spread(
-          (users, companies, venues, channeles, permissions, forms) => {
-            dispatch(
-              loadUserAction(
-                users.data.results,
-                users.data.count,
-                users.data.pages
-              )
-            );
-            dispatch(loadCompaniesUserAction(companies.data.results));
-            dispatch(loadChannelsUserAction(channeles.data.results));
-            dispatch(loadVenuesUserAction(venues.data.results));
-            dispatch(loadPermissionsUserAction(permissions.data.results));
-            dispatch(loadFormsUserAction(forms.data.results));
-            dispatch(isLoadingAction(false));
-          }
-        )
+        Axios.spread((users, venues, channeles, permissions, forms) => {
+          dispatch(
+            loadUserAction(
+              users.data.results,
+              users.data.count,
+              users.data.pages
+            )
+          );
+          // dispatch(loadCompaniesUserAction(companies.data.results));
+          dispatch(loadVenuesUserAction(venues.data.results));
+          dispatch(loadChannelsUserAction(channeles.data.results));
+          dispatch(loadPermissionsUserAction(permissions.data.results));
+          dispatch(loadFormsUserAction(forms.data.results));
+          dispatch(isLoadingAction(false));
+        })
       )
       .catch((err: AxiosError): void => {
         dispatch(isLoadingAction(false));
