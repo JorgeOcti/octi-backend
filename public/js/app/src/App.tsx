@@ -17,7 +17,6 @@ import DashboardDamagesView from './components/DashboardGeneral/DashboardDamages
 import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
 import DashboardTimingView from './components/DashboardGeneral/DashboardTimingView';
-import DashboardRevisionsView from './components/DashboardVin/DashboardRevisionsView';
 import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
@@ -83,7 +82,6 @@ const App = () => (
       <Switch>
         <Route exact path="/settings/integrations/" component={IntegrationListView}/>
         <Route exact path='/' component={DashboardGeneralView} />
-        <Route exact path='/revision-report/' component={DashboardRevisionsView} />
         <Route exact path='/cars/' component={DashboardVinView} />
         <Route exact path='/deliveries/' component={DeliveriesView} />
         <Route exact path='/planning/import/' component={PlanningImportView} />
