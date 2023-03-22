@@ -100,7 +100,7 @@ class InventoryQueue {
         }, {});
 
         for (const car of venue.cars) {
-          let currentCar= await CarModel.findOne({
+          let currentCar = await CarModel.findOne({
             team,
             vin: car.vin.trim()
           });
@@ -153,7 +153,9 @@ class InventoryQueue {
           });
         }
 
-        logger.info(`InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`)
+        logger.info(
+          `InventoryQueue.processCreateInventory {venue: ${currentVenue._id}, inventoryCars: ${inventoryCars.length}}`
+        );
 
         totalInventoryCars += inventoryCars.length;
         await ActivityHistory.insertMany(activityHistories);
@@ -170,7 +172,9 @@ class InventoryQueue {
         }
       }
 
-      logger.info(`InventoryQueue.processCreateInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${totalInventoryCars}}`)
+      logger.info(
+        `InventoryQueue.processCreateInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${totalInventoryCars}}`
+      );
 
       // mongoose.set('debug', true);
       await Inventory.findByIdAndUpdate(inventoryID, {
@@ -376,7 +380,7 @@ class InventoryQueue {
             carToUpdate.patent = car.patent;
           }
           // mongoose.set('debug', true);
-          if (this.debug && update) {
+          if (update) {
             await carToUpdate.save();
             logger.info(
               `InventoryQueue.updateCar ${job.data.car.vin} updated.`
