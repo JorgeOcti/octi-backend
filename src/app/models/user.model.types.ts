@@ -1,9 +1,6 @@
 export enum UserTypes {
   common = 'common',
-  integration = 'integration',
+  integration = 'integration'
 }
 
-export const userTypes = [
-  UserTypes.common,
-  UserTypes.integration,
-];
+export const userTypes = [UserTypes.common, UserTypes.integration];

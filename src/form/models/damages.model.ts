@@ -4,44 +4,57 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 import type { IDamages } from '../interfaces/damage.interface';
 
 export interface IDamagesModel extends IDamages, mongoose.Document {}
-export const damagesSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
+export const damagesSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true
+    },
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      required: true
+    },
+    parts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Part'
+      }
+    ],
+    kinds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Kind'
+      }
+    ],
+    positions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Position'
+      }
+    ],
+    partFallback: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Part'
+    },
+    kindFallback: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Kind'
+    },
+    severityOptions: [String]
   },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    required: true
-  },
-  parts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Part'
-  }],
-  kinds: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Kind'
-  }],
-  positions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Position'
-  }],
-  partFallback: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Part'
-  },
-  kindFallback: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Kind'
-  },
-  severityOptions: [String]
-}, {
-  timestamps: true
-});
+  {
+    timestamps: true
+  }
+);
 
 damagesSchema.plugin(mongoosePaginate);
 
-export type DamagesSchema = mongoose.Model<IDamagesModel> & PaginateModel<IDamagesModel>;
+export type DamagesSchema = mongoose.Model<IDamagesModel> &
+  PaginateModel<IDamagesModel>;
 
-const Damages = mongoose.model<IDamagesModel, DamagesSchema>('Damages', damagesSchema);
+const Damages = mongoose.model<IDamagesModel, DamagesSchema>(
+  'Damages',
+  damagesSchema
+);
 export default Damages;

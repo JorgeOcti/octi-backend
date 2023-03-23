@@ -6,7 +6,6 @@ import mongoose from 'mongoose';
 import type { IUser } from '../interfaces/user.interface';
 
 export default class UserServices {
-
   constructor(protected user: IUser | IUserModel) {
     this.user = user;
     this.fullName = this.fullName.bind(this);
@@ -28,7 +27,12 @@ export default class UserServices {
 
   public hasPermission(permission: string): boolean {
     const { userPermissions } = this.user;
-    if (permission && permission.length && userPermissions && userPermissions.length) {
+    if (
+      permission &&
+      permission.length &&
+      userPermissions &&
+      userPermissions.length
+    ) {
       return userPermissions.some((perm) => perm.codeName === permission);
     }
     return false;
@@ -45,7 +49,9 @@ export default class UserServices {
       venuesPermissions = Array.from(
         new Set([
           ...venuesPermissions,
-          ...venuesAccess.map((venue: any) => (venue && venue._id ? venue._id : venue))
+          ...venuesAccess.map((venue: any) =>
+            venue && venue._id ? venue._id : venue
+          )
         ])
       );
     }

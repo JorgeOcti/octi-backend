@@ -1,11 +1,18 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import type { IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection } from '../interfaces/form.interface';
+import type {
+  IForm,
+  IFormAccesory,
+  IFormItems,
+  IFormQuestion,
+  IFormSection
+} from '../interfaces/form.interface';
 import { formTriggerSchema } from './trigger.model';
 
-export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {
-}
+export interface IFormItemModel
+  extends IFormItems,
+    mongoose.Types.Subdocument {}
 
 const itemSchema = new mongoose.Schema({
   item: {
@@ -19,8 +26,9 @@ const itemSchema = new mongoose.Schema({
   }
 });
 
-export interface IFormAccesoryModel extends IFormAccesory, mongoose.Types.Subdocument {
-}
+export interface IFormAccesoryModel
+  extends IFormAccesory,
+    mongoose.Types.Subdocument {}
 
 const accessorySchema = new mongoose.Schema({
   question: {
@@ -90,8 +98,9 @@ export const kindQuestionImage = [
   KindQuestionImage.picture
 ];
 
-export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {
-}
+export interface IFormQuestionModel
+  extends IFormQuestion,
+    mongoose.Types.Subdocument {}
 
 const formQuestionsSchema = new mongoose.Schema({
   question: {
@@ -183,9 +192,9 @@ const formQuestionsSchema = new mongoose.Schema({
   }
 });
 
-
-export interface IFormSectionModel extends IFormSection, mongoose.Types.Subdocument {
-}
+export interface IFormSectionModel
+  extends IFormSection,
+    mongoose.Types.Subdocument {}
 
 const formSectionsSchema = new mongoose.Schema({
   name: {
@@ -210,7 +219,6 @@ const formSectionsSchema = new mongoose.Schema({
   }
 });
 
-
 export enum KindForm {
   init = 'init',
   control = 'control',
@@ -225,126 +233,128 @@ export const kindForm = [
   KindForm.transmittal
 ];
 
-export interface IFormModel extends IForm, mongoose.Document {
-}
+export interface IFormModel extends IForm, mongoose.Document {}
 
-const formSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    required: true
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    required: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
+const formSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      required: true
+    },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true
+    },
+    description: {
+      type: String,
+      trim: true
+    },
 
-  // if shipping form
-  shipping: {
-    type: Boolean,
-    default: false
-  },
-  shippingText: {
-    type: String,
-    default: ''
-  },
+    // if shipping form
+    shipping: {
+      type: Boolean,
+      default: false
+    },
+    shippingText: {
+      type: String,
+      default: ''
+    },
 
-  shippingImage: {
-    type: Boolean,
-    default: false
-  },
-  // mark if require venue
-  shippingVenue: {
-    type: Boolean,
-    default: false
-  },
-  // text if require venue
-  shippingVenueText: {
-    type: String,
-    default: ''
-  },
+    shippingImage: {
+      type: Boolean,
+      default: false
+    },
+    // mark if require venue
+    shippingVenue: {
+      type: Boolean,
+      default: false
+    },
+    // text if require venue
+    shippingVenueText: {
+      type: String,
+      default: ''
+    },
 
-  // if reception form
-  reception: {
-    type: Boolean,
-    default: false
-  },
-  receptionText: {
-    type: String,
-    default: ''
-  },
-  receptionImage: {
-    type: Boolean,
-    default: false
-  },
-  // mark if require venue
-  receptionVenue: {
-    type: Boolean,
-    default: false
-  },
-  // text if require venue
-  receptionVenueText: {
-    type: String,
-    default: ''
-  },
+    // if reception form
+    reception: {
+      type: Boolean,
+      default: false
+    },
+    receptionText: {
+      type: String,
+      default: ''
+    },
+    receptionImage: {
+      type: Boolean,
+      default: false
+    },
+    // mark if require venue
+    receptionVenue: {
+      type: Boolean,
+      default: false
+    },
+    // text if require venue
+    receptionVenueText: {
+      type: String,
+      default: ''
+    },
 
-  // if require select carrier
-  carrier: {
-    type: Boolean,
-    default: false
-  },
-  carrierText: {
-    type: String,
-    default: ''
-  },
+    // if require select carrier
+    carrier: {
+      type: Boolean,
+      default: false
+    },
+    carrierText: {
+      type: String,
+      default: ''
+    },
 
-  conciliation: {
-    type: Boolean,
-    default: false
-  },
-  conciliationText: {
-    type: String,
-    default: ''
-  },
-  conciliationImage: {
-    type: Boolean,
-    default: false
-  },
+    conciliation: {
+      type: Boolean,
+      default: false
+    },
+    conciliationText: {
+      type: String,
+      default: ''
+    },
+    conciliationImage: {
+      type: Boolean,
+      default: false
+    },
 
-  kind: {
-    type: String,
-    enum: kindForm,
-    default: KindForm.control
-  },
+    kind: {
+      type: String,
+      enum: kindForm,
+      default: KindForm.control
+    },
 
-  action: {
-    type: String,
-    enum: kindActionForm
-  },
+    action: {
+      type: String,
+      enum: kindActionForm
+    },
 
-  sections: [formSectionsSchema],
-  triggers: [formTriggerSchema],
-  deliveryToCustomer: {
-    type: Boolean,
-    default: false
+    sections: [formSectionsSchema],
+    triggers: [formTriggerSchema],
+    deliveryToCustomer: {
+      type: Boolean,
+      default: false
+    },
+    active: {
+      type: Boolean,
+      default: true
+    }
   },
-  active: {
-    type: Boolean,
-    default: true
+  {
+    timestamps: true
   }
-}, {
-  timestamps: true
-});
+);
 
 formSchema.set<any>('redisCache', process.env.ENV === 'production');
 formSchema.set<any>('expires', 30);

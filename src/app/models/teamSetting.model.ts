@@ -3,34 +3,33 @@ import { PaginateModel } from 'mongoose';
 import type { ITeamSetting } from '../interfaces/teamSetting.interface';
 import type { ICarModel } from './car.model';
 
-export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {
-}
+export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {}
 
 const helpPhonesSettingSchema = new mongoose.Schema({
   transmittal: {
-    type: String,
+    type: String
   }
 });
 
 const UnitVocabReferenceSchema = new mongoose.Schema({
   singular: {
     type: String,
-    default: "Unidad"
+    default: 'Unidad'
   },
   plural: {
     type: String,
-    default: "Unidades"
+    default: 'Unidades'
   }
 });
 
 const vocabularySettingsSchema = new mongoose.Schema({
   primary: {
     type: String,
-    default: "VIN"
+    default: 'VIN'
   },
   secondary: {
     type: String,
-    default: "Patente"
+    default: 'Patente'
   },
   unitReference: {
     type: UnitVocabReferenceSchema
@@ -46,7 +45,8 @@ const reportSettingSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  secondaryRequired: {  //commonly know as Patente for the most
+  secondaryRequired: {
+    //commonly know as Patente for the most
     type: Boolean,
     default: true
   }
@@ -130,11 +130,11 @@ const inventorySettingSchema = new mongoose.Schema({
 });
 
 const requestSettingSchema = new mongoose.Schema({
-  brand:{
+  brand: {
     type: Boolean,
     default: true
   },
-  brandReadOnly:{
+  brandReadOnly: {
     type: Boolean,
     default: true
   },
@@ -217,30 +217,35 @@ const requestSettingSchema = new mongoose.Schema({
   thirdColorOption: {
     type: Boolean,
     default: false
-  },
+  }
 });
 
-const teamSettingSchema = new mongoose.Schema({
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
+const teamSettingSchema = new mongoose.Schema(
+  {
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team'
+    },
+    inventory: inventorySettingSchema,
+    request: requestSettingSchema,
+    helpPhones: helpPhonesSettingSchema,
+    form: formSettingSchema,
+    vocabulary: vocabularySettingsSchema
   },
-  inventory: inventorySettingSchema,
-  request: requestSettingSchema,
-  helpPhones: helpPhonesSettingSchema,
-  form: formSettingSchema,
-  vocabulary: vocabularySettingsSchema,
-}, {
-  timestamps: true,
-});
-
+  {
+    timestamps: true
+  }
+);
 
 teamSettingSchema.set<any>('redisCache', process.env.ENV === 'production');
 teamSettingSchema.set<any>('expires', 30);
 
-teamSettingSchema.index({ 'team': 1 });
+teamSettingSchema.index({ team: 1 });
 
-teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+teamSettingSchema.statics.findOneOrCreate = function (
+  condition: any,
+  create: any
+): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
     model.findOne(condition, (err: any, result: ICarModel) => {
@@ -260,10 +265,14 @@ teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any
   });
 };
 
-export type TeamSettingSchema = mongoose.Model<ITeamSettingModel> & PaginateModel<ITeamSettingModel> & {
-  findOneOrCreate(condition: any, create: any): Promise<ITeamSettingModel>
-};
+export type TeamSettingSchema = mongoose.Model<ITeamSettingModel> &
+  PaginateModel<ITeamSettingModel> & {
+    findOneOrCreate(condition: any, create: any): Promise<ITeamSettingModel>;
+  };
 
-const TeamSetting = mongoose.model<ITeamSettingModel, TeamSettingSchema>('TeamSetting', teamSettingSchema);
+const TeamSetting = mongoose.model<ITeamSettingModel, TeamSettingSchema>(
+  'TeamSetting',
+  teamSettingSchema
+);
 
 export default TeamSetting;

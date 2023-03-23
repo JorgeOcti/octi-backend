@@ -4,33 +4,36 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 import { PaginateModel } from 'mongoose';
 import type { ITeam } from '../interfaces/team.interface';
 
-export interface ITeamModel extends ITeam, mongoose.Document { }
+export interface ITeamModel extends ITeam, mongoose.Document {}
 
-const teamSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    trim: true,
-    required: true
+const teamSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      trim: true,
+      required: true
+    },
+    formsNumber: {
+      type: Number,
+      default: 0
+    },
+    requestNumber: {
+      type: Number,
+      default: 0
+    },
+    transmittalNumber: {
+      type: Number,
+      default: 0
+    },
+    active: {
+      type: Boolean,
+      default: true
+    }
   },
-  formsNumber: {
-    type: Number,
-    default: 0
-  },
-  requestNumber: {
-    type: Number,
-    default: 0
-  },
-  transmittalNumber: {
-    type: Number,
-    default: 0
-  },
-  active: {
-    type: Boolean,
-    default: true
+  {
+    timestamps: true
   }
-}, {
-  timestamps: true
-});
+);
 
 teamSchema.set<any>('redisCache', process.env.ENV === 'production');
 teamSchema.set<any>('expires', 30);
@@ -62,7 +65,6 @@ teamSchema.virtual('histories', {
   foreignField: 'team', // is equal to field in another model
   justOne: true
 });
-
 
 teamSchema.plugin(mongoosePaginate);
 

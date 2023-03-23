@@ -13,8 +13,10 @@ userSchema.set<any>('expires', 30);
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ venue: 1 });
-userSchema.index({ firstName: "text", lastName: "text", email: "text"  });
-
+userSchema.index(
+  { firstName: 'text', lastName: 'text', email: 'text' },
+  { default_language: 'spanish' }
+);
 
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
@@ -29,7 +31,10 @@ userSchema.methods.fullName = function (this: IUserModel): string {
 };
 
 // validate user has permissions
-userSchema.methods.hasPermission = function (this: IUserModel, permission: string): boolean {
+userSchema.methods.hasPermission = function (
+  this: IUserModel,
+  permission: string
+): boolean {
   return new UserServices(this).hasPermission(permission);
 };
 
@@ -38,37 +43,44 @@ userSchema.methods.generateToken = function (this: IUserModel): string {
   return new UserServices(this).generateToken();
 };
 
-userSchema.methods.venuesPermissions = function (this: IUserModel, inString?: boolean): any[] {
+userSchema.methods.venuesPermissions = function (
+  this: IUserModel,
+  inString?: boolean
+): any[] {
   return new UserServices(this).venuesPermissions(inString);
 };
 
-userSchema.methods.comparePassword = async function (this: IUserModel, candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (
+  this: IUserModel,
+  candidatePassword: string
+): Promise<boolean> {
   return await new UserServices(this).comparePassword(candidatePassword);
 };
 
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function (this: IUserModel, next: CallbackWithoutResultAndOptionalError) {
-  const user = this;
-  if (!user.isModified('password')) {
-    return next();
-  }
-  bcrypt.genSalt!(10, (err, salt) => {
-    if (err) {
-      return next(err);
+userSchema.pre(
+  'save',
+  function (this: IUserModel, next: CallbackWithoutResultAndOptionalError) {
+    const user = this;
+    if (!user.isModified('password')) {
+      return next();
     }
-    bcrypt.hash!(user.password, salt, (err: mongoose.Error, hash) => {
+    bcrypt.genSalt!(10, (err, salt) => {
       if (err) {
         return next(err);
       }
-      user.password = hash;
-      next();
+      bcrypt.hash!(user.password, salt, (err: mongoose.Error, hash) => {
+        if (err) {
+          return next(err);
+        }
+        user.password = hash;
+        next();
+      });
     });
-  });
-});
-
-
+  }
+);
 
 export const User = mongoose.model<IUserModel, UserSchema>('User', userSchema);
 

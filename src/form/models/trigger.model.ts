@@ -1,7 +1,9 @@
 import * as mongoose from 'mongoose';
-import type { IFormTrigger, ITriggerConfig } from '../interfaces/form.interface';
+import type {
+  IFormTrigger,
+  ITriggerConfig
+} from '../interfaces/form.interface';
 import { KindTrigger } from './trigger.types';
-
 
 export const kindsTrigger = [
   KindTrigger.file,
@@ -15,7 +17,7 @@ export enum IntegrationType {
   http = 'http',
   sap = 'sap',
   conecta = 'conecta',
-  integration = 'integration',
+  integration = 'integration'
 }
 
 export const integrationTypes = [
@@ -24,7 +26,9 @@ export const integrationTypes = [
   IntegrationType.conecta
 ];
 
-export interface ITriggerConfigModel extends ITriggerConfig, mongoose.Types.Subdocument { }
+export interface ITriggerConfigModel
+  extends ITriggerConfig,
+    mongoose.Types.Subdocument {}
 export const triggerConfigSchema = new mongoose.Schema({
   fullname: {
     type: mongoose.Schema.Types.Mixed
@@ -76,8 +80,7 @@ export const triggerConfigSchema = new mongoose.Schema({
   }
 });
 
-
-export interface IFormTriggerModel extends IFormTrigger, mongoose.Document { }
+export interface IFormTriggerModel extends IFormTrigger, mongoose.Document {}
 export const formTriggerSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -102,6 +105,9 @@ export const formTriggerSchema = new mongoose.Schema({
   config: triggerConfigSchema
 });
 
-const FormTrigger = mongoose.model<IFormTriggerModel>('FormTrigger', formTriggerSchema);
+const FormTrigger = mongoose.model<IFormTriggerModel>(
+  'FormTrigger',
+  formTriggerSchema
+);
 
 export default FormTrigger;
