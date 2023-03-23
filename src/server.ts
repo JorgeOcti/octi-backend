@@ -18,7 +18,7 @@ async function main() {
     ),
     port: 6379
   });
-  await mongoose.connect(MONGODB_URI, { autoIndex: false });
+  await mongoose.connect(MONGODB_URI, {  });
   console.log('Mongoose Successfully connected');
 }
 

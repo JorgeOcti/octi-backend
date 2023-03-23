@@ -13,7 +13,8 @@ userSchema.set<any>('expires', 30);
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ venue: 1 });
-userSchema.index({ venuesAccess: 1 });
+userSchema.index({ firstName: "text", lastName: "text", email: "text"  });
+
 
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate

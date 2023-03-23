@@ -539,7 +539,7 @@ class AdminUsersController {
         {
           path: 'userForms',
           select: ['name'],
-          match: { active: true}
+          match: { active: true }
         },
         {
           path: 'company',
@@ -1035,22 +1035,18 @@ class AdminUsersController {
     search?: string
   ): Promise<PaginateResult<IUserModel>> {
     if (search && search.length) {
-      const searchText = new RegExp(search, 'i');
       filter = {
         $and: [
           {
-            $or: [
-              {
-                firstName: { $regex: searchText }
-              },
-              {
-                lastName: { $regex: searchText }
-              }
-            ]
+            $text: { $search: search }
           },
           filter
         ]
       };
+      options ={
+        sort: { $meta: "textScore" },
+        ...options,
+      }
     }
     return new Promise((resolve, reject) => {
       User.paginate!(filter, options, (err, result) => {
