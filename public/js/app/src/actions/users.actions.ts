@@ -498,7 +498,7 @@ export function getUsersAction(
       api.getVenues({ page: 1, pageSize: 500, noPopulate: false }),
       api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
-      api.getForms(1, 200)
+      api.getForms(1, 200, true)
     ])
       .then(
         Axios.spread((users, venues, channeles, permissions, forms) => {

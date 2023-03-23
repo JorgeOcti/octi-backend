@@ -154,7 +154,7 @@ class AdminVenueController {
     // paginate options
     const options: PaginateOptions = {
       sort: {
-        name: 1,
+        name: 1
       },
       customLabels: {
         totalDocs: 'total',
@@ -463,13 +463,16 @@ class AdminVenueController {
           { $pull: { receiveFrom: id } },
           { multi: true }
         );
-        await User.updateMany({
-          companiesAccess: {$in:company},
-        }, {
-          $addToSet: {
-            venuesAccess: { $each: [newVenue._id]}
+        await User.updateMany(
+          {
+            companiesAccess: { $in: company }
+          },
+          {
+            $addToSet: {
+              venuesAccess: { $each: [newVenue._id] }
+            }
           }
-        })
+        );
         socket().to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id

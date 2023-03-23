@@ -63,10 +63,10 @@ class ConectaController {
             logger.debug(`RequestController.searchVin\x1b[90m: There are no records.`);
             resolve({ data: [] });
           });
-      } catch (e) {
+      } catch (error) {
         logger.error(`RequestController.searchVin\x1b[90m: catch error.`);
-        logger.error(e);
-        resolve({ data: [] });
+        logger.error(error);
+        reject({ error });
       }
     });
   }

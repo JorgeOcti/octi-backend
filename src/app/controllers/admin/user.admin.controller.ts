@@ -538,7 +538,8 @@ class AdminUsersController {
         },
         {
           path: 'userForms',
-          select: ['name']
+          select: ['name'],
+          match: { active: true}
         },
         {
           path: 'company',

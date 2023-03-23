@@ -150,7 +150,8 @@ class Middlewares {
               select: ['codeName']
             }, {
               path: 'userForms',
-              select: ['name']
+              select: ['name'],
+              match: { active: true}
             }, {
               path: 'venue',
               select: ['name']

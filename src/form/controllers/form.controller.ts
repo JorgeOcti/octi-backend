@@ -55,6 +55,7 @@ import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
 import { KindTrigger } from '../models/trigger.types';
 import TriggerHandler from './triggers/triggerHandler';
+import axios from 'axios';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -73,6 +74,31 @@ class FormController {
     this.getControls = this.getControls.bind(this);
     this.allControls = this.allControls.bind(this);
     this.allControlsByVIN = this.allControlsByVIN.bind(this);
+    this.getExternalOrder = this.getExternalOrder.bind(this);
+  }
+
+  public async getExternalOrder(req: IRequest, res: Response): Promise<any> {
+    const { order } = req.body;
+    try {
+      const config = {
+        headers: {
+          'x-apikey': ' LQKpXlFg5UwXgoHDJ2CWlwyAVQG2llyz5RTNT6NmgFrGABzj'
+        }
+      };
+      const instance = axios.create(config);
+      const response = await instance.get(
+        `https://ipa.qa.derco.services/osa-integration/v1/pedidos/${order}`
+      );
+      console.dir(response.data);
+      return res.json(
+        {
+          data: response.data
+        });
+    } catch (e) {
+      console.log(e);
+      // Raven.captureException(e, { req });
+      return res.status(500).json(e.message);
+    }
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
@@ -798,7 +824,7 @@ class FormController {
           team
         });
       } else if (carId) {
-        car = await Car.findOne({_id: carId})
+        car = await Car.findOne({ _id: carId });
       }
 
       if (car || transmittal) {
@@ -807,14 +833,15 @@ class FormController {
           team
         });
         if (form) {
-
-          let searchVal : any[] = [];
-          if (car)
-            searchVal.push({car: car._id})
+          let searchVal: any[] = [];
+          if (car) searchVal.push({ car: car._id });
           if (transmittal)
-            searchVal.push({transmittal: new Types.ObjectId(transmittal)})
+            searchVal.push({ transmittal: new Types.ObjectId(transmittal) });
 
-          const keyRawAnswers= crypto.createHash('md5').update(JSON.stringify(answers)).digest("hex");
+          const keyRawAnswers = crypto
+            .createHash('md5')
+            .update(JSON.stringify(answers))
+            .digest('hex');
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
           const existControl = await Participant.findOne({
@@ -826,8 +853,8 @@ class FormController {
               $gte: today.toDate(),
               $lt: tomorrow.toDate()
             }
-          })
-          if(existControl) {
+          });
+          if (existControl) {
             const today = moment().startOf('day');
             const count = await Participant.find({
               user: req.user,
@@ -1005,7 +1032,7 @@ class FormController {
                 answer.images.forEach(async (image: string) => {
                   const deleteFile = await ParticipantFile.findById(image);
                   if (deleteFile) {
-                    await ParticipantFile.deleteOne({_id: image});
+                    await ParticipantFile.deleteOne({ _id: image });
                   }
                 });
               }
@@ -1026,19 +1053,29 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
-              } else if (question?.kindUpdate === 'participant.clientSignature') {
+              } else if (
+                question?.kindUpdate === 'participant.clientSignature'
+              ) {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
-                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
+                  ? answer.images.map(
+                      (image: string) => new mongoose.Types.ObjectId(image)
+                    )
                   : [];
-              } else if (question?.kindUpdate === 'participant.clientIdentifyCard') {
+              } else if (
+                question?.kindUpdate === 'participant.clientIdentifyCard'
+              ) {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
-                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
+                  ? answer.images.map(
+                      (image: string) => new mongoose.Types.ObjectId(image)
+                    )
                   : [];
               } else if (question?.kindUpdate === 'participant.plateEvidence')
                 newParticipant.deliveryInfo.plateEvidence = answer?.images
                   ?.length
-                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
+                  ? answer.images.map(
+                      (image: string) => new mongoose.Types.ObjectId(image)
+                    )
                   : [];
 
               newAnswers.push({
@@ -1061,9 +1098,13 @@ class FormController {
                 risk: question.risk,
                 comment,
                 observe: question.observe,
-                answer: answer ? new mongoose.Types.ObjectId(answer.value) : null,
+                answer: answer
+                  ? new mongoose.Types.ObjectId(answer.value)
+                  : null,
                 images: answer?.images?.length
-                  ? answer.images.map((image: string) => new mongoose.Types.ObjectId(image))
+                  ? answer.images.map(
+                      (image: string) => new mongoose.Types.ObjectId(image)
+                    )
                   : [],
                 qualification,
                 na,
@@ -3041,7 +3082,7 @@ class FormController {
       const forms = await Form.find(filter, {
         _id: 1,
         name: 1
-      }).lean()
+      }).lean();
       return resolve(forms);
     });
   }
@@ -3133,11 +3174,11 @@ class FormController {
               }
             ])
             .lean();
-            if (form) {
-              redisClient.setex(keyCache, 60, JSON.stringify(form));
-              resolve(form);
-            }
-            reject('No se encontro formularío');
+          if (form) {
+            redisClient.setex(keyCache, 60, JSON.stringify(form));
+            resolve(form);
+          }
+          reject('No se encontro formularío');
         }
       });
     });
@@ -3221,10 +3262,9 @@ class FormController {
             'choices.na': false,
             team: false,
             __v: false
-          })
-            .lean()
-            redisClient.setex(keyCache, 30, JSON.stringify(scales));
-            resolve(scales);
+          }).lean();
+          redisClient.setex(keyCache, 30, JSON.stringify(scales));
+          resolve(scales);
         }
       });
     });
