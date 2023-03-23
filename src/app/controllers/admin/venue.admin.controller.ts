@@ -180,6 +180,12 @@ class AdminVenueController {
         updatedAt: true,
         createdAt: true
       };
+      options['populate'] = [
+        {
+          path: 'company',
+          select: ['name']
+        }
+      ];
     } else {
       options['select'] = {
         _id: true,

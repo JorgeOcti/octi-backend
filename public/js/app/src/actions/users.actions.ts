@@ -495,7 +495,7 @@ export function getUsersAction(
         search: state.users.searchText
       }),
       // api.getCompanies(1, 200),
-      api.getVenues({ page: 1, pageSize: 500, noPopulate: false }),
+      api.getVenues({ page: 1, pageSize: 500, noPopulate: true }),
       api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
       api.getForms(1, 200, true)
