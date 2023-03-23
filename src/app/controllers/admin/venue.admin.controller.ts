@@ -463,6 +463,13 @@ class AdminVenueController {
           { $pull: { receiveFrom: id } },
           { multi: true }
         );
+        await User.updateMany({
+          companiesAccess: {$in:company},
+        }, {
+          $addToSet: {
+            venuesAccess: { $each: [newVenue._id]}
+          }
+        })
         socket().to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
