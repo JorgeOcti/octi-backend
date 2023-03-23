@@ -1036,17 +1036,13 @@ class AdminUsersController {
   ): Promise<PaginateResult<IUserModel>> {
     if (search && search.length) {
       filter = {
-        $and: [
-          {
-            $text: { $search: search }
-          },
-          filter
-        ]
+        ...filter,
+        $text: { $search: search },
       };
-      options ={
-        sort:  { score: { $meta: "textScore" } },
+      options = {
         ...options,
-      }
+        sort: { score: { $meta: 'textScore' } }
+      };
     }
     return new Promise((resolve, reject) => {
       User.paginate!(filter, options, (err, result) => {

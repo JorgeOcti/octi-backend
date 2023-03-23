@@ -15,7 +15,14 @@ userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ venue: 1 });
 userSchema.index(
   { firstName: 'text', lastName: 'text', email: 'text' },
-  { default_language: 'spanish' }
+  {
+    default_language: 'spanish',
+    weights: {
+      firstName: 10,
+      lastName: 3
+    },
+    name: 'TextIndex'
+  }
 );
 
 userSchema.plugin(passportLocalMongoose);
