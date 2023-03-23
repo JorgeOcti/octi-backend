@@ -616,6 +616,7 @@ class AdminUsersController {
       preferred,
       company,
       venuesAccess,
+      companiesAccess,
       isAdmin,
       isDriver,
       settings
@@ -657,6 +658,7 @@ class AdminUsersController {
           username: email,
           venue,
           venuesAccess,
+          companiesAccess,
           settings,
           isDriver,
           preferred,
