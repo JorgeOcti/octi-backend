@@ -1044,7 +1044,7 @@ class AdminUsersController {
         ]
       };
       options ={
-        sort: { $meta: "textScore" },
+        sort:  { score: { $meta: "textScore" } },
         ...options,
       }
     }
