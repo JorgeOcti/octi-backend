@@ -18,7 +18,13 @@ import { IRequest } from '../../interfaces/global.interface';
 import InventoryModel, {
   ChoicesStatusInventory
 } from '../../inventory/models/inventory.model';
-import { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, Types } from 'mongoose';
+import {
+  CustomLabels,
+  PaginateOptions,
+  PaginateResult,
+  PipelineStage,
+  Types
+} from 'mongoose';
 import ParticipantModel, {
   IParticipantAnswerModel
 } from '../../form/models/participant.model';
@@ -1998,99 +2004,142 @@ class CarController {
       if (delivery?.length > 2) {
         // aggregate.push({ $match: { score: { $gte: 5 } } });
         aggregate.push({ $sort: { score: { $meta: 'textScore' } } });
-       }// else {
+      } // else {
       //   options.sort = { _id: -1 };
       // }
       // populate related data
-      const populateAggregate: PipelineStage[] = [
-        {
-          $lookup: {
-            from: 'cars',
-            localField: 'car',
-            foreignField: '_id',
-            as: 'car'
-          }
-        },
-        {
-          $unwind: {
-            path: '$car',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'user',
-            foreignField: '_id',
-            as: 'user'
-          }
-        },
-        {
-          $unwind: {
-            path: '$user',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $lookup: {
-            from: 'venues',
-            localField: 'venue',
-            foreignField: '_id',
-            as: 'venue'
-          }
-        },
-        {
-          $unwind: {
-            path: '$venue',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $lookup: {
-            from: 'companies',
-            localField: 'company',
-            foreignField: '_id',
-            as: 'company'
-          }
-        },
-        {
-          $unwind: {
-            path: '$company',
-            preserveNullAndEmptyArrays: true
-          }
-        }
-      ];
+      // const populateAggregate: PipelineStage[] = [
+      //   {
+      //     $lookup: {
+      //       from: 'cars',
+      //       localField: 'car',
+      //       foreignField: '_id',
+      //       as: 'car'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$car',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'users',
+      //       localField: 'user',
+      //       foreignField: '_id',
+      //       as: 'user'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$user',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'venues',
+      //       localField: 'venue',
+      //       foreignField: '_id',
+      //       as: 'venue'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$venue',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'companies',
+      //       localField: 'company',
+      //       foreignField: '_id',
+      //       as: 'company'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$company',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
 
-      // project only needed fields
-      populateAggregate.push({
-        $project: {
-          createdAt: true,
-          number: true,
+      //   {
+      //     $unwind: {
+      //       path: '$deliveryInfo.identifyCard',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: 'participantfiles',
+      //       localField: 'deliveryInfo.signature',
+      //       foreignField: '_id',
+      //       as: 'deliveryInfo.signature'
+      //     }
+      //   },
+      //   // {
+      //   //   $lookup: {
+      //   //     from: 'participantfiles',
+      //   //     localField: 'deliveryInfo.identifyCard',
+      //   //     foreignField: '_id',
+      //   //     as: 'deliveryInfo.identifyCard'
+      //   //   }
+      //   // },
+      //   // {
+      //   //   $unwind: {
+      //   //     path: '$deliveryInfo.signature',
+      //   //     preserveNullAndEmptyArrays: true
+      //   //   }
+      //   // },
+      //   // {
+      //   //   $lookup: {
+      //   //     from: 'participantfiles',
+      //   //     localField: 'deliveryInfo.plateEvidence',
+      //   //     foreignField: '_id',
+      //   //     as: 'deliveryInfo.plateEvidence'
+      //   //   }
+      //   // },
+      //   // {
+      //   //   $unwind: {
+      //   //     path: '$deliveryInfo.plateEvidence',
+      //   //     preserveNullAndEmptyArrays: true
+      //   //   }
+      //   // }
+      // ];
 
-          hasDamages: true,
-          qualification: true,
-          deliveryInfo: true,
-          name: true,
+      // // project only needed fields
+      // populateAggregate.push({
+      //   $project: {
+      //     createdAt: true,
+      //     number: true,
 
-          'car._id': true,
-          'car.vin': true,
-          'car.brand': true,
-          'car.patent': true,
-          'car.denomination': true,
-          'car.color': true,
-          'car.lastForm': true,
+      //     hasDamages: true,
+      //     qualification: true,
+      //     deliveryInfo: true,
+      //     name: true,
 
-          'user._id': true,
-          'user.firstName': true,
-          'user.lastName': true,
+      //     'car._id': true,
+      //     'car.vin': true,
+      //     'car.brand': true,
+      //     'car.patent': true,
+      //     'car.denomination': true,
+      //     'car.color': true,
+      //     'car.lastForm': true,
 
-          'venue._id': true,
-          'venue.name': true,
+      //     'user._id': true,
+      //     'user.firstName': true,
+      //     'user.lastName': true,
 
-          'company._id': true,
-          'company.name': true
-        }
-      });
+      //     'venue._id': true,
+      //     'venue.name': true,
+
+      //     'company._id': true,
+      //     'company.name': true
+      //   }
+      // });
 
       const participantsAggregate = Participant.aggregate(aggregate);
 
@@ -2108,28 +2157,71 @@ class CarController {
           status: 400
         });
       } else {
-        const pipelinePopulated = [
-          {
-            $match: {
-              ...searchParticipantText,
-              _id: { $in: participants.docs.map((d) => d._id) }
-            }
-          },
-          ...populateAggregate
-        ];
-        if (delivery?.length > 2) {
-          // pipelinePopulated.push({ $match: { score: { $gte: 1 } } });
-          pipelinePopulated.push({ $sort: { score: { $meta: 'textScore' } } });
-        } else{
-          pipelinePopulated.push({ $sort: { _id: -1 } });
-        }
+        // const pipelinePopulated = [
+        //   {
+        //     $match: {
+        //       ...searchParticipantText,
+        //       _id: { $in: participants.docs.map((d) => d._id) }
+        //     }
+        //   },
+        //   ...populateAggregate
+        // ];
+        // if (delivery?.length > 2) {
+        //   // pipelinePopulated.push({ $match: { score: { $gte: 1 } } });
+        //   pipelinePopulated.push({ $sort: { score: { $meta: 'textScore' } } });
+        // } else{
+        //   pipelinePopulated.push({ $sort: { _id: -1 } });
+        // }
 
         return res.json({
           count: participants.total,
           pages: participants.pages,
           hasPrevious: participants.hasPrevious,
           hasNext: participants.hasNext,
-          results: await Participant.aggregate([...pipelinePopulated]),
+          // results: await Participant.aggregate([...pipelinePopulated]),
+          results: await Participant.find({
+            ...searchParticipantText,
+            _id: { $in: participants.docs.map((d) => d._id) }
+          })
+            .populate([
+              {
+                path: 'car',
+                select: [
+                  'vin',
+                  'brand',
+                  'patent',
+                  'denomination',
+                  'color',
+                  'lastForm'
+                ]
+              },
+              {
+                path: 'user',
+                select: ['firstName', 'lastName']
+              },
+              {
+                path: 'venue',
+                select: ['name']
+              },
+              {
+                path: 'company',
+                select: ['name']
+              },
+              {
+                path: 'deliveryInfo.identifyCard'
+              },
+              {
+                path: 'deliveryInfo.signature'
+              },
+              {
+                path: 'deliveryInfo.plateEvidence'
+              }
+            ])
+            .sort(
+              delivery?.length > 2
+                ? { score: { $meta: 'textScore' } }
+                : { _id: -1 }
+            ),
           status: 200
         });
       }
