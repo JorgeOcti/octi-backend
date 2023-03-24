@@ -1,4 +1,7 @@
-import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.actions';
+import {
+  DashboardReduxAction,
+  IDashboardState
+} from '../actions/dashboard.actions';
 import * as moment from 'moment-timezone';
 
 const initialState: IDashboardState = {
@@ -6,9 +9,9 @@ const initialState: IDashboardState = {
   source: null,
   participants: [],
   requests: [],
-  companies:[],
+  companies: [],
   car: null,
-  carEvents: {} ,
+  carEvents: {},
   forms: [],
   searchForms: [],
   participantsReceivedPerDate: [],
@@ -18,7 +21,11 @@ const initialState: IDashboardState = {
   planningPerDate: [],
   planningProcessPerDate: [],
   searchText: '',
-  searchFrom: moment().startOf('month').subtract(6, 'months').startOf('month').toDate(),
+  searchFrom: moment()
+    .startOf('month')
+    .subtract(3, 'months')
+    .startOf('month')
+    .toDate(),
   searchTo: moment().toDate(),
   carsByVenue: [],
   totalCars: 0,
@@ -32,7 +39,10 @@ const initialState: IDashboardState = {
   }
 };
 
-export function dashboardReducer(state = initialState, action: DashboardReduxAction): IDashboardState {
+export function dashboardReducer(
+  state = initialState,
+  action: DashboardReduxAction
+): IDashboardState {
   switch (action.type) {
     case '/DASHBOARD/IS_LOADING':
       return {
@@ -58,7 +68,7 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
       return {
         ...state,
         searchFrom: action.payload.from,
-        searchTo: action.payload.to,
+        searchTo: action.payload.to
       };
     case '/DASHBOARD/LOADING_PARTICIPANT':
       return {
@@ -81,7 +91,7 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
     case '/DASHBOARD/LOAD_CAR':
       return {
         ...state,
-        car: action.payload.car,
+        car: action.payload.car
       };
     case '/DASHBOARD/LOAD_REQUESTS_IN_CAR':
       return {
@@ -94,7 +104,10 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
           ...state,
           car: {
             ...state.car,
-            participants: [action.payload.participant, ...state.car.participants]
+            participants: [
+              action.payload.participant,
+              ...state.car.participants
+            ]
           }
         };
       } else {

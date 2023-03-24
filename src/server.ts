@@ -10,7 +10,7 @@ async function main() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('strictQuery', true);
-  mongoose.set('debug', true);
+  mongoose.set('debug', false);
   mongooseRedisCache(mongoose, {
     host: GeneralUtils.getFromEnviroment(
       'REDIS_SERVICE_SERVICE_HOST',
@@ -18,7 +18,7 @@ async function main() {
     ),
     port: 6379
   });
-  await mongoose.connect(MONGODB_URI, {  });
+  await mongoose.connect(MONGODB_URI, { autoIndex: false });
   console.log('Mongoose Successfully connected');
 }
 
