@@ -35,7 +35,9 @@ class HeaderApp extends React.Component<{}, {}> {
       <header className="main-header">
         <a className="logo" href="/" style={{padding: '5px 15px'}}>
           <span className="logo-mini">&nbsp;</span>
-          <span className="logo-lg"><img src="/static/images/OSA_andes_logo_horizontal.svg" style={{maxHeight: '40px', verticalAlign: 'baseline'}}/></span>
+          <span className="logo-lg"><img src={
+            process.env.NODE_ENV === 'development'?"/static/images/osa-andes-dev-logo.png":"/static/images/OSA_andes_logo_horizontal.svg"}
+           style={{maxHeight: '40px', verticalAlign: 'baseline'}}/></span>
         </a>
         <nav className="navbar navbar-static-top">
           <a className="sidebar-toggle hidden-sm hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
