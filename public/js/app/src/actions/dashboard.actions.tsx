@@ -770,7 +770,7 @@ export function getCarAction(id: string) {
       api.getRequestsByCar(id)
     ]).then(Axios.spread((car, requests) => {
       // dispatch(loadDashboardCleaningAction(dashboard.data));
-      document.title = `OSA Andes | Detalle VIN ${car.data.data.vin}`;
+      document.title = `${car.data.data.vin} - Detalle | OSA Andes`;
       dispatch(loadCarAction(car.data.data));
       dispatch(loadRequestsInCarAction(requests.data));
       dispatch(isLoadingAction(false));

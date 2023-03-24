@@ -56,7 +56,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Entregas';
+    this.title = 'Entregas de unidades';
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);

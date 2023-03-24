@@ -49,7 +49,7 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Stock Actual';
+    this.title = 'Dashboard';
     this.customTotal = this.customTotal.bind(this);
     this.driverFormatter = this.driverFormatter.bind(this);
     this.otFormatter = this.otFormatter.bind(this);

@@ -75,7 +75,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Solicitudes';
+    this.title = 'Detalle de solicitudes';
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);

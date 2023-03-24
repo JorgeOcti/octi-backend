@@ -44,7 +44,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Detalle VIN';
+    this.title = '- Detalle';
   }
 
   componentWillMount() {

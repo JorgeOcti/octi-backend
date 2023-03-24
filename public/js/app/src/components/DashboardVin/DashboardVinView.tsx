@@ -72,10 +72,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     searchText: '',
     carLoading: '',
     selectedForms: [],
-    from: moment()
-      .subtract(1, 'months')
-      .startOf('month')
-      .toDate(),
+    from: moment().subtract(1, 'months').startOf('month').toDate(),
     to: moment().toDate(),
     downloading: false
   };
@@ -86,7 +83,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Revisiones';
+    this.title = 'Revisiones de unidades';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
@@ -244,12 +241,24 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     const { highlight, carLoading, downloading, from, to, selectedForms } =
       this.state;
     return (
-      <AppContainer title="Revisiones" cMenu="1" cSubMenu="1.2">
+      <AppContainer
+        title={
+          <div style={{ width: '180px' }}>
+            <DateRangeInput
+              options={this.getDateRangeOptions()}
+              onChange={this.onDateRangeChange}
+              startDate={from}
+              endDate={to}
+            />
+          </div>
+        }
+        cMenu="1"
+        cSubMenu="1.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">
-                Controles{' '}
+                Revisiones de unidad{' '}
                 <small>
                   {new Intl.NumberFormat('de-DE').format(pagination.count)}
                 </small>
@@ -265,7 +274,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row no-margin">
-              <div className="col-md-12 no-padding">
+                <div className="col-md-8 no-padding">
                   <div
                     className="input-group input-group-sm"
                     style={{ padding: '10px' }}>
@@ -274,7 +283,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
                       value={searchText}
-                      placeholder="Buscar VIN, marca, supervisor o sucursal"
+                      placeholder="Buscar por VIN, descripción unidad, supervisor y/o sucursal"
                     />
                     <div className="input-group-btn">
                       <button className="btn btn-default">
@@ -283,7 +292,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-6 no-padding">
+                <div className="col-md-4 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
@@ -304,7 +313,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className="col-md-6 no-padding">
+                {/* <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <DateRangeInput
                       options={this.getDateRangeOptions()}
@@ -313,8 +322,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       endDate={to}
                     />
                   </div>
-                </div>
-
+                </div> */}
               </div>
               {participants.length ? (
                 <div className="table-responsive" style={{ border: 0 }}>
@@ -701,30 +709,18 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         cancelLabel: 'Cancelar'
       },
       ranges: {
-        'Este mes': [
-          moment().startOf('month').toDate(),
+        'Este mes': [moment().startOf('month').toDate(), moment().toDate()],
+        'Últimos 3 meses': [
+          moment().subtract(3, 'months').startOf('month').toDate(),
           moment().toDate()
         ],
-        'Últimos 3 meses': [
-          moment()
-            .subtract(3, 'months')
-            .startOf('month')
-            .toDate(),
-            moment().toDate()
-        ],
         'Últimos 6 meses': [
-          moment()
-            .subtract(6, 'months')
-            .startOf('month')
-            .toDate(),
-            moment().toDate()
+          moment().subtract(6, 'months').startOf('month').toDate(),
+          moment().toDate()
         ],
         'Último año': [
-          moment()
-            .subtract(12, 'months')
-            .startOf('month')
-            .toDate(),
-            moment().toDate()
+          moment().subtract(12, 'months').startOf('month').toDate(),
+          moment().toDate()
         ]
       },
       opens: 'left'

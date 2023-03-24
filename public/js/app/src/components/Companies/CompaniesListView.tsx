@@ -81,7 +81,7 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, companies, pagination} = this.props.companies;
     return (
-      <AppContainer title="" cMenu="200" cSubMenu="200.0" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.1" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Empresas <small>{pagination.count}</small></h3>

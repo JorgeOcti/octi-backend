@@ -61,7 +61,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {pagination} = this.props.users;
     // set the title of the page
-    document.title = 'OSA Andes | Listado de integraciones';
+    document.title = 'Listado de integraciones | OSA Andes';
     this.props.getUsersAction(1, UserTypes.integration);
 
     // socket

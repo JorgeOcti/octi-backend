@@ -48,7 +48,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Reportes generales';
+    this.title = 'Dashboard general';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
     this.updateCarsChart = this.updateCarsChart.bind(this);

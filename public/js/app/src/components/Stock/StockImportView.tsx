@@ -77,7 +77,7 @@ class StockImportView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillMount() {
     // set the title of the page
-    document.title = 'OSA Andes | Importar Stock';
+    document.title = 'Importar Stock OSA Andes';
     this.getVenues();
     this.props.getStockAction();
   }

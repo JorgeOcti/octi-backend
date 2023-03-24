@@ -64,7 +64,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Transporte';
+    this.title = 'Transportes de unidades';
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.exportExcel = this.exportExcel.bind(this);

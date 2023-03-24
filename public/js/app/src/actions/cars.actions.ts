@@ -106,7 +106,7 @@ export function getCarAction(id: string) {
     dispatch(isLoadingAction(true));
     api.getCar(id)
       .then((response: AxiosResponse) => {
-        document.title = `OSA Andes | Detalle VIN ${response.data.data.vin}`;
+        document.title = ` ${response.data.data.vin} - Detalle  | OSA Andes`;
         dispatch(loadCarAction(response.data.data));
         dispatch(isLoadingAction(false));
       })

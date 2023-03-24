@@ -54,7 +54,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Inventarios';
+    this.title = 'Gestión de inventarios';
     this.create = this.create.bind(this);
     this.changePage = this.changePage.bind(this);
     this.labelStatus = this.labelStatus.bind(this);

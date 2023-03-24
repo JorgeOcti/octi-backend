@@ -19,7 +19,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
 
   public componentDidMount(): void {
     // set the title of the page
-    document.title = `OSA Andes | ${this.title}`;
+    document.title = `${this.title} | OSA Andes `;
     if (process.env.NODE_ENV === 'production') {
       this.registerUser();
       this.trackPage();

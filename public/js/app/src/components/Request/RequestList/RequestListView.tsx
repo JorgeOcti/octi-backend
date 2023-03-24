@@ -52,7 +52,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Solicitudes';
+    this.title = 'Solicitudes de unidades';
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);

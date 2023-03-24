@@ -45,7 +45,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Listado de autos';
+    this.title = 'Buscador de unidades';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(1000, this.debounceOnChangeSearch);

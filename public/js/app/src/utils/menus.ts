@@ -1,33 +1,21 @@
-import {IWindow} from '../interfaces/window';
-import {hasPermission, parseReplicableURL} from './common';
+import { IWindow } from '../interfaces/window';
+import { hasPermission, parseReplicableURL } from './common';
 
 declare let window: IWindow;
 
 const menus: any[] = [];
 
 /* *****************
-* 1. Dashboard
-*****************/
-const dashboardItems = [{
-  id: '1.1',
-  icon: 'fa-circle-o',
-  text: 'General',
-  url: '/'
-}];
-
-dashboardItems.push({
-  id: '1.2',
-  icon: 'fa-circle-o text-blue',
-  text: 'Revisiones',
-  url: '/cars/'
-});
-
-dashboardItems.push({
-  id: '1.8',
-  icon: 'fa-circle-o text-red',
-  text: 'Entregas',
-  url: '/deliveries/'
-});
+ * 1. Dashboard
+ *****************/
+const dashboardItems = [
+  {
+    id: '1.1',
+    icon: 'fa-circle-o',
+    text: 'General',
+    url: '/'
+  }
+];
 
 if (hasPermission(window.user, 'viewCar')) {
   dashboardItems.push({
@@ -37,6 +25,20 @@ if (hasPermission(window.user, 'viewCar')) {
     url: '/settings/cars/'
   });
 }
+
+dashboardItems.push({
+  id: '1.2',
+  icon: 'fa-circle-o text-red',
+  text: 'Revisiones',
+  url: '/cars/'
+});
+
+dashboardItems.push({
+  id: '1.8',
+  icon: 'fa-circle-o text-blue',
+  text: 'Entregas',
+  url: '/deliveries/'
+});
 
 if (hasPermission(window.user, 'viewChecklistStudio')) {
   dashboardItems.push({
@@ -54,7 +56,10 @@ if (hasPermission(window.user, 'viewChecklistStudio')) {
 //   url: '/revision-report/'
 // });
 
-if (process.env.NODE_ENV !== 'development' && hasPermission(window.user, 'viewDashboardDamages')) {
+if (
+  process.env.NODE_ENV !== 'development' &&
+  hasPermission(window.user, 'viewDashboardDamages')
+) {
   dashboardItems.push({
     id: '1.4',
     icon: 'fa-circle-o',
@@ -63,7 +68,10 @@ if (process.env.NODE_ENV !== 'development' && hasPermission(window.user, 'viewDa
   });
 }
 
-if (process.env.NODE_ENV !== 'development' && hasPermission(window.user, 'viewDashboardTiming')) {
+if (
+  process.env.NODE_ENV !== 'development' &&
+  hasPermission(window.user, 'viewDashboardTiming')
+) {
   dashboardItems.push({
     id: '1.5',
     icon: 'fa-circle-o',
@@ -101,9 +109,78 @@ if (dashboardItems.length) {
 }
 
 /* *****************
-* 3. Request and Distribution
-*****************/
+ * 2. Inventory
+ *****************/
+const inventoryItems = [];
+
+if (hasPermission(window.user, 'viewInventoryDashboard')) {
+  inventoryItems.push({
+    id: '2.3',
+    icon: 'fa-circle-o text-blue',
+    text: 'Dashboard',
+    url: '/inventory/dashboard/'
+  });
+}
+
+if (hasPermission(window.user, 'currentStock')) {
+  inventoryItems.push({
+    id: '2.4',
+    icon: 'fa-circle-o text-green',
+    text: 'Stock Actual',
+    url: '/stock/'
+  });
+}
+
+if (hasPermission(window.user, 'viewInventory')) {
+  inventoryItems.push({
+    id: '2.1',
+    icon: 'fa-circle-o text-red',
+    text: 'Gestión',
+    url: '/inventory/'
+  });
+}
+
+if (hasPermission(window.user, 'viewInventoryStudio')) {
+  inventoryItems.push({
+    id: '2.5',
+    icon: 'fa-circle-o text-yellow',
+    text: 'Análisis',
+    url: '/inventory/studio/'
+  });
+}
+
+if (hasPermission(window.user, 'viewLabel')) {
+  inventoryItems.push({
+    id: '2.2',
+    icon: 'fa-circle-o',
+    text: 'Etiquetas',
+    url: '/settings/labels/'
+  });
+}
+
+if (inventoryItems.length) {
+  menus.push({
+    id: '2',
+    text: 'Inventario',
+    icon: 'fa-book',
+    url: inventoryItems[0].url,
+    items: inventoryItems
+  });
+}
+
+/* *****************
+ * 3. Request and Distribution
+ *****************/
 const distributionItems = [];
+
+if (hasPermission(window.user, 'viewRequest')) {
+  distributionItems.push({
+    id: '3.1',
+    icon: 'fa-circle-o text-green',
+    text: 'Solicitudes',
+    url: parseReplicableURL('/requests/')
+  });
+}
 
 if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
@@ -114,19 +191,10 @@ if (hasPermission(window.user, 'viewRequest')) {
   });
 }
 
-
-if (hasPermission(window.user, 'viewRequest')) {
-  distributionItems.push({
-    id: '3.1',
-    icon: 'fa-circle-o text-blue',
-    text: 'Solicitudes',
-    url: parseReplicableURL('/requests/')
-  });
-}
 if (hasPermission(window.user, 'viewTransmittal')) {
   distributionItems.push({
     id: '3.4',
-    icon: 'fa-circle-o text-green',
+    icon: 'fa-circle-o text-blue',
     text: 'Transportes',
     url: parseReplicableURL('/transmittals/')
   });
@@ -170,70 +238,8 @@ if (distributionItems.length) {
 }
 
 /* *****************
-* 2. Inventory
-*****************/
-const inventoryItems = [];
-
-if (hasPermission(window.user, 'viewInventoryDashboard')) {
-  inventoryItems.push({
-    id: '2.3',
-    icon: 'fa-circle-o',
-    text: 'Dashboard',
-    url: '/inventory/dashboard/'
-  });
-}
-
-if (hasPermission(window.user, 'viewInventory')) {
-  inventoryItems.push({
-    id: '2.1',
-    icon: 'fa-circle-o text-blue',
-    text: 'Gestión',
-    url: '/inventory/'
-  });
-}
-
-if (hasPermission(window.user, 'viewInventoryStudio')) {
-  inventoryItems.push({
-    id: '2.5',
-    icon: 'fa-circle-o text-yellow',
-    text: 'Análisis',
-    url: '/inventory/studio/'
-  });
-}
-
-if (hasPermission(window.user, 'currentStock')) {
-  inventoryItems.push({
-    id: '2.4',
-    icon: 'fa-circle-o',
-    text: 'Stock Actual',
-    url: '/stock/'
-  });
-}
-
-if (hasPermission(window.user, 'viewLabel')) {
-  inventoryItems.push({
-    id: '2.2',
-    icon: 'fa-circle-o',
-    text: 'Etiquetas',
-    url: '/settings/labels/'
-  });
-}
-
-
-if (inventoryItems.length) {
-  menus.push({
-    id: '2',
-    text: 'Inventario',
-    icon: 'fa-book',
-    url: inventoryItems[0].url,
-    items: inventoryItems
-  });
-}
-
-
-/* *****************
-* 3. Planning
-*****************/
+ * 3. Planning
+ *****************/
 const planningItems = [];
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
@@ -262,7 +268,6 @@ if (hasPermission(window.user, 'viewPlanning')) {
 //   });
 // }
 
-
 if (process.env.NODE_ENV !== 'development' && planningItems.length) {
   menus.push({
     id: '4',
@@ -274,18 +279,31 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
 }
 
 /* *****************
-* 10. Settings
-*****************/
-const settingItems = [/*{
+ * 10. Settings
+ *****************/
+const settingItems = [
+  /*{
   id: '10.1',
   icon: 'fa-circle-o',
   text: 'Alertas',
   url: '/settings/alerts/'
-}*/];
+}*/
+];
+
+if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
+  settingItems.push({
+    id: '10.1',
+    icon: 'fa-circle-o text-yellow',
+    text: 'Empresas',
+    url: '/settings/companies/'
+  });
+}
+
+
 if (hasPermission(window.user, 'viewUser')) {
   settingItems.push({
     id: '10.5',
-    icon: 'fa-circle-o',
+    icon: 'fa-circle-o text-green',
     text: 'Usuarios',
     url: '/settings/users/'
   });
@@ -294,16 +312,17 @@ if (hasPermission(window.user, 'viewUser')) {
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
     id: '10.4',
-    icon: 'fa-circle-o',
+    icon: 'fa-circle-o text-red',
     text: 'Sucursales',
     url: '/settings/venues/'
   });
 }
 
+
 if (hasPermission(window.user, 'viewCarrier')) {
   settingItems.push({
     id: '10.6',
-    icon: 'fa-circle-o',
+    icon: 'fa-circle-o  text-blue',
     text: 'Transportistas',
     url: '/settings/carriers/'
   });
@@ -347,31 +366,41 @@ if (settingItems.length) {
 }
 
 /* *****************
-* 1001. Información
-*****************/
+ * 1001. Información
+ *****************/
 const AdminItems: any[] = [];
 
 if (window.user.isAdmin) {
   AdminItems.push({
     id: '200.21',
-    icon: 'fa-circle-o',
-    text: 'General',
+    icon: 'fa-circle-o text-blue',
+    text: 'Settings',
     url: '/settings/billing-settings/'
   });
 }
 
-if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
+// if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
+//   AdminItems.push({
+//     id: '200.0',
+//     icon: 'fa-circle-o text-red',
+//     text: 'Empresas',
+//     url: '/settings/companies/'
+//   });
+// }
+
+if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
   AdminItems.push({
-    id: '200.0',
-    icon: 'fa-circle-o',
-    text: 'Empresas',
-    url: '/settings/companies/'
+    id: '200.4',
+    icon: 'fa-circle-o text-green',
+    text: 'Billing Corporativo',
+    url: '/settings/billing/corporate/'
   });
 }
+
 if (hasPermission(window.user, 'viewIntegration') && window.user.isAdmin) {
   AdminItems.push({
     id: '200.1',
-    icon: 'fa-circle-o',
+    icon: 'fa-circle-o text-yellow',
     text: 'Integraciones',
     url: '/settings/integrations/'
   });
@@ -386,16 +415,6 @@ if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
   });
 }
 
-if (hasPermission(window.user, 'viewBilling') && window.user.isAdmin) {
-  AdminItems.push({
-    id: '200.4',
-    icon: 'fa-circle-o',
-    text: 'Billing Corporativo',
-    url: '/settings/billing/corporate/'
-  });
-}
-
-
 if (hasPermission(window.user, 'viewStatsDashboard') && window.user.isAdmin) {
   AdminItems.push({
     id: '200.3',
@@ -409,7 +428,7 @@ if (AdminItems.length && window.user.isAdmin) {
   menus.push({
     id: '200',
     text: 'Administrador',
-    icon: `fa-check-square ${process.env.NODE_ENV === 'development' ? 'text-red' : ''}`,
+    icon: `fa-check-square text-red`,
     url: '/settings/integrations/',
     items: AdminItems
   });

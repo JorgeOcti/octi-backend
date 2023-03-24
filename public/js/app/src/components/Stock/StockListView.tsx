@@ -85,7 +85,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Stock Actual';
+    this.title = 'Stock actual';
     this.xlsExport = this.xlsExport.bind(this);
     this.daysInVenue = this.daysInVenue.bind(this);
     this.daysPermanence = this.daysPermanence.bind(this);
