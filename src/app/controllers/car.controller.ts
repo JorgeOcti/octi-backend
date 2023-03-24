@@ -1926,7 +1926,7 @@ class CarController {
               score: { $meta: 'textScore' }
             }
           },
-          { $match: { score: { $gte: 5 } } },
+          { $match: { score: { $gte: 5.5 } } },
           { $sort: { score: { $meta: 'textScore' } } }
         ]);
 

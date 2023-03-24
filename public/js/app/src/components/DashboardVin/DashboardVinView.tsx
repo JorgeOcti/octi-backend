@@ -90,7 +90,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
-    this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
+    this.debounceOnChangeSearch = debounce(1000, this.debounceOnChangeSearch);
     this.downloadReport = this.downloadReport.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.filterForms = this.filterForms.bind(this);
