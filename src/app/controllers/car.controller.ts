@@ -14,11 +14,11 @@ import FormModel, {
   KindForm,
   KindQuestion
 } from '../../form/models/form.model';
-import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { IRequest } from '../../interfaces/global.interface';
 import InventoryModel, {
   ChoicesStatusInventory
 } from '../../inventory/models/inventory.model';
-import { PaginateOptions, PaginateResult, PipelineStage, Types } from 'mongoose';
+import { CustomLabels, PaginateOptions, PaginateResult, PipelineStage, Types } from 'mongoose';
 import ParticipantModel, {
   IParticipantAnswerModel
 } from '../../form/models/participant.model';
@@ -2977,20 +2977,20 @@ class CarController {
     }
   }
 
-  private getRevisions(
-    filters: any,
-    options: PaginateOptions
-  ): Promise<PaginateResult<IParticipant>> {
-    return new Promise((resolve, reject) => {
-      ParticipantModel.paginate!(filters, options, (err, result) => {
-        if (err) {
-          /* istanbul ignore next */
-          reject(err);
-        }
-        resolve(result);
-      });
-    });
-  }
+  // private getRevisions(
+  //   filters: any,
+  //   options: PaginateOptions
+  // ): Promise<PaginateResult<IParticipant>> {
+  //   return new Promise((resolve, reject) => {
+  //     ParticipantModel.paginate!(filters, options, (err, result) => {
+  //       if (err) {
+  //         /* istanbul ignore next */
+  //         reject(err);
+  //       }
+  //       resolve(result);
+  //     });
+  //   });
+  // }
 
   private getCars(
     filters: any,
