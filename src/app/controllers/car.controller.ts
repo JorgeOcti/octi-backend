@@ -39,7 +39,6 @@ import Participant from '../../form/models/participant.model';
 moment.tz.setDefault('America/Santiago');
 
 class CarController {
-
   readonly aggregateCustomLabels: CustomLabels = {
     totalDocs: 'total',
     docs: 'docs',
@@ -1919,7 +1918,7 @@ class CarController {
             }
           },
           { $match: { score: { $gte: 5 } } },
-          { $sort: { score: { $meta: 'textScore' } } },
+          { $sort: { score: { $meta: 'textScore' } } }
         ]);
 
         if (users.length) {
@@ -1956,8 +1955,8 @@ class CarController {
         console.log({
           cars,
           venues,
-          users,
-        })
+          users
+        });
         if (venues.length) {
           searchOtherText = {
             ...searchOtherText,
@@ -1994,15 +1993,16 @@ class CarController {
           }
         }
       ];
-
+      // aggregate.push({ $sort: { _id: -1} });
       // sort if search text in participant
       if (delivery?.length > 2) {
         // aggregate.push({ $match: { score: { $gte: 5 } } });
         aggregate.push({ $sort: { score: { $meta: 'textScore' } } });
-      }
-
+       }// else {
+      //   options.sort = { _id: -1 };
+      // }
       // populate related data
-      const populateAggregate: PipelineStage[]  = [
+      const populateAggregate: PipelineStage[] = [
         {
           $lookup: {
             from: 'cars',
@@ -2092,10 +2092,12 @@ class CarController {
         }
       });
 
-      const participantsAggregate =
-      Participant.aggregate(aggregate)
+      const participantsAggregate = Participant.aggregate(aggregate);
 
-      const participants = await Participant.aggregatePaginate(participantsAggregate, options);
+      const participants = await Participant.aggregatePaginate(
+        participantsAggregate,
+        options
+      );
       if (
         options.page &&
         participants.pages &&
@@ -2114,10 +2116,12 @@ class CarController {
             }
           },
           ...populateAggregate
-        ]
+        ];
         if (delivery?.length > 2) {
           // pipelinePopulated.push({ $match: { score: { $gte: 1 } } });
           pipelinePopulated.push({ $sort: { score: { $meta: 'textScore' } } });
+        } else{
+          pipelinePopulated.push({ $sort: { _id: -1 } });
         }
 
         return res.json({
@@ -2130,6 +2134,7 @@ class CarController {
         });
       }
       // return res.json(revisions);
+      // const team = req.user.team._id;
       // logger.info(
       //   `CarController.apiRevisions: email: ${
       //     req.user.email
@@ -2347,19 +2352,19 @@ class CarController {
       //     status: 400
       //   });
       // } else {
-      // return res.json({
-      //   count: revisions.total,
-      //   pages: revisions.pages,
-      //   hasPrevious: revisions.hasPrevious,
-      //   hasNextPage: revisions.hasNextPage,
-      //   results: revisions.docs,
-      //   status: 200
-      // });
+      //   return res.json({
+      //     count: revisions.total,
+      //     pages: revisions.pages,
+      //     hasPrevious: revisions.hasPrevious,
+      //     hasNextPage: revisions.hasNextPage,
+      //     results: revisions.docs,
+      //     status: 200
+      //   });
       // }
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);
-      console.log(e);;
+      console.log(e);
       return res.status(500).json(e);
     }
   }
