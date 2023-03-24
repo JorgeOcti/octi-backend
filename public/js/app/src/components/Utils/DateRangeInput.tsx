@@ -49,7 +49,7 @@ class DateRangeInput extends React.Component<IPropsType, IStateType> {
 
   render() {
     return <div className='input-group input-group-sm'>
-      <input type='text' className='form-control input-sm' ref={this.pickerRef} />
+      <input type='text' className='form-control input-sm' style={{ fontWeight: 'bold', textAlign:'right' }} ref={this.pickerRef} />
       <div className='input-group-btn'>
         <button className='btn btn-default' onClick={() => {
           ($(this.pickerRef.current!) as any).click();

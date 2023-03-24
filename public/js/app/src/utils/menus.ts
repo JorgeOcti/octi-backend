@@ -54,7 +54,7 @@ if (hasPermission(window.user, 'viewChecklistStudio')) {
 //   url: '/revision-report/'
 // });
 
-if (hasPermission(window.user, 'viewDashboardDamages')) {
+if (process.env.NODE_ENV !== 'development' && hasPermission(window.user, 'viewDashboardDamages')) {
   dashboardItems.push({
     id: '1.4',
     icon: 'fa-circle-o',
@@ -63,7 +63,7 @@ if (hasPermission(window.user, 'viewDashboardDamages')) {
   });
 }
 
-if (hasPermission(window.user, 'viewDashboardTiming')) {
+if (process.env.NODE_ENV !== 'development' && hasPermission(window.user, 'viewDashboardTiming')) {
   dashboardItems.push({
     id: '1.5',
     icon: 'fa-circle-o',
@@ -263,7 +263,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
 // }
 
 
-if (planningItems.length) {
+if (process.env.NODE_ENV !== 'development' && planningItems.length) {
   menus.push({
     id: '4',
     text: 'Planificación',

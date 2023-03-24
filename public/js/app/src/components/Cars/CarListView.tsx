@@ -48,7 +48,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Listado de autos';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
-    this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
+    this.debounceOnChangeSearch = debounce(1000, this.debounceOnChangeSearch);
   }
 
   componentDidMount() {

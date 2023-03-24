@@ -265,6 +265,24 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row no-margin">
+              <div className="col-md-12 no-padding">
+                  <div
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      value={searchText}
+                      placeholder="Buscar VIN, marca, supervisor o sucursal"
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-search" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
@@ -296,24 +314,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className="col-md-12 no-padding">
-                  <div
-                    className="input-group input-group-sm"
-                    style={{ padding: '10px' }}>
-                    <input
-                      type="text"
-                      className="form-control pull-right"
-                      onChange={this.onChangeSearch}
-                      value={searchText}
-                      placeholder="Buscar VIN, marca, supervisor o sucursal"
-                    />
-                    <div className="input-group-btn">
-                      <button className="btn btn-default">
-                        <i className="fa fa-search" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+
               </div>
               {participants.length ? (
                 <div className="table-responsive" style={{ border: 0 }}>

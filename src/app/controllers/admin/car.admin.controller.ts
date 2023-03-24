@@ -9,7 +9,6 @@ import History from '../../models/history.model';
 import { ModuleHistory, StatusHistory } from '../../models/history.types';
 
 class AdminCarController {
-
   constructor() {
     this.index = this.index.bind(this);
     this.indexDetail = this.indexDetail.bind(this);
@@ -31,7 +30,11 @@ class AdminCarController {
     const { id } = req.params;
     const team = req.user.team._id;
     /* istanbul ignore else */
-    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({ _id: id, team }).countDocuments()) {
+    if (
+      req.user.hasPermission('viewCar') &&
+      Types.ObjectId.isValid(id) &&
+      (await Car.find({ _id: id, team }).countDocuments())
+    ) {
       res.render('app/index', { token: await req.user.generateToken() });
     } else {
       res.redirect('/settings/cars/');
@@ -56,7 +59,7 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    let carsToInsert : ICarModel[] = [];
+    let carsToInsert: ICarModel[] = [];
 
     const { company } = req.user;
     const { team } = req.user;
@@ -67,12 +70,16 @@ class AdminCarController {
         logger.info(`CarController.importCars cars: ${JSON.stringify(cars)}`);
         for (const car of cars) {
           if (car.vin && car.vin.length) {
-
-              const vin2 = car.vin.toUpperCase().trim().substr(car.vin.length - 6);
-              let newCar = await Car.findOne({
+            const vin2 = car.vin
+              .toUpperCase()
+              .trim()
+              .substr(car.vin.length - 6);
+            let newCar = await Car.findOne(
+              {
                 vin: car.vin.toUpperCase().trim(),
                 team: team._id
-              }, {
+              },
+              {
                 _id: true,
                 type: true,
                 NInterno: true,
@@ -85,44 +92,53 @@ class AdminCarController {
                 createdBy: true,
                 createdAt: true,
                 status: true
-              });
-              if (newCar) {
-                logger.info(`CarController.importCars updated: ${JSON.stringify(car)}`);
-                newCar.vin2 = vin2;
-                newCar.type = car.tipo ? car.tipo : newCar.type;
-                newCar.property = car.propiedad ? car.propiedad : newCar.property;
-                newCar.color = car.color ? car.color : newCar.color;
-                newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-                newCar.brand = car.marca ? car.marca : newCar.brand;
-                newCar.patent = car.patente ? car.patente : newCar.patent;
-                newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
-                newCar.createdBy = req.user;
-                newCar.status = ChoicesStatusCar.active;
-                await newCar.save();
-              } else {
-                carsToInsert.push({
-                  vin: car.vin,
-                  vin2,
-                  type: car.tipo ? car.tipo : '',
-                  color: car.color ? car.color : '',
-                  property: car.propiedad ? car.propiedad : '',
-                  denomination: car.denominacion ? car.denominacion : '',
-                  brand: car.marca ? car.marca : '',
-                  patent: car.patente ? car.patente : '',
-                  internalNumber: car.NInterno ? car.NInterno : '',
-                  company: company._id,
-                  team: team._id,
-                  createdBy: req.user,
-                  status: ChoicesStatusCar.active
-                } as ICarModel);
               }
-              // io.to(req.user._id).emit('STATUS-CARS', {newCar});
+            );
+            if (newCar) {
+              logger.info(
+                `CarController.importCars updated: ${JSON.stringify(car)}`
+              );
+              newCar.vin2 = vin2;
+              newCar.type = car.tipo ? car.tipo : newCar.type;
+              newCar.property = car.propiedad ? car.propiedad : newCar.property;
+              newCar.color = car.color ? car.color : newCar.color;
+              newCar.denomination = car.denominacion
+                ? car.denominacion
+                : newCar.denomination;
+              newCar.brand = car.marca ? car.marca : newCar.brand;
+              newCar.patent = car.patente ? car.patente : newCar.patent;
+              newCar.internalNumber = car.NInterno
+                ? car.NInterno
+                : newCar.internalNumber;
+              newCar.createdBy = req.user;
+              newCar.status = ChoicesStatusCar.active;
+              await newCar.save();
+            } else {
+              carsToInsert.push({
+                vin: car.vin,
+                vin2,
+                type: car.tipo ? car.tipo : '',
+                color: car.color ? car.color : '',
+                property: car.propiedad ? car.propiedad : '',
+                denomination: car.denominacion ? car.denominacion : '',
+                brand: car.marca ? car.marca : '',
+                patent: car.patente ? car.patente : '',
+                internalNumber: car.NInterno ? car.NInterno : '',
+                company: company._id,
+                team: team._id,
+                createdBy: req.user,
+                status: ChoicesStatusCar.active
+              } as ICarModel);
+            }
+            // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           }
         }
 
         const data = await Car.insertMany(carsToInsert);
-        for (let car of data){
-          logger.info(`CarController.importCars created: ${JSON.stringify(car)}`);
+        for (let car of data) {
+          logger.info(
+            `CarController.importCars created: ${JSON.stringify(car)}`
+          );
           let history = await new History({
             status: StatusHistory.created,
             module: ModuleHistory.import,
@@ -133,13 +149,16 @@ class AdminCarController {
             executedAt: car.createdAt,
             current: true
           }).save();
-          await Car.updateOne({
-            _id: car
-          }, {
-            $set: {
-              event: history._id
+          await Car.updateOne(
+            {
+              _id: car
+            },
+            {
+              $set: {
+                event: history._id
+              }
             }
-          });
+          );
         }
         socket().to(req.user._id).emit('FINISH-IMPORT', { finish: true });
       }
@@ -160,7 +179,11 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
+    const { page, pageSize, search } = req.query as {
+      page: string;
+      pageSize: string;
+      search: string;
+    };
     const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
@@ -199,17 +222,25 @@ class AdminCarController {
       lean: true
     };
     try {
-      logger.info(`CarController.apiListCars email: ${req.user.email}, query: ${JSON.stringify(req.query)}`);
-      const cars = await this.getCars({
-        vin: {
-          $exists: true,
-          $ne: ''
+      logger.info(
+        `CarController.apiListCars email: ${
+          req.user.email
+        }, query: ${JSON.stringify(req.query)}`
+      );
+      const cars = await this.getCars(
+        {
+          vin: {
+            $exists: true,
+            $ne: ''
+          },
+          team
+          // status: {
+          //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
+          // }
         },
-        team
-        // status: {
-        //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
-        // }
-      }, options, search);
+        options,
+        search
+      );
       // validate exist page
       /* istanbul ignore if  */
       if (options.page && cars.pages && cars.pages < options.page) {
@@ -236,22 +267,22 @@ class AdminCarController {
     }
   }
 
-  private getCars(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
+  private getCars(
+    filter: any,
+    options: PaginateOptions,
+    search?: string
+  ): Promise<PaginateResult<ICarModel>> {
     if (search && search.length) {
-      const searchText = new RegExp(search, 'i');
-      filter = {
-        $and: [{
-          $or: [{
-            vin: { $regex: searchText }
-          }, {
-            brand: { $regex: searchText }
-          }, {
-            denomination: { $regex: searchText }
-          }, {
-            color: { $regex: searchText }
-          }]
-        }, filter]
-      };
+      if (search && search.length) {
+        filter = {
+          ...filter,
+          $text: { $search: search }
+        };
+        options = {
+          ...options,
+          sort: { score: { $meta: 'textScore' } }
+        };
+      }
     }
 
     return new Promise((resolve, reject) => {
