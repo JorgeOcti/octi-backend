@@ -221,9 +221,8 @@ carSchema.index(
     vin: 'text',
     vin2: 'text',
     patent: 'text',
-    denomination: 'text',
-    material: 'text',
     brand: 'text',
+    denomination: 'text',
     color: 'text'
   },
   {
@@ -232,9 +231,9 @@ carSchema.index(
       vin: 10,
       vin2: 10,
       patent: 10,
-      brand: 5,
-      material: 5,
-      denomination: 5
+      brand: 10,
+      denomination: 6,
+      color: 6
     },
     name: 'CarTextIndex'
   }

@@ -1884,6 +1884,7 @@ class CarController {
 
       // search in  user, venue and car
       let searchOtherText: any = {};
+      let ponderations: any = {};
       if (search?.length > 2) {
         const cars = await Car.aggregate([
           {
@@ -1898,7 +1899,9 @@ class CarController {
               score: { $meta: 'textScore' }
             }
           },
-          { $match: { score: { $gte: 6 } } }
+          { $sort: { score: { $meta: 'textScore' } } },
+          { $match: { score: { $gte: 5.5 } } },
+          { $limit: 100 }
         ]);
 
         if (cars.length) {
@@ -1953,16 +1956,10 @@ class CarController {
               score: { $meta: 'textScore' }
             }
           },
-          { $match: { score: { $gte: 5 } } },
           { $sort: { score: { $meta: 'textScore' } } },
+          { $match: { score: { $gte: 8 } } },
           { $limit: 1 }
         ]);
-
-        console.log({
-          cars,
-          venues,
-          users
-        });
         if (venues.length) {
           searchOtherText = {
             ...searchOtherText,
@@ -1971,6 +1968,11 @@ class CarController {
             }
           };
         }
+        ponderations = {
+          cars,
+          venues,
+          users
+        };
       }
 
       // base aggregate pipeline
@@ -2158,28 +2160,12 @@ class CarController {
           status: 400
         });
       } else {
-        // const pipelinePopulated = [
-        //   {
-        //     $match: {
-        //       ...searchParticipantText,
-        //       _id: { $in: participants.docs.map((d) => d._id) }
-        //     }
-        //   },
-        //   ...populateAggregate
-        // ];
-        // if (delivery?.length > 2) {
-        //   // pipelinePopulated.push({ $match: { score: { $gte: 1 } } });
-        //   pipelinePopulated.push({ $sort: { score: { $meta: 'textScore' } } });
-        // } else{
-        //   pipelinePopulated.push({ $sort: { _id: -1 } });
-        // }
-
         return res.json({
           count: participants.total,
           pages: participants.pages,
           hasPrevious: participants.hasPrevious,
           hasNext: participants.hasNext,
-          // results: await Participant.aggregate([...pipelinePopulated]),
+          ponderations,
           results: await Participant.find({
             ...searchParticipantText,
             _id: { $in: participants.docs.map((d) => d._id) }
