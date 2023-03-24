@@ -1901,7 +1901,7 @@ class CarController {
           },
           { $sort: { score: { $meta: 'textScore' } } },
           { $match: { score: { $gte: 5.5 } } },
-          { $limit: 100 }
+          { $limit: 1000 }
         ]);
 
         if (cars.length) {
@@ -1927,7 +1927,8 @@ class CarController {
             }
           },
           { $match: { score: { $gte: 5.5 } } },
-          { $sort: { score: { $meta: 'textScore' } } }
+          { $sort: { score: { $meta: 'textScore' } } },
+          { $limit: 5 }
         ]);
 
         if (users.length) {
