@@ -2000,6 +2000,24 @@ class CarController {
             },
             ...searchOtherText
           }
+        },
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        {
+          $unwind: {
+            path: '$car',
+            preserveNullAndEmptyArrays: true
+          }
+        }, {
+          $sort: {
+            'car.denomination': 1
+          }
         }
       ];
       console.log('aggregate', JSON.stringify(aggregate, null, 2));
