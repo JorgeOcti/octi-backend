@@ -2184,10 +2184,20 @@ class CarController {
           hasPrevious: participants.hasPrevious,
           hasNext: participants.hasNext,
           ponderations,
-          results: await Participant.find({
-            ...searchParticipantText,
-            _id: { $in: participants.docs.map((d) => d._id) }
-          })
+          results: await Participant.find(
+            {
+              ...searchParticipantText,
+              _id: { $in: participants.docs.map((d) => d._id) }
+            },
+            {
+              createdAt: true,
+              number: true,
+              hasDamages: true,
+              qualification: true,
+              deliveryInfo: true,
+              name: true
+            }
+          )
             .populate([
               {
                 path: 'car',
