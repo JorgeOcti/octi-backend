@@ -165,7 +165,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Solicitudes <small>{pagination.count}</small></h3>
+              <h3 className='box-title'>Solicitudes <small>{new Intl.NumberFormat('de-DE').format(pagination.count)}</small></h3>
               <div className='pull-right box-tools'>
                 {/*<div className='btn-group btn-group-sm'>*/}
                 <ShowIf condition={hasPermission(window.user, 'createRequest')}>

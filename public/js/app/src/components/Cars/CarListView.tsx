@@ -90,7 +90,10 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
           <div className='box'>
             <div className='box-header with-border'>
               <h3 className='box-title'>
-                Unidades <small>{pagination.count}</small>
+                Unidades{' '}
+                <small>
+                  {new Intl.NumberFormat('de-DE').format(pagination.count)}
+                </small>
               </h3>
               <div className='box-tools'>
                 {

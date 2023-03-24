@@ -74,7 +74,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     selectedForms: [],
     from: moment()
       .startOf('month')
-      .subtract(3, 'months')
+      .subtract(2, 'months')
       .startOf('month')
       .toDate(),
     to: moment().toDate(),

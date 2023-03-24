@@ -6,7 +6,11 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import AppContainer from '../../container/AppContainer';
 import * as Raven from 'raven-js';
-import { IDeliveriesActionTypes, IDeliveriesState, IDeliveryDispatch } from '../../actions/deliveries.types';
+import {
+  IDeliveriesActionTypes,
+  IDeliveriesState,
+  IDeliveryDispatch
+} from '../../actions/deliveries.types';
 import DeliveriesActions from '../../actions/deliveries.actions';
 import ShowIf from '../Utils/ShowIf';
 import Paginator from '../Utils/Paginator';
@@ -37,7 +41,6 @@ interface IStateType {
 }
 
 class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
-
   public title: string;
 
   protected isMount: boolean = false;
@@ -64,7 +67,10 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
     this.onChangeSearchDelivery = this.onChangeSearchDelivery.bind(this);
-    this.debounceOnChangeSearchDelivery = debounce(300, this.debounceOnChangeSearchDelivery);
+    this.debounceOnChangeSearchDelivery = debounce(
+      300,
+      this.debounceOnChangeSearchDelivery
+    );
   }
 
   public componentDidMount(): void {
@@ -87,13 +93,19 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `deliveries-view-${window.user.team._id}` });
+      this.socket.emit('join', {
+        room: `deliveries-view-${window.user.team._id}`
+      });
     });
 
     this.socket.on('REFRESH', (data: any): void => {
       const { page } = this.props.deliveries.pagination;
       const { forms } = this.props.deliveries;
-      if (data.update && window.user.venuesAccess.includes(data.venueId) && forms.map((form: IForm) => form._id).includes(data.formId)) {
+      if (
+        data.update &&
+        window.user.venuesAccess.includes(data.venueId) &&
+        forms.map((form: IForm) => form._id).includes(data.formId)
+      ) {
         deliveriesActions.getDeliveriesThunkAction(page, false);
         ($ as any).toast({
           heading: data.notification.title,
@@ -109,13 +121,16 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
             highlight: [data.car, ...this.state.highlight]
           });
         } else {
-          this.setState({
-            highlight: this.state.highlight.filter((e) => e !== data.car)
-          }, () => {
-            this.setState({
-              highlight: [data.car, ...this.state.highlight]
-            });
-          });
+          this.setState(
+            {
+              highlight: this.state.highlight.filter((e) => e !== data.car)
+            },
+            () => {
+              this.setState({
+                highlight: [data.car, ...this.state.highlight]
+              });
+            }
+          );
         }
         setTimeout(() => {
           if (this.isMount) {
@@ -130,7 +145,10 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     this.isMount = true;
   }
 
-  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>): void {
+  public componentDidUpdate(
+    prevProps: Readonly<IPropsType>,
+    prevState: Readonly<IStateType>
+  ): void {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
@@ -150,38 +168,42 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { participants, forms, pagination, loading, filters } = this.props.deliveries;
+    const { participants, forms, pagination, loading, filters } =
+      this.props.deliveries;
     const { highlight, carLoading } = this.state;
     return (
-      <AppContainer title={this.title} cMenu='1' cSubMenu='1.8'>
-        <section className='content'>
-          <div className='box'>
-            <div className='box-header with-border'>
-              <h3 className='box-title'>Controles <small>{pagination.count}</small>
+      <AppContainer title={this.title} cMenu="1" cSubMenu="1.8">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">
+                Controles{' '}
+                <small>
+                  {new Intl.NumberFormat('de-DE').format(pagination.count)}
+                </small>
               </h3>
-              <div className='box-tools pull-right'>
+              <div className="box-tools pull-right">
                 <button
-                  className='btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm'
-                  onClick={this.downloadReport}
-                >
-                  <i className='fa fa-fw fa-download' /> Exportar
+                  className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm"
+                  onClick={this.downloadReport}>
+                  <i className="fa fa-fw fa-download" /> Exportar
                 </button>
               </div>
             </div>
             <div className={`box-body no-padding`}>
-              <div className='row no-margin'>
-                <div className='col-md-6 no-padding'>
+              <div className="row no-margin">
+                <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
-                      noneSelectedText='Todos los controles'
+                      noneSelectedText="Todos los controles"
                       displayItems={4}
                       sm={true}
                       autoClouse={true}
-                      selectedText='formularios seleccionadas.'
+                      selectedText="formularios seleccionadas."
                       selected={filters.forms}
                       allOption={true}
                       selectAll={this.filterAllForms}
-                      separator=' - '
+                      separator=" - "
                       options={forms.map((form: IForm) => ({
                         value: form._id,
                         text: form.name
@@ -191,7 +213,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className='col-md-6 no-padding'>
+                <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <DateRangeInput
                       options={this.getDateRangeOptions()}
@@ -202,36 +224,40 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <div className='row no-margin'>
-                <div className='col-md-6 no-padding'>
+              <div className="row no-margin">
+                <div className="col-md-6 no-padding">
                   <div
-                    className='input-group input-group-sm'
-                    style={{ padding: '10px' }}
-                  >
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
                     <input
-                      type='text'
-                      className='form-control pull-right'
+                      type="text"
+                      className="form-control pull-right"
                       onChange={this.onChangeSearch}
                       value={filters.searchText}
-                      placeholder='Buscar por VIN, marca, vendedor o sucursal' />
-                    <div className='input-group-btn'>
-                      <button className='btn btn-default'><i className='fa fa-search' /></button>
+                      placeholder="Buscar por VIN, marca, vendedor o sucursal"
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-search" />
+                      </button>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-6 no-padding'>
+                <div className="col-md-6 no-padding">
                   <div
-                    className='input-group input-group-sm'
-                    style={{ padding: '10px' }}
-                  >
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
                     <input
-                      type='text'
-                      className='form-control pull-right'
+                      type="text"
+                      className="form-control pull-right"
                       onChange={this.onChangeSearchDelivery}
                       value={filters.searchDelivery}
-                      placeholder='Buscar por nombre, rut, email u orden del cliente. ' />
-                    <div className='input-group-btn'>
-                      <button className='btn btn-default'><i className='fa fa-search' /></button>
+                      placeholder="Buscar por nombre, rut, email u orden del cliente. "
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-search" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -244,8 +270,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                       <strong>No se han encontrado entregas.</strong>
                     </p>
                   </ShowIf>
-                }
-              >
+                }>
                 <DeliveriesCarDetail
                   participants={participants}
                   highlight={highlight}
@@ -256,15 +281,17 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
               </ShowIf>
             </div>
             <ShowIf condition={pagination.pages > 1}>
-              <div className='box-footer'>
-                <div className='row'>
-                  <div className='col-md-6' style={{ padding: '20px 15px' }}>
-                    <span className='react-bootstrap-table-pagination-total text-ellipsis'>
-                      &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
-                      </span>
+              <div className="box-footer">
+                <div className="row">
+                  <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                    <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                      &nbsp;&nbsp;Mostrando registros del{' '}
+                      {(pagination.page - 1) * 20 + 1} al {pagination.page * 20}{' '}
+                      de {pagination.count} registros.
+                    </span>
                   </div>
-                  <div className='col-md-6'>
-                    <div className='text-right' style={{ marginRight: '15px' }}>
+                  <div className="col-md-6">
+                    <div className="text-right" style={{ marginRight: '15px' }}>
                       <Paginator
                         changePage={this.changePage}
                         page={pagination.page}
@@ -276,8 +303,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </ShowIf>
             <ShowIf condition={loading && !participants.length}>
-              <div className='overlay'>
-                <i className='fa fa-spinner fa-spin text-purple' />
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple" />
               </div>
             </ShowIf>
           </div>
@@ -365,9 +392,15 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
       to
     });
     if (monthsDiff > 3) {
-      swal!('Revisiones', 'Selecciona un rango que 3 meses para descargar la información', 'error');
+      swal!(
+        'Revisiones',
+        'Selecciona un rango que 3 meses para descargar la información',
+        'error'
+      );
     } else {
-      let query = `?deliveries=1&from=${moment(from).unix()}&to=${moment(to).unix()}`;
+      let query = `?deliveries=1&from=${moment(from).unix()}&to=${moment(
+        to
+      ).unix()}`;
       if (searchText.trim().length) {
         query += `&search=${searchText}`;
       }
@@ -396,10 +429,22 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
         cancelLabel: 'Cancelar'
       },
       ranges: {
-        'Este mes': [moment().startOf('month').startOf('month'), moment().endOf('month')],
-        'Últimos 3 meses': [moment().startOf('month').subtract(3, 'months').startOf('month'), moment().endOf('month')],
-        'Últimos 6 meses': [moment().startOf('month').subtract(6, 'months').startOf('month'), moment().endOf('month')],
-        'Último año': [moment().startOf('month').subtract(12, 'months').startOf('month'), moment().endOf('month')]
+        'Este mes': [
+          moment().startOf('month').startOf('month'),
+          moment().endOf('month')
+        ],
+        'Últimos 3 meses': [
+          moment().startOf('month').subtract(3, 'months').startOf('month'),
+          moment().endOf('month')
+        ],
+        'Últimos 6 meses': [
+          moment().startOf('month').subtract(6, 'months').startOf('month'),
+          moment().endOf('month')
+        ],
+        'Último año': [
+          moment().startOf('month').subtract(12, 'months').startOf('month'),
+          moment().endOf('month')
+        ]
       },
       opens: 'left'
     };
@@ -420,4 +465,7 @@ const mapDispatchToProps = (dispatch: IDeliveryDispatch) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DeliveriesView);
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(DeliveriesView);

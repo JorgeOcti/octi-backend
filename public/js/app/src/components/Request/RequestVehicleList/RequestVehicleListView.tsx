@@ -113,7 +113,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
-              <h3 className='box-title'>Unidades <small>{pagination.count}</small></h3>
+              <h3 className='box-title'>Unidades <small>{new Intl.NumberFormat('de-DE').format(pagination.count)}</small></h3>
               <div className='pull-right box-tools'>
                 <ShowIf
                   condition={
