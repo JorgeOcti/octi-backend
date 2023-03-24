@@ -2014,10 +2014,9 @@ class CarController {
             path: '$car',
             preserveNullAndEmptyArrays: true
           }
-        }, {
-          $sort: {
-            'car.denomination': 1
-          }
+        },
+        {
+          $sort: search?.length ? { 'car.denomination': 1 } : { _id: -1 }
         }
       ];
       console.log('aggregate', JSON.stringify(aggregate, null, 2));
