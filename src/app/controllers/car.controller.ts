@@ -1999,6 +1999,7 @@ class CarController {
           }
         }
       ];
+      console.log('aggregate', JSON.stringify(aggregate, null, 2));
       // aggregate.push({ $sort: { _id: -1} });
       // sort if search text in participant
       if (delivery?.length > 2) {

@@ -23,7 +23,7 @@ const initialState: IDashboardState = {
   searchText: '',
   searchFrom: moment()
     .startOf('month')
-    .subtract(2, 'months')
+    .subtract(1, 'months')
     .startOf('month')
     .toDate(),
   searchTo: moment().toDate(),

@@ -73,8 +73,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     carLoading: '',
     selectedForms: [],
     from: moment()
-      .startOf('month')
-      .subtract(2, 'months')
+      .subtract(1, 'months')
       .startOf('month')
       .toDate(),
     to: moment().toDate(),
@@ -703,31 +702,28 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       ranges: {
         'Este mes': [
           moment().startOf('month').toDate(),
-          moment().endOf('month').toDate()
+          moment().toDate()
         ],
         'Últimos 3 meses': [
           moment()
-            .startOf('month')
             .subtract(3, 'months')
             .startOf('month')
             .toDate(),
-          moment().endOf('month').toDate()
+            moment().toDate()
         ],
         'Últimos 6 meses': [
           moment()
-            .startOf('month')
             .subtract(6, 'months')
             .startOf('month')
             .toDate(),
-          moment().endOf('month').toDate()
+            moment().toDate()
         ],
         'Último año': [
           moment()
-            .startOf('month')
             .subtract(12, 'months')
             .startOf('month')
             .toDate(),
-          moment().endOf('month').toDate()
+            moment().toDate()
         ]
       },
       opens: 'left'

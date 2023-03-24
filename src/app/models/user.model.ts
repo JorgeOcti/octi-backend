@@ -19,7 +19,8 @@ userSchema.index(
     default_language: 'spanish',
     weights: {
       firstName: 5,
-      lastName: 5
+      lastName: 5,
+      email: 5
     },
     name: 'TextIndex'
   }
