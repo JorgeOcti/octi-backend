@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import type {
   IParticipant,
   IParticipantAccesory,
@@ -548,6 +549,25 @@ participantSchema.set<any>('expires', 10);
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
+participantSchema.index(
+  {
+    'deliveryInfo.name': 'text',
+    'deliveryInfo.rut': 'text',
+    'deliveryInfo.order': 'text',
+    'deliveryInfo.email': 'text'
+  },
+  {
+    default_language: 'spanish',
+    weights: {
+      'deliveryInfo.rut': 5,
+      'deliveryInfo.name': 5,
+      'deliveryInfo.order': 5,
+      'deliveryInfo.email': 5
+    },
+    name: 'ParticipantTextIndex'
+  }
+);
+
 participantSchema.index({
   car: 1,
   form: 1,
@@ -557,9 +577,11 @@ participantSchema.index({
 });
 
 participantSchema.plugin(mongoosePaginate);
+participantSchema.plugin(mongooseAggregatePaginate);
+
 
 export type ParticipantSchema = mongoose.Model<IParticipantModel> &
-  PaginateModel<IParticipantModel>;
+  PaginateModel<IParticipantModel> & mongoose.AggregatePaginateModel<IParticipantModel>;;
 
 const Participant = mongoose.model<IParticipantModel, ParticipantSchema>(
   'Participant',

@@ -133,6 +133,17 @@ venueSchema.index({ responsible: 1 });
 venueSchema.index({ team: 1, name: 1 });
 venueSchema.index({ team: 1, deleted: 1 });
 
+venueSchema.index(
+  { name: 'text' },
+  {
+    default_language: 'spanish',
+    weights: {
+      name: 10,
+    },
+    name: 'VenueTextIndex'
+  }
+);
+
 mongoose.plugin(mongoosePaginate);
 
 venueSchema.post<IVenueModel>('findOneAndUpdate', async (doc: any) => {

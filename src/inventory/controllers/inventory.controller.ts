@@ -2672,7 +2672,7 @@ class InventoryController {
             ]
           },
           createdAt: {
-            $gt: moment().subtract(30, 'days')
+            $gt: moment().subtract(180, 'days')
           }
         },
         {

@@ -925,7 +925,7 @@ class RequestController {
     }
 
     try {
-      const baseAggregate: any[] = [
+      const baseAggregate: PipelineStage[] = [
         {
           $match: {
             team: new mongoose.Types.ObjectId(team),

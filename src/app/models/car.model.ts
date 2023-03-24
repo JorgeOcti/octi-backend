@@ -78,7 +78,7 @@ export const baseCarSchema = new mongoose.Schema({
   },
   driveType: {
     type: String,
-    default: '',
+    default: ''
   },
   destination: {
     type: String
@@ -125,103 +125,121 @@ export const baseCarSchema = new mongoose.Schema({
     type: String,
     default: '',
     trim: true
-  },
+  }
 });
 
-export const carSchema = new mongoose.Schema({
-  ...baseCarSchema.obj,
-  meta: {
-    type: metaSchema,
-    default: {}
-  },
-  invoice: {
-    type: String,
-    default: ''
-  },
-  businessYear: {
-    type: String,
-  },
-  manufacturingYear: {
-    type: String,
-  },
-  price: {
-    type: String,
-  },
-  insurancePrice: {
-    type: String,
-  },
-  weight:{
-    type: String,
-  },
-  countryOrigin: {
-    type: String,
-  },
-  gas:{
-    type: String,
-  },
-  ap:{
-    type: String,
-  },
-  client: {
-    type: String,
-    default: ''
-  },
-  bl: {
-    type: String,
-    default: ''
-  },
-  shippingDate: {
-    type: Date,
-    default: ''
-  },
-  isExhibition: {
-    type: Boolean,
-    default: false
-  },
-  imported: {
-    type: Boolean,
-    default: true
-  },
-  lastForm: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Participant',
-    default: null
-  },
-  status: {
-    type: String,
-    enum: choicesStatusCar,
-    required: true,
-    default: ChoicesStatusCar.active
-  },
-  event: {
-    type: {
+export const carSchema = new mongoose.Schema(
+  {
+    ...baseCarSchema.obj,
+    meta: {
+      type: metaSchema,
+      default: {}
+    },
+    invoice: {
+      type: String,
+      default: ''
+    },
+    businessYear: {
+      type: String
+    },
+    manufacturingYear: {
+      type: String
+    },
+    price: {
+      type: String
+    },
+    insurancePrice: {
+      type: String
+    },
+    weight: {
+      type: String
+    },
+    countryOrigin: {
+      type: String
+    },
+    gas: {
+      type: String
+    },
+    ap: {
+      type: String
+    },
+    client: {
+      type: String,
+      default: ''
+    },
+    bl: {
+      type: String,
+      default: ''
+    },
+    shippingDate: {
+      type: Date,
+      default: ''
+    },
+    isExhibition: {
+      type: Boolean,
+      default: false
+    },
+    imported: {
+      type: Boolean,
+      default: true
+    },
+    lastForm: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'History',
+      ref: 'Participant',
+      default: null
+    },
+    status: {
+      type: String,
+      enum: choicesStatusCar,
+      required: true,
+      default: ChoicesStatusCar.active
+    },
+    event: {
+      type: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'History',
+        default: null
+      }
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       default: null
     }
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
+  {
+    timestamps: true
   }
-}, {
-  timestamps: true
-});
+);
 
 carSchema.set<any>('redisCache', process.env.ENV === 'production');
 carSchema.set<any>('expires', 30);
 
 // text search
-carSchema.index({
-  team: 1, denomination: 'text', material: 'text', brand: 'text'
-}, {
-  weights: {
-    material: 3,
-    denomination: 2,
-    brand: 1
+carSchema.index(
+  {
+    vin: 'text',
+    vin2: 'text',
+    patent: 'text',
+    denomination: 'text',
+    material: 'text',
+    brand: 'text',
+    color: 'text'
+  },
+  {
+    default_language: 'spanish',
+    weights: {
+      vin: 10,
+      vin2: 10,
+      patent: 10,
+      brand: 5,
+      material: 5,
+      denomination: 5
+    },
+    name: 'CarTextIndex'
   }
-});
+);
+
 
 carSchema.index({ team: 1, vin: 1 });
 carSchema.index({ team: 1, vin2: 1 });
@@ -261,7 +279,10 @@ carSchema.virtual('inventories', {
 carSchema.set('toObject', { virtuals: true });
 carSchema.set('toJSON', { virtuals: true });
 
-carSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+carSchema.statics.findOneOrCreate = function (
+  condition: any,
+  create: any
+): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
     model.findOne(condition, (err: any, result: ICarModel) => {
@@ -283,9 +304,10 @@ carSchema.statics.findOneOrCreate = function(condition: any, create: any): Promi
 
 carSchema.plugin(mongoosePaginate);
 
-export type CarSchema = mongoose.Model<ICarModel> & PaginateModel<ICarModel> & {
-  findOneOrCreate(condition: any, create: any): Promise<ICarModel>
-};
+export type CarSchema = mongoose.Model<ICarModel> &
+  PaginateModel<ICarModel> & {
+    findOneOrCreate(condition: any, create: any): Promise<ICarModel>;
+  };
 
 export const Car = mongoose.model<ICarModel, CarSchema>('Car', carSchema);
 
