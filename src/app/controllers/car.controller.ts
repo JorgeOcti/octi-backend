@@ -2000,167 +2000,39 @@ class CarController {
             },
             ...searchOtherText
           }
-        },
-        {
+        }
+      ];
+      console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
+      if (Object.keys(searchOtherText).length) {
+        aggregate.push({
           $lookup: {
             from: 'cars',
             localField: 'car',
             foreignField: '_id',
             as: 'car'
           }
-        },
-        {
+        });
+        aggregate.push({
           $unwind: {
             path: '$car',
             preserveNullAndEmptyArrays: true
           }
-        },
-        {
+        });
+        aggregate.push({
           $sort: search?.length ? { 'car.denomination': 1 } : { _id: -1 }
-        }
-      ];
+        });
+      } else {
+        aggregate.push({
+          $sort: { _id: -1 }
+        });
+      }
+
       console.log('aggregate', JSON.stringify(aggregate, null, 2));
-      // aggregate.push({ $sort: { _id: -1} });
+
       // sort if search text in participant
       if (delivery?.length > 2) {
-        // aggregate.push({ $match: { score: { $gte: 5 } } });
         aggregate.push({ $sort: { score: { $meta: 'textScore' } } });
-      } // else {
-      //   options.sort = { _id: -1 };
-      // }
-      // populate related data
-      // const populateAggregate: PipelineStage[] = [
-      //   {
-      //     $lookup: {
-      //       from: 'cars',
-      //       localField: 'car',
-      //       foreignField: '_id',
-      //       as: 'car'
-      //     }
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$car',
-      //       preserveNullAndEmptyArrays: true
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'users',
-      //       localField: 'user',
-      //       foreignField: '_id',
-      //       as: 'user'
-      //     }
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$user',
-      //       preserveNullAndEmptyArrays: true
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'venues',
-      //       localField: 'venue',
-      //       foreignField: '_id',
-      //       as: 'venue'
-      //     }
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$venue',
-      //       preserveNullAndEmptyArrays: true
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'companies',
-      //       localField: 'company',
-      //       foreignField: '_id',
-      //       as: 'company'
-      //     }
-      //   },
-      //   {
-      //     $unwind: {
-      //       path: '$company',
-      //       preserveNullAndEmptyArrays: true
-      //     }
-      //   },
-
-      //   {
-      //     $unwind: {
-      //       path: '$deliveryInfo.identifyCard',
-      //       preserveNullAndEmptyArrays: true
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: 'participantfiles',
-      //       localField: 'deliveryInfo.signature',
-      //       foreignField: '_id',
-      //       as: 'deliveryInfo.signature'
-      //     }
-      //   },
-      //   // {
-      //   //   $lookup: {
-      //   //     from: 'participantfiles',
-      //   //     localField: 'deliveryInfo.identifyCard',
-      //   //     foreignField: '_id',
-      //   //     as: 'deliveryInfo.identifyCard'
-      //   //   }
-      //   // },
-      //   // {
-      //   //   $unwind: {
-      //   //     path: '$deliveryInfo.signature',
-      //   //     preserveNullAndEmptyArrays: true
-      //   //   }
-      //   // },
-      //   // {
-      //   //   $lookup: {
-      //   //     from: 'participantfiles',
-      //   //     localField: 'deliveryInfo.plateEvidence',
-      //   //     foreignField: '_id',
-      //   //     as: 'deliveryInfo.plateEvidence'
-      //   //   }
-      //   // },
-      //   // {
-      //   //   $unwind: {
-      //   //     path: '$deliveryInfo.plateEvidence',
-      //   //     preserveNullAndEmptyArrays: true
-      //   //   }
-      //   // }
-      // ];
-
-      // // project only needed fields
-      // populateAggregate.push({
-      //   $project: {
-      //     createdAt: true,
-      //     number: true,
-
-      //     hasDamages: true,
-      //     qualification: true,
-      //     deliveryInfo: true,
-      //     name: true,
-
-      //     'car._id': true,
-      //     'car.vin': true,
-      //     'car.brand': true,
-      //     'car.patent': true,
-      //     'car.denomination': true,
-      //     'car.color': true,
-      //     'car.lastForm': true,
-
-      //     'user._id': true,
-      //     'user.firstName': true,
-      //     'user.lastName': true,
-
-      //     'venue._id': true,
-      //     'venue.name': true,
-
-      //     'company._id': true,
-      //     'company.name': true
-      //   }
-      // });
+      }
 
       const participantsAggregate = Participant.aggregate(aggregate);
 
@@ -2240,234 +2112,6 @@ class CarController {
           status: 200
         });
       }
-      // return res.json(revisions);
-      // const team = req.user.team._id;
-      // logger.info(
-      //   `CarController.apiRevisions: email: ${
-      //     req.user.email
-      //   } query: ${JSON.stringify(req.query)}`
-      // );
-      // logger.debug(
-      //   `CarController.apiRevisions: email: ${
-      //     req.user.email
-      //   } options: ${JSON.stringify(options)}`
-      // );
-      // const userForms = req.user.userForms.map((form) => form._id);
-      // const participantFilter: IAnyObject = {
-      //   car: {
-      //     $ne: null
-      //   },
-      //   form: {
-      //     $in: userForms
-      //   },
-      //   deliveryToCustomer: deliveries === '1',
-      //   $and: [
-      //     {
-      //       venue: {
-      //         $in: req.user.venuesPermissions()
-      //       },
-      //       team
-      //     }
-      //   ]
-      // };
-
-      // if (forms) {
-      //   const formArray = forms
-      //     .split(',')
-      //     .filter((form) => userForms.map((f) => f.toString()).includes(form));
-      //   participantFilter.form = {
-      //     $in: formArray.map((f: string) => new mongoose.Types.ObjectId(f))
-      //   };
-      // }
-
-      // if (only_controls === '1') {
-      //   participantFilter.kind = { $ne: KindForm.transmittal };
-      // }
-
-      // /* search on deliveryInfo */
-      // if (delivery?.length > 2) {
-      //   const deliveryTextArray = delivery.split(' ');
-      //   participantFilter.$or = [
-      //     {
-      //       'deliveryInfo.name': {
-      //         $regex: new RegExp(deliveryTextArray[0], 'i')
-      //       }
-      //     },
-      //     {
-      //       'deliveryInfo.rut': {
-      //         $regex: new RegExp(delivery, 'i')
-      //       }
-      //     },
-      //     {
-      //       'deliveryInfo.email': {
-      //         $regex: new RegExp(delivery, 'i')
-      //       }
-      //     },
-      //     {
-      //       'deliveryInfo.order': {
-      //         $regex: new RegExp(delivery, 'i')
-      //       }
-      //     }
-      //   ];
-      //   if (deliveryTextArray.length > 1) {
-      //     participantFilter['$or'].push({
-      //       'deliveryInfo.name': {
-      //         $regex: new RegExp(deliveryTextArray[1], 'i')
-      //       }
-      //     });
-      //   }
-      // }
-
-      // if (search?.length > 2) {
-      //   search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
-      //   // search = search.trim().replace("*", "");
-      //   logger.info(
-      //     `CarController.apiRevisions: email: ${req.user.email} search: ${search}`
-      //   );
-      //   const searchText = new RegExp(search, 'i');
-      //   const searchTextArray = search.split(' ');
-      //   const filterUser: any = {
-      //     $and: [
-      //       {
-      //         team
-      //       }
-      //     ]
-      //   };
-      //   if (searchTextArray.length > 3) {
-      //     filterUser['$or'] = [
-      //       {
-      //         firstName: {
-      //           $regex: new RegExp(
-      //             `${searchTextArray[0]} ${searchTextArray[1]}`,
-      //             'i'
-      //           )
-      //         },
-      //         lastName: {
-      //           $regex: new RegExp(
-      //             `${searchTextArray[2]} ${searchTextArray[3]}`,
-      //             'i'
-      //           )
-      //         }
-      //       }
-      //     ];
-      //   } else {
-      //     filterUser['$and'].push({
-      //       firstName: {
-      //         $regex: new RegExp(searchTextArray[0], 'i')
-      //       }
-      //     });
-      //     if (searchTextArray.length > 1) {
-      //       filterUser['$and'].push({
-      //         lastName: {
-      //           $regex: new RegExp(searchTextArray[1], 'i')
-      //         }
-      //       });
-      //     }
-      //   }
-      //   logger.info(
-      //     `CarController.apiRevisions: email: ${req.user.email} searchTextArray: ${searchTextArray}`
-      //   );
-      //   logger.debug(
-      //     `CarController.apiRevisions: email: ${
-      //       req.user.email
-      //     } filterUser: ${JSON.stringify(filterUser)}`
-      //   );
-      //   const searchUser = await User.find(filterUser, { _id: true });
-      //   const searchVenue = searchUser.length
-      //     ? []
-      //     : await Venue.find(
-      //         {
-      //           _id: {
-      //             $in: req.user.venuesPermissions()
-      //           },
-      //           name: {
-      //             $regex: searchText
-      //           },
-      //           team
-      //         },
-      //         { _id: true }
-      //       );
-      //   if (searchUser.length) {
-      //     participantFilter.$and.push({
-      //       user: {
-      //         $in: searchUser.map((user) => user._id)
-      //       }
-      //     });
-      //   } else if (searchVenue.length) {
-      //     participantFilter.$and.push({
-      //       venue: {
-      //         $in: searchVenue.map((venue) => venue._id)
-      //       }
-      //     });
-      //   } else {
-      //     const searchCar = await CarModel.find(
-      //       {
-      //         $or: [
-      //           {
-      //             vin: {
-      //               $regex: searchText
-      //             }
-      //           },
-      //           {
-      //             patent: {
-      //               $regex: searchText
-      //             }
-      //           },
-      //           {
-      //             brand: {
-      //               $regex: searchText
-      //             }
-      //           }
-      //         ],
-      //         team
-      //       },
-      //       { _id: true }
-      //     );
-      //     participantFilter.$and.push({
-      //       car: {
-      //         $in: searchCar.map((car) => car._id)
-      //       }
-      //     });
-      //   }
-      // }
-
-      // if (from || to) {
-      //   const createdAtFilter: any = {};
-
-      //   if (from) {
-      //     createdAtFilter.$gte = moment(from, 'YYYY-MM-DD').startOf('day');
-      //   }
-      //   if (to) {
-      //     createdAtFilter.$lte = moment(to, 'YYYY-MM-DD').endOf('day');
-      //   }
-
-      //   participantFilter.$and.push({
-      //     createdAt: createdAtFilter
-      //   });
-      // }
-      // logger.debug(
-      //   `CarController.apiRevisions: email: ${
-      //     req.user.email
-      //   } participantFilter: ${JSON.stringify(participantFilter)}`
-      // );
-      // const revisions = await this.getRevisions(participantFilter, options);
-
-      // // validate exist page
-      // if (options.page && revisions.pages && revisions.pages < options.page) {
-      //   return res.status(400).json({
-      //     message: 'La página solicitada no existe.',
-      //     status: 400
-      //   });
-      // } else {
-      //   return res.json({
-      //     count: revisions.total,
-      //     pages: revisions.pages,
-      //     hasPrevious: revisions.hasPrevious,
-      //     hasNextPage: revisions.hasNextPage,
-      //     results: revisions.docs,
-      //     status: 200
-      //   });
-      // }
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);
