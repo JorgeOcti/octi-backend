@@ -143,7 +143,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     const isUploadingFiles = newCar.files.length > 0 && filesCompleted.length < newCar.files.length;
     const reasonSelected: IReason | undefined = (reasons as IReason[]).find((reason: IReason) => reason._id === newCar.reason);
     return (
-      <AppContainer title='' cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction='Crear solicitud'>
+      <AppContainer  cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction='Crear solicitud'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

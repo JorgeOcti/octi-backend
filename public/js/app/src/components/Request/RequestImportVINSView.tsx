@@ -276,7 +276,7 @@ class RequestImportVINSView extends TrackingBasePage<IPropsType, IStateType> {
     } = this.state;
     const pendings = this.itemsByStatus(itemStatus.PENDING);
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.2' cAction='Asignación masiva de unidades'>
+      <AppContainer cMenu='3' cSubMenu='3.2' cAction='Asignación masiva de unidades'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

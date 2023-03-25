@@ -273,7 +273,7 @@ class BordersListView extends TrackingBasePage<IPropsType, IStateType> {
       actions.push(Actions.delete)
 
     return (
-      <AppContainer title='' cMenu='10' cSubMenu='10.11' cAction='Listado'>
+      <AppContainer cMenu='10' cSubMenu='10.11' cAction='Listado'>
         <section className='content'>
           <Row>
             <div className='col-md-12 col-lg-12'>

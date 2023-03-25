@@ -41,6 +41,7 @@ interface IStateType {
 }
 
 class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
+
   public title: string;
 
   protected isMount: boolean = false;

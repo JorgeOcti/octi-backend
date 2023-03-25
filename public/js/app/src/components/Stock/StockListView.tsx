@@ -267,7 +267,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
         <div
           style={{ width: '180px' }}
         >
-          <ShowIf condition={Object.keys(this.props.stock.rangeOptions.ranges!).length > 0}>
+          <ShowIf condition={Object.keys(this.props.stock.rangeOptions.ranges!).length > 0} alternative={<>&nbsp;</>}>
             <DateRangeInput
               options={rangeOptions}
               onChange={this.onDateRangeChange}
@@ -275,7 +275,6 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
               endDate={filter.to}
             />
           </ShowIf>
-
         </div>
       } cMenu='2' cSubMenu='2.4'>
         <section className='content'>

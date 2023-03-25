@@ -94,7 +94,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
     const { searchText } = this.state;
     return (
       <AppContainer
-        title={<>&nbsp;</>}
+        // title={}
         cMenu="1"
         cSubMenu="1.0"
         cAction="Listado">

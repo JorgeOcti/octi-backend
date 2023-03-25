@@ -116,7 +116,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
     // const canEdit = hasPermission(window.user, 'adminRequest');
     // const canDelete = hasPermission(window.user, 'adminRequest');
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.3' cAction='Hitos'>
+      <AppContainer cMenu='3' cSubMenu='3.3' cAction='Hitos'>
         <section className='content'>
           <div className='row'>
             <div className='col-md-3'>

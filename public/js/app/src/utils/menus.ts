@@ -93,7 +93,7 @@ if (window.user.isAdmin) {
   dashboardItems.push({
     id: '1.10',
     icon: 'fa-circle-o',
-    text: 'Ajustes',
+    text: 'Ajustes de control',
     url: '/forms/settings/forms/'
   });
 }

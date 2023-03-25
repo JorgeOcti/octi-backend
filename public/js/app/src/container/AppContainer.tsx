@@ -59,8 +59,8 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
         <div className='content-wrapper' style={{ minHeight: `${window.innerHeight - 51}px` }}>
           <section className='content-header'>
-            <ShowIf condition={typeof title === 'string'} alternative={title}>
-              <h1>{title ? title: '\u00A0'}</h1>
+            <ShowIf condition={typeof title === 'string'} alternative={title ??<h1>&nbsp;</h1>}>
+              <h1>{title ?? ''}&nbsp;</h1>
             </ShowIf>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction} />
           </section>

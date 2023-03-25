@@ -92,7 +92,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { filter, loading, venues } = this.props.inventoryDashboard;
     return (
-      <AppContainer title='' cMenu='2' cSubMenu='2.3'>
+      <AppContainer  cMenu='2' cSubMenu='2.3'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

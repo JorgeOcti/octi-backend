@@ -71,7 +71,7 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
     const {studios, loading} = this.props.dashboard;
     const { tab } = this.state;
     const selectedStudio : IStudio | undefined = studios.find((studio: IStudio) => studio._id === tab);
-    return <AppContainer title="" cMenu={this.state.menu} cSubMenu={this.state.cSubmenu}>
+    return <AppContainer cMenu={this.state.menu} cSubMenu={this.state.cSubmenu}>
       <section className="content">
         <div className="box">
           <div className="box-header with-border">

@@ -88,7 +88,7 @@ class CarriersListView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { loading, carriers, pagination } = this.props.carriers;
     return (
-      <AppContainer title='' cMenu='10' cSubMenu='10.6' cAction='Listado'>
+      <AppContainer cMenu='10' cSubMenu='10.6' cAction='Listado'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'><h3 className='box-title'>Transportistas <small>{pagination.count}</small></h3>

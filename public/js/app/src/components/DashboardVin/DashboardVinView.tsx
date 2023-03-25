@@ -15,6 +15,7 @@ import {
   changeRangeDashboardAction,
   changeSearchDashboardAction,
   DashboardReduxAction,
+  getParticipant,
   getRevisionsAction,
   getRevisionsThunkAction,
   IDashboardState
@@ -30,6 +31,7 @@ import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
 import * as daterangepicker from 'daterangepicker';
+import ModalView from '../Modal/ModalView';
 
 declare let window: IWindow;
 
@@ -42,6 +44,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
     loading: boolean,
     search?: string
   ): void;
+
+  getParticipant(id: string): void;
 
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
 
@@ -236,10 +240,17 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, participants, pagination, searchText, forms } =
-      this.props.dashboard;
+    const {
+      loading,
+      participants,
+      pagination,
+      searchText,
+      forms,
+      loadingParticipant
+    } = this.props.dashboard;
     const { highlight, carLoading, downloading, from, to, selectedForms } =
       this.state;
+    const { getParticipant } = this.props;
     return (
       <AppContainer
         title={
@@ -553,7 +564,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <div className="hidden-xs hidden-sm">
                                 <div
                                   className="btn-group"
-                                  style={{ width: '70px' }}>
+                                  style={{ width: '100px' }}>
+                                  <button
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() =>
+                                      this.props.history.push(
+                                        `/cars/${participant.car?._id}`
+                                      )
+                                    }>
+                                    <i className="fa fa-bookmark" />
+                                  </button>
                                   <button
                                     className="btn btn-sm btn-default hidden-xs hidden-sm"
                                     disabled={carLoading === participant._id}
@@ -571,14 +591,32 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                       }
                                     />
                                   </button>
+
                                   <button
                                     className="btn btn-sm btn-primary"
-                                    onClick={() =>
-                                      this.props.history.push(
-                                        `/cars/${participant.car?._id}`
+                                    disabled={
+                                      !!(
+                                        loadingParticipant &&
+                                        loadingParticipant === participant._id
                                       )
+                                    }
+                                    onClick={
+                                      loadingParticipant
+                                        ? undefined
+                                        : () => getParticipant(participant._id)
                                     }>
-                                    <i className="fa fa-bars" />
+                                    <ShowIf
+                                      condition={
+                                        !!(
+                                          loadingParticipant &&
+                                          loadingParticipant === participant._id
+                                        )
+                                      }
+                                      alternative={
+                                        <i className="fa fa-bolt" />
+                                      }>
+                                      <i className="fa fa-spin fa-spinner" />
+                                    </ShowIf>
                                   </button>
                                 </div>
                               </div>
@@ -590,7 +628,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                       `/cars/${participant.car?._id}`
                                     )
                                   }>
-                                  <i className="fa fa-bars" />
+                                  <i className="fa fa-bookmark" />
                                 </button>
                               </div>
                             </td>
@@ -634,6 +672,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             )}
           </div>
+          <ModalView />
         </section>
       </AppContainer>
     );
@@ -750,6 +789,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
+    getParticipant: (id: string) => dispatch(getParticipant(id)),
     getRevisionsThunkAction: (
       page: number,
       loading: boolean,

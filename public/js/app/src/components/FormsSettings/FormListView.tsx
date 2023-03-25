@@ -65,7 +65,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Listado Formularios';
+    this.title = 'Ajustes de control';
     this.changePage = this.changePage.bind(this);
     this.createForm = this.createForm.bind(this);
     this.processCreateForm = this.processCreateForm.bind(this);
@@ -124,7 +124,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
     const canEdit = true;
     const canDelete = true;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.10' cAction='Formularios'>
+      <AppContainer  cMenu='1' cSubMenu='1.10' cAction='Formularios'>
         <section className='content'>
           <div className='row'>
             <div className='col-md-3'>

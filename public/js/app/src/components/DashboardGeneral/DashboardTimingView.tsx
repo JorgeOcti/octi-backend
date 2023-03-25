@@ -118,7 +118,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
       this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY')) : '';
 
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.5'>
+      <AppContainer cMenu='1' cSubMenu='1.5'>
         <section className='content'>
           <Row>
             <div className='col-md-12'>

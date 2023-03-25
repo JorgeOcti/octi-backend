@@ -117,7 +117,7 @@ class ColorListView extends TrackingBasePage<IPropsType, IStateType> {
     const canUpdate = hasPermission(window.user, 'changeColor') || isDevelopment;
     const canDelete = hasPermission(window.user, 'deleteColor') || isDevelopment;
     return (
-      <AppContainer title='' cMenu='10' cSubMenu='10.10' cAction='Colors'>
+      <AppContainer cMenu='10' cSubMenu='10.10' cAction='Colors'>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Colores <small>{pagination.count}</small></h3>
