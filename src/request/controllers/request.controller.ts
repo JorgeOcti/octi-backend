@@ -41,6 +41,7 @@ import RequestFile from '../models/requestFile.model';
 import requestItemsMeta from '../models/requestIteam.meta';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import conectaController from './conecta.controller';
+import TransmittalItem from '../../distribution/models/transmittalItem.model';
 
 class RequestController {
   public itemPopulate: QueryPopulateOptions[] = [
@@ -2520,12 +2521,18 @@ class RequestController {
       req.on('close', function () {
         cancelRequest = true;
       });
+
+      const toUpdate = Object.keys(updateObject)
+        .filter((key) => !['transmittal', 'transmittalItem'].includes(key))
+        .reduce((cur, key) => {
+          return Object.assign(cur, { [key]: updateObject[key] });
+        }, {});
       const requestItem = await RequestItem.findOneAndUpdate(
         {
           _id: id,
           team
         },
-        { $set: { ...updateObject } }
+        { $set: toUpdate }
       ).populate([{ path: 'car' }, { path: 'request' }]);
       if (Object.keys(updateObject.car).length) {
         if (requestItem) {
@@ -2572,7 +2579,7 @@ class RequestController {
           item
         });
       }
-      res.status(200).json({
+      return res.status(200).json({
         ...item
       });
     } catch (e) {
@@ -2582,7 +2589,7 @@ class RequestController {
       logger.error(`RequestController.apiPatchItem: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 
