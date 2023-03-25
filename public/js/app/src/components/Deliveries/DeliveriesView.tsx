@@ -56,7 +56,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Entregas de unidades';
+    this.title = 'Buscador de entregas';
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
@@ -172,12 +172,24 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
       this.props.deliveries;
     const { highlight, carLoading } = this.state;
     return (
-      <AppContainer title={this.title} cMenu="1" cSubMenu="1.8">
+      <AppContainer
+        title={
+          <div style={{ width: '180px' }}>
+            <DateRangeInput
+              options={this.getDateRangeOptions()}
+              onChange={this.onDateRangeChange}
+              startDate={filters.from}
+              endDate={filters.to}
+            />
+          </div>
+        }
+        cMenu="1"
+        cSubMenu="1.8">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">
-                Controles{' '}
+                {this.title}{' '}
                 <small>
                   {new Intl.NumberFormat('de-DE').format(pagination.count)}
                 </small>
@@ -192,6 +204,63 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row no-margin">
+                <div className="col-md-12 no-padding">
+                  <div
+                    className="input-group input-group-md"
+                    style={{ padding: '10px' }}>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      value={filters.searchText}
+                      placeholder="Buscar por unidad, vendedor o sucursal"
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-primary">
+                        <i className="fa fa-search" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row no-margin">
+                {/* <div className="col-md-6 no-padding">
+                  <div
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      value={filters.searchText}
+                      placeholder="Buscar por VIN, marca, vendedor o sucursal"
+                    />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-search" />
+                      </button>
+                    </div>
+                  </div>
+                </div> */}
+                <div className="col-md-6 no-padding">
+                  <div
+                    className="input-group input-group-sm"
+                    style={{ padding: '10px' }}>
+                    <div className="input-group-btn">
+                      <button className="btn btn-default">
+                        <i className="fa fa-address-card-o" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearchDelivery}
+                      value={filters.searchDelivery}
+                      placeholder="Buscar por datos del cliente nombre, rut, email u orden del cliente. "
+                    />
+                  </div>
+                </div>
                 <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
@@ -211,54 +280,6 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                       onClick={this.filterForms}
                       notHideOnClickOutside={false}
                     />
-                  </div>
-                </div>
-                <div className="col-md-6 no-padding">
-                  <div style={{ padding: '10px' }}>
-                    <DateRangeInput
-                      options={this.getDateRangeOptions()}
-                      onChange={this.onDateRangeChange}
-                      startDate={filters.from}
-                      endDate={filters.to}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row no-margin">
-                <div className="col-md-6 no-padding">
-                  <div
-                    className="input-group input-group-sm"
-                    style={{ padding: '10px' }}>
-                    <input
-                      type="text"
-                      className="form-control pull-right"
-                      onChange={this.onChangeSearch}
-                      value={filters.searchText}
-                      placeholder="Buscar por VIN, marca, vendedor o sucursal"
-                    />
-                    <div className="input-group-btn">
-                      <button className="btn btn-default">
-                        <i className="fa fa-search" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6 no-padding">
-                  <div
-                    className="input-group input-group-sm"
-                    style={{ padding: '10px' }}>
-                    <input
-                      type="text"
-                      className="form-control pull-right"
-                      onChange={this.onChangeSearchDelivery}
-                      value={filters.searchDelivery}
-                      placeholder="Buscar por nombre, rut, email u orden del cliente. "
-                    />
-                    <div className="input-group-btn">
-                      <button className="btn btn-default">
-                        <i className="fa fa-search" />
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

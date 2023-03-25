@@ -83,7 +83,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Revisiones de unidades';
+    this.title = 'Buscador de revisiones';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
@@ -258,7 +258,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">
-                Revisiones de unidad{' '}
+                {this.title}&nbsp;
                 <small>
                   {new Intl.NumberFormat('de-DE').format(pagination.count)}
                 </small>
@@ -276,7 +276,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="row no-margin">
                 <div className="col-md-8 no-padding">
                   <div
-                    className="input-group input-group-sm"
+                    className="input-group input-group"
                     style={{ padding: '10px' }}>
                     <input
                       type="text"
@@ -286,18 +286,19 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       placeholder="Buscar por VIN, descripción unidad, supervisor y/o sucursal"
                     />
                     <div className="input-group-btn">
-                      <button className="btn btn-default">
+                      <button className="btn btn-primary">
                         <i className="fa fa-search" />
                       </button>
                     </div>
                   </div>
                 </div>
+                {/* <div className="col-md-4 col-md-offset-8 no-padding"> */}
                 <div className="col-md-4 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
                       displayItems={4}
-                      sm={true}
+                      // sm={true}
                       autoClouse={true}
                       selectedText="formularios seleccionadas."
                       selected={selectedForms}

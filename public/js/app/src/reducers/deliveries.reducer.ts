@@ -22,7 +22,7 @@ const initialState: IDeliveriesState = {
     forms: [],
     searchText: '',
     searchDelivery: '',
-    from: moment().subtract(3, 'months').startOf('month'),
+    from: moment().subtract(1, 'months').startOf('month'),
     to: moment().endOf('day')
   },
   participants: []

@@ -262,7 +262,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="row">
                 <div className="col-md-8">
                   <div
-                    className="input-group input-group-sm"
+                    className="input-group input-group"
                     style={{ padding: '10px' }}>
                     <input
                       type="text"
@@ -274,7 +274,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                       placeholder="Buscar"
                     />
                     <div className="input-group-btn">
-                      <button className="btn btn-default">
+                      <button className="btn btn-primary">
                         <i className="fa fa-search" />
                       </button>
                     </div>
@@ -283,7 +283,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                 <div className="col-md-4">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
-                      sm={true}
+                      // sm={true}
                       noneSelectedText="Todas las sucursales"
                       displayItems={2}
                       selectedText="sucursales seleccionadas."
