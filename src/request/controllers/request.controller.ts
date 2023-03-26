@@ -41,7 +41,7 @@ import RequestFile from '../models/requestFile.model';
 import requestItemsMeta from '../models/requestIteam.meta';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import conectaController from './conecta.controller';
-import TransmittalItem from '../../distribution/models/transmittalItem.model';
+// import TransmittalItem from '../../distribution/models/transmittalItem.model';
 
 class RequestController {
   public itemPopulate: QueryPopulateOptions[] = [
