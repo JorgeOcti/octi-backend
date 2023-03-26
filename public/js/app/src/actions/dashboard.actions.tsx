@@ -663,7 +663,7 @@ export function getParticipant(id: string) {
                                 ) : null}
                               </strong>
                               {answer.hint && answer.hint !== '' ? (
-                                <small>
+                                <small className='text-muted text-sm'>
                                   <br />
                                   {answer.hint}
                                 </small>
