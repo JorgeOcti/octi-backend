@@ -69,7 +69,7 @@ export default class ApiService {
   }
 
   public getProperties(): AxiosPromise {
-    return this.instance.get(`/api/cars/properties/`, {
+    return this.instance.get(`/api/cars/properties/?page=1`, {
       cancelToken: this.source.token
     });
   }
@@ -90,7 +90,7 @@ export default class ApiService {
       minified,
       limit
     });
-    return this.instance.get(`/api/admin/users?${params}`, {
+    return this.instance.get(`/api/admin/users/?${params}`, {
       cancelToken: this.source.token
     });
   }
@@ -147,7 +147,7 @@ export default class ApiService {
 
   public getCompanies(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/companies?page=${page}${
+      `/api/admin/companies/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
@@ -224,7 +224,7 @@ export default class ApiService {
     search?: string;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues?page=${page}${
+      `/api/admin/venues/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }${company ? `&company=${company}` : ''}${
         noPopulate ? `&noPopulate=${noPopulate}` : ''
@@ -259,7 +259,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/reasons?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
+      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
         orderBy ? `&orderBy=${orderBy}` : ''
       }${orderType ? `&orderType=${orderType}` : ''}`
     );
@@ -292,7 +292,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/sales-channel?page=${page}${
+      `/api/v1/sales-channel/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }${orderBy ? `&orderBy=${orderBy}` : ''}${
         orderType ? `&orderType=${orderType}` : ''
@@ -349,7 +349,7 @@ export default class ApiService {
 
   public getCarriers(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/carriers?page=${page}${
+      `/api/admin/carriers/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
@@ -377,7 +377,7 @@ export default class ApiService {
 
   public getRegions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/regions?page=${page}${
+      `/api/admin/regions/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
@@ -385,7 +385,7 @@ export default class ApiService {
 
   public getPermissions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/permissions?page=${page}${
+      `/api/admin/permissions/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
@@ -431,14 +431,14 @@ export default class ApiService {
 
     if (forms) query += `&forms=${forms.join(',')}`;
 
-    return this.instance.get(`/api/revisions${query}`, {
+    return this.instance.get(`/api/revisions/${query}`, {
       cancelToken: this.source.token
     });
   }
 
   public getAdminCars(page?: number, search?: string): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars?page=${page}${search ? `&search=${search}` : ''}`,
+      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`,
       {
         cancelToken: this.source.token
       }
@@ -458,7 +458,7 @@ export default class ApiService {
   }
 
   public getInventories(page: number): AxiosPromise {
-    return this.instance.get(`/api/inventory?page=${page}`, {
+    return this.instance.get(`/api/inventory/?page=${page}`, {
       cancelToken: this.source.token
     });
   }
@@ -594,7 +594,7 @@ export default class ApiService {
 
   public getLabels(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/labels?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/admin/labels/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
@@ -612,7 +612,7 @@ export default class ApiService {
 
   public getInventoryDashboard(filter?: IFilterCar): AxiosPromise {
     return this.instance.post(
-      '/api/inventory/dashboard/',
+      '/api/inventory/dashboard/?page=1',
       filter ? { venues: filter.venues } : {}
     );
   }
@@ -696,7 +696,7 @@ export default class ApiService {
     params = pageSize ? `${params}&pageSize=${pageSize}` : params;
     params = orderBy ? `${params}&orderBy=${orderBy}` : params;
     params = orderType ? `${params}&orderType=${orderType}` : params;
-    return this.instance.get(`/api/v1/requests${params}/`);
+    return this.instance.get(`/api/v1/requests/${params}/`);
   }
 
   public getRequestItems({
@@ -773,7 +773,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/request-item-status?page=${page}${
+      `/api/v1/request-item-status/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }${orderBy ? `&orderBy=${orderBy}` : ''}${
         orderType ? `&orderType=${orderType}` : ''
@@ -922,7 +922,7 @@ export default class ApiService {
   }
 
   public getTeamSettings(): AxiosPromise {
-    return this.instance.get(`/api/admin/team-settings/`);
+    return this.instance.get(`/api/admin/team-settings/?page=1`);
   }
 
   // public createMilestone(milestone: IMilestone): AxiosPromise {
@@ -958,7 +958,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/milestones?page=${page}${
+      `/api/v1/milestones/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }${milestoneType ? `&milestoneType=${milestoneType}` : ''}${
         orderBy ? `&orderBy=${orderBy}` : ''
@@ -995,7 +995,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/milestone-types?page=${page}${
+      `/api/v1/milestone-types/?page=${page}${
         pageSize ? `&pageSize=${pageSize}` : ''
       }${orderBy ? `&orderBy=${orderBy}` : ''}${
         orderType ? `&orderType=${orderType}` : ''
@@ -1029,7 +1029,7 @@ export default class ApiService {
 
   public getUserForms({ deliveries }: { deliveries: boolean }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/user-forms?deliveries=${deliveries ? '1' : 0}`
+      `/api/v1/user-forms/?deliveries=${deliveries ? '1' : 0}`
     );
   }
 
@@ -1039,7 +1039,7 @@ export default class ApiService {
     activated?: boolean
   ): AxiosPromise {
     return this.instance.get(
-      `/api/admin/forms?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
         activated ? `&activated=1` : ''
       }`
     );

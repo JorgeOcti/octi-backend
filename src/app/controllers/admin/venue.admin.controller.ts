@@ -769,14 +769,13 @@ class AdminVenueController {
     search?: string
   ): Promise<PaginateResult<IVenueModel>> {
     if (search && search.length) {
-      const searchText = new RegExp(search, 'i');
       filter = {
-        $and: [
-          {
-            name: { $regex: searchText }
-          },
-          filter
-        ]
+        ...filter,
+        $text: { $search: search },
+      };
+      options = {
+        ...options,
+        sort: { score: { $meta: 'textScore' } }
       };
     }
     return new Promise((resolve, reject) => {
