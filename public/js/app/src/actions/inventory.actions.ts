@@ -387,10 +387,12 @@ export function getInventoryDetailAction(id: string, update: boolean) {
               $(this).prop('Counter', 0).animate({
                 Counter: $(this).text()
               }, {
-                duration: 1500,
+                duration: 2000,
                 easing: 'swing',
                 step: function(now) {
-                  $(this).text(Math.ceil(now));
+                  $(this).text(new Intl.NumberFormat('de-DE').format(
+                    Math.ceil(now
+                  )));
                 }
               });
             });
