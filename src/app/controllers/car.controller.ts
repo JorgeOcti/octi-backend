@@ -1851,6 +1851,11 @@ class CarController {
       lean: true
     };
     try {
+      logger.info(
+        `CarController.apiRevisions ${req.user.email} body: ${JSON.stringify(
+          req.body
+        )} query: ${JSON.stringify(req.query)}`
+      );
       const { user } = req;
 
       // filter by delivery
@@ -1978,6 +1983,14 @@ class CarController {
           venues,
           users
         };
+        logger.info(
+          `CarController.apiRevisions ${
+            req.user.email
+          } ponderations: ${JSON.stringify({
+            ...ponderations,
+            cars: cars.slice(0, 10)
+          })}`
+        );
       }
 
       // base aggregate pipeline
@@ -2006,7 +2019,7 @@ class CarController {
           }
         }
       ];
-      console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
+      // console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
       if (Object.keys(searchOtherText).length) {
         aggregate.push({
           $lookup: {
@@ -2031,7 +2044,7 @@ class CarController {
         });
       }
 
-      console.log('aggregate', JSON.stringify(aggregate, null, 2));
+      // console.log('aggregate', JSON.stringify(aggregate, null, 2));
 
       // sort if search text in participant
       if (delivery?.length > 2) {
