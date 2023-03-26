@@ -592,7 +592,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
-    const value = e.target.value.trim();
+    const value = e.target.value;
     this.props.changeSearchAction(value);
     this.debounceOnChangeSearch();
   }
