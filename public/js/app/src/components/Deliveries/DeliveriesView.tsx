@@ -25,13 +25,21 @@ import { Socket } from 'socket.io-client/build/esm/socket';
 import { io } from 'socket.io-client';
 import { IWindow } from '../../interfaces/window';
 import { debounce } from 'throttle-debounce';
+import {
+  getParticipant,
+  IDashboardState
+} from '../../actions/dashboard.actions';
+import ModalView from '../Modal/ModalView';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<IDeliveriesActionTypes>;
   deliveries: IDeliveriesState;
+  dashboard: IDashboardState;
   deliveriesActions: DeliveriesActions;
+
+  getParticipant(id: string): void;
 }
 
 interface IStateType {
@@ -41,7 +49,6 @@ interface IStateType {
 }
 
 class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
-
   public title: string;
 
   protected isMount: boolean = false;
@@ -171,6 +178,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { participants, forms, pagination, loading, filters } =
       this.props.deliveries;
+    const { loadingParticipant } = this.props.dashboard;
+    const { getParticipant } = this.props;
     const { highlight, carLoading } = this.state;
     return (
       <AppContainer
@@ -294,6 +303,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                   </ShowIf>
                 }>
                 <DeliveriesCarDetail
+                  loadingParticipant={loadingParticipant}
+                  getParticipant={getParticipant}
                   participants={participants}
                   highlight={highlight}
                   carLoading={carLoading}
@@ -331,6 +342,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
             </ShowIf>
           </div>
         </section>
+        <ModalView />
       </AppContainer>
     );
   }
@@ -473,16 +485,18 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: { deliveries: IDeliveriesState }) => {
+const mapStateToProps = (state: { deliveries: IDeliveriesState, dashboard: IDashboardState  }) => {
   return {
-    deliveries: state.deliveries
+    deliveries: state.deliveries,
+    dashboard: state.dashboard
   };
 };
 
-const mapDispatchToProps = (dispatch: IDeliveryDispatch) => {
+const mapDispatchToProps = (dispatch: IDeliveryDispatch | any) => {
   const deliveriesActions = new DeliveriesActions(dispatch);
   return {
     dispatch,
+    getParticipant: (id: string) => dispatch(getParticipant(id)),
     deliveriesActions
   };
 };

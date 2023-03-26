@@ -6,6 +6,51 @@ select,
 textarea
   font-family: 'Source Sans Pro',sans-serif !important
 
+.modal-body
+  padding: 10px
+
+@media (min-width: 768px)
+  .modal-body
+    padding: 20px
+
+.breadcrumb
+  li
+    color: #333
+    .breadcrumb-section
+      color: #000
+    .breadcrumb-sub-section
+      color: #0073b7
+    .active
+      color: #000
+      font-weight: bold
+    &:before
+      color: #000
+      font-weight: bold
+
+.nav-tabs
+  margin: 0 -5px 20px -5px
+  li
+    boder: 0
+    // border: 1px solid #ddd
+    // background-color: #000
+    font-weight: bold
+    &.active > a
+      color: #000
+      
+      boder: 0
+      margin: 0
+      // background-color: #3c8dbc
+      // color: #fff
+
+      &:hover
+        boder: 0
+        margin: 0
+
+      &:focus
+        boder: 0
+        margin: 0
+      
+
 .line-through
   text-decoration: line-through
 
@@ -116,7 +161,6 @@ textarea
 .no-background-hover:hover
   background-color: transparent !important
 
-
 @keyframes info-fade
   0%
     background: #d9edf7
@@ -131,11 +175,9 @@ textarea
   text-overflow: ellipsis
   white-space: nowrap
 
-
 .chosen-container
   width: 100% !important
   height: 32px
-
 
 .form-group
   label
@@ -186,7 +228,7 @@ textarea
     &:focus
       outline: 1px auto -webkit-focus-ring-color !important
       outline-color: #3c8dbc !important
-    border-color: #d2d6de
+      border-color: #d2d6de
     .filter-option
       color: #777 !important
       background: #FFF !important
@@ -195,7 +237,6 @@ textarea
   .btn-filter
     border-color: #3c8dbc
     box-shadow: none
-
 
 #center-message
   background-color: rgba(50, 50, 50, 0.8)
@@ -227,13 +268,10 @@ textarea
       .text-muted
         color: #fff !important
 
-
-
 .dropdown-menu-scrollable
   height: auto
   max-height: 170px
   overflow-x: hidden
-
 
 .change-image-wrapper
   position: relative
@@ -344,8 +382,6 @@ textarea
 // font-size: 18px;
 // line-height: 1.3333333;
 // border-radius: 6px;
-
-
 
 .text-wrap
   white-space: pre-wrap

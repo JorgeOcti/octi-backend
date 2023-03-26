@@ -9,20 +9,25 @@
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",
   "dependencies": {
-    "autoprefixer": "^10.4.7",
-    "gulp": "^4.0.2",
-    "gulp-postcss": "^9.0.1",
-    "gulp-sass": "^5.1.0",
-    "gulp-sourcemaps": "^3.0.0",
-    "gulp-typescript": "^6.0.0-alpha.1",
+    "autoprefixer": "~10.4.7",
+    "gulp": "~4.0.2",
+    "gulp-postcss": "~9.0.1",
+    "gulp-sass": "~5.1.0",
+    "gulp-sourcemaps": "~3.0.0",
+    "gulp-typescript": "~6.0.0-alpha.1",
+    "postcss": "^8.4.21",
     "postcss-object-fit-images": "~1.1.2",
-    "sass": "^1.52.3",
-    "typescript": "^4.7.3"
+    "sass": "~1.52.3",
+    "typescript": "~4.7.3"
   },
+  "browserslist": [
+    "defaults and supports es6-module",
+    "maintained node versions"
+  ],
   "devDependencies": {
-    "@types/gulp": "^4.0.9",
-    "@types/gulp-postcss": "^8.0.2",
-    "@types/gulp-sass": "^5.0.0",
-    "@types/gulp-sourcemaps": "^0.0.35"
+    "@types/gulp": "~4.0.9",
+    "@types/gulp-postcss": "~8.0.2",
+    "@types/gulp-sass": "~5.0.0",
+    "@types/gulp-sourcemaps": "~0.0.35"
   }
 }

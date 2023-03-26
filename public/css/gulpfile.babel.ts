@@ -25,12 +25,7 @@ const paths = {
 
 gulp.task('css', function () {
   const pluginsPostCss = [
-    autoprefixer({
-      browsers: [
-        'last 2 versions',
-        'ie 6-10'
-      ]
-    }), objectFitImages
+    autoprefixer(), objectFitImages
   ];
   return gulp.src(sassPaths.src)
     .pipe(sourcemaps.init())

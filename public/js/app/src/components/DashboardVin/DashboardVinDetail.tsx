@@ -440,8 +440,8 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                     <i
                                       className={
                                         carLoading === participant._id
-                                          ? 'fa fa-spinner fa-spin'
-                                          : 'fa fa-print'
+                                          ? 'fa fw fa-spinner fa-spin'
+                                          : 'fa fw fa-print'
                                       }
                                     />
                                   </button>
@@ -466,9 +466,9 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                         )
                                       }
                                       alternative={
-                                        <i className="fa fa-bolt" />
+                                        <i className="fa fw fa-check-square-o" />
                                       }>
-                                      <i className="fa fa-spin fa-spinner" />
+                                      <i className="fa fw fa-spin fa-spinner" />
                                     </ShowIf>
                                   </button>
                                 </div>
@@ -494,8 +494,8 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                         loadingParticipant === participant._id
                                       )
                                     }
-                                    alternative={<i className="fa fa-bolt" />}>
-                                    <i className="fa fa-spin fa-spinner" />
+                                    alternative={<i className="fa fw fa-check-square-o" />}>
+                                    <i className="fa fw fa-spin fa-spinner" />
                                   </ShowIf>
                                 </button>
                               </div>

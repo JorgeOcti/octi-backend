@@ -566,14 +566,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   className="btn-group"
                                   style={{ width: '100px' }}>
                                   <button
-                                    className="btn btn-sm btn-primary"
+                                    className="btn btn-sm btn-default"
                                     onClick={() =>
                                       this.props.history.push(
                                         `/cars/${participant.car?._id}`
                                       )
                                     }>
-                                    <i className="fa fa-bookmark" />
+                                    <i className="fa fw fa-bars" />
                                   </button>
+
                                   <button
                                     className="btn btn-sm btn-default hidden-xs hidden-sm"
                                     disabled={carLoading === participant._id}
@@ -586,14 +587,14 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     <i
                                       className={
                                         carLoading === participant._id
-                                          ? 'fa fa-spinner fa-spin'
-                                          : 'fa fa-print'
+                                          ? 'fa fw fa-spinner fa-spin'
+                                          : 'fa fw fa-print'
                                       }
                                     />
                                   </button>
 
                                   <button
-                                    className="btn btn-sm btn-primary"
+                                    className="btn btn-primary btn-sm"
                                     disabled={
                                       !!(
                                         loadingParticipant &&
@@ -613,9 +614,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                         )
                                       }
                                       alternative={
-                                        <i className="fa fa-bolt" />
+                                        <i className="fa fw fa-check-square-o" />
                                       }>
-                                      <i className="fa fa-spin fa-spinner" />
+                                      <i className="fa fw fa-spin fa-spinner" />
                                     </ShowIf>
                                   </button>
                                 </div>
@@ -628,7 +629,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                       `/cars/${participant.car?._id}`
                                     )
                                   }>
-                                  <i className="fa fa-bookmark" />
+                                  <i className="fa fw fa-bars" />
                                 </button>
                               </div>
                             </td>

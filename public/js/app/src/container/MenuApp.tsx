@@ -36,7 +36,7 @@ class MenuApp extends React.Component<IPropsType, {}> {
                         color: '#a1214c',
                       } : {}} className={`fa ${menu.icon}`}/> <span>{menu.text}</span>
                       <span className="pull-right-container">
-                      <i className="fa fa-angle-left pull-right"/>
+                      <i className="fa fa-angle-left pull-right text-black"/>
                     </span>
                     </a>
                     <ul className="treeview-menu">
