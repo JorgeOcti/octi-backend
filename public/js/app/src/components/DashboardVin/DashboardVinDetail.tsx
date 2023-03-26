@@ -151,7 +151,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
       this.props.location.pathname.includes('deliveries/cars');
     return (
       <AppContainer
-        title={`Detalle ${car ? car.vin : null}`}
+        title={`${car?.vin ?? ''}`}
         cMenu="1"
         cSubMenu={deliveriesView ? '1.8' : '1.2'}
         cAction={`Detalle`}>
@@ -183,32 +183,32 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <strong>VIN</strong>
                       <span className="pull-right text-primary">
                         <CopyText value={car?.vin ?? ''}>
-                          <strong>{car && car.vin ? car.vin : '-'}</strong>
+                          <strong>{car?.vin?.toLocaleUpperCase() ?? '-'}</strong>
                         </CopyText>
                       </span>
                     </li>
                     <li className="list-group-item">
                       <strong>Color</strong>
                       <strong className="pull-right">
-                        {car && car.color ? car.color : '-'}
+                        {car && car.color ? car.color?.toLocaleUpperCase() : '-'}
                       </strong>
                     </li>
                     <li className="list-group-item">
                       <strong>Material</strong>
                       <strong className="pull-right">
-                        {car && car.material ? car.material : '-'}
+                        {car && car.material ? car.material?.toLocaleUpperCase() : '-'}
                       </strong>
                     </li>
                     <li className="list-group-item">
                       <strong>Patente</strong>
                       <strong className="pull-right">
-                        {car && car.patent ? car.patent : '-'}
+                        {car && car.patent ? car.patent?.toLocaleUpperCase() : '-'}
                       </strong>
                     </li>
                     <li className="list-group-item">
                       <strong>Nº Interno</strong>
                       <strong className="pull-right">
-                        {car && car.internalNumber ? car.internalNumber : '-'}
+                        {car && car.internalNumber ? car.internalNumber?.toLocaleUpperCase() : '-'}
                       </strong>
                     </li>
 
@@ -331,8 +331,8 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                 <div className="visible-xs visible-sm">
                                   <strong>
                                     <i className="fa fa-fw fa-user-o" />{' '}
-                                    {participant.user?.firstName ?? ''}{' '}
-                                    {participant.user?.lastName ?? ''}
+                                    {participant.user?.firstName?.toLocaleUpperCase() ?? ''}{' '}
+                                    {participant.user?.lastName?.toLocaleUpperCase() ?? ''}
                                   </strong>
                                   <div>
                                     <i className="fa fa-fw fa-flag-o" />{' '}
@@ -373,10 +373,10 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                               <strong className="text-muted">
                                 <i className="fa fa-fw fa-user-o" />{' '}
                                 {participant.user
-                                  ? participant.user.firstName
+                                  ? participant.user.firstName?.toLocaleUpperCase()
                                   : ''}{' '}
                                 {participant.user
-                                  ? participant.user.lastName
+                                  ? participant.user.lastName?.toLocaleUpperCase()
                                   : ''}
                               </strong>
                               <div>

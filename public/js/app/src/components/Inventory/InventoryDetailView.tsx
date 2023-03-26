@@ -779,7 +779,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       <strong>
                         {
                           !loadingDetail && summary && summary.createdBy ?
-                            summary.createdBy.fullName
+                            summary.createdBy.fullName?.toLocaleUpperCase()
                             : '-'
                         }
                       </strong>
@@ -787,11 +787,11 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className='col-md-4 col-lg-3'>
                       <i className='fa fa-fw fa-clock-o text-green' />
-                      <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
+                      <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL')?.toLocaleUpperCase() : '-'}</strong>
                     </div>
                     <div className='col-md-4 col-lg-3'>
                       <i className='fa fa-fw fa-clock-o text-red' />
-                      <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
+                      <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL')?.toLocaleUpperCase() : '-'}</strong>
                     </div>
                     <div className='col-md-12 col-lg-3 text-right'>
                       {!loadingDetail ? this.labelStatus(detail.status) : null}

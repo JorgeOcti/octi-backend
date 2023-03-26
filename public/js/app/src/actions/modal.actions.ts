@@ -1,6 +1,6 @@
 
 export interface IModalState {
-  title: string;
+  title: JSX.Element| string;
   body: JSX.Element| null;
   footer: JSX.Element| null;
 }
@@ -8,13 +8,13 @@ export interface IModalState {
 interface ILoadData {
   type: '/MODAL/LOAD_DATA';
   payload: {
-    title: string;
+    title: JSX.Element | string;
     body: JSX.Element | null;
     footer?: JSX.Element | null;
   };
 }
 
-export function loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ILoadData {
+export function loadDataAction(title: string|JSX.Element, body: JSX.Element, footer?: JSX.Element): ILoadData {
   return {
     type: '/MODAL/LOAD_DATA',
     payload: {

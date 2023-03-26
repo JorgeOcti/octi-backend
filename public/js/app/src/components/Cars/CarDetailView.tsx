@@ -79,7 +79,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const { loadingParticipant } = this.props.dashboard;
     const { getParticipant } = this.props;
     return (
-      <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu='1' cSubMenu='1.0' cAction='Detalle'>
+      <AppContainer title={`${ car?.vin ?? ''}`} cMenu='1' cSubMenu='1.0' cAction='Detalle'>
         <section className='content'>
           <Row>
             <div className='col-md-3 col-lg-3'>

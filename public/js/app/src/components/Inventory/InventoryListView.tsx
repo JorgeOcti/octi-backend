@@ -172,7 +172,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
                                 {inventory.createdBy ? (
                                   <React.Fragment>
                                     <i className="fa fa-fw fa-user" />
-                                    Por {inventory.createdBy.fullName}
+                                    Por {inventory.createdBy.fullName?.toLocaleUpperCase()}
                                     <br />
                                   </React.Fragment>
                                 ) : null}
@@ -187,7 +187,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
                                     {inventory.finalizedBy ? (
                                       <React.Fragment>
                                         <i className="fa fa-fw fa-user" />
-                                        Por {inventory.finalizedBy.fullName}
+                                        Por {inventory.finalizedBy.fullName?.toLocaleUpperCase()}
                                       </React.Fragment>
                                     ) : null}
                                   </React.Fragment>

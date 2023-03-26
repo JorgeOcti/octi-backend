@@ -400,10 +400,18 @@ export function getParticipant(id: string) {
         const data = response.data.data;
         dispatch(
           loadDataAction(
-            data.name,
+           <strong className='text-muted'>{data.name}</strong>,
             <div id="form-detail">
               <table style={{ width: '100%' }}>
                 <tbody>
+                  <tr>
+                    <td style={{ width: '40%' }}>
+                      <strong>Fecha</strong>
+                    </td>
+                    <td className='text-muted'>
+                      {moment(data.createdAt).format('LLL')?.toUpperCase()}
+                    </td>
+                  </tr>
                   <tr>
                     <td style={{ width: '40%' }}>
                       <strong>Supervisor</strong>
@@ -415,12 +423,7 @@ export function getParticipant(id: string) {
                       </strong>
                     </td>
                   </tr>
-                  <tr>
-                    <td style={{ width: '40%' }}>
-                      <strong>Fecha</strong>
-                    </td>
-                    <td>{moment(data.createdAt).format('LLL')}</td>
-                  </tr>
+
                   {/* <tr>
                 <td style={{width: '40%'}}><strong>Calificación</strong></td>
                 <td>{Math.round(data.qualification)}%</td>
@@ -494,6 +497,7 @@ export function getParticipant(id: string) {
                       <td>{data.carrierBy.name.toUpperCase()}</td>
                     </tr>
                   ) : null}
+
                   {data.shippingText && data.shippingText.length ? (
                     <tr>
                       <td style={{ width: '40%' }}>
@@ -584,6 +588,50 @@ export function getParticipant(id: string) {
                       </td>
                     </tr>
                   ) : null}
+                  <tr>
+                    <td style={{ width: '40%' }}>&nbsp;</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  {data?.car?.vin ? (
+                    <tr>
+                      <td style={{ width: '40%' }}>
+                        <strong>VIN</strong>
+                      </td>
+                      <td><strong>{data?.car?.vin.toUpperCase()}</strong></td>
+                    </tr>
+                  ) : null}
+                  {data?.car?.brand ? (
+                    <tr>
+                      <td style={{ width: '40%' }}>
+                        <strong>Marca</strong>
+                      </td>
+                      <td className='text-primary'><strong>{data?.car?.brand.toUpperCase()}</strong></td>
+                    </tr>
+                  ) : null}
+                  {data?.car?.denomination ? (
+                    <tr>
+                      <td style={{ width: '40%' }}>
+                        <strong>Denominación</strong>
+                      </td>
+                      <td><strong className='text-muted'>{data?.car?.denomination.toUpperCase()}</strong></td>
+                    </tr>
+                  ) : null}
+                  {data?.car?.color ? (
+                    <tr>
+                      <td style={{ width: '40%' }}>
+                        <strong>Color</strong>
+                      </td>
+                      <td className='text-muted'>{data?.car?.color.toUpperCase()}</td>
+                    </tr>
+                  ) : null}
+                  {data?.car?.patent ? (
+                    <tr>
+                      <td style={{ width: '40%' }}>
+                        <strong>Identificación</strong>
+                      </td>
+                      <td className='text-muted'>{data?.car?.patent.toUpperCase()}</td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
               {data.sections.map(
@@ -663,7 +711,7 @@ export function getParticipant(id: string) {
                                 ) : null}
                               </strong>
                               {answer.hint && answer.hint !== '' ? (
-                                <small className='text-muted text-sm'>
+                                <small className="text-muted text-sm">
                                   <br />
                                   {answer.hint}
                                 </small>

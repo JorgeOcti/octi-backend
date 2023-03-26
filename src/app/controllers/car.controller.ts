@@ -1601,6 +1601,10 @@ class CarController {
           select: ['name']
         },
         {
+          path: 'car',
+          select: ['vin', 'brand', 'denomination', 'color', 'patent']
+        },
+        {
           path: 'receiveFrom',
           select: ['name']
         },

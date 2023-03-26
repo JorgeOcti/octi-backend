@@ -444,7 +444,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <i className="fa fa-fw fa-user-o" />{' '}
                                   {`${
                                     participant.user
-                                      ? `${participant.user.firstName} ${participant.user.lastName}`
+                                      ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
                                       : ''
                                   }`}
                                 </span>
@@ -502,7 +502,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <i className="fa fa-fw fa-user-o" />{' '}
                                   {`${
                                     participant.user
-                                      ? `${participant.user.firstName} ${participant.user.lastName}`
+                                      ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
                                       : ''
                                   }`}
                                 </strong>
