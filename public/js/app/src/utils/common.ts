@@ -90,7 +90,8 @@ export function showModal(show: boolean) {
 export function goToSection(selector: string) {
   const section = document.querySelector(`${selector}`);
   if (section) {
-    section?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // section.scrollIntoView(false);
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 
