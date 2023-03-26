@@ -300,21 +300,21 @@ if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
 }
 
 
-if (hasPermission(window.user, 'viewUser')) {
-  settingItems.push({
-    id: '10.5',
-    icon: 'fa-circle-o text-green',
-    text: 'Usuarios',
-    url: '/settings/users/'
-  });
-}
-
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
     id: '10.4',
     icon: 'fa-circle-o text-red',
     text: 'Sucursales',
     url: '/settings/venues/'
+  });
+}
+
+if (hasPermission(window.user, 'viewUser')) {
+  settingItems.push({
+    id: '10.5',
+    icon: 'fa-circle-o text-green',
+    text: 'Usuarios',
+    url: '/settings/users/'
   });
 }
 
