@@ -438,7 +438,7 @@ class BillingTeamQueue {
             ) {
               const invoice = new InvoiceTeamBilling(invoiceData);
               await invoice.save();
-              this.createPDF(invoice);
+              await this.createPDF(invoice);
             } else {
               console.log(`${period} ${teamBilling.team.name} ya existe!!!.`);
             }

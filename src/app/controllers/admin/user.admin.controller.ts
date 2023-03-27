@@ -707,7 +707,7 @@ class AdminUsersController {
           Tus Datos para acceder a la aplicación son:
           Usuario: ${newUser.email}
           Contraseña ${password}
-          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
+          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
 
           © 2021 OSA SpA. All rights reserved.`,
             view: 'account/welcome',

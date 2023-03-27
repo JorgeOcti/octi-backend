@@ -30,6 +30,7 @@ import { getUsersParams } from './axios.types';
 import { IBaseBorder } from '../../../../../src/app/interfaces/border.interface';
 
 export default class ApiService {
+
   private readonly instance: AxiosInstance;
   private CancelToken: CancelTokenStatic;
   private source: CancelTokenSource;
@@ -550,6 +551,7 @@ export default class ApiService {
   public deleteAlert(id: string): AxiosPromise {
     return this.instance.delete(`/api/admin/alerts/${id}/`);
   }
+
   public preMassAllocation(data: any): AxiosPromise {
     return this.instance.post(`/api/v1/requests/pre-mass-allocation/`, data);
   }
