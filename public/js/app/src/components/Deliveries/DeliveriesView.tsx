@@ -267,7 +267,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                       className="form-control pull-right"
                       onChange={this.onChangeSearchDelivery}
                       value={filters.searchDelivery}
-                      placeholder="Buscar por datos del cliente nombre, rut, email u orden del cliente. "
+                      placeholder="Buscar por datos del cliente nombre. "
                     />
                   </div>
                 </div>

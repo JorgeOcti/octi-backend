@@ -80,6 +80,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     to: moment().toDate(),
     downloading: false
   };
+
   protected printIframe: any;
 
   protected isMount: boolean = false;
