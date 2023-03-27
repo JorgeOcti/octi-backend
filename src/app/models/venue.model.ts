@@ -134,11 +134,13 @@ venueSchema.index({ team: 1, name: 1 });
 venueSchema.index({ team: 1, deleted: 1 });
 
 venueSchema.index(
-  { name: 'text' },
+  { name: 'text', code: 'text', abbreviation: 'text' },
   {
     default_language: 'spanish',
     weights: {
       name: 10,
+      code: 10,
+      abbreviation: 10,
     },
     name: 'VenueTextIndex'
   }

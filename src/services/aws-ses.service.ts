@@ -7,10 +7,10 @@ const ses = new AWS.SES({
   apiVersion: '2010-12-01',
   region: process.env.SES_REGION || 'us-west-2'
 });
-ses.setIdentityDkimEnabled({
-  DkimEnabled: true,
-  Identity: 'soporte@osacontrol.com'
-});
+// ses.setIdentityDkimEnabled({
+//   DkimEnabled: true,
+//   Identity: 'soporte@osacontrol.com'
+// });
 const transport = nodemailer.createTransport({
   SES: ses
 });
