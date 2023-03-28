@@ -33,7 +33,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (
               Control
             </th>
             <th style={{ width: '20%' }} className="middle hidden-xs hidden-sm">
-              Realizado por
+              Supervisor
             </th>
             <th style={{ width: '20%' }} className="middle hidden-xs hidden-sm">
               Cliente

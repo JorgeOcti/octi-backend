@@ -2086,10 +2086,6 @@ class CarController {
 
       // sort if search text in participant
       if (delivery?.length > 2) {
-        // aggregate = [
-        //   ...aggregate,
-        //   { $sort: { score: { $meta: 'textScore' } } }
-        // ];
         options.sort = { score: { $meta: 'textScore' } };
       } else if (Object.keys(searchOtherText).length) {
         aggregate = [
@@ -2112,7 +2108,6 @@ class CarController {
         options.sort = { 'car.denomination': 1 };
       } else {
         options.sort = { _id: -1 };
-        // aggregate = [...aggregate, { $sort: { _id: -1 } }];
       }
 
       let projects: any = {

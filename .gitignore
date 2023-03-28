@@ -54,6 +54,7 @@ buildcache
 /dist/
 /tools/
 .cache
+.vscode
 
 updateAndesProdToLocal.sh
 updateAndesProdToStage.sh

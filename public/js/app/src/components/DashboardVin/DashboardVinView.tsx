@@ -355,7 +355,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         <th
                           style={{ width: '20%' }}
                           className="middle hidden-xs hidden-sm">
-                          Realizado por
+                          Supervisor
                         </th>
                         <th
                           style={{ width: '10%' }}
