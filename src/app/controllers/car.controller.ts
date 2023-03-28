@@ -1943,37 +1943,6 @@ class CarController {
         ]);
 
         if (keys.length) {
-          const cars = await Car.aggregate([
-            {
-              $match: {
-                team: new mongoose.Types.ObjectId(user.team._id),
-                _id: {
-                  $in: keys[0].cars
-                },
-                $text: { $search: search }
-                // $text: { $search: `"${search.split(' ').join('" ')}"` }
-              }
-            },
-
-            {
-              $project: {
-                _id: 1,
-                score: { $meta: 'textScore' }
-              }
-            },
-            { $sort: { score: { $meta: 'textScore' } } },
-            // { $match: { score: { $gte: 10 } } },
-            { $limit: 1000 }
-          ]);
-
-          if (cars.length) {
-            baseMatch = {
-              car: {
-                $in: cars.map((car) => car._id)
-              }
-            };
-            ponderations['cars'] = cars;
-          }
           const users = await User.aggregate([
             {
               $match: {
@@ -2039,6 +2008,38 @@ class CarController {
             };
             ponderations['venues'] = venues;
           }
+          const cars = await Car.aggregate([
+            {
+              $match: {
+                team: new mongoose.Types.ObjectId(user.team._id),
+                _id: {
+                  $in: keys[0].cars
+                },
+                $text: { $search: search }
+                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+              }
+            },
+
+            {
+              $project: {
+                _id: 1,
+                score: { $meta: 'textScore' }
+              }
+            },
+            { $sort: { score: { $meta: 'textScore' } } },
+            { $match: { score: { $gt: 10 } } },
+            { $limit: !users.length && !venues.length ? 40 : 1000 }
+          ]);
+
+          if (cars.length) {
+            baseMatch = {
+              ...baseMatch,
+              car: {
+                $in: cars.map((car) => car._id)
+              }
+            };
+            ponderations['cars'] = cars;
+          }
         }
         logger.info(
           `CarController.apiRevisions ${
@@ -2055,8 +2056,8 @@ class CarController {
       let countAggregate: PipelineStage[] = [
         {
           $match: {
-            ...baseMatch,
-            ...searchParticipantText
+            ...searchParticipantText,
+            ...baseMatch
           }
         }
       ];
@@ -2163,7 +2164,7 @@ class CarController {
             }
           }
         ];
-        options.sort = { _id: -1, 'user.lastName': 1 };
+        options.sort = { 'user.firstName': 1, _id: -1 };
       } else if (ponderations?.cars?.length) {
         aggregate = [
           ...aggregate,
@@ -2195,6 +2196,7 @@ class CarController {
         qualification: true,
         deliveryInfo: true,
         name: true,
+        deliveryToCustomer: true,
 
         // 'car._id': true,
         // 'car.vin': true,
