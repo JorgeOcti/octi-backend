@@ -1963,7 +1963,8 @@ class CarController {
               }
             },
             // { $match: { score: { $gte: 5.5 } } },
-            { $sort: { score: { $meta: 'textScore' } } }
+            { $sort: { score: { $meta: 'textScore' } } },
+            { $limit: 1 }
             // { $limit: 5 }
           ]);
 
@@ -1996,8 +1997,9 @@ class CarController {
                 score: { $meta: 'textScore' }
               }
             },
-            { $sort: { score: { $meta: 'textScore' } } }
             // { $match: { score: { $gte: 8 } } }
+            { $sort: { score: { $meta: 'textScore' } } },
+            { $limit: 1 }
           ]);
           if (venues.length) {
             baseMatch = {
@@ -2145,7 +2147,7 @@ class CarController {
             }
           }
         ];
-        options.sort = { _id: -1, 'venue.name': 1 };
+        options.sort = { _id: -1 };
       } else if (ponderations?.users?.length) {
         aggregate = [
           ...aggregate,
@@ -2164,7 +2166,8 @@ class CarController {
             }
           }
         ];
-        options.sort = { 'user.firstName': 1, _id: -1 };
+        // options.sort = { 'user.firstName': 1, _id: -1 };
+        options.sort = { _id: -1 };
       } else if (ponderations?.cars?.length) {
         aggregate = [
           ...aggregate,
@@ -2183,7 +2186,8 @@ class CarController {
             }
           }
         ];
-        options.sort = { _id: -1, 'car.denomination': 1 };
+        // options.sort = { _id: -1, 'car.denomination': 1 };
+        options.sort = { _id: -1 };
       } else {
         options.sort = { _id: -1 };
       }
