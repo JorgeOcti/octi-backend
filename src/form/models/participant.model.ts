@@ -559,10 +559,10 @@ participantSchema.index(
   {
     default_language: 'spanish',
     weights: {
-      'deliveryInfo.rut': 5,
-      'deliveryInfo.name': 5,
-      'deliveryInfo.order': 5,
-      'deliveryInfo.email': 5
+      'deliveryInfo.rut': 10,
+      'deliveryInfo.name': 10,
+      'deliveryInfo.order': 10,
+      'deliveryInfo.email': 10
     },
     name: 'ParticipantTextIndex'
   }
