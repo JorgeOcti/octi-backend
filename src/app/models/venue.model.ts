@@ -134,7 +134,7 @@ venueSchema.index({ team: 1, name: 1 });
 venueSchema.index({ team: 1, deleted: 1 });
 
 venueSchema.index(
-  { name: 'text', code: 'text', abbreviation: 'text' },
+  { team: 1, name: 'text', code: 'text', abbreviation: 'text' },
   {
     default_language: 'spanish',
     weights: {

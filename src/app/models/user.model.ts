@@ -24,7 +24,7 @@ userSchema.index(
       lastName: 10,
       email: 10
     },
-    name: 'TextIndex'
+    name: 'UserTextIndex'
   }
 );
 

@@ -233,7 +233,7 @@ carSchema.index(
       patent: 10,
       brand: 10,
       denomination: 6,
-      color: 6
+      color: 10
     },
     name: 'CarTextIndex'
   }
