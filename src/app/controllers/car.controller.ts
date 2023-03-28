@@ -1841,7 +1841,7 @@ class CarController {
       to,
       forms
     } = req.query as Record<string, string>;
-
+    search = search ? search.replace(/  +/g, ' ').trim() : '';
     // paginate options
     let options: PaginateOptions = {
       page: parseInt(page ? page : '1', 10),
@@ -1951,8 +1951,8 @@ class CarController {
                   $in: keys[0].users
                 },
                 active: true,
-                // $text: { $search: `"${search.split(' ').join('" ')}"` }
-                $text: { $search: search }
+                $text: { $search: `"${search.split(' ').join('" "')}"` }
+                // $text: { $search: search }
               }
             },
             {
@@ -1986,8 +1986,8 @@ class CarController {
                 _id: {
                   $in: keys[0].venues
                 },
-                $text: { $search: search }
-                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+                // $text: { $search: search }
+                $text: { $search: `"${search.split(' ').join('" "')}"` }
               }
             },
             {
@@ -2018,7 +2018,7 @@ class CarController {
                   $in: keys[0].cars
                 },
                 $text: { $search: search }
-                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+                // $text: { $search: `"${search.split(' ').join('" "')}"` }
               }
             },
 
@@ -2283,18 +2283,16 @@ class CarController {
             path: 'deliveryInfo.plateEvidence'
           }
         ]);
+
+        const hasSearch = search?.length > 0;
+        const showHasResult = !hasSearch || (hasSearch && Object.keys(ponderations).length);
         return res.json({
-          count: participants.total,
-          pages: participants.pages,
+          count: showHasResult ? participants.total : [],
+          pages: showHasResult ? participants.pages : 0,
           hasPrevious: participants.hasPrevious,
           hasNext: participants.hasNext,
           ponderations,
-          results: data,
-          // .sort(
-          //   delivery?.length > 2
-          //     ? { score: { $meta: 'textScore' } }
-          //     : { _id: -1 }
-          // ),
+          results: showHasResult ? data : [],
           status: 200
         });
       }
