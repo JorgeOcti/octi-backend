@@ -546,6 +546,18 @@ const participantSchema = new mongoose.Schema(
 participantSchema.set<any>('redisCache', process.env.ENV === 'production');
 participantSchema.set<any>('expires', 10);
 
+participantSchema.index(
+  {
+    team: 1,
+    car: 1,
+    form: 1,
+    deliveryToCustomer: 1,
+    kind: 1,
+    venue: 1,
+    createdAt: 1
+  },
+  { name: 'ParticipantIndex' }
+);
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
@@ -579,9 +591,9 @@ participantSchema.index({
 participantSchema.plugin(mongoosePaginate);
 participantSchema.plugin(mongooseAggregatePaginate);
 
-
 export type ParticipantSchema = mongoose.Model<IParticipantModel> &
-  PaginateModel<IParticipantModel> & mongoose.AggregatePaginateModel<IParticipantModel>;;
+  PaginateModel<IParticipantModel> &
+  mongoose.AggregatePaginateModel<IParticipantModel>;
 
 const Participant = mongoose.model<IParticipantModel, ParticipantSchema>(
   'Participant',

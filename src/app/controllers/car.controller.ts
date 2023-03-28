@@ -1891,106 +1891,161 @@ class CarController {
         };
       }
 
-      // search in  user, venue and car
-      let searchOtherText: any = {};
+      let baseMatch: any = {
+        team: new mongoose.Types.ObjectId(user.team._id),
+        car: {
+          $ne: null
+        },
+        venue: {
+          $in: req.user.venuesPermissions()
+        },
+        deliveryToCustomer: deliveries === '1',
+        kind,
+        form: {
+          $in: formsIds
+        },
+        createdAt: {
+          $gte: moment(from).startOf('day').utc().toDate(),
+          $lte: moment(to).endOf('day').utc().toDate()
+        }
+      };
       let ponderations: any = {};
       if (search?.length > 2) {
-        const cars = await Car.aggregate([
+        const keys = await Participant.aggregate([
           {
-            $match: {
-              team: new mongoose.Types.ObjectId(user.team._id),
-              $text: { $search: search }
-            }
+            $match: baseMatch
           },
           {
             $project: {
-              _id: 1,
-              score: { $meta: 'textScore' }
-            }
-          },
-          { $sort: { score: { $meta: 'textScore' } } },
-          { $match: { score: { $gte: 5.5 } } },
-          { $limit: 1000 }
-        ]);
-
-        if (cars.length) {
-          searchOtherText = {
-            car: {
-              $in: cars.map((car) => car._id),
-              $ne: null
-            }
-          };
-        }
-        const users = await User.aggregate([
-          {
-            $match: {
-              team: new mongoose.Types.ObjectId(user.team._id),
-              active: true,
-              $text: { $search: `"${search.split(' ').join('" ')}"` }
+              team: 1,
+              car: 1,
+              venue: 1,
+              user: 1,
+              cars: [],
+              venues: [],
+              users: []
             }
           },
           {
-            $project: {
-              _id: 1,
-              email: 1,
-              score: { $meta: 'textScore' }
-            }
-          },
-          { $match: { score: { $gte: 5.5 } } },
-          { $sort: { score: { $meta: 'textScore' } } },
-          { $limit: 5 }
-        ]);
-
-        if (users.length) {
-          searchOtherText = {
-            ...searchOtherText,
-            user: {
-              $in: users.map((user) => user._id)
-            }
-          };
-        }
-
-        const venues = await Venue.aggregate([
-          {
-            $match: {
-              team: new mongoose.Types.ObjectId(user.team._id),
-              active: true,
-              _id: {
-                $in: user.venuesPermissions()
+            $group: {
+              _id: '$team',
+              cars: {
+                $addToSet: '$car'
               },
-              $text: { $search: `"${search.split(' ').join('" ')}"` }
+              venues: {
+                $addToSet: '$venue'
+              },
+              users: {
+                $addToSet: '$user'
+              }
             }
-          },
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              score: { $meta: 'textScore' }
-            }
-          },
-          { $sort: { score: { $meta: 'textScore' } } },
-          { $match: { score: { $gte: 8 } } },
-          { $limit: 1 }
+          }
         ]);
-        if (venues.length) {
-          searchOtherText = {
-            ...searchOtherText,
-            venue: {
-              $in: venues.map((venue) => venue._id)
-            }
-          };
+
+        if (keys.length) {
+          const cars = await Car.aggregate([
+            {
+              $match: {
+                team: new mongoose.Types.ObjectId(user.team._id),
+                _id: {
+                  $in: keys[0].cars
+                },
+                $text: { $search: search }
+                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+              }
+            },
+
+            {
+              $project: {
+                _id: 1,
+                score: { $meta: 'textScore' }
+              }
+            },
+            { $sort: { score: { $meta: 'textScore' } } },
+            // { $match: { score: { $gte: 10 } } },
+            { $limit: 1000 }
+          ]);
+
+          if (cars.length) {
+            baseMatch = {
+              car: {
+                $in: cars.map((car) => car._id)
+              }
+            };
+            ponderations['cars'] = cars;
+          }
+          const users = await User.aggregate([
+            {
+              $match: {
+                team: new mongoose.Types.ObjectId(user.team._id),
+                _id: {
+                  $in: keys[0].users
+                },
+                active: true,
+                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+                $text: { $search: search }
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                email: 1,
+                score: { $meta: 'textScore' }
+              }
+            },
+            // { $match: { score: { $gte: 5.5 } } },
+            { $sort: { score: { $meta: 'textScore' } } }
+            // { $limit: 5 }
+          ]);
+
+          if (users.length) {
+            baseMatch = {
+              ...baseMatch,
+              user: {
+                $in: users.map((user) => user._id)
+              }
+            };
+            ponderations['users'] = users;
+          }
+
+          const venues = await Venue.aggregate([
+            {
+              $match: {
+                team: new mongoose.Types.ObjectId(user.team._id),
+                active: true,
+                _id: {
+                  $in: keys[0].venues
+                },
+                $text: { $search: search }
+                // $text: { $search: `"${search.split(' ').join('" ')}"` }
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                score: { $meta: 'textScore' }
+              }
+            },
+            { $sort: { score: { $meta: 'textScore' } } }
+            // { $match: { score: { $gte: 8 } } }
+          ]);
+          if (venues.length) {
+            baseMatch = {
+              ...baseMatch,
+              venue: {
+                $in: venues.map((venue) => venue._id)
+              }
+            };
+            ponderations['venues'] = venues;
+          }
         }
-        ponderations = {
-          cars,
-          venues,
-          users
-        };
         logger.info(
           `CarController.apiRevisions ${
             req.user.email
           } ponderations: ${JSON.stringify({
             ...ponderations,
-            cars: cars.slice(0, 10)
+            cars: ponderations?.cars?.slice(0, 10)
           })}`
         );
       }
@@ -2000,24 +2055,8 @@ class CarController {
       let countAggregate: PipelineStage[] = [
         {
           $match: {
-            ...searchParticipantText,
-            team: new mongoose.Types.ObjectId(user.team._id),
-            car: {
-              $ne: null
-            },
-            form: {
-              $in: formsIds
-            },
-            deliveryToCustomer: deliveries === '1',
-            kind,
-            venue: {
-              $in: req.user.venuesPermissions()
-            },
-            createdAt: {
-              $gte: moment(from).startOf('day').utc().toDate(),
-              $lte: moment(to).endOf('day').utc().toDate()
-            },
-            ...searchOtherText
+            ...baseMatch,
+            ...searchParticipantText
           }
         }
       ];
@@ -2087,7 +2126,45 @@ class CarController {
       // sort if search text in participant
       if (delivery?.length > 2) {
         options.sort = { score: { $meta: 'textScore' } };
-      } else if (Object.keys(searchOtherText).length) {
+      } else if (ponderations?.venues?.length) {
+        aggregate = [
+          ...aggregate,
+          {
+            $lookup: {
+              from: 'venues',
+              localField: 'venue',
+              foreignField: '_id',
+              as: 'venue'
+            }
+          },
+          {
+            $unwind: {
+              path: '$venue',
+              preserveNullAndEmptyArrays: true
+            }
+          }
+        ];
+        options.sort = { _id: -1, 'venue.name': 1 };
+      } else if (ponderations?.users?.length) {
+        aggregate = [
+          ...aggregate,
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'user',
+              foreignField: '_id',
+              as: 'user'
+            }
+          },
+          {
+            $unwind: {
+              path: '$user',
+              preserveNullAndEmptyArrays: true
+            }
+          }
+        ];
+        options.sort = { _id: -1, 'user.lastName': 1 };
+      } else if (ponderations?.cars?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2105,7 +2182,7 @@ class CarController {
             }
           }
         ];
-        options.sort = { 'car.denomination': 1 };
+        options.sort = { _id: -1, 'car.denomination': 1 };
       } else {
         options.sort = { _id: -1 };
       }
