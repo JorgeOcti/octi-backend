@@ -16,13 +16,13 @@ userSchema.index({ venue: 1 });
 
 
 userSchema.index(
-  { firstName: 'text', lastName: 'text', email: 'text' },
+  { team: 1, firstName: 'text', lastName: 'text', email: 'text' },
   {
     default_language: 'spanish',
     weights: {
-      firstName: 5,
-      lastName: 5,
-      email: 5
+      firstName: 10,
+      lastName: 10,
+      email: 10
     },
     name: 'TextIndex'
   }
