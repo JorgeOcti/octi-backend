@@ -1887,7 +1887,7 @@ class CarController {
       let searchParticipantText: any = {};
       if (delivery?.length > 2) {
         searchParticipantText = {
-          $text: { $search: delivery }
+          $text: { $search: `"${delivery.split(' ').join('" ')}"` }
         };
       }
 
@@ -1926,12 +1926,13 @@ class CarController {
             $match: {
               team: new mongoose.Types.ObjectId(user.team._id),
               active: true,
-              $text: { $search: search }
+              $text: { $search: `"${search.split(' ').join('" ')}"` }
             }
           },
           {
             $project: {
               _id: 1,
+              email: 1,
               score: { $meta: 'textScore' }
             }
           },
@@ -1957,12 +1958,13 @@ class CarController {
               _id: {
                 $in: user.venuesPermissions()
               },
-              $text: { $search: search }
+              $text: { $search: `"${search.split(' ').join('" ')}"` }
             }
           },
           {
             $project: {
               _id: 1,
+              name: 1,
               score: { $meta: 'textScore' }
             }
           },
@@ -1995,7 +1997,7 @@ class CarController {
 
       // base aggregate pipeline
 
-      let aggregate: PipelineStage[] = [
+      let countAggregate: PipelineStage[] = [
         {
           $match: {
             ...searchParticipantText,
@@ -2019,44 +2021,146 @@ class CarController {
           }
         }
       ];
-      // console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
-      if (Object.keys(searchOtherText).length) {
-        aggregate.push({
-          $lookup: {
-            from: 'cars',
-            localField: 'car',
-            foreignField: '_id',
-            as: 'car'
-          }
-        });
-        aggregate.push({
-          $unwind: {
-            path: '$car',
-            preserveNullAndEmptyArrays: true
-          }
-        });
-        aggregate.push({
-          $sort: search?.length ? { 'car.denomination': 1 } : { _id: -1 }
-        });
-      } else {
-        aggregate.push({
-          $sort: { _id: -1 }
-        });
-      }
 
-      // console.log('aggregate', JSON.stringify(aggregate, null, 2));
+      let aggregate: PipelineStage[] = [
+        ...countAggregate
+        // {
+        //   $lookup: {
+        //     from: 'cars',
+        //     localField: 'car',
+        //     foreignField: '_id',
+        //     as: 'car'
+        //   }
+        // },
+        // {
+        //   $unwind: {
+        //     path: '$car',
+        //     preserveNullAndEmptyArrays: true
+        //   }
+        // },
+        // {
+        //   $lookup: {
+        //     from: 'users',
+        //     localField: 'user',
+        //     foreignField: '_id',
+        //     as: 'user'
+        //   }
+        // },
+        // {
+        //   $unwind: {
+        //     path: '$user',
+        //     preserveNullAndEmptyArrays: true
+        //   }
+        // },
+        // {
+        //   $lookup: {
+        //     from: 'venues',
+        //     localField: 'venue',
+        //     foreignField: '_id',
+        //     as: 'venue'
+        //   }
+        // },
+        // {
+        //   $unwind: {
+        //     path: '$venue',
+        //     preserveNullAndEmptyArrays: true
+        //   }
+        // },
+        // {
+        //   $lookup: {
+        //     from: 'companies',
+        //     localField: 'company',
+        //     foreignField: '_id',
+        //     as: 'company'
+        //   }
+        // },
+        // {
+        //   $unwind: {
+        //     path: '$company',
+        //     preserveNullAndEmptyArrays: true
+        //   }
+        // }
+      ];
+
+      // console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
 
       // sort if search text in participant
       if (delivery?.length > 2) {
-        aggregate.push({ $sort: { score: { $meta: 'textScore' } } });
+        // aggregate = [
+        //   ...aggregate,
+        //   { $sort: { score: { $meta: 'textScore' } } }
+        // ];
+        options.sort = { score: { $meta: 'textScore' } };
+      } else if (Object.keys(searchOtherText).length) {
+        aggregate = [
+          ...aggregate,
+          {
+            $lookup: {
+              from: 'cars',
+              localField: 'car',
+              foreignField: '_id',
+              as: 'car'
+            }
+          },
+          {
+            $unwind: {
+              path: '$car',
+              preserveNullAndEmptyArrays: true
+            }
+          }
+        ];
+        options.sort = { 'car.denomination': 1 };
+      } else {
+        options.sort = { _id: -1 };
+        // aggregate = [...aggregate, { $sort: { _id: -1 } }];
       }
 
-      const participantsAggregate = Participant.aggregate(aggregate);
+      let projects: any = {
+        createdAt: true,
+        number: true,
+
+        hasDamages: true,
+        qualification: true,
+        deliveryInfo: true,
+        name: true,
+
+        // 'car._id': true,
+        // 'car.vin': true,
+        // 'car.brand': true,
+        // 'car.patent': true,
+        // 'car.denomination': true,
+        // 'car.color': true,
+        // 'car.lastForm': true,
+
+        // 'user._id': true,
+        // 'user.firstName': true,
+        // 'user.lastName': true,
+
+        // 'venue._id': true,
+        // 'venue.name': true,
+
+        // 'company._id': true,
+        // 'company.name': true
+        car: true,
+        user: true,
+        venue: true,
+        company: true
+      };
+      if (delivery?.length) {
+        projects['score'] = { $meta: 'textScore' };
+      }
+      // project only needed fields
+      aggregate.push({
+        $project: projects
+      });
+
+      options['countQuery'] = Participant.aggregate(countAggregate);
 
       const participants = await Participant.aggregatePaginate(
-        participantsAggregate,
+        Participant.aggregate(aggregate),
         options
       );
+
       if (
         options.page &&
         participants.pages &&
@@ -2067,65 +2171,52 @@ class CarController {
           status: 400
         });
       } else {
+        const data = await Participant.populate(participants.docs, [
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'brand',
+              'patent',
+              'denomination',
+              'color',
+              'lastForm'
+            ]
+          },
+          {
+            path: 'user',
+            select: ['firstName', 'lastName']
+          },
+          {
+            path: 'venue',
+            select: ['name']
+          },
+          {
+            path: 'company',
+            select: ['name']
+          },
+          {
+            path: 'deliveryInfo.identifyCard'
+          },
+          {
+            path: 'deliveryInfo.signature'
+          },
+          {
+            path: 'deliveryInfo.plateEvidence'
+          }
+        ]);
         return res.json({
           count: participants.total,
           pages: participants.pages,
           hasPrevious: participants.hasPrevious,
           hasNext: participants.hasNext,
           ponderations,
-          results: await Participant.find(
-            {
-              ...searchParticipantText,
-              _id: { $in: participants.docs.map((d) => d._id) }
-            },
-            {
-              createdAt: true,
-              number: true,
-              hasDamages: true,
-              qualification: true,
-              deliveryInfo: true,
-              name: true
-            }
-          )
-            .populate([
-              {
-                path: 'car',
-                select: [
-                  'vin',
-                  'brand',
-                  'patent',
-                  'denomination',
-                  'color',
-                  'lastForm'
-                ]
-              },
-              {
-                path: 'user',
-                select: ['firstName', 'lastName']
-              },
-              {
-                path: 'venue',
-                select: ['name']
-              },
-              {
-                path: 'company',
-                select: ['name']
-              },
-              {
-                path: 'deliveryInfo.identifyCard'
-              },
-              {
-                path: 'deliveryInfo.signature'
-              },
-              {
-                path: 'deliveryInfo.plateEvidence'
-              }
-            ])
-            .sort(
-              delivery?.length > 2
-                ? { score: { $meta: 'textScore' } }
-                : { _id: -1 }
-            ),
+          results: data,
+          // .sort(
+          //   delivery?.length > 2
+          //     ? { score: { $meta: 'textScore' } }
+          //     : { _id: -1 }
+          // ),
           status: 200
         });
       }
