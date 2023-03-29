@@ -216,7 +216,7 @@ class AdminCarController {
         totalPages: 'pages',
         pagingCounter: 'si'
       },
-      // allowDiskUse: true,
+      allowDiskUse: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10),
       lean: true
@@ -232,8 +232,7 @@ class AdminCarController {
           $and: [
             {
               vin: {
-                $exists: true,
-                $ne: ''
+                $nin: ['', null]
               },
               team
             }
