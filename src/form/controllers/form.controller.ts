@@ -2806,6 +2806,7 @@ class FormController {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '20', 10),
         customLabels: this.aggregateCustomLabels,
+        allowDiskUse: true,
         sort: { number: 1 },
         lean: true
       };
@@ -2824,25 +2825,39 @@ class FormController {
 
       options['countQuery'] = Participant.aggregate(countAggregate);
       // let aggregate: PipelineStage[] = [...countAggregate];
+      let project: any = {
+        _id: true,
+        name: true,
+        sections: true,
+        venue: true,
+        receiveFrom: true,
+        sendTo: true,
+        number: true,
+        createdAt: true
+      };
+
       let aggregate: PipelineStage[] = [
         ...countAggregate,
         {
           $project: {
-            _id: true,
-            name: true,
-            sections: true,
-            venue: true,
-            receiveFrom: true,
-            sendTo: true,
-            number: true,
-            createdAt: true,
-
+            ...project,
             car: true,
             form: true,
             user: true,
-            carrierBy: true,
+            carrierBy: true
           }
-        },
+        }
+      ];
+
+      project = {
+        ...project,
+        'user._id': true,
+        'user.firstName': true,
+        'user.lastName': true,
+        'user.email': true
+      };
+      aggregate = [
+        ...aggregate,
         {
           $lookup: {
             from: 'users',
@@ -2858,19 +2873,23 @@ class FormController {
           }
         },
         {
-          $lookup: {
-            from: 'cars',
-            localField: 'car',
-            foreignField: '_id',
-            as: 'car'
+          $project: {
+            ...project,
+            car: true,
+            form: true,
+            carrierBy: true
           }
-        },
-        {
-          $unwind: {
-            path: '$car',
-            preserveNullAndEmptyArrays: true
-          }
-        },
+        }
+      ];
+
+      project = {
+        ...project,
+        'form._id': true,
+        'form.name': true,
+        'form.action': true
+      };
+      aggregate = [
+        ...aggregate,
         {
           $lookup: {
             from: 'forms',
@@ -2885,7 +2904,23 @@ class FormController {
             preserveNullAndEmptyArrays: true
           }
         },
+        {
+          $project: {
+            ...project,
+            carrierBy: true,
+            car: true,
+          }
+        }
+      ];
 
+      project = {
+        ...project,
+        'carrierBy._id': true,
+        'carrierBy.name': true
+      };
+
+      aggregate = [
+        ...aggregate,
         {
           $lookup: {
             from: 'carriers',
@@ -2902,35 +2937,43 @@ class FormController {
         },
         {
           $project: {
-            _id: true,
-            name: true,
-            sections: true,
-            venue: true,
-            receiveFrom: true,
-            sendTo: true,
-            number: true,
-            createdAt: true,
+            ...project,
+            car: true,
+          }
+        }
+      ];
 
-            'car._id': true,
-            'car.vin': true,
-            'car.patent': true,
-            'car.color': true,
-            'car.denomination': true,
-            'car.brand': true,
-            'car.type': true,
-            'car.internalNumber': true,
+      project = {
+        ...project,
+        'car._id': true,
+        'car.vin': true,
+        'car.patent': true,
+        'car.color': true,
+        'car.denomination': true,
+        'car.brand': true,
+        'car.type': true,
+        'car.internalNumber': true
+      };
 
-            'form._id': true,
-            'form.name': true,
-            'form.action': true,
-
-            'user._id': true,
-            'user.firstName': true,
-            'user.lastName': true,
-            'user.email': true,
-
-            'carrierBy._id': true,
-            'carrierBy.name': true
+      aggregate = [
+        ...aggregate,
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        {
+          $unwind: {
+            path: '$car',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            ...project
           }
         }
       ];
