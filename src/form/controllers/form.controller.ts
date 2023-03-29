@@ -2800,272 +2800,272 @@ class FormController {
           req.user.email
         } query: ${JSON.stringify(req.query)}`
       );
-      const { page, pageSize } = req.query as Record<string, string>;
-      // paginate options
-      let options: PaginateOptions = {
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '20', 10),
-        customLabels: this.aggregateCustomLabels,
-        allowDiskUse: true,
-        sort: { number: 1 },
-        lean: true
-      };
-
-      let countAggregate: PipelineStage[] = [
-        {
-          $match: {
-            team: new mongoose.Types.ObjectId(req.user.team._id),
-            active: true,
-            createdAt: {
-              $gte: moment().startOf('day').subtract(2, 'days').toDate()
-            }
-          }
-        }
-      ];
-
-      options['countQuery'] = Participant.aggregate(countAggregate);
-      // let aggregate: PipelineStage[] = [...countAggregate];
-      let project: any = {
-        _id: true,
-        name: true,
-        sections: true,
-        venue: true,
-        receiveFrom: true,
-        sendTo: true,
-        number: true,
-        createdAt: true
-      };
-
-      let aggregate: PipelineStage[] = [
-        ...countAggregate,
-        {
-          $project: {
-            ...project,
-            car: true,
-            form: true,
-            user: true,
-            carrierBy: true
-          }
-        }
-      ];
-
-      project = {
-        ...project,
-        'user._id': true,
-        'user.firstName': true,
-        'user.lastName': true,
-        'user.email': true
-      };
-      aggregate = [
-        ...aggregate,
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'user',
-            foreignField: '_id',
-            as: 'user'
-          }
-        },
-        {
-          $unwind: {
-            path: '$user',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $project: {
-            ...project,
-            car: true,
-            form: true,
-            carrierBy: true
-          }
-        }
-      ];
-
-      project = {
-        ...project,
-        'form._id': true,
-        'form.name': true,
-        'form.action': true
-      };
-      aggregate = [
-        ...aggregate,
-        {
-          $lookup: {
-            from: 'forms',
-            localField: 'form',
-            foreignField: '_id',
-            as: 'form'
-          }
-        },
-        {
-          $unwind: {
-            path: '$form',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $project: {
-            ...project,
-            carrierBy: true,
-            car: true,
-          }
-        }
-      ];
-
-      project = {
-        ...project,
-        'carrierBy._id': true,
-        'carrierBy.name': true
-      };
-
-      aggregate = [
-        ...aggregate,
-        {
-          $lookup: {
-            from: 'carriers',
-            localField: 'carrierBy',
-            foreignField: '_id',
-            as: 'carrierBy'
-          }
-        },
-        {
-          $unwind: {
-            path: '$carrierBy',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $project: {
-            ...project,
-            car: true,
-          }
-        }
-      ];
-
-      project = {
-        ...project,
-        'car._id': true,
-        'car.vin': true,
-        'car.patent': true,
-        'car.color': true,
-        'car.denomination': true,
-        'car.brand': true,
-        'car.type': true,
-        'car.internalNumber': true
-      };
-
-      aggregate = [
-        ...aggregate,
-        {
-          $lookup: {
-            from: 'cars',
-            localField: 'car',
-            foreignField: '_id',
-            as: 'car'
-          }
-        },
-        {
-          $unwind: {
-            path: '$car',
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $project: {
-            ...project
-          }
-        }
-      ];
-
-      const participants = await Participant.aggregatePaginate(
-        Participant.aggregate(aggregate),
-        options
-      );
-
-      // const team = req.user.team._id;
       // const { page, pageSize } = req.query as Record<string, string>;
-      // const filter = {
-      //   team,
-      //   active: true,
-      //   createdAt: {
-      //     $gte: moment().startOf('day').subtract(2, 'days').toISOString()
-      //   }
-      // };
-      // const options: PaginateOptions = {
-      //   sort: {
-      //     number: 1
-      //   },
-      //   customLabels: {
-      //     totalDocs: 'total',
-      //     docs: 'docs',
-      //     limit: 'perPage',
-      //     page: 'currentPage',
-      //     hasNextPage: 'hasNextPage',
-      //     hasPrevPage: 'hasPrevPage',
-      //     totalPages: 'pages',
-      //     pagingCounter: 'si'
-      //   },
-      //   select: {
-      //     _id: true,
-      //     name: true,
-      //     sections: true,
-      //     venue: true,
-      //     receiveFrom: true,
-      //     sendTo: true,
-      //     number: true,
-      //     createdAt: true
-      //   },
-      //   populate: [
-      //     {
-      //       path: 'car',
-      //       select: {
-      //         _id: true,
-      //         vin: true,
-      //         patent: true,
-      //         color: true,
-      //         denomination: true,
-      //         brand: true,
-      //         type: true,
-      //         internalNumber: true
-      //       }
-      //     },
-      //     {
-      //       path: 'form',
-      //       select: {
-      //         _id: true,
-      //         name: true,
-      //         action: true
-      //       }
-      //     },
-      //     {
-      //       path: 'user',
-      //       select: {
-      //         _id: true,
-      //         firstName: true,
-      //         lastName: true,
-      //         email: true
-      //       }
-      //     },
-      //     {
-      //       path: 'carrierBy',
-      //       select: {
-      //         _id: true,
-      //         name: true
-      //       }
-      //     },
-      //     {
-      //       path: 'sections.answers.images'
-      //     },
-      //     {
-      //       path: 'sections.answers.damagesSelected.images'
-      //     }
-      //   ],
-      //   lean: true,
+      // // paginate options
+      // let options: PaginateOptions = {
       //   page: parseInt(page ? page : '1', 10),
-      //   limit: parseInt(pageSize ? pageSize : '10', 10)
+      //   limit: parseInt(pageSize ? pageSize : '20', 10),
+      //   customLabels: this.aggregateCustomLabels,
+      //   allowDiskUse: true,
+      //   sort: { number: 1 },
+      //   lean: true
       // };
-      // const participants: any = await this.getControls(filter, options);
+
+      // let countAggregate: PipelineStage[] = [
+      //   {
+      //     $match: {
+      //       team: new mongoose.Types.ObjectId(req.user.team._id),
+      //       active: true,
+      //       createdAt: {
+      //         $gte: moment().startOf('day').subtract(2, 'days').toDate()
+      //       }
+      //     }
+      //   }
+      // ];
+
+      // options['countQuery'] = Participant.aggregate(countAggregate);
+      // // let aggregate: PipelineStage[] = [...countAggregate];
+      // let project: any = {
+      //   _id: true,
+      //   name: true,
+      //   sections: true,
+      //   venue: true,
+      //   receiveFrom: true,
+      //   sendTo: true,
+      //   number: true,
+      //   createdAt: true
+      // };
+
+      // let aggregate: PipelineStage[] = [
+      //   ...countAggregate,
+      //   {
+      //     $project: {
+      //       ...project,
+      //       car: true,
+      //       form: true,
+      //       user: true,
+      //       carrierBy: true
+      //     }
+      //   }
+      // ];
+
+      // project = {
+      //   ...project,
+      //   'user._id': true,
+      //   'user.firstName': true,
+      //   'user.lastName': true,
+      //   'user.email': true
+      // };
+      // aggregate = [
+      //   ...aggregate,
+      //   {
+      //     $lookup: {
+      //       from: 'users',
+      //       localField: 'user',
+      //       foreignField: '_id',
+      //       as: 'user'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$user',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       ...project,
+      //       car: true,
+      //       form: true,
+      //       carrierBy: true
+      //     }
+      //   }
+      // ];
+
+      // project = {
+      //   ...project,
+      //   'form._id': true,
+      //   'form.name': true,
+      //   'form.action': true
+      // };
+      // aggregate = [
+      //   ...aggregate,
+      //   {
+      //     $lookup: {
+      //       from: 'forms',
+      //       localField: 'form',
+      //       foreignField: '_id',
+      //       as: 'form'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$form',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       ...project,
+      //       carrierBy: true,
+      //       car: true,
+      //     }
+      //   }
+      // ];
+
+      // project = {
+      //   ...project,
+      //   'carrierBy._id': true,
+      //   'carrierBy.name': true
+      // };
+
+      // aggregate = [
+      //   ...aggregate,
+      //   {
+      //     $lookup: {
+      //       from: 'carriers',
+      //       localField: 'carrierBy',
+      //       foreignField: '_id',
+      //       as: 'carrierBy'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$carrierBy',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       ...project,
+      //       car: true,
+      //     }
+      //   }
+      // ];
+
+      // project = {
+      //   ...project,
+      //   'car._id': true,
+      //   'car.vin': true,
+      //   'car.patent': true,
+      //   'car.color': true,
+      //   'car.denomination': true,
+      //   'car.brand': true,
+      //   'car.type': true,
+      //   'car.internalNumber': true
+      // };
+
+      // aggregate = [
+      //   ...aggregate,
+      //   {
+      //     $lookup: {
+      //       from: 'cars',
+      //       localField: 'car',
+      //       foreignField: '_id',
+      //       as: 'car'
+      //     }
+      //   },
+      //   {
+      //     $unwind: {
+      //       path: '$car',
+      //       preserveNullAndEmptyArrays: true
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       ...project
+      //     }
+      //   }
+      // ];
+
+      // const participants = await Participant.aggregatePaginate(
+      //   Participant.aggregate(aggregate),
+      //   options
+      // );
+
+      const team = req.user.team._id;
+      const { page, pageSize } = req.query as Record<string, string>;
+      const filter = {
+        team,
+        active: true,
+        createdAt: {
+          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+        }
+      };
+      const options: PaginateOptions = {
+        sort: {
+          number: 1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          hasNextPage: 'hasNextPage',
+          hasPrevPage: 'hasPrevPage',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        select: {
+          _id: true,
+          name: true,
+          sections: true,
+          venue: true,
+          receiveFrom: true,
+          sendTo: true,
+          number: true,
+          createdAt: true
+        },
+        populate: [
+          {
+            path: 'car',
+            select: {
+              _id: true,
+              vin: true,
+              patent: true,
+              color: true,
+              denomination: true,
+              brand: true,
+              type: true,
+              internalNumber: true
+            }
+          },
+          {
+            path: 'form',
+            select: {
+              _id: true,
+              name: true,
+              action: true
+            }
+          },
+          {
+            path: 'user',
+            select: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          {
+            path: 'carrierBy',
+            select: {
+              _id: true,
+              name: true
+            }
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'sections.answers.damagesSelected.images'
+          }
+        ],
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10)
+      };
+      const participants: any = await this.getControls(filter, options);
       if (
         options.page &&
         participants.pages &&
