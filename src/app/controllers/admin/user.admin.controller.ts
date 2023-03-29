@@ -1037,7 +1037,7 @@ class AdminUsersController {
     if (search && search.length) {
       filter = {
         ...filter,
-        $text: { $search: search },
+        $text: { $search: search }
       };
       options = {
         ...options,

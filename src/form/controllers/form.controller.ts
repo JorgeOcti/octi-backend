@@ -7,9 +7,11 @@ import * as GraphicsMagick from 'gm';
 import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import mongoose, {
+  CustomLabels,
   LeanDocument,
   PaginateOptions,
   PaginateResult,
+  PipelineStage,
   Types
 } from 'mongoose';
 import * as path from 'path';
@@ -60,6 +62,19 @@ import axios from 'axios';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
+  readonly aggregateCustomLabels: CustomLabels = {
+    totalDocs: 'total',
+    docs: 'docs',
+    limit: 'perPage',
+    page: 'currentPage',
+    nextPage: 'next',
+    prevPage: 'prev',
+    totalPages: 'pages',
+    hasPrevPage: 'hasPrevious',
+    hasNextPage: 'hasNext',
+    pagingCounter: 'pageCounter'
+  };
+
   constructor() {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
@@ -90,10 +105,9 @@ class FormController {
         `https://ipa.qa.derco.services/osa-integration/v1/pedidos/${order}`
       );
       console.dir(response.data);
-      return res.json(
-        {
-          data: response.data
-        });
+      return res.json({
+        data: response.data
+      });
     } catch (e) {
       console.log(e);
       // Raven.captureException(e, { req });
@@ -2786,89 +2800,229 @@ class FormController {
           req.user.email
         } query: ${JSON.stringify(req.query)}`
       );
-      const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
-      const filter = {
-        team,
-        active: true,
-        createdAt: {
-          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
-        }
-      };
-      const options: PaginateOptions = {
-        sort: {
-          number: 1
-        },
-        customLabels: {
-          totalDocs: 'total',
-          docs: 'docs',
-          limit: 'perPage',
-          page: 'currentPage',
-          hasNextPage: 'hasNextPage',
-          hasPrevPage: 'hasPrevPage',
-          totalPages: 'pages',
-          pagingCounter: 'si'
-        },
-        select: {
-          _id: true,
-          name: true,
-          sections: true,
-          venue: true,
-          receiveFrom: true,
-          sendTo: true,
-          number: true,
-          createdAt: true
-        },
-        populate: [
-          {
-            path: 'car',
-            select: {
-              _id: true,
-              vin: true,
-              patent: true,
-              color: true,
-              denomination: true,
-              brand: true,
-              type: true,
-              internalNumber: true
-            }
-          },
-          {
-            path: 'form',
-            select: {
-              _id: true,
-              name: true,
-              action: true
-            }
-          },
-          {
-            path: 'user',
-            select: {
-              _id: true,
-              firstName: true,
-              lastName: true,
-              email: true
-            }
-          },
-          {
-            path: 'carrierBy',
-            select: {
-              _id: true,
-              name: true
-            }
-          },
-          {
-            path: 'sections.answers.images'
-          },
-          {
-            path: 'sections.answers.damagesSelected.images'
-          }
-        ],
-        lean: true,
+      // paginate options
+      let options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10)
+        limit: parseInt(pageSize ? pageSize : '20', 10),
+        customLabels: this.aggregateCustomLabels,
+        sort: { number: 1 },
+        lean: true
       };
-      const participants = await this.getControls(filter, options);
+
+      let countAggregate: PipelineStage[] = [
+        {
+          $match: {
+            team: new mongoose.Types.ObjectId(req.user.team._id),
+            active: true,
+            createdAt: {
+              $gte: moment().startOf('day').subtract(2, 'days').toDate()
+            }
+          }
+        }
+      ];
+
+      options['countQuery'] = Participant.aggregate(countAggregate);
+      // let aggregate: PipelineStage[] = [...countAggregate];
+      let aggregate: PipelineStage[] = [
+        ...countAggregate,
+        {
+          $project: {
+            _id: true,
+            name: true,
+            sections: true,
+            venue: true,
+            receiveFrom: true,
+            sendTo: true,
+            number: true,
+            createdAt: true,
+
+            car: true,
+            form: true,
+            user: true,
+            carrierBy: true,
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: {
+            path: '$user',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        {
+          $unwind: {
+            path: '$car',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'forms',
+            localField: 'form',
+            foreignField: '_id',
+            as: 'form'
+          }
+        },
+        {
+          $unwind: {
+            path: '$form',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+
+        {
+          $lookup: {
+            from: 'carriers',
+            localField: 'carrierBy',
+            foreignField: '_id',
+            as: 'carrierBy'
+          }
+        },
+        {
+          $unwind: {
+            path: '$carrierBy',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: true,
+            name: true,
+            sections: true,
+            venue: true,
+            receiveFrom: true,
+            sendTo: true,
+            number: true,
+            createdAt: true,
+
+            'car._id': true,
+            'car.vin': true,
+            'car.patent': true,
+            'car.color': true,
+            'car.denomination': true,
+            'car.brand': true,
+            'car.type': true,
+            'car.internalNumber': true,
+
+            'form._id': true,
+            'form.name': true,
+            'form.action': true,
+
+            'user._id': true,
+            'user.firstName': true,
+            'user.lastName': true,
+            'user.email': true,
+
+            'carrierBy._id': true,
+            'carrierBy.name': true
+          }
+        }
+      ];
+
+      const participants = await Participant.aggregatePaginate(
+        Participant.aggregate(aggregate),
+        options
+      );
+
+      // const team = req.user.team._id;
+      // const { page, pageSize } = req.query as Record<string, string>;
+      // const filter = {
+      //   team,
+      //   active: true,
+      //   createdAt: {
+      //     $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+      //   }
+      // };
+      // const options: PaginateOptions = {
+      //   sort: {
+      //     number: 1
+      //   },
+      //   customLabels: {
+      //     totalDocs: 'total',
+      //     docs: 'docs',
+      //     limit: 'perPage',
+      //     page: 'currentPage',
+      //     hasNextPage: 'hasNextPage',
+      //     hasPrevPage: 'hasPrevPage',
+      //     totalPages: 'pages',
+      //     pagingCounter: 'si'
+      //   },
+      //   select: {
+      //     _id: true,
+      //     name: true,
+      //     sections: true,
+      //     venue: true,
+      //     receiveFrom: true,
+      //     sendTo: true,
+      //     number: true,
+      //     createdAt: true
+      //   },
+      //   populate: [
+      //     {
+      //       path: 'car',
+      //       select: {
+      //         _id: true,
+      //         vin: true,
+      //         patent: true,
+      //         color: true,
+      //         denomination: true,
+      //         brand: true,
+      //         type: true,
+      //         internalNumber: true
+      //       }
+      //     },
+      //     {
+      //       path: 'form',
+      //       select: {
+      //         _id: true,
+      //         name: true,
+      //         action: true
+      //       }
+      //     },
+      //     {
+      //       path: 'user',
+      //       select: {
+      //         _id: true,
+      //         firstName: true,
+      //         lastName: true,
+      //         email: true
+      //       }
+      //     },
+      //     {
+      //       path: 'carrierBy',
+      //       select: {
+      //         _id: true,
+      //         name: true
+      //       }
+      //     },
+      //     {
+      //       path: 'sections.answers.images'
+      //     },
+      //     {
+      //       path: 'sections.answers.damagesSelected.images'
+      //     }
+      //   ],
+      //   lean: true,
+      //   page: parseInt(page ? page : '1', 10),
+      //   limit: parseInt(pageSize ? pageSize : '10', 10)
+      // };
+      // const participants: any = await this.getControls(filter, options);
       if (
         options.page &&
         participants.pages &&
@@ -2884,7 +3038,14 @@ class FormController {
           pages: participants.pages,
           hasPrevPage: participants.hasPrevPage,
           hasNextPage: participants.hasNextPage,
-          data: participants.docs,
+          data: await Participant.populate(participants.docs, [
+            {
+              path: 'sections.answers.images'
+            },
+            {
+              path: 'sections.answers.damagesSelected.images'
+            }
+          ]),
           status: 200
         });
       }

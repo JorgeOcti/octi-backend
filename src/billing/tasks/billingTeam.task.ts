@@ -207,10 +207,14 @@ class BillingTeamQueue {
     }
   }
 
-  public async processBilling(filter: any = {}, run?:boolean): Promise<any> {
+  public async processBilling(filter: any = {}, run?: boolean): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        run = run || moment().startOf('day').isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
+        run =
+          run ||
+          moment()
+            .startOf('day')
+            .isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
         if (run) {
           mongoose.set('debug', true);
           console.log('START billing');
@@ -233,9 +237,14 @@ class BillingTeamQueue {
           }, {});
           for (const teamBilling of teamBillings) {
             const now = moment().startOf('day');
-            const lastInvoice = await InvoiceTeamBilling.findOne({
-              team: teamBilling.team._id
-            }).sort({
+            const lastInvoice = await InvoiceTeamBilling.findOne(
+              {
+                team: teamBilling.team._id
+              },
+              {
+                to: 1
+              }
+            ).sort({
               createdAt: -1
             });
             const from = lastInvoice
@@ -270,6 +279,7 @@ class BillingTeamQueue {
                 module: 1
               }
             )
+              .allowDiskUse(true)
               .populate([
                 {
                   path: 'car',
