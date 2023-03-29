@@ -3070,6 +3070,7 @@ class FormController {
           }
         ],
         lean: true,
+        allowDiskUse: true,
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)
       };
