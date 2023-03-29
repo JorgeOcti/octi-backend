@@ -11,7 +11,6 @@ import mongoose, {
   LeanDocument,
   PaginateOptions,
   PaginateResult,
-  PipelineStage,
   Types
 } from 'mongoose';
 import * as path from 'path';
