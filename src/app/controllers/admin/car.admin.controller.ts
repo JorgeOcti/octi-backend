@@ -229,11 +229,15 @@ class AdminCarController {
       );
       const cars = await this.getCars(
         {
-          vin: {
-            $exists: true,
-            $ne: ''
-          },
-          team
+          $and: [
+            {
+              vin: {
+                $exists: true,
+                $ne: ''
+              },
+              team
+            }
+          ]
           // status: {
           //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
           // }
