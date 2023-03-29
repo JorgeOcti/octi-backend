@@ -2813,11 +2813,15 @@ class FormController {
       // let countAggregate: PipelineStage[] = [
       //   {
       //     $match: {
-      //       team: new mongoose.Types.ObjectId(req.user.team._id),
-      //       active: true,
-      //       createdAt: {
-      //         $gte: moment().startOf('day').subtract(2, 'days').toDate()
-      //       }
+      //       $and: [
+      //         {
+      //           team: new mongoose.Types.ObjectId(req.user.team._id),
+      //           active: true,
+      //           createdAt: {
+      //             $gte: moment().startOf('day').subtract(2, 'days').toDate()
+      //           }
+      //         }
+      //       ]
       //     }
       //   }
       // ];
@@ -2907,7 +2911,7 @@ class FormController {
       //     $project: {
       //       ...project,
       //       carrierBy: true,
-      //       car: true,
+      //       car: true
       //     }
       //   }
       // ];
@@ -2937,7 +2941,7 @@ class FormController {
       //   {
       //     $project: {
       //       ...project,
-      //       car: true,
+      //       car: true
       //     }
       //   }
       // ];
@@ -2985,12 +2989,17 @@ class FormController {
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
       const filter = {
-        team,
-        active: true,
-        createdAt: {
-          $gte: moment().startOf('day').subtract(2, 'days').toISOString()
-        }
+        $and: [
+          {
+            team,
+            active: true,
+            createdAt: {
+              $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+            }
+          }
+        ]
       };
+
       const options: PaginateOptions = {
         sort: {
           number: 1
