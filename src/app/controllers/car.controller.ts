@@ -1655,24 +1655,7 @@ class CarController {
     const { id } = req.params;
     try {
       const venuesPermissions = req.user.venuesPermissions();
-      const inventoriesIDS = await InventoryModel.find(
-        {
-          $and: [
-            {
-              team,
-              venues: {
-                $in: venuesPermissions
-              },
-              status: ChoicesStatusInventory.finalized
-            }
-          ]
-        },
-        {
-          _id: true
-        }
-      ).distinct('_id');
-      console.log(inventoriesIDS)
-      const car = await CarModel.findOne(
+      let car = await CarModel.findOne(
         {
           $and: [
             {
@@ -1691,119 +1674,137 @@ class CarController {
           denomination: true,
           color: true
         }
-      )
-        .allowDiskUse(true)
-        .populate([
-          {
-            path: 'inventories',
-            match: {
-              $and: [
-                {
-                  inventory: {
-                    $in: inventoriesIDS.map(
-                      (inventory) => inventory._id
-                    )
-                  },
-                  status: {
-                    $in: [
-                      ChoicesStatusCarInventory.pending,
-                      ChoicesStatusCarInventory.found,
-                      ChoicesStatusCarInventory.missing,
-                      ChoicesStatusCarInventory.leftover,
-                      ChoicesStatusCarInventory.reported
-                    ]
-                  }
-                }
-              ]
-            },
-            populate: [
-              {
-                path: 'venue',
-                select: ['name']
-              },
-              {
-                path: 'label'
-              },
-              {
-                path: 'venueFound',
-                select: ['name']
-              },
-              {
-                path: 'inventory',
-                select: ['name']
-              },
-              {
-                path: 'inventoriedBy',
-                select: ['firstName', 'lastName']
-              },
-              {
-                path: 'labelBy',
-                select: ['firstName', 'lastName']
-              }
-            ],
-            options: {
-              sort: {
-                createdAt: -1
-              }
-            }
-          },
-          {
-            // reverse populate
-            path: 'participants',
-            select: [
-              'number',
-              'name',
-              'user',
-              'createdAt',
-              'updatedAt',
-              'qualification',
-              'venue',
-              'shipping',
-              'reception',
-              'hasDamages',
-              'kind',
-              'imported'
-            ],
-            match: {
-              venue: {
+      ).allowDiskUse(true);
+
+      const inventoriesIDS = await InventoryModel.find(
+        {
+          $and: [
+            {
+              team,
+              venues: {
                 $in: venuesPermissions
+              },
+              createdAt: {
+                $gte: car!.createdAt
               }
-            },
-            options: {
-              sort: {
-                createdAt: -1
-              }
-            },
-            // deep populate user
-            populate: [
+              // status: ChoicesStatusInventory.finalized
+            }
+          ]
+        },
+        {
+          _id: true
+        }
+      ).distinct('_id');
+
+
+      car = await CarModel.populate(car, [
+        {
+          path: 'inventories',
+          match: {
+            $and: [
               {
-                path: 'company',
-                select: ['name']
-              },
-              {
-                path: 'venue',
-                select: ['name']
-              },
-              {
-                path: 'sendTo',
-                select: ['name']
-              },
-              {
-                path: 'receiveFrom',
-                select: ['name']
-              },
-              {
-                path: 'form',
-                select: ['shipping', 'reception']
-              },
-              {
-                path: 'user',
-                select: ['firstName', 'lastName']
+                inventory: {
+                  $in: inventoriesIDS.map((inventory) => inventory._id)
+                },
+                status: {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
+                }
               }
             ]
+          },
+          populate: [
+            {
+              path: 'venue',
+              select: ['name']
+            },
+            {
+              path: 'label'
+            },
+            {
+              path: 'venueFound',
+              select: ['name']
+            },
+            {
+              path: 'inventory',
+              select: ['name']
+            },
+            {
+              path: 'inventoriedBy',
+              select: ['firstName', 'lastName']
+            },
+            {
+              path: 'labelBy',
+              select: ['firstName', 'lastName']
+            }
+          ],
+          options: {
+            sort: {
+              createdAt: -1
+            }
           }
-        ])
-        .lean();
+        },
+        {
+          // reverse populate
+          path: 'participants',
+          select: [
+            'number',
+            'name',
+            'user',
+            'createdAt',
+            'updatedAt',
+            'qualification',
+            'venue',
+            'shipping',
+            'reception',
+            'hasDamages',
+            'kind',
+            'imported'
+          ],
+          match: {
+            venue: {
+              $in: venuesPermissions
+            }
+          },
+          options: {
+            sort: {
+              createdAt: -1
+            }
+          },
+          // deep populate user
+          populate: [
+            {
+              path: 'company',
+              select: ['name']
+            },
+            {
+              path: 'venue',
+              select: ['name']
+            },
+            {
+              path: 'sendTo',
+              select: ['name']
+            },
+            {
+              path: 'receiveFrom',
+              select: ['name']
+            },
+            {
+              path: 'form',
+              select: ['shipping', 'reception']
+            },
+            {
+              path: 'user',
+              select: ['firstName', 'lastName']
+            }
+          ]
+        }
+      ]);
       if (!car) {
         return res.status(404).json({
           messsage: 'Auto no encontrado.',
@@ -1817,6 +1818,7 @@ class CarController {
       }
     } catch (e) {
       /* istanbul ignore next */
+      console.error(e);
       logger.error(e);
       return res.status(500).json(e);
     }
