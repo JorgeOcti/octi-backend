@@ -1807,304 +1807,317 @@ class InventoryController {
         labels,
         detailInventory
       ] = await Promise.all([
-        InventoryModel.aggregate([
-          {
-            $match: {
-              $and: [
-                {
-                  team: new mongoose.Types.ObjectId(team),
-                  _id: { $in: [new mongoose.Types.ObjectId(id)] }
-                }
-              ]
-            }
-          },
-          {
-            $lookup: {
-              from: 'inventorycars',
-              localField: '_id',
-              foreignField: 'inventory',
-              as: 'cars'
-            }
-          },
-          {
-            $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
-          },
-          {
-            $match: {
-              $or: [
-                {
-                  'cars.venue': {
-                    $in: venuesPermissions
+        InventoryModel.aggregate(
+          [
+            {
+              $match: {
+                $and: [
+                  {
+                    team: new mongoose.Types.ObjectId(team),
+                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
                   }
-                },
-                {
-                  'cars.venueFound': {
-                    $in: venuesPermissions
-                  }
-                }
-              ],
-              'cars.status': {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
                 ]
               }
-            }
-          },
-          {
-            $group: {
-              _id: {
-                category: '$_id',
-                status: '$status',
-                carStatus: '$cars.status',
-                name: '$name',
-                createdBy: '$createdBy',
-                createdAt: '$createdAt',
-                finalizedAt: '$finalizedAt'
-              },
-              total: {
-                $sum: 1
+            },
+            {
+              $lookup: {
+                from: 'inventorycars',
+                localField: '_id',
+                foreignField: 'inventory',
+                as: 'cars'
               }
-            }
-          },
-          {
-            $group: {
-              _id: '$_id.category',
-              name: {
-                $first: '$_id.name'
-              },
-              createdAt: {
-                $first: '$_id.createdAt'
-              },
-              finalizedAt: {
-                $first: '$_id.finalizedAt'
-              },
-              user: {
-                $first: '$_id.createdBy'
-              },
-              results: {
-                $push: {
-                  status: '$_id.carStatus',
-                  total: '$total'
+            },
+            {
+              $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    'cars.venue': {
+                      $in: venuesPermissions
+                    }
+                  },
+                  {
+                    'cars.venueFound': {
+                      $in: venuesPermissions
+                    }
+                  }
+                ],
+                'cars.status': {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
                 }
-              },
-              status: {
-                $first: '$_id.status'
               }
-            }
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'user',
-              foreignField: '_id',
-              as: 'userInfo'
-            }
-          },
-          {
-            $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
-          },
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              results: 1,
-              'userInfo.firstName': 1,
-              'userInfo.lastName': 1,
-              status: 1,
-              createdAt: 1,
-              finalizedAt: 1
-            }
-          },
-          {
-            $sort: {
-              createdAt: -1
-            }
-          }
-        ], {
-          allowDiskUse: true
-        }),
-        InventoryModel.aggregate([
-          {
-            $match: {
-              $and: [{
-                team: new mongoose.Types.ObjectId(team),
-                _id: { $in: [new mongoose.Types.ObjectId(id)] }
-              }]
-            }
-          },
-          {
-            $lookup: {
-              from: 'inventorycars',
-              localField: '_id',
-              foreignField: 'inventory',
-              as: 'cars'
-            }
-          },
-          {
-            $unwind: '$cars'
-          },
-          {
-            $match: {
-              $or: [
-                {
-                  'cars.venue': {
-                    $in: venuesPermissions
+            },
+            {
+              $group: {
+                _id: {
+                  category: '$_id',
+                  status: '$status',
+                  carStatus: '$cars.status',
+                  name: '$name',
+                  createdBy: '$createdBy',
+                  createdAt: '$createdAt',
+                  finalizedAt: '$finalizedAt'
+                },
+                total: {
+                  $sum: 1
+                }
+              }
+            },
+            {
+              $group: {
+                _id: '$_id.category',
+                name: {
+                  $first: '$_id.name'
+                },
+                createdAt: {
+                  $first: '$_id.createdAt'
+                },
+                finalizedAt: {
+                  $first: '$_id.finalizedAt'
+                },
+                user: {
+                  $first: '$_id.createdBy'
+                },
+                results: {
+                  $push: {
+                    status: '$_id.carStatus',
+                    total: '$total'
                   }
                 },
-                {
-                  'cars.venueFound': {
-                    $in: venuesPermissions
-                  }
+                status: {
+                  $first: '$_id.status'
                 }
-              ],
-              'cars.status': {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
+              }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                as: 'userInfo'
+              }
+            },
+            {
+              $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                results: 1,
+                'userInfo.firstName': 1,
+                'userInfo.lastName': 1,
+                status: 1,
+                createdAt: 1,
+                finalizedAt: 1
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            }
+          ],
+          {
+            allowDiskUse: true
+          }
+        ),
+        InventoryModel.aggregate(
+          [
+            {
+              $match: {
+                $and: [
+                  {
+                    team: new mongoose.Types.ObjectId(team),
+                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
+                  }
                 ]
               }
-            }
-          },
-          {
-            $group: {
-              _id: {
-                category: {
-                  $cond: {
-                    if: {
-                      $gt: ['$cars.venueFound', null]
-                    },
-                    then: '$cars.venueFound',
-                    else: '$cars.venue'
-                  }
-                },
-                status: '$cars.status'
-              },
-              total: {
-                $sum: 1
+            },
+            {
+              $lookup: {
+                from: 'inventorycars',
+                localField: '_id',
+                foreignField: 'inventory',
+                as: 'cars'
               }
-            }
-          },
-          {
-            $group: {
-              _id: '$_id.category',
-              status: {
-                $push: {
-                  name: '$_id.status',
-                  total: '$total'
+            },
+            {
+              $unwind: '$cars'
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    'cars.venue': {
+                      $in: venuesPermissions
+                    }
+                  },
+                  {
+                    'cars.venueFound': {
+                      $in: venuesPermissions
+                    }
+                  }
+                ],
+                'cars.status': {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
                 }
               }
+            },
+            {
+              $group: {
+                _id: {
+                  category: {
+                    $cond: {
+                      if: {
+                        $gt: ['$cars.venueFound', null]
+                      },
+                      then: '$cars.venueFound',
+                      else: '$cars.venue'
+                    }
+                  },
+                  status: '$cars.status'
+                },
+                total: {
+                  $sum: 1
+                }
+              }
+            },
+            {
+              $group: {
+                _id: '$_id.category',
+                status: {
+                  $push: {
+                    name: '$_id.status',
+                    total: '$total'
+                  }
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: 'venues',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'info'
+              }
+            },
+            {
+              $unwind: '$info'
             }
-          },
+          ],
           {
-            $lookup: {
-              from: 'venues',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'info'
-            }
-          },
-          {
-            $unwind: '$info'
+            allowDiskUse: true
           }
-        ], {
-          allowDiskUse: true
-        }),
-        InventoryModel.aggregate([
-          {
-            $match: {
-              $and: [{
-                team: new mongoose.Types.ObjectId(team),
-                _id: { $in: [new mongoose.Types.ObjectId(id)] }
-              }]
-            }
-          },
-          {
-            $lookup: {
-              from: 'inventorycars',
-              localField: '_id',
-              foreignField: 'inventory',
-              as: 'cars'
-            }
-          },
-          {
-            $unwind: '$cars'
-          },
-          {
-            $match: {
-              $or: [
-                {
-                  'cars.venue': {
-                    $in: venuesPermissions
+        ),
+        InventoryModel.aggregate(
+          [
+            {
+              $match: {
+                $and: [
+                  {
+                    team: new mongoose.Types.ObjectId(team),
+                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
                   }
-                },
-                {
-                  'cars.venueFound': {
-                    $in: venuesPermissions
-                  }
-                }
-              ],
-              'cars.status': {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
                 ]
               }
-            }
-          },
-          {
-            $lookup: {
-              from: 'cars',
-              localField: 'cars.car',
-              foreignField: '_id',
-              as: 'car'
-            }
-          },
-          {
-            $unwind: '$car'
-          },
-          {
-            $group: {
-              _id: {
-                car: '$car.brand',
-                status: '$cars.status'
-              },
-              total: {
-                $sum: 1
+            },
+            {
+              $lookup: {
+                from: 'inventorycars',
+                localField: '_id',
+                foreignField: 'inventory',
+                as: 'cars'
               }
-            }
-          },
-          {
-            $group: {
-              _id: '$_id.car',
-              status: {
-                $push: {
-                  name: '$_id.status',
-                  total: '$total'
+            },
+            {
+              $unwind: '$cars'
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    'cars.venue': {
+                      $in: venuesPermissions
+                    }
+                  },
+                  {
+                    'cars.venueFound': {
+                      $in: venuesPermissions
+                    }
+                  }
+                ],
+                'cars.status': {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
                 }
               }
+            },
+            {
+              $lookup: {
+                from: 'cars',
+                localField: 'cars.car',
+                foreignField: '_id',
+                as: 'car'
+              }
+            },
+            {
+              $unwind: '$car'
+            },
+            {
+              $group: {
+                _id: {
+                  car: '$car.brand',
+                  status: '$cars.status'
+                },
+                total: {
+                  $sum: 1
+                }
+              }
+            },
+            {
+              $group: {
+                _id: '$_id.car',
+                status: {
+                  $push: {
+                    name: '$_id.status',
+                    total: '$total'
+                  }
+                }
+              }
+            },
+            {
+              $lookup: {
+                from: 'venues',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'info'
+              }
             }
-          },
+          ],
           {
-            $lookup: {
-              from: 'venues',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'info'
-            }
+            allowDiskUse: true
           }
-        ], {
-          allowDiskUse: true
-        }),
+        ),
         TeamSetting.findOne({ team }).lean(true),
         InventoryLabel.find(
           {
@@ -2676,18 +2689,22 @@ class InventoryController {
 
       const historyCars = await History.find(
         {
-          company,
-          current: true,
-          status: {
-            $in: [
-              StatusHistory.available,
-              StatusHistory.inTransit,
-              StatusHistory.sale
-            ]
-          },
-          createdAt: {
-            $gt: moment().subtract(45, 'days')
-          }
+          $and: [
+            {
+              company,
+              current: true,
+              status: {
+                $in: [
+                  StatusHistory.available,
+                  StatusHistory.inTransit,
+                  StatusHistory.sale
+                ]
+              },
+              createdAt: {
+                $gt: moment().subtract(45, 'days')
+              }
+            }
+          ]
         },
         {
           status: true,
@@ -2696,6 +2713,7 @@ class InventoryController {
           createdAt: true
         }
       )
+        .allowDiskUse(true)
         .populate([
           {
             path: 'car',
@@ -2748,14 +2766,19 @@ class InventoryController {
         .lean();
       const inventories = await Inventory.find(
         {
-          company,
-          status: ChoicesStatusInventory.finalized
+          $and: [
+            {
+              company,
+              status: ChoicesStatusInventory.finalized
+            }
+          ]
         },
         {
           createdAt: true,
           finalizedAt: true
         }
       )
+        .allowDiskUse(true)
         .sort({ createdAt: -1 })
         .limit(2);
       res.status(200).json({
