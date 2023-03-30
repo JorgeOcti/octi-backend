@@ -1757,21 +1757,9 @@ class CarController {
               'imported'
             ],
             match: {
-              $or: [
-                {
-                  venue: {
-                    $in: venuesPermissions
-                  }
-                },
-                {
-                  venue: {
-                    $exists: false
-                  }
-                },
-                {
-                  venue: null
-                }
-              ]
+              venue: {
+                $in: venuesPermissions
+              }
             },
             options: {
               sort: {
