@@ -1657,8 +1657,12 @@ class CarController {
       const venuesPermissions = req.user.venuesPermissions();
       const car = await CarModel.findOne(
         {
-          _id: id,
-          team
+          $and: [
+            {
+              _id: id,
+              team
+            }
+          ]
         },
         {
           vin: true,
