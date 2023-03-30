@@ -1810,8 +1810,12 @@ class InventoryController {
         InventoryModel.aggregate([
           {
             $match: {
-              team: new mongoose.Types.ObjectId(team),
-              _id: { $in: [new mongoose.Types.ObjectId(id)] }
+              $and: [
+                {
+                  team: new mongoose.Types.ObjectId(team),
+                  _id: { $in: [new mongoose.Types.ObjectId(id)] }
+                }
+              ]
             }
           },
           {
@@ -1920,12 +1924,16 @@ class InventoryController {
               createdAt: -1
             }
           }
-        ]),
+        ], {
+          allowDiskUse: true
+        }),
         InventoryModel.aggregate([
           {
             $match: {
-              team: new mongoose.Types.ObjectId(team),
-              _id: { $in: [new mongoose.Types.ObjectId(id)] }
+              $and: [{
+                team: new mongoose.Types.ObjectId(team),
+                _id: { $in: [new mongoose.Types.ObjectId(id)] }
+              }]
             }
           },
           {
@@ -2005,12 +2013,16 @@ class InventoryController {
           {
             $unwind: '$info'
           }
-        ]),
+        ], {
+          allowDiskUse: true
+        }),
         InventoryModel.aggregate([
           {
             $match: {
-              team: new mongoose.Types.ObjectId(team),
-              _id: { $in: [new mongoose.Types.ObjectId(id)] }
+              $and: [{
+                team: new mongoose.Types.ObjectId(team),
+                _id: { $in: [new mongoose.Types.ObjectId(id)] }
+              }]
             }
           },
           {
@@ -2090,7 +2102,9 @@ class InventoryController {
               as: 'info'
             }
           }
-        ]),
+        ], {
+          allowDiskUse: true
+        }),
         TeamSetting.findOne({ team }).lean(true),
         InventoryLabel.find(
           {

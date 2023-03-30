@@ -2285,7 +2285,8 @@ class CarController {
         ]);
 
         const hasSearch = search?.length > 0;
-        const showHasResult = !hasSearch || (hasSearch && Object.keys(ponderations).length);
+        const showHasResult =
+          !hasSearch || (hasSearch && Object.keys(ponderations).length);
         return res.json({
           count: showHasResult ? participants.total : [],
           pages: showHasResult ? participants.pages : 0,
@@ -2868,7 +2869,7 @@ class CarController {
         totalPages: 'pages',
         pagingCounter: 'si'
       },
-      // allowDiskUse: true,
+      allowDiskUse: true,
       lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)

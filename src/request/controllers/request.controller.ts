@@ -1988,9 +1988,15 @@ class RequestController {
     const { id } = req.params;
     try {
       const requestItems = await RequestItem.find({
-        car: id,
-        team
-      }).populate(this.itemPopulate);
+        $and: [
+          {
+            car: id,
+            team
+          }
+        ]
+      })
+        .allowDiskUse(true)
+        .populate(this.itemPopulate);
       if (requestItems) {
         res.json(requestItems);
       } else {
