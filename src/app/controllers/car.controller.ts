@@ -1675,45 +1675,50 @@ class CarController {
           color: true
         }
       )
+        .allowDiskUse(true)
         .populate([
           {
             path: 'inventories',
             match: {
-              inventory: {
-                $in: await InventoryModel.find(
-                  {
-                    team,
-                    venues: {
-                      $in: venuesPermissions
+              $and: [{
+                inventory: {
+                  $in: await InventoryModel.find(
+                    {
+                      $and: [{
+                        team,
+                        venues: {
+                          $in: venuesPermissions
+                        },
+                        status: ChoicesStatusInventory.finalized
+                      }]
                     },
-                    status: ChoicesStatusInventory.finalized
+                    {
+                      _id: true
+                    }
+                  )
+                },
+                status: {
+                  $in: [
+                    ChoicesStatusCarInventory.pending,
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.missing,
+                    ChoicesStatusCarInventory.leftover,
+                    ChoicesStatusCarInventory.reported
+                  ]
+                },
+                $or: [
+                  {
+                    venue: {
+                      $in: venuesPermissions
+                    }
                   },
                   {
-                    _id: true
+                    venueFound: {
+                      $in: venuesPermissions
+                    }
                   }
-                )
-              },
-              status: {
-                $in: [
-                  ChoicesStatusCarInventory.pending,
-                  ChoicesStatusCarInventory.found,
-                  ChoicesStatusCarInventory.missing,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.reported
                 ]
-              },
-              $or: [
-                {
-                  venue: {
-                    $in: venuesPermissions
-                  }
-                },
-                {
-                  venueFound: {
-                    $in: venuesPermissions
-                  }
-                }
-              ]
+              }]
             },
             populate: [
               {
