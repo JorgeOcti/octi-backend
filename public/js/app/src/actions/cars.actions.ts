@@ -100,8 +100,9 @@ export function loadCarAction(car: ICar): ILoadCar {
 }
 
 export function getCarAction(id: string) {
-  return (dispatch: Dispatch<CarReduxAction>) => {
+  return (dispatch: Dispatch<CarReduxAction>/*, getState: () => {cars: ICarsState}*/) => {
     const api: ApiService = new ApiService();
+    // const state = getState();
     dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     api.getCar(id)

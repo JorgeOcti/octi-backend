@@ -147,18 +147,20 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
     const { car, loadingParticipant, requests, loading } = this.props.dashboard;
     const { highlight, carLoading } = this.state;
     const { getParticipant } = this.props;
+    const { params } = this.props.match;
+    const isSameCar = !!(car?._id === params.id);
     const deliveriesView =
       this.props.location.pathname.includes('deliveries/cars');
     return (
       <AppContainer
-        title={`${car?.vin ?? ''}`}
+        title={`${isSameCar ? car?.vin : ''}`}
         cMenu="1"
         cSubMenu={deliveriesView ? '1.8' : '1.2'}
         cAction={`Detalle`}>
         <section className="content">
           <div className="row">
             <div className="col-md-3 col-lg-3">
-              {loading ? (
+              {loading && !isSameCar ? (
                 <div className="box">
                   <div className="box-body text-center">
                     <p>&nbsp;</p>
@@ -257,7 +259,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                             parseReplicableURL(`/settings/cars/${car?._id}`)
                           );
                         }}>
-                        <strong>Detalle</strong>
+                        <strong>Ver Historial</strong>
                       </button>
                     </ShowIf>
                   </div>

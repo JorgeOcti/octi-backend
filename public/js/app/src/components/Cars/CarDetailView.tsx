@@ -83,7 +83,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillUnmount() {
     // cancel request if component is inmounted
-    this.props.isLoadingAction(true);
+    // this.props.isLoadingAction(true);
     if (this.props.cars.source) {
       this.props.cars.source.cancel('Operation canceled by the user.');
     }
@@ -93,16 +93,18 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const { loading, car, carEvents } = this.props.cars;
     const { loadingParticipant } = this.props.dashboard;
     const { getParticipant } = this.props;
+    const { params } = this.props.match;
+    const isSameCar = !!(car?._id === params.id);
     return (
       <AppContainer
-        title={`${car?.vin ?? ''}`}
+        title={`${isSameCar ? car?.vin : ''}`}
         cMenu="1"
         cSubMenu="1.0"
         cAction="Detalle">
         <section className="content">
           <Row>
             <div className="col-md-3 col-lg-3">
-              {loading ? (
+              {loading && !isSameCar ? (
                 <div className="box">
                   <div className="box-body text-center">
                     <p>&nbsp;</p>
@@ -190,7 +192,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           parseReplicableURL(`/cars/${car?._id}`)
                         );
                       }}>
-                      <strong>Controles</strong>
+                      <strong>Ver Controles</strong>
                     </button>
                   </div>
                 </div>
