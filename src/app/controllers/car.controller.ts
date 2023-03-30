@@ -1705,19 +1705,7 @@ class CarController {
                     ChoicesStatusCarInventory.leftover,
                     ChoicesStatusCarInventory.reported
                   ]
-                },
-                $or: [
-                  {
-                    venue: {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    venueFound: {
-                      $in: venuesPermissions
-                    }
-                  }
-                ]
+                }
               }]
             },
             populate: [
