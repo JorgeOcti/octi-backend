@@ -144,7 +144,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { car, loadingParticipant, requests } = this.props.dashboard;
+    const { car, loadingParticipant, requests, loading } = this.props.dashboard;
     const { highlight, carLoading } = this.state;
     const { getParticipant } = this.props;
     const deliveriesView =
@@ -158,104 +158,135 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
         <section className="content">
           <div className="row">
             <div className="col-md-3 col-lg-3">
-              <div className="box box-primary">
-                <div className="box-body box-profile">
-                  {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
-                  {/*<img*/}
-                  {/*className="profile-user-img img-responsive img-circle"*/}
-                  {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
-                  {/*alt="User profile picture"*/}
-                  {/*style={{*/}
-                  {/*fontFamily: 'object-fit:cover',*/}
-                  {/*objectFit: 'cover',*/}
-                  {/*width: '100px',*/}
-                  {/*height: '100px'*/}
-                  {/*}}*/}
-                  {/*/>*/}
-                  <h3 className="profile-username text-center text-black">
-                    {car && car.brand ? car.brand : '-'}
-                  </h3>
-                  <p className="text-muted text-center text-black">
-                    {car && car.denomination ? car.denomination : '-'}
-                  </p>
-                  <ul className="list-group list-group-unbordered no-margin text-muted">
-                    <li className="list-group-item">
-                      <strong>VIN</strong>
-                      <span className="pull-right text-primary">
-                        <CopyText value={car?.vin ?? ''}>
-                          <strong>{car?.vin?.toLocaleUpperCase() ?? '-'}</strong>
-                        </CopyText>
-                      </span>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Color</strong>
-                      <strong className="pull-right">
-                        {car && car.color ? car.color?.toLocaleUpperCase() : '-'}
-                      </strong>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Material</strong>
-                      <strong className="pull-right">
-                        {car && car.material ? car.material?.toLocaleUpperCase() : '-'}
-                      </strong>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Patente</strong>
-                      <strong className="pull-right">
-                        {car && car.patent ? car.patent?.toLocaleUpperCase() : '-'}
-                      </strong>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Nº Interno</strong>
-                      <strong className="pull-right">
-                        {car && car.internalNumber ? car.internalNumber?.toLocaleUpperCase() : '-'}
-                      </strong>
-                    </li>
-
-                    {/*<li className='list-group-item'>*/}
-                    {/*  <strong>Revisiones</strong>*/}
-                    {/*  <span className='pull-right'>*/}
-                    {/*    {*/}
-                    {/*      car && car.participants ? car.participants.length : 0*/}
-                    {/*    }*/}
-                    {/*  </span>*/}
-                    {/*</li>*/}
-                    {/*<li className='list-group-item'>*/}
-                    {/*  <strong>Inventarios</strong>*/}
-                    {/*  <span className='pull-right'>*/}
-                    {/*    {*/}
-                    {/*      car && car.inventories ? car.inventories.length : 0*/}
-                    {/*    }*/}
-                    {/*  </span>*/}
-                    {/*</li>*/}
-                  </ul>
-                  <ShowIf condition={hasPermission(window.user, 'viewCar')}>
-                    <button
-                      className="btn btn-primary btn-block"
-                      onClick={() => {
-                        this.props.history.replace(
-                          parseReplicableURL(`/settings/cars/${car?._id}`)
-                        );
-                      }}>
-                      <strong>Detalle</strong>
-                    </button>
-                  </ShowIf>
+              {loading ? (
+                <div className="box">
+                  <div className="box-body text-center">
+                    <p>&nbsp;</p>
+                  </div>
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple" />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="box box-primary">
+                  <div className="box-body box-profile">
+                    {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
+                    {/*<img*/}
+                    {/*className="profile-user-img img-responsive img-circle"*/}
+                    {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
+                    {/*alt="User profile picture"*/}
+                    {/*style={{*/}
+                    {/*fontFamily: 'object-fit:cover',*/}
+                    {/*objectFit: 'cover',*/}
+                    {/*width: '100px',*/}
+                    {/*height: '100px'*/}
+                    {/*}}*/}
+                    {/*/>*/}
+                    <h3 className="profile-username text-center text-black">
+                      {car && car.brand ? car.brand : '-'}
+                    </h3>
+                    <p className="text-muted text-center text-black">
+                      {car && car.denomination ? car.denomination : '-'}
+                    </p>
+                    <ul className="list-group list-group-unbordered no-margin text-muted">
+                      <li className="list-group-item">
+                        <strong>VIN</strong>
+                        <span className="pull-right text-primary">
+                          <CopyText value={car?.vin ?? ''}>
+                            <strong>
+                              {car?.vin?.toLocaleUpperCase() ?? '-'}
+                            </strong>
+                          </CopyText>
+                        </span>
+                      </li>
+                      <li className="list-group-item">
+                        <strong>Color</strong>
+                        <strong className="pull-right">
+                          {car && car.color
+                            ? car.color?.toLocaleUpperCase()
+                            : '-'}
+                        </strong>
+                      </li>
+                      <li className="list-group-item">
+                        <strong>Material</strong>
+                        <strong className="pull-right">
+                          {car && car.material
+                            ? car.material?.toLocaleUpperCase()
+                            : '-'}
+                        </strong>
+                      </li>
+                      <li className="list-group-item">
+                        <strong>Patente</strong>
+                        <strong className="pull-right">
+                          {car && car.patent
+                            ? car.patent?.toLocaleUpperCase()
+                            : '-'}
+                        </strong>
+                      </li>
+                      <li className="list-group-item">
+                        <strong>Nº Interno</strong>
+                        <strong className="pull-right">
+                          {car && car.internalNumber
+                            ? car.internalNumber?.toLocaleUpperCase()
+                            : '-'}
+                        </strong>
+                      </li>
+
+                      {/*<li className='list-group-item'>*/}
+                      {/*  <strong>Revisiones</strong>*/}
+                      {/*  <span className='pull-right'>*/}
+                      {/*    {*/}
+                      {/*      car && car.participants ? car.participants.length : 0*/}
+                      {/*    }*/}
+                      {/*  </span>*/}
+                      {/*</li>*/}
+                      {/*<li className='list-group-item'>*/}
+                      {/*  <strong>Inventarios</strong>*/}
+                      {/*  <span className='pull-right'>*/}
+                      {/*    {*/}
+                      {/*      car && car.inventories ? car.inventories.length : 0*/}
+                      {/*    }*/}
+                      {/*  </span>*/}
+                      {/*</li>*/}
+                    </ul>
+                    <ShowIf condition={hasPermission(window.user, 'viewCar')}>
+                      <button
+                        className="btn btn-primary btn-block"
+                        onClick={() => {
+                          this.props.history.replace(
+                            parseReplicableURL(`/settings/cars/${car?._id}`)
+                          );
+                        }}>
+                        <strong>Detalle</strong>
+                      </button>
+                    </ShowIf>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="col-md-9 col-lg-9">
-              <div className="nav-tabs-custom">
-                <ul className="nav nav-tabs">
-                  <li className="active">
-                    <a
-                      href="#checklist"
-                      data-toggle="tab"
-                      aria-expanded="false">
-                      Controles ({car?.participants?.length ?? '0'})
-                    </a>
-                  </li>
-                  {/*<li className=''><a href='#distribution' data-toggle='tab' aria-expanded='true'>Distribución ({requests?.length ?? '0'})</a></li>*/}
-                  {/*<li className="dropdown">
+              {loading ? (
+                <div className="box">
+                  <div className="box-body text-center">
+                    <p>&nbsp;</p>
+                  </div>
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple" />
+                  </div>
+                </div>
+              ) : (
+                <div className="nav-tabs-custom">
+                  <ul className="nav nav-tabs">
+                    <li className="active">
+                      <a
+                        href="#checklist"
+                        data-toggle="tab"
+                        aria-expanded="false">
+                        Controles ({car?.participants?.length ?? '0'})
+                      </a>
+                    </li>
+                    {/*<li className=''><a href='#distribution' data-toggle='tab' aria-expanded='true'>Distribución ({requests?.length ?? '0'})</a></li>*/}
+                    {/*<li className="dropdown">
                         <a className="dropdown-toggle" data-toggle="dropdown" href="#">
                           Dropdown <span className="caret"></span>
                         </a>
@@ -268,183 +299,220 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                         </ul>
                       </li>
                       <li className="pull-right"><a href="#" className="text-muted"><i className="fa fa-gear"></i></a></li>*/}
-                </ul>
-                <div className="tab-content no-padding">
-                  {/*style={{maxHeight: '80vh', overflowX: 'scroll'}}*/}
-                  <div className="tab-pane active" id="checklist">
-                    <table className="table table-striped no-margin">
-                      <thead>
-                        <tr>
-                          <th className="middle" style={{ width: '40%' }}>
-                            Control
-                          </th>
-                          {/*<th className="middle hidden-xs">Supervisor</th>*/}
-                          <th
-                            className="middle hidden-xs"
-                            style={{ width: '40%' }}>
-                            Realizado por
-                          </th>
-                          <th
-                            className="middle hidden-xs"
-                            style={{ width: '20%' }}></th>
-                          <th
-                            className="middle-center hidden-xs"
-                            style={{ width: '3%' }}></th>
-                          <th style={{ width: '1%' }} />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {car?.participants?.map((participant) => (
-                          <tr
-                            key={participant._id}
-                            className={
-                              highlight.length &&
-                              highlight.includes(participant._id as never)
-                                ? 'highlight-info'
-                                : ''
-                            }>
-                            <td
-                              className="middle text-sm"
-                              style={{
-                                paddingTop: '10px',
-                                paddingBottom: '10px'
-                              }}>
-                              <div className="visible-xs visible-sm">
-                                <strong className="text-muted">
-                                  #{participant.number}
-                                </strong>
-                                <br />
-                                <strong className="text-primary">
-                                  {participant.name}
-                                </strong>
-                              </div>
-                              <div className="hidden-xs hidden-sm ">
-                                <strong className="text-primary">
-                                  {participant.name}
-                                </strong>
-                                <br />
-                                <strong className="text-muted">
-                                  #{participant.number}
-                                </strong>
-                              </div>
-                              <div className="text-muted text-sm">
+                  </ul>
+                  <div className="tab-content no-padding">
+                    {/*style={{maxHeight: '80vh', overflowX: 'scroll'}}*/}
+                    <div className="tab-pane active" id="checklist">
+                      <table className="table table-striped no-margin">
+                        <thead>
+                          <tr>
+                            <th className="middle" style={{ width: '40%' }}>
+                              Control
+                            </th>
+                            {/*<th className="middle hidden-xs">Supervisor</th>*/}
+                            <th
+                              className="middle hidden-xs"
+                              style={{ width: '40%' }}>
+                              Realizado por
+                            </th>
+                            <th
+                              className="middle hidden-xs"
+                              style={{ width: '20%' }}></th>
+                            <th
+                              className="middle-center hidden-xs"
+                              style={{ width: '3%' }}></th>
+                            <th style={{ width: '1%' }} />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {car?.participants?.map((participant) => (
+                            <tr
+                              key={participant._id}
+                              className={
+                                highlight.length &&
+                                highlight.includes(participant._id as never)
+                                  ? 'highlight-info'
+                                  : ''
+                              }>
+                              <td
+                                className="middle text-sm"
+                                style={{
+                                  paddingTop: '10px',
+                                  paddingBottom: '10px'
+                                }}>
                                 <div className="visible-xs visible-sm">
-                                  <strong>
-                                    <i className="fa fa-fw fa-user-o" />{' '}
-                                    {participant.user?.firstName?.toLocaleUpperCase() ?? ''}{' '}
-                                    {participant.user?.lastName?.toLocaleUpperCase() ?? ''}
+                                  <strong className="text-muted">
+                                    #{participant.number}
                                   </strong>
-                                  <div>
-                                    <i className="fa fa-fw fa-flag-o" />{' '}
-                                    {participant.venue
-                                      ? participant.venue.name
-                                      : '-'}{' '}
-                                    <ShowIf condition={participant.hasDamages}>
-                                      <React.Fragment>
-                                        {' '}
-                                        <i
-                                          className="fa fa-fw fa-warning text-red"
-                                          data-toggle="tooltip"
-                                          data-placement="top"
-                                          title="Daños encontrados en esta revisión."
-                                        />
-                                      </React.Fragment>
-                                    </ShowIf>
-                                  </div>
-                                  <div>{participant.company?.name}</div>
-                                  <div>
-                                    <i className="fa fa-clock-o fa-fw" />{' '}
-                                    {moment(participant.createdAt).fromNow()} (
-                                    {moment(participant.createdAt).format(
-                                      'LLL'
-                                    )}
-                                    )
+                                  <br />
+                                  <strong className="text-primary">
+                                    {participant.name}
+                                  </strong>
+                                </div>
+                                <div className="hidden-xs hidden-sm ">
+                                  <strong className="text-primary">
+                                    {participant.name}
+                                  </strong>
+                                  <br />
+                                  <strong className="text-muted">
+                                    #{participant.number}
+                                  </strong>
+                                </div>
+                                <div className="text-muted text-sm">
+                                  <div className="visible-xs visible-sm">
+                                    <strong>
+                                      <i className="fa fa-fw fa-user-o" />{' '}
+                                      {participant.user?.firstName?.toLocaleUpperCase() ??
+                                        ''}{' '}
+                                      {participant.user?.lastName?.toLocaleUpperCase() ??
+                                        ''}
+                                    </strong>
+                                    <div>
+                                      <i className="fa fa-fw fa-flag-o" />{' '}
+                                      {participant.venue
+                                        ? participant.venue.name
+                                        : '-'}{' '}
+                                      <ShowIf
+                                        condition={participant.hasDamages}>
+                                        <React.Fragment>
+                                          {' '}
+                                          <i
+                                            className="fa fa-fw fa-warning text-red"
+                                            data-toggle="tooltip"
+                                            data-placement="top"
+                                            title="Daños encontrados en esta revisión."
+                                          />
+                                        </React.Fragment>
+                                      </ShowIf>
+                                    </div>
+                                    <div>{participant.company?.name}</div>
+                                    <div>
+                                      <i className="fa fa-clock-o fa-fw" />{' '}
+                                      {moment(participant.createdAt).fromNow()}{' '}
+                                      (
+                                      {moment(participant.createdAt).format(
+                                        'LLL'
+                                      )}
+                                      )
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </td>
-                            {/*<td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>*/}
-                            <td
-                              className="middle hidden-xs text-sm text-muted text-ellipsis"
-                              style={{
-                                paddingTop: '10px',
-                                paddingBottom: '10px'
-                              }}>
-                              <strong className="text-muted">
-                                <i className="fa fa-fw fa-user-o" />{' '}
-                                {participant.user
-                                  ? participant.user.firstName?.toLocaleUpperCase()
-                                  : ''}{' '}
-                                {participant.user
-                                  ? participant.user.lastName?.toLocaleUpperCase()
-                                  : ''}
-                              </strong>
-                              <div>
-                                <i className="fa fa-fw fa-flag-o" />{' '}
-                                {participant.venue
-                                  ? participant.venue.name
-                                  : '-'}{' '}
-                                <ShowIf condition={participant.hasDamages}>
-                                  <React.Fragment>
-                                    {' '}
-                                    <i
-                                      className="fa fa-fw fa-warning text-red"
-                                      data-toggle="tooltip"
-                                      data-placement="top"
-                                      title="Daños encontrados en esta revisión."
-                                    />
-                                  </React.Fragment>
-                                </ShowIf>
-                              </div>
-                              {participant.company?.name}
-                            </td>
-                            <td className="middle-center hidden-xs text-muted text-sm text-ellipsis">
-                              <div
-                                className="text-muted text-sm"
-                                data-toggle="tooltip"
-                                data-placement="top"
-                                title={moment(participant.createdAt).format(
-                                  'LLL'
-                                )}>
-                                <i className="fa fa-fw fa-clock-o" />{' '}
-                                {moment(participant.createdAt).fromNow()}
-                              </div>
-                            </td>
-                            <td className="middle-center hidden-xs text-muted text-sm">
-                              <ShowIf
-                                condition={
-                                  !!(
-                                    participant.hasOwnProperty(
-                                      'qualification'
-                                    ) && participant.qualification
-                                  )
-                                }
-                                alternative={''}>
-                                {`${Math.round(participant.qualification)}%`}
-                              </ShowIf>
-                            </td>
-                            <td className="text-primary middle-center text-ellipsis">
-                              <div className="hidden-xs hidden-sm">
+                              </td>
+                              {/*<td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>*/}
+                              <td
+                                className="middle hidden-xs text-sm text-muted text-ellipsis"
+                                style={{
+                                  paddingTop: '10px',
+                                  paddingBottom: '10px'
+                                }}>
+                                <strong className="text-muted">
+                                  <i className="fa fa-fw fa-user-o" />{' '}
+                                  {participant.user
+                                    ? participant.user.firstName?.toLocaleUpperCase()
+                                    : ''}{' '}
+                                  {participant.user
+                                    ? participant.user.lastName?.toLocaleUpperCase()
+                                    : ''}
+                                </strong>
+                                <div>
+                                  <i className="fa fa-fw fa-flag-o" />{' '}
+                                  {participant.venue
+                                    ? participant.venue.name
+                                    : '-'}{' '}
+                                  <ShowIf condition={participant.hasDamages}>
+                                    <React.Fragment>
+                                      {' '}
+                                      <i
+                                        className="fa fa-fw fa-warning text-red"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="Daños encontrados en esta revisión."
+                                      />
+                                    </React.Fragment>
+                                  </ShowIf>
+                                </div>
+                                {participant.company?.name}
+                              </td>
+                              <td className="middle-center hidden-xs text-muted text-sm text-ellipsis">
                                 <div
-                                  className="btn-group"
-                                  style={{ width: '70px' }}>
-                                  <button
-                                    className="btn btn-sm btn-default"
-                                    disabled={carLoading === participant._id}
-                                    onClick={() =>
-                                      this.printPdf(
-                                        `/report/forms/pdf/${participant._id}.pdf`,
-                                        participant._id
-                                      )
-                                    }>
-                                    <i
-                                      className={
-                                        carLoading === participant._id
-                                          ? 'fa fw fa-spinner fa-spin'
-                                          : 'fa fw fa-print'
+                                  className="text-muted text-sm"
+                                  data-toggle="tooltip"
+                                  data-placement="top"
+                                  title={moment(participant.createdAt).format(
+                                    'LLL'
+                                  )}>
+                                  <i className="fa fa-fw fa-clock-o" />{' '}
+                                  {moment(participant.createdAt).fromNow()}
+                                </div>
+                              </td>
+                              <td className="middle-center hidden-xs text-muted text-sm">
+                                <ShowIf
+                                  condition={
+                                    !!(
+                                      participant.hasOwnProperty(
+                                        'qualification'
+                                      ) && participant.qualification
+                                    )
+                                  }
+                                  alternative={''}>
+                                  {`${Math.round(participant.qualification)}%`}
+                                </ShowIf>
+                              </td>
+                              <td className="text-primary middle-center text-ellipsis">
+                                <div className="hidden-xs hidden-sm">
+                                  <div
+                                    className="btn-group"
+                                    style={{ width: '70px' }}>
+                                    <button
+                                      className="btn btn-sm btn-default"
+                                      disabled={carLoading === participant._id}
+                                      onClick={() =>
+                                        this.printPdf(
+                                          `/report/forms/pdf/${participant._id}.pdf`,
+                                          participant._id
+                                        )
+                                      }>
+                                      <i
+                                        className={
+                                          carLoading === participant._id
+                                            ? 'fa fw fa-spinner fa-spin'
+                                            : 'fa fw fa-print'
+                                        }
+                                      />
+                                    </button>
+                                    <button
+                                      className="btn btn-sm btn-primary"
+                                      disabled={
+                                        !!(
+                                          loadingParticipant &&
+                                          loadingParticipant === participant._id
+                                        )
                                       }
-                                    />
-                                  </button>
+                                      onClick={
+                                        loadingParticipant
+                                          ? undefined
+                                          : () =>
+                                              getParticipant(participant._id)
+                                      }>
+                                      <ShowIf
+                                        condition={
+                                          !!(
+                                            loadingParticipant &&
+                                            loadingParticipant ===
+                                              participant._id
+                                          )
+                                        }
+                                        alternative={
+                                          <i className="fa fw fa-check-square-o" />
+                                        }>
+                                        <i className="fa fw fa-spin fa-spinner" />
+                                      </ShowIf>
+                                    </button>
+                                  </div>
+                                </div>
+                                <div
+                                  className="visible-xs visible-sm"
+                                  style={{ width: '60px', textAlign: 'end' }}>
                                   <button
                                     className="btn btn-sm btn-primary"
                                     disabled={
@@ -472,123 +540,97 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                                     </ShowIf>
                                   </button>
                                 </div>
-                              </div>
-                              <div className="visible-xs visible-sm" style={{width: '60px', textAlign: 'end'}}>
-                                <button
-                                  className="btn btn-sm btn-primary"
-                                  disabled={
-                                    !!(
-                                      loadingParticipant &&
-                                      loadingParticipant === participant._id
-                                    )
-                                  }
-                                  onClick={
-                                    loadingParticipant
-                                      ? undefined
-                                      : () => getParticipant(participant._id)
-                                  }>
-                                  <ShowIf
-                                    condition={
-                                      !!(
-                                        loadingParticipant &&
-                                        loadingParticipant === participant._id
-                                      )
-                                    }
-                                    alternative={<i className="fa fw fa-check-square-o" />}>
-                                    <i className="fa fw fa-spin fa-spinner" />
-                                  </ShowIf>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div
-                    className="tab-pane"
-                    id="distribution"
-                    style={{ maxHeight: '80vh', overflowX: 'scroll' }}>
-                    <table className="table table-striped">
-                      <thead>
-                        <tr>
-                          <th className="middle">Nº</th>
-                          <th className="middle">Estado</th>
-                          <th className="middle">Solicitante</th>
-                          <th className="middle">Vendedor</th>
-                          <th className="middle">Cliente</th>
-                          <th className="middle">RUT Cliente</th>
-                          <th className="middle">Correo</th>
-                          <th className="middle-center">Ticket</th>
-                          <th className="middle">Nº Ticket</th>
-                          <th className="middle">Sucursal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {requests.map((request) => {
-                          return (
-                            <tr key={request._id}>
-                              <td>
-                                <a
-                                  href={parseReplicableURL(
-                                    `/requests/vehicles/${request.request._id}/`
-                                  )}
-                                  target="_blank"
-                                  style={{
-                                    textDecoration: 'underline'
-                                  }}>
-                                  #{request.request.number}{' '}
-                                  <i className="fa fa-fw fa-share-alt-square" />
-                                </a>
                               </td>
-                              <td>{request.status?.name}</td>
-                              <td>
-                                {request.request.createdBy
-                                  ? `${request.request.createdBy.firstName} ${request.request.createdBy.lastName}`
-                                  : ''}
-                              </td>
-                              <td>{request.request.sellerText}</td>
-                              <td>
-                                {request.request?.customerInformation?.name}
-                              </td>
-                              <td>
-                                {request.request?.customerInformation?.rut}
-                              </td>
-                              <td>
-                                {request.request?.customerInformation?.email}
-                              </td>
-                              <td className="middle-center">
-                                {request.request?.advancePaymentInformation
-                                  ?.files?.length ? (
-                                  <i
-                                    className="fa fa-check-circle text-green pointer"
-                                    onClick={() =>
-                                      this.openBlank(
-                                        request.request
-                                          .advancePaymentInformation.files[0]
-                                          .file.url
-                                      )
-                                    }
-                                  />
-                                ) : (
-                                  ''
-                                )}
-                              </td>
-                              <td className="middle">
-                                {
-                                  request.request?.advancePaymentInformation
-                                    ?.number
-                                }
-                              </td>
-                              <td>{request.destination?.name}</td>
                             </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div
+                      className="tab-pane"
+                      id="distribution"
+                      style={{ maxHeight: '80vh', overflowX: 'scroll' }}>
+                      <table className="table table-striped">
+                        <thead>
+                          <tr>
+                            <th className="middle">Nº</th>
+                            <th className="middle">Estado</th>
+                            <th className="middle">Solicitante</th>
+                            <th className="middle">Vendedor</th>
+                            <th className="middle">Cliente</th>
+                            <th className="middle">RUT Cliente</th>
+                            <th className="middle">Correo</th>
+                            <th className="middle-center">Ticket</th>
+                            <th className="middle">Nº Ticket</th>
+                            <th className="middle">Sucursal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {requests.map((request) => {
+                            return (
+                              <tr key={request._id}>
+                                <td>
+                                  <a
+                                    href={parseReplicableURL(
+                                      `/requests/vehicles/${request.request._id}/`
+                                    )}
+                                    target="_blank"
+                                    style={{
+                                      textDecoration: 'underline'
+                                    }}>
+                                    #{request.request.number}{' '}
+                                    <i className="fa fa-fw fa-share-alt-square" />
+                                  </a>
+                                </td>
+                                <td>{request.status?.name}</td>
+                                <td>
+                                  {request.request.createdBy
+                                    ? `${request.request.createdBy.firstName} ${request.request.createdBy.lastName}`
+                                    : ''}
+                                </td>
+                                <td>{request.request.sellerText}</td>
+                                <td>
+                                  {request.request?.customerInformation?.name}
+                                </td>
+                                <td>
+                                  {request.request?.customerInformation?.rut}
+                                </td>
+                                <td>
+                                  {request.request?.customerInformation?.email}
+                                </td>
+                                <td className="middle-center">
+                                  {request.request?.advancePaymentInformation
+                                    ?.files?.length ? (
+                                    <i
+                                      className="fa fa-check-circle text-green pointer"
+                                      onClick={() =>
+                                        this.openBlank(
+                                          request.request
+                                            .advancePaymentInformation.files[0]
+                                            .file.url
+                                        )
+                                      }
+                                    />
+                                  ) : (
+                                    ''
+                                  )}
+                                </td>
+                                <td className="middle">
+                                  {
+                                    request.request?.advancePaymentInformation
+                                      ?.number
+                                  }
+                                </td>
+                                <td>{request.destination?.name}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <ModalView />
