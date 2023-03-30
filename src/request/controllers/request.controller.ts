@@ -1998,9 +1998,9 @@ class RequestController {
         .allowDiskUse(true)
         .populate(this.itemPopulate);
       if (requestItems) {
-        res.json(requestItems);
+        return res.json(requestItems);
       } else {
-        res.json([]);
+        return res.json([]);
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -2014,7 +2014,7 @@ class RequestController {
         )}`
       );
       logger.error(e);
-      res.status(500).json(e);
+      return res.status(500).json(e);
     }
   }
 

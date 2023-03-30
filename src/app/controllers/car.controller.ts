@@ -2900,12 +2900,12 @@ class CarController {
 
       // validate exist page
       if (options.page && cars.pages && cars.pages < options.page) {
-        res.status(400).json({
+        return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-        res.json({
+        return res.json({
           count: cars.total,
           pages: cars.pages,
           hasPrevious: cars.hasPrevious,
@@ -2916,9 +2916,7 @@ class CarController {
       }
     } catch (e) {
       /* istanbul ignore next */
-      if (e) {
-        res.status(500).json(e);
-      }
+      return res.status(500).json(e);
     }
   }
 

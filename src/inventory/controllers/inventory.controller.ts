@@ -2781,7 +2781,7 @@ class InventoryController {
         .allowDiskUse(true)
         .sort({ createdAt: -1 })
         .limit(2);
-      res.status(200).json({
+      return res.status(200).json({
         message: '',
         cars: historyCars,
         inventories
@@ -2795,7 +2795,7 @@ class InventoryController {
       logger.error(e);
       // Raven.captureException(e, {req});
       /* istanbul ignore next */
-      res.status(500).json({
+      return res.status(500).json({
         message: JSON.stringify(e),
         status: 500
       });
