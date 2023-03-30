@@ -559,7 +559,6 @@ participantSchema.index(
   { name: 'ParticipantIndex' }
 );
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
-participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
 participantSchema.index(
   {

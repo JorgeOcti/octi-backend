@@ -1655,6 +1655,23 @@ class CarController {
     const { id } = req.params;
     try {
       const venuesPermissions = req.user.venuesPermissions();
+      const inventoriesIDS = await InventoryModel.find(
+        {
+          $and: [
+            {
+              team,
+              venues: {
+                $in: venuesPermissions
+              },
+              status: ChoicesStatusInventory.finalized
+            }
+          ]
+        },
+        {
+          _id: true
+        }
+      ).distinct('_id');
+      console.log(inventoriesIDS)
       const car = await CarModel.findOne(
         {
           $and: [
@@ -1680,33 +1697,24 @@ class CarController {
           {
             path: 'inventories',
             match: {
-              $and: [{
-                inventory: {
-                  $in: await InventoryModel.find(
-                    {
-                      $and: [{
-                        team,
-                        venues: {
-                          $in: venuesPermissions
-                        },
-                        status: ChoicesStatusInventory.finalized
-                      }]
-                    },
-                    {
-                      _id: true
-                    }
-                  )
-                },
-                status: {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
+              $and: [
+                {
+                  inventory: {
+                    $in: inventoriesIDS.map(
+                      (inventory) => inventory._id
+                    )
+                  },
+                  status: {
+                    $in: [
+                      ChoicesStatusCarInventory.pending,
+                      ChoicesStatusCarInventory.found,
+                      ChoicesStatusCarInventory.missing,
+                      ChoicesStatusCarInventory.leftover,
+                      ChoicesStatusCarInventory.reported
+                    ]
+                  }
                 }
-              }]
+              ]
             },
             populate: [
               {

@@ -102,8 +102,8 @@ export function loadCarAction(car: ICar): ILoadCar {
 export function getCarAction(id: string) {
   return (dispatch: Dispatch<CarReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
+    dispatch(cancelRequestAction(api.getSource()));
     api.getCar(id)
       .then((response: AxiosResponse) => {
         document.title = ` ${response.data.data.vin} - Detalle  | OSA Andes`;
