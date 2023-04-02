@@ -3129,7 +3129,9 @@ class FormController {
       const team = req.user.team._id;
       const { page, pageSize } = req.query as Record<string, string>;
       const car = await Car.findOne(
-        { vin: req.params.vin, team },
+        {
+          $and: [{ vin: req.params.vin, team }]
+        },
         { _id: true }
       );
       if (!car) {
@@ -3140,9 +3142,11 @@ class FormController {
       }
 
       const filter = {
-        team,
-        car: car._id,
-        active: true
+        $and: [{
+          team,
+          car: car._id,
+          active: true
+        }]
       };
       const options: PaginateOptions = {
         sort: {
@@ -3213,6 +3217,7 @@ class FormController {
             path: 'sections.answers.damagesSelected.images'
           }
         ],
+        allowDiskUse: true,
         lean: true,
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)
