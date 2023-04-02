@@ -41,7 +41,7 @@ import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
 const metricsMiddleware = promBundle({
   includeMethod: true,
   includePath: true,
-  includeStatusCode: true,
+  includeStatusCode: true
 });
 
 // Create Express server

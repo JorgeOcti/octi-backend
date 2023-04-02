@@ -105,6 +105,7 @@ router.get('/api/v1/forms/controls/', Middlewares.isJWTAuthenticated, Middleware
  *     security:
  *       - ApiKeyAuth: []
  */
+
 router.get('/api/v1/forms/controls/:vin', Middlewares.isJWTAuthenticated, Middlewares.validateQueryParams(FormListControls), FormController.allControlsByVIN);
 
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);

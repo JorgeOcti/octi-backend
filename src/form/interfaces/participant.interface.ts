@@ -178,6 +178,10 @@ export interface IParticipant {
   keyRawAnswers: string;
 
   imported: boolean;
+  importedType: string;
+  importedFrom: string;
+  importedID: string;
+
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

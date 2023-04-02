@@ -6,7 +6,7 @@ import * as path from 'path';
 
 import Car from '../models/car.model';
 import { IUserModel } from '../schemas/user.schema';
-import {  IVenueModel } from '../models/venue.model';
+import { IVenueModel } from '../models/venue.model';
 import Venue from '../models/venue.model';
 import Form, { IFormModel } from '../../form/models/form.model';
 
@@ -162,13 +162,18 @@ async function makeControl(
           car: car._id,
           // venue: '639780224e5d4600cc76b563'
           venue: '63fe66c4078da800128e4f04'
-        })
-        if(existParticipant) {
-        await History.updateOne({ participant: existParticipant._id }, {$set:{
-          from: '63fe66c4078da800128e4f04',
-          to: '63fe66c4078da800128e4f04',
-        }})
-      }
+        });
+        if (existParticipant) {
+          await History.updateOne(
+            { participant: existParticipant._id },
+            {
+              $set: {
+                from: '63fe66c4078da800128e4f04',
+                to: '63fe66c4078da800128e4f04'
+              }
+            }
+          );
+        }
 
         // console.log("existParticipant", existParticipant)
         resolve({
@@ -176,7 +181,7 @@ async function makeControl(
             filter: {
               createdAt: participantObject.createdAt,
               user: user._id,
-              car: car._id,
+              car: car._id
             },
             update: participantObject
           }
@@ -283,9 +288,9 @@ async function importMassive() {
     }
     while (makeControls.length) {
       const controls = await Promise.all(makeControls.splice(0, 100));
-      bulkParticipants = [...bulkParticipants, ...controls]
+      bulkParticipants = [...bulkParticipants, ...controls];
     }
-    console.log("bulkParticipants.length", bulkParticipants.length);
+    console.log('bulkParticipants.length', bulkParticipants.length);
     const execute = true;
     if (execute && bulkParticipants.length > 0) {
       while (bulkParticipants.length) {

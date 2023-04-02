@@ -521,6 +521,17 @@ const participantSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+
+    importedType: {
+      type: String
+    },
+    importedFrom: {
+      type: String
+    },
+    importedID: {
+      type: String
+    },
+
     active: {
       type: Boolean,
       default: true

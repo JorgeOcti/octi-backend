@@ -46,7 +46,8 @@ import { socket } from '../../services/socket.service';
 import GeneralUtils from '../../utils/general.utils';
 import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
-import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
+import Form, {
+  IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
 import Participant, {
   IParticipantAnswerModel,
@@ -846,27 +847,35 @@ class FormController {
           team
         });
         if (form) {
-          let searchVal: any[] = [];
-          if (car) searchVal.push({ car: car._id });
-          if (transmittal)
-            searchVal.push({ transmittal: new Types.ObjectId(transmittal) });
-
           const keyRawAnswers = crypto
             .createHash('md5')
             .update(JSON.stringify(answers))
             .digest('hex');
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
-          const existControl = await Participant.findOne({
-            $or: searchVal,
-            form: form._id,
-            venue: updatedUser.venue,
-            keyRawAnswers,
-            createdAt: {
-              $gte: today.toDate(),
-              $lt: tomorrow.toDate()
-            }
-          });
+          let query: any = {
+            $and: [
+              {
+                form: form._id,
+                venue: updatedUser.venue,
+                keyRawAnswers,
+                createdAt: {
+                  $gte: today.toDate(),
+                  $lt: tomorrow.toDate()
+                }
+              }
+            ]
+          };
+
+          if (car) {
+            query['$and'].push({ car: car._id });
+          }
+
+          if (transmittal) {
+            query['$or'].push({ transmittal: new Types.ObjectId(transmittal) });
+          }
+
+          const existControl = await Participant.findOne(query);
           if (existControl) {
             const today = moment().startOf('day');
             const count = await Participant.find({

@@ -261,22 +261,36 @@ class CarController {
             status: 404
           });
         } else {
-          const inventoryQuery: any = {
-            team
+          let carQuery: any = {
+            $and: [{ team }]
           };
           if (vin) {
-            inventoryQuery.vin = vin;
+            carQuery = {
+              $and: [...carQuery['$and'], { vin }]
+            };
           }
           if (vin2) {
             if (vin2[0] === '0') {
               const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
-              inventoryQuery.vin2 = { $regex: vinRegex };
+              carQuery = {
+                $and: [
+                  ...carQuery['$and'],
+                  {
+                    vin2: { $regex: vinRegex }
+                  }
+                ]
+              };
             } else {
-              const patentRegex = new RegExp(vin2, 'i');
-              inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
+              // const patentRegex = new RegExp(vin2, 'i');
+              carQuery = {
+                $and: [
+                  ...carQuery['$and'],
+                  { $or: [{ vin2 }, { patent: vin2 }] }
+                ]
+              };
             }
           }
-          const cars = await CarModel.find(inventoryQuery, {
+          const cars = await CarModel.find(carQuery, {
             vin: true,
             vin2: true,
             brand: true,
@@ -393,11 +407,13 @@ class CarController {
       }
     } else {
       try {
-        const carFilter: any = {
-          team
+        let carFilter: any = {
+          $and: [{ team }]
         };
         if (vin) {
-          carFilter.vin = vin;
+          carFilter = {
+            $and: [...carFilter['$and'], { vin }]
+          };
           if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
             let { data: integrationData } =
               await conectaController.searchVinContecta(vin);
@@ -467,10 +483,17 @@ class CarController {
               `${vin2.substr(vin2.length - 5)}$`,
               'i'
             );
-            carFilter.vin2 = { $regex: vinRegex };
+            carFilter = {
+              $and: [...carFilter['$and'], { vin2: vinRegex }]
+            };
           } else {
             const patentRegex = new RegExp(vin2, 'i');
-            carFilter.$or = [{ vin2 }, { patent: patentRegex }];
+            carFilter = {
+              $and: [
+                ...carFilter['$and'],
+                { $or: [{ vin2}, {patent: patentRegex }] }
+              ]
+            };
           }
         }
         logger.debug(
@@ -1696,7 +1719,6 @@ class CarController {
         }
       ).distinct('_id');
 
-
       car = await CarModel.populate(car, [
         {
           path: 'inventories',
@@ -1764,7 +1786,10 @@ class CarController {
             'reception',
             'hasDamages',
             'kind',
-            'imported'
+            'imported',
+            'importedFrom',
+            'importedType',
+            'importedID'
           ],
           match: {
             venue: {
