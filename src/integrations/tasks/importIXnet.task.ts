@@ -19,6 +19,7 @@ import {
   IIntegrationAction
 } from '../interfaces/integration.interface';
 import Integration from '../models/integrations.model';
+import Car from '../../app/models/car.model';
 
 export default class ImportIXnetQueue {
   public queue: Queue.Queue;
@@ -48,9 +49,9 @@ export default class ImportIXnetQueue {
   public run() {
     this.queue.process('main', 1, this.main);
     this.queue.process('entradas-action', 1, this.processEntradasAction);
-    this.queue.process('import-forms', 10, this.importForm);
+    this.queue.process('import-forms', 5, this.importForm);
   }
-  //http://localhost:3030/settings/cars/642a33f7fea4ae558df96a81
+
   async importForm(job: Queue.Job<any>, done: Queue.DoneCallback) {
     const { action, integration, venue, form, user, records } = job.data;
     // console.dir(job.data, { depth: 2 })
@@ -61,15 +62,46 @@ export default class ImportIXnetQueue {
       `ImportIXnetQueue.import-forms ${integration.name} -> ${action.name}: Importing ${records.length} records`
     );
     for (const record of records) {
-      const { VIN, Fecha, FechaEnt, IdRevision, ...rest } = record;
+      const { VIN, Fecha, FechaEnt, IdRevision, Marca, Modelo, Version } =
+        record;
+      const updateCarData: any = {};
+      if (Marca?.length) {
+        updateCarData.brand = Marca;
+      }
+      if (Modelo?.length || Version?.length) {
+        updateCarData.denomination = `${Modelo ?? ''} ${
+          Version?.replace(Modelo, '') ?? ''
+        }`;
+      }
+      const vin = VIN?.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      const car = await Car.findOneAndUpdate(
+        {
+          $and: [
+            {
+              team: venue.company.team,
+              vin: vin.toUpperCase()
+            }
+          ]
+        },
+        {
+          $set: {
+            ...updateCarData,
+            vin,
+            vin2: vin.slice(vin.length - 6),
+            company: venue.company._id
+          }
+        },
+        { upsert: true, new: true }
+      );
       parserRecords.push({
-        vin: VIN,
+        car,
         externalId: IdRevision?.toString() ?? '',
         createdAt: Fecha ?? FechaEnt,
         venue,
         user,
         form,
-        rest
+        updateCarData
+        // rest
       });
     }
     // console.dir(parserRecords, { depth: 2 })
@@ -100,21 +132,17 @@ export default class ImportIXnetQueue {
         // filter records by unique IdRevision or VIN
         var externalIds: any[] = [];
         const filterRecords: any[] = records.filter((record: any) => {
-          const idRevision = record?.IdRevision?.toString() ?? '';
-          if (
-            record?.VIN?.length &&
-            (!idRevision?.length ||
-              (idRevision?.length && externalIds.indexOf(idRevision) === -1))
-          ) {
-            if (idRevision?.length) {
-              externalIds.push(idRevision);
-            }
+          const idRevision = record?.IdRevision?.toString()?.trim()?.length
+            ? record?.IdRevision?.toString()
+            : `${record?.VIN}${record?.FechaEnt}`;
+          if (record?.VIN?.length && externalIds.indexOf(idRevision) === -1) {
+            externalIds.push(idRevision);
             return true;
           }
           return false;
         });
         while (filterRecords.length) {
-          const batch = filterRecords.splice(0, 10);
+          const batch = filterRecords.splice(0, 100);
           await this.queue.add(
             'import-forms',
             {

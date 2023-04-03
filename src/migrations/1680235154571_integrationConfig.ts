@@ -28,7 +28,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
               },
               actions: [
                 {
-                  name: 'entradas',
+                  name: 'Entradas',
                   type: 'get',
                   url: '/derco/api/Interfaz/Entradas?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
                   //  CD LONQUÉN SCHIAPPACASSE
@@ -39,7 +39,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                   user: '61c2152bbd455b001337cbf6'
                 },
                 {
-                  name: 'revisiones',
+                  name: 'Revisiones',
                   type: 'get',
                   url: '/derco/api/Interfaz/Revisiones?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
                   //  CD LONQUÉN SCHIAPPACASSE
@@ -74,7 +74,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
               },
               actions: [
                 {
-                  name: 'entradas',
+                  name: 'Entradas',
                   type: 'get',
                   url: '/derco/api/Interfaz/Entradas?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
                   // CD NOVICIADO TRANSAUTO
@@ -85,7 +85,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                   user: '61c2152bbd455b001337cbf6'
                 },
                 {
-                  name: 'revisiones',
+                  name: 'Revisiones',
                   type: 'get',
                   url: '/derco/api/Interfaz/Revisiones?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
                   // CD NOVICIADO TRANSAUTO

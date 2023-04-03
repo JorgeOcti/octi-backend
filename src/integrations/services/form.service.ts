@@ -7,7 +7,6 @@ import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
-import Car from '../../app/models/car.model';
 
 import {
   IIntegration,
@@ -59,14 +58,15 @@ export default class FormImporter {
       const batch = data.splice(0, 10);
       const processedBatch = await Promise.all(
         batch.map(async (row) => {
-          const { externalId, form, user, vin, venue, createdAt } = row;
+          const { externalId, form, user, car, venue, createdAt, updateCarData } = row;
           const completedForm = await this.makeCompletedForm({
             externalId,
             form,
             user,
-            vin,
+            car,
             venue,
-            createdAt
+            createdAt,
+            updateCarData
           });
           return completedForm;
         })
@@ -84,9 +84,9 @@ export default class FormImporter {
     externalId,
     form,
     user,
-    vin,
+    car,
     venue,
-    createdAt
+    createdAt,
   }: any) {
     if (!this._isFormInCache[form._id]?.name) {
       this.participantObject = {
@@ -155,23 +155,7 @@ export default class FormImporter {
       }
       this._isFormInCache[form._id] = true;
     }
-    const car = await Car.findOneAndUpdate(
-      {
-        $and: [
-          {
-            team: venue.company.team,
-            vin
-          }
-        ]
-      },
-      {
-        $set: {
-          vin,
-          company: venue.company._id
-        }
-      },
-      { upsert: true, new: true }
-    );
+
     createdAt = moment(createdAt).toISOString();
     const existParticipant = await Participant.findOne(
       {

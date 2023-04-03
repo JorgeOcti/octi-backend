@@ -5,6 +5,39 @@
       importedType: "ixnet",
     },
   },
+  // {
+  //   $group: {
+  //     _id: {
+  //       car: "$car",
+  //       importedID: "$importedID",
+  //     },
+  //     //data: {$push: "$car"},
+  //     count: {
+  //       $sum: 1,
+  //     },
+  //   },
+  // }
+  // {
+  //   $match:
+  //     /**
+  //      * query: The query in MQL.
+  //      */
+  //     {
+  //       "_id.importedID": {
+  //         $ne: "",
+  //       },
+  //       count: {
+  //         $gt: 1,
+  //       },
+  //     },
+  // }
+  // {
+  //   $count:
+  //     /**
+  //      * Provide the field name for the count.
+  //      */
+  //     "string",
+  // }
   {
     $group: {
       _id: {
@@ -18,7 +51,7 @@
       forms: {
         $addToSet: "$form",
       },
-      count: {
+      controls: {
         $sum: 1,
       },
     },
@@ -34,7 +67,7 @@
         $size: "$cars",
       },
       forms: 1,
-      count: 1,
+      controls: 1,
     },
   },
   {
@@ -71,7 +104,7 @@
       venue: "$venue.name",
       form: "$form.name",
       cars: 1,
-      count: 1,
+      controls: 1,
     },
   },
 ]
