@@ -181,6 +181,7 @@ export interface IParticipant {
   importedType: string;
   importedFrom: string;
   importedID: string;
+  importedAt: Date;
 
   active: boolean;
   updatedAt: Date;

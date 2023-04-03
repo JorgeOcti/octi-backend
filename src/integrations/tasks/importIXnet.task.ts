@@ -6,13 +6,14 @@ import { IVenue } from '../../app/interfaces/venue.interface';
 import Company from '../../app/models/company.model';
 import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
-import Venue from '../../app/models/venue.model';
+import Venue, { IVenueModel } from '../../app/models/venue.model';
+import { IUserModel } from '../../app/schemas/user.schema';
 import { IForm } from '../../form/interfaces/form.interface';
-import Form from '../../form/models/form.model';
+import Form, { IFormModel } from '../../form/models/form.model';
 import logger from '../../services/logger.service';
 import { createRedisClient } from '../../services/redis.service';
 import IXnetClient from '../clients/IXnet.client';
-import FormImporter from '../importers/form.importer';
+import FormImporter from '../services/form.service';
 import {
   IIntegration,
   IIntegrationAction
@@ -27,12 +28,12 @@ export default class ImportIXnetQueue {
       createClient: () => {
         return createRedisClient();
       },
-      prefix: '{andes}',
+      prefix: '{andes}'
       // Limit queue to max 10 jobs per 1 second
-      limiter: {
-        max: 500,
-        duration: 1000
-      }
+      // limiter: {
+      //   max: 200,
+      //   duration: 1000
+      // }
     });
     mongoose.set('debug', false);
     new Company();
@@ -41,22 +42,24 @@ export default class ImportIXnetQueue {
     this.start = this.start.bind(this);
     this.processEntradasAction = this.processEntradasAction.bind(this);
     this.importForm = this.importForm.bind(this);
+    this.getBaseData = this.getBaseData.bind(this);
   }
 
   public run() {
-    this.queue.process('main', this.main);
-    this.queue.process('entradas-action', this.processEntradasAction);
-    this.queue.process('import-forms', this.importForm);
+    this.queue.process('main', 1, this.main);
+    this.queue.process('entradas-action', 1, this.processEntradasAction);
+    this.queue.process('import-forms', 10, this.importForm);
   }
-
+  //http://localhost:3030/settings/cars/642a33f7fea4ae558df96a81
   async importForm(job: Queue.Job<any>, done: Queue.DoneCallback) {
     const { action, integration, venue, form, user, records } = job.data;
-    logger.debug(
-      `ImportIXnetQueue.import-forms ${integration.name} -> ${action.name}`
-    );
     // console.dir(job.data, { depth: 2 })
     const importer = new FormImporter('ixnet', integration, action);
-    const parserRecords = [];
+    const parserRecords: any[] = [];
+
+    logger.debug(
+      `ImportIXnetQueue.import-forms ${integration.name} -> ${action.name}: Importing ${records.length} records`
+    );
     for (const record of records) {
       const { VIN, Fecha, FechaEnt, IdRevision, ...rest } = record;
       parserRecords.push({
@@ -94,9 +97,25 @@ export default class ImportIXnetQueue {
         );
         const client = new IXnetClient(integration);
         let records = await client.getFrom(action);
-        while (records.length) {
-          const batch = records.splice(0, 10);
-          this.queue.add(
+        // filter records by unique IdRevision or VIN
+        var externalIds: any[] = [];
+        const filterRecords: any[] = records.filter((record: any) => {
+          const idRevision = record?.IdRevision?.toString() ?? '';
+          if (
+            record?.VIN?.length &&
+            (!idRevision?.length ||
+              (idRevision?.length && externalIds.indexOf(idRevision) === -1))
+          ) {
+            if (idRevision?.length) {
+              externalIds.push(idRevision);
+            }
+            return true;
+          }
+          return false;
+        });
+        while (filterRecords.length) {
+          const batch = filterRecords.splice(0, 10);
+          await this.queue.add(
             'import-forms',
             {
               records: batch,
@@ -112,39 +131,6 @@ export default class ImportIXnetQueue {
             }
           );
         }
-        // if (records?.length) {
-        //   logger.info(
-        //     `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}: found ${records?.length}!`
-        //   );
-        //   const importer = new FormImporter('ixnet', integration, action);
-
-        //   const parserRecords = [];
-        //   for (const record of records) {
-        //     const { VIN, Fecha, FechaEnt, IdRevision, ...rest } = record;
-        //     parserRecords.push({
-        //       vin: VIN,
-        //       externalId: IdRevision?.toString(),
-        //       createdAt: Fecha ?? FechaEnt,
-        //       venue,
-        //       user,
-        //       form,
-        //       importedFrom: 'ixnet',
-        //       rest
-        //     });
-        //   }
-        //   const show = parserRecords[0];
-        //   logger.info(
-        //     `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}: importing ${records.length}`
-        //   );
-        //   console.dir(show, { depth: 2 });
-        //   await importer.import({
-        //     data: parserRecords
-        //   });
-
-        //   logger.info(
-        //     `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}: importing success!`
-        //   );
-        // }
         logger.info(
           `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}: success!`
         );
@@ -163,54 +149,17 @@ export default class ImportIXnetQueue {
       try {
         logger.debug(`ImportIXnetQueue.start`);
         const integrations = await Integration.find({
-          type: 'ixnet',
+          type: 'ixnet'
         });
         for (const integration of integrations) {
           for (const action of integration.actions) {
-            const venue = await Venue.findById(action.venue, {
-              _id: 1,
-              name: 1
-            }).populate([
-              {
-                path: 'company',
-                select: { _id: 1, name: 1 },
-                populate: [
-                  {
-                    path: 'team',
-                    select: { _id: 1, name: 1 }
-                  }
-                ]
-              }
-            ]);
-            const form = await Form.findById(action.form).populate([
-              {
-                path: 'sections.questions.scale'
-              },
-              {
-                path: 'sections.questions.damages',
-                select: ['name', 'positions', 'kinds', 'parts'],
-                populate: [
-                  {
-                    path: 'positions',
-                    select: ['name']
-                  },
-                  {
-                    path: 'kinds',
-                    select: ['name']
-                  },
-                  {
-                    path: 'parts',
-                    select: ['name']
-                  }
-                ]
-              }
-            ]);
-            const user = await User.findById(action.user, {
-              _id: 1,
-              email: 1
+            const { venue, form, user } = await this.getBaseData({
+              venueId: action.venue,
+              formId: action.form,
+              userId: action.user
             });
             if (venue && form && user) {
-              this.queue.add(
+              await this.queue.add(
                 'entradas-action',
                 {
                   integration,
@@ -272,5 +221,57 @@ export default class ImportIXnetQueue {
       await this.start(job, done);
       resolve({});
     });
+  }
+
+  private async getBaseData({ venueId, formId, userId }: any): Promise<{
+    user: IUserModel | null;
+    venue: IVenueModel | null;
+    form: IFormModel | null;
+  }> {
+    const [venue, form, user] = await Promise.all([
+      Venue.findById(venueId, {
+        _id: 1,
+        name: 1
+      }).populate([
+        {
+          path: 'company',
+          select: { _id: 1, name: 1 },
+          populate: [
+            {
+              path: 'team',
+              select: { _id: 1, name: 1 }
+            }
+          ]
+        }
+      ]),
+      Form.findById(formId).populate([
+        {
+          path: 'sections.questions.scale'
+        },
+        {
+          path: 'sections.questions.damages',
+          select: ['name', 'positions', 'kinds', 'parts'],
+          populate: [
+            {
+              path: 'positions',
+              select: ['name']
+            },
+            {
+              path: 'kinds',
+              select: ['name']
+            },
+            {
+              path: 'parts',
+              select: ['name']
+            }
+          ]
+        }
+      ]),
+      User.findById(userId, {
+        _id: 1,
+        email: 1
+      })
+    ]);
+    return { venue, form, user };
   }
 }

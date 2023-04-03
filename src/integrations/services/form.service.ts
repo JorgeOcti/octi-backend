@@ -1,4 +1,3 @@
-// import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as moment from 'moment';
 import History from '../../app/models/history.model';
@@ -9,7 +8,7 @@ import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
 import Car from '../../app/models/car.model';
-// import logger from '../../services/logger.service';
+
 import {
   IIntegration,
   IIntegrationAction
@@ -72,10 +71,10 @@ export default class FormImporter {
           return completedForm;
         })
       );
-      if (processedBatch.length) {
-        const show = processedBatch[0];
-        console.dir(show, { depth: 2 });
-      }
+      // if (processedBatch.length) {
+      //   const show = processedBatch[0];
+      //   console.dir(show, { depth: 2 });
+      // }
       await Participant.bulkWrite(processedBatch);
     }
     return true;
@@ -223,7 +222,8 @@ export default class FormImporter {
         insertOne: {
           document: {
             ...this.participantObject,
-            ...participant
+            ...participant,
+            importedAt: moment().toISOString()
           },
           timestamps: false
         }

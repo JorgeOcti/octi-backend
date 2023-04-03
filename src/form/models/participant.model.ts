@@ -531,6 +531,9 @@ const participantSchema = new mongoose.Schema(
     importedID: {
       type: String
     },
+    importedAt: {
+      type: Date
+    },
 
     active: {
       type: Boolean,

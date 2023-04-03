@@ -1789,6 +1789,7 @@ class CarController {
             'imported',
             'importedFrom',
             'importedType',
+            'importedAt',
             'importedID'
           ],
           match: {
