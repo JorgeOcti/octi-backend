@@ -15,4 +15,4 @@ importIXnet.run();
 //     removeOnComplete: true
 //   }
 // );
-importIXnet.queue.add('main', {}, { attempts: 3, removeOnComplete: true });
+// importIXnet.queue.add('main', {}, { attempts: 3, removeOnComplete: true });

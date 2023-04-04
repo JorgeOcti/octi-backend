@@ -496,7 +496,7 @@ class InventoryController {
         totalPages: 'pages',
         pagingCounter: 'si'
       },
-      // allowDiskUse: true,
+      allowDiskUse: true,
       lean: true,
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '10', 10)
@@ -504,10 +504,14 @@ class InventoryController {
     try {
       const paginatedInventories = await InventoryModel.paginate(
         {
-          team,
-          venues: {
-            $in: venuesPermissions
-          }
+          $and: [
+            {
+              team,
+              venues: {
+                $in: venuesPermissions
+              }
+            }
+          ]
         },
         options
       );
@@ -651,8 +655,8 @@ class InventoryController {
 
       if (
         options.page &&
-        paginatedInventories.pages &&
-        paginatedInventories.pages < options.page
+        paginatedInventories?.pages &&
+        paginatedInventories?.pages as number < options.page
       ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
@@ -1814,7 +1818,7 @@ class InventoryController {
                 $and: [
                   {
                     team: new mongoose.Types.ObjectId(team),
-                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
+                    _id: new mongoose.Types.ObjectId(id)
                   }
                 ]
               }
@@ -1937,7 +1941,7 @@ class InventoryController {
                 $and: [
                   {
                     team: new mongoose.Types.ObjectId(team),
-                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
+                    _id: new mongoose.Types.ObjectId(id)
                   }
                 ]
               }
@@ -2031,7 +2035,7 @@ class InventoryController {
                 $and: [
                   {
                     team: new mongoose.Types.ObjectId(team),
-                    _id: { $in: [new mongoose.Types.ObjectId(id)] }
+                    _id: new mongoose.Types.ObjectId(id)
                   }
                 ]
               }
