@@ -46,8 +46,7 @@ import { socket } from '../../services/socket.service';
 import GeneralUtils from '../../utils/general.utils';
 import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
-import Form, {
-  IFormModel, KindForm, KindQuestion } from '../models/form.model';
+import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
 import Participant, {
   IParticipantAnswerModel,
@@ -129,21 +128,13 @@ class FormController {
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await Participant.findOne(
         {
-          _id: id,
-          team,
-          $or: [
+          $and: [
             {
+              _id: id,
+              team,
               venue: {
                 $in: venuesPermissions
               }
-            },
-            {
-              venue: {
-                $exists: false
-              }
-            },
-            {
-              venue: null
             }
           ]
         },
@@ -322,9 +313,7 @@ class FormController {
         };
 
         if (
-          participant.form &&
-          participant.form.triggers &&
-          participant.form.triggers.length > 0
+          participant.form?.triggers?.length > 0
         ) {
           let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
             (trigger: IFormTrigger) =>
@@ -400,7 +389,7 @@ class FormController {
     } catch (e) {
       console.log(e);
       // Raven.captureException(e, { req });
-      res.status(500).json(e.message);
+      return res.status(500).json(e.message);
     }
   }
 
@@ -3151,11 +3140,13 @@ class FormController {
       }
 
       const filter = {
-        $and: [{
-          team,
-          car: car._id,
-          active: true
-        }]
+        $and: [
+          {
+            team,
+            car: car._id,
+            active: true
+          }
+        ]
       };
       const options: PaginateOptions = {
         sort: {
