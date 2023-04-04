@@ -157,6 +157,7 @@ class FormController {
           createdAt: true
         }
       )
+        .allowDiskUse(true)
         .populate([
           {
             path: 'user',
@@ -312,9 +313,7 @@ class FormController {
           }
         };
 
-        if (
-          participant.form?.triggers?.length > 0
-        ) {
+        if (participant.form?.triggers?.length > 0) {
           let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
             (trigger: IFormTrigger) =>
               trigger.kind === KindTrigger.file && trigger.enabled
@@ -3226,7 +3225,7 @@ class FormController {
       if (
         options.page &&
         participants.pages &&
-        participants.pages < options.page
+        (participants.pages as number) < options.page
       ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',

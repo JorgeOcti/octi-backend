@@ -1590,21 +1590,13 @@ class CarController {
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await ParticipantModel.findOne(
         {
-          _id: id,
-          team,
-          $or: [
+          $and: [
             {
+              _id: id,
+              team,
               venue: {
                 $in: venuesPermissions
               }
-            },
-            {
-              venue: {
-                $exists: false
-              }
-            },
-            {
-              venue: null
             }
           ]
         },
