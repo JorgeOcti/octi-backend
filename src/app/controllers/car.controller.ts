@@ -491,7 +491,7 @@ class CarController {
             carFilter = {
               $and: [
                 ...carFilter['$and'],
-                { $or: [{ vin2}, {patent: patentRegex }] }
+                { $or: [{ vin2 }, { patent: patentRegex }] }
               ]
             };
           }
@@ -548,14 +548,18 @@ class CarController {
     try {
       const { companies, only_controls } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
-      const query: any = {
-        _id: {
-          $in: venuesPermissions
-        }
+      let query: any = {
+        $and: [
+          {
+            _id: {
+              $in: venuesPermissions
+            }
+          }
+        ]
       };
       if (companies) {
-        query.company = {
-          $in: [companies]
+        query = {
+          $and: [...query['$and'], { company: { $in: [companies] } }]
         };
       }
 
@@ -565,22 +569,31 @@ class CarController {
       );
 
       let participantQuery: any = {
-        venue: {
-          $in: venuesPermissionsFilterByCompanies
-        },
-        createdAt: {
-          $gte: moment().subtract(30, 'd').toDate()
-        }
+        $and: [
+          {
+            venue: {
+              $in: venuesPermissionsFilterByCompanies
+            },
+            // reception: true,
+            createdAt: {
+              $gte: moment().subtract(30, 'd').toDate()
+            }
+          }
+        ]
       };
       if (only_controls === '1') {
-        participantQuery.kind = { $ne: KindForm.transmittal };
+        participantQuery = {
+          $and: [
+            ...participantQuery['$and'],
+            { kind: { $ne: KindForm.transmittal } }
+          ]
+        };
       }
 
       const participantReceivedPerDay = await ParticipantModel.aggregate([
         {
           $match: {
-            ...participantQuery,
-            reception: true
+            $and: [...participantQuery['$and'], { reception: true }]
           }
         },
         {
@@ -661,8 +674,7 @@ class CarController {
       const participantSentPerDay = await ParticipantModel.aggregate([
         {
           $match: {
-            ...participantQuery,
-            shipping: true
+            $and: [...participantQuery['$and'], { shipping: true }]
           }
         },
         {
@@ -947,12 +959,16 @@ class CarController {
       const participantPerRange = await ParticipantModel.aggregate([
         {
           $match: {
-            venue: {
-              $in: venuesPermissions
-            },
-            createdAt: {
-              $gte: moment().subtract(14, 'd').toDate()
-            }
+            $and: [
+              {
+                venue: {
+                  $in: venuesPermissions
+                },
+                createdAt: {
+                  $gte: moment().subtract(14, 'd').toDate()
+                }
+              }
+            ]
           }
         },
         {

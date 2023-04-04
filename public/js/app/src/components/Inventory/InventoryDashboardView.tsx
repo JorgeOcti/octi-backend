@@ -51,7 +51,6 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-
     window.scrollTo(0, 0);
 
     // add listeners
@@ -60,17 +59,20 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
     // get data
     const { filter } = this.props.inventoryDashboard;
     this.props.getInventoryDashboard(filter);
-
   }
 
   public componentDidMount(): void {
     super.componentDidMount();
-    const $monthlyReport = document.getElementById('inventory-monthly-report') as HTMLDivElement;
+    const $monthlyReport = document.getElementById(
+      'inventory-monthly-report'
+    ) as HTMLDivElement;
     this.monthlyReport = echarts.init($monthlyReport);
-
   }
 
-  public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
+  public componentDidUpdate(
+    prevProps: IPropsType,
+    prevState: IStateType
+  ): void {
     const { loading } = this.props.inventoryDashboard;
     if (!loading) {
       this.updateDashboardChart();
@@ -92,41 +94,50 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { filter, loading, venues } = this.props.inventoryDashboard;
     return (
-      <AppContainer  cMenu='2' cSubMenu='2.3'>
-        <section className='content'>
-          <div className='box'>
-            <div className='box-header with-border'>
-              <h3 className='box-title'>Dashboard de inventarios</h3>
+      <AppContainer
+        title={
+          // <div className='col-md-offset-8 col-md-4' style={{ padding: '20px 40px' }}>
+          <div style={{ width: '250px' }}>
+            <BootstrapSelect
+              sm={true}
+              noneSelectedText="Todas las sucursales"
+              displayItems={2}
+              selectedText="sucursales seleccionadas."
+              selected={filter.venues}
+              allOption={true}
+              search={true}
+              selectAll={this.filterAllVenues}
+              options={venues.map((venue: any) => ({
+                value: venue._id,
+                text: venue.name
+              }))}
+              onClick={this.filterVenues}
+            />
+          </div>
+          // </div>
+        }
+        cMenu="2"
+        cSubMenu="2.3">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Dashboard de inventarios</h3>
             </div>
-            <div className='box-body no-padding'>
+            <div className="box-body no-padding">
               <Row>
-                <div className='col-md-offset-8 col-md-4' style={{ padding: '20px 40px' }}>
-                  <BootstrapSelect
-                    sm={true}
-                    noneSelectedText='Todas'
-                    displayItems={2}
-                    selectedText='sucursales seleccionadas.'
-                    selected={filter.venues}
-                    allOption={true}
-                    selectAll={this.filterAllVenues}
-                    options={venues.map((venue: any) => ({
-                      value: venue._id,
-                      text: venue.name
-                    }))}
-                    onClick={this.filterVenues}
+                <div className="col-md-12" style={{ padding: '0 0 15px 0' }}>
+                  <div
+                    id="inventory-monthly-report"
+                    style={{ height: '65vh', maxWidth: '100%' }}
                   />
-                </div>
-                <div className='col-md-12' style={{padding: '0 0 15px 0'}}>
-                   <div id='inventory-monthly-report' style={{ height: '65vh', maxWidth: '100%' }} />
                 </div>
               </Row>
             </div>
-            {
-              loading &&
-              <div className='overlay'>
-                <i className='fa fa-spinner fa-spin text-purple' />
+            {loading && (
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple" />
               </div>
-            }
+            )}
           </div>
         </section>
       </AppContainer>
@@ -143,10 +154,11 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterVenues(value: any) {
-
     const { filter } = this.props.inventoryDashboard;
 
-    const venues = filter.venues.includes(value) ? filter.venues.filter((venue) => venue !== value) : [value, ...filter.venues];
+    const venues = filter.venues.includes(value)
+      ? filter.venues.filter((venue) => venue !== value)
+      : [value, ...filter.venues];
     this.props.getInventoryDashboardFiltered({
       ...filter,
       venues
@@ -189,7 +201,13 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
     const reported = Object.values(monthlyReport).map((v) => v.reported);
 
     const option: any = {
-      color: [inventorySettings.foundColor, inventorySettings.leftoverColor, inventorySettings.missingColor, inventorySettings.pendingColor, inventorySettings.reportedColor],
+      color: [
+        inventorySettings.foundColor,
+        inventorySettings.leftoverColor,
+        inventorySettings.missingColor,
+        inventorySettings.pendingColor,
+        inventorySettings.reportedColor
+      ],
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -200,9 +218,15 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
         }
       },
       legend: {
-        // x: 'center',
-        // bottom: 50,
-        data: [inventorySettings.found, inventorySettings.leftover, inventorySettings.missing, inventorySettings.pending, inventorySettings.reported]
+        x: 'center',
+        bottom: 50,
+        data: [
+          inventorySettings.found,
+          inventorySettings.leftover,
+          inventorySettings.missing,
+          inventorySettings.pending,
+          inventorySettings.reported
+        ]
       },
       calculable: true,
       xAxis: [
@@ -212,7 +236,7 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
           data: xSerie
         }
       ],
-       yAxis: {
+      yAxis: {
         // minInterval: 1,
         type: 'value',
         axisLine: {
@@ -231,13 +255,13 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
       grid: {
         left: '3%',
         right: '4%',
-        bottom: 80,
+        bottom: 100,
         containLabel: true
       },
       dataZoom: {
         show: true,
         realtime: true,
-        start: 50,
+        start: 0,
         end: 100
       },
       series: [
@@ -314,11 +338,12 @@ class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
     };
 
     this.monthlyReport.setOption(option);
-
   }
 }
 
-const mapStateToProps = (state: { inventoryDashboard: IInventoryDashboardState }) => {
+const mapStateToProps = (state: {
+  inventoryDashboard: IInventoryDashboardState;
+}) => {
   return {
     inventoryDashboard: state.inventoryDashboard
   };
@@ -328,8 +353,12 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getInventoryDashboard: () => dispatch(getInventoryDashboard()),
-    getInventoryDashboardFiltered: (filter: IFilterCar) => dispatch(getInventoryDashboardFiltered(filter))
+    getInventoryDashboardFiltered: (filter: IFilterCar) =>
+      dispatch(getInventoryDashboardFiltered(filter))
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(InventoryDashboardView);
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(InventoryDashboardView);

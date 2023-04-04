@@ -656,7 +656,7 @@ class InventoryController {
       if (
         options.page &&
         paginatedInventories?.pages &&
-        paginatedInventories?.pages as number < options.page
+        (paginatedInventories?.pages as number) < options.page
       ) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
@@ -767,12 +767,16 @@ class InventoryController {
         // const venuesPermissions = req.user.venuesPermissions();
         const inventory = await (Inventory as any)
           .findOne({
-            _id: id,
-            venues: updatedUser.venue,
-            status: {
-              $in: [ChoicesStatusInventory.inProcess]
-            },
-            team
+            $and: [
+              {
+                _id: id,
+                venues: updatedUser.venue,
+                status: {
+                  $in: [ChoicesStatusInventory.inProcess]
+                },
+                team
+              }
+            ]
           })
           .populate([
             {
@@ -784,9 +788,6 @@ class InventoryController {
                     ChoicesStatusCarInventory.found
                   ]
                 }
-                //   venue: {
-                //     $in: venuesPermissions
-                //   }
               },
               populate: [
                 {
@@ -2351,18 +2352,26 @@ class InventoryController {
       const inventory: any = await InventoryCar.aggregate([
         {
           $match: {
-            createdAt: {
-              $gte: moment().subtract(total, 'months').startOf('month').toDate()
-            },
-            venue: {
-              $in: venuesPermissions
-            }
+            $and: [
+              {
+                createdAt: {
+                  $gte: moment()
+                    .subtract(total, 'months')
+                    .startOf('month')
+                    .toDate()
+                },
+                venue: {
+                  $in: venuesPermissions
+                }
+              }
+            ]
           }
         },
         {
           $group: {
             _id: {
               status: '$status',
+              // car: '$car',
               month: {
                 $dateToString: { format: '%Y-%m', date: '$createdAt' }
               }
