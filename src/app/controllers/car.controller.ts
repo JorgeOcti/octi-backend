@@ -623,44 +623,44 @@ class CarController {
                   timezone: 'America/Santiago'
                 }
               },
-              user: '$user'
+              // user: '$user'
             },
             total: {
               $sum: 1
             }
           }
         },
-        {
-          $lookup: {
-            from: 'users',
-            localField: '_id.user',
-            foreignField: '_id',
-            as: 'userInfo'
-          }
-        },
-        {
-          $unwind: '$userInfo'
-        },
+        // {
+        //   $lookup: {
+        //     from: 'users',
+        //     localField: '_id.user',
+        //     foreignField: '_id',
+        //     as: 'userInfo'
+        //   }
+        // },
+        // {
+        //   $unwind: '$userInfo'
+        // },
         {
           $project: {
             '_id.category': 1,
-            '_id.user': 1,
+            // '_id.user': 1,
             total: 1,
-            'userInfo._id': 1,
-            'userInfo.firstName': 1,
-            'userInfo.lastName': 1
+            // 'userInfo._id': 1,
+            // 'userInfo.firstName': 1,
+            // 'userInfo.lastName': 1
           }
         },
         {
           $group: {
             _id: '$_id.category',
-            users: {
-              $push: {
-                user: '$_id.user',
-                userInfo: '$userInfo',
-                total: '$total'
-              }
-            },
+            // users: {
+            //   $push: {
+            //     user: '$_id.user',
+            //     userInfo: '$userInfo',
+            //     total: '$total'
+            //   }
+            // },
             total: { $sum: '$total' }
           }
         },
@@ -704,44 +704,44 @@ class CarController {
                   timezone: 'America/Santiago'
                 }
               },
-              user: '$user'
+              // user: '$user'
             },
             total: {
               $sum: 1
             }
           }
         },
-        {
-          $lookup: {
-            from: 'users',
-            localField: '_id.user',
-            foreignField: '_id',
-            as: 'userInfo'
-          }
-        },
-        {
-          $unwind: '$userInfo'
-        },
+        // {
+        //   $lookup: {
+        //     from: 'users',
+        //     localField: '_id.user',
+        //     foreignField: '_id',
+        //     as: 'userInfo'
+        //   }
+        // },
+        // {
+        //   $unwind: '$userInfo'
+        // },
         {
           $project: {
             '_id.category': 1,
-            '_id.user': 1,
+            // '_id.user': 1,
             total: 1,
-            'userInfo._id': 1,
-            'userInfo.firstName': 1,
-            'userInfo.lastName': 1
+            // 'userInfo._id': 1,
+            // 'userInfo.firstName': 1,
+            // 'userInfo.lastName': 1
           }
         },
         {
           $group: {
             _id: '$_id.category',
-            users: {
-              $push: {
-                user: '$_id.user',
-                userInfo: '$userInfo',
-                total: '$total'
-              }
-            },
+            // users: {
+            //   $push: {
+            //     user: '$_id.user',
+            //     userInfo: '$userInfo',
+            //     total: '$total'
+            //   }
+            // },
             total: { $sum: '$total' }
           }
         },
