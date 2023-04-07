@@ -860,7 +860,7 @@ class FormController {
           }
 
           if (transmittal) {
-            query['$or'].push({ transmittal: new Types.ObjectId(transmittal) });
+            query['$and'].push({ transmittal: new Types.ObjectId(transmittal) });
           }
 
           const existControl = await Participant.findOne(query);
