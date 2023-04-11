@@ -156,10 +156,7 @@ export default class ImportIXnetQueue {
               form,
               user
             },
-            {
-              attempts: 3,
-              removeOnComplete: true
-            }
+            { attempts: 3, backoff: 1000, removeOnComplete: true }
           );
         }
         logger.info(
@@ -213,10 +210,7 @@ export default class ImportIXnetQueue {
                   },
                   form
                 },
-                {
-                  attempts: 3,
-                  removeOnComplete: true
-                }
+                { attempts: 3, backoff: 1000, removeOnComplete: true }
               );
               logger.info(
                 `ImportIXnetQueue.start ${integration.name} -> ${action.name} added success!');`

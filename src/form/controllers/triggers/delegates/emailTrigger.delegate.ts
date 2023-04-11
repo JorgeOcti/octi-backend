@@ -1,9 +1,8 @@
-import NullTriggerDelegate from './nullTrigger.delegate';
-import { IFormTriggerModel } from '../../../models/trigger.model';
-import logger from '../../../../services/logger.service';
-
 import { IAnyObject } from '../../../../interfaces/global.interface';
+import { IFormTriggerModel } from '../../../models/trigger.model';
+import NullTriggerDelegate from './nullTrigger.delegate';
 import emailQueue from '../../../../app/tasks/email.task';
+import logger from '../../../../services/logger.service';
 
 export default class EmailTriggerDelegate extends NullTriggerDelegate {
 
@@ -52,7 +51,7 @@ export default class EmailTriggerDelegate extends NullTriggerDelegate {
           ...context,
           ...answers
         }
-      }, { attempts: 3, backoff: 1000 });
+      },  { attempts: 3, backoff: 1000, removeOnComplete: true });
 
       logger.info(`EmailTriggerDelegate.trigger ${trigger.kind} executed`);
 

@@ -1,43 +1,30 @@
+import * as GraphicsMagick from 'gm';
+import * as Joi from 'joi';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
-import { Alignment } from 'exceljs';
-import { Response } from 'express';
 import * as fs from 'fs';
-import * as GraphicsMagick from 'gm';
 import * as https from 'https';
-import * as Joi from 'joi';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import { PaginateOptions, PipelineStage } from 'mongoose';
 import * as tempfile from 'tempfile';
+
 import {
-  ChoicesStatusCar,
   default as Car,
   default as CarModel,
+  ChoicesStatusCar,
   ICarModel
 } from '../../app/models/car.model';
-import History from '../../app/models/history.model';
-import { StatusHistory } from '../../app/models/history.types';
-import TeamSetting from '../../app/models/teamSetting.model';
-import { default as User } from '../../app/models/user.model';
-import {
-  default as Venue,
-  default as VenueModel,
-  IVenueModel
-} from '../../app/models/venue.model';
-import historyQueue from '../../app/tasks/history.task';
-import { IRequest } from '../../interfaces/global.interface';
-import logger from '../../services/logger.service';
-import { socket } from '../../services/socket.service';
-import GeneralUtils from '../../utils/general.utils';
-import { IInventoryCar } from '../interfaces/inventory.interface';
-import { IStockCar } from '../interfaces/stock.interface';
 import {
   ChoicesStatusInventory,
   default as Inventory,
   default as InventoryModel
 } from '../models/inventory.model';
+import {
+  IVenueModel,
+  default as Venue,
+  default as VenueModel
+} from '../../app/models/venue.model';
 import InventoryCar, {
   ChoicesStatusCarInventory
 } from '../models/inventoryCar.model';
@@ -45,10 +32,25 @@ import {
   default as InventoryFile,
   default as InventoryFileModel
 } from '../models/inventoryFile.model';
+import { PaginateOptions, PipelineStage } from 'mongoose';
+
+import { Alignment } from 'exceljs';
+import GeneralUtils from '../../utils/general.utils';
+import History from '../../app/models/history.model';
+import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IRequest } from '../../interfaces/global.interface';
+import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
+import { Response } from 'express';
+import { StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
+import TeamSetting from '../../app/models/teamSetting.model';
+import { default as User } from '../../app/models/user.model';
+import historyQueue from '../../app/tasks/history.task';
 import inventoryQueue from '../taks/inventory.task';
+import logger from '../../services/logger.service';
+import { socket } from '../../services/socket.service';
 
 class InventoryController {
   constructor() {
@@ -1192,7 +1194,7 @@ class InventoryController {
           {
             inventory: inventory._id
           },
-          { attempts: 3, backoff: 1000 }
+          { attempts: 3, backoff: 1000, removeOnComplete: true }
         );
         socket().to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
@@ -2658,7 +2660,7 @@ class InventoryController {
                 currentCar: currentCar._id,
                 car
               },
-              { attempts: 3, backoff: 1000 }
+              { attempts: 3, backoff: 1000, removeOnComplete: true }
             );
           }
         }

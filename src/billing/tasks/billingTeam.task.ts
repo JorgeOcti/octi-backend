@@ -1,20 +1,22 @@
+import * as fs from 'fs';
 import * as moment from 'moment-timezone';
+import * as mongoose from 'mongoose';
+import * as path from 'path';
 import * as request from 'request';
-import TeamBilling from '../models/teamBilling.model';
-import History from '../../app/models/history.model';
-import Submodule from '../models/submodule.model';
-import puppeteer from 'puppeteer';
+
 import InvoiceTeamBilling, {
   IInvoiceTeamBillingModel
 } from '../models/invoiceTeamBilling.module';
-import * as mongoose from 'mongoose';
-import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
-import * as fs from 'fs';
-import * as path from 'path';
-import GeneralUtils from '../../utils/general.utils';
-import { StatusHistory } from '../../app/models/history.types';
+
 import Car from '../../app/models/car.model';
+import GeneralUtils from '../../utils/general.utils';
+import History from '../../app/models/history.model';
+import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
+import { StatusHistory } from '../../app/models/history.types';
+import Submodule from '../models/submodule.model';
+import TeamBilling from '../models/teamBilling.model';
 import emailQueue from '../../app/tasks/email.task';
+import puppeteer from 'puppeteer';
 
 class BillingTeamQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -202,7 +204,7 @@ class BillingTeamQueue {
             name: notification.name
           }
         },
-        { attempts: 3, backoff: 1000 }
+        { attempts: 3, backoff: 1000, removeOnComplete: true }
       );
     }
   }
