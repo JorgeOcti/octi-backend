@@ -30,7 +30,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                 {
                   name: 'Entradas',
                   type: 'get',
-                  url: '/derco/api/Interfaz/Entradas?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
+                  url: '/derco/api/Interfaz/Entradas',
                   //  CD LONQUÉN SCHIAPPACASSE
                   venue: '63977ffc6ea6ad00c32cfc22',
                   // INGRESO LONQUÉN
@@ -41,7 +41,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                 {
                   name: 'Revisiones',
                   type: 'get',
-                  url: '/derco/api/Interfaz/Revisiones?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
+                  url: '/derco/api/Interfaz/Revisiones',
                   //  CD LONQUÉN SCHIAPPACASSE
                   venue: '63977ffc6ea6ad00c32cfc22',
                   // ALMACENAMIENTO LONQUÉN
@@ -76,7 +76,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                 {
                   name: 'Entradas',
                   type: 'get',
-                  url: '/derco/api/Interfaz/Entradas?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
+                  url: '/derco/api/Interfaz/Entradas',
                   // CD NOVICIADO TRANSAUTO
                   venue: '639780224e5d4600cc76b563',
                   //INGRESO NOVICIADO
@@ -87,7 +87,7 @@ export class integrationConfig1680235154571 implements MigrationInterface {
                 {
                   name: 'Revisiones',
                   type: 'get',
-                  url: '/derco/api/Interfaz/Revisiones?fecha_ini=2010-03-01 09:00:00&fecha_fin=2023-03-28 14:00:00',
+                  url: '/derco/api/Interfaz/Revisiones',
                   // CD NOVICIADO TRANSAUTO
                   venue: '639780224e5d4600cc76b563',
                   //ALMACENAMIENTO NOVICIADO

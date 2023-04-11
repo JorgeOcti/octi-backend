@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
 import type {
   IParticipant,
   IParticipantAccesory,
@@ -12,8 +11,11 @@ import type {
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
+import { KindForm, KindQuestion, kindForm, kindQuestion } from './form.model';
+
+import { PaginateModel } from 'mongoose';
 import { choiceBackgroundColors } from './scale.model';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IParticipantChoicesModel
   extends IParticipantChoices,
@@ -572,8 +574,11 @@ participantSchema.index(
   },
   { name: 'ParticipantIndex' }
 );
+
 participantSchema.index({ team: 1, active: 1, createdAt: -1 });
+
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
+
 participantSchema.index(
   {
     'deliveryInfo.name': 'text',
