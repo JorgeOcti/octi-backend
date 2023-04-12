@@ -6,7 +6,7 @@ metadata:
   labels:
     app: osa-andes-worker
 spec:
-  replicas: ${INSTANCE_NUMBER}
+  replicas: 1
   selector:
     matchLabels:
       app: osa-andes-worker
