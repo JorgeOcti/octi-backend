@@ -78,6 +78,9 @@ jobs:
             kubectl apply -f ${HOME}/patched-andes-deployment.yaml
             kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
 
+            envsubst < ~/repo/k8s/kube/andes-worker-deployment.yaml > ${HOME}/patched-andes-worker-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-worker-deployment.yaml
+
             envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
             kubectl apply -f ${HOME}/patched-andes-service.yaml
 

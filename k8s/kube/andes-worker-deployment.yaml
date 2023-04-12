@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: osa-andes
+  name: osa-andes-worker
   namespace: ${NAMESPACE}
   labels:
-    app: osa-andes
+    app: osa-andes-worker
 spec:
   replicas: ${INSTANCE_NUMBER}
   selector:
     matchLabels:
-      app: osa-andes
+      app: osa-andes-worker
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -19,31 +19,31 @@ spec:
     metadata:
       namespace: ${NAMESPACE}
       labels:
-        app: osa-andes
+        app: osa-andes-worker
     spec:
       containers:
-      - name: osa-andes
+      - name: osa-andes-worker
         image: ${REGISTRY}:${CIRCLE_SHA1}
-        command: [ "pm2", "start", "pm2.json", "--no-daemon" ]
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health-check/
-            port: 3030
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health-check/
-            port: 3030
-            scheme: HTTP
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
+        command: [ "pm2", "start", "pm2-worker.json", "--no-daemon" ]
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health-check/
+        #     port: 3030
+        #     scheme: HTTP
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        # livenessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health-check/
+        #     port: 3030
+        #     scheme: HTTP
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
         imagePullPolicy: Always
         env:
           - name: ENV

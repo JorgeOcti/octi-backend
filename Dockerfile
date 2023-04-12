@@ -54,6 +54,7 @@ COPY ./src /srv/src
 COPY ./public /srv/public
 COPY ./views /srv/views
 COPY ./pm2.json /srv/pm2.json
+COPY ./pm2-worker.json /srv/pm2-worker.json
 COPY ./tsconfig.json /srv/tsconfig.json
 
 RUN export PYTHON=python3

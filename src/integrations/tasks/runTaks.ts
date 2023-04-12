@@ -7,11 +7,10 @@ importIXnet.queue.add(
   'main',
   {},
   {
-    repeat: {
-      every: (1000 * 60) * 30 // 30 minutes
-    },
+    repeat: { cron: '0 * * * *' },
+    // jobId: 'importIXnet' ,
     attempts: 3,
     removeOnComplete: true
   }
 );
-importIXnet.queue.add('main', {}, { attempts: 3, removeOnComplete: true });
+// importIXnet.queue.add('main', {}, { attempts: 3, removeOnComplete: true });
