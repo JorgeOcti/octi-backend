@@ -1,17 +1,19 @@
-import * as mongoose from 'mongoose';
 import * as moment from 'moment';
-import History from '../../app/models/history.model';
-import Team from '../../app/models/team.model';
-import Damages from '../../form/models/damages.model';
-import Kind from '../../form/models/kind.model';
-import Part from '../../form/models/part.model';
-import Participant from '../../form/models/participant.model';
-import Position from '../../form/models/position.model';
+import * as mongoose from 'mongoose';
 
 import {
   IIntegration,
   IIntegrationAction
 } from '../interfaces/integration.interface';
+
+import Damages from '../../form/models/damages.model';
+import History from '../../app/models/history.model';
+import Kind from '../../form/models/kind.model';
+import Part from '../../form/models/part.model';
+import Participant from '../../form/models/participant.model';
+import Position from '../../form/models/position.model';
+import Team from '../../app/models/team.model';
+import carTracker from '../../app/controllers/tracker/car.tracker';
 
 export default class FormImporter {
   private _isFormInCache: any = {};
@@ -58,7 +60,15 @@ export default class FormImporter {
       const batch = data.splice(0, 10);
       const processedBatch = await Promise.all(
         batch.map(async (row) => {
-          const { externalId, form, user, car, venue, createdAt, updateCarData } = row;
+          const {
+            externalId,
+            form,
+            user,
+            car,
+            venue,
+            createdAt,
+            updateCarData
+          } = row;
           const completedForm = await this.makeCompletedForm({
             externalId,
             form,
@@ -75,7 +85,15 @@ export default class FormImporter {
       //   const show = processedBatch[0];
       //   console.dir(show, { depth: 2 });
       // }
-      await Participant.bulkWrite(processedBatch);
+      const bulk = await Participant.bulkWrite(processedBatch);
+      if (Object.values(bulk.insertedIds).length) {
+        console.log(Object.values(bulk.insertedIds));
+        const carTrackers = [];
+        for (const participant of Object.values(bulk.insertedIds)) {
+          carTrackers.push(carTracker.fromParticipant({ id: participant }));
+        }
+        await Promise.all(carTrackers);
+      }
     }
     return true;
   }
@@ -86,7 +104,7 @@ export default class FormImporter {
     user,
     car,
     venue,
-    createdAt,
+    createdAt
   }: any) {
     if (!this._isFormInCache[form._id]?.name) {
       this.participantObject = {
@@ -189,6 +207,15 @@ export default class FormImporter {
       updatedAt: createdAt
     };
     if (existParticipant) {
+      // await History.updateOne(
+      //   { participant: existParticipant._id },
+      //   {
+      //     $set: {
+      //       from: venue._id,
+      //       to: venue._id
+      //     }
+      //   }
+      // );
       return {
         updateOne: {
           filter: {

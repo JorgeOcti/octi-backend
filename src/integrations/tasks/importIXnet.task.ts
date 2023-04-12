@@ -130,7 +130,7 @@ export default class ImportIXnetQueue {
           `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}`
         );
         const client = new IXnetClient(integration);
-        action.url = `${action.url}?fecha_ini=${moment().subtract(11, 'days').format('YYYY-MM-DD HH:mm:ss')}&fecha_fin=${moment().format('YYYY-MM-DD HH:mm:ss')}`
+        action.url = `${action.url}?fecha_ini=${moment().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss')}&fecha_fin=${moment().format('YYYY-MM-DD HH:mm:ss')}`
         let records = await client.getFrom(action);
         // filter records by unique IdRevision or VIN
         var externalIds: any[] = [];
