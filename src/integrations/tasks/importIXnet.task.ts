@@ -175,7 +175,7 @@ export default class ImportIXnetQueue {
   async start(_job: Queue.Job<any>, done: Queue.DoneCallback) {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.debug(`ImportIXnetQueue.start`);
+        logger.debug(`ImportIXnetQueue.start ${moment().format('YYYY-MM-DD HH:mm:ss')}`);
         const integrations = await Integration.find({
           type: 'ixnet'
         });

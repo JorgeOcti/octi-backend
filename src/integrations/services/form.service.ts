@@ -14,6 +14,7 @@ import Participant from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
 import Team from '../../app/models/team.model';
 import carTracker from '../../app/controllers/tracker/car.tracker';
+import logger from '../../services/logger.service';
 
 export default class FormImporter {
   private _isFormInCache: any = {};
@@ -53,12 +54,9 @@ export default class FormImporter {
   }
 
   public async import({ data }: { data: any[] }) {
-    // logger.debug(
-    //   `FormImporter.import ${this.integration.name} -> ${this.action.name} Importing ${data.length} participants`
-    // );
     while (data.length) {
       const batch = data.splice(0, 10);
-      const processedBatch = await Promise.all(
+      let processedBatch = await Promise.all(
         batch.map(async (row) => {
           const {
             externalId,
@@ -81,10 +79,15 @@ export default class FormImporter {
           return completedForm;
         })
       );
-      // if (processedBatch.length) {
-      //   const show = processedBatch[0];
-      //   console.dir(show, { depth: 2 });
-      // }
+      processedBatch = processedBatch.filter((item) => item?.updateOne === null);
+      if (processedBatch.length) {
+        logger.debug(
+          `FormImporter.import ${this.integration.name} -> ${this.action.name} Importing ${data.length} participants`
+        );
+        const show = processedBatch[0];
+        console.dir(show, { depth: 2 });
+      }
+
       const bulk = await Participant.bulkWrite(processedBatch);
       if (Object.values(bulk.insertedIds).length) {
         console.log(Object.values(bulk.insertedIds));
@@ -173,6 +176,12 @@ export default class FormImporter {
       }
       this._isFormInCache[form._id] = true;
     }
+    // console.log('createdAt', createdAt);
+    // console.log(
+    //   'moment(createdAt).toISOString()',
+    //   moment(createdAt).toISOString()
+    // );
+    // console.log('moment(createdAt).toDate()', moment(createdAt).toDate());
 
     createdAt = moment(createdAt).toISOString();
     const existParticipant = await Participant.findOne(
