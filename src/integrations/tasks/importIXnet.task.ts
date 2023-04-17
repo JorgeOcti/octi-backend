@@ -38,7 +38,7 @@ export default class ImportIXnetQueue {
       //   duration: 1000
       // }
     });
-    mongoose.set('debug', false);
+    mongoose.set('debug', true);
     new Company();
     new Team();
     this.main = this.main.bind(this);
