@@ -1,0 +1,6 @@
+{
+  "name": "andes-worker",
+  "script": "dist/integrations/tasks/runTaks.js",
+  "instances": "1",
+  "exec_mode": "cluster"
+}

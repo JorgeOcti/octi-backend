@@ -1,25 +1,27 @@
 import * as Queue from 'bull';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import { IUser } from '../../app/interfaces/user.interface';
-import { IVenue } from '../../app/interfaces/venue.interface';
-import Company from '../../app/models/company.model';
-import Team from '../../app/models/team.model';
-import User from '../../app/models/user.model';
-import Venue, { IVenueModel } from '../../app/models/venue.model';
-import { IUserModel } from '../../app/schemas/user.schema';
-import { IForm } from '../../form/interfaces/form.interface';
+
 import Form, { IFormModel } from '../../form/models/form.model';
-import logger from '../../services/logger.service';
-import { createRedisClient } from '../../services/redis.service';
-import IXnetClient from '../clients/IXnet.client';
-import FormImporter from '../services/form.service';
 import {
   IIntegration,
   IIntegrationAction
 } from '../interfaces/integration.interface';
-import Integration from '../models/integrations.model';
+import Venue, { IVenueModel } from '../../app/models/venue.model';
+
 import Car from '../../app/models/car.model';
+import Company from '../../app/models/company.model';
+import FormImporter from '../services/form.service';
+import { IForm } from '../../form/interfaces/form.interface';
+import { IUser } from '../../app/interfaces/user.interface';
+import { IUserModel } from '../../app/schemas/user.schema';
+import { IVenue } from '../../app/interfaces/venue.interface';
+import IXnetClient from '../clients/IXnet.client';
+import Integration from '../models/integrations.model';
+import Team from '../../app/models/team.model';
+import User from '../../app/models/user.model';
+import { createRedisClient } from '../../services/redis.service';
+import logger from '../../services/logger.service';
 
 export default class ImportIXnetQueue {
   public queue: Queue.Queue;
@@ -36,7 +38,7 @@ export default class ImportIXnetQueue {
       //   duration: 1000
       // }
     });
-    mongoose.set('debug', false);
+    mongoose.set('debug', true);
     new Company();
     new Team();
     this.main = this.main.bind(this);
@@ -128,6 +130,7 @@ export default class ImportIXnetQueue {
           `ImportIXnetQueue.entradas-action ${integration.name} -> ${action.name}`
         );
         const client = new IXnetClient(integration);
+        action.url = `${action.url}?fecha_ini=${moment().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss')}&fecha_fin=${moment().format('YYYY-MM-DD HH:mm:ss')}`
         let records = await client.getFrom(action);
         // filter records by unique IdRevision or VIN
         var externalIds: any[] = [];
@@ -153,10 +156,7 @@ export default class ImportIXnetQueue {
               form,
               user
             },
-            {
-              attempts: 3,
-              removeOnComplete: true
-            }
+            { attempts: 3, backoff: 1000, removeOnComplete: true }
           );
         }
         logger.info(
@@ -175,7 +175,7 @@ export default class ImportIXnetQueue {
   async start(_job: Queue.Job<any>, done: Queue.DoneCallback) {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.debug(`ImportIXnetQueue.start`);
+        logger.debug(`ImportIXnetQueue.start ${moment().format('YYYY-MM-DD HH:mm:ss')}`);
         const integrations = await Integration.find({
           type: 'ixnet'
         });
@@ -210,10 +210,7 @@ export default class ImportIXnetQueue {
                   },
                   form
                 },
-                {
-                  attempts: 3,
-                  removeOnComplete: true
-                }
+                { attempts: 3, backoff: 1000, removeOnComplete: true }
               );
               logger.info(
                 `ImportIXnetQueue.start ${integration.name} -> ${action.name} added success!');`

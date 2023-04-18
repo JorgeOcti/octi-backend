@@ -1,17 +1,19 @@
 import * as fs from 'fs';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
-import puppeteer from 'puppeteer';
 import * as request from 'request';
-import type { ICompany } from '../../app/interfaces/company.interface';
+
+import Invoice, { IInvoiceModel } from '../models/invoice.model';
+
+import ActivityHistory from '../models/activityHistory.model';
+import { ChoicesTypeActivity } from '../models/activiHistory.types';
 import Company from '../../app/models/company.model';
-import emailQueue from '../../app/tasks/email.task';
+import GeneralUtils from '../../utils/general.utils';
+import type { ICompany } from '../../app/interfaces/company.interface';
 import Participant from '../../form/models/participant.model';
 import { RequestItem } from '../../request/models/requestItem.model';
-import GeneralUtils from '../../utils/general.utils';
-import { ChoicesTypeActivity } from '../models/activiHistory.types';
-import ActivityHistory from '../models/activityHistory.model';
-import Invoice, { IInvoiceModel } from '../models/invoice.model';
+import emailQueue from '../../app/tasks/email.task';
+import puppeteer from 'puppeteer';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -346,7 +348,7 @@ class BillingQueue {
           name: notification.name,
           company: invoice.company.name
         }
-      }, { attempts: 3, backoff: 1000 });
+      },  { attempts: 3, backoff: 1000, removeOnComplete: true });
     }
   }
 

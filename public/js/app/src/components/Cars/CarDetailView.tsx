@@ -1,30 +1,32 @@
+import * as Raven from 'raven-js';
+import * as React from 'react';
 // import * as PropTypes from 'prop-types';
 import * as moment from 'moment';
-import * as Raven from 'raven-js';
-import { ErrorInfo } from 'react';
-import * as React from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
-import { Dispatch } from 'redux';
-import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
+
 import {
   CarReduxAction,
-  getCarAction,
   ICarsState,
+  getCarAction,
   isLoadingAction
 } from '../../actions/cars.actions';
 import {
-  getParticipant,
   IDashboardState,
+  getParticipant,
   loadParticipantInCarAction
 } from '../../actions/dashboard.actions';
+
 import AppContainer from '../../container/AppContainer';
+import CopyText from '../Utils/CopyText';
+import { Dispatch } from 'redux';
+import { ErrorInfo } from 'react';
+import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import ModalView from '../Modal/ModalView';
+import { RouteComponentProps } from 'react-router';
 import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-import CopyText from '../Utils/CopyText';
+import { connect } from 'react-redux';
 import { parseReplicableURL } from '../../utils/common';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
@@ -269,7 +271,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                           VEHÍCULO IMPORTADO
                                         </a>
                                       </h3>
-                                      <div className="timeline-body">
+                                      <div className="timeline-body text-sm text-muted">
                                         El vehículo fue importado al sistema el{' '}
                                         {data.createdAt.format('LLLL')}.
                                       </div>

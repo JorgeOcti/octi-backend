@@ -1,15 +1,17 @@
-import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
-import ParticipantModel from '../../form/models/participant.model';
-import { IRequest } from '../../interfaces/global.interface';
-import logger from '../../services/logger.service';
-import GeneralUtils from '../../utils/general.utils';
-import TeamSetting from '../models/teamSetting.model';
+
+import { Request, Response } from 'express';
 import { default as User, default as UserModel } from '../models/user.model';
+
+import GeneralUtils from '../../utils/general.utils';
+import { IRequest } from '../../interfaces/global.interface';
+import ParticipantModel from '../../form/models/participant.model';
+import TeamSetting from '../models/teamSetting.model';
 import Version from '../models/version.model';
 import emailQueue from '../tasks/email.task';
+import logger from '../../services/logger.service';
 
 class JWTController {
   constructor() {
@@ -360,7 +362,7 @@ class JWTController {
               url: `${process.env.SITE_URL}account/recovery/${token}/`
             }
           },
-          { attempts: 3, backoff: 1000 }
+          { attempts: 3, backoff: 1000, removeOnComplete: true }
         );
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();

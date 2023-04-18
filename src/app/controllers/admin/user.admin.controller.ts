@@ -1,21 +1,23 @@
 import * as excel from 'exceljs';
-import { Alignment } from 'exceljs';
-import { Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
 import * as uuid from 'uuid';
-import { IPermission } from '../../../billing/interfaces/permission.interface';
-import { IForm } from '../../../form/interfaces/form.interface';
-import { IRequest } from '../../../interfaces/global.interface';
-import redisClient from '../../../services/redis.service';
-import { socket } from '../../../services/socket.service';
+
+import { PaginateOptions, PaginateResult } from 'mongoose';
+
+import { Alignment } from 'exceljs';
 import { IBaseVenue } from '../../interfaces/venue.interface';
+import { IForm } from '../../../form/interfaces/form.interface';
+import { IPermission } from '../../../billing/interfaces/permission.interface';
+import { IRequest } from '../../../interfaces/global.interface';
+import { IUserModel } from '../../schemas/user.schema';
+import { Response } from 'express';
 import User from '../../models/user.model';
 import { UserTypes } from '../../models/user.model.types';
 import Venue from '../../models/venue.model';
-import { IUserModel } from '../../schemas/user.schema';
 import emailQueue from '../../tasks/email.task';
+import redisClient from '../../../services/redis.service';
+import { socket } from '../../../services/socket.service';
 
 class AdminUsersController {
   constructor() {
@@ -718,7 +720,7 @@ class AdminUsersController {
               password
             }
           },
-          { attempts: 3, backoff: 1000 }
+          { attempts: 3, backoff: 1000, removeOnComplete: true }
         );
 
         // prevent return password

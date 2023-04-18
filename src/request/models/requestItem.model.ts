@@ -2,16 +2,17 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 import { AggregatePaginateModel, PaginateModel } from 'mongoose';
-import { baseVenueSchema } from '../../app/models/venue.model';
-import { baseCarSchema } from '../../app/models/car.model';
 
 import type { IRequestItem } from '../interfaces/requestItem.interface';
+import { baseCarSchema } from '../../app/models/car.model';
 import { baseRequestItemStatusSchema } from './requestItemStatus.model';
+import { baseUserSchema } from '../../app/schemas/user.schema';
+import { baseVenueSchema } from '../../app/models/venue.model';
 import requestItemsHooks from './requestItem.hooks';
 import { requestSchema } from './request.model';
 import { transmittalSchema } from '../../distribution/models/transmittal.model';
+
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
-import { baseUserSchema } from '../../app/schemas/user.schema';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document<any> {
   createdAt: Date;
@@ -168,59 +169,16 @@ const requestItemSchema = new mongoose.Schema({
 requestItemSchema.set<any>('redisCache', process.env.ENV === 'production');
 requestItemSchema.set<any>('expires', 30);
 
-requestItemSchema.index({ 'meta.status._id': 1 });
-requestItemSchema.index({ team: 1, 'meta.car.vin': -1, origin: 1, createdAt: 1 });
-requestItemSchema.index({ team: 1, 'meta.request.number': -1, destination: 1, createdAt: 1 });
-requestItemSchema.index({ team: 1, 'meta.car.vin': -1, destination: 1, createdAt: 1 });
-requestItemSchema.index({ team: 1, 'meta.request.number': -1, origin: 1, createdAt: 1 });
-requestItemSchema.index({ team: 1, 'request.number': -1, origin: 1, assigned: 1 });
-requestItemSchema.index({ team: 1, 'request.number': -1, destination: 1, assigned: 1 });
 requestItemSchema.index({
   team: 1,
   'meta.request.number': -1,
   origin: 1,
+  destination: 1,
   createdAt: 1
 });
-requestItemSchema.index({
-  team: 1,
-'meta.request.number': -1,
-  destination: 1,
-  createdAt: 1,
-});
-requestItemSchema.index({ car: 1, team: 1, _id: -1 });
-requestItemSchema.index({ company: 1 });
-requestItemSchema.index({ origin: 1 });
-requestItemSchema.index({ channel: 1 });
-requestItemSchema.index({ status: 1 });
-requestItemSchema.index({ reason: 1 });
-requestItemSchema.index({ carrier: 1 });
-requestItemSchema.index({ reason: 1 });
-requestItemSchema.index({ transmittal: 1 });
-requestItemSchema.index({ transmittalItem: 1 });
-requestItemSchema.index({ createdBy: 1 });
-requestItemSchema.index({ createdAt: 1 });
-requestItemSchema.index({ items: 1 });
-requestItemSchema.index({
-  request: 1,
-  transmittal: 1,
-  car: 1,
-  createdBy: 1,
-  origin: 1,
-  destination: 1,
-  status: 1,
-  createdAt: -1
-});
-requestItemSchema.index({ 'request.channel': 1 });
-requestItemSchema.index({ 'request.createdBy': 1 });
-requestItemSchema.index({ 'meta.request.number': 1 });
-requestItemSchema.index({ 'request.advancePaymentInformation.files': 1 });
-requestItemSchema.index({ 'request.advancePaymentInformation.letters': 1 });
-requestItemSchema.index({ 'request.advancePaymentInformation.method': 1 });
-requestItemSchema.index({ 'advancePaymentInformation.files': 1 });
-requestItemSchema.index({ 'advancePaymentInformation.letters': 1 });
-requestItemSchema.index({ 'destination': 1, 'origin': 1, 'team': 1 });
-requestItemSchema.index({ 'destination': 1, 'origin': 1, 'createdAt': 1 });
 
+requestItemSchema.index({ car: 1, team: 1, _id: -1 });
+requestItemSchema.index({ transmittal: 1, team: 1, _id: -1 });
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
 

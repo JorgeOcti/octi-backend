@@ -1,24 +1,26 @@
 import * as Queue from 'bull';
-import moment = require('moment');
+
 import CarModel, { ChoicesStatusCar } from '../../app/models/car.model';
-import Team from '../../app/models/team.model';
-import User from '../../app/models/user.model';
-import Venue, { IVenueModel } from '../../app/models/venue.model';
-import { IUserModel } from '../../app/schemas/user.schema';
-import emailQueue from '../../app/tasks/email.task';
-import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
-import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
-import ActivityHistory from '../../billing/models/activityHistory.model';
-import logger from '../../services/logger.service';
-import pushService from '../../services/push.service';
-import { createRedisClient } from '../../services/redis.service';
-import { socket } from '../../services/socket.service';
-import { IInventoryCar } from '../interfaces/inventory.interface';
 import Inventory, {
   ChoicesStatusInventory,
   IInventoryModel
 } from '../models/inventory.model';
+import Venue, { IVenueModel } from '../../app/models/venue.model';
+
+import ActivityHistory from '../../billing/models/activityHistory.model';
+import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
+import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
+import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IUserModel } from '../../app/schemas/user.schema';
 import InventoryCar from '../models/inventoryCar.model';
+import Team from '../../app/models/team.model';
+import User from '../../app/models/user.model';
+import { createRedisClient } from '../../services/redis.service';
+import emailQueue from '../../app/tasks/email.task';
+import logger from '../../services/logger.service';
+import pushService from '../../services/push.service';
+import { socket } from '../../services/socket.service';
+import moment = require('moment');
 
 interface IInventoryQueueData {
   userID: string;
@@ -264,7 +266,7 @@ class InventoryQueue {
               env: process.env.ENV
             }
           },
-          { attempts: 3, backoff: 1000 }
+          { attempts: 3, backoff: 1000, removeOnComplete: true }
         );
       }
       resolve({});

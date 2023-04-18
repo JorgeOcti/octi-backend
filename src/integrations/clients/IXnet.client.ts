@@ -1,9 +1,11 @@
-import axios, { AxiosInstance } from 'axios';
 import * as qs from 'qs';
+
 import {
   IIntegration,
   IIntegrationAction
 } from '../interfaces/integration.interface';
+import axios, { AxiosInstance } from 'axios';
+
 import Integration from '../models/integrations.model';
 import logger from '../../services/logger.service';
 

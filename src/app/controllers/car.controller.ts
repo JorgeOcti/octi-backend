@@ -9,15 +9,6 @@ import CarModel, {
   ChoicesStatusCar,
   ICarModel
 } from '../models/car.model';
-import FormModel, {
-  IFormModel,
-  KindForm,
-  KindQuestion
-} from '../../form/models/form.model';
-import { IRequest } from '../../interfaces/global.interface';
-import InventoryModel, {
-  ChoicesStatusInventory
-} from '../../inventory/models/inventory.model';
 import {
   CustomLabels,
   PaginateOptions,
@@ -25,14 +16,24 @@ import {
   PipelineStage,
   Types
 } from 'mongoose';
+import FormModel, {
+  IFormModel,
+  KindForm,
+  KindQuestion
+} from '../../form/models/form.model';
+import InventoryModel, {
+  ChoicesStatusInventory
+} from '../../inventory/models/inventory.model';
 import ParticipantModel, {
   IParticipantAnswerModel
 } from '../../form/models/participant.model';
 
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import { IParticipant } from '../../form/interfaces/participant.interface';
+import { IRequest } from '../../interfaces/global.interface';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
+import Participant from '../../form/models/participant.model';
 import Planning from '../../planning/models/planning.model';
 import Position from '../../form/models/position.model';
 import { Response } from 'express';
@@ -40,7 +41,6 @@ import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import conectaController from '../../request/controllers/conecta.controller';
 import logger from '../../services/logger.service';
-import Participant from '../../form/models/participant.model';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -1876,7 +1876,7 @@ class CarController {
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10),
       customLabels: this.aggregateCustomLabels,
-      sort: { _id: -1 },
+      sort: { createdAt: -1 },
       lean: true
     };
     try {
@@ -2047,7 +2047,6 @@ class CarController {
                   $in: keys[0].cars
                 },
                 $text: { $search: search }
-                // $text: { $search: `"${search.split(' ').join('" "')}"` }
               }
             },
 
@@ -2095,62 +2094,6 @@ class CarController {
 
       let aggregate: PipelineStage[] = [
         ...countAggregate
-        // {
-        //   $lookup: {
-        //     from: 'cars',
-        //     localField: 'car',
-        //     foreignField: '_id',
-        //     as: 'car'
-        //   }
-        // },
-        // {
-        //   $unwind: {
-        //     path: '$car',
-        //     preserveNullAndEmptyArrays: true
-        //   }
-        // },
-        // {
-        //   $lookup: {
-        //     from: 'users',
-        //     localField: 'user',
-        //     foreignField: '_id',
-        //     as: 'user'
-        //   }
-        // },
-        // {
-        //   $unwind: {
-        //     path: '$user',
-        //     preserveNullAndEmptyArrays: true
-        //   }
-        // },
-        // {
-        //   $lookup: {
-        //     from: 'venues',
-        //     localField: 'venue',
-        //     foreignField: '_id',
-        //     as: 'venue'
-        //   }
-        // },
-        // {
-        //   $unwind: {
-        //     path: '$venue',
-        //     preserveNullAndEmptyArrays: true
-        //   }
-        // },
-        // {
-        //   $lookup: {
-        //     from: 'companies',
-        //     localField: 'company',
-        //     foreignField: '_id',
-        //     as: 'company'
-        //   }
-        // },
-        // {
-        //   $unwind: {
-        //     path: '$company',
-        //     preserveNullAndEmptyArrays: true
-        //   }
-        // }
       ];
 
       // console.log('Object.keys(searchOtherText)', Object.keys(searchOtherText))
@@ -2216,9 +2159,9 @@ class CarController {
           }
         ];
         // options.sort = { _id: -1, 'car.denomination': 1 };
-        options.sort = { _id: -1 };
+        options.sort = { createdAt: -1 };
       } else {
-        options.sort = { _id: -1 };
+        options.sort = { createdAt: -1 };
       }
 
       let projects: any = {

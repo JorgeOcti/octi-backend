@@ -1,16 +1,18 @@
-import { NextFunction, Request, Response } from 'express';
 import * as GraphicsMagick from 'gm';
 import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
 import * as uuid from 'uuid';
-import { IRequest } from '../../interfaces/global.interface';
-import { passport } from '../../passportConfig';
-import logger from '../../services/logger.service';
-import redisClient from '../../services/redis.service';
-import GeneralUtils from '../../utils/general.utils';
-import RecoverFile from '../models/recoverFile.model';
+
+import { NextFunction, Request, Response } from 'express';
 import UserModel, { User } from '../models/user.model';
+
+import GeneralUtils from '../../utils/general.utils';
+import { IRequest } from '../../interfaces/global.interface';
+import RecoverFile from '../models/recoverFile.model';
 import emailQueue from '../tasks/email.task';
+import logger from '../../services/logger.service';
+import { passport } from '../../passportConfig';
+import redisClient from '../../services/redis.service';
 
 class AppController {
   constructor() {
@@ -256,7 +258,7 @@ class AppController {
               url: `${process.env.SITE_URL}account/recovery/${token}/`
             }
           },
-          { attempts: 3, backoff: 1000 }
+          { attempts: 3, backoff: 1000, removeOnComplete: true }
         );
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
