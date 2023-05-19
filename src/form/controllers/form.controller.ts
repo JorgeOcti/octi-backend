@@ -96,12 +96,12 @@ class FormController {
     try {
       const config = {
         headers: {
-          'x-apikey': ' LQKpXlFg5UwXgoHDJ2CWlwyAVQG2llyz5RTNT6NmgFrGABzj'
+          'x-apikey': ' Tr2cRKGiZe9Z2dzGL0WVnhjgWDZ1pYXxDe38vaQd90pnemhN'
         }
       };
       const instance = axios.create(config);
       const response = await instance.get(
-        `https://ipa.qa.derco.services/osa-integration/v1/pedidos/${order}`
+        `https://ipa.prd.derco.services/osa-integration/v1/pedidos/${order}`
       );
       console.dir(response.data);
       return res.json({
