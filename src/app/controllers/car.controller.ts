@@ -1624,7 +1624,8 @@ class CarController {
           shippingVenueText: true,
           conciliationImages: true,
           createdAt: true,
-          kind: true
+          kind: true,
+          reliability: true,
         }
       ).populate([
         {
