@@ -184,6 +184,7 @@ export interface IParticipant {
   importedAt: Date;
 
   active: boolean;
+  reliability: boolean;
   updatedAt: Date;
   createdAt: Date;
 }

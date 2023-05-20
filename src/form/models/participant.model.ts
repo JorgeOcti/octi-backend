@@ -552,7 +552,8 @@ const participantSchema = new mongoose.Schema(
     keyRawAnswers: {
       type: String,
       default: null
-    }
+    },
+    reliability: Boolean
   },
   {
     timestamps: true
