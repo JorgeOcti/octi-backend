@@ -785,7 +785,7 @@ class FormController {
 
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
-    let { vin, answers, transmittalItem, transmittal } = req.body;
+    let { vin, answers, transmittalItem, transmittal, reliability } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
     logger.info(`FormController.complete email: ${req.user.email}`);
@@ -902,6 +902,7 @@ class FormController {
             deliveryInfo: {},
             rawAnswers: answers,
             rawBody: req.body,
+            reliability,
             keyRawAnswers
           };
 
