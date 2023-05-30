@@ -137,7 +137,7 @@ app.use(
     cookie: {
       ...cookieSetting
     },
-    store: new redisStore({ client: redisClient as any })
+    // store: new redisStore({ client: redisClient as any })
   })
 );
 
