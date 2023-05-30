@@ -47,7 +47,7 @@ const metricsMiddleware = promBundle({
 // Create Express server
 const app = express();
 
-const redisStore = connectRedis(session);
+// const redisStore = connectRedis(session);
 
 dotenv.config({
   path: path.join(__dirname, '../.env')
