@@ -64,7 +64,7 @@ import BordersListView from "./components/Borders/BordersListView";
 import BillingSettingsListView from './components/Billing/BillingSettings/BillingSettingsListView';
 import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
 import DeliveriesView from './components/Deliveries/DeliveriesView';
-import * as ReactGA from 'react-ga';
+import ReactGA from "react-ga4";
 
 
 declare let window: IWindow;
@@ -167,9 +167,8 @@ $(() => {
   js.appendChild(link);
 
   moment.locale('es');
-  ReactGA.initialize('UA-101792436-1', {
-    debug: false,
-    titleCase: false,
+  ReactGA.initialize('G-Q7FN9BE7SM', {
+    testMode: false,
     gaOptions: {
       userId: window.user._id,
       clientId: window.user.email,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { IWindow } from '../../interfaces/window';
 import MixpanelTracker from './MixpanelTracker';
-import * as ReactGA from 'react-ga';
+import ReactGA from "react-ga4";
 
 declare let window: IWindow;
 
@@ -31,7 +31,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
     // if (this.shouldTrack()){
 
 
-    ReactGA.pageview(`${window.location.pathname}${window.location.search ?? ''}`, ['tracker'], this.title);
+    ReactGA.send({hitType: "pageview", page:`${window.location.pathname}${window.location.search ?? ''}`, title: this.title});
     // ReactGA.event({
     //   category: 'Navegation',
     //   action: this.title
