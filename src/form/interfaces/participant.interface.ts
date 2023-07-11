@@ -114,6 +114,8 @@ export interface IParticipantDeliveryInfo {
   email: string;
   rut: string;
   order: string;
+
+  parking: string;
   signature: IParticipantFile[];
   identifyCard: IParticipantFile[];
   plateEvidence: IParticipantFile[];
