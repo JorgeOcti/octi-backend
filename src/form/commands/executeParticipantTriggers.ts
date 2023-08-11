@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import path from "path";
+import * as path from 'path';
 import mongoose from "mongoose";
 import * as bluebird from "bluebird";
 import Participant from "../models/participant.model";
