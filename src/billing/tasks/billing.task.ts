@@ -90,20 +90,14 @@ class BillingQueue {
     });
   }
 
-  private async calculateCarsInChecklist(company: ICompany): Promise<number> {
+  private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
     const countCarChecklist = await Participant.count({
       company: company._id,
       deliveryToCustomer: false,
       createdAt: {
-        $gte: moment()
-          // .subtract(1, 'month')
-          .subtract(1, 'day')
-          .startOf('month')
+        $gte: start_date
           .toDate(),
-        $lte: moment()
-          // .subtract(1, 'month')
-          .subtract(1, 'day')
-          .endOf('month')
+        $lte: end_date
           .toDate()
       }
     });
@@ -143,20 +137,14 @@ class BillingQueue {
     return countCarChecklist //vinInChecklist.length ? vinInChecklist[0].count : 0;
   }
 
-  private async calculateCarsInDelivery(company: ICompany): Promise<number> {
+  private async calculateCarsInDelivery(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
     const countCarDelivery = await Participant.count({
       company: company._id,
       deliveryToCustomer: true,
       createdAt: {
-        $gte: moment()
-          .subtract(1, 'month')
-          // .subtract(1, 'day')
-          .startOf('month')
+        $gte: start_date
           .toDate(),
-        $lte: moment()
-          .subtract(1, 'month')
-          // .subtract(1, 'day')
-          .endOf('month')
+        $lte: end_date
           .toDate()
       }
     })
@@ -196,19 +184,13 @@ class BillingQueue {
     return countCarDelivery //vinInDelivery.length ? vinInDelivery[0].count : 0;
   }
 
-  private async calculateCarsInInventory(company: ICompany): Promise<number> {
+  private async calculateCarsInInventory(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
     const inventories = await Inventory.find({
       company: company._id,
       createdAt: {
-        $gte: moment()
-          // .subtract(1, 'month')
-          .subtract(1, 'day')
-          .startOf('month')
+        $gte: start_date
           .toDate(),
-        $lte: moment()
-          // .subtract(1, 'month')
-          .subtract(1, 'day')
-          .endOf('month')
+        $lte: end_date
           .toDate()
       }
     });
@@ -269,19 +251,13 @@ class BillingQueue {
     return countInventoryCars //vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
-  private async calculateCarsInRequest(company: ICompany): Promise<number> {
+  private async calculateCarsInRequest(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
     const countRequestsCars = await RequestItem.count({
       company: company._id,
       createdAt: {
-        $gte: moment()
-          .subtract(1, 'month')
-          // .subtract(1, 'day')
-          .startOf('month')
+        $gte: start_date
           .toDate(),
-        $lte: moment()
-          .subtract(1, 'month')
-          // .subtract(1, 'day')
-          .endOf('month')
+        $lte: end_date
           .toDate()
       }
     })
@@ -452,13 +428,15 @@ class BillingQueue {
       if (team) {
         filter.team = team;
       }
+      let start_date = moment().subtract(5, 'days').startOf('month');
+      let end_date = moment().subtract(5, 'days').endOf('month');
       const companies = await Company.find(filter);
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
-        const inventoryCars = await this.calculateCarsInInventory(company);
-        const checklistCars = await this.calculateCarsInChecklist(company);
-        const requestCars = await this.calculateCarsInRequest(company);
-        const deliveryCars = await this.calculateCarsInDelivery(company);
+        const inventoryCars = await this.calculateCarsInInventory(company, start_date, end_date);
+        const checklistCars = await this.calculateCarsInChecklist(company, start_date, end_date);
+        const requestCars = await this.calculateCarsInRequest(company, start_date, end_date);
+        const deliveryCars = await this.calculateCarsInDelivery(company, start_date, end_date);
         const totalInventory = inventoryCars * company.billing.inventoryPrice;
         const totalChecklist = checklistCars * company.billing.checklistPrice;
         const totalDelivery = deliveryCars * company.billing.deliveryPrice;
