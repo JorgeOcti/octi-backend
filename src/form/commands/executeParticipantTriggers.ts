@@ -47,7 +47,7 @@ async function executeParticipantTriggers(){
 
 
   for (let participant of participants) {
-    const form = await Form.findById(participants[0].form).exec();
+    const form = await Form.findById(participant.form).exec();
     if (form && form.triggers && form.triggers.length) {
       let triggersHandler = new TriggerHandler(form, participant);
       await triggersHandler.execute({});
