@@ -16,6 +16,7 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "esModuleInterop": true,
     "lib": ["ESNext"],
     "target": "ESNext",
     "typeRoots": [
