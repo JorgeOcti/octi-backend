@@ -751,6 +751,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         cancelLabel: 'Cancelar'
       },
       ranges: {
+        'Hoy': [moment().startOf('days').toDate(), moment().endOf('days').toDate()],
         'Este mes': [moment().startOf('month').toDate(), moment().toDate()],
         'Últimos 3 meses': [
           moment().subtract(3, 'months').startOf('month').toDate(),
