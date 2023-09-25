@@ -2995,7 +2995,7 @@ class FormController {
             team,
             active: true,
             createdAt: {
-              $gte: moment().startOf('year').startOf('month').startOf('day').toISOString()
+              $gte: moment().startOf('day').subtract(2, 'days').toISOString()
             }
           }
         ]
