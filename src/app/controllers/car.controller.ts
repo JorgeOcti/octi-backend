@@ -39,7 +39,6 @@ import Position from '../../form/models/position.model';
 import { Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import conectaController from '../../request/controllers/conecta.controller';
 import logger from '../../services/logger.service';
 
 moment.tz.setDefault('America/Santiago');
@@ -414,70 +413,8 @@ class CarController {
           carFilter = {
             $and: [...carFilter['$and'], { vin }]
           };
-          if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } =
-              await conectaController.searchVinContecta(vin);
-            if (integrationData?.length) {
-              for (const car of integrationData) {
-                await Car.updateOne(
-                  {
-                    team,
-                    vin: car.vin
-                  },
-                  {
-                    $set: {
-                      vin2: car.vin.toString().substr(car.vin?.length - 6),
-                      brand: car.brand,
-                      denomination: car.denomination,
-                      material: car.material,
-                      color: car.color,
-                      company: req.user.company?._id,
-                      status: ChoicesStatusCar.active
-                    }
-                  },
-                  {
-                    upsert: true,
-                    setDefaultsOnInsert: true
-                  }
-                );
-              }
-            }
-          }
         }
         if (vin2) {
-          if (vin2?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } =
-              await conectaController.searchVinContecta(vin2);
-            if (integrationData?.length > 1) {
-              for (const car of integrationData) {
-                try {
-                  await Car.updateOne(
-                    {
-                      team,
-                      vin: car.vin
-                    },
-                    {
-                      $set: {
-                        vin2: car.vin.toString().substr(car.vin?.length - 6),
-                        brand: car.brand,
-                        denomination: car.denomination,
-                        material: car.material,
-                        color: car.color,
-                        company: req.user.company?._id,
-                        status: ChoicesStatusCar.active
-                      }
-                    },
-                    {
-                      upsert: true,
-                      setDefaultsOnInsert: true
-                    }
-                  );
-                } catch (e) {
-                  console.log(e);
-                }
-              }
-            }
-          }
           if (vin2[0] === '0') {
             const vinRegex = new RegExp(
               `${vin2.substr(vin2.length - 5)}$`,

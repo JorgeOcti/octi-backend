@@ -2291,34 +2291,6 @@ class RequestController {
           )}`
         );
         let integrationData: ICar | undefined;
-        if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-          if (vin?.length >= 6) {
-            let { data } = await conectaController.searchVinContecta(vin);
-            if (data.length > 1) {
-              res.status(400).json({
-                message: 'Hay más de una coincidencia'
-              });
-            }
-            const foundVin = !!data.length;
-            if (requestItem.car?.material?.length) {
-              integrationData = data.find(
-                (conectaCar) =>
-                  conectaCar.material === requestItem!.car.material
-              );
-            } else if (data.length) {
-              integrationData = data[0];
-            }
-            if (!foundVin) {
-              return res.status(400).json({
-                message: 'Vin no encontrado en SAP.'
-              });
-            } else if (foundVin && !integrationData) {
-              return res.status(400).json({
-                message: 'Material no corresponde a VIN.'
-              });
-            }
-          }
-        }
         // previene vehículos sin vin
         const car = vin.length > 0 ? await Car.findOne({ vin, team }) : false;
         // si el vehículo ya existe
@@ -2748,43 +2720,19 @@ class RequestController {
   }
 
   public async searchVin(req: IRequest, res: Response) {
-    const { team } = req.user;
-    const { vin, material } = req.query as IStringKeyObject<string>;
     try {
       logger.info(
         `RequestController.searchVin\x1b[90m query: ${JSON.stringify(
           req.query
         )}`
       );
-      if (team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        // const data = await conectaController.searchVinContecta('014688');
-        if (vin?.length > 5) {
-          let { data } = await conectaController.searchVinContecta(vin);
-          if (material?.length > 4 && !['undefined'].includes(material)) {
-            data = data.filter((car) => car.material.toString() === material);
-          }
-          logger.info(
-            `RequestController.searchVin\x1b[90m data: ${JSON.stringify(data)}`
-          );
-          return res.json({ data });
-        } else {
-          logger.debug(
-            `RequestController.searchVin\x1b[90m: There are no records.`
-          );
-          return res.json({
-            data: [],
-            meta: { info: 'There are no records.' }
-          });
-        }
-      } else {
-        logger.debug(
-          `RequestController.searchVin\x1b[90m error: team has no integration`
-        );
-        return res.json({
-          data: [],
-          meta: { info: 'team has no integration.' }
-        });
-      }
+      logger.debug(
+        `RequestController.searchVin\x1b[90m error: team has no integration`
+      );
+      return res.json({
+        data: [],
+        meta: { info: 'team has no integration.' }
+      });
     } catch (e) {
       logger.error(
         `RequestController.searchVin\x1b[90m error: ${JSON.stringify(e)}`
@@ -2842,65 +2790,13 @@ class RequestController {
 
   public async checkItemMassAllocation(req: IRequest, res: Response) {
     try {
-      const { team } = req.user;
       // let { vin, _id: id, material } = req.body;
-      let { andesData, excelData } = req.body;
       logger.info(
         `RequestController.checkItemMassAllocation ${
           req.user.email
         } \x1b[90m${JSON.stringify(req.body)}`
       );
-      const item = await RequestItem.findOne({
-        _id: andesData._id,
-        team
-      }).populate([
-        {
-          path: 'car'
-        }
-      ]);
       const errors: { message: string }[] = [];
-      let integrationData: ICar | undefined;
-      const vin = excelData?.vin?.length ? excelData.vin : item?.car.vin ?? '';
-      if (item && team._id.toString() === '5bf2de35caf8ef7096105cdd') {
-        if (vin?.length >= 6) {
-          let { data } = await conectaController.searchVinContecta(vin);
-          const foundVin = !!data.length;
-          if (data.length > 1) {
-            errors.push({
-              message: 'Mas de una coincidencia'
-            });
-          }
-          const material =
-            excelData?.material?.length &&
-            !['undefined'].includes(excelData?.material)
-              ? excelData.material
-              : item.car.material ?? '';
-          if (material.length) {
-            integrationData = data.find(
-              (conectaCar) => conectaCar.material === material
-            );
-          } else if (data.length) {
-            integrationData = data[0];
-          }
-          if (!foundVin) {
-            errors.push({
-              message: 'Vin no encontrado en conecta.'
-            });
-          } else if (!integrationData) {
-            errors.push({
-              message: `Material ${material} no corresponde a VIN ${vin}.`
-            });
-          }
-          return res.json({
-            errors,
-            data: integrationData
-          });
-        }
-        return res.json({
-          errors,
-          data: []
-        });
-      }
       return res.json({
         errors,
         data: []
@@ -2943,55 +2839,6 @@ class RequestController {
           path: 'car'
         }
       ]);
-      // si existe la solicitud y el team es salfa
-      if (requestItem) {
-        if (
-          vin.length >= 6 &&
-          team._id.toString() === '5bf2de35caf8ef7096105cdd'
-        ) {
-          let { data: conectaData } = await conectaController.searchVinContecta(
-            vin
-          );
-          const foundVin = !!conectaData.length;
-          if (conectaData.length > 1) {
-            errors.push({
-              message: 'Mas de una coincidencia'
-            });
-          }
-          if (
-            (andesData.car.material?.length &&
-              !['undefined'].includes(andesData.car.material)) ||
-            (integrationData?.material?.length &&
-              !['undefined'].includes(integrationData?.material))
-          ) {
-            conectaData = conectaData.filter((conectaCar) =>
-              excelData?.material?.length
-                ? conectaCar.material === integrationData?.material
-                : conectaCar.material === andesData.car.material
-            );
-          }
-          if (!foundVin) {
-            errors.push({
-              message: 'Vin no encontrado en conecta.'
-            });
-          }
-          if (!conectaData.length) {
-            logger.debug(
-              `RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Vin no encontrado en conecta.`
-            );
-            errors.push({
-              message: 'Vin no encontrado en conecta.'
-            });
-          } else if (vin.length && foundVin && !conectaData.length) {
-            logger.debug(
-              `RequestController.processItemMassAllocation ${req.user.email}\x1b[90m Material no corresponde a VIN.`
-            );
-            errors.push({
-              message: 'Material no corresponde a VIN.'
-            });
-          }
-        }
-      }
       // si existe la solicitud, el vin y no tiene errores
       if (requestItem && !errors.length) {
         // mongoose.set('debug', true);
