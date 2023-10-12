@@ -238,6 +238,7 @@ class UserController {
 
     // paginate options
     const options: PaginateOptions = {
+      limit: 200,
       sort: {
         firstName: 1
       },
