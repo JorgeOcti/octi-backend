@@ -49,6 +49,7 @@ appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDash
 appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
+appRouter.get('/api/v1/company/cars/', Middlewares.isJWTAuthenticated, CarController.apiCompanyCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
 appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiDamagesExport);
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);

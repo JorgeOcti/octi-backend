@@ -75,6 +75,7 @@ class CarController {
     this.exportParticipants = this.exportParticipants.bind(this);
     this.listProperties = this.listProperties.bind(this);
     this.createCar = this.createCar.bind(this);
+    this.apiCompanyCars = this.apiCompanyCars.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -2733,6 +2734,74 @@ class CarController {
         console.log(e);
         res.status(500).json(e);
       }
+    }
+  }
+
+  public async apiCompanyCars(req: IRequest, res: Response) {
+    const { page, pageSize, search } = req.query as {
+      page: string;
+      pageSize: string;
+      search: string;
+    };
+
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        vin: true,
+        vin2: true,
+        patent: true,
+        internalNumber: true,
+        brand: true,
+        denomination: true,
+        color: true
+      },
+      sort: {
+        updatedAt: 1
+      },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      allowDiskUse: true,
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    try {
+      const cars = await this.getCars(
+        {
+          company: req.user.company._id
+        },
+        options,
+        search
+      );
+
+      // validate exist page
+      if (options.page && cars.pages && cars.pages < options.page) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 200
+        });
+      } else {
+        return res.json({
+          count: cars.total,
+          pages: cars.pages,
+          hasPrevious: cars.hasPrevious,
+          hasNextPage: cars.hasNextPage,
+          results: cars.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e.toString())
+      return res.status(500).json({message: e.stack});
     }
   }
 
