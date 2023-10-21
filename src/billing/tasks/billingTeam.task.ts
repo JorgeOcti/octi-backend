@@ -126,6 +126,7 @@ class BillingTeamQueue {
         const path = `/tmp/${filename}`;
         // launch a new chrome instance
         const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
           args: [
             '--no-sandbox',
             '--allow-file-access-from-files',
