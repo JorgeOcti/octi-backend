@@ -1,0 +1,33 @@
+FROM node:18.17.1-bullseye-slim
+
+LABEL maintainer = "gmunoz@osacontrol.com"
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        python3 && \
+    # clean
+    apt-get clean && \
+    rm -rf /var/lib/apt
+
+WORKDIR /scripts
+
+# Copy the package.json and package-lock.json files to the container
+COPY ./package*.json /scripts
+
+RUN export PYTHON=python3
+
+# Install Node.js dependencies
+RUN npm install
+RUN npm i -g ts-node
+
+# Copy the rest of your application's source code to the container
+COPY ./src/app /scripts/app
+COPY ./src/billing /scripts/billing
+
+EXPOSE 3001
+
+# Specify the default command to run when the container starts
+CMD ["ts-node", "app/commands/BillingTeamRun.ts"]
