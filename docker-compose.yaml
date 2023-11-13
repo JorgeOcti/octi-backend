@@ -24,6 +24,18 @@ services:
     volumes:
       - redis:/data
 
+  billing:
+    build:
+      context: .
+      dockerfile: Dockerfile.billing
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
+    ports:
+      - "3031:3031" # Adjust the port mapping as needed
+    volumes:
+      - ./src:/scripts
+
   backend:
     build:
       dockerfile: Dockerfile.development
