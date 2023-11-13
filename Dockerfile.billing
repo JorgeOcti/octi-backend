@@ -24,7 +24,5 @@ RUN npm i -g ts-node
 COPY ./src/app /scripts/app
 COPY ./src/billing /scripts/billing
 
-EXPOSE 3001
-
 # Specify the default command to run when the container starts
 CMD ["ts-node", "app/commands/BillingTeamRun.ts"]
