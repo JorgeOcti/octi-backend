@@ -6,8 +6,7 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         build-essential \
-        ca-certificates \
-        python3 && \
+        ca-certificates && \
     # clean
     apt-get clean && \
     rm -rf /var/lib/apt
@@ -16,8 +15,6 @@ WORKDIR /scripts
 
 # Copy the package.json and package-lock.json files to the container
 COPY ./package*.json /scripts
-
-RUN export PYTHON=python3
 
 # Install Node.js dependencies
 RUN npm install
