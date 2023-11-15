@@ -6,23 +6,59 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         build-essential \
-        ca-certificates && \
+        cabextract \
+        wget \
+        gnupg \
+        chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 \
+        xfonts-utils \
+        ca-certificates \
+        fontconfig \
+        libfreetype6 \
+        libfontconfig1 \
+        libssl-dev \
+        libxft-dev \
+        python3 \
+        nano \
+        graphicsmagick \
+        gettext \
+        git-core \
+        imagemagick && \
+    # install windows fonts
+    wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
+    dpkg -i ttf-mscorefonts-installer_3.8_all.deb && \
+    rm ttf-mscorefonts-installer_3.8_all.deb && \
+    fc-cache && \
     # clean
     apt-get clean && \
     rm -rf /var/lib/apt
 
+# # We don't need the standalone Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
+
 WORKDIR /scripts
 
-# Copy the package.json and package-lock.json files to the container
-COPY ./package*.json /scripts
+RUN rm -rf /scripts/node_modules
 
-# Install Node.js dependencies
-RUN npm install
-RUN npm i -g ts-node
+RUN npm install -g npm@latest
 
-# Copy the rest of your application's source code to the container
-COPY ./src/app /scripts/app
-COPY ./src/billing /scripts/billing
+RUN npm i -g typescript@4.9.4 ts-node ts-node-dev ts-migrate-mongoose
+RUN touch /scripts/s3-config.json
+RUN echo "{}" >> /scripts/s3-config.json
+RUN touch /scripts/ses-config.json
+RUN echo "{}" >> /scripts/ses-config.json
+
+COPY package.json /scripts
+COPY package-lock.json /scripts
+COPY tsconfig.json /scripts
+
+COPY ./src/ /scripts/src
+
+RUN export PYTHON=python3
+
+RUN npm i
+
+RUN rm -rf /scripts/node_modules
 
 # Specify the default command to run when the container starts
-CMD ["ts-node", "app/commands/BillingTeamRun.ts"]
+CMD ["ts-node", "src/app/commands/BillingTeamRun.ts"]
