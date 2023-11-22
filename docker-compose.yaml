@@ -33,11 +33,13 @@ services:
     environment:
       NODE_ENV: development
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
-    # volumes:
-    #   - ./src/app:/scripts/src/app
-    #   - ./src/billing:/scripts/src/billing
-    #   - ./src/utils:/scripts/src/utils
-    #   - ./src/request:/scripts/src/request
+    volumes:
+      - ./src/app:/scripts/src/app
+      - ./src/billing:/scripts/src/billing
+      - ./src/utils:/scripts/src/utils
+      - ./src/request:/scripts/src/request
+      - ./src/mongoRaw.ts:/scripts/src/mongoRaw.ts
+      - ./views/billing:/scripts/views/billing
 
   backend:
     build:
