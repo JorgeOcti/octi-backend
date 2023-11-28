@@ -444,7 +444,7 @@ class BillingQueue {
         const totalRequest = requestCars * company.billing.requestPrice;
         const totalUF =
           totalInventory + totalChecklist + totalRequest + totalDelivery;
-        const period = moment().format('YYYYMM');
+        const period = start_date.format('YYYYMM');
         const invoice = new Invoice({
           team: company.team,
           company,
