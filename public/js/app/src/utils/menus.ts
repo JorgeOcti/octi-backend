@@ -173,7 +173,7 @@ if (inventoryItems.length) {
  *****************/
 const anteojosItems = [];
 
-if (hasPermission(window.user, 'viewRequest')) {
+if (hasPermission(window.user, 'viewTraceability')) {
   anteojosItems.push({
     id: '3.1',
     icon: 'fa-circle-o text-green',
@@ -267,7 +267,7 @@ if (distributionItems.length) {
 const planningItems = [];
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
-    id: '4.1',
+    id: '5.1',
     icon: 'fa-circle-o',
     text: 'Detalle',
     url: '/planning/'
@@ -276,7 +276,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
 
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
-    id: '4.2',
+    id: '5.2',
     icon: 'fa-circle-o',
     text: 'Importar',
     url: '/planning/import/'
@@ -294,7 +294,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
 
 if (process.env.NODE_ENV !== 'development' && planningItems.length) {
   menus.push({
-    id: '4',
+    id: '5',
     text: 'Planificación',
     icon: 'fa-calendar-check-o',
     url: '/planning/',
