@@ -350,8 +350,8 @@ class DashboardView extends TrackingBasePage<IPropsType, IStateType> {
     let international_data: any = this.processDataForTimeline();
 
     return <AppContainer
-      cMenu='3'
-      cSubMenu='3.6'
+      cMenu='4'
+      cSubMenu='4.6'
       title={
         <div
           style={{ width: '180px' }}
