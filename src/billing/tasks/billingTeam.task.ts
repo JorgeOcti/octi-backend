@@ -1,36 +1,25 @@
-import * as fs from 'fs';
 import * as moment from 'moment-timezone';
-import * as mongoose from 'mongoose';
-import * as path from 'path';
-import * as request from 'request';
+// import * as request from 'request';
 
-import InvoiceTeamBilling, {
-  IInvoiceTeamBillingModel
-} from '../models/invoiceTeamBilling.module';
-
-import Car from '../../app/models/car.model';
-import GeneralUtils from '../../utils/general.utils';
-import History from '../../app/models/history.model';
+import { IInvoiceTeamBillingModel } from '../models/invoiceTeamBilling.module';
 import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
-import { StatusHistory } from '../../app/models/history.types';
-import Submodule from '../models/submodule.model';
-import TeamBilling from '../models/teamBilling.model';
+import BillingTeamProcessor from '../../billing/tasks/billingTeamProcessor.task';
 import emailQueue from '../../app/tasks/email.task';
-import puppeteer from 'puppeteer';
+import BillingTeamPDF from './billingTeamPDF.task';
 
 class BillingTeamQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
-
-  readonly car: any;
+  private billingProcessor: BillingTeamProcessor = new BillingTeamProcessor();
+  private pdfProcessor: BillingTeamPDF = new BillingTeamPDF();
 
   constructor() {
-    this.processBilling = this.processBilling.bind(this);
     this.getUFPrice = this.getUFPrice.bind(this);
     this.getDolarPrice = this.getDolarPrice.bind(this);
-    this.generateHTML = this.generateHTML.bind(this);
-    this.car = new Car({});
-    this.createPDF = this.createPDF.bind(this);
     this.sendEmail = this.sendEmail.bind(this);
+    
+    this.generateHTML = this.generateHTML.bind(this);
+    this.createPDF = this.createPDF.bind(this);
+    this.processBilling = this.processBilling.bind(this);
   }
 
   private getUFPrice(): Promise<number> {
@@ -86,103 +75,6 @@ class BillingTeamQueue {
     });
   }
 
-  public generateHTML(invoice: IInvoiceTeamBilling): string {
-    moment.locale('es');
-    moment.tz.setDefault('America/Santiago');
-    const css = fs.readFileSync(
-      `${path.join(
-        __dirname,
-        '../../../views/'
-      )}billing/pdf-corporate/style.css`,
-      'utf8'
-    );
-    const templatePath: string = `${path.join(
-      __dirname,
-      '../../../views/'
-    )}billing/pdf-corporate/index.pug`;
-    return GeneralUtils.generateHtmlFromPugFile(templatePath, {
-      css: css.replace(/(\r\n|\n|\r)/gm, ''),
-      moment,
-      invoice,
-      jsUcfirst: (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
-    });
-  }
-
-  public async createPDF(invoice: IInvoiceTeamBillingModel): Promise<void> {
-    try {
-      const newInvoice = await InvoiceTeamBilling.findById(
-        invoice._id
-      ).populate([
-        {
-          path: 'team'
-        },
-        {
-          path: 'companies.company',
-          select: ['_id', 'name']
-        }
-      ]);
-      if (newInvoice) {
-        const filename = `invoice-${invoice._id}.pdf`;
-        const path = `/tmp/${filename}`;
-        // launch a new chrome instance
-        const browser = await puppeteer.launch({
-          executablePath: '/usr/bin/chromium',
-          args: [
-            '--no-sandbox',
-            '--allow-file-access-from-files',
-            '--enable-local-file-accesses'
-          ], // Required.
-          headless: true
-        });
-
-        // create a new page
-        const page = await browser.newPage();
-
-        await page.setContent(this.generateHTML(newInvoice), {
-          waitUntil: 'networkidle0'
-        });
-
-        await page.pdf({
-          path,
-          format: 'Letter',
-          printBackground: true,
-          margin: {
-            top: '0.3in',
-            right: '0.5in',
-            bottom: '0.3in',
-            left: '0.5in'
-          }
-        });
-        await browser.close();
-
-        invoice.attach(
-          'file',
-          {
-            originalname: filename,
-            team: `${newInvoice.team._id} ${newInvoice.team.name}`,
-            createdAt: moment(newInvoice.createdAt)
-              .subtract(1, 'month')
-              .format('YYYY-MM'),
-            path
-          },
-          async (error: any) => {
-            if (error) {
-              /* istanbul ignore next */
-              console.log(error);
-            } else {
-              invoice.file = invoice.file;
-              await invoice.save();
-              this.sendEmail(invoice);
-            }
-          }
-        );
-      }
-    } catch (e) {
-      // Raven.captureException(e);
-      console.log(e.message);
-    }
-  }
-
   private sendEmail(invoice: IInvoiceTeamBillingModel): void {
     const period = moment(invoice.createdAt).format('MMMM YYYY');
     for (const notification of invoice.teamBilling.notifications) {
@@ -210,315 +102,16 @@ class BillingTeamQueue {
     }
   }
 
+  public generateHTML(invoice: IInvoiceTeamBilling): string {
+    return this.pdfProcessor.generateHTML(invoice);
+  }
+
+  public async createPDF(invoice: IInvoiceTeamBillingModel): Promise<void> {
+    return await this.pdfProcessor.createPDF(invoice);
+  }
+
   public async processBilling(filter: any = {}, run?: boolean): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        run =
-          run ||
-          moment()
-            .startOf('day')
-            .isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
-        if (run) {
-          mongoose.set('debug', true);
-          console.log('START billing');
-          // const valueUF = 28662.81; /*await this.getUFPrice();*/
-          // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-          // const valueUF = await this.getUFPrice();
-          // const valueDolar = await this.getDolarPrice();
-          const teamBillings = await TeamBilling.find(filter).cursor();
-          
-          for await (const doc of teamBillings) {
-            await doc.populate([
-              {
-                path: 'team'
-              }
-            ]);
-          }
-
-          await teamBillings.close();
-          
-          const subModules = await Submodule.find({});
-          const infoByType: any = subModules.reduce((acc: any, cur: any) => {
-            acc[cur.type] = {
-              module: cur.module.toString(),
-              subModule: cur._id.toString()
-            };
-            return acc;
-          }, {});
-
-          let cursorBilling;
-          try {
-            cursorBilling = TeamBilling.find(filter).cursor();
-          
-            for await (const teamBilling of cursorBilling) {
-              const now = moment().startOf('day');
-              const lastInvoice = await InvoiceTeamBilling.findOne(
-                {
-                  team: teamBilling.team._id
-                },
-                {
-                  to: 1
-                }
-              ).sort({
-                createdAt: -1
-              });
-              const from = lastInvoice
-                ? lastInvoice.to
-                : new Date(
-                    `${now.startOf('month').format('YYYY-MM-DD')}T00:00:00.000Z`
-                  );
-              const to = moment();
-              // let to = moment().endOf('month').subtract(3, 'days').startOf('day');
-              // If the script runs earlier than automatically scheduled
-              // if (now.isBefore(to)) {
-              //   to = now;
-              // }
-              const histories = await History.find(
-                {
-                  company: { $in: teamBilling.companies },
-                  status: {
-                    $in: [
-                      StatusHistory.available,
-                      StatusHistory.inTransit,
-                      StatusHistory.sale
-                    ]
-                  },
-                  createdAt: {
-                    $gte: from,
-                    $lte: to
-                  }
-                },
-                {
-                  company: 1,
-                  car: 1,
-                  module: 1
-                }
-              )
-                .allowDiskUse(true)
-                .populate([
-                  {
-                    path: 'car',
-                    select: ['vin']
-                  }
-                ])
-                .sort({
-                  createdAt: 1
-                });
-              const usedVINS: any[] = [];
-              const countByModule: any = {};
-              const countBySubmodule: any = {};
-              const countByCompany: any = {};
-              const uniqueHistories: any[] = [];
-
-              for (const history of histories) {
-                if (
-                  history.module in infoByType &&
-                  history?.car?.vin?.trim()?.length &&
-                  !usedVINS.includes(history.car.vin)
-                ) {
-                  uniqueHistories.push(history._id);
-                  usedVINS.push(history.car.vin);
-                  const info = infoByType[history.module];
-
-                  if (info.module in countByModule) {
-                    countByModule[`${info.module}`] = {
-                      _id: info.module,
-                      count: countByModule[`${info.module}`].count + 1,
-                      histories: [
-                        ...countByModule[`${info.module}`].histories,
-                        history._id
-                      ]
-                    };
-                  } else {
-                    countByModule[`${info.module}`] = {
-                      _id: info.module,
-                      count: 1,
-                      histories: [history._id]
-                    };
-                  }
-
-                  if (info.subModule in countBySubmodule) {
-                    countBySubmodule[`${info.subModule}`] = {
-                      _id: info.subModule,
-                      count: countBySubmodule[`${info.subModule}`].count + 1,
-                      histories: [
-                        ...countBySubmodule[`${info.subModule}`].histories,
-                        history._id
-                      ]
-                    };
-                  } else {
-                    countBySubmodule[`${info.subModule}`] = {
-                      _id: info.subModule,
-                      count: 1,
-                      histories: [history._id]
-                    };
-                  }
-
-                  if (history.company in countByCompany) {
-                    countByCompany[`${history.company}`] = {
-                      _id: history.company,
-                      count: countByCompany[`${history.company}`].count + 1,
-                      histories: [
-                        ...countByCompany[`${history.company}`].histories,
-                        history._id
-                      ]
-                    };
-                  } else {
-                    countByCompany[`${history.company}`] = {
-                      _id: history.company,
-                      count: 1,
-                      histories: [history._id]
-                    };
-                  }
-                }
-              }
-              console.log({
-                countByModule,
-                countByCompany,
-                countBySubmodule
-              });
-              const period = now.format('YYYYMM');
-              let sumUFbyModule: any = {};
-              let totalDolar = 0;
-
-              teamBilling.modules.forEach((module: any) => {
-                if (module.module in countByModule) {
-                  module.sections
-                    .sort((a: any, b: any) => {
-                      if (a.start < b.start) {
-                        return -1;
-                      }
-                      if (a.start > b.start) {
-                        return 1;
-                      }
-                      return 0;
-                    })
-                    .forEach((section: any) => {
-                      new Array(countByModule[`${module.module}`].count)
-                        .fill(0)
-                        .forEach((_, index: number) => {
-                          const item = index + 1;
-                          if (item >= section.start && item <= section.end) {
-                            totalDolar += section.price;
-                            if (module.module in sumUFbyModule) {
-                              const count =
-                                sumUFbyModule[`${module.module}`].count + 1;
-                              const total =
-                                sumUFbyModule[`${module.module}`].total +
-                                section.price;
-                              sumUFbyModule[`${module.module}`] = {
-                                count,
-                                total
-                              };
-                            } else {
-                              sumUFbyModule[`${module.module}`] = {
-                                count: 1,
-                                total: section.price
-                              };
-                            }
-                          }
-                        });
-                    });
-                }
-              });
-
-              const invoiceData = {
-                team: teamBilling.team,
-                period,
-                teamBilling,
-                histories: histories.map((history: any) => history._id),
-                uniqueHistories,
-                modules: Object.values(countByModule).map((module: any) => ({
-                  module: module._id,
-                  histories: module.histories
-                })),
-                subModules: Object.values(countBySubmodule).map(
-                  (subModule: any) => ({
-                    subModule: subModule._id,
-                    histories: subModule.histories
-                  })
-                ),
-                companies: Object.values(countByCompany).map((company: any) => ({
-                  company: company._id,
-                  histories: company.histories
-                })),
-                // valueUF,
-                // valueDolar,
-                // totalUF,
-                from,
-                to,
-                total: uniqueHistories.length,
-                realDolar: totalDolar,
-                totalDolar:
-                  totalDolar > teamBilling.baseCost
-                    ? totalDolar
-                    : teamBilling.baseCost
-                // total
-              };
-
-              if (
-                !(await InvoiceTeamBilling.find({
-                  team: teamBilling.team,
-                  period
-                }).countDocuments())
-              ) {
-                const invoice = new InvoiceTeamBilling(invoiceData);
-                await invoice.save();
-                await this.createPDF(invoice);
-              } else {
-                console.log(`${period} ${teamBilling.team.name} ya existe!!!.`);
-              }
-            }
-          } catch (error) {
-            console.error('Error querying team billings:', error);
-          } finally {
-            if (cursorBilling) {
-              console.log('Closing cursorBilling');
-              await cursorBilling.close();
-            }
-          }
-        }
-        resolve({});
-
-        /*const companies = await Company.find(filter);
-        for (const company of companies) {
-          console.log(`calculating billing ${company.name}`);
-          const inventoryCars = await this.calculateCarsInInventory(company);
-          const checklistCars = await this.calculateCarsInChecklist(company);
-          const requestCars = await this.calculateCarsInRequest(company);
-          const totalInventory = inventoryCars * company.billing.inventoryPrice;
-          const totalChecklist = checklistCars * company.billing.checklistPrice;
-          const totalRequest = requestCars * company.billing.requestPrice;
-          const totalUF = totalInventory + totalChecklist + totalRequest;
-          const period = moment().format('YYYYMM');
-          const invoice = new Invoice({
-            team: company.team,
-            company,
-            period,
-            inventoryCars,
-            checklistCars,
-            requestCars,
-            inventoryPrice: company.billing.inventoryPrice,
-            checklistPrice: company.billing.checklistPrice,
-            requestPrice: company.billing.requestPrice,
-            totalUF,
-            valueUF,
-            // valueDolar,
-            // totalDolar: (totalUF * valueUF) / valueDolar,
-            totalPeso: totalUF * valueUF
-          });
-          if (!await Invoice.find({ company, period }).countDocuments()) {
-            await invoice.save();
-            this.createPDF(invoice, company);
-          } else {
-            console.log(`${period} ${company.name} ya existe!!!.`);
-          }
-        }*/
-      } catch (e) {
-        console.log(e);
-        reject({});
-      }
-    });
+    return await this.billingProcessor.processBilling(filter, run);
   }
 }
 
