@@ -50,11 +50,20 @@ RUN echo "{}" >> /scripts/ses-config.json
 
 COPY package.json /scripts
 COPY package-lock.json /scripts
-COPY tsconfig.json /scripts
 
+COPY tsconfig.json /scripts/
+
+COPY ./src/cli.ts /scripts/src/cli.ts
 RUN export PYTHON=python3
 
+
+
+RUN npm i --save-dev @types/bluebird
+RUN npm i --save-dev @types/multer
 RUN npm i
+# RUN npm --production i && npm cache clean --force
+RUN tsc --project tsconfig.json
+# RUN rm -rf /scripts/node_modules
 
 # Specify the default command to run when the container starts
 CMD ["ts-node", "src/app/commands/BillingTeamRun.ts"]
