@@ -38,6 +38,9 @@ services:
       - ./src/billing:/scripts/src/billing
       - ./src/utils:/scripts/src/utils
       - ./src/request:/scripts/src/request
+      - ./src/interfaces:/scripts/src/interfaces
+      - ./src/@types:/scripts/src/@types
+      - ./src/services:/scripts/src/services
       - ./src/mongoRaw.ts:/scripts/src/mongoRaw.ts
       - ./views/billing:/scripts/views/billing
 
@@ -83,6 +86,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - billing
 
   # frontend:
   #   build:
