@@ -2,7 +2,9 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import BillingTeamQueue from '../../billing/tasks/billingTeam.task';
+// import BillingTeamQueue from '../../billing/tasks/billingTeam.task';
+import BillingTeamProcessor from '../../billing/tasks/billingTeamProcessor.task';
+import BillingTeamPDF from '../../billing/tasks/billingTeamPDF.task';
 import Company from '../models/company.model';
 import Team from '../models/team.model';
 
@@ -17,11 +19,20 @@ async function BillingTeamRun() {
   new Team()
   new Company()
   try {
-    await new BillingTeamQueue().processBilling({}, true);
+    await new BillingTeamProcessor().processBilling({}, true);
   } catch (e) {
-    console.log('Ha ocurrido un error en BillingTeamRun');
+    console.log('Ha ocurrido un error en BillingTeamProcessor');
     console.log('error:', e);
   }
+
+  try {
+    console.log('Iniciando post procesamiento de PDF');
+    await new BillingTeamPDF().processPDFInvoices();
+  } catch (e) {
+    console.log('Ha ocurrido un error en BillingTeamPDF');
+    console.log('error:', e);
+  }
+
   process.exit(1);
 }
 
