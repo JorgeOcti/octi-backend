@@ -46,3 +46,23 @@ export interface ITeamBilling {
   updatedAt: Date;
   createdAt: Date;
 }
+
+export interface IHistoryResults {
+  countByModule: any;
+  countBySubmodule: any;
+  countByCompany: any;
+  uniqueHistories: any[];
+}
+
+export interface IInvoiceData {
+  histories: any,
+  teamBilling: any,
+  period: String,
+  from: Date | undefined,
+  to: Date | undefined,
+  uniqueHistories: any,
+  countByModule: any,
+  countBySubmodule: any,
+  countByCompany: any,
+  totalDolar: number
+}
