@@ -9,12 +9,40 @@ import InvoiceTeamBilling, {
 import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
 import GeneralUtils from '../../utils/general.utils';
 
+import emailQueue from '../../app/tasks/email.task';
 class BillingTeamPDF {
   constructor () {
-    console.log('Starting PDF creation...');
+    this.sendEmail = this.sendEmail.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
     this.createPDF = this.createPDF.bind(this);
     this.processPDFInvoices = this.processPDFInvoices.bind(this);
+  }
+
+  private sendEmail(invoice: IInvoiceTeamBillingModel): void {
+    const period = moment(invoice.createdAt).format('MMMM YYYY');
+    for (const notification of invoice.teamBilling.notifications) {
+      emailQueue.queue.add(
+        'email',
+        {
+          from: '',
+          title: `Billing for ${invoice.team.name}`,
+          to: `"${notification.name}"<${notification.email}`,
+          subject: `Billing ${invoice.team.name} - ${period}`,
+          text: ``,
+          attachments: {
+            filename: `${invoice.team.name} ${period}.pdf`,
+            path: decodeURI(invoice.file.url)
+          },
+          view: 'billing/corporate-email',
+          context: {
+            invoice,
+            period,
+            name: notification.name
+          }
+        },
+        { attempts: 3, backoff: 1000, removeOnComplete: true }
+      );
+    }
   }
 
   public generateHTML(invoice: IInvoiceTeamBilling): string {
@@ -57,10 +85,11 @@ class BillingTeamPDF {
         const path = `/tmp/${filename}`;
         // launch a new chrome instance
         const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
           args: [
             '--no-sandbox',
             '--allow-file-access-from-files',
-            '--enable-local-file-accesses'
+            '--enable-local-file-accesses',
           ], // Required.
           headless: true
         });
