@@ -1,10 +1,9 @@
 import * as moment from 'moment-timezone';
-// import * as request from 'request';
+import * as request from 'request';
 
 import { IInvoiceTeamBillingModel } from '../models/invoiceTeamBilling.module';
 import { IInvoiceTeamBilling } from '../interfaces/invoiceTeamBilling.interface';
 import BillingTeamProcessor from '../../billing/tasks/billingTeamProcessor.task';
-import emailQueue from '../../app/tasks/email.task';
 import BillingTeamPDF from './billingTeamPDF.task';
 
 class BillingTeamQueue {
@@ -15,7 +14,6 @@ class BillingTeamQueue {
   constructor() {
     this.getUFPrice = this.getUFPrice.bind(this);
     this.getDolarPrice = this.getDolarPrice.bind(this);
-    this.sendEmail = this.sendEmail.bind(this);
     
     this.generateHTML = this.generateHTML.bind(this);
     this.createPDF = this.createPDF.bind(this);
@@ -73,33 +71,6 @@ class BillingTeamQueue {
         }
       });
     });
-  }
-
-  private sendEmail(invoice: IInvoiceTeamBillingModel): void {
-    const period = moment(invoice.createdAt).format('MMMM YYYY');
-    for (const notification of invoice.teamBilling.notifications) {
-      emailQueue.queue.add(
-        'email',
-        {
-          from: '',
-          title: `Billing for ${invoice.team.name}`,
-          to: `"${notification.name}"<${notification.email}`,
-          subject: `Billing ${invoice.team.name} - ${period}`,
-          text: ``,
-          attachments: {
-            filename: `${invoice.team.name} ${period}.pdf`,
-            path: decodeURI(invoice.file.url)
-          },
-          view: 'billing/corporate-email',
-          context: {
-            invoice,
-            period,
-            name: notification.name
-          }
-        },
-        { attempts: 3, backoff: 1000, removeOnComplete: true }
-      );
-    }
   }
 
   public generateHTML(invoice: IInvoiceTeamBilling): string {
