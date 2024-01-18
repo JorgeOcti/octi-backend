@@ -139,7 +139,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             </button>
           </div>
         </div>*/
-      } cMenu='3' cSubMenu='3.4'>
+      } cMenu='4' cSubMenu='4.4'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

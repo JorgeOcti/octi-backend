@@ -132,7 +132,7 @@ class RequestImportView extends TrackingBasePage<IPropsType, IStateType> {
       loading, requests, sending, channels, operationTypes, reasons, venues
     } = this.state;
     return (
-      <AppContainer  cMenu='3' cSubMenu='3.2' cAction='Importar solicitudes por lote'>
+      <AppContainer  cMenu='4' cSubMenu='4.2' cAction='Importar solicitudes por lote'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

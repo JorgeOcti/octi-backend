@@ -87,7 +87,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const canChangeRequest = hasPermission(window.user, 'changeRequest') || window.user.isAdmin;
     const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
     return (
-      <AppContainer cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
+      <AppContainer cMenu='4' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

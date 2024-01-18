@@ -88,7 +88,7 @@ class PlanningListView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, plannings, pagination} = this.props.planning;
     return (
-      <AppContainer title="" cMenu="4" cSubMenu="4.1">
+      <AppContainer title="" cMenu="5" cSubMenu="5.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

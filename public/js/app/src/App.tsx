@@ -65,6 +65,7 @@ import BillingSettingsListView from './components/Billing/BillingSettings/Billin
 import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
 import DeliveriesView from './components/Deliveries/DeliveriesView';
 import ReactGA from "react-ga4";
+import {TraceabilityView} from "./components/Traceability/TraceabilityView";
 
 
 declare let window: IWindow;
@@ -142,6 +143,7 @@ const App = () => (
         <Route exact path='/requests/vehicles/:id/' component={RequestDetailView} />
         <Route exact path='/requests/vehicles/' component={RequestVehicleListView} />
         <Route exact path='/requests/:id/' component={RequestDetailView} />
+        <Route exact path='/trace/' component={TraceabilityView} />
         <Route component={NoMatch} />
       </Switch>
     </ConnectedRouter>

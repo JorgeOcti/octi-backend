@@ -185,8 +185,8 @@ class PlanificationDashboardStatsView extends DashboardStatsView {
   state = {
     error: null,
     loading: true,
-    menu: "3",
-    cSubmenu: "3.5",
+    menu: "5",
+    cSubmenu: "5.5",
     type: StatsDashboardTypes.PLANIFICATION,
     tab: "",
   };
