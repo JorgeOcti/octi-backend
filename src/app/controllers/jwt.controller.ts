@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
+import * as bcrypt from 'bcrypt';
 
 import { Request, Response } from 'express';
 import { default as User, default as UserModel } from '../models/user.model';
@@ -79,7 +80,7 @@ class JWTController {
           }
         ]);
 
-        if (!user || !user.comparePassword(req.body.password)) {
+        if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
           logger.error(
             `login: Authentication failed. Invalid user or password.`
           );

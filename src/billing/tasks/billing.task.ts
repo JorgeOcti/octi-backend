@@ -429,8 +429,8 @@ class BillingQueue {
       if (team) {
         filter.team = team;
       }
-      let start_date = moment().subtract(5, 'days').startOf('month');
-      let end_date = moment().subtract(5, 'days').endOf('month');
+      let start_date = moment().subtract(15, 'days').startOf('month');
+      let end_date = moment().subtract(15, 'days').endOf('month');
       const companies = await Company.find(filter);
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
