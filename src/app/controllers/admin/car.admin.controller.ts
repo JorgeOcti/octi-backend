@@ -227,20 +227,40 @@ class AdminCarController {
           req.user.email
         }, query: ${JSON.stringify(req.query)}`
       );
-      const cars = await this.getCars(
-        {
+
+      let filter: any = {
+        $and: [
+          {
+            vin: {
+              $nin: ['', null]
+            },
+            team
+          }
+        ]
+      }
+
+
+
+      if (req.user.userBrands && req.user.userBrands.length) {
+        filter = {
           $and: [
             {
               vin: {
                 $nin: ['', null]
               },
-              team
+              team,
+              brandRelated: {
+                $in: req.user.userBrands
+              }
             }
           ]
-          // status: {
-          //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
-          // }
-        },
+        };
+      }
+
+      logger.info(`CarController.apiListCars filter: ${JSON.stringify(filter)}`);
+
+      const cars = await this.getCars(
+        filter,
         options,
         search
       );

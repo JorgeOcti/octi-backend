@@ -18,6 +18,7 @@ import Venue from '../../models/venue.model';
 import emailQueue from '../../tasks/email.task';
 import redisClient from '../../../services/redis.service';
 import { socket } from '../../../services/socket.service';
+import {IBrand} from "../../interfaces/brand.interface";
 
 class AdminUsersController {
   constructor() {
@@ -539,6 +540,15 @@ class AdminUsersController {
           }
         },
         {
+          path: 'userBrands',
+          select: ['name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
+        },
+        {
           path: 'userForms',
           select: ['name'],
           match: { active: true }
@@ -791,6 +801,7 @@ class AdminUsersController {
       venue,
       userPermissions,
       userForms,
+      userBrands,
       preferred,
       company,
       venuesAccess,
@@ -836,6 +847,10 @@ class AdminUsersController {
           userForms:
             userForms && userForms.length
               ? userForms.map((userForm: IForm) => userForm._id)
+              : [],
+          userBrands:
+            userBrands && userBrands.length
+              ? userBrands.map((userBrand: IBrand) => userBrand._id)
               : [],
           venue,
           venuesAccess,
