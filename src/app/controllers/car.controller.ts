@@ -1490,6 +1490,16 @@ class CarController {
         }
       ];
 
+      if (req.user.userBrands && req.user.userBrands.length > 0) {
+        aggregation.push({
+          $match: {
+            'car.brandRelated': {
+              $in: req.user.userBrands.map((brand) => Types.ObjectId(brand._id))
+            }
+          }
+        });
+      }
+
       if (searchTextFilter) {
         aggregation.push({
           $match: searchTextFilter
