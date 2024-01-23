@@ -24,6 +24,26 @@ services:
     volumes:
       - redis:/data
 
+  billing:
+    build:
+      context: .
+      dockerfile: Dockerfile.billing
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
+    volumes:
+      - ./src/app:/scripts/src/app
+      - ./src/billing:/scripts/src/billing
+      - ./src/utils:/scripts/src/utils
+      - ./src/request:/scripts/src/request
+      - ./src/interfaces:/scripts/src/interfaces
+      - ./src/@types:/scripts/src/@types
+      - ./src/services:/scripts/src/services
+      - ./src/mongoRaw.ts:/scripts/src/mongoRaw.ts
+      - ./views/billing:/scripts/views/billing
+
   backend:
     build:
       dockerfile: Dockerfile.development
@@ -66,6 +86,7 @@ services:
     depends_on:
       - redis
       - mongo
+      - billing
 
   # frontend:
   #   build:
