@@ -1089,8 +1089,8 @@ class CarController {
         venue: participant.venue
           ? participant.venue.name
           : participant.user
-          ? participant.user.venue.name
-          : '',
+            ? participant.user.venue.name
+            : '',
         vin: participant.car ? participant.car.vin : '',
         plate: participant.car ? participant.car.patent : '',
         name: participant.name,
@@ -1119,14 +1119,14 @@ class CarController {
         sectionAnswers = {
           ...sectionAnswers,
           [`${participant.form.toString()}-reception`]:
-            participant.receiveFrom?.name
+          participant.receiveFrom?.name
         };
       }
       if (participant.carrier) {
         sectionAnswers = {
           ...sectionAnswers,
           [`${participant.form.toString()}-carrier`]:
-            participant.carrierBy?.name
+          participant.carrierBy?.name
         };
       }
 
@@ -1830,8 +1830,8 @@ class CarController {
       const kind =
         only_controls === '1'
           ? {
-              $ne: KindForm.transmittal
-            }
+            $ne: KindForm.transmittal
+          }
           : { $eq: KindForm.transmittal };
 
       // filter by form
@@ -1842,13 +1842,13 @@ class CarController {
 
       const formsIds = searchForms?.length
         ? user.userForms
-            .filter((form) => {
-              if (searchForms?.length) {
-                return searchForms.includes(form._id.toString());
-              }
-              return true;
-            })
-            .map((form) => new Types.ObjectId(form._id))
+          .filter((form) => {
+            if (searchForms?.length) {
+              return searchForms.includes(form._id.toString());
+            }
+            return true;
+          })
+          .map((form) => new Types.ObjectId(form._id))
         : user.userForms.map((form) => new Types.ObjectId(form._id));
 
       // search text in participant
@@ -2283,33 +2283,33 @@ class CarController {
               damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
                 ? cache.kinds[damage.kind.toString()]
                 : answer.damages.kinds.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.kind &&
-                        d._id.toString() === damage.kind.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.kind &&
+                    d._id.toString() === damage.kind.toString()
+                  )
+                );
             const part =
               damage.part && cache.parts.hasOwnProperty(damage.part.toString())
                 ? cache.parts[damage.part.toString()]
                 : answer.damages.parts.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.part &&
-                        d._id.toString() === damage.part.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.part &&
+                    d._id.toString() === damage.part.toString()
+                  )
+                );
             const position =
               damage.position &&
               cache.positions.hasOwnProperty(damage.position.toString())
                 ? cache.positions[damage.position.toString()]
                 : answer.damages.positions.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.position &&
-                        d._id.toString() === damage.position.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.position &&
+                    d._id.toString() === damage.position.toString()
+                  )
+                );
             if (kind && part) {
               damages.push({ kind, part, position });
             }
