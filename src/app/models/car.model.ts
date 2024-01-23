@@ -97,6 +97,10 @@ export const baseCarSchema = new mongoose.Schema({
     trim: true,
     uppercase: true
   },
+  brandRelated: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand'
+  },
   denomination: {
     type: String,
     trim: true,

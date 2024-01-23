@@ -8,6 +8,7 @@ import PushService from '../../services/push.service';
 import { default as User, default as UserModel } from '../models/user.model';
 import Venue from '../models/venue.model';
 import { IUserModel } from '../schemas/user.schema';
+import Brand from "../models/brand.model";
 
 class UserController {
 
@@ -140,6 +141,43 @@ class UserController {
       if (currentUser) {
         res.status(200).json({
           venues: await Venue.find({
+            _id: {
+              $in: currentUser.venuesPermissions()
+            },
+            team
+          }, {
+            name: true,
+            lat: true,
+            lng: true
+          }),
+          status: 200
+        });
+      } else {
+        /* istanbul ignore next */
+        res.status(400).json({
+          message: 'Ha ocurrido un error',
+          status: 400
+        });
+      }
+    } catch (e) {
+      logger.error(`apiListVenues: Async Error.`);
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(500).json({
+        message: 'Ha ocurrido un error',
+        status: 500
+      });
+    }
+  }
+
+  public async apiListBrands(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    logger.info(`UserController.apiListBrands email: ${req.user.email}`);
+    try {
+      const currentUser = await UserModel.findById(req.user._id);
+      if (currentUser) {
+        res.status(200).json({
+          brands: await Brand.find({
             _id: {
               $in: currentUser.venuesPermissions()
             },

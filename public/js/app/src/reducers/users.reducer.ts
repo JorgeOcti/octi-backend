@@ -5,6 +5,7 @@ import { IUser } from '../../../../../src/app/interfaces/user.interface';
 const initialState: IUsersState = {
   users: [],
   venues: [],
+  brands: [],
   companies: [],
   searchText: '',
   permissions: [],
@@ -22,6 +23,7 @@ const initialState: IUsersState = {
     settings: {},
     userPermissions: [],
     userForms: [],
+    userBrands: [],
     venuesAccess: [],
     companiesAccess: []
   },
@@ -51,6 +53,11 @@ export function usersReducer(
         ...state,
         venues: action.payload.venues.sort((a, b) => a.company.name.localeCompare(b.company.name)),
         companies: action.payload.companies
+      };
+    case '/USERS/LOAD_BRANDS':
+      return {
+        ...state,
+        brands: action.payload.brands
       };
     case '/USERS/FILTER_VENUES':
       return {

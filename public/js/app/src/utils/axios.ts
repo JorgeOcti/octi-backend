@@ -232,6 +232,28 @@ export default class ApiService {
       }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
+
+  public getBrands({
+                     page,
+                     pageSize,
+                     noPopulate,
+                     filted,
+                     search
+                   }: {
+    page: number;
+    pageSize?: number;
+    noPopulate?: boolean;
+    filted?: boolean;
+    search?: string;
+  }): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/brands/?page=${page}${
+        pageSize ? `&pageSize=${pageSize}` : ''
+      }${
+        noPopulate ? `&noPopulate=${noPopulate}` : ''
+      }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
+    );
+  }
   public getCompanyVenues(): AxiosPromise {
     return this.instance.get(`/api/admin/company-venues/`);
   }

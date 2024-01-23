@@ -4,6 +4,7 @@ import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
+import AdminBrandController from './controllers/admin/brand.admin.controller';
 import AdminColorsController from './controllers/admin/color.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
@@ -92,6 +93,10 @@ appRouter.get('/api/v1/histories/:vin/', Middlewares.isJWTAuthenticated, history
 // admin venues
 appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVenuesController.accessByVenue);
+
+// admin Brand
+appRouter.get('/settings/brands/', Middlewares.isLoggedIn, AdminBrandController.index);
+appRouter.get('/api/admin/brands/', Middlewares.isLoggedIn, AdminBrandController.apiList);
 
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);

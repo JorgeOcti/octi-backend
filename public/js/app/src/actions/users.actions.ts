@@ -15,10 +15,12 @@ import ApiService from '../utils/axios';
 import { showModal, statusFooterButttonsModal } from '../utils/common';
 import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import { UserTypes } from '../../../../../src/app/models/user.model.types';
+import {IBrand} from "../../../../../src/app/interfaces/brand.interface";
 
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
+  brands: IBrand[];
   companies: ICompany[];
   forms: IForm[];
   channels: ISalesChannel[];
@@ -144,6 +146,7 @@ export interface ITempUser {
   venuesAccess: IVenue[];
   companiesAccess: ICompany[];
   userForms: IForm[];
+  userBrands: IBrand[];
   settings: Dictionary<any>;
   isAdmin: boolean;
   isDriver: boolean;
@@ -427,6 +430,22 @@ export function loadFormsUserAction(forms: IForm[]): ILoadFormsUser {
   };
 }
 
+interface ILoadBrandsUser {
+  type: '/USERS/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsUserAction(brands: IBrand[]): ILoadBrandsUser {
+  return {
+    type: '/USERS/LOAD_BRANDS',
+    payload: {
+      brands
+    }
+  };
+}
+
 interface ILoadCompaniesUser {
   type: '/USERS/LOAD_COMPANIES';
   payload: {
@@ -498,10 +517,11 @@ export function getUsersAction(
       api.getVenues({ page: 1, pageSize: 500, noPopulate: true }),
       api.getSalesChannel({ page: 1, pageSize: 200 }),
       api.getPermissions(1, 200),
-      api.getForms(1, 200, true)
+      api.getForms(1, 200, true),
+      api.getBrands({ page: 1, pageSize: 500}),
     ])
       .then(
-        Axios.spread((users, venues, channeles, permissions, forms) => {
+        Axios.spread((users, venues, channeles, permissions, forms, brands) => {
           dispatch(
             loadUserAction(
               users.data.results,
@@ -514,6 +534,7 @@ export function getUsersAction(
           dispatch(loadChannelsUserAction(channeles.data.results));
           dispatch(loadPermissionsUserAction(permissions.data.results));
           dispatch(loadFormsUserAction(forms.data.results));
+          dispatch(loadBrandsUserAction(brands.data.results));
           dispatch(isLoadingAction(false));
         })
       )
@@ -612,4 +633,5 @@ export type UserReduxAction =
   | ILoadVenuesUser
   | ILoadPermissionsUser
   | ILoadFormsUser
-  | ILoadCompaniesUser;
+  | ILoadCompaniesUser
+  | ILoadBrandsUser;

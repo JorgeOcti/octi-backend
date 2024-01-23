@@ -1877,6 +1877,35 @@ class CarController {
           $lte: moment(to).endOf('day').utc().toDate()
         }
       };
+
+      if (req.user.userBrands?.length) {
+        const cars = await Car.aggregate([
+          {
+            $match: {
+              team: new mongoose.Types.ObjectId(user.team._id),
+              brandRelated: {
+                $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
+              },
+            }
+          },
+
+          {
+            $project: {
+              _id: 1,
+            }
+          },
+        ]);
+
+        if (cars.length) {
+          baseMatch = {
+            ...baseMatch,
+            car: {
+              $in: cars.map((car) => car._id)
+            }
+          };
+        }
+      }
+
       let ponderations: any = {};
       if (search?.length > 2) {
         const keys = await Participant.aggregate([
@@ -2040,7 +2069,8 @@ class CarController {
       // sort if search text in participant
       if (delivery?.length > 2) {
         options.sort = { score: { $meta: 'textScore' } };
-      } else if (ponderations?.venues?.length) {
+      }
+      else if (ponderations?.venues?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2059,7 +2089,8 @@ class CarController {
           }
         ];
         options.sort = { _id: -1 };
-      } else if (ponderations?.users?.length) {
+      }
+      else if (ponderations?.users?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2079,7 +2110,8 @@ class CarController {
         ];
         // options.sort = { 'user.firstName': 1, _id: -1 };
         options.sort = { _id: -1 };
-      } else if (ponderations?.cars?.length) {
+      }
+      else if (ponderations?.cars?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2099,7 +2131,8 @@ class CarController {
         ];
         // options.sort = { _id: -1, 'car.denomination': 1 };
         options.sort = { createdAt: -1 };
-      } else {
+      }
+      else {
         options.sort = { createdAt: -1 };
       }
 

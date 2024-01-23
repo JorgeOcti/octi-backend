@@ -6,6 +6,7 @@ import type { ISalesChannel } from '../../request/interfaces/salesChannel.interf
 import type { ITeam } from './team.interface';
 import type { ITeamModel } from '../models/team.model';
 import type { IVenue } from './venue.interface';
+import {IBrand} from "./brand.interface";
 
 export interface IUserSettings {
   defaultChannel: ISalesChannel;
@@ -31,6 +32,7 @@ export interface IUser {
   venue: IVenue | any;
   settings: IUserSettings;
   venuesAccess: IVenue[] | any[];
+  userBrands: IBrand[] | any[];
   companiesAccess: ICompany[] | any[];
   preferred: IForm | any;
   email: string;
