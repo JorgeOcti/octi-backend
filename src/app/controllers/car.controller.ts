@@ -1494,7 +1494,7 @@ class CarController {
         aggregation.push({
           $match: {
             'car.brandRelated': {
-              $in: req.user.userBrands.map((brand) => Types.ObjectId(brand._id))
+              $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
             }
           }
         });
@@ -1530,6 +1530,7 @@ class CarController {
       logger.error(e);
     }
   }
+
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
     const { id } = req.params;
