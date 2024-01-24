@@ -240,6 +240,32 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
+  public downloadEvidence() {
+    const { from, to, selectedForms, searchText } = this.state;
+    const monthsDiff = moment(to).diff(moment(from), 'months');
+    this.trackClick('Descargar evidencia', {
+      from,
+      to
+    });
+    if (monthsDiff > 3) {
+      swal!(
+        'Revisiones',
+        'Selecciona un rango menor que 3 meses para descargar la información',
+        'error'
+      );
+    } else {
+      let query = `?deliveries=0&from=${moment(from).unix()}&to=${moment(
+        to
+      ).unix()}`;
+
+      if (searchText) query += `&search=${searchText}`;
+
+      if (selectedForms) query += `&forms=${selectedForms.join(',')}`;
+
+      window.open(`/api/participant/export/evidence/${query}`, '_blank');
+    }
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {
       loading,
@@ -278,9 +304,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 <button
                   className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm"
+                  onClick={this.downloadEvidence}
+                  disabled={downloading}>
+                  <i className="fa fa-fw fa-download"/> Descargar Evidencias de Daños
+                </button>
+
+                <button
+                  className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm"
                   onClick={this.downloadReport}
                   disabled={downloading}>
-                  <i className="fa fa-fw fa-download" /> Exportar
+                  <i className="fa fa-fw fa-download"/> Exportar
                 </button>
               </div>
             </div>
