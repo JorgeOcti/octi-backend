@@ -3,6 +3,7 @@ import * as excel from 'exceljs';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as tempfile from 'tempfile';
+import * as Zip from 'adm-zip';
 
 import CarModel, {
   Car,
@@ -40,6 +41,8 @@ import { Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
+import * as fetch from "nodemailer/lib/fetch";
+import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
 
 moment.tz.setDefault('America/Santiago');
 
@@ -1529,6 +1532,250 @@ class CarController {
     } catch (e) {
       logger.error(e);
     }
+  }
+
+  public async exportDamagePictures(req: IRequest, res: Response) {
+    logger.info(`CarController.exportDamagePictures email: ${req.user.email}`);
+    logger.info(
+      `CarController.exportDamagePictures email: ${
+        req.user.email
+      } query: ${JSON.stringify(req.query)}`
+    );
+
+    const team = req.user.team._id;
+    const { userForms } = req.user;
+    let { search, from, to, deliveries } = req.query as Record<
+      string,
+      string
+    >;
+    let queryForms = req.query.forms as string;
+
+    const venuesPermissions = req.user.venuesPermissions();
+
+    // Get filters for Mongo Query
+    let targetForms = userForms.map((form) => form._id.toString());
+    if (queryForms) {
+      const formArray = queryForms.split(',');
+      targetForms = formArray.filter((f) => targetForms.includes(f));
+    }
+
+    const queryFilter: any = {
+      car: {
+        $ne: null
+      },
+      team: new mongoose.Types.ObjectId(team),
+      venue: {
+        $in: venuesPermissions
+      },
+      deliveryToCustomer: deliveries === '1',
+      form: {
+        $in: targetForms.map((f) => new mongoose.Types.ObjectId(f))
+      },
+      hasDamage: true
+    };
+    if (from && to) {
+      queryFilter.createdAt = {
+        $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+        $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+      };
+    }
+
+    let searchTextFilter: any = {};
+
+    if (search?.length > 0) {
+      search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
+      // search = search.trim().replace("*", "");
+      logger.info(
+        `CarController.exportParticipants: email: ${req.user.email} search: ${search}`
+      );
+      const searchText = new RegExp(search, 'i');
+      const searchTextArray = search.split(' ');
+
+      // User first name and last name
+      const filterUser: any = {
+        $and: []
+      };
+      //User
+      if (searchTextArray.length > 3) {
+        filterUser['$or'] = [
+          {
+            firstName: {
+              $regex: new RegExp(
+                `${searchTextArray[0]} ${searchTextArray[1]}`,
+                'i'
+              )
+            },
+            lastName: {
+              $regex: new RegExp(
+                `${searchTextArray[2]} ${searchTextArray[3]}`,
+                'i'
+              )
+            }
+          }
+        ];
+      } else {
+        filterUser['$and'].push({
+          'user.firstName': {
+            $regex: new RegExp(searchTextArray[0], 'i')
+          }
+        });
+        if (searchTextArray.length > 1) {
+          filterUser['$and'].push({
+            'user.lastName': {
+              $regex: new RegExp(searchTextArray[1], 'i')
+            }
+          });
+        }
+      }
+
+      //Car (VIN or Brand)
+      const filterCar: any = {
+        $or: [
+          {
+            'car.vin': {
+              $regex: searchText
+            }
+          },
+          {
+            'car.patent': {
+              $regex: searchText
+            }
+          },
+          {
+            'car.brand': {
+              $regex: searchText
+            }
+          }
+        ]
+      };
+      //Venue (name)
+      const filterVenue: any = {
+        'venue.name': {
+          $regex: searchText
+        }
+      };
+
+      searchTextFilter = {
+        $or: [filterUser, filterCar, filterVenue]
+      };
+    }
+
+    let aggregation: any[] = [
+      {
+        $project: {
+          number: 1,
+          createdAt: 1,
+          deliveryToCustomer: 1,
+          car: 1,
+          user: 1,
+          company: 1,
+          team: 1,
+          venue: 1,
+          name: 1,
+          receptionText: 1,
+          shippingText: 1,
+          sections: 1,
+          form: 1,
+          shippingVenue: 1,
+          receptionVenue: 1,
+          sendTo: 1,
+          receiveFrom: 1,
+          reception: 1,
+          shipping: 1,
+          carrier: 1,
+          carrierText: 1,
+          carrierBy: 1
+        }
+      },
+      {
+        $match: queryFilter
+      },
+      {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car'
+        }
+      },
+      {
+        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+      },
+    ];
+
+    if (req.user.userBrands && req.user.userBrands.length > 0) {
+      aggregation.push({
+        $match: {
+          'car.brandRelated': {
+            $in: req.user.userBrands.map((brand) => Types.ObjectId(brand._id))
+          }
+        }
+      });
+    }
+
+    if (searchTextFilter) {
+      aggregation.push({
+        $match: searchTextFilter
+      });
+    }
+
+    logger.debug(JSON.stringify(aggregation));
+
+    res.header('Content-Type', 'application/zip');
+    res.header(
+      'Content-Disposition',
+      `attachment; filename=imagenes-${moment().format('YYYY-MM-DD')}.zip`
+    );
+
+
+    const cursor = ParticipantModel.aggregate(aggregation).cursor();
+
+    let zip = new Zip(null, {
+      
+    });
+
+    await cursor.eachAsync(
+      async (participant) => {
+        const damageImages = this.getDamageImages(participant)
+        damageImages.forEach((image: IParticipantFile) => {
+          let file = fetch(image.file.url)
+          file.
+
+          fetch()
+            .then((res) => {
+              res.arrayBuffer()
+            })
+            .then((buffer) => {
+              if (!zip.getEntry(`${participant.car.vin}/`))
+                zip.addFile(`${participant.car.vin}/`, null)
+              zip.addFile(`${participant.car.vin}/${image.file.name}`, Buffer.from(buffer))
+            })
+        })
+      },
+      { parallel: 100 }
+    );
+
+    cursor.close();
+
+    req.connection.on('close', async () => {
+      cursor.close();
+    });
+
+    return res.end(zip.toBuffer());
+  }
+
+  private getDamageImages(participant: IParticipant) {
+    const damageImages: IParticipantFile[] = []
+    participant.sections.forEach((section) => {
+      section.answers.forEach((answer) => {
+        if (answer.kind === 'damage') {
+          answer.damagesSelected.forEach((damage) => {
+            damageImages.push(...damage.images)
+          })
+        }
+      })
+    })
+    return damageImages
   }
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
