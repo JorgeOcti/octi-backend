@@ -60,6 +60,7 @@ appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarControll
 
 
 // form detail
+appRouter.get('/api/participant/export/evidence/', Middlewares.isLoggedIn, CarController.exportDamagePictures);
 appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
