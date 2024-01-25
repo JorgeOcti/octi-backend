@@ -1718,7 +1718,7 @@ class CarController {
       aggregation.push({
         $match: {
           'car.brandRelated': {
-            $in: req.user.userBrands.map((brand) => Types.ObjectId(brand._id))
+            $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
           }
         }
       });
@@ -1741,9 +1741,7 @@ class CarController {
 
     const cursor = ParticipantModel.aggregate(aggregation).cursor();
 
-    let zip = new Zip(null, {
-
-    });
+    let zip = new Zip();
 
     await cursor.eachAsync(
       async (participant) => {
