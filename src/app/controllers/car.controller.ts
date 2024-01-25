@@ -3,7 +3,7 @@ import * as excel from 'exceljs';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as tempfile from 'tempfile';
-import * as Zip from 'adm-zip';
+import * as Zip from "adm-zip";
 
 import CarModel, {
   Car,
@@ -41,8 +41,8 @@ import { Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
-import * as fetch from "nodemailer/lib/fetch";
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
+import axios from "axios";
 
 moment.tz.setDefault('America/Santiago');
 
@@ -76,9 +76,11 @@ class CarController {
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
     this.processParticipant = this.processParticipant.bind(this);
     this.exportParticipants = this.exportParticipants.bind(this);
+    this.exportDamagePictures = this.exportDamagePictures.bind(this);
     this.listProperties = this.listProperties.bind(this);
     this.createCar = this.createCar.bind(this);
     this.apiCompanyCars = this.apiCompanyCars.bind(this);
+    this.getDamageImages = this.getDamageImages.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1571,7 +1573,7 @@ class CarController {
       form: {
         $in: targetForms.map((f) => new mongoose.Types.ObjectId(f))
       },
-      hasDamage: true
+      hasDamages: true
     };
     if (from && to) {
       queryFilter.createdAt = {
@@ -1672,6 +1674,7 @@ class CarController {
           team: 1,
           venue: 1,
           name: 1,
+          hasDamages: 1,
           receptionText: 1,
           shippingText: 1,
           sections: 1,
@@ -1696,6 +1699,14 @@ class CarController {
           localField: 'car',
           foreignField: '_id',
           as: 'car'
+        }
+      },
+      {
+        $lookup: {
+          from: 'participantfiles',
+          localField: 'sections.answers.damagesSelected.images',
+          foreignField: '_id',
+          as: 'damageImages'
         }
       },
       {
@@ -1731,37 +1742,43 @@ class CarController {
     const cursor = ParticipantModel.aggregate(aggregation).cursor();
 
     let zip = new Zip(null, {
-      
+
     });
 
     await cursor.eachAsync(
       async (participant) => {
-        const damageImages = this.getDamageImages(participant)
-        damageImages.forEach((image: IParticipantFile) => {
-          let file = fetch(image.file.url)
-          file.
+        const damageImages = participant.damageImages
+        if (damageImages.length === 0) {
+          return
+        }
 
-          fetch()
-            .then((res) => {
-              res.arrayBuffer()
-            })
-            .then((buffer) => {
-              if (!zip.getEntry(`${participant.car.vin}/`))
-                zip.addFile(`${participant.car.vin}/`, null)
-              zip.addFile(`${participant.car.vin}/${image.file.name}`, Buffer.from(buffer))
-            })
-        })
+        for (const image of damageImages) {
+          let buffer = await this.getImageBuffer(image.file.url);
+          if (zip.getEntry(`${participant.car.vin}/`) === null )
+            zip.addFile(`${participant.car.vin}/`, Buffer.alloc(0));
+          zip.addFile(`${participant.car.vin}/${image.file.name}`, buffer);
+        }
       },
       { parallel: 100 }
     );
 
-    cursor.close();
+    cursor.close().then(() => {
+      res.end(zip.toBuffer());
+    });
 
     req.connection.on('close', async () => {
       cursor.close();
     });
 
-    return res.end(zip.toBuffer());
+
+  }
+
+  private getImageBuffer(url: string) {
+    return axios
+      .get(url, {
+        responseType: 'arraybuffer'
+      })
+      .then(response => Buffer.from(response.data, 'binary'))
   }
 
   private getDamageImages(participant: IParticipant) {
