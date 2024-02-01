@@ -43,6 +43,7 @@ import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
 import axios from "axios";
+import History from "../models/history.model";
 
 moment.tz.setDefault('America/Santiago');
 
@@ -3049,6 +3050,14 @@ class CarController {
       search: string;
     };
 
+    const ActivitieCars = await History.distinct('car', {
+      team: req.user.team._id,
+      status: {$ne: "sale"},
+      createdAt: {
+        $gte: moment().subtract(6, 'months').toDate()
+      }
+    });
+
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -3081,7 +3090,12 @@ class CarController {
     try {
       const cars = await this.getCars(
         {
-          company: req.user.company._id
+          $or: [
+            {company: req.user.company._id, createdAt: {
+                $gte: moment().subtract(12, 'months').toDate()
+              }},
+            {_id: {$in: ActivitieCars}}
+          ]
         },
         options,
         search
