@@ -12,7 +12,7 @@ body
         img(src="http://localhost:3030/static/images/circle_andes.png", height="100px")
       td.text-right
         h1
-          | Billing #{jsUcfirst(moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY"))}
+          | Billing #{moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY")}
   h2
     | Resumen
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;width:50%")
@@ -100,7 +100,7 @@ body
       tr
         td(colspan=3).text-right
           strong
-            | 
+            |
         td.text-right
           strong
             | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
