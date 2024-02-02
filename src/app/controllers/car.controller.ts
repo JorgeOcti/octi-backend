@@ -3101,6 +3101,19 @@ class CarController {
               ]}
           ]
         }},
+      {$project:
+          {
+            _id: true,
+            createdAt: true,
+            vin: true,
+            vin2: true,
+            patent: true,
+            internalNumber: true,
+            brand: true,
+            denomination: true,
+            color: true
+          }
+      },
     ];
 
     let pageNumber = parseInt(page ? page : '1', 10);
