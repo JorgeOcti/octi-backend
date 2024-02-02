@@ -43,7 +43,6 @@ import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
 import axios from "axios";
-import History from "../models/history.model";
 
 moment.tz.setDefault('America/Santiago');
 
