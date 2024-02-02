@@ -3074,21 +3074,6 @@ class CarController {
           path: "$history",
           "preserveNullAndEmptyArrays": true
         } },
-      {$project:
-          {
-            _id: true,
-            event: true,
-            history: true,
-            createdAt: true,
-            vin: true,
-            vin2: true,
-            patent: true,
-            internalNumber: true,
-            brand: true,
-            denomination: true,
-            color: true
-          }
-        },
       {$match: {
           $or: [
             {history: null},
@@ -3101,43 +3086,46 @@ class CarController {
               ]}
           ]
         }},
-      {$project:
-          {
-            _id: true,
-            createdAt: true,
-            vin: true,
-            vin2: true,
-            patent: true,
-            internalNumber: true,
-            brand: true,
-            denomination: true,
-            color: true
-          }
-      },
     ];
 
     let pageNumber = parseInt(page ? page : '1', 10);
     let pageSizeNumber = parseInt(pageSize ? pageSize : '20', 10);
 
     try {
-      let datum : any = await Car.aggregate([
-        ...pipeline,
-        {$count: "total"}
-      ])
-
-      let total = datum[0] ? datum[0].total : 0;
-
-      let cars = await Car.aggregate([
-        ...pipeline,
-        {$sort: {
-            "createdAt": 1
+      let datum : any = await Car.aggregate().facet({
+        data: [
+          ...pipeline,
+          {
+            $sort: {
+              createdAt: 1
+            }
+          }, {
+            $skip: (pageNumber - 1) * pageSizeNumber
+          }, {
+            $limit: pageSizeNumber
+          }, {
+            $project:
+              {
+                _id: true,
+                createdAt: true,
+                vin: true,
+                vin2: true,
+                patent: true,
+                internalNumber: true,
+                brand: true,
+                denomination: true,
+                color: true
+              }
           }
-        }, {
-          $skip: (pageNumber - 1) * pageSizeNumber
-        }, {
-          $limit: pageSizeNumber
-        }
-      ]);
+        ],
+        count: [
+          ...pipeline,
+          {$count: "total"}
+        ]
+      })
+
+      let total = datum[0].count[0] ? datum[0].count[0].total : 0;
+      let cars = datum[0].data;
 
       let pages = Math.ceil(total / pageSizeNumber);
       let hasPrevious = pageNumber > 1;
