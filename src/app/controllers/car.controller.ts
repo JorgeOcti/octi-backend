@@ -43,6 +43,7 @@ import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
 import axios from "axios";
+import Form from "../../form/models/form.model";
 
 moment.tz.setDefault('America/Santiago');
 
@@ -3043,107 +3044,79 @@ class CarController {
   }
 
   public async apiCompanyCars(req: IRequest, res: Response) {
-    const { page, pageSize } = req.query as {
+    const { page, pageSize, search } = req.query as {
       page: string;
       pageSize: string;
+      search: string;
     };
 
-    let pipeline: any = [
-      {$match: {
-        team: new mongoose.Types.ObjectId(req.user.team._id),
-        createdAt: {
-          $gte: moment().subtract(12, 'months').toDate()
-        }
-      }
-    },
-      {$lookup:{
-          from: "histories",
-          localField: "event",
-          foreignField: "_id",
-          pipeline: [
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        vin: true,
+        vin2: true,
+        patent: true,
+        internalNumber: true,
+        brand: true,
+        denomination: true,
+        color: true
+      },
+      sort: {
+        updatedAt: 1
+      },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      allowDiskUse: true,
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+
+    try {
+      const deliveryForms = await Form.find({deliveryToCustomer: true}, {_id: true})
+
+      const cars = await this.getCars(
+        {
+          $or: [
             {
-              $match: {
-                $expr: { current: true }
+              team: req.user.team._id,
+              updatedAt: {
+                $gte: moment().subtract(6, 'months').toDate()
+              }
+            },{
+              company: req.user.company._id,
+              createdAt: {
+                $gte: moment().subtract(12, 'months').toDate()
               }
             }
           ],
-          as: "history"
-        }
-      },
-      { $unwind: {
-          path: "$history",
-          "preserveNullAndEmptyArrays": true
-        } },
-      {$match: {
-          $or: [
-            {history: null},
-            {$and: [
-                {history: {$ne: null}},
-                {"history.createdAt": {
-                    $gte: moment().subtract(6, 'months').toDate()
-                  }},
-                {"history.status": {$ne: "sale"}}
-              ]}
-          ]
-        }},
-    ];
-
-    let pageNumber = parseInt(page ? page : '1', 10);
-    let pageSizeNumber = parseInt(pageSize ? pageSize : '20', 10);
-
-    try {
-      let datum : any = await Car.aggregate().facet({
-        data: [
-          ...pipeline,
-          {
-            $sort: {
-              createdAt: 1
-            }
-          }, {
-            $skip: (pageNumber - 1) * pageSizeNumber
-          }, {
-            $limit: pageSizeNumber
-          }, {
-            $project:
-              {
-                _id: true,
-                createdAt: true,
-                vin: true,
-                vin2: true,
-                patent: true,
-                internalNumber: true,
-                brand: true,
-                denomination: true,
-                color: true
-              }
-          }
-        ],
-        count: [
-          ...pipeline,
-          {$count: "total"}
-        ]
-      })
-
-      let total = datum[0].count[0] ? datum[0].count[0].total : 0;
-      let cars = datum[0].data;
-
-      let pages = Math.ceil(total / pageSizeNumber);
-      let hasPrevious = pageNumber > 1;
-      let hasNext = pageNumber < pages;
+          lastForm: {$nin: deliveryForms}
+        },
+        options,
+        search
+      );
 
       // validate exist page
-      if (pageNumber && pages && pages < pageNumber) {
+      if (options.page && cars.pages && cars.pages < options.page) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
         return res.json({
-          count: total,
-          pages: pages,
-          hasPrevious: hasPrevious,
-          hasNextPage: hasNext,
-          results: cars,
+          count: cars.total,
+          pages: cars.pages,
+          hasPrevious: cars.hasPrevious,
+          hasNextPage: cars.hasNextPage,
+          results: cars.docs,
           status: 200
         });
       }
