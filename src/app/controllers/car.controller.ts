@@ -3044,76 +3044,106 @@ class CarController {
   }
 
   public async apiCompanyCars(req: IRequest, res: Response) {
-    const { page, pageSize, search } = req.query as {
+    const { page, pageSize } = req.query as {
       page: string;
       pageSize: string;
-      search: string;
     };
 
-    const ActivitieCars = await History.distinct('car', {
-      team: req.user.team._id,
-      status: {$ne: "sale"},
-      createdAt: {
-        $gte: moment().subtract(6, 'months').toDate()
+    let pipeline: any = [
+      {$match: {
+        team: new mongoose.Types.ObjectId(req.user.team._id),
+        createdAt: {
+          $gte: moment().subtract(12, 'months').toDate()
+        }
       }
-    });
-
-    // paginate options
-    const options: PaginateOptions = {
-      select: {
-        vin: true,
-        vin2: true,
-        patent: true,
-        internalNumber: true,
-        brand: true,
-        denomination: true,
-        color: true
+    },
+      {$lookup:{
+          from: "histories",
+          localField: "event",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $match: {
+                $expr: { current: true }
+              }
+            }
+          ],
+          as: "history"
+        }
       },
-      sort: {
-        updatedAt: 1
-      },
-      customLabels: {
-        totalDocs: 'total',
-        docs: 'docs',
-        limit: 'perPage',
-        page: 'currentPage',
-        nextPage: 'next',
-        prevPage: 'prev',
-        totalPages: 'pages',
-        pagingCounter: 'si'
-      },
-      allowDiskUse: true,
-      lean: true,
-      page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
-    };
-    try {
-      const cars = await this.getCars(
-        {
-          $or: [
-            {company: req.user.company._id, createdAt: {
-                $gte: moment().subtract(12, 'months').toDate()
-              }},
-            {_id: {$in: ActivitieCars}}
-          ]
+      { $unwind: {
+          path: "$history",
+          "preserveNullAndEmptyArrays": true
+        } },
+      {$project:
+          {
+            _id: true,
+            event: true,
+            history: true,
+            createdAt: true,
+            vin: true,
+            vin2: true,
+            patent: true,
+            internalNumber: true,
+            brand: true,
+            denomination: true,
+            color: true
+          }
         },
-        options,
-        search
-      );
+      {$match: {
+          $or: [
+            {history: null},
+            {$and: [
+                {history: {$ne: null}},
+                {"history.createdAt": {
+                    $gte: moment().subtract(6, 'months').toDate()
+                  }},
+                {"history.status": {$ne: "sale"}}
+              ]}
+          ]
+        }},
+    ];
+
+    let pageNumber = parseInt(page ? page : '1', 10);
+    let pageSizeNumber = parseInt(pageSize ? pageSize : '20', 10);
+
+    try {
+      let datum : any = await Car.aggregate([
+        ...pipeline,
+        {$count: "total"}
+      ])
+
+      let total = datum[0] ? datum[0].total : 0;
+
+      let cars = await Car.aggregate([
+        ...pipeline,
+        {$sort: {
+            "createdAt": 1
+          }
+        }, {
+          $skip: (pageNumber - 1) * pageSizeNumber
+        }, {
+          $limit: pageSizeNumber
+        }
+      ]);
+
+      let pages = Math.ceil(total / pageSizeNumber);
+      let hasPrevious = pageNumber > 1;
+      let hasNext = pageNumber < pages;
 
       // validate exist page
-      if (options.page && cars.pages && cars.pages < options.page) {
+      if (pageNumber && pages && pages < pageNumber) {
         return res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
         return res.json({
-          count: cars.total,
-          pages: cars.pages,
-          hasPrevious: cars.hasPrevious,
-          hasNextPage: cars.hasNextPage,
-          results: cars.docs,
+          count: total,
+          pages: pages,
+          hasPrevious: hasPrevious,
+          hasNextPage: hasNext,
+          results: cars,
           status: 200
         });
       }
