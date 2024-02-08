@@ -178,7 +178,16 @@ if (hasPermission(window.user, 'viewTraceability')) {
     id: '3.1',
     icon: 'fa-circle-o text-green',
     text: 'Trazabilidad',
-    url: parseReplicableURL('/trace/')
+    url: '/trace/'
+  });
+}
+
+if (hasPermission(window.user, 'viewTraceability')) {
+  anteojosItems.push({
+    id: '3.2',
+    icon: 'fa-circle-o text-green',
+    text: 'OSA',
+    url: '/osa/'
   });
 }
 

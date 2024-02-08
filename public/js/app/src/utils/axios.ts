@@ -1180,4 +1180,8 @@ export default class ApiService {
   public getAllModules(): AxiosPromise {
     return this.instance.get(`/api/settings/billing/modules/`);
   }
+
+  public getOSACars(search? :String): AxiosPromise {
+    return this.instance.get(`/api/osa-cars/${search ? `?search=${search}` : ''}`);
+  }
 }
