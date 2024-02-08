@@ -51,6 +51,7 @@ import historyQueue from '../../app/tasks/history.task';
 import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
+import Form, {KindForm} from "../../form/models/form.model";
 
 class InventoryController {
   constructor() {
@@ -80,6 +81,7 @@ class InventoryController {
     this.loadStock = this.loadStock.bind(this);
     this.checkExistVenue = this.checkExistVenue.bind(this);
     this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
+    this.CarStatusList = this.CarStatusList.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -2800,6 +2802,63 @@ class InventoryController {
         message: '',
         cars: historyCars,
         inventories
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`inventory currentStock: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      // Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
+  public async CarStatusList(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { team } = req.user;
+
+      let handOutForm = await Form.find({team: team._id, kind: KindForm.final})
+
+      let pipeline: any = [
+        {$match: {
+            team: new mongoose.Types.ObjectId(team._id),
+            lastForm: {$nin: handOutForm.map(f => f._id)},
+            vin: {"$exists" : true, "$ne" : ""},
+            createdAt: {
+              $gte: moment().subtract(12, 'months').toDate()
+            },
+            event: {"$exists" : true, $ne: {type: null}},
+            "meta.location.venue" : {"$exists" : true, "$ne" : null},
+          }
+        },
+        // {$project: {
+        //     _id: 1,
+        //     vin: 1,
+        //     vin2: 1,
+        //     internalNumber: 1,
+        //     color: 1,
+        //     denomination: 1,
+        //     brand: 1,
+        //     event: 1,
+        //     createdAt: 1,
+        //     venue: 1,
+        //     meta: 1
+        //   }},
+      ]
+
+      const cars = await CarModel
+        .aggregate(pipeline)
+        .allowDiskUse(true);
+
+      return res.status(200).json({
+        message: '',
+        cars: cars
       });
     } catch (e) {
       /* istanbul ignore next */
