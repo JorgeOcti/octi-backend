@@ -139,17 +139,20 @@ class UserController {
     try {
       const currentUser = await UserModel.findById(req.user._id);
       if (currentUser) {
+        let data = await Venue.find({
+          _id: {
+            $in: currentUser.venuesPermissions()
+          },
+          team
+        }, {
+          name: true,
+          lat: true,
+          lng: true
+        })
+
         res.status(200).json({
-          venues: await Venue.find({
-            _id: {
-              $in: currentUser.venuesPermissions()
-            },
-            team
-          }, {
-            name: true,
-            lat: true,
-            lng: true
-          }),
+          data,
+          venues: data,
           status: 200
         });
       } else {
