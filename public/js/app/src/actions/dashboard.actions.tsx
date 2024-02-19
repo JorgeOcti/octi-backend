@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import * as React from 'react';
 import { Dispatch } from 'redux';
 import { ICar } from '../../../../../src/app/interfaces/car.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import {
   IParticipant,
   IParticipantSection
@@ -27,6 +28,7 @@ export interface IDashboardState {
   requests: any[];
   companies: any[];
   car: ICar | null;
+  brands: IBrand[];
   carEvents: any;
   participantsReceivedPerDate: any[];
   participantsSentPerDate: any[];
@@ -137,6 +139,22 @@ export function loadRequestsInCarAction(requests: any): ILoadRequestsInCar {
       requests
     }
   };
+}
+
+interface ILoadBrands {
+  type: '/DASHBOARD/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsAction(brands: IBrand[]): ILoadBrands {
+  return {
+    type: '/DASHBOARD/LOAD_BRANDS',
+    payload: {
+      brands: brands
+    }
+  }
 }
 
 interface ILoadCar {
@@ -265,6 +283,16 @@ export function getRevisionsThunkAction(
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
+    }
+
+    if (state.dashboard.brands.length === 0) {
+      api.getBrands({page: 1, pageSize: 500})
+        .then((response: AxiosResponse) => {
+          dispatch(loadBrandsAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
     }
     const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
     Axios.all([
@@ -1199,6 +1227,7 @@ export type DashboardReduxAction =
   | ILoadRevisions
   | IChangeSearchDashboard
   | IChangeRangeDashboard
+  | ILoadBrands
   | ILoadCar
   | ILoadParticipantsPerDate
   | ILoadingParticipant

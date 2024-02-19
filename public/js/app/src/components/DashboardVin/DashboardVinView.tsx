@@ -61,6 +61,7 @@ interface IStateType {
   highlight: string[];
   searchText: string;
   selectedForms: string[];
+  selectedBrands: string[];
   carLoading: string;
   from: Date;
   to: Date;
@@ -76,6 +77,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     searchText: '',
     carLoading: '',
     selectedForms: [],
+    selectedBrands: [],
     from: moment().subtract(1, 'months').startOf('month').toDate(),
     to: moment().toDate(),
     downloading: false
@@ -274,9 +276,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       pagination,
       searchText,
       forms,
+      brands,
       loadingParticipant
     } = this.props.dashboard;
-    const { highlight, carLoading, downloading, from, to, selectedForms } =
+    const { highlight, carLoading, downloading, from, to, selectedForms, selectedBrands } =
       this.state;
     const { getParticipant } = this.props;
     return (
@@ -320,7 +323,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row no-margin">
-                <div className="col-md-8 no-padding">
+                <div className="col-md-12 no-padding">
                   <div
                     className="input-group input-group"
                     style={{ padding: '10px' }}>
@@ -339,7 +342,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 {/* <div className="col-md-4 col-md-offset-8 no-padding"> */}
-                <div className="col-md-4 no-padding">
+                <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
@@ -357,6 +360,23 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       }))}
                       onClick={this.filterForms}
                       notHideOnClickOutside={false}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-6 no-padding">
+                  <div style={{ padding: '10px' }}>
+                    <BootstrapSelect
+                      noneSelectedText="Todos los controles"
+                      displayItems={4}
+                      autoClouse={false}
+                      selectedText="formularios seleccionadas."
+                      allOption={true}
+                      separator=" - "
+                      options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
+                      notHideOnClickOutside={false}
+                      selected={selectedBrands}
+                      onClick={() => {}}
+                      selectAll={() => {}}
                     />
                   </div>
                 </div>

@@ -12,6 +12,7 @@ const initialState: IDashboardState = {
   companies: [],
   car: null,
   carEvents: {},
+  brands: [],
   forms: [],
   searchForms: [],
   participantsReceivedPerDate: [],
@@ -87,6 +88,11 @@ export function dashboardReducer(
         totalCars: action.payload.totalCars,
         carsByVenue: action.payload.carsByVenue,
         participantPerRange: action.payload.participantPerRange
+      };
+    case '/DASHBOARD/LOAD_BRANDS':
+      return {
+        ...state,
+        brands: action.payload.brands
       };
     case '/DASHBOARD/LOAD_CAR':
       return {
