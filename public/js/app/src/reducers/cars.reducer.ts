@@ -6,6 +6,7 @@ const initialState: ICarsState = {
   cars: [],
   car: null,
   carEvents: {} ,
+  brands: [],
   loading: true,
   source: null,
   pagination: {
@@ -26,6 +27,11 @@ export function carsReducer(state = initialState, action: CarReduxAction): ICars
       return {
         ...state,
         source: action.payload.source
+      };
+    case '/CARS/LOAD_BRANDS':
+      return {
+        ...state,
+        brands: action.payload.brands,
       };
     case '/CARS/LOAD_CARS':
       return {

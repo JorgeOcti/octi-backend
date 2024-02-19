@@ -20,6 +20,7 @@ import ShowIf from '../Utils/ShowIf';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import BootstrapSelect from '../Utils/BootstrapSelect';
 
 declare let window: IWindow;
 
@@ -33,6 +34,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   searchText: string;
+  selectedBrands: string[];
 }
 
 class CarListView extends TrackingBasePage<IPropsType, IStateType> {
@@ -42,9 +44,10 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   //   dispatch: PropTypes.func.isRequired
   // };
 
-  readonly state = {
+  readonly state: IStateType = {
     error: null,
-    searchText: ''
+    searchText: '',
+    selectedBrands: []
   };
 
   constructor(props: IPropsType) {
@@ -90,8 +93,9 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, cars, pagination } = this.props.cars;
-    const { searchText } = this.state;
+    const { loading, cars, brands, pagination } = this.props.cars;
+    const { searchText, selectedBrands } = this.state;
+    console.log(this.props.cars.brands);
     return (
       <AppContainer
         // title={}
@@ -120,8 +124,8 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding">
-              <div className="row">
-                <div className="col-md-12">
+              <div className="row no-margin">
+                <div className="col-md-8 no-padding">
                   <div
                     className="input-group input-group"
                     style={{ padding: '10px' }}>
@@ -136,6 +140,25 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                         <i className="fa fa-search" />
                       </button>
                     </div>
+                  </div>
+                </div>
+                <div className="col-md-4 no-padding" style={{}}>
+                  <div 
+                    style={{ padding: '10px', height: "100%" }}>
+                    <BootstrapSelect
+                      noneSelectedText="Todos los controles"
+                      displayItems={4}
+                      selectedText="formularios seleccionadas."
+                      allOption={true}
+                      autoClouse={false}
+                      notHideOnClickOutside={false}
+                      sm={true}
+                      separator=" - "
+                      options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
+                      selected={selectedBrands}
+                      onClick={() => {}}
+                      selectAll={() => {}}
+                    />
                   </div>
                 </div>
               </div>

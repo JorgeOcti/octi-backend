@@ -1,12 +1,14 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import {ICar} from '../../../../../src/app/interfaces/car.interface';
+import {IBrand} from '../../../../../src/app/interfaces/brand.interface';
 import ApiService from '../utils/axios';
 
 export interface ICarsState {
   cars: ICar[];
   car: ICar | null;
   carEvents: any;
+  brands: IBrand[];
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
@@ -83,6 +85,22 @@ export function loadCarsAction(cars: any, count: number, pages: number): ILoadCa
   };
 }
 
+interface ILoadBrands {
+  type: '/CARS/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsAction(brands: any): ILoadBrands {
+  return {
+    type: '/CARS/LOAD_BRANDS',
+    payload: {
+      brands: brands,
+    }
+  }
+}
+
 interface ILoadCar {
   type: '/CARS/LOAD_CAR';
   payload: {
@@ -135,6 +153,17 @@ export function getCarsAction(nextPage: number, search?: string) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
+
+    if (state.cars.brands.length === 0) {
+      api.getBrands({page: 1, pageSize: 500})
+        .then((response: AxiosResponse) => {
+          dispatch(loadBrandsAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
+
     api.getAdminCars(page, search)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
@@ -157,4 +186,5 @@ export type CarReduxAction =
   IIsLoading |
   IChangePage |
   ILoadCars |
+  ILoadBrands |
   ILoadCar;
