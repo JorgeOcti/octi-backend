@@ -347,7 +347,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
                       displayItems={4}
-                      // sm={true}
                       autoClouse={true}
                       selectedText="formularios seleccionadas."
                       selected={selectedForms}
@@ -366,10 +365,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                 <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
-                      noneSelectedText="Todos los controles"
+                      noneSelectedText="Todas las marcas"
                       displayItems={4}
                       autoClouse={false}
-                      selectedText="formularios seleccionadas."
+                      selectedText="Marcas seleccionadas."
                       allOption={true}
                       separator=" - "
                       options={brands.map((brand) => ({value: brand._id, text: brand.name}))}

@@ -146,13 +146,12 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div 
                     style={{ padding: '10px', height: "100%" }}>
                     <BootstrapSelect
-                      noneSelectedText="Todos los controles"
+                      noneSelectedText="Todas las marcas"
                       displayItems={4}
-                      selectedText="formularios seleccionadas."
+                      selectedText="Marcas seleccionadas."
                       allOption={true}
                       autoClouse={false}
                       notHideOnClickOutside={false}
-                      sm={true}
                       separator=" - "
                       options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
                       selected={selectedBrands}
