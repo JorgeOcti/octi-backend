@@ -21,6 +21,7 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as daterangepicker from 'daterangepicker';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
+import { IBrand } from '../../../../../../src/app/interfaces/brand.interface';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import { io } from 'socket.io-client';
 import { IWindow } from '../../interfaces/window';
@@ -176,7 +177,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { participants, forms, pagination, loading, filters } =
+    const { participants, forms, brands, pagination, loading, filters } =
       this.props.deliveries;
     const { loadingParticipant } = this.props.dashboard;
     const { getParticipant } = this.props;
@@ -253,7 +254,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div> */}
-                <div className="col-md-6 no-padding">
+                <div className="col-md-4 no-padding">
                   <div
                     className="input-group input-group-sm"
                     style={{ padding: '10px' }}>
@@ -271,7 +272,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className="col-md-6 no-padding">
+                <div className="col-md-4 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
@@ -288,6 +289,27 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                         text: form.name
                       }))}
                       onClick={this.filterForms}
+                      notHideOnClickOutside={false}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-4 no-padding">
+                  <div style={{ padding: '10px' }}>
+                    <BootstrapSelect
+                      noneSelectedText="Todas las marcas"
+                      displayItems={4}
+                      sm={true}
+                      autoClouse={false}
+                      selectedText="Marcas seleccionadas."
+                      selected={filters.brands}
+                      allOption={true}
+                      separator=" - "
+                      options={brands.map((brand: IBrand) => ({
+                        value: brand._id,
+                        text: brand.name
+                      }))}
+                      selectAll={() => {}}
+                      onClick={() => {}}
                       notHideOnClickOutside={false}
                     />
                   </div>

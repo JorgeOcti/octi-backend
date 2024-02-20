@@ -9,10 +9,12 @@ import {
   IDeliveryDispatch,
   LOAD_DELIVERIES,
   LOAD_FORMS,
+  LOAD_BRANDS,
   LOADING_DELIVERIES
 } from './deliveries.types';
-import { AxiosError, CancelTokenSource, default as Axios } from 'axios';
+import { AxiosError, AxiosResponse, CancelTokenSource, default as Axios } from 'axios';
 import { IParticipant } from '../../../../../src/form/interfaces/participant.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
 
 export default class DeliveriesActions {
@@ -40,6 +42,15 @@ export default class DeliveriesActions {
         count,
         page,
         pages
+      }
+    });
+  }
+
+  public loadBrandsAction(brands: IBrand[]): void {
+    this.dispatch({
+      type: LOAD_BRANDS,
+      payload: {
+        brands: brands
       }
     });
   }
@@ -73,6 +84,16 @@ export default class DeliveriesActions {
       const { pagination, filters } = deliveries;
       const page = nextPage ? nextPage : pagination.page;
       this.cancelAction(this.api.getSource());
+      if(filters.brands.length === 0) {
+        this.api.getBrands({page: 1, pageSize: 500})
+          .then((response: AxiosResponse) => {
+            this.loadBrandsAction(response.data.results);
+          })
+          .catch((err: AxiosError) => {
+            this.api.errorHandler(err);
+          });
+      }
+
       Axios
         .all([
           this.api.getRevisions({

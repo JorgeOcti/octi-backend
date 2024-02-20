@@ -1,5 +1,6 @@
 import { CancelTokenSource } from 'axios';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import { IParticipant } from '../../../../../src/form/interfaces/participant.interface';
 import { ThunkDispatch } from 'redux-thunk';
 
@@ -8,6 +9,7 @@ export const LOAD_DELIVERIES = '@deliveries/LOAD_DELIVERIES';
 export const LOAD_FORMS = '@deliveries/LOAD_FORMS';
 export const CHANGE_FILTER_DELIVERIES = '@deliveries/CHANGE_FILTER_DELIVERIES';
 export const CANCEL_DELIVERIES = '@deliveries/CANCEL_DELIVERIES';
+export const LOAD_BRANDS = '@deliveries/LOAD_BRANDS';
 
 interface IDeliveriesLoadingAction {
   type: typeof LOADING_DELIVERIES;
@@ -26,6 +28,13 @@ interface IDeliveriesLoadAction {
   };
 }
 
+interface IDeliveriesLoadBrandsAction {
+  type: typeof LOAD_BRANDS;
+  payload: {
+    brands: IBrand[];
+  }
+}
+
 interface IDeliveriesLoadFormsAction {
   type: typeof LOAD_FORMS;
   payload: {
@@ -40,7 +49,7 @@ interface IDeliveriesCancelAction {
   };
 }
 
-export type DeliveriesFilterFields = 'forms' | 'from' | 'to' | 'searchText'| 'searchDelivery';
+export type DeliveriesFilterFields = 'forms' | 'from' | 'to' | 'searchText'| 'searchDelivery' | 'brands';
 export type DeliveriesFilterValues = any | any[];
 export type DeliveriesFilter = Record<DeliveriesFilterFields, DeliveriesFilterValues>
 
@@ -51,6 +60,7 @@ interface IDeliveriesChangeFilterAction {
 
 export interface IDeliveriesState {
   forms: IForm[];
+  brands: IBrand[];
   participants: IParticipant[];
   loading: boolean;
   source: CancelTokenSource | null;
@@ -69,5 +79,6 @@ export type IDeliveriesActionTypes =
   IDeliveriesChangeFilterAction |
   IDeliveriesLoadAction |
   IDeliveriesLoadFormsAction |
+  IDeliveriesLoadBrandsAction |
   IDeliveriesCancelAction;
 
