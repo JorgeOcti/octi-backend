@@ -4,6 +4,7 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import { IUser } from '../../../../../src/app/interfaces/user.interface';
 import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
@@ -12,6 +13,7 @@ export const REQUEST_ITEMS_IS_LOADING = '/REQUESTS_ITEMS/IS_LOADING';
 export const REQUEST_ITEMS_LOAD_REASONS = '/REQUESTS_ITEMS/LOAD_REASONS';
 export const REQUEST_ITEMS_LOAD_CARRIERS = '/REQUESTS_ITEMS/LOAD_CARRIERS';
 export const REQUEST_ITEMS_LOAD_VENUES = '/REQUESTS_ITEMS/LOAD_VENUES';
+export const REQUEST_ITEMS_LOAD_BRANDS = '/REQUESTS_ITEMS/LOAD_BRANDS';
 export const REQUEST_ITEMS_LOAD_USERS = '/REQUESTS_ITEMS/LOAD_USERS';
 export const REQUEST_ITEMS_LOAD_PROPERTIES = '/REQUESTS_ITEMS/LOAD_PROPERTIES';
 export const REQUEST_ITEMS_LOAD_REQUESTS_ITEMS = '/REQUESTS_ITEMS/LOAD_REQUESTS_ITEMS';
@@ -45,6 +47,7 @@ export interface IRequestItemsState {
   carriers: ICarrier[];
   properties: ICarrier[];
   venues: IVenue[];
+  brands: IBrand[];
   users: IUser[];
   requestItemStatus: IRequestItemStatus[];
   requestSettings: IRequestSetting;
@@ -96,6 +99,13 @@ export interface ILoadUsersRequestItems {
   type: typeof REQUEST_ITEMS_LOAD_USERS;
   payload: {
     users: IUser[];
+  };
+}
+
+export interface ILoadBrandsRequestItems {
+  type: typeof REQUEST_ITEMS_LOAD_BRANDS;
+  payload: {
+    brands: IBrand[];
   };
 }
 
@@ -184,6 +194,7 @@ export type RequestItemsReduxActions =
   ILoadCarriersRequestItems |
   ILoadUsersRequestItems |
   ILoadVenuesRequestItems |
+  ILoadBrandsRequestItems |
   ILoadPropertiesRequestItems |
   IChangeOrderRequestItems |
   IChangeFilterRequestItems |

@@ -91,7 +91,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings, users
+      pagination, loading, requestItems, requestItemStatus, venues, brands, filters, properties, requestSettings, users
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -277,6 +277,26 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
+                    <div className='form-group'>
+                      <label htmlFor='brands' className='control-label'>Marcas</label>
+                      <BootstrapSelect
+                        noneSelectedText='Todas'
+                        search={true}
+                        displayItems={2}
+                        selectedText='marcas seleccionadas.'
+                        selected={filters.venues}
+                        sm={true}
+                        allOption={true}
+                        selectAll={() => {}}
+                        options={brands.map((brand) => ({
+                          value: brand._id,
+                          text: brand.name
+                        }))}
+                        onClick={() => {}}
+                      />
+                    </div>
+                  </div>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
