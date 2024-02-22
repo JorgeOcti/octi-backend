@@ -148,8 +148,9 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                     <BootstrapSelect
                       noneSelectedText="Todas las marcas"
                       displayItems={4}
-                      selectedText="Marcas seleccionadas."
+                      selectedText="marcas seleccionadas."
                       allOption={true}
+                      search={true}
                       autoClouse={false}
                       notHideOnClickOutside={false}
                       separator=" - "

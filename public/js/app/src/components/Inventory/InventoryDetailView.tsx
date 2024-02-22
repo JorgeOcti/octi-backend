@@ -1247,8 +1247,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           noneSelectedText="Todas"
                           displayItems={2}
                           sm={true}
-                          selectedText="sucursales seleccionadas."
+                          selectedText="marcas seleccionadas."
                           autoClouse={false}
+                          search={true}
                           allOption={true}
                           options={brands.map((brand) => ({
                             value: brand._id,

@@ -368,7 +368,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       noneSelectedText="Todas las marcas"
                       displayItems={4}
                       autoClouse={false}
-                      selectedText="Marcas seleccionadas."
+                      search={true}
+                      selectedText="marcas seleccionadas."
                       allOption={true}
                       separator=" - "
                       options={brands.map((brand) => ({value: brand._id, text: brand.name}))}

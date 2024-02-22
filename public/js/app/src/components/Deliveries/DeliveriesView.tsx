@@ -300,7 +300,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                       displayItems={4}
                       sm={true}
                       autoClouse={false}
-                      selectedText="Marcas seleccionadas."
+                      search={true}
+                      selectedText="marcas seleccionadas."
                       selected={filters.brands}
                       allOption={true}
                       separator=" - "
