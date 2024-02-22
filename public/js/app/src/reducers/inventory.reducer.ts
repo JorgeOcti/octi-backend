@@ -25,6 +25,7 @@ const initialState: IInventoryState = {
     reportedClass: "gray-dark",
     reportedColor: ""
   },
+  brands: [],
   loading: true,
   inventoryCar: null,
   source: null,
@@ -82,6 +83,11 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         ...state,
         source: action.payload.source
       };
+    case '/INVENTORIES/LOAD_BRANDS':
+      return {
+      ...state,
+      brands: action.payload.brands
+    };
     case '/INVENTORIES/LOAD_DATA':
       return {
         ...state,

@@ -793,6 +793,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       loadingDetail,
       summary,
       detail,
+      brands,
       carsTable,
       filter,
       selectedItems,
@@ -1223,7 +1224,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     display: loadingDetail ? 'none' : ''
                   }}>
                   <Row style={{ margin: '5px 0' }}>
-                    <div className="col-md-12">
+                    <div className="col-md-9">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">
                           Unidades
@@ -1234,6 +1235,28 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           id="cars"
                           placeholder="Busca por VIN, patente, marca o modelo."
                           onChange={this.handleChangeSearchText}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="brands" className="control-label">
+                          Marcas
+                        </label>
+                        <BootstrapSelect
+                          noneSelectedText="Todas"
+                          displayItems={2}
+                          sm={true}
+                          selectedText="sucursales seleccionadas."
+                          autoClouse={false}
+                          allOption={true}
+                          options={brands.map((brand) => ({
+                            value: brand._id,
+                            text: brand.name
+                          }))}
+                          selected={[]}
+                          selectAll={() => {}}
+                          onClick={() => {}}
                         />
                       </div>
                     </div>
