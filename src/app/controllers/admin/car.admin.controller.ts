@@ -179,10 +179,11 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const { page, pageSize, search } = req.query as {
+    const { page, pageSize, search, brands } = req.query as {
       page: string;
       pageSize: string;
       search: string;
+      brands: string;
     };
     const team = req.user.team._id;
     // paginate options
@@ -241,7 +242,10 @@ class AdminCarController {
 
 
 
-      if (req.user.userBrands && req.user.userBrands.length) {
+      if ((req.user.userBrands && req.user.userBrands.length > 0) || brands) {
+        let brandRelated = req.user.userBrands ?
+          req.user.userBrands :
+          brands.split(',').map((brand: string) => new Types.ObjectId(brand));
         filter = {
           $and: [
             {
@@ -250,7 +254,7 @@ class AdminCarController {
               },
               team,
               brandRelated: {
-                $in: req.user.userBrands
+                $in: brandRelated
               }
             }
           ]
