@@ -7,10 +7,13 @@ import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
 import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../src/app/interfaces/car.interface';
+import { IBrand } from '../../../../../../src/app/interfaces/brand.interface';
 import {
   CarReduxAction,
   getCarsAction,
-  ICarsState
+  changeFilterAction,
+  ICarsState,
+  ICarFilter
 } from '../../actions/cars.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
@@ -29,12 +32,12 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   cars: ICarsState;
 
   getCarsAction(page: number, search?: string): CarReduxAction;
+  changeFilterAction(filter: ICarFilter): CarReduxAction;
 }
 
 interface IStateType {
   error: Error | null;
   searchText: string;
-  selectedBrands: string[];
 }
 
 class CarListView extends TrackingBasePage<IPropsType, IStateType> {
@@ -47,7 +50,6 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   readonly state: IStateType = {
     error: null,
     searchText: '',
-    selectedBrands: []
   };
 
   constructor(props: IPropsType) {
@@ -55,6 +57,8 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Buscador de unidades';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.filterBrand = this.filterBrand.bind(this);
+    this.filterAllBrands = this.filterAllBrands.bind(this);
     this.debounceOnChangeSearch = debounce(1000, this.debounceOnChangeSearch);
   }
 
@@ -93,9 +97,8 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, cars, brands, pagination } = this.props.cars;
-    const { searchText, selectedBrands } = this.state;
-    console.log(this.props.cars.brands);
+    const { loading, cars, brands, pagination, filter } = this.props.cars;
+    const { searchText } = this.state;
     return (
       <AppContainer
         // title={}
@@ -155,9 +158,9 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                       notHideOnClickOutside={false}
                       separator=" - "
                       options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
-                      selected={selectedBrands}
-                      onClick={() => {}}
-                      selectAll={() => {}}
+                      selected={filter.brands}
+                      onClick={this.filterBrand}
+                      selectAll={this.filterAllBrands}
                     />
                   </div>
                 </div>
@@ -322,17 +325,41 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    const { searchText } = this.state;
+    let { searchText } = this.state;
+    let { filter } = this.props.cars;
     if (searchText && searchText.length) {
-      this.props.getCarsAction(1, searchText);
+      this.props.changeFilterAction({
+        ...filter,
+        searchText: searchText
+      });
     } else {
-      this.props.getCarsAction(1);
+      this.props.changeFilterAction({
+        ...filter,
+        searchText: ""
+      });
     }
   }
 
+  private filterBrand(brand: string): void {
+    let { filter } = this.props.cars;
+
+    this.props.changeFilterAction({
+      ...filter,
+      brands: filter.brands.includes(brand) ? filter.brands.filter((oldBrand) => oldBrand !== brand) : [brand, ...filter.brands]
+    });
+  }
+
+  private filterAllBrands(all: boolean): void {
+    let { brands, filter } = this.props.cars;
+
+    this.props.changeFilterAction({
+      ...filter,
+      brands: all ? brands.map((brand: IBrand) => brand._id) : []
+    });
+  }
+
   private changePage(page: number): void {
-    const { searchText } = this.state;
-    this.props.getCarsAction(page, searchText);
+    this.props.getCarsAction(page);
   }
 }
 
@@ -345,8 +372,9 @@ const mapStateToProps = (state: { cars: ICarsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getCarsAction: (page: number, search?: string) =>
-      dispatch(getCarsAction(page, search))
+    getCarsAction: (page: number) =>
+      dispatch(getCarsAction(page)),
+    changeFilterAction: (filter: ICarFilter) => dispatch(changeFilterAction(filter))
   };
 };
 

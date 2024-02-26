@@ -5,6 +5,10 @@ import {CarReduxAction, ICarsState} from '../actions/cars.actions';
 const initialState: ICarsState = {
   cars: [],
   car: null,
+  filter: {
+    brands: [],
+    searchText: ''
+  },
   carEvents: {} ,
   brands: [],
   loading: true,
@@ -32,6 +36,11 @@ export function carsReducer(state = initialState, action: CarReduxAction): ICars
       return {
         ...state,
         brands: action.payload.brands,
+      };
+    case '/CARS/UPDATE_FILTER':
+      return {
+        ...state,
+        filter: action.payload.filter,
       };
     case '/CARS/LOAD_CARS':
       return {

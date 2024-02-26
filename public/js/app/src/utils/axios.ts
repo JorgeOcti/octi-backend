@@ -459,9 +459,9 @@ export default class ApiService {
     });
   }
 
-  public getAdminCars(page?: number, search?: string): AxiosPromise {
+  public getAdminCars(page?: number, search?: string, brands?: string[]): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`,
+      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}${brands ? `&brands=${brands.join(',')}` : ''}`,
       {
         cancelToken: this.source.token
       }

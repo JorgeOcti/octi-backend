@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import * as React from 'react';
-import { CarReduxAction, getCarsAction, ICarsState } from '../../../actions/cars.actions';
+import { CarReduxAction, getCarsAction, changeFilterAction, ICarsState, ICarFilter } from '../../../actions/cars.actions';
 import { connect } from 'react-redux';
 import { debounce } from 'throttle-debounce';
 import Paginator from '../../Utils/Paginator';
@@ -18,6 +18,7 @@ interface IPropsType  extends IExternarlPropsType {
   cars: ICarsState;
 
   getCarsAction(page: number, search?: string): CarReduxAction;
+  changeFilterAction(filter: ICarFilter): CarReduxAction;
 }
 
 interface IStateType {
@@ -183,17 +184,23 @@ class SearchCarInCars extends React.Component<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    const { searchText } = this.state;
+    let { searchText } = this.state;
+    let { filter } = this.props.cars;
     if (searchText && searchText.length) {
-      this.props.getCarsAction(1, searchText);
+      this.props.changeFilterAction({
+        ...filter,
+        searchText: searchText
+      });
     } else {
-      this.props.getCarsAction(1);
+      this.props.changeFilterAction({
+        ...filter,
+        searchText: ""
+      });
     }
   }
 
   private changePage(page: number): void {
-    const { searchText } = this.state;
-    this.props.getCarsAction(page, searchText);
+    this.props.getCarsAction(page);
   }
 }
 
@@ -206,7 +213,8 @@ const mapStateToProps = (state: { cars: ICarsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getCarsAction: (page: number, search?: string) => dispatch(getCarsAction(page, search))
+    getCarsAction: (page: number) => dispatch(getCarsAction(page)),
+    changeFilterAction: (filter: ICarFilter) => dispatch(changeFilterAction(filter))
   };
 };
 
