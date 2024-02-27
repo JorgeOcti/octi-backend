@@ -14,20 +14,23 @@ const initialState: IDashboardState = {
   carEvents: {},
   brands: [],
   forms: [],
-  searchForms: [],
+  filter: {
+    searchForms: [],
+    searchBrands: [],
+    searchText: '',
+    searchFrom: moment()
+      .startOf('month')
+      .subtract(1, 'months')
+      .startOf('month')
+      .toDate(),
+    searchTo: moment().toDate(),
+  },
   participantsReceivedPerDate: [],
   participantsSentPerDate: [],
   participantPerRange: [],
   carsPerDate: [],
   planningPerDate: [],
   planningProcessPerDate: [],
-  searchText: '',
-  searchFrom: moment()
-    .startOf('month')
-    .subtract(1, 'months')
-    .startOf('month')
-    .toDate(),
-  searchTo: moment().toDate(),
   carsByVenue: [],
   totalCars: 0,
   loadingParticipant: null,
@@ -60,16 +63,10 @@ export function dashboardReducer(
           count: action.payload.count
         }
       };
-    case '/DASHBOARD/CHANGE_SEARCH':
+    case '/DASHBOARD/UPDATE_FILTER':
       return {
         ...state,
-        searchText: action.payload.searchText
-      };
-    case '/DASHBOARD/CHANGE_RANGE':
-      return {
-        ...state,
-        searchFrom: action.payload.from,
-        searchTo: action.payload.to
+        filter: action.payload.filter
       };
     case '/DASHBOARD/LOADING_PARTICIPANT':
       return {
@@ -146,11 +143,6 @@ export function dashboardReducer(
       return {
         ...state,
         forms: action.payload.forms
-      };
-    case '/DASHBOARD/CHANGE_FORM_SEARCH':
-      return {
-        ...state,
-        searchForms: action.payload.searchForms
       };
     default:
       return state;
