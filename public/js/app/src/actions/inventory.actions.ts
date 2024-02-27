@@ -3,6 +3,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
 import {IInventorySetting} from '../../../../../src/app/interfaces/teamSetting.interface';
+import {IBrand} from '../../../../../src/app/interfaces/brand.interface';
 import {IInventoryComment} from '../../../../../src/inventory/interfaces/inventoryComment.interface';
 import {IInventoryLabel} from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {IFilterCar} from '../reducers/inventory.reducer';
@@ -58,6 +59,7 @@ export interface IInventoryState {
   inventorySettings: IInventorySetting;
   loading: boolean;
   inventoryCar: IInventoryCar | null;
+  brands: IBrand[];
   source: CancelTokenSource | null;
   loadingDetail: boolean;
   fetchingDetail: boolean;
@@ -139,6 +141,22 @@ export function isLoadingAction(loading: boolean): IIsLoading {
     type: '/INVENTORIES/IS_LOADING',
     payload: {
       loading
+    }
+  };
+}
+
+interface ILoadBrands {
+  type: '/INVENTORIES/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsAction(brands: IBrand[]): ILoadBrands {
+  return {
+    type: '/INVENTORIES/LOAD_BRANDS',
+    payload: {
+      brands: brands
     }
   };
 }
@@ -366,7 +384,19 @@ export function getInventoryDetailAction(id: string, update: boolean) {
       if (!update) {
         dispatch(loadingInventoryDetaillAction(true));
       }
+
       const api: ApiService = new ApiService();
+
+      if (state.inventories.brands.length === 0) {
+        api.getBrands({page: 1, pageSize: 500})
+          .then((response: AxiosResponse) => {
+            dispatch(loadBrandsAction(response.data.results));
+          })
+          .catch((err: AxiosError) => {
+            api.errorHandler(err);
+          });
+      }
+
       dispatch(cancelRequestAction(api.getSource()));
       api.getInventory(id)
         .then((response: AxiosResponse) => {
@@ -469,6 +499,7 @@ export type InventoryReduxAction =
   IIsLoading |
   ILoadInventories |
   ILoadInventory |
+  ILoadBrands |
   ILoadingDetailInventory |
   IUpdateInventoryCar |
   IAddComment |

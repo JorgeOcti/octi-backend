@@ -11,14 +11,13 @@ import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
 import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import {
-  changeFormsSearchDashboardAction,
-  changeRangeDashboardAction,
-  changeSearchDashboardAction,
+  changeFilterDashboardAction,
   DashboardReduxAction,
   getParticipant,
   getRevisionsAction,
   getRevisionsThunkAction,
-  IDashboardState
+  IDashboardState,
+  IDashboardFilter
 } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
@@ -27,6 +26,7 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import DateRangeInput from '../Utils/DateRangeInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
+import { IBrand } from '../../../../../../src/app/interfaces/brand.interface';
 import ShowIf from '../Utils/ShowIf';
 import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
@@ -49,21 +49,14 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
 
-  changeSearchFormsDashboardAction(forms: string[]): DashboardReduxAction;
-
-  changeSearchDashboardAction(searchText: string): DashboardReduxAction;
-
-  changeRangeDashboardAction(from: Date, to: Date): DashboardReduxAction;
+  changeFilterDashboardAction(filter: IDashboardFilter): void;
 }
 
 interface IStateType {
   error: Error | null;
   highlight: string[];
   searchText: string;
-  selectedForms: string[];
   carLoading: string;
-  from: Date;
-  to: Date;
   downloading: boolean;
 }
 
@@ -75,9 +68,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     highlight: [],
     searchText: '',
     carLoading: '',
-    selectedForms: [],
-    from: moment().subtract(1, 'months').startOf('month').toDate(),
-    to: moment().toDate(),
     downloading: false
   };
 
@@ -89,6 +79,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Buscador de revisiones';
+    this.state.searchText = this.props.dashboard.filter.searchText;
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
@@ -98,6 +89,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
+    this.filterBrands = this.filterBrands.bind(this);
+    this.filterAllBrands = this.filterAllBrands.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -216,11 +209,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public downloadReport() {
-    const { from, to, selectedForms, searchText } = this.state;
-    const monthsDiff = moment(to).diff(moment(from), 'months');
+    const { searchFrom, searchTo, searchForms, searchText } = this.props.dashboard.filter;
+    const monthsDiff = moment(searchTo).diff(moment(searchFrom), 'months');
     this.trackClick('Descargar reporte', {
-      from,
-      to
+      searchFrom,
+      searchTo
     });
     if (monthsDiff > 3) {
       swal!(
@@ -229,24 +222,24 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         'error'
       );
     } else {
-      let query = `?deliveries=0&from=${moment(from).unix()}&to=${moment(
-        to
+      let query = `?deliveries=0&searchFrom=${moment(searchFrom).unix()}&searchTo=${moment(
+        searchTo
       ).unix()}`;
 
       if (searchText) query += `&search=${searchText}`;
 
-      if (selectedForms) query += `&forms=${selectedForms.join(',')}`;
+      if (searchForms) query += `&forms=${searchForms.join(',')}`;
 
       window.open(`/api/participant/export/${query}`, '_blank');
     }
   }
 
   public downloadEvidence() {
-    const { from, to, selectedForms, searchText } = this.state;
-    const monthsDiff = moment(to).diff(moment(from), 'months');
+    const { searchFrom, searchTo, searchForms, searchText } = this.props.dashboard.filter;
+    const monthsDiff = moment(searchTo).diff(moment(searchFrom), 'months');
     this.trackClick('Descargar evidencia', {
-      from,
-      to
+      searchFrom,
+      searchTo
     });
     if (monthsDiff > 3) {
       swal!(
@@ -255,13 +248,13 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         'error'
       );
     } else {
-      let query = `?deliveries=0&from=${moment(from).unix()}&to=${moment(
-        to
+      let query = `?deliveries=0&searchFrom=${moment(searchFrom).unix()}&searchTo=${moment(
+        searchTo
       ).unix()}`;
 
       if (searchText) query += `&search=${searchText}`;
 
-      if (selectedForms) query += `&forms=${selectedForms.join(',')}`;
+      if (searchForms) query += `&forms=${searchForms.join(',')}`;
 
       window.open(`/api/participant/export/evidence/${query}`, '_blank');
     }
@@ -272,11 +265,12 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       loading,
       participants,
       pagination,
-      searchText,
+      filter,
       forms,
+      brands,
       loadingParticipant
     } = this.props.dashboard;
-    const { highlight, carLoading, downloading, from, to, selectedForms } =
+    const { highlight, carLoading, downloading, searchText } =
       this.state;
     const { getParticipant } = this.props;
     return (
@@ -286,8 +280,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             <DateRangeInput
               options={this.getDateRangeOptions()}
               onChange={this.onDateRangeChange}
-              startDate={from}
-              endDate={to}
+              startDate={filter.searchFrom}
+              endDate={filter.searchTo}
             />
           </div>
         }
@@ -320,7 +314,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row no-margin">
-                <div className="col-md-8 no-padding">
+                <div className="col-md-12 no-padding">
                   <div
                     className="input-group input-group"
                     style={{ padding: '10px' }}>
@@ -339,15 +333,14 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 {/* <div className="col-md-4 col-md-offset-8 no-padding"> */}
-                <div className="col-md-4 no-padding">
+                <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
                       displayItems={4}
-                      // sm={true}
                       autoClouse={true}
                       selectedText="formularios seleccionadas."
-                      selected={selectedForms}
+                      selected={filter.searchForms}
                       allOption={true}
                       selectAll={this.filterAllForms}
                       separator=" - "
@@ -357,6 +350,24 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       }))}
                       onClick={this.filterForms}
                       notHideOnClickOutside={false}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-6 no-padding">
+                  <div style={{ padding: '10px' }}>
+                    <BootstrapSelect
+                      noneSelectedText="Todas las marcas"
+                      displayItems={4}
+                      autoClouse={false}
+                      search={true}
+                      selectedText="marcas seleccionadas."
+                      allOption={true}
+                      separator=" - "
+                      options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
+                      notHideOnClickOutside={false}
+                      selected={filter.searchBrands}
+                      onClick={this.filterBrands}
+                      selectAll={this.filterAllBrands}
                     />
                   </div>
                 </div>
@@ -715,37 +726,39 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private filterForms(value: any) {
-    let { selectedForms } = this.state;
-    let sForms = selectedForms;
+    let { searchForms } = this.props.dashboard.filter;
 
-    sForms = sForms.includes(value)
-      ? sForms.filter((form) => form !== value)
-      : [value, ...selectedForms];
-
-    this.setState(
-      {
-        selectedForms: sForms
-      },
-      () => {
-        this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
-        this.props.getRevisionsAction(1, false);
-      }
-    );
+    this.props.changeFilterDashboardAction({
+      ...this.props.dashboard.filter,
+      searchForms: searchForms.includes(value) ? searchForms.filter((form) => form !== value) : [value, ...searchForms]
+    });
   }
 
   private filterAllForms(value: boolean) {
-    let { forms } = this.props.dashboard;
-    let sForms = value ? forms.map((f: IForm) => f._id) : [];
+    let { forms, filter } = this.props.dashboard;
 
-    this.setState(
-      {
-        selectedForms: sForms
-      },
-      () => {
-        this.props.changeSearchFormsDashboardAction(this.state.selectedForms);
-        this.props.getRevisionsAction(1, false);
-      }
-    );
+    this.props.changeFilterDashboardAction({
+      ...filter,
+      searchForms: value ? forms.map((form: IForm) => form._id) : []
+    });
+  }
+
+  private filterBrands(value: any) {
+    let { searchBrands } = this.props.dashboard.filter;
+
+    this.props.changeFilterDashboardAction({
+      ...this.props.dashboard.filter,
+      searchBrands: searchBrands.includes(value) ? searchBrands.filter((brand) => brand !== value) : [value, ...searchBrands]
+    });
+  }
+
+  private filterAllBrands(value: boolean) {
+    let { brands, filter } = this.props.dashboard;
+
+    this.props.changeFilterDashboardAction({
+      ...filter,
+      searchBrands: value ? brands.map((brand: IBrand) => brand._id) : []
+    });
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -754,16 +767,22 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.setState({
       searchText: value
     });
-    this.props.changeSearchDashboardAction(value);
     this.debounceOnChangeSearch();
   }
 
   private debounceOnChangeSearch(): void {
     const { searchText } = this.state;
+    const { filter } = this.props.dashboard;
     if (searchText && searchText.length) {
-      this.props.getRevisionsAction(1, false, searchText);
+      this.props.changeFilterDashboardAction({
+        ...filter,
+        searchText: searchText
+      });
     } else {
-      this.props.getRevisionsAction(1, false);
+      this.props.changeFilterDashboardAction({
+        ...filter,
+        searchText: ""
+      });
     }
   }
 
@@ -805,15 +824,12 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private onDateRangeChange(from: Date, to: Date) {
-    this.setState({
-      from,
-      to
+    const { filter } = this.props.dashboard;
+    this.props.changeFilterDashboardAction({
+      ...filter,
+      searchFrom: moment(from).toDate(),
+      searchTo: moment(to).toDate()
     });
-    this.props.changeRangeDashboardAction(
-      moment(from).toDate(),
-      moment(to).toDate()
-    );
-    this.debounceOnChangeSearch();
   }
 }
 
@@ -842,12 +858,8 @@ const mapDispatchToProps = (dispatch: any) => {
           undefined
         )
       ),
-    changeSearchFormsDashboardAction: (forms: string[]) =>
-      dispatch(changeFormsSearchDashboardAction(forms)),
-    changeSearchDashboardAction: (searchText: string) =>
-      dispatch(changeSearchDashboardAction(searchText)),
-    changeRangeDashboardAction: (from: Date, to: Date) =>
-      dispatch(changeRangeDashboardAction(from, to)),
+    changeFilterDashboardAction: (filter:IDashboardFilter) =>
+      dispatch(changeFilterDashboardAction(filter)),
     getRevisionsAction: (page: number, loading: boolean, search?: string) =>
       dispatch(getRevisionsAction(page, loading, search))
   };

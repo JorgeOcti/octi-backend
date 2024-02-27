@@ -18,6 +18,7 @@ import { Socket } from 'socket.io-client/build/esm/socket';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import { IInventoryCar } from '../../../../../../src/inventory/interfaces/inventory.interface';
+import { IBrand } from '../../../../../../src/app/interfaces/brand.interface';
 import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import {
@@ -201,6 +202,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     this.selectedFormatter = this.selectedFormatter.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
+    this.filterBrands = this.filterBrands.bind(this);
+    this.filterAllBrands = this.filterAllBrands.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
     this.filterType = this.filterType.bind(this);
     this.filterProperty = this.filterProperty.bind(this);
@@ -793,6 +796,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       loadingDetail,
       summary,
       detail,
+      brands,
       carsTable,
       filter,
       selectedItems,
@@ -1223,7 +1227,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     display: loadingDetail ? 'none' : ''
                   }}>
                   <Row style={{ margin: '5px 0' }}>
-                    <div className="col-md-12">
+                    <div className="col-md-9">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">
                           Unidades
@@ -1234,6 +1238,29 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           id="cars"
                           placeholder="Busca por VIN, patente, marca o modelo."
                           onChange={this.handleChangeSearchText}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="brands" className="control-label">
+                          Marcas
+                        </label>
+                        <BootstrapSelect
+                          noneSelectedText="Todas"
+                          displayItems={2}
+                          sm={true}
+                          selectedText="marcas seleccionadas."
+                          autoClouse={false}
+                          search={true}
+                          allOption={true}
+                          options={brands.map((brand) => ({
+                            value: brand._id,
+                            text: brand.name
+                          }))}
+                          selected={filter.brands}
+                          selectAll={this.filterAllBrands}
+                          onClick={this.filterBrands}
                         />
                       </div>
                     </div>
@@ -1607,6 +1634,22 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
+  private filterBrands(value: any) {
+    const { filter } = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      brands: filter.brands.includes(value) ? filter.brands.filter((brand) => brand !== value) : [value, ...filter.brands]
+    });
+  }
+
+  private filterAllBrands(value: boolean) {
+    const { filter, brands } = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      brands: value ? brands.map((brand: IBrand) => brand._id) : []
+    });
+  }
+
   private filterStatus(value: any) {
     const { filter } = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
@@ -1639,7 +1682,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       type: '',
       property: '',
       venues: [],
-      states: [state]
+      states: [state],
+      brands: []
     });
 
     if (this.state.tab !== 'detail') {
@@ -1656,7 +1700,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       type: '',
       property: '',
       venues: [venue],
-      states: []
+      states: [],
+      brands: []
     });
     if (this.state.tab !== 'detail') {
       this.changeTab('detail');
@@ -1670,6 +1715,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
+      brands: [],
       property: '',
       type: '',
       text: ''

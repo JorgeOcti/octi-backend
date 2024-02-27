@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import * as React from 'react';
 import { Dispatch } from 'redux';
 import { ICar } from '../../../../../src/app/interfaces/car.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import {
   IParticipant,
   IParticipantSection
@@ -18,15 +19,24 @@ import { loadDataAction } from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
 
+export interface IDashboardFilter {
+  searchForms: string[];
+  searchBrands: string[];
+  searchText: string;
+  searchFrom: Date;
+  searchTo: Date;
+}
+
 export interface IDashboardState {
   forms: IForm[];
-  searchForms: string[];
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  filter: IDashboardFilter;
   requests: any[];
   companies: any[];
   car: ICar | null;
+  brands: IBrand[];
   carEvents: any;
   participantsReceivedPerDate: any[];
   participantsSentPerDate: any[];
@@ -34,9 +44,6 @@ export interface IDashboardState {
   planningPerDate: any[];
   planningProcessPerDate: any[];
   carsByVenue: any[];
-  searchText: string;
-  searchFrom: Date;
-  searchTo: Date;
   participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
@@ -139,6 +146,22 @@ export function loadRequestsInCarAction(requests: any): ILoadRequestsInCar {
   };
 }
 
+interface ILoadBrands {
+  type: '/DASHBOARD/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsAction(brands: IBrand[]): ILoadBrands {
+  return {
+    type: '/DASHBOARD/LOAD_BRANDS',
+    payload: {
+      brands: brands
+    }
+  }
+}
+
 interface ILoadCar {
   type: '/DASHBOARD/LOAD_CAR';
   payload: {
@@ -171,62 +194,24 @@ export function changePageAction(page: number): IChangePage {
   };
 }
 
-interface IChangeSearchDashboard {
-  type: '/DASHBOARD/CHANGE_SEARCH';
+interface IUpdateFilterDashboard {
+  type: '/DASHBOARD/UPDATE_FILTER';
   payload: {
-    searchText: string;
+    filter: IDashboardFilter;
   };
 }
 
-export function changeSearchDashboardAction(
-  searchText: string
-): IChangeSearchDashboard {
+export function updateFilterDashboardAction(
+  filter: IDashboardFilter
+): IUpdateFilterDashboard {
   return {
-    type: '/DASHBOARD/CHANGE_SEARCH',
+    type: '/DASHBOARD/UPDATE_FILTER',
     payload: {
-      searchText
+      filter: filter
     }
   };
 }
 
-interface IChangeRangeDashboard {
-  type: '/DASHBOARD/CHANGE_RANGE';
-  payload: {
-    from: Date;
-    to: Date;
-  };
-}
-
-export function changeRangeDashboardAction(
-  from: Date,
-  to: Date
-): IChangeRangeDashboard {
-  return {
-    type: '/DASHBOARD/CHANGE_RANGE',
-    payload: {
-      from,
-      to
-    }
-  };
-}
-
-interface IChangeFormsSearchDashboard {
-  type: '/DASHBOARD/CHANGE_FORM_SEARCH';
-  payload: {
-    searchForms: string[];
-  };
-}
-
-export function changeFormsSearchDashboardAction(
-  searchForms: string[]
-): IChangeFormsSearchDashboard {
-  return {
-    type: '/DASHBOARD/CHANGE_FORM_SEARCH',
-    payload: {
-      searchForms
-    }
-  };
-}
 
 interface ILoadingForms {
   type: '/DASHBOARD/LOAD_FORMS';
@@ -242,6 +227,17 @@ export function loadForms(forms: IForm[]): ILoadingForms {
       forms
     }
   };
+}
+
+export function changeFilterDashboardAction(filter: IDashboardFilter) {
+  return (
+    dispatch: Dispatch<DashboardReduxAction>,
+    getState: () => { dashboard: IDashboardState }
+  ) => {
+    dispatch(updateFilterDashboardAction(filter));
+    const getRevisions = getRevisionsAction(1, false);
+    getRevisions(dispatch, getState);
+  }
 }
 
 export function getRevisionsThunkAction(
@@ -266,16 +262,27 @@ export function getRevisionsThunkAction(
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+
+    if (state.dashboard.brands.length === 0) {
+      api.getBrands({page: 1, pageSize: 500})
+        .then((response: AxiosResponse) => {
+          dispatch(loadBrandsAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
+    const { filter } = state.dashboard;
     Axios.all([
       api.getRevisions({
         onlyControls,
         deliveries: false,
         page,
-        search: searchText,
-        from: searchFrom,
-        to: searchTo,
-        forms: searchForms
+        search: filter.searchText,
+        from: filter.searchFrom,
+        to: filter.searchTo,
+        forms: filter.searchForms,
+        brands: filter.searchBrands
       }),
       api.getUserForms({ deliveries: false })
     ])
@@ -332,16 +339,17 @@ export function getRevisionsAction(
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+    const { filter } = state.dashboard;
     api
       .getRevisions({
         onlyControls,
         deliveries: false,
         page,
-        search: searchText,
-        from: searchFrom,
-        to: searchTo,
-        forms: searchForms
+        search: filter.searchText,
+        from: filter.searchFrom,
+        to: filter.searchTo,
+        forms: filter.searchForms,
+        brands: filter.searchBrands
       })
       .then((response: AxiosResponse) => {
         dispatch(
@@ -1197,8 +1205,7 @@ export type DashboardReduxAction =
   | IIsLoading
   | ICancelRequest
   | ILoadRevisions
-  | IChangeSearchDashboard
-  | IChangeRangeDashboard
+  | ILoadBrands
   | ILoadCar
   | ILoadParticipantsPerDate
   | ILoadingParticipant
@@ -1208,4 +1215,4 @@ export type DashboardReduxAction =
   | ILoadingVenuesStats
   | ILoadingRevisionsStats
   | ILoadingForms
-  | IChangeFormsSearchDashboard;
+  | IUpdateFilterDashboard;

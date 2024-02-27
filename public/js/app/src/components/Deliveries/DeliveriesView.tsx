@@ -21,6 +21,7 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as daterangepicker from 'daterangepicker';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
+import { IBrand } from '../../../../../../src/app/interfaces/brand.interface';
 import { Socket } from 'socket.io-client/build/esm/socket';
 import { io } from 'socket.io-client';
 import { IWindow } from '../../interfaces/window';
@@ -67,6 +68,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Buscador de entregas';
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
+    this.filterBrands = this.filterBrands.bind(this);
+    this.filterAllBrands = this.filterAllBrands.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.getDateRangeOptions = this.getDateRangeOptions.bind(this);
     this.downloadReport = this.downloadReport.bind(this);
@@ -176,7 +179,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { participants, forms, pagination, loading, filters } =
+    const { participants, forms, brands, pagination, loading, filters } =
       this.props.deliveries;
     const { loadingParticipant } = this.props.dashboard;
     const { getParticipant } = this.props;
@@ -253,7 +256,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div> */}
-                <div className="col-md-6 no-padding">
+                <div className="col-md-4 no-padding">
                   <div
                     className="input-group input-group-sm"
                     style={{ padding: '10px' }}>
@@ -271,7 +274,7 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className="col-md-6 no-padding">
+                <div className="col-md-4 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
@@ -288,6 +291,28 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                         text: form.name
                       }))}
                       onClick={this.filterForms}
+                      notHideOnClickOutside={false}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-4 no-padding">
+                  <div style={{ padding: '10px' }}>
+                    <BootstrapSelect
+                      noneSelectedText="Todas las marcas"
+                      displayItems={4}
+                      sm={true}
+                      autoClouse={false}
+                      search={true}
+                      selectedText="marcas seleccionadas."
+                      selected={filters.brands}
+                      allOption={true}
+                      separator=" - "
+                      options={brands.map((brand: IBrand) => ({
+                        value: brand._id,
+                        text: brand.name
+                      }))}
+                      selectAll={this.filterAllBrands}
+                      onClick={this.filterBrands}
                       notHideOnClickOutside={false}
                     />
                   </div>
@@ -390,6 +415,26 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     const { forms } = this.props.deliveries;
     deliveriesActions.updateFiltersAction({
       forms: forms.map((form: IForm) => form._id)
+    });
+  }
+
+  private filterBrands(value: any) {
+    const { deliveriesActions } = this.props;
+    const { filters } = this.props.deliveries;
+    let sBrands = [...filters.brands];
+
+    sBrands = sBrands.includes(value)
+      ? sBrands.filter((brand: string) => brand !== value)
+      : [value, ...filters.brands];
+
+    deliveriesActions.updateFiltersAction({ brands: sBrands });
+  }
+
+  private filterAllBrands(value: boolean): void {
+    const { deliveriesActions } = this.props;
+    const { brands } = this.props.deliveries;
+    deliveriesActions.updateFiltersAction({
+      brands: value ? brands.map((brand: IBrand) => brand._id): []
     });
   }
 

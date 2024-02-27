@@ -5,6 +5,7 @@ import {
   IDeliveriesState,
   LOAD_DELIVERIES,
   LOAD_FORMS,
+  LOAD_BRANDS,
   LOADING_DELIVERIES
 } from '../actions/deliveries.types';
 import * as moment from 'moment';
@@ -13,6 +14,7 @@ const initialState: IDeliveriesState = {
   loading: true,
   source: null,
   forms: [],
+  brands: [],
   pagination: {
     count: 0,
     page: 1,
@@ -20,6 +22,7 @@ const initialState: IDeliveriesState = {
   },
   filters: {
     forms: [],
+    brands: [],
     searchText: '',
     searchDelivery: '',
     from: moment().subtract(1, 'months').startOf('month'),
@@ -43,6 +46,11 @@ export default function deliveriesReducer(state = initialState, action: IDeliver
           ...state.filters,
           ...action.payload
         }
+      };
+    case LOAD_BRANDS:
+      return {
+        ...state,
+        brands: action.payload.brands
       };
     case LOAD_FORMS:
       return {

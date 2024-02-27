@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { debounce } from 'throttle-debounce';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
+import { IBrand } from '../../../../../../../src/app/interfaces/brand.interface';
 import {
   changeFilterRequestAction,
   createRequestItemAction,
-  // deleteRequestItemAction,
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
@@ -91,7 +91,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings, users
+      pagination, loading, requestItems, requestItemStatus, venues, brands, filters, properties, requestSettings, users
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -277,6 +277,42 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
+                    <div className='form-group'>
+                      <label htmlFor='brands' className='control-label'>Marcas</label>
+                      <BootstrapSelect
+                        noneSelectedText='Todas'
+                        search={true}
+                        displayItems={2}
+                        selectedText='marcas seleccionadas.'
+                        selected={filters.brands}
+                        sm={true}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('brands', brands.map((brand: IBrand) => brand._id));
+                            } else {
+                              this.changeFilter('brands', []);
+                            }
+                          }
+                        }
+                        options={brands.map((brand: IBrand) => ({
+                          value: brand._id,
+                          text: brand.name
+                        }))}
+                        onClick={
+                          (selected: any) => {
+                            if (filters.brands.includes(selected)) {
+                              this.changeFilter('brands', [...filters.brands.filter((brand) => brand !== selected)]);
+                            } else {
+                              this.changeFilter('brands', [...filters.brands, selected]);
+                            }
+                          }
+                        }
+                      />
+                    </div>
+                  </div>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>

@@ -431,7 +431,8 @@ export default class ApiService {
     delivery,
     from,
     to,
-    forms
+    forms,
+    brands
   }: {
     onlyControls: boolean;
     deliveries: boolean;
@@ -441,6 +442,7 @@ export default class ApiService {
     from?: Date;
     to?: Date;
     forms?: String[];
+    brands?: String[];
   }): AxiosPromise {
     let query = `?page=${page}&only_controls=${
       onlyControls ? '1' : '0'
@@ -454,14 +456,16 @@ export default class ApiService {
 
     if (forms) query += `&forms=${forms.join(',')}`;
 
+    if (brands) query += `&brands=${brands.join(',')}`;
+
     return this.instance.get(`/api/revisions/${query}`, {
       cancelToken: this.source.token
     });
   }
 
-  public getAdminCars(page?: number, search?: string): AxiosPromise {
+  public getAdminCars(page?: number, search?: string, brands?: string[]): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`,
+      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}${brands ? `&brands=${brands.join(',')}` : ''}`,
       {
         cancelToken: this.source.token
       }
