@@ -67,6 +67,7 @@ import DeliveriesView from './components/Deliveries/DeliveriesView';
 import ReactGA from "react-ga4";
 import {TraceabilityView} from "./components/Traceability/TraceabilityView";
 import OSAView from "./components/OSA/OSAView";
+import {LBZView} from "./components/LBZ/LBZ";
 
 
 declare let window: IWindow;
@@ -146,6 +147,7 @@ const App = () => (
         <Route exact path='/requests/:id/' component={RequestDetailView} />
         <Route exact path='/trace/' component={TraceabilityView} />
         <Route exact path='/osa/' component={OSAView} />
+        <Route exact path='/control/' component={LBZView} />
         <Route component={NoMatch} />
       </Switch>
     </ConnectedRouter>
