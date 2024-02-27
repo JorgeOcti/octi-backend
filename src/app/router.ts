@@ -39,6 +39,7 @@ appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.general
 appRouter.get('/dashboard/studio/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/trace/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/osa/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/control/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
