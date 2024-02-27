@@ -68,6 +68,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Buscador de entregas';
     this.filterForms = this.filterForms.bind(this);
     this.filterAllForms = this.filterAllForms.bind(this);
+    this.filterBrands = this.filterBrands.bind(this);
+    this.filterAllBrands = this.filterAllBrands.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
     this.getDateRangeOptions = this.getDateRangeOptions.bind(this);
     this.downloadReport = this.downloadReport.bind(this);
@@ -309,8 +311,8 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
                         value: brand._id,
                         text: brand.name
                       }))}
-                      selectAll={() => {}}
-                      onClick={() => {}}
+                      selectAll={this.filterAllBrands}
+                      onClick={this.filterBrands}
                       notHideOnClickOutside={false}
                     />
                   </div>
@@ -413,6 +415,26 @@ class DeliveriesView extends TrackingBasePage<IPropsType, IStateType> {
     const { forms } = this.props.deliveries;
     deliveriesActions.updateFiltersAction({
       forms: forms.map((form: IForm) => form._id)
+    });
+  }
+
+  private filterBrands(value: any) {
+    const { deliveriesActions } = this.props;
+    const { filters } = this.props.deliveries;
+    let sBrands = [...filters.brands];
+
+    sBrands = sBrands.includes(value)
+      ? sBrands.filter((brand: string) => brand !== value)
+      : [value, ...filters.brands];
+
+    deliveriesActions.updateFiltersAction({ brands: sBrands });
+  }
+
+  private filterAllBrands(value: boolean): void {
+    const { deliveriesActions } = this.props;
+    const { brands } = this.props.deliveries;
+    deliveriesActions.updateFiltersAction({
+      brands: value ? brands.map((brand: IBrand) => brand._id): []
     });
   }
 

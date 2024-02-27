@@ -105,6 +105,7 @@ export default class DeliveriesActions {
             to: filters.to,
             search: filters.searchText,
             delivery: filters.searchDelivery,
+            brands: filters.brands
           }),
           this.api.getUserForms({ deliveries: true })
         ])
