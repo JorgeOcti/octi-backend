@@ -9,7 +9,8 @@ const initialState: IInventoryDashboardState = {
     property: '',
     type: '',
     venues: [],
-    states: []
+    states: [],
+    brands: []
   },
   inventorySettings: {
     report: null,
