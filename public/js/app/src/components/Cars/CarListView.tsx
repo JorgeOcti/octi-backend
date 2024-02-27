@@ -55,6 +55,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Buscador de unidades';
+    this.state.searchText = this.props.cars.filter.searchText;
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.filterBrand = this.filterBrand.bind(this);
@@ -136,6 +137,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                       type="text"
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
+                      value={searchText}
                       placeholder="Buscar por datos de la unidad"
                     />
                     <div className="input-group-btn">
