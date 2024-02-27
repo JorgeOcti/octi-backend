@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { debounce } from 'throttle-debounce';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
+import { IBrand } from '../../../../../../../src/app/interfaces/brand.interface';
 import {
   changeFilterRequestAction,
   createRequestItemAction,
-  // deleteRequestItemAction,
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
@@ -285,15 +285,31 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         search={true}
                         displayItems={2}
                         selectedText='marcas seleccionadas.'
-                        selected={filters.venues}
+                        selected={filters.brands}
                         sm={true}
                         allOption={true}
-                        selectAll={() => {}}
-                        options={brands.map((brand) => ({
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('brands', brands.map((brand: IBrand) => brand._id));
+                            } else {
+                              this.changeFilter('brands', []);
+                            }
+                          }
+                        }
+                        options={brands.map((brand: IBrand) => ({
                           value: brand._id,
                           text: brand.name
                         }))}
-                        onClick={() => {}}
+                        onClick={
+                          (selected: any) => {
+                            if (filters.brands.includes(selected)) {
+                              this.changeFilter('brands', [...filters.brands.filter((brand) => brand !== selected)]);
+                            } else {
+                              this.changeFilter('brands', [...filters.brands, selected]);
+                            }
+                          }
+                        }
                       />
                     </div>
                   </div>

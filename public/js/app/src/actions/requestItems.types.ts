@@ -32,6 +32,7 @@ export interface IRequestItemsFilters {
   conectaID: string;
   request: string;
   transmittal: string;
+  brands: string[];
   entry: string;
   venues: any[];
   users: any[];
