@@ -148,7 +148,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="col-md-4 no-padding" style={{}}>
-                  <div 
+                  <div
                     style={{ padding: '10px', height: "100%" }}>
                     <BootstrapSelect
                       noneSelectedText="Todas las marcas"
@@ -201,7 +201,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                   </tr>
                 </thead>
                 <tbody>
-                  {!loading && cars.length === 0 && searchText ? (
+                  {!loading && cars.length === 0 ? (
                     <tr>
                       <td colSpan={5}>No se han encontrado resultados.</td>
                     </tr>
