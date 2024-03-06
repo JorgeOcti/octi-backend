@@ -2153,17 +2153,20 @@ class CarController {
       };
 
       if (req.user.userBrands?.length || brands) {
-        let brandsRelated = req.user.userBrands.map((brand) => new Types.ObjectId(brand._id));
+        let brandsRelated = req.user.userBrands.map((brand) => brand._id.toString());
+        logger.info("Userbrands: "+ JSON.stringify(brandsRelated))
+        logger.info("brands " + brands)
         if (brands) {
-          let tmp = brands.split(',').map((brand: string) => new Types.ObjectId(brand))
-          brandsRelated = brandsRelated.filter((brand) => tmp.includes(brand))
+          let tmp = brands.split(',')
+          brandsRelated = brandsRelated.length > 0  ? brandsRelated.filter((brand) => tmp.includes(brand)) : tmp
         }
+        logger.info("Final Userbrands: "+ JSON.stringify(brandsRelated))
         const cars = await Car.aggregate([
           {
             $match: {
               team: new mongoose.Types.ObjectId(user.team._id),
               brandRelated: {
-                $in: brandsRelated
+                $in: brandsRelated.map((brand) => new mongoose.Types.ObjectId(brand))
               },
             }
           },
