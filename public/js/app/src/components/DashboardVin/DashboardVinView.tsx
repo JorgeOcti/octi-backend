@@ -215,6 +215,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       searchFrom,
       searchTo
     });
+
     if (monthsDiff > 3) {
       swal!(
         'Revisiones',
@@ -222,7 +223,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         'error'
       );
     } else {
-      let query = `?deliveries=0&searchFrom=${moment(searchFrom).unix()}&searchTo=${moment(
+      let query = `?deliveries=0&from=${moment(searchFrom).unix()}&to=${moment(
         searchTo
       ).unix()}`;
 
@@ -248,7 +249,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         'error'
       );
     } else {
-      let query = `?deliveries=0&searchFrom=${moment(searchFrom).unix()}&searchTo=${moment(
+      let query = `?deliveries=0&from=${moment(searchFrom).unix()}&to=${moment(
         searchTo
       ).unix()}`;
 
