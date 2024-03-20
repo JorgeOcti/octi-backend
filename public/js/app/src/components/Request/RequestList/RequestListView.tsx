@@ -161,7 +161,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     const { orderBy, orderType } = this.props.requests.options;
     const { exporing } = this.state;
     return (
-      <AppContainer cMenu='4' cSubMenu='4.1'>
+      <AppContainer cMenu='4' cSubMenu='4.1' title={this.title}>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
