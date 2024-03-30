@@ -228,14 +228,16 @@ export function getVenuesAction(nextPage: number) {
     const api: ApiService = new ApiService();
     const state = getState();
     const { searchText, filters } = state.venues;
-    if (nextPage && nextPage !== state.venues.pagination.page) {
+
+    if (nextPage) {
       dispatch(isLoadingAction(true));
+      if (nextPage !== state.venues.pagination.page) {
+        dispatch(changePageAction(nextPage));
+      }
     }
+
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.venues.pagination.page;
-    if (nextPage) {
-      dispatch(changePageAction(nextPage));
-    }
     Axios.all([
       api.getCompanies(1, 200),
       api.getVenues({ page: 1, pageSize: 200 }),
