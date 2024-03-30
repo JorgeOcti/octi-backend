@@ -494,16 +494,16 @@ export function getUsersAction(
     const api: ApiService = new ApiService();
     const state = getState();
 
-    if (nextPage && nextPage !== state.users.pagination.page) {
+    if (nextPage) {
       dispatch(isLoadingAction(true));
+      if (nextPage !== state.users.pagination.page) {
+        dispatch(changePageAction(nextPage));
+      }
     }
     // get venues and permissions
 
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
-    if (nextPage) {
-      dispatch(changePageAction(nextPage));
-    }
     Axios.all([
       api.getUsers({
         page,
