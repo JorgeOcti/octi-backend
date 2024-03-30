@@ -83,6 +83,7 @@ export default class DeliveriesActions {
       const { deliveries } = getState();
       const { pagination, filters } = deliveries;
       const page = nextPage ? nextPage : pagination.page;
+      this.loadingAction(true);
       this.cancelAction(this.api.getSource());
       if(filters.brands.length === 0) {
         this.api.getBrands({page: 1, pageSize: 500})
