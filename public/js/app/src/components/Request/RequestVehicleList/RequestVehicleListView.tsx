@@ -707,7 +707,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     const { orderBy, orderType } = this.props.requestItems.options;
     this.props.changeFilterRequestAction('from', from);
     this.props.changeFilterRequestAction('to', to);
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
   }
 
   public componentDidMount() {
@@ -719,7 +719,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     const { page } = this.props.requestItems.pagination;
     window.scrollTo(0, 0);
 
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -754,7 +754,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
       setTimeout(() => {
         const { orderBy, orderType } = this.props.requestItems.options;
         const { page } = this.props.requestItems.pagination;
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
         // this.props.deleteRequestItemAction(data.item);
       }, 400);
     });
@@ -785,9 +785,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             }, 400);
           }
         }
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
       } else {
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
       }
     });
 
@@ -839,7 +839,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   private changeFilter(key: keyof IRequestItemsFilters, value: any | any[]): void {
     const { orderBy, orderType } = this.props.requestItems.options;
     this.props.changeFilterRequestAction(key, value);
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
   }
 
   private changeOrder(key: string) {
@@ -852,13 +852,13 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType, true);
+    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType);
   }
 
   private changePage(page: number): void {
     window.scrollTo(0, 0);
     const { orderBy, orderType } = this.props.requestItems.options;
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
   }
 
   public exportExcel(): void {
