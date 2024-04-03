@@ -18,7 +18,7 @@ class GeneralUtils implements IGeneralutils {
     attribute: string,
     defaultValue: any
   ): any {
-    if (obj.hasOwnProperty(attribute)) {
+    if (obj && obj.hasOwnProperty(attribute)) {
       return obj[attribute];
     } else {
       return defaultValue;

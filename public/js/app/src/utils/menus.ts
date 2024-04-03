@@ -191,6 +191,15 @@ if (hasPermission(window.user, 'viewTraceability')) {
   });
 }
 
+if (hasPermission(window.user, 'viewTraceability')) {
+  anteojosItems.push({
+    id: '3.3',
+    icon: 'fa-circle-o text-green',
+    text: 'Control',
+    url: '/control/'
+  });
+}
+
 if (anteojosItems.length) {
   menus.push({
     id: '3',

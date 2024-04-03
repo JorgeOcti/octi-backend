@@ -2080,7 +2080,8 @@ class CarController {
       delivery,
       from,
       to,
-      forms
+      forms,
+      brands
     } = req.query as Record<string, string>;
     search = search ? search.replace(/  +/g, ' ').trim() : '';
     // paginate options
@@ -2151,13 +2152,21 @@ class CarController {
         }
       };
 
-      if (req.user.userBrands?.length) {
+      if (req.user.userBrands?.length || brands) {
+        let brandsRelated = req.user.userBrands.map((brand) => brand._id.toString());
+        logger.info("Userbrands: "+ JSON.stringify(brandsRelated))
+        logger.info("brands " + brands)
+        if (brands) {
+          let tmp = brands.split(',')
+          brandsRelated = brandsRelated.length > 0  ? brandsRelated.filter((brand) => tmp.includes(brand)) : tmp
+        }
+        logger.info("Final Userbrands: "+ JSON.stringify(brandsRelated))
         const cars = await Car.aggregate([
           {
             $match: {
               team: new mongoose.Types.ObjectId(user.team._id),
               brandRelated: {
-                $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
+                $in: brandsRelated.map((brand) => new mongoose.Types.ObjectId(brand))
               },
             }
           },

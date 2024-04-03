@@ -581,7 +581,7 @@ class AdminUsersController {
 
     if (type === UserTypes.common) {
       filter = venue
-        ? { ...filter, venue }
+        ? { ...filter, $or: [{venue}, {venuesAccess: venue}]}
         : { ...filter, venue: { $in: req.user.venuesPermissions() } };
     }
 
