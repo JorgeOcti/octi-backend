@@ -178,14 +178,15 @@ export function getCarsAction(nextPage: number) {
     const state = getState();
 
 
-    if (nextPage && nextPage !== state.cars.pagination.page) {
+    if (nextPage) {
       dispatch(isLoadingAction(true));
+      if (nextPage !== state.cars.pagination.page) {
+        dispatch(changePageAction(nextPage));
+      }
     }
+
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.cars.pagination.page;
-    if (nextPage) {
-      dispatch(changePageAction(nextPage));
-    }
 
     if (state.cars.brands.length === 0) {
       api.getBrands({page: 1, pageSize: 500})

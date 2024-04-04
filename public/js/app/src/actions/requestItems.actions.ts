@@ -202,7 +202,7 @@ export function loadRequestSettingsAction(requestSettings: IRequestSetting): ILo
   };
 }
 
-export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
+export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading: boolean = false) {
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();

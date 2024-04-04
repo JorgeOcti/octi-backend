@@ -332,7 +332,7 @@ export function getRevisionsAction(
     const api: ApiService = new ApiService();
     const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
-    if (loading) {
+    if (!loading) {
       dispatch(isLoadingAction(true));
     }
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
@@ -359,20 +359,14 @@ export function getRevisionsAction(
             response.data.pages
           )
         );
-        if (loading) {
-          dispatch(isLoadingAction(false));
-        }
+        dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
         // if the request is canceled
         if (Axios.isCancel(err)) {
-          if (loading) {
-            dispatch(isLoadingAction(true));
-          }
+          dispatch(isLoadingAction(true));
         } else {
-          if (loading) {
-            dispatch(isLoadingAction(false));
-          }
+          dispatch(isLoadingAction(false));
           api.errorHandler(err);
         }
       });
