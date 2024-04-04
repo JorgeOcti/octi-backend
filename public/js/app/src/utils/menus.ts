@@ -177,8 +177,8 @@ if (hasPermission(window.user, 'viewTraceability')) {
   anteojosItems.push({
     id: '3.1',
     icon: 'fa-circle-o text-green',
-    text: 'Trazabilidad',
-    url: '/trace/'
+    text: 'Control',
+    url: '/osa/studio/'
   });
 }
 
@@ -191,14 +191,14 @@ if (hasPermission(window.user, 'viewTraceability')) {
   });
 }
 
-if (hasPermission(window.user, 'viewTraceability')) {
-  anteojosItems.push({
-    id: '3.3',
-    icon: 'fa-circle-o text-green',
-    text: 'Control',
-    url: '/control/'
-  });
-}
+// if (hasPermission(window.user, 'viewTraceability')) {
+//   anteojosItems.push({
+//     id: '3.3',
+//     icon: 'fa-circle-o text-green',
+//     text: 'Control',
+//     url: '/control/'
+//   });
+// }
 
 if (anteojosItems.length) {
   menus.push({

@@ -55,7 +55,10 @@ import FormsSettingsListView from './components/FormsSettings/FormListView';
 import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
 import ColorListView from './components/Colors/ColorsListView';
 import {
-  VDistributionDashboardStatsView, VInventoryDashboardStatsView, VPlanificationDashboardStatsView,
+  VDistributionDashboardStatsView,
+  VInventoryDashboardStatsView,
+  VOSADashboardStatsView,
+  VPlanificationDashboardStatsView,
   VUnitControlDashboardStatsView
 } from "./components/Stats/DashboardStatsView";
 import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
@@ -147,6 +150,7 @@ const App = () => (
         <Route exact path='/requests/:id/' component={RequestDetailView} />
         <Route exact path='/trace/' component={TraceabilityView} />
         <Route exact path='/osa/' component={OSAView} />
+        <Route exact path='/osa/studio/' component={VOSADashboardStatsView} />
         <Route exact path='/control/' component={LBZView} />
         <Route component={NoMatch} />
       </Switch>
