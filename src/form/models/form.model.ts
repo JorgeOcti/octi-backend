@@ -38,7 +38,7 @@ const accessorySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-
+  multi: Boolean,
   items: [itemSchema]
 });
 
@@ -189,6 +189,10 @@ const formQuestionsSchema = new mongoose.Schema({
   colors: [String],
 
   requireSeverity: {
+    type: Boolean,
+    default: false
+  },
+  requirePicture: {
     type: Boolean,
     default: false
   },

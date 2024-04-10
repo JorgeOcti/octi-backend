@@ -19,6 +19,7 @@ export interface IFormItems {
 export interface IFormAccesory {
   _id?: any;
   question: string;
+  multi: boolean;
   items: IFormItemModel[];
 }
 
@@ -51,6 +52,7 @@ export interface IFormQuestion {
   colors: string[];
 
   requireSeverity: boolean;
+  requirePicture: boolean;
 
   triggers: mongoose.Types.Array<IQuestionTriggerModel>;
 
