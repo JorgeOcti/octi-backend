@@ -2727,11 +2727,16 @@ class InventoryController {
           status: true,
           from: true,
           to: true,
+          participant: true,
           createdAt: true
         }
       )
         .allowDiskUse(true)
         .populate([
+          {
+            path: 'participant',
+            select: ['name']
+          },
           {
             path: 'car',
             select: [
