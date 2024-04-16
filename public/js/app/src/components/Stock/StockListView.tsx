@@ -673,6 +673,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
           Tipo: car.car.type && car.car.type ? car.car.type : '-',
           Propiedad: car.car.property && car.car.property ? car.car.property : '-',
           Sucursal: venue ? venue.name : '-',
+          ['Último status'] : car.participant ? car.participant.name : '-',
           // ['Última actualización']: moment(car.createdAt).format('YYYY-MM-DD'),
           ['En Sucursaln']: daysInVenue,
           ['Permanencia']: daysPermanence
