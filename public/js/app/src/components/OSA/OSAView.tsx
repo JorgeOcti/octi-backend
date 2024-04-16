@@ -10,7 +10,7 @@ import TrackingBasePage from "../Utils/TrackingBasePage";
 import AppContainer from "../../container/AppContainer";
 import {RouteComponentProps} from "react-router";
 import CopyText from "../Utils/CopyText";
-import {parseReplicableURL} from "../../utils/common";
+import {hasPermission, parseReplicableURL} from "../../utils/common";
 import ApiService from "../../utils/axios";
 
 import BootstrapTable from 'react-bootstrap-table-next';
@@ -108,8 +108,12 @@ export class OSAView extends TrackingBasePage<IPropsType, IStateType> {
       formatter: (cell: string, row: any) =>
         <CopyText value={row.vin || '-'}>
           <strong
-            className='text-primary pointer text-underline'
-            onClick={() => this.props.history.push(parseReplicableURL(`/settings/cars/${row._id.toString()}`))}
+            className={ 'text-primary text-underline ' + (hasPermission(window.user, 'viewCar') ? 'pointer' : '')}
+            onClick={
+              () => {
+              if (hasPermission(window.user, 'viewCar'))
+                this.props.history.push(parseReplicableURL(`/settings/cars/${row._id.toString()}`))
+            }}
           >
             {row.vin || '-'}
           </strong>
