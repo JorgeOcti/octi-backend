@@ -11,6 +11,7 @@ import {
 import History from '../../app/models/history.model';
 import { StatusHistory } from '../../app/models/history.types';
 import Car from '../../app/models/car.model';
+import User from "../../app/models/user.model";
 
 class BillingTeamProcessor {
   readonly car: any;
@@ -26,8 +27,7 @@ class BillingTeamProcessor {
         run =
           run ||
           moment()
-            .startOf('day')
-            .isSame(moment().endOf('month').startOf('day').subtract(3, 'days'));
+            .startOf('day').date() == 27;
         // run = run || true;
         if (run) {
           mongoose.set('debug', false);
@@ -38,7 +38,7 @@ class BillingTeamProcessor {
           // const valueDolar = await this.getDolarPrice();
 
           const teamBillings = await this.populatePath(filter);
-          
+
           const subModules = await Submodule.find({});
           const infoByType: any = subModules.reduce((acc: any, cur: any) => {
             acc[cur.type] = {
@@ -74,7 +74,7 @@ class BillingTeamProcessor {
             // }
 
             const histories = await this.findHistories(teamBilling, from, to)
-            
+
             const {
               countByModule,
               countBySubmodule,
@@ -170,6 +170,23 @@ class BillingTeamProcessor {
   private async findHistories(teamBilling: any,
                               from: Date | undefined,
                               to: Date | undefined) {
+
+    const EMAILS_CONSIDERAR = [
+      "dercocenter.cl",
+      "derco.cl",
+      "imcruz.com",
+      "dercomaq.cl",
+      "inchape.cl",
+      "autopia.cl",
+      "inchcape.cl",
+    ]
+    const regex = EMAILS_CONSIDERAR.join("|");
+    const users = await User.find({
+      email: {
+        "$regex": regex,
+        "$options": "i"
+      }
+    });
     return await History.find(
       {
         company: { $in: teamBilling.companies },
@@ -183,6 +200,9 @@ class BillingTeamProcessor {
         createdAt: {
           $gte: from,
           $lte: to
+        },
+        createdBy: {
+          $in: users.map((user: any) => user._id)
         }
       },
       {
@@ -287,44 +307,58 @@ class BillingTeamProcessor {
   private calculateDolar(teamBilling: any, countByModule: any): number {
     let sumUFbyModule: any = {};
     let totalDolar: number = 0;
+    let totalUnits: number = 0;
 
     teamBilling.modules.forEach((module: any) => {
       if (module.module in countByModule) {
-        module.sections.sort((a: any, b: any) => {
-            if (a.start < b.start) {
-              return -1;
-            }
-            if (a.start > b.start) {
-              return 1;
-            }
-            return 0;
-          })
-          .forEach((section: any) => {
-            new Array(countByModule[`${module.module}`].count)
-              .fill(0)
-              .forEach((_, index: number) => {
-                const item = index + 1;
-                if (item >= section.start && item <= section.end) {
-                  totalDolar += section.price;
-                  if (module.module in sumUFbyModule) {
-                    const count =
-                      sumUFbyModule[`${module.module}`].count + 1;
-                    const total =
-                      sumUFbyModule[`${module.module}`].total +
-                      section.price;
-                    sumUFbyModule[`${module.module}`] = {
-                      count,
-                      total
-                    };
-                  } else {
-                    sumUFbyModule[`${module.module}`] = {
-                      count: 1,
-                      total: section.price
-                    };
-                  }
-                }
-              });
-          });
+        totalUnits += countByModule[`${module.module}`].count
+
+        const section  = module.sections.find((section: any) => {
+          return section.start <= totalUnits && totalUnits <= section.end
+        })
+
+        sumUFbyModule[`${module.module}`] = {
+          count: countByModule[`${module.module}`].count,
+          total: section.price * countByModule[`${module.module}`].count
+        };
+
+        totalDolar += section.price * countByModule[`${module.module}`].count
+
+        // module.sections.sort((a: any, b: any) => {
+        //     if (a.start < b.start) {
+        //       return -1;
+        //     }
+        //     if (a.start > b.start) {
+        //       return 1;
+        //     }
+        //     return 0;
+        //   })
+        //   .forEach((section: any) => {
+        //     new Array(countByModule[`${module.module}`].count)
+        //       .fill(0)
+        //       .forEach((_, index: number) => {
+        //         const item = index + 1;
+        //         if (item >= section.start && item <= section.end) {
+        //           totalDolar += section.price;
+        //           if (module.module in sumUFbyModule) {
+        //             const count =
+        //               sumUFbyModule[`${module.module}`].count + 1;
+        //             const total =
+        //               sumUFbyModule[`${module.module}`].total +
+        //               section.price;
+        //             sumUFbyModule[`${module.module}`] = {
+        //               count,
+        //               total
+        //             };
+        //           } else {
+        //             sumUFbyModule[`${module.module}`] = {
+        //               count: 1,
+        //               total: section.price
+        //             };
+        //           }
+        //         }
+        //       });
+        //   });
       }
     });
 

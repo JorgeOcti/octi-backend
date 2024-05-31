@@ -129,9 +129,9 @@ class BillingTeamPDF {
               /* istanbul ignore next */
               console.log(error);
             } else {
-              invoice.file = invoice.file;
+              // invoice.file = invoice.file;
               await invoice.save();
-              this.sendEmail(invoice);
+              // this.sendEmail(invoice);
             }
           }
         );
