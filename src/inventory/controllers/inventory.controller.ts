@@ -820,6 +820,7 @@ class InventoryController {
                 return {
                   ...car.car,
                   _id: (car as any)._id,
+                  car_id: car.car._id,
                   venue: car.venue,
                   status: car.status
                 };
