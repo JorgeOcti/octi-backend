@@ -802,7 +802,8 @@ class InventoryController {
                     'color',
                     'denomination',
                     'brand',
-                    'patent'
+                    'patent',
+                    'isContainer',
                   ]
                 },
                 {
@@ -1021,7 +1022,7 @@ class InventoryController {
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
-    const { vin, images } = req.body;
+    const { vin, images, container } = req.body;
     logger.info(`apiFoundCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1081,6 +1082,15 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
+              if (container){
+                let inventoryContainer = await InventoryCar.findOne({
+                  _id: new mongoose.Types.ObjectId(container)
+                });
+                if (inventoryContainer) {
+                  inventoryCar.containerFound = inventoryContainer._id;
+                }
+              }
+
               if (
                 teamSettings!.inventory.leftoverDifferentVenue &&
                 inventoryCar.venue.toString() !== venueId.toString()
@@ -1546,7 +1556,7 @@ class InventoryController {
   public async reportCar(req: IRequest, res: Response): Promise<any> {
     const { company, team } = req.user;
     const { id } = req.params;
-    const { vin, patent, denomination, brand, color, images } = req.body;
+    const { vin, patent, denomination, brand, color, images, container } = req.body;
     logger.info(`reportCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1604,6 +1614,15 @@ class InventoryController {
             : [],
           status: ChoicesStatusCarInventory.reported
         });
+        if (container){
+          let inventoryContainer = await InventoryCar.findOne({
+            _id: new mongoose.Types.ObjectId(container)
+          });
+          if (inventoryContainer) {
+            inventoryCar.container = inventoryContainer._id;
+            inventoryCar.containerFound = inventoryContainer._id;
+          }
+        }
         await inventoryCar.save();
         const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
         socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {

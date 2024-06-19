@@ -94,6 +94,18 @@ const inventoryCarSchema = new mongoose.Schema({
     type: String,
     enum: choicesStatusCarInventory,
     default: ChoicesStatusCarInventory.pending
+  },
+  container: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryCar'
+  },
+  containerFound: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryCar'
+  },
+  extras: {
+    type: Object,
+    default: {}
   }
 }, {
   timestamps: true

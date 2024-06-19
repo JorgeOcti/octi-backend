@@ -129,6 +129,10 @@ export const baseCarSchema = new mongoose.Schema({
     type: String,
     default: '',
     trim: true
+  },
+  isContainer: {
+    type: Boolean,
+    default: false
   }
 });
 

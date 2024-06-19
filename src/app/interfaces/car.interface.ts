@@ -49,6 +49,7 @@ export interface ICar {
   firstColorOption: string;
   secondColorOption: string;
   thirdColorOption: string;
+  isContainer: boolean;
   team: ITeam | any;
   company: ICompany | any;
   lastForm: IParticipant | any;
