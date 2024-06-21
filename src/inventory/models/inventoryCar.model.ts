@@ -103,7 +103,7 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'
   },
-  extras: {
+  extra: {
     type: Object,
     default: {}
   }
