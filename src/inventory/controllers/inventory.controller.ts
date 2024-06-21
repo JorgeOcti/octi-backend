@@ -823,7 +823,10 @@ class InventoryController {
                   _id: (car as any)._id,
                   car_id: car.car._id,
                   venue: car.venue,
-                  status: car.status
+                  status: car.status,
+                  container: car.container,
+                  containerFound: car.containerFound,
+                  extra: car.extra
                 };
               }),
               reasons: []
