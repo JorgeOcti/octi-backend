@@ -1087,7 +1087,7 @@ class InventoryController {
               inventoryCar.venueFound = venueId;
               if (container){
                 let inventoryContainer = await InventoryCar.findOne({
-                  car: new mongoose.Types.ObjectId(container),
+                  _id: new mongoose.Types.ObjectId(container),
                   inventory: id
                 });
                 if (inventoryContainer) {
@@ -1620,7 +1620,7 @@ class InventoryController {
         });
         if (container){
           let inventoryContainer = await InventoryCar.findOne({
-            car: new mongoose.Types.ObjectId(container),
+            _id: new mongoose.Types.ObjectId(container),
             inventory
           });
           if (inventoryContainer) {
