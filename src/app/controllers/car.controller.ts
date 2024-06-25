@@ -349,7 +349,11 @@ class CarController {
                       denomination: carToAdd.denomination,
                       status: car.status,
                       venue: car.venue,
-                      brand: carToAdd.brand
+                      brand: carToAdd.brand,
+                      container: car.container,
+                      containerFound: car.containerFound,
+                      extra: car.extra,
+                      isContainer: carToAdd.isContainer
                     });
                   }
                 }
@@ -451,7 +455,8 @@ class CarController {
           brand: true,
           color: true,
           patent: true,
-          denomination: true
+          denomination: true,
+          isContainer: true
         }).lean();
         if (car && car.length) {
           res.json({
