@@ -355,7 +355,7 @@ class CarController {
                       containerFound: car.containerFound,
                       extra: car.extra,
                       isContainer: carToAdd.isContainer,
-                      inventoryCar_id: car._id
+                      inventoryCar_id: (car as any)._id
                     });
                   }
                 }
