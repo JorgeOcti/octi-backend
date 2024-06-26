@@ -10,6 +10,7 @@ import type { IInventoryFile } from './inventoryFile.interface';
 import type { IInventoryLabel } from './inventoryLabel.interface';
 
 export interface IInventoryCar {
+  _id: mongoose.Schema.Types.ObjectId;
   car: ICar;
   inventory?: mongoose.Schema.Types.ObjectId;
   venue: IVenue;
