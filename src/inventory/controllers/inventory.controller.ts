@@ -1025,7 +1025,7 @@ class InventoryController {
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
-    const { vin, images, container } = req.body;
+    const { vin, images, containerFound } = req.body;
     logger.info(`apiFoundCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1085,9 +1085,9 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
-              if (container){
+              if (containerFound){
                 let inventoryContainer = await InventoryCar.findOne({
-                  _id: new mongoose.Types.ObjectId(container),
+                  _id: new mongoose.Types.ObjectId(containerFound),
                   inventory: id
                 });
                 if (inventoryContainer) {
