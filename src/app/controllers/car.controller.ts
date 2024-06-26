@@ -354,7 +354,8 @@ class CarController {
                       container: car.container,
                       containerFound: car.containerFound,
                       extra: car.extra,
-                      isContainer: carToAdd.isContainer
+                      isContainer: carToAdd.isContainer,
+                      inventoryCar_id: car._id
                     });
                   }
                 }
