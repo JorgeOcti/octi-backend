@@ -158,6 +158,15 @@ if (hasPermission(window.user, 'viewLabel')) {
   });
 }
 
+if (hasPermission(window.user, 'viewInventory')) {
+  inventoryItems.push({
+    id: '2.6',
+    icon: 'fa-circle-o',
+    text: 'Revisión Containers',
+    url: '/inventory/containers/'
+  });
+}
+
 if (inventoryItems.length) {
   menus.push({
     id: '2',

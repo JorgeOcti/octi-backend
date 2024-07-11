@@ -12,8 +12,10 @@ inventoryRouter.get('/inventory/dashboard/', Middlewares.isLoggedIn, InventoryCo
 inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/excel/', Middlewares.isLoggedIn, InventoryController.inventoryByCars);
+inventoryRouter.get('/inventory/containers/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detail);
 inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryController.detail);
+
 
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);

@@ -109,6 +109,9 @@ const inventorySchema = new mongoose.Schema({
     type: String,
     enum: choicesStatusInventory,
     default: ChoicesStatusInventory.pending
+  },
+  containerInventory: {
+    type: Boolean
   }
 }, {
   timestamps: true

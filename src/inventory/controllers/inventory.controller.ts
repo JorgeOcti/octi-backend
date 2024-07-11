@@ -480,7 +480,7 @@ class InventoryController {
 
   public async list(req: IRequest, res: Response) {
     const team = req.user.team._id;
-    const { page, pageSize } = req.query as { page: string; pageSize: string };
+    const { page, pageSize, containers } = req.query as { page: string; pageSize: string, containers?: string };
     const venuesPermissions = req.user.venuesPermissions();
     // paginate options
     const options: PaginateOptions = {
@@ -505,17 +505,22 @@ class InventoryController {
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '10', 10)
     };
+
+    let match : any[] = [
+      {
+        team,
+        venues: {
+          $in: venuesPermissions
+        }
+      }
+    ]
+    if (containers !== undefined) {
+      match.push({ containerInventory: parseInt(containers) > 0 });
+    }
     try {
       const paginatedInventories = await InventoryModel.paginate(
         {
-          $and: [
-            {
-              team,
-              venues: {
-                $in: venuesPermissions
-              }
-            }
-          ]
+          $and: match
         },
         options
       );
@@ -569,6 +574,7 @@ class InventoryController {
             _id: {
               category: '$_id',
               status: '$status',
+              containers: "$containers",
               carStatus: '$cars.status',
               name: '$name',
               file: '$file',
@@ -588,6 +594,9 @@ class InventoryController {
             _id: '$_id.category',
             name: {
               $first: '$_id.name'
+            },
+            containers: {
+              $first: '$_id.containers'
             },
             createdAt: {
               $first: '$_id.createdAt'
@@ -641,6 +650,7 @@ class InventoryController {
             results: 1,
             file: 1,
             backup: 1,
+            containers: 1,
             'createdBy.firstName': 1,
             'createdBy.lastName': 1,
             'finalizedBy.firstName': 1,
@@ -714,6 +724,7 @@ class InventoryController {
                   fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
                 }
               : {},
+            containers: inventory.containers,
             results: inventory.results.reduce(
               (acc: any, cur: any) => {
                 acc[cur.status] = cur.total;
@@ -1560,7 +1571,7 @@ class InventoryController {
   public async reportCar(req: IRequest, res: Response): Promise<any> {
     const { company, team } = req.user;
     const { id } = req.params;
-    const { vin, patent, denomination, brand, color, images, container } = req.body;
+    const { vin, patent, denomination, brand, color, images, containerFound } = req.body;
     logger.info(`reportCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1618,9 +1629,9 @@ class InventoryController {
             : [],
           status: ChoicesStatusCarInventory.reported
         });
-        if (container){
+        if (containerFound){
           let inventoryContainer = await InventoryCar.findOne({
-            _id: new mongoose.Types.ObjectId(container),
+            _id: new mongoose.Types.ObjectId(containerFound),
             inventory
           });
           if (inventoryContainer) {
@@ -1793,7 +1804,8 @@ class InventoryController {
           {
             _id: true,
             name: true,
-            settings: true
+            settings: true,
+            containers: true
           }
         ).lean();
         return res.json({
@@ -2215,7 +2227,8 @@ class InventoryController {
                     'patent',
                     'internalNumber',
                     'property',
-                    'type'
+                    'type',
+                    'isContainer'
                   ]
                 },
                 {

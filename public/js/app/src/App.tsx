@@ -71,6 +71,7 @@ import ReactGA from "react-ga4";
 import {TraceabilityView} from "./components/Traceability/TraceabilityView";
 import OSAView from "./components/OSA/OSAView";
 import {LBZView} from "./components/LBZ/LBZ";
+import ContainersInventory from "./components/Inventory/ContainersInventory";
 
 
 declare let window: IWindow;
@@ -104,6 +105,7 @@ const App = () => (
         <Route exact path='/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/deliveries/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/inventory/' component={InventoryListView} />
+        <Route exact path='/inventory/containers/' component={ContainersInventory} />
         <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />
         <Route exact path='/inventory/create/' component={InventoryCreateView} />

@@ -42,6 +42,7 @@ export interface IInventory {
   file: IIFile;
   backup: IIFile;
   status: string;
+  containerInventory: boolean;
   updatedAt: Date;
   createdAt: Date;
 }
