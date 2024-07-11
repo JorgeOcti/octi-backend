@@ -98,8 +98,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
         })
 
-        console.log(containers)
-
         this.setState({
           containers: containers
         })
