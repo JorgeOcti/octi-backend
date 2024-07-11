@@ -152,7 +152,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                 this.state.selectedContainer === index ? (<i className='fa fa-chevron-up'/>) : (<i className='fa fa-chevron-down'/>)
                               }
                             </div>
-                            {this.state.selectedContainer === index && container.content.length &&
+                            {this.state.selectedContainer === index && container.content && container.content.length &&
                               container.content.map((car: any, index: number) => {
                                 let className = `${car.status}Class`;
                                 return (
