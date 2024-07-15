@@ -1519,15 +1519,12 @@ class CarController {
 
       await cursor.eachAsync(
         async (participants) => {
-          let rows = []
           for (const participant of participants) {
             const row = await this.processParticipant(participant);
-            rows.push(row);
+            worksheet.addRow(row).commit();
           }
-          worksheet.addRows(rows)
-          worksheet.commit();
         },
-        { parallel: 5, batchSize: 1000}
+        { parallel: 5, batchSize: 100}
       );
 
       cursor.close();
