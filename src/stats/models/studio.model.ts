@@ -10,6 +10,7 @@ export const choicesStatsDashboardTypes = [
   StatsDashboardTypes.INVENTORY,
   StatsDashboardTypes.DISTRIBUTION,
   StatsDashboardTypes.PLANIFICATION,
+  StatsDashboardTypes.OSA,
 ];
 
 const studioSchema = new mongoose.Schema({

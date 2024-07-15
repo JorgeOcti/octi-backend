@@ -4,6 +4,7 @@ import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
+import AdminBrandController from './controllers/admin/brand.admin.controller';
 import AdminColorsController from './controllers/admin/color.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
@@ -36,6 +37,9 @@ appRouter.get('/dashboard/damages/', Middlewares.isLoggedIn, CarController.gener
 appRouter.get('/dashboard/timing/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/studio/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/osa/studio/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/osa/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/control/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
@@ -49,6 +53,7 @@ appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDash
 appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
+appRouter.get('/api/v1/company/cars/', Middlewares.isJWTAuthenticated, CarController.apiCompanyCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
 appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiDamagesExport);
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
@@ -57,6 +62,7 @@ appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarControll
 
 
 // form detail
+appRouter.get('/api/participant/export/evidence/', Middlewares.isLoggedIn, CarController.exportDamagePictures);
 appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
@@ -90,6 +96,10 @@ appRouter.get('/api/v1/histories/:vin/', Middlewares.isJWTAuthenticated, history
 // admin venues
 appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVenuesController.accessByVenue);
+
+// admin Brand
+appRouter.get('/settings/brands/', Middlewares.isLoggedIn, AdminBrandController.index);
+appRouter.get('/api/admin/brands/', Middlewares.isLoggedIn, AdminBrandController.apiList);
 
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);

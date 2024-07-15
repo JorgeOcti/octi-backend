@@ -232,6 +232,28 @@ export default class ApiService {
       }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
+
+  public getBrands({
+                     page,
+                     pageSize,
+                     noPopulate,
+                     filted,
+                     search
+                   }: {
+    page: number;
+    pageSize?: number;
+    noPopulate?: boolean;
+    filted?: boolean;
+    search?: string;
+  }): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/brands/?page=${page}${
+        pageSize ? `&pageSize=${pageSize}` : ''
+      }${
+        noPopulate ? `&noPopulate=${noPopulate}` : ''
+      }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
+    );
+  }
   public getCompanyVenues(): AxiosPromise {
     return this.instance.get(`/api/admin/company-venues/`);
   }
@@ -409,7 +431,8 @@ export default class ApiService {
     delivery,
     from,
     to,
-    forms
+    forms,
+    brands
   }: {
     onlyControls: boolean;
     deliveries: boolean;
@@ -419,6 +442,7 @@ export default class ApiService {
     from?: Date;
     to?: Date;
     forms?: String[];
+    brands?: String[];
   }): AxiosPromise {
     let query = `?page=${page}&only_controls=${
       onlyControls ? '1' : '0'
@@ -432,14 +456,16 @@ export default class ApiService {
 
     if (forms) query += `&forms=${forms.join(',')}`;
 
+    if (brands) query += `&brands=${brands.join(',')}`;
+
     return this.instance.get(`/api/revisions/${query}`, {
       cancelToken: this.source.token
     });
   }
 
-  public getAdminCars(page?: number, search?: string): AxiosPromise {
+  public getAdminCars(page?: number, search?: string, brands?: string[]): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`,
+      `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}${brands ? `&brands=${brands.join(',')}` : ''}`,
       {
         cancelToken: this.source.token
       }
@@ -1157,5 +1183,9 @@ export default class ApiService {
 
   public getAllModules(): AxiosPromise {
     return this.instance.get(`/api/settings/billing/modules/`);
+  }
+
+  public getOSACars(search? :String): AxiosPromise {
+    return this.instance.get(`/api/osa-cars/${search ? `?search=${search}` : ''}`);
   }
 }

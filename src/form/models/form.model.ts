@@ -8,7 +8,9 @@ import type {
   IFormQuestion,
   IFormSection
 } from '../interfaces/form.interface';
-import { formTriggerSchema } from './trigger.model';
+
+import {formTriggerSchema} from './trigger.model';
+import {questionTriggerSchema} from "./questionTrigger.model";
 
 export interface IFormItemModel
   extends IFormItems,
@@ -36,7 +38,7 @@ const accessorySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-
+  multi: Boolean,
   items: [itemSchema]
 });
 
@@ -189,7 +191,13 @@ const formQuestionsSchema = new mongoose.Schema({
   requireSeverity: {
     type: Boolean,
     default: false
-  }
+  },
+  requirePicture: {
+    type: Boolean,
+    default: false
+  },
+
+  triggers: [questionTriggerSchema],
 });
 
 export interface IFormSectionModel

@@ -111,6 +111,7 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
         const path = `/tmp/${filename}`;
         // launch a new chrome instance
         const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
           args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
           headless: true,
         });

@@ -5,6 +5,7 @@ import type { IParticipant } from '../../form/interfaces/participant.interface';
 import type { ITeam } from './team.interface';
 import type { IUser } from './user.interface';
 import type { IVenue } from './venue.interface';
+import {IBrand} from "./brand.interface";
 
 export interface ICarLocation {
   venue: IVenue;
@@ -48,11 +49,13 @@ export interface ICar {
   firstColorOption: string;
   secondColorOption: string;
   thirdColorOption: string;
+  isContainer: boolean;
   team: ITeam | any;
   company: ICompany | any;
   lastForm: IParticipant | any;
   participants?: IParticipant[];
   inventories?: IInventoryCar[];
+  brandRelated: IBrand | any;
   status: string;
   event: IHistory;
   events: IHistory[];

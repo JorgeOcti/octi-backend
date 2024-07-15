@@ -169,13 +169,55 @@ if (inventoryItems.length) {
 }
 
 /* *****************
- * 3. Request and Distribution
+ * 3. Anteojos
+ *****************/
+const anteojosItems = [];
+
+if (hasPermission(window.user, 'viewTraceability')) {
+  anteojosItems.push({
+    id: '3.1',
+    icon: 'fa-circle-o text-green',
+    text: 'Control',
+    url: '/osa/studio/'
+  });
+}
+
+if (hasPermission(window.user, 'viewTraceability')) {
+  anteojosItems.push({
+    id: '3.2',
+    icon: 'fa-circle-o text-green',
+    text: 'OSA',
+    url: '/osa/'
+  });
+}
+
+// if (hasPermission(window.user, 'viewTraceability')) {
+//   anteojosItems.push({
+//     id: '3.3',
+//     icon: 'fa-circle-o text-green',
+//     text: 'Control',
+//     url: '/control/'
+//   });
+// }
+
+if (anteojosItems.length) {
+  menus.push({
+    id: '3',
+    text: 'Anteojos',
+    icon: 'fa-search',
+    url: anteojosItems[0].url,
+    items: anteojosItems
+  });
+}
+
+/* *****************
+ * 4. Request and Distribution
  *****************/
 const distributionItems = [];
 
 if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
-    id: '3.1',
+    id: '4.1',
     icon: 'fa-circle-o text-green',
     text: 'Solicitudes',
     url: parseReplicableURL('/requests/')
@@ -184,7 +226,7 @@ if (hasPermission(window.user, 'viewRequest')) {
 
 if (hasPermission(window.user, 'viewRequest')) {
   distributionItems.push({
-    id: '3.2',
+    id: '4.2',
     icon: 'fa-circle-o text-red',
     text: 'Unidades',
     url: parseReplicableURL('/requests/vehicles/')
@@ -193,7 +235,7 @@ if (hasPermission(window.user, 'viewRequest')) {
 
 if (hasPermission(window.user, 'viewTransmittal')) {
   distributionItems.push({
-    id: '3.4',
+    id: '4.4',
     icon: 'fa-circle-o text-blue',
     text: 'Transportes',
     url: parseReplicableURL('/transmittals/')
@@ -202,7 +244,7 @@ if (hasPermission(window.user, 'viewTransmittal')) {
 
 if (hasPermission(window.user, 'viewDistributionStudio')) {
   distributionItems.push({
-    id: '3.5',
+    id: '4.5',
     icon: 'fa-circle-o text-yellow',
     text: 'Análisis',
     url: '/requests/studio/'
@@ -211,7 +253,7 @@ if (hasPermission(window.user, 'viewDistributionStudio')) {
 
 if (hasPermission(window.user, 'adminRequest')) {
   distributionItems.push({
-    id: '3.3',
+    id: '4.3',
     icon: 'fa-circle-o',
     text: 'Ajustes',
     url: parseReplicableURL('/requests/settings/reasons/')
@@ -220,7 +262,7 @@ if (hasPermission(window.user, 'adminRequest')) {
 
 if (hasPermission(window.user, 'transmittalDashboard')) {
   distributionItems.push({
-    id: '3.6',
+    id: '4.6',
     icon: 'fa-circle-o',
     text: 'Dashboard',
     url: parseReplicableURL('/transmittals/dashboard/')
@@ -229,7 +271,7 @@ if (hasPermission(window.user, 'transmittalDashboard')) {
 
 if (distributionItems.length) {
   menus.push({
-    id: '3',
+    id: '4',
     text: 'Distribución',
     icon: 'fa-cubes',
     url: distributionItems[0].url,
@@ -238,12 +280,12 @@ if (distributionItems.length) {
 }
 
 /* *****************
- * 3. Planning
+ * 5. Planning
  *****************/
 const planningItems = [];
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
-    id: '4.1',
+    id: '5.1',
     icon: 'fa-circle-o',
     text: 'Detalle',
     url: '/planning/'
@@ -252,7 +294,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
 
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
-    id: '4.2',
+    id: '5.2',
     icon: 'fa-circle-o',
     text: 'Importar',
     url: '/planning/import/'
@@ -270,7 +312,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
 
 if (process.env.NODE_ENV !== 'development' && planningItems.length) {
   menus.push({
-    id: '4',
+    id: '5',
     text: 'Planificación',
     icon: 'fa-calendar-check-o',
     url: '/planning/',

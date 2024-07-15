@@ -7,6 +7,7 @@ import type { IDamagesModel } from '../models/damages.model';
 import type { IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSectionModel } from '../models/form.model';
 import type { IScaleModel } from '../models/scale.model';
 import type { IFormTriggerModel } from "../models/trigger.model";
+import {IQuestionTriggerModel} from "../models/questionTrigger.model";
 
 export interface IFormItems {
   _id?: any;
@@ -18,6 +19,7 @@ export interface IFormItems {
 export interface IFormAccesory {
   _id?: any;
   question: string;
+  multi: boolean;
   items: IFormItemModel[];
 }
 
@@ -50,6 +52,10 @@ export interface IFormQuestion {
   colors: string[];
 
   requireSeverity: boolean;
+  requirePicture: boolean;
+
+  triggers: mongoose.Types.Array<IQuestionTriggerModel>;
+
 }
 
 export interface IFormSection {

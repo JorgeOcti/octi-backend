@@ -25,6 +25,7 @@ const initialState: IInventoryState = {
     reportedClass: "gray-dark",
     reportedColor: ""
   },
+  brands: [],
   loading: true,
   inventoryCar: null,
   source: null,
@@ -53,7 +54,8 @@ const initialState: IInventoryState = {
     property: '',
     type: '',
     venues: [],
-    states: []
+    states: [],
+    brands: []
   },
   pagination: {
     count: 0,
@@ -68,6 +70,7 @@ export interface IFilterCar {
   property: string;
   venues: string[];
   states: string[];
+  brands: string[];
 }
 
 export function inventoriesReducer(state = initialState, action: InventoryReduxAction): IInventoryState {
@@ -82,6 +85,11 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         ...state,
         source: action.payload.source
       };
+    case '/INVENTORIES/LOAD_BRANDS':
+      return {
+      ...state,
+      brands: action.payload.brands
+    };
     case '/INVENTORIES/LOAD_DATA':
       return {
         ...state,
@@ -208,6 +216,9 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     }
     if (add && filter && filter.type && filter.type.length) {
       add = car.car.type === filter.type;
+    }
+    if (add && filter && filter.brands && filter.brands.length) {
+      add = (filter.brands as any).includes(car.car.brandRelated?._id);
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (

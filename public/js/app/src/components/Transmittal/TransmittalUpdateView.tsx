@@ -100,7 +100,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     const {loadInitialValues} = this.state;
 
     return (
-      <AppContainer cMenu='3' cSubMenu='3.4' cAction='Crear Order'>
+      <AppContainer cMenu='4' cSubMenu='4.4' cAction='Crear Order'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>

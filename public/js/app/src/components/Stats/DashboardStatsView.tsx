@@ -71,7 +71,7 @@ class DashboardStatsView extends TrackingBasePage<IPropsType, IStateType> {
     const {studios, loading} = this.props.dashboard;
     const { tab } = this.state;
     const selectedStudio : IStudio | undefined = studios.find((studio: IStudio) => studio._id === tab);
-    return <AppContainer cMenu={this.state.menu} cSubMenu={this.state.cSubmenu}>
+    return <AppContainer cMenu={this.state.menu} cSubMenu={this.state.cSubmenu} title={this.title}>
       <section className="content">
         <div className="box">
           <div className="box-header with-border">
@@ -185,9 +185,20 @@ class PlanificationDashboardStatsView extends DashboardStatsView {
   state = {
     error: null,
     loading: true,
-    menu: "3",
-    cSubmenu: "3.5",
+    menu: "5",
+    cSubmenu: "5.5",
     type: StatsDashboardTypes.PLANIFICATION,
+    tab: "",
+  };
+}
+
+class OSADashboardStatsView extends DashboardStatsView {
+  state = {
+    error: null,
+    loading: true,
+    menu: "3",
+    cSubmenu: "3.1",
+    type: StatsDashboardTypes.OSA,
     tab: "",
   };
 }
@@ -197,4 +208,5 @@ let VInventoryDashboardStatsView =  connect<{}, {}, IPropsType>(mapStateToProps,
 let VUnitControlDashboardStatsView = connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UnitControlDashboardStatsView);
 let VDistributionDashboardStatsView = connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DistributionDashboardStatsView);
 let VPlanificationDashboardStatsView = connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(PlanificationDashboardStatsView);
-export { VInventoryDashboardStatsView, VUnitControlDashboardStatsView, VDistributionDashboardStatsView, VPlanificationDashboardStatsView };
+let VOSADashboardStatsView = connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(OSADashboardStatsView);
+export { VInventoryDashboardStatsView, VUnitControlDashboardStatsView, VDistributionDashboardStatsView, VPlanificationDashboardStatsView, VOSADashboardStatsView };

@@ -527,7 +527,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private cloneUser(user: IUser): void {
     const { changeTempUser } = this;
-    const { venues, permissions, forms, companies } = this.props.users;
+    const { venues, permissions, forms, companies, brands } = this.props.users;
     const tmpUser = {
       ...user,
       _id: '',
@@ -545,6 +545,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           changeTempUser={changeTempUser}
           companies={companies}
           venues={venues}
+          brands={brands}
           users={this.props.users}
           forms={forms}
           permissions={permissions}
@@ -581,8 +582,9 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private createUser(): void {
     const { changeTempUser } = this;
-    const { venues, permissions, forms, companies } = this.props.users;
+    const { venues, permissions, forms, companies, brands } = this.props.users;
     this.props.changeTempUserAction({
+      userBrands: [],
       _id: '',
       firstName: '',
       lastName: '',
@@ -604,6 +606,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           create={true}
           changeTempUser={changeTempUser}
           venues={venues}
+          brands={brands}
           companies={companies}
           users={this.props.users}
           forms={forms}
@@ -706,7 +709,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private updateUser(user: IUser): void {
     const { changeTempUser } = this;
-    const { venues, permissions, forms, companies } = this.props.users;
+    const { venues, permissions, forms, companies, brands } = this.props.users;
     const tmpUser = { ...user };
     tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
     changeTempUser(tmpUser);
@@ -718,6 +721,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
           changeTempUser={changeTempUser}
           companies={companies}
           venues={venues}
+          brands={brands}
           users={this.props.users}
           forms={forms}
           permissions={permissions}
@@ -763,6 +767,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     lastName,
     email,
     venue,
+    userBrands,
     userPermissions,
     preferred,
     userForms,
@@ -789,6 +794,9 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       password: password ? password : '',
       settings: settings ?? this.props.users.tempUser.settings,
       email: email ? email : this.props.users.tempUser.email,
+      userBrands: userBrands
+        ?  userBrands
+        : this.props.users.tempUser.userBrands,
       userPermissions: userPermissions
         ? userPermissions
         : this.props.users.tempUser.userPermissions,

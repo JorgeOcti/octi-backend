@@ -74,6 +74,10 @@ export const userSchema = new mongoose.Schema<IUser>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
   }],
+  userBrands: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand'
+  }],
   preferred: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',

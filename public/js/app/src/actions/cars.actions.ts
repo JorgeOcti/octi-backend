@@ -1,12 +1,21 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import {ICar} from '../../../../../src/app/interfaces/car.interface';
+import {IBrand} from '../../../../../src/app/interfaces/brand.interface';
 import ApiService from '../utils/axios';
+
+
+export interface ICarFilter {
+  brands: string[];
+  searchText: string;
+}
 
 export interface ICarsState {
   cars: ICar[];
   car: ICar | null;
+  filter: ICarFilter;
   carEvents: any;
+  brands: IBrand[];
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
@@ -83,6 +92,38 @@ export function loadCarsAction(cars: any, count: number, pages: number): ILoadCa
   };
 }
 
+interface IUpdateFilter {
+  type: '/CARS/UPDATE_FILTER';
+  payload: {
+    filter: ICarFilter;
+  }
+}
+
+export function updateFilterAction(filter: ICarFilter): IUpdateFilter {
+  return {
+    type: '/CARS/UPDATE_FILTER',
+    payload: {
+      filter: filter
+    }
+  }
+}
+
+interface ILoadBrands {
+  type: '/CARS/LOAD_BRANDS';
+  payload: {
+    brands: IBrand[];
+  };
+}
+
+export function loadBrandsAction(brands: any): ILoadBrands {
+  return {
+    type: '/CARS/LOAD_BRANDS',
+    payload: {
+      brands: brands,
+    }
+  }
+}
+
 interface ILoadCar {
   type: '/CARS/LOAD_CAR';
   payload: {
@@ -97,6 +138,14 @@ export function loadCarAction(car: ICar): ILoadCar {
       car
     }
   };
+}
+
+export function changeFilterAction(filter: ICarFilter) {
+  return (dispatch: Dispatch<CarReduxAction>, getState: () => {cars: ICarsState}) => {
+    dispatch(updateFilterAction(filter));
+    const getCars = getCarsAction(1);
+    getCars(dispatch, getState);
+  }
 }
 
 export function getCarAction(id: string) {
@@ -123,19 +172,33 @@ export function getCarAction(id: string) {
   };
 }
 
-export function getCarsAction(nextPage: number, search?: string) {
+export function getCarsAction(nextPage: number) {
   return (dispatch: Dispatch<CarReduxAction>, getState: () => {cars: ICarsState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    if (nextPage && nextPage !== state.cars.pagination.page) {
+
+
+    if (nextPage) {
       dispatch(isLoadingAction(true));
+      if (nextPage !== state.cars.pagination.page) {
+        dispatch(changePageAction(nextPage));
+      }
     }
+
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.cars.pagination.page;
-    if (nextPage) {
-      dispatch(changePageAction(nextPage));
+
+    if (state.cars.brands.length === 0) {
+      api.getBrands({page: 1, pageSize: 500})
+        .then((response: AxiosResponse) => {
+          dispatch(loadBrandsAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
     }
-    api.getAdminCars(page, search)
+
+    api.getAdminCars(page, state.cars.filter.searchText, state.cars.filter.brands)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
@@ -157,4 +220,6 @@ export type CarReduxAction =
   IIsLoading |
   IChangePage |
   ILoadCars |
+  IUpdateFilter |
+  ILoadBrands |
   ILoadCar;

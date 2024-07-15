@@ -62,6 +62,7 @@ class BillingController {
           return res.send(html);
         } else {
           const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium',
             args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
             headless: true,
           })
@@ -116,6 +117,7 @@ class BillingController {
           return res.send(html);
         } else {
           const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium',
             args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'], // Required.
             headless: true,
           })

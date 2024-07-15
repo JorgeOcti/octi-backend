@@ -10,7 +10,7 @@ async function main() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('strictQuery', true);
-  mongoose.set('debug', false);
+  mongoose.set('debug', true);
   mongooseRedisCache(mongoose, {
     host: GeneralUtils.getFromEnviroment(
       'REDIS_SERVICE_SERVICE_HOST',

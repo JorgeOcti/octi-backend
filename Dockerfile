@@ -1,6 +1,6 @@
-FROM node:18.13.0-bullseye-slim
+FROM node:18.17.1-bullseye-slim
 
-LABEL maintainer = "gmunoz@osacontrol.com"
+LABEL maintainer = "jorge@osacontrol.com"
 
 RUN apt-get update && \
     apt-get upgrade -y && \

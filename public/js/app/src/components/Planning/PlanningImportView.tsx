@@ -83,7 +83,7 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
       loadingSettings, carsByDate, sending
     } = this.state;
     return (
-      <AppContainer title="" cMenu="4" cSubMenu="4.2">
+      <AppContainer title="" cMenu="5" cSubMenu="5.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

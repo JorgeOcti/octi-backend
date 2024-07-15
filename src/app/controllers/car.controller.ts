@@ -3,6 +3,7 @@ import * as excel from 'exceljs';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as tempfile from 'tempfile';
+import * as Zip from "adm-zip";
 
 import CarModel, {
   Car,
@@ -39,8 +40,10 @@ import Position from '../../form/models/position.model';
 import { Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import conectaController from '../../request/controllers/conecta.controller';
 import logger from '../../services/logger.service';
+import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
+import axios from "axios";
+import Form from "../../form/models/form.model";
 
 moment.tz.setDefault('America/Santiago');
 
@@ -74,8 +77,11 @@ class CarController {
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
     this.processParticipant = this.processParticipant.bind(this);
     this.exportParticipants = this.exportParticipants.bind(this);
+    this.exportDamagePictures = this.exportDamagePictures.bind(this);
     this.listProperties = this.listProperties.bind(this);
     this.createCar = this.createCar.bind(this);
+    this.apiCompanyCars = this.apiCompanyCars.bind(this);
+    this.getDamageImages = this.getDamageImages.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -414,70 +420,8 @@ class CarController {
           carFilter = {
             $and: [...carFilter['$and'], { vin }]
           };
-          if (vin?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } =
-              await conectaController.searchVinContecta(vin);
-            if (integrationData?.length) {
-              for (const car of integrationData) {
-                await Car.updateOne(
-                  {
-                    team,
-                    vin: car.vin
-                  },
-                  {
-                    $set: {
-                      vin2: car.vin.toString().substr(car.vin?.length - 6),
-                      brand: car.brand,
-                      denomination: car.denomination,
-                      material: car.material,
-                      color: car.color,
-                      company: req.user.company?._id,
-                      status: ChoicesStatusCar.active
-                    }
-                  },
-                  {
-                    upsert: true,
-                    setDefaultsOnInsert: true
-                  }
-                );
-              }
-            }
-          }
         }
         if (vin2) {
-          if (vin2?.length > 5 && team === '5bf2de35caf8ef7096105cdd') {
-            let { data: integrationData } =
-              await conectaController.searchVinContecta(vin2);
-            if (integrationData?.length > 1) {
-              for (const car of integrationData) {
-                try {
-                  await Car.updateOne(
-                    {
-                      team,
-                      vin: car.vin
-                    },
-                    {
-                      $set: {
-                        vin2: car.vin.toString().substr(car.vin?.length - 6),
-                        brand: car.brand,
-                        denomination: car.denomination,
-                        material: car.material,
-                        color: car.color,
-                        company: req.user.company?._id,
-                        status: ChoicesStatusCar.active
-                      }
-                    },
-                    {
-                      upsert: true,
-                      setDefaultsOnInsert: true
-                    }
-                  );
-                } catch (e) {
-                  console.log(e);
-                }
-              }
-            }
-          }
           if (vin2[0] === '0') {
             const vinRegex = new RegExp(
               `${vin2.substr(vin2.length - 5)}$`,
@@ -1151,8 +1095,8 @@ class CarController {
         venue: participant.venue
           ? participant.venue.name
           : participant.user
-          ? participant.user.venue.name
-          : '',
+            ? participant.user.venue.name
+            : '',
         vin: participant.car ? participant.car.vin : '',
         plate: participant.car ? participant.car.patent : '',
         name: participant.name,
@@ -1181,14 +1125,14 @@ class CarController {
         sectionAnswers = {
           ...sectionAnswers,
           [`${participant.form.toString()}-reception`]:
-            participant.receiveFrom?.name
+          participant.receiveFrom?.name
         };
       }
       if (participant.carrier) {
         sectionAnswers = {
           ...sectionAnswers,
           [`${participant.form.toString()}-carrier`]:
-            participant.carrierBy?.name
+          participant.carrierBy?.name
         };
       }
 
@@ -1552,6 +1496,16 @@ class CarController {
         }
       ];
 
+      if (req.user.userBrands && req.user.userBrands.length > 0) {
+        aggregation.push({
+          $match: {
+            'car.brandRelated': {
+              $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
+            }
+          }
+        });
+      }
+
       if (searchTextFilter) {
         aggregation.push({
           $match: searchTextFilter
@@ -1586,6 +1540,263 @@ class CarController {
     } catch (e) {
       logger.error(e);
     }
+  }
+
+  public async exportDamagePictures(req: IRequest, res: Response) {
+    logger.info(`CarController.exportDamagePictures email: ${req.user.email}`);
+    logger.info(
+      `CarController.exportDamagePictures email: ${
+        req.user.email
+      } query: ${JSON.stringify(req.query)}`
+    );
+
+    const team = req.user.team._id;
+    const { userForms } = req.user;
+    let { search, from, to, deliveries } = req.query as Record<
+      string,
+      string
+    >;
+    let queryForms = req.query.forms as string;
+
+    const venuesPermissions = req.user.venuesPermissions();
+
+    // Get filters for Mongo Query
+    let targetForms = userForms.map((form) => form._id.toString());
+    if (queryForms) {
+      const formArray = queryForms.split(',');
+      targetForms = formArray.filter((f) => targetForms.includes(f));
+    }
+
+    const queryFilter: any = {
+      car: {
+        $ne: null
+      },
+      team: new mongoose.Types.ObjectId(team),
+      venue: {
+        $in: venuesPermissions
+      },
+      deliveryToCustomer: deliveries === '1',
+      form: {
+        $in: targetForms.map((f) => new mongoose.Types.ObjectId(f))
+      },
+      hasDamages: true
+    };
+    if (from && to) {
+      queryFilter.createdAt = {
+        $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+        $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+      };
+    }
+
+    let searchTextFilter: any = {};
+
+    if (search?.length > 0) {
+      search = search.replace(/[^a-z0-9 A-ZÀ-ú]+/g, '').trim();
+      // search = search.trim().replace("*", "");
+      logger.info(
+        `CarController.exportParticipants: email: ${req.user.email} search: ${search}`
+      );
+      const searchText = new RegExp(search, 'i');
+      const searchTextArray = search.split(' ');
+
+      // User first name and last name
+      const filterUser: any = {
+        $and: []
+      };
+      //User
+      if (searchTextArray.length > 3) {
+        filterUser['$or'] = [
+          {
+            firstName: {
+              $regex: new RegExp(
+                `${searchTextArray[0]} ${searchTextArray[1]}`,
+                'i'
+              )
+            },
+            lastName: {
+              $regex: new RegExp(
+                `${searchTextArray[2]} ${searchTextArray[3]}`,
+                'i'
+              )
+            }
+          }
+        ];
+      } else {
+        filterUser['$and'].push({
+          'user.firstName': {
+            $regex: new RegExp(searchTextArray[0], 'i')
+          }
+        });
+        if (searchTextArray.length > 1) {
+          filterUser['$and'].push({
+            'user.lastName': {
+              $regex: new RegExp(searchTextArray[1], 'i')
+            }
+          });
+        }
+      }
+
+      //Car (VIN or Brand)
+      const filterCar: any = {
+        $or: [
+          {
+            'car.vin': {
+              $regex: searchText
+            }
+          },
+          {
+            'car.patent': {
+              $regex: searchText
+            }
+          },
+          {
+            'car.brand': {
+              $regex: searchText
+            }
+          }
+        ]
+      };
+      //Venue (name)
+      const filterVenue: any = {
+        'venue.name': {
+          $regex: searchText
+        }
+      };
+
+      searchTextFilter = {
+        $or: [filterUser, filterCar, filterVenue]
+      };
+    }
+
+    let aggregation: any[] = [
+      {
+        $project: {
+          number: 1,
+          createdAt: 1,
+          deliveryToCustomer: 1,
+          car: 1,
+          user: 1,
+          company: 1,
+          team: 1,
+          venue: 1,
+          name: 1,
+          hasDamages: 1,
+          receptionText: 1,
+          shippingText: 1,
+          sections: 1,
+          form: 1,
+          shippingVenue: 1,
+          receptionVenue: 1,
+          sendTo: 1,
+          receiveFrom: 1,
+          reception: 1,
+          shipping: 1,
+          carrier: 1,
+          carrierText: 1,
+          carrierBy: 1
+        }
+      },
+      {
+        $match: queryFilter
+      },
+      {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car'
+        }
+      },
+      {
+        $lookup: {
+          from: 'participantfiles',
+          localField: 'sections.answers.damagesSelected.images',
+          foreignField: '_id',
+          as: 'damageImages'
+        }
+      },
+      {
+        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+      },
+    ];
+
+    if (req.user.userBrands && req.user.userBrands.length > 0) {
+      aggregation.push({
+        $match: {
+          'car.brandRelated': {
+            $in: req.user.userBrands.map((brand) => new Types.ObjectId(brand._id))
+          }
+        }
+      });
+    }
+
+    if (searchTextFilter) {
+      aggregation.push({
+        $match: searchTextFilter
+      });
+    }
+
+    logger.debug(JSON.stringify(aggregation));
+
+    res.header('Content-Type', 'application/zip');
+    res.header(
+      'Content-Disposition',
+      `attachment; filename=imagenes-${moment().format('YYYY-MM-DD')}.zip`
+    );
+
+
+    const cursor = ParticipantModel.aggregate(aggregation).cursor();
+
+    let zip = new Zip();
+
+    await cursor.eachAsync(
+      async (participant) => {
+        const damageImages = participant.damageImages
+        if (damageImages.length === 0) {
+          return
+        }
+
+        for (const image of damageImages) {
+          let buffer = await this.getImageBuffer(image.file.url);
+          if (zip.getEntry(`${participant.car.vin}/`) === null )
+            zip.addFile(`${participant.car.vin}/`, Buffer.alloc(0));
+          zip.addFile(`${participant.car.vin}/${image.file.name}`, buffer);
+        }
+      },
+      { parallel: 100 }
+    );
+
+    cursor.close().then(() => {
+      res.end(zip.toBuffer());
+    });
+
+    req.connection.on('close', async () => {
+      cursor.close();
+    });
+
+
+  }
+
+  private getImageBuffer(url: string) {
+    return axios
+      .get(url, {
+        responseType: 'arraybuffer'
+      })
+      .then(response => Buffer.from(response.data, 'binary'))
+  }
+
+  private getDamageImages(participant: IParticipant) {
+    const damageImages: IParticipantFile[] = []
+    participant.sections.forEach((section) => {
+      section.answers.forEach((answer) => {
+        if (answer.kind === 'damage') {
+          answer.damagesSelected.forEach((damage) => {
+            damageImages.push(...damage.images)
+          })
+        }
+      })
+    })
+    return damageImages
   }
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
@@ -1629,7 +1840,8 @@ class CarController {
           shippingVenueText: true,
           conciliationImages: true,
           createdAt: true,
-          kind: true
+          kind: true,
+          reliability: true,
         }
       ).populate([
         {
@@ -1873,7 +2085,8 @@ class CarController {
       delivery,
       from,
       to,
-      forms
+      forms,
+      brands
     } = req.query as Record<string, string>;
     search = search ? search.replace(/  +/g, ' ').trim() : '';
     // paginate options
@@ -1896,8 +2109,8 @@ class CarController {
       const kind =
         only_controls === '1'
           ? {
-              $ne: KindForm.transmittal
-            }
+            $ne: KindForm.transmittal
+          }
           : { $eq: KindForm.transmittal };
 
       // filter by form
@@ -1908,13 +2121,13 @@ class CarController {
 
       const formsIds = searchForms?.length
         ? user.userForms
-            .filter((form) => {
-              if (searchForms?.length) {
-                return searchForms.includes(form._id.toString());
-              }
-              return true;
-            })
-            .map((form) => new Types.ObjectId(form._id))
+          .filter((form) => {
+            if (searchForms?.length) {
+              return searchForms.includes(form._id.toString());
+            }
+            return true;
+          })
+          .map((form) => new Types.ObjectId(form._id))
         : user.userForms.map((form) => new Types.ObjectId(form._id));
 
       // search text in participant
@@ -1943,6 +2156,43 @@ class CarController {
           $lte: moment(to).endOf('day').utc().toDate()
         }
       };
+
+      if (req.user.userBrands?.length || brands) {
+        let brandsRelated = req.user.userBrands.map((brand) => brand._id.toString());
+        logger.info("Userbrands: "+ JSON.stringify(brandsRelated))
+        logger.info("brands " + brands)
+        if (brands) {
+          let tmp = brands.split(',')
+          brandsRelated = brandsRelated.length > 0  ? brandsRelated.filter((brand) => tmp.includes(brand)) : tmp
+        }
+        logger.info("Final Userbrands: "+ JSON.stringify(brandsRelated))
+        const cars = await Car.aggregate([
+          {
+            $match: {
+              team: new mongoose.Types.ObjectId(user.team._id),
+              brandRelated: {
+                $in: brandsRelated.map((brand) => new mongoose.Types.ObjectId(brand))
+              },
+            }
+          },
+
+          {
+            $project: {
+              _id: 1,
+            }
+          },
+        ]);
+
+        if (cars.length) {
+          baseMatch = {
+            ...baseMatch,
+            car: {
+              $in: cars.map((car) => car._id)
+            }
+          };
+        }
+      }
+
       let ponderations: any = {};
       if (search?.length > 2) {
         const keys = await Participant.aggregate([
@@ -2106,7 +2356,8 @@ class CarController {
       // sort if search text in participant
       if (delivery?.length > 2) {
         options.sort = { score: { $meta: 'textScore' } };
-      } else if (ponderations?.venues?.length) {
+      }
+      else if (ponderations?.venues?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2125,7 +2376,8 @@ class CarController {
           }
         ];
         options.sort = { _id: -1 };
-      } else if (ponderations?.users?.length) {
+      }
+      else if (ponderations?.users?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2145,7 +2397,8 @@ class CarController {
         ];
         // options.sort = { 'user.firstName': 1, _id: -1 };
         options.sort = { _id: -1 };
-      } else if (ponderations?.cars?.length) {
+      }
+      else if (ponderations?.cars?.length) {
         aggregate = [
           ...aggregate,
           {
@@ -2165,7 +2418,8 @@ class CarController {
         ];
         // options.sort = { _id: -1, 'car.denomination': 1 };
         options.sort = { createdAt: -1 };
-      } else {
+      }
+      else {
         options.sort = { createdAt: -1 };
       }
 
@@ -2316,33 +2570,33 @@ class CarController {
               damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
                 ? cache.kinds[damage.kind.toString()]
                 : answer.damages.kinds.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.kind &&
-                        d._id.toString() === damage.kind.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.kind &&
+                    d._id.toString() === damage.kind.toString()
+                  )
+                );
             const part =
               damage.part && cache.parts.hasOwnProperty(damage.part.toString())
                 ? cache.parts[damage.part.toString()]
                 : answer.damages.parts.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.part &&
-                        d._id.toString() === damage.part.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.part &&
+                    d._id.toString() === damage.part.toString()
+                  )
+                );
             const position =
               damage.position &&
               cache.positions.hasOwnProperty(damage.position.toString())
                 ? cache.positions[damage.position.toString()]
                 : answer.damages.positions.find((d) =>
-                    Boolean(
-                      d._id &&
-                        damage.position &&
-                        d._id.toString() === damage.position.toString()
-                    )
-                  );
+                  Boolean(
+                    d._id &&
+                    damage.position &&
+                    d._id.toString() === damage.position.toString()
+                  )
+                );
             if (kind && part) {
               damages.push({ kind, part, position });
             }
@@ -2800,6 +3054,90 @@ class CarController {
         console.log(e);
         res.status(500).json(e);
       }
+    }
+  }
+
+  public async apiCompanyCars(req: IRequest, res: Response) {
+    const { page, pageSize, search } = req.query as {
+      page: string;
+      pageSize: string;
+      search: string;
+    };
+
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        vin: true,
+        vin2: true,
+        patent: true,
+        internalNumber: true,
+        brand: true,
+        denomination: true,
+        color: true
+      },
+      sort: {
+        updatedAt: 1
+      },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      allowDiskUse: true,
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+
+    try {
+      const deliveryForms = await Form.find({deliveryToCustomer: true}, {_id: true})
+
+      const cars = await this.getCars(
+        {
+          $or: [
+            {
+              team: req.user.team._id,
+              updatedAt: {
+                $gte: moment().subtract(6, 'months').toDate()
+              }
+            },{
+              company: req.user.company._id,
+              createdAt: {
+                $gte: moment().subtract(12, 'months').toDate()
+              }
+            }
+          ],
+          lastForm: {$nin: deliveryForms}
+        },
+        options,
+        search
+      );
+
+      // validate exist page
+      if (options.page && cars.pages && cars.pages < options.page) {
+        return res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 200
+        });
+      } else {
+        return res.json({
+          count: cars.total,
+          pages: cars.pages,
+          hasPrevious: cars.hasPrevious,
+          hasNextPage: cars.hasNextPage,
+          results: cars.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e.toString())
+      return res.status(500).json({message: e.stack});
     }
   }
 

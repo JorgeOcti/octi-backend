@@ -96,16 +96,17 @@ class FormController {
     try {
       const config = {
         headers: {
-          'x-apikey': ' LQKpXlFg5UwXgoHDJ2CWlwyAVQG2llyz5RTNT6NmgFrGABzj'
+          'x-apikey': ' Tr2cRKGiZe9Z2dzGL0WVnhjgWDZ1pYXxDe38vaQd90pnemhN'
         }
       };
       const instance = axios.create(config);
       const response = await instance.get(
-        `https://ipa.qa.derco.services/osa-integration/v1/pedidos/${order}`
+        `https://ipa.prd.derco.services/osa-integration/v1/pedidos/${order}`
       );
       console.dir(response.data);
       return res.json({
-        data: response.data
+        data: response.data,
+        status: response.status
       });
     } catch (e) {
       console.log(e);
@@ -350,6 +351,7 @@ class FormController {
         } else {
           // launch a new chrome instance
           const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium',
             args: [
               '--no-sandbox',
               '--allow-file-access-from-files',
@@ -784,7 +786,7 @@ class FormController {
 
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
-    let { vin, answers, transmittalItem, transmittal } = req.body;
+    let { vin, answers, transmittalItem, transmittal, reliability } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
     logger.info(`FormController.complete email: ${req.user.email}`);
@@ -901,6 +903,7 @@ class FormController {
             deliveryInfo: {},
             rawAnswers: answers,
             rawBody: req.body,
+            reliability,
             keyRawAnswers
           };
 
@@ -1063,6 +1066,8 @@ class FormController {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
+              } else if (question?.kindUpdate === 'participant.parking') {
+                newParticipant.deliveryInfo.parking = comment;
               } else if (
                 question?.kindUpdate === 'participant.clientSignature'
               ) {
@@ -2991,7 +2996,7 @@ class FormController {
             team,
             active: true,
             createdAt: {
-              $gte: moment().startOf('day').subtract(2, 'days').toISOString()
+              $gte: moment().startOf('day').subtract(3, 'days').toISOString()
             }
           }
         ]

@@ -110,7 +110,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                             <td className="middle">
                               <strong className='text-info'>
                                 {
-                                  moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY').toUpperCase()
+                                  moment(invoice.period, "YYYYMM").format('MMMM YYYY').toUpperCase()
                                 }
                               </strong>
                             </td>

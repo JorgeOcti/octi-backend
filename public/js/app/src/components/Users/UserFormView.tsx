@@ -12,6 +12,7 @@ import { IWindow } from '../../interfaces/window';
 import Checkbox from '../Utils/CheckBox';
 import { hasPermission } from '../../utils/common';
 import ShowIf from '../Utils/ShowIf';
+import {IBrand} from "../../../../../../src/app/interfaces/brand.interface";
 
 interface IPropsType {
   users: IUsersState;
@@ -19,6 +20,7 @@ interface IPropsType {
   forms: IForm[];
   permissions: IPermission[];
   companies: ICompany[];
+  brands: IBrand[];
   user?: IUser;
   create: boolean;
   changeTempUser(user: any): void;
@@ -48,6 +50,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.changeIsDriver = this.changeIsDriver.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
+    this.addBrand = this.addBrand.bind(this);
+    this.deleteBrand = this.deleteBrand.bind(this);
     this.toogleCompanies = this.toogleCompanies.bind(this);
   }
 
@@ -62,6 +66,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
         this.addForm(e.target.value);
       });
+
+    ($('#id-brands') as any)
+      .chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        this.addBrand(e.target.value);
+      });
+
     ($('#id-form-default') as any)
       .chosen(chosenOptions)
       .change((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -110,6 +121,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   componentDidUpdate() {
     $('#id-forms').trigger('chosen:updated');
+    $('#id-brands').trigger('chosen:updated');
     $('#id-form-default').trigger('chosen:updated');
     $('#id-venue').trigger('chosen:updated');
     $('#id-permissions').trigger('chosen:updated');
@@ -119,10 +131,12 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { changeTempUser, venues, permissions, forms, create, companies } =
+    const { changeTempUser, venues, permissions, forms, create, companies, brands } =
       this.props;
     const { tempUser, channels } = this.props.users;
     const userPermissions: IPermission[] = [];
+    const userBrands: IBrand[] = [];
+    const selectBrands: IBrand[] = [];
     const selectPermissions: IPermission[] = [];
     const userForms: IForm[] = [];
     const selectForms: IForm[] = [];
@@ -133,6 +147,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       tempUser?.venuesAccess?.map((venue) => venue._id) ?? [];
     const idsUserForms =
       tempUser?.userForms?.map((userForm) => userForm._id) ?? [];
+    const idsUserBrands =
+      tempUser?.userBrands?.map((userBrand) => userBrand._id) ?? [];
 
     permissions.forEach((permission) => {
       if (idsUserPermissions.includes(permission._id)) {
@@ -141,6 +157,16 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         selectPermissions.push(permission);
       }
     });
+
+    brands.forEach((brand) => {
+      if (idsUserBrands.includes(brand._id)) {
+        userBrands.push(brand);
+      } else {
+        selectBrands.push(brand);
+      }
+    });
+
+
     forms.forEach((form) => {
       if (idsUserForms.includes(form._id)) {
         userForms.push(form);
@@ -151,7 +177,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
     return (
       <React.Fragment>
-        <ul className="nav nav-tabs" style={{ marginBottom: '15px' }}>
+        <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
           <li className="active">
             <a data-toggle="tab" href="#general">
               General
@@ -172,14 +198,19 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             </a>
           </li>
           <li>
-            <a data-toggle="tab" href="#request">
+            <a data-toggle="tab" href="#brands">
               Solicitudes
+            </a>
+          </li>
+          <li>
+            <a data-toggle="tab" href="#brands">
+              Marcas
             </a>
           </li>
         </ul>
         <div className="tab-content">
           <div id="general" className="tab-pane fade in active">
-            <div className="row">
+          <div className="row">
               <div className="col-md-12">
                 <div className="form-group">
                   <label>Nombres</label>
@@ -190,7 +221,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     maxLength={50}
                     defaultValue={tempUser ? tempUser.firstName : undefined}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      changeTempUser({ firstName: e.target.value })
+                      changeTempUser({firstName: e.target.value})
                     }
                   />
                 </div>
@@ -205,7 +236,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     maxLength={50}
                     defaultValue={tempUser ? tempUser.lastName : undefined}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      changeTempUser({ lastName: e.target.value })
+                      changeTempUser({lastName: e.target.value})
                     }
                   />
                 </div>
@@ -221,7 +252,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     maxLength={80}
                     defaultValue={tempUser ? tempUser.email : undefined}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      changeTempUser({ email: e.target.value })
+                      changeTempUser({email: e.target.value})
                     }
                   />
                 </div>
@@ -240,7 +271,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     }
                     onChange={undefined}
                     data-placeholder={'Seleccione...'}>
-                    <option value="" />
+                    <option value=""/>
                     {companies.map((company) => (
                       <option key={company._id} value={company._id}>
                         {company.name}
@@ -261,7 +292,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     }
                     onChange={undefined}
                     data-placeholder={'Seleccione...'}>
-                    <option value="" />
+                    <option value=""/>
                     {venues
                       .filter(
                         (venue) =>
@@ -283,10 +314,10 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <select
                     id="id-forms"
                     className="chosen-select form-control"
-                    style={{ minWidth: '200px' }}
+                    style={{minWidth: '200px'}}
                     onChange={undefined}
                     data-placeholder={'Seleccione...'}>
-                    <option value="" />
+                    <option value=""/>
                     {selectForms.map((form) => {
                       return (
                         <option key={form._id} value={form._id}>
@@ -300,32 +331,32 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               <div className="col-md-12">
                 <table className="table table-striped">
                   <thead>
-                    <tr>
-                      <th style={{ width: '90%' }}>Name</th>
-                      <th style={{ width: '10%' }} />
-                    </tr>
+                  <tr>
+                    <th style={{width: '90%'}}>Name</th>
+                    <th style={{width: '10%'}}/>
+                  </tr>
                   </thead>
                   <tbody>
-                    {userForms.length ? (
-                      userForms.map((form: any) => {
-                        return (
-                          <tr key={form._id}>
-                            <td>{form.name}</td>
-                            <td
-                              className="text-center text-red pointer"
-                              onClick={() => this.deleteForm(form._id)}>
-                              <i className="fa fa-minus-circle" />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan={2}>
-                          Aún no se han seleccionado permisos.
-                        </td>
-                      </tr>
-                    )}
+                  {userForms.length ? (
+                    userForms.map((form: any) => {
+                      return (
+                        <tr key={form._id}>
+                          <td>{form.name}</td>
+                          <td
+                            className="text-center text-red pointer"
+                            onClick={() => this.deleteForm(form._id)}>
+                            <i className="fa fa-minus-circle"/>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={2}>
+                        Aún no se han seleccionado permisos.
+                      </td>
+                    </tr>
+                  )}
                   </tbody>
                 </table>
               </div>
@@ -335,7 +366,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <select
                     id="id-form-default"
                     className="chosen-select form-control"
-                    style={{ minWidth: '200px' }}
+                    style={{minWidth: '200px'}}
                     defaultValue={
                       tempUser && tempUser.preferred
                         ? tempUser.preferred
@@ -343,7 +374,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     }
                     onChange={undefined}
                     data-placeholder={'Seleccione...'}>
-                    <option value="" />
+                    <option value=""/>
                     {userForms.map((form) => {
                       return (
                         <option key={form._id} value={form._id}>
@@ -360,7 +391,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     active={tempUser && tempUser.isDriver}
                     action={this.changeIsDriver}
                     classes="icheck-in-checkbox"
-                    style={{ marginTop: '-4px', marginRight: '5px' }}
+                    style={{marginTop: '-4px', marginRight: '5px'}}
                   />
                   Es Conductor
                 </div>
@@ -372,7 +403,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                       active={tempUser && tempUser.isAdmin}
                       action={this.changeIsAdmin}
                       classes="icheck-in-checkbox"
-                      style={{ marginTop: '-4px', marginRight: '5px' }}
+                      style={{marginTop: '-4px', marginRight: '5px'}}
                     />
                     Es ADMIN
                   </div>
@@ -391,9 +422,9 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     <select
                       id="id-permissions"
                       className="chosen-select form-control"
-                      style={{ minWidth: '200px' }}
+                      style={{minWidth: '200px'}}
                       data-placeholder={'Seleccione...'}>
-                      <option value="" />
+                      <option value=""/>
                       {selectPermissions.map((permission) => {
                         return (
                           <option key={permission._id} value={permission._id}>
@@ -407,36 +438,36 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                 <div className="col-md-12">
                   <table className="table table-striped">
                     <thead>
-                      <tr>
-                        <th style={{ width: '20%' }}>Code</th>
-                        <th style={{ width: '70%' }}>Name</th>
-                        <th style={{ width: '10%' }} />
-                      </tr>
+                    <tr>
+                      <th style={{width: '20%'}}>Code</th>
+                      <th style={{width: '70%'}}>Name</th>
+                      <th style={{width: '10%'}}/>
+                    </tr>
                     </thead>
                     <tbody>
-                      {userPermissions.length ? (
-                        userPermissions.map((permission: any) => {
-                          return (
-                            <tr key={permission._id}>
-                              <td>{permission.codeName}</td>
-                              <td>{permission.name}</td>
-                              <td
-                                className="text-center text-red pointer"
-                                onClick={() =>
-                                  this.deletePermission(permission._id)
-                                }>
-                                <i className="fa fa-minus-circle" />
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan={3}>
-                            Aún no se han seleccionado permisos.
-                          </td>
-                        </tr>
-                      )}
+                    {userPermissions.length ? (
+                      userPermissions.map((permission: any) => {
+                        return (
+                          <tr key={permission._id}>
+                            <td>{permission.codeName}</td>
+                            <td>{permission.name}</td>
+                            <td
+                              className="text-center text-red pointer"
+                              onClick={() =>
+                                this.deletePermission(permission._id)
+                              }>
+                              <i className="fa fa-minus-circle"/>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={3}>
+                          Aún no se han seleccionado permisos.
+                        </td>
+                      </tr>
+                    )}
                     </tbody>
                   </table>
                 </div>
@@ -496,19 +527,19 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                               : this.addCompanyAccess(company._id);
                           }}
                           classes="icheck-in-checkbox"
-                          style={{ marginTop: '-4px', marginRight: '5px' }}
+                          style={{marginTop: '-4px', marginRight: '5px'}}
                         />
                         <strong className="text-primary">{company.name}</strong>{' '}
                         ({venuesSelected.length} de {company.venues.length}{' '}
                         sucursales)
                         <div
                           className="pointer"
-                          style={{ float: 'right' }}
+                          style={{float: 'right'}}
                           onClick={() => this.toogleCompanies(company._id)}>
                           {this.state.companiesOpen.includes(company._id) ? (
-                            <i className="fa fa-chevron-up" />
+                            <i className="fa fa-chevron-up"/>
                           ) : (
-                            <i className="fa fa-chevron-down" />
+                            <i className="fa fa-chevron-down"/>
                           )}
                         </div>
                       </div>
@@ -617,7 +648,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     defaultValue={tempUser?.settings?.defaultChannel}
                     onChange={undefined}
                     data-placeholder={'Seleccione...'}>
-                    <option value="" />
+                    <option value=""/>
                     {channels.map((channel) => (
                       <option key={channel._id} value={channel._id}>
                         {channel.name}
@@ -625,6 +656,63 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     ))}
                   </select>
                 </div>
+              </div>
+            </div>
+          </div>
+          <div id="brands" className="tab-pane fade">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Marcas</label>
+                  <select
+                    id="id-brands"
+                    className="chosen-select form-control"
+                    style={{minWidth: '200px'}}
+                    data-placeholder={'Seleccione...'}>
+                    <option value=""/>
+                    {brands.map((brand) => {
+                      return (
+                        <option key={brand._id} value={brand._id}>
+                          {brand.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <table className="table table-striped">
+                  <thead>
+                  <tr>
+                    <th style={{width: '70%'}}>Name</th>
+                    <th style={{width: '10%'}}/>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {userBrands.length ? (
+                    userBrands.map((brand: any) => {
+                      return (
+                        <tr key={brand._id}>
+                          <td>{brand.name}</td>
+                          <td
+                            className="text-center text-red pointer"
+                            onClick={() =>
+                              this.deleteBrand(brand._id)
+                            }>
+                            <i className="fa fa-minus-circle"/>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={3}>
+                        Tiene acceeso a todas las marcas.
+                      </td>
+                    </tr>
+                  )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -642,18 +730,18 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private changeIsAdmin() {
-    const { isAdmin } = this.props.users.tempUser;
-    this.props.changeTempUser({ isAdmin: !isAdmin });
+    const {isAdmin} = this.props.users.tempUser;
+    this.props.changeTempUser({isAdmin: !isAdmin});
   }
 
   private changeIsDriver() {
-    const { isDriver } = this.props.users.tempUser;
-    this.props.changeTempUser({ isDriver: !isDriver });
+    const {isDriver} = this.props.users.tempUser;
+    this.props.changeTempUser({isDriver: !isDriver});
   }
 
   private addCompanyAccess(id: string) {
-    const { changeTempUser } = this.props;
-    const { tempUser, companies, venues } = this.props.users;
+    const {changeTempUser} = this.props;
+    const {tempUser, companies, venues} = this.props.users;
     const findVenues = venues.filter((venue) => venue.company._id === id);
     const company = companies.find((company) => company._id === id);
     const venuesAccess = [
@@ -674,8 +762,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteCompanyAccess(id: string) {
-    const { changeTempUser } = this.props;
-    const { tempUser } = this.props.users;
+    const {changeTempUser} = this.props;
+    const {tempUser} = this.props.users;
     const venuesAccess = tempUser.venuesAccess.filter(
       (venue) => venue.company._id !== id
     );
@@ -693,8 +781,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   private addVenueAccess(id: string) {
-    const { changeTempUser } = this.props;
-    const { tempUser, venues, companies } = this.props.users;
+    const {changeTempUser} = this.props;
+    const {tempUser, venues, companies} = this.props.users;
     const findVenue = venues.find((venue) => venue._id === id);
     const company = companies.find((company) =>
       company.venues.some((venue) => venue._id === id)
@@ -761,6 +849,28 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private addBrand(id: string) {
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
+    const { brands } = this.props;
+    const findBrand = brands.find((brand) => brand._id === id);
+    if (findBrand) {
+      changeTempUser({
+        userBrands: [findBrand, ...tempUser.userBrands]
+      });
+    }
+  }
+
+  private deleteBrand(id: string) {
+    const { changeTempUser } = this.props;
+    const { tempUser } = this.props.users;
+    changeTempUser({
+      userBrands: tempUser
+        ? tempUser.userBrands.filter((brand) => brand._id !== id)
+        : []
+    });
+  }
+
   private addForm(id: string) {
     const { changeTempUser } = this.props;
     const { tempUser } = this.props.users;
@@ -772,6 +882,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       });
     }
   }
+
 
   private deleteForm(id: string) {
     const { changeTempUser } = this.props;

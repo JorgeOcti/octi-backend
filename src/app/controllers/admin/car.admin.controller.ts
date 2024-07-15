@@ -179,10 +179,11 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const { page, pageSize, search } = req.query as {
+    const { page, pageSize, search, brands } = req.query as {
       page: string;
       pageSize: string;
       search: string;
+      brands: string;
     };
     const team = req.user.team._id;
     // paginate options
@@ -227,20 +228,43 @@ class AdminCarController {
           req.user.email
         }, query: ${JSON.stringify(req.query)}`
       );
-      const cars = await this.getCars(
-        {
+
+      let filter: any = {
+        $and: [
+          {
+            vin: {
+              $nin: ['', null]
+            },
+            team
+          }
+        ]
+      }
+
+
+
+      if ((req.user.userBrands && req.user.userBrands.length > 0) || brands) {
+        let brandRelated = req.user.userBrands ?
+          req.user.userBrands :
+          brands.split(',').map((brand: string) => new Types.ObjectId(brand));
+        filter = {
           $and: [
             {
               vin: {
                 $nin: ['', null]
               },
-              team
+              team,
+              brandRelated: {
+                $in: brandRelated
+              }
             }
           ]
-          // status: {
-          //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
-          // }
-        },
+        };
+      }
+
+      logger.info(`CarController.apiListCars filter: ${JSON.stringify(filter)}`);
+
+      const cars = await this.getCars(
+        filter,
         options,
         search
       );

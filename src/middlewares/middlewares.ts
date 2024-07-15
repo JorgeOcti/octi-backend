@@ -149,6 +149,9 @@ class Middlewares {
               path: 'userPermissions',
               select: ['codeName']
             }, {
+              path: 'userBrands',
+              select: ['name']
+            }, {
               path: 'userForms',
               select: ['name'],
               match: { active: true}

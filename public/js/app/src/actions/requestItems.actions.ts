@@ -9,6 +9,7 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { IBrand } from '../../../../../src/app/interfaces/brand.interface';
 import ApiService from '../utils/axios';
 import {
   ICancelRequestItems,
@@ -24,6 +25,7 @@ import {
   ILoadRequestItemStatus,
   ILoadSettingsRequestItems,
   ILoadVenuesRequestItems,
+  ILoadBrandsRequestItems,
   IRequestItemsFilters,
   IRequestItemsState,
   IUpdateRequestItems,
@@ -40,6 +42,7 @@ import {
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_SETTINGS, REQUEST_ITEMS_LOAD_USERS,
   REQUEST_ITEMS_LOAD_VENUES,
+  REQUEST_ITEMS_LOAD_BRANDS,
   REQUEST_ITEMS_UPDATE_ITEM,
   RequestItemsReduxActions,
   ILoadUsersRequestItems
@@ -89,6 +92,15 @@ export function loadUsersRequestItemsAction(users: IUser[]): ILoadUsersRequestIt
     type: REQUEST_ITEMS_LOAD_USERS,
     payload: {
       users
+    }
+  };
+}
+
+export function loadBrandsRequestItemsAction(brands: IBrand[]): ILoadBrandsRequestItems {
+  return {
+    type: REQUEST_ITEMS_LOAD_BRANDS,
+    payload: {
+      brands: brands
     }
   };
 }
@@ -190,13 +202,24 @@ export function loadRequestSettingsAction(requestSettings: IRequestSetting): ILo
   };
 }
 
-export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
+export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading: boolean = false) {
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
     if(!hideLoading){
       dispatch(isLoadingRequestItemsAction(true));
     }
+
+    if (state.requestItems.brands.length === 0) {
+      api.getBrands({page: 1, pageSize: 500})
+        .then((response: AxiosResponse) => {
+          dispatch(loadBrandsRequestItemsAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
+
     const page = nextPage ? nextPage : state.requestItems.pagination.page;
     dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestItemsAction(api.getSource()));

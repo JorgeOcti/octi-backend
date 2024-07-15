@@ -1,10 +1,14 @@
 import * as React from 'react';
 import CopyText from '../Utils/CopyText';
-import { parseReplicableURL } from '../../utils/common';
+import {hasPermission, parseReplicableURL} from '../../utils/common';
 import ShowIf from '../Utils/ShowIf';
 import * as moment from 'moment-timezone';
 import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import * as H from 'history';
+import {IWindow} from "../../interfaces/window";
+
+
+declare let window: IWindow;
 
 interface IPropsType<S = H.LocationState> {
   participants: any[];
@@ -267,7 +271,7 @@ const DeliveriesCarDetail: React.FunctionComponent<IPropsType> = (
                     )}
                     {/*</div>*/}
                     {/*<div className='col-md-6'>*/}
-                    {participant?.deliveryInfo?.identifyCard?.map(
+                    {hasPermission(window.user, 'viewPersonalData') && participant?.deliveryInfo?.identifyCard?.map(
                       (image: any, index: number) => (
                         <div
                           key={image._id}

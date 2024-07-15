@@ -120,7 +120,7 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     const canEdit = hasPermission(window.user, 'adminRequest');
     const canDelete = hasPermission(window.user, 'adminRequest');
     return (
-      <AppContainer cMenu='3' cSubMenu='3.3' cAction='Tipos de operación'>
+      <AppContainer cMenu='4' cSubMenu='4.3' cAction='Tipos de operación'>
         <section className='content'>
           <div className='row'>
             <div className='col-md-3'>

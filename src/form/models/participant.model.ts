@@ -346,7 +346,10 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ParticipantFile'
     }
-  ]
+  ],
+  parking: {
+    type: String
+  }
 });
 
 export interface IParticipantModel extends IParticipant, mongoose.Document {}
@@ -552,7 +555,8 @@ const participantSchema = new mongoose.Schema(
     keyRawAnswers: {
       type: String,
       default: null
-    }
+    },
+    reliability: Boolean
   },
   {
     timestamps: true

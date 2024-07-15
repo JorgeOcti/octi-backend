@@ -51,6 +51,7 @@ import historyQueue from '../../app/tasks/history.task';
 import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
+import Form, {KindForm} from "../../form/models/form.model";
 
 class InventoryController {
   constructor() {
@@ -80,6 +81,7 @@ class InventoryController {
     this.loadStock = this.loadStock.bind(this);
     this.checkExistVenue = this.checkExistVenue.bind(this);
     this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
+    this.CarStatusList = this.CarStatusList.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -800,7 +802,8 @@ class InventoryController {
                     'color',
                     'denomination',
                     'brand',
-                    'patent'
+                    'patent',
+                    'isContainer',
                   ]
                 },
                 {
@@ -818,6 +821,7 @@ class InventoryController {
                 return {
                   ...car.car,
                   _id: (car as any)._id,
+                  car_id: car.car._id,
                   venue: car.venue,
                   status: car.status
                 };
@@ -1018,7 +1022,7 @@ class InventoryController {
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
-    const { vin, images } = req.body;
+    const { vin, images, container } = req.body;
     logger.info(`apiFoundCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1078,6 +1082,15 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
+              if (container){
+                let inventoryContainer = await InventoryCar.findOne({
+                  _id: new mongoose.Types.ObjectId(container)
+                });
+                if (inventoryContainer) {
+                  inventoryCar.containerFound = inventoryContainer._id;
+                }
+              }
+
               if (
                 teamSettings!.inventory.leftoverDifferentVenue &&
                 inventoryCar.venue.toString() !== venueId.toString()
@@ -1543,7 +1556,7 @@ class InventoryController {
   public async reportCar(req: IRequest, res: Response): Promise<any> {
     const { company, team } = req.user;
     const { id } = req.params;
-    const { vin, patent, denomination, brand, color, images } = req.body;
+    const { vin, patent, denomination, brand, color, images, container } = req.body;
     logger.info(`reportCar`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -1601,6 +1614,15 @@ class InventoryController {
             : [],
           status: ChoicesStatusCarInventory.reported
         });
+        if (container){
+          let inventoryContainer = await InventoryCar.findOne({
+            _id: new mongoose.Types.ObjectId(container)
+          });
+          if (inventoryContainer) {
+            inventoryCar.container = inventoryContainer._id;
+            inventoryCar.containerFound = inventoryContainer._id;
+          }
+        }
         await inventoryCar.save();
         const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
         socket().to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -2725,11 +2747,16 @@ class InventoryController {
           status: true,
           from: true,
           to: true,
+          participant: true,
           createdAt: true
         }
       )
         .allowDiskUse(true)
         .populate([
+          {
+            path: 'participant',
+            select: ['name']
+          },
           {
             path: 'car',
             select: [
@@ -2800,6 +2827,63 @@ class InventoryController {
         message: '',
         cars: historyCars,
         inventories
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`inventory currentStock: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      // Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
+  public async CarStatusList(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { team } = req.user;
+
+      let handOutForm = await Form.find({team: team._id, kind: KindForm.final})
+
+      let pipeline: any = [
+        {$match: {
+            team: new mongoose.Types.ObjectId(team._id),
+            lastForm: {$nin: handOutForm.map(f => f._id)},
+            vin: {"$exists" : true, "$ne" : ""},
+            createdAt: {
+              $gte: moment().subtract(12, 'months').toDate()
+            },
+            event: {"$exists" : true, $ne: {type: null}},
+            "meta.location.venue" : {"$exists" : true, "$ne" : null},
+          }
+        },
+        // {$project: {
+        //     _id: 1,
+        //     vin: 1,
+        //     vin2: 1,
+        //     internalNumber: 1,
+        //     color: 1,
+        //     denomination: 1,
+        //     brand: 1,
+        //     event: 1,
+        //     createdAt: 1,
+        //     venue: 1,
+        //     meta: 1
+        //   }},
+      ]
+
+      const cars = await CarModel
+        .aggregate(pipeline)
+        .allowDiskUse(true);
+
+      return res.status(200).json({
+        message: '',
+        cars: cars
       });
     } catch (e) {
       /* istanbul ignore next */

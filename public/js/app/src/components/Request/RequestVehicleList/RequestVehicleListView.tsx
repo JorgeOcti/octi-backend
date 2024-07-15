@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { debounce } from 'throttle-debounce';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
+import { IBrand } from '../../../../../../../src/app/interfaces/brand.interface';
 import {
   changeFilterRequestAction,
   createRequestItemAction,
-  // deleteRequestItemAction,
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
@@ -91,7 +91,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings, users
+      pagination, loading, requestItems, requestItemStatus, venues, brands, filters, properties, requestSettings, users
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -109,7 +109,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
           />
 
         </div>
-      } cMenu='3' cSubMenu='3.2'>
+      } cMenu='4' cSubMenu='4.2'>
         <section className='content'>
           <div className='box'>
             <div className='box-header with-border'>
@@ -277,6 +277,42 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </ShowIf>
+                  <div className='col-md-3' style={{ padding: '0 5px' }}>
+                    <div className='form-group'>
+                      <label htmlFor='brands' className='control-label'>Marcas</label>
+                      <BootstrapSelect
+                        noneSelectedText='Todas'
+                        search={true}
+                        displayItems={2}
+                        selectedText='marcas seleccionadas.'
+                        selected={filters.brands}
+                        sm={true}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('brands', brands.map((brand: IBrand) => brand._id));
+                            } else {
+                              this.changeFilter('brands', []);
+                            }
+                          }
+                        }
+                        options={brands.map((brand: IBrand) => ({
+                          value: brand._id,
+                          text: brand.name
+                        }))}
+                        onClick={
+                          (selected: any) => {
+                            if (filters.brands.includes(selected)) {
+                              this.changeFilter('brands', [...filters.brands.filter((brand) => brand !== selected)]);
+                            } else {
+                              this.changeFilter('brands', [...filters.brands, selected]);
+                            }
+                          }
+                        }
+                      />
+                    </div>
+                  </div>
                   <div className='col-md-3' style={{ padding: '0 5px' }}>
                     <div className='form-group'>
                       <label htmlFor='venues' className='control-label'>Sucursales</label>
@@ -671,7 +707,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     const { orderBy, orderType } = this.props.requestItems.options;
     this.props.changeFilterRequestAction('from', from);
     this.props.changeFilterRequestAction('to', to);
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
   }
 
   public componentDidMount() {
@@ -683,7 +719,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     const { page } = this.props.requestItems.pagination;
     window.scrollTo(0, 0);
 
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -718,7 +754,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
       setTimeout(() => {
         const { orderBy, orderType } = this.props.requestItems.options;
         const { page } = this.props.requestItems.pagination;
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
         // this.props.deleteRequestItemAction(data.item);
       }, 400);
     });
@@ -749,9 +785,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             }, 400);
           }
         }
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
       } else {
-        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType);
       }
     });
 
@@ -803,7 +839,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   private changeFilter(key: keyof IRequestItemsFilters, value: any | any[]): void {
     const { orderBy, orderType } = this.props.requestItems.options;
     this.props.changeFilterRequestAction(key, value);
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
   }
 
   private changeOrder(key: string) {
@@ -816,13 +852,13 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType, true);
+    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType);
   }
 
   private changePage(page: number): void {
     window.scrollTo(0, 0);
     const { orderBy, orderType } = this.props.requestItems.options;
-    this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
   }
 
   public exportExcel(): void {

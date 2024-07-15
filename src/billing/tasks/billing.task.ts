@@ -5,8 +5,8 @@ import * as request from 'request';
 
 import Invoice, { IInvoiceModel } from '../models/invoice.model';
 
-import ActivityHistory from '../models/activityHistory.model';
-import { ChoicesTypeActivity } from '../models/activiHistory.types';
+// import ActivityHistory from '../models/activityHistory.model';
+// import { ChoicesTypeActivity } from '../models/activiHistory.types';
 import Company from '../../app/models/company.model';
 import GeneralUtils from '../../utils/general.utils';
 import type { ICompany } from '../../app/interfaces/company.interface';
@@ -14,6 +14,10 @@ import Participant from '../../form/models/participant.model';
 import { RequestItem } from '../../request/models/requestItem.model';
 import emailQueue from '../../app/tasks/email.task';
 import puppeteer from 'puppeteer';
+import * as console from "console";
+// import History from "../../app/models/history.model";
+import Inventory from "../../inventory/models/inventory.model";
+import InventoryCar from "../../inventory/models/inventoryCar.model";
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -86,151 +90,211 @@ class BillingQueue {
     });
   }
 
-  private async calculateCarsInChecklist(company: ICompany): Promise<number> {
-    const vinInChecklist = await Participant.aggregate([
-      {
-        $match: {
-          company: company._id,
-          deliveryToCustomer: false,
-          createdAt: {
-            $gte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .startOf('month')
-              .toDate(),
-            $lte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .endOf('month')
-              .toDate()
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$car'
-        }
-      },
-      {
-        $group: {
-          _id: 1,
-          count: {
-            $sum: 1
-          }
-        }
+  private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
+    const countCarChecklist = await Participant.count({
+      company: company._id,
+      deliveryToCustomer: false,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
       }
-    ]);
-    return vinInChecklist.length ? vinInChecklist[0].count : 0;
+    });
+    // const vinInChecklist = await Participant.aggregate([
+    //   {
+    //     $match: {
+    //       company: company._id,
+    //       deliveryToCustomer: false,
+    //       createdAt: {
+    //         $gte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .startOf('month')
+    //           .toDate(),
+    //         $lte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .endOf('month')
+    //           .toDate()
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: '$car'
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: 1,
+    //       count: {
+    //         $sum: 1
+    //       }
+    //     }
+    //   }
+    // ]);
+    return countCarChecklist //vinInChecklist.length ? vinInChecklist[0].count : 0;
   }
 
-  private async calculateCarsInDelivery(company: ICompany): Promise<number> {
-    const vinInDelivery = await Participant.aggregate([
-      {
-        $match: {
-          company: company._id,
-          deliveryToCustomer: true,
-          createdAt: {
-            $gte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .startOf('month')
-              .toDate(),
-            $lte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .endOf('month')
-              .toDate()
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$car'
-        }
-      },
-      {
-        $group: {
-          _id: 1,
-          count: {
-            $sum: 1
-          }
-        }
+  private async calculateCarsInDelivery(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
+    const countCarDelivery = await Participant.count({
+      company: company._id,
+      deliveryToCustomer: true,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
       }
-    ]);
-    return vinInDelivery.length ? vinInDelivery[0].count : 0;
+    })
+    // const vinInDelivery = await Participant.aggregate([
+    //   {
+    //     $match: {
+    //       company: company._id,
+    //       deliveryToCustomer: true,
+    //       createdAt: {
+    //         $gte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .startOf('month')
+    //           .toDate(),
+    //         $lte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .endOf('month')
+    //           .toDate()
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: '$car'
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: 1,
+    //       count: {
+    //         $sum: 1
+    //       }
+    //     }
+    //   }
+    // ]);
+    return countCarDelivery //vinInDelivery.length ? vinInDelivery[0].count : 0;
   }
 
-  private async calculateCarsInInventory(company: ICompany): Promise<number> {
-    const vinInInventories = await ActivityHistory.aggregate([
-      {
-        $match: {
-          company: company._id,
-          type: ChoicesTypeActivity.inventory,
-          createdAt: {
-            $gte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .startOf('month')
-              .toDate(),
-            $lte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .endOf('month')
-              .toDate()
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$car'
-        }
-      },
-      {
-        $group: {
-          _id: 1,
-          count: {
-            $sum: 1
-          }
-        }
+  private async calculateCarsInInventory(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
+    const inventories = await Inventory.find({
+      company: company._id,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
       }
-    ]);
-    return vinInInventories.length ? vinInInventories[0].count : 0;
+    });
+
+    const countInventoryCars = await InventoryCar.count({
+      inventory: {$in: inventories.map(i => i._id)}
+    });
+
+    // const countInventoryCars = await History.count({
+    //   company: company._id,
+    //   module: ChoicesTypeActivity.inventory,
+    //   createdAt: {
+    //     $gte: moment()
+    //       .subtract(1, 'month')
+    //       .subtract(1, 'day')
+    //       .startOf('month')
+    //       .toDate(),
+    //     $lte: moment()
+    //       .subtract(1, 'month')
+    //       .subtract(1, 'day')
+    //       .endOf('month')
+    //       .toDate()
+    //   }
+    // })
+    // const vinInInventories = await ActivityHistory.aggregate([
+    //   {
+    //     $match: {
+    //       company: company._id,
+    //       type: ChoicesTypeActivity.inventory,
+    //       createdAt: {
+    //         $gte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .startOf('month')
+    //           .toDate(),
+    //         $lte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .endOf('month')
+    //           .toDate()
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: '$car'
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: 1,
+    //       count: {
+    //         $sum: 1
+    //       }
+    //     }
+    //   }
+    // ]);
+    return countInventoryCars //vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
-  private async calculateCarsInRequest(company: ICompany): Promise<number> {
-    const vinInInventories = await RequestItem.aggregate([
-      {
-        $match: {
-          company: company._id,
-          createdAt: {
-            $gte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .startOf('month')
-              .toDate(),
-            $lte: moment()
-              // .subtract(1, 'month')
-              .subtract(1, 'day')
-              .endOf('month')
-              .toDate()
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$_id'
-        }
-      },
-      {
-        $group: {
-          _id: 1,
-          count: {
-            $sum: 1
-          }
-        }
+  private async calculateCarsInRequest(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
+    const countRequestsCars = await RequestItem.count({
+      company: company._id,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
       }
-    ]);
-    return vinInInventories.length ? vinInInventories[0].count : 0;
+    })
+
+    // const vinInInventories = await RequestItem.aggregate([
+    //   {
+    //     $match: {
+    //       company: company._id,
+    //       createdAt: {
+    //         $gte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .startOf('month')
+    //           .toDate(),
+    //         $lte: moment()
+    //           // .subtract(1, 'month')
+    //           .subtract(1, 'day')
+    //           .endOf('month')
+    //           .toDate()
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: '$_id'
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: 1,
+    //       count: {
+    //         $sum: 1
+    //       }
+    //     }
+    //   }
+    // ]);
+    return countRequestsCars // vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
   public generateHTML(invoice: IInvoiceModel): string {
@@ -270,6 +334,7 @@ class BillingQueue {
         const path = `/tmp/${filename}`;
         // launch a new chrome instance
         const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
           args: [
             '--no-sandbox',
             '--allow-file-access-from-files',
@@ -364,20 +429,22 @@ class BillingQueue {
       if (team) {
         filter.team = team;
       }
+      let start_date = moment().subtract(15, 'days').startOf('month');
+      let end_date = moment().subtract(15, 'days').endOf('month');
       const companies = await Company.find(filter);
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
-        const inventoryCars = await this.calculateCarsInInventory(company);
-        const checklistCars = await this.calculateCarsInChecklist(company);
-        const requestCars = await this.calculateCarsInRequest(company);
-        const deliveryCars = await this.calculateCarsInDelivery(company);
+        const inventoryCars = await this.calculateCarsInInventory(company, start_date, end_date);
+        const checklistCars = await this.calculateCarsInChecklist(company, start_date, end_date);
+        const requestCars = await this.calculateCarsInRequest(company, start_date, end_date);
+        const deliveryCars = await this.calculateCarsInDelivery(company, start_date, end_date);
         const totalInventory = inventoryCars * company.billing.inventoryPrice;
         const totalChecklist = checklistCars * company.billing.checklistPrice;
         const totalDelivery = deliveryCars * company.billing.deliveryPrice;
         const totalRequest = requestCars * company.billing.requestPrice;
         const totalUF =
           totalInventory + totalChecklist + totalRequest + totalDelivery;
-        const period = moment().format('YYYYMM');
+        const period = start_date.format('YYYYMM');
         const invoice = new Invoice({
           team: company.team,
           company,
@@ -398,7 +465,8 @@ class BillingQueue {
         });
         if (!(await Invoice.find({ company, period }).countDocuments())) {
           await invoice.save();
-          this.createPDF(invoice, company);
+          // this.createPDF(invoice, company);
+          console.log("Creado")
         } else {
           console.log(`${period} ${company.name} ya existe!!!.`);
         }

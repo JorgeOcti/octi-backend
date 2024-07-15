@@ -23,6 +23,9 @@ export interface IInventoryCar {
   images: IInventoryFile[];
   files: IInventoryFile[];
   status: string;
+  container?: mongoose.Schema.Types.ObjectId;
+  containerFound?: mongoose.Schema.Types.ObjectId;
+  extra: any;
   updatedAt?: Date;
   createdAt?: Date;
 }

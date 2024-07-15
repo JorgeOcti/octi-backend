@@ -55,7 +55,10 @@ import FormsSettingsListView from './components/FormsSettings/FormListView';
 import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
 import ColorListView from './components/Colors/ColorsListView';
 import {
-  VDistributionDashboardStatsView, VInventoryDashboardStatsView, VPlanificationDashboardStatsView,
+  VDistributionDashboardStatsView,
+  VInventoryDashboardStatsView,
+  VOSADashboardStatsView,
+  VPlanificationDashboardStatsView,
   VUnitControlDashboardStatsView
 } from "./components/Stats/DashboardStatsView";
 import DashboardStatsListView from "./components/Stats/DashboardStatsListView";
@@ -64,7 +67,10 @@ import BordersListView from "./components/Borders/BordersListView";
 import BillingSettingsListView from './components/Billing/BillingSettings/BillingSettingsListView';
 import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
 import DeliveriesView from './components/Deliveries/DeliveriesView';
-import * as ReactGA from 'react-ga';
+import ReactGA from "react-ga4";
+import {TraceabilityView} from "./components/Traceability/TraceabilityView";
+import OSAView from "./components/OSA/OSAView";
+import {LBZView} from "./components/LBZ/LBZ";
 
 
 declare let window: IWindow;
@@ -142,6 +148,10 @@ const App = () => (
         <Route exact path='/requests/vehicles/:id/' component={RequestDetailView} />
         <Route exact path='/requests/vehicles/' component={RequestVehicleListView} />
         <Route exact path='/requests/:id/' component={RequestDetailView} />
+        <Route exact path='/trace/' component={TraceabilityView} />
+        <Route exact path='/osa/' component={OSAView} />
+        <Route exact path='/osa/studio/' component={VOSADashboardStatsView} />
+        <Route exact path='/control/' component={LBZView} />
         <Route component={NoMatch} />
       </Switch>
     </ConnectedRouter>
@@ -167,9 +177,8 @@ $(() => {
   js.appendChild(link);
 
   moment.locale('es');
-  ReactGA.initialize('UA-101792436-1', {
-    debug: false,
-    titleCase: false,
+  ReactGA.initialize('G-Q7FN9BE7SM', {
+    testMode: false,
     gaOptions: {
       userId: window.user._id,
       clientId: window.user.email,
