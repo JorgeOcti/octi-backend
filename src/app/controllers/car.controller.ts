@@ -1524,7 +1524,7 @@ class CarController {
             worksheet.addRow(row).commit();
           }
         },
-        { parallel: 5, batchSize: 100}
+        { parallel: 2, batchSize: 10}
       );
 
       cursor.close();
