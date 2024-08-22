@@ -461,7 +461,7 @@ if (hasPermission(window.user, 'viewStatsDashboard') && window.user.isAdmin) {
   AdminItems.push({
     id: '200.3',
     icon: 'fa-circle-o',
-    text: 'Estádisticas',
+    text: 'Estadísticas',
     url: '/settings/stats/'
   });
 }
