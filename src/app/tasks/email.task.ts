@@ -68,7 +68,7 @@ class EmailQueue {
         html: mail.html,
         attachments: mail.attachments,
       })}`);
-      job.log('send email');
+      job.log('send email: ' + mail.subject + ' to ' + mail.to);
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
         if (error) {
