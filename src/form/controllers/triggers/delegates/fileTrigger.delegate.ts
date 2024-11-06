@@ -94,7 +94,7 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
       if (payload?.files) {
         payload.files.push({ filename, path: url });
       } else {
-        payload['files'] = [{ filename, path: url }];
+        payload['files'] = [{ filename, path: url }, {filename: "ley-pro-consumidor.pdf", path: path.join(__dirname, '../../../../../views/') + 'emails/' + "ley-pro-consumidor.pdf"}];
       }
       logger.info(`FileTriggerDelegate.trigger: files ${JSON.stringify(payload['files'])}`);
       logger.info(`FileTriggerDelegate.trigger: ${trigger.kind} executed`);
