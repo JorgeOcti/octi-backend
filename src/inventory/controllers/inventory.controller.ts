@@ -1364,52 +1364,14 @@ class InventoryController {
         }
       );
       if (inventory) {
-        const inventoriesCars = await InventoryModel.aggregate([
+        const inventoriesCars = await InventoryCar.aggregate([
           {
             $match: {
-              team,
-              _id: new mongoose.Types.ObjectId(id)
-            }
-          },
-          {
-            $lookup: {
-              from: 'inventorycars',
-              localField: '_id',
-              foreignField: 'inventory',
-              as: 'cars'
-            }
-          },
-          {
-            $project: {
-              cars: {
-                $filter: {
-                  input: '$cars',
-                  as: 'cars',
-                  cond: {
-                    $and: [
-                      {
-                        $in: [
-                          '$$cars._id',
-                          cars.map(
-                            (car: string) => new mongoose.Types.ObjectId(car)
-                          )
-                        ]
-                      },
-                      {
-                        $ne: ['$$cars.images', []]
-                      }
-                    ]
-                  }
-                }
+              team: new mongoose.Types.ObjectId(team),
+              inventory: new mongoose.Types.ObjectId(id),
+              _id: {
+                $in: cars.map((car: string) => new mongoose.Types.ObjectId(car))
               }
-            }
-          },
-          {
-            $unwind: '$cars'
-          },
-          {
-            $replaceRoot: {
-              newRoot: '$cars'
             }
           },
           {
@@ -1419,28 +1381,6 @@ class InventoryController {
               foreignField: '_id',
               as: 'images'
             }
-          },
-          {
-            $lookup: {
-              from: 'cars',
-              localField: 'car',
-              foreignField: '_id',
-              as: 'car'
-            }
-          },
-          {
-            $unwind: '$car'
-          },
-          {
-            $lookup: {
-              from: 'venues',
-              localField: 'venue',
-              foreignField: '_id',
-              as: 'venue'
-            }
-          },
-          {
-            $unwind: '$venue'
           },
           {
             $project: {
@@ -1455,12 +1395,15 @@ class InventoryController {
             level: 0
           }
         });
+
         archive.on('error', (err) => {
           res.status(500).send({
             error: err.message
           });
         });
+
         const filename = `${inventory.name}.zip`;
+
         archive.on('end', () => {
           console.log(
             `${filename}: Archive wrote ${(
@@ -1469,6 +1412,7 @@ class InventoryController {
             ).toFixed(2)}MB`
           );
         });
+
         res.attachment(filename);
         const imagesToDownload: any = [];
         const imagesToCompress: any = [];
@@ -1526,7 +1470,7 @@ class InventoryController {
         });
         res.setHeader(
           'size',
-          results.reduce((a: number, b: number) => a + b)
+          results.reduce((a: number, b: number) => a + b, 0)
         );
         archive.pipe(res);
         archive.finalize();
