@@ -1367,7 +1367,6 @@ class InventoryController {
         const inventoriesCars = await InventoryCar.aggregate([
           {
             $match: {
-              team: new mongoose.Types.ObjectId(team),
               inventory: new mongoose.Types.ObjectId(id),
               _id: {
                 $in: cars.map((car: string) => new mongoose.Types.ObjectId(car))
