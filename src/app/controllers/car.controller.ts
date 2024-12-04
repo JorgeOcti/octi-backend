@@ -1525,11 +1525,13 @@ class CarController {
       const cursor = ParticipantModel.aggregate(aggregation).cursor();
 
       await cursor.eachAsync(
-        async (participant) => {
-          const row = await this.processParticipant(participant);
-          worksheet.addRow(row).commit();
+        async (participants) => {
+          for (const participant of participants) {
+            const row = await this.processParticipant(participant);
+            worksheet.addRow(row).commit();
+          }
         },
-        { parallel: 100 }
+        { parallel: 2, batchSize: 10}
       );
 
       cursor.close();

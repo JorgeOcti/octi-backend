@@ -299,13 +299,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
               </h3>
               <div className="box-tools pull-right">
                 <button
-                  className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm margin-r-5"
-                  onClick={this.downloadEvidence}
-                  disabled={downloading}>
-                  <i className="fa fa-fw fa-download"/> Descargar Evidencias de Daños
-                </button>
-
-                <button
                   className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm"
                   onClick={this.downloadReport}
                   disabled={downloading}>
