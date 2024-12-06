@@ -800,7 +800,8 @@ class InventoryController {
                 status: {
                   $in: [
                     ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found
+                    ChoicesStatusCarInventory.found,
+                    ChoicesStatusCarInventory.reported,
                   ]
                 }
               },
