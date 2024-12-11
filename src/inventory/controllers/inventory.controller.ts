@@ -1749,7 +1749,7 @@ class InventoryController {
             _id: true,
             name: true,
             settings: true,
-            containers: true
+            containerInventory: true
           }
         ).lean();
         return res.json({

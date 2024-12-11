@@ -131,16 +131,6 @@ spec:
               secretKeyRef:
                 name: s3
                 key: REGION
-          - name: AWS_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                name: ses
-                key: KEY
-          - name: AWS_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: ses
-                key: SECRET
           - name: SES_REGION
             valueFrom:
               secretKeyRef:

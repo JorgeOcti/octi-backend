@@ -1,5 +1,24 @@
 version: 2
 jobs:
+  build-GCP: &build-GCP
+    docker:
+      - image: google/cloud-sdk:latest
+    steps:
+      - checkout
+      - run:
+          name: Build and push Docker OSA-Andes image
+          command: |
+            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            
+            gcloud auth configure-docker southamerica-east1-docker.pkg.dev
+
+            CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
+
+            docker build -t $REGISTRY/$NAMESPACE:$CIRCLE_SHA1 -t $REGISTRY/$NAMESPACE:latest .
+#            docker push southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/$NAMESPACE
+            docker push $REGISTRY/$NAMESPACE
   build-AWS: &build-AWS
     docker:
       - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
@@ -27,6 +46,64 @@ jobs:
             
             docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest .
             docker push $REGISTRY -a
+  deploy-GCP: &deploy-GCP
+    docker:
+      - image: google/cloud-sdk:latest
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - checkout
+      - run:
+          name: Deploying Andes
+          command: |
+            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            
+            curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+            chmod +x kops
+            sudo mv kops /usr/local/bin/kops
+            
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            mkdir -p ~/.local/bin
+            mv ./kubectl ~/.local/bin/kubectl
+            
+            export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
+            export KOPS_STATE_STORE=gs://${KOPS_STATE_STORE}
+            
+            if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
+              echo "Cluster exists, loading configuration into kubectl"
+              kops export kubecfg --name ${KOPS_CLUSTER_NAME} --admin
+            else
+              exit 1
+            fi
+            
+            kops validate cluster --wait 15m
+  
+            if kubectl --namespace=$NAMESPACE describe deployment/osa-andes ;then
+              echo "Updating image on existing deployment"
+            else
+              echo "There's no deployments deployed in cluster"
+              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
+              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/gcp-registry.yaml
+            fi
+
+            envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
+            kubectl apply -f ${HOME}/patched-redis-cluster.yml
+
+            kubectl rollout status statefulset/redis
+
+            echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
+
+            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
+            kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
+
+            envsubst < ~/repo/k8s/kube/andes-worker-deployment.yaml > ${HOME}/patched-andes-worker-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-worker-deployment.yaml
+
+            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service
 
   deploy-AWS: &deploy-AWS
     docker:
@@ -104,18 +181,18 @@ jobs:
       REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
 
   build-staging:
-    <<: *build-AWS
+    <<: *build-GCP
     environment:
-      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
+      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
 
   deploy-staging:
-    <<: *deploy-AWS
+    <<: *deploy-GCP
     environment:
       NAMESPACE: andes-stage
-      KOPS_CLUSTER_NAME: kops-stage.osacontrol.com
-      KOPS_STATE_STORE: andes-kops-state-store
+      KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
+      KOPS_STATE_STORE: osa-kubernetes-clusters
       INSTANCE_NUMBER: 1
-      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/stage
+      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
 
 
 workflows:
