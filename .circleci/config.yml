@@ -17,8 +17,8 @@ jobs:
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
 
             docker build -t $REGISTRY/$NAMESPACE:$CIRCLE_SHA1 -t $REGISTRY/$NAMESPACE:latest .
-#            docker push southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/$NAMESPACE
             docker push $REGISTRY/$NAMESPACE
+
   build-AWS: &build-AWS
     docker:
       - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
