@@ -56,6 +56,7 @@ jobs:
   deploy-GCP: &deploy-GCP
     docker:
       - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
+        user: root
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -66,7 +67,7 @@ jobs:
           command: |
             curl https://sdk.cloud.google.com > install.sh
             bash install.sh --disable-prompts
-            source /home/circleci/google-cloud-sdk/path.bash.inc
+            source /root/google-cloud-sdk/path.bash.inc
             
             
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
