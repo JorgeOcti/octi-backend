@@ -69,6 +69,8 @@ jobs:
             bash install.sh --disable-prompts
             source /root/google-cloud-sdk/path.bash.inc
             
+            echo $GCLOUD_SERVICE_KEY | base64 --decode
+            
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
