@@ -69,15 +69,12 @@ jobs:
             bash install.sh --disable-prompts
             source /root/google-cloud-sdk/path.bash.inc
             
-            
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
             
-            gcloud storage buckets list
-            
-            export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
-            export KOPS_STATE_STORE=gs://${KOPS_STATE_STORE}
+            export KOPS_CLUSTER_NAME=kops-gcp.bwg.cl
+            export KOPS_STATE_STORE=gs://osa-kubernetes-clusters/
             
             if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
               echo "Cluster exists, loading configuration into kubectl"
@@ -197,7 +194,7 @@ jobs:
     environment:
       NAMESPACE: andes-stage
       KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
-      KOPS_STATE_STORE: osa-kubernetes-clusters/
+      KOPS_STATE_STORE: osa-kubernetes-clusters
       INSTANCE_NUMBER: 1
       REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
 
@@ -233,4 +230,4 @@ workflows:
             branches:
               only:
                 - develop
-          context: build-gcp
+          context: deploy-gcp
