@@ -2,12 +2,17 @@ version: 2
 jobs:
   build-GCP: &build-GCP
     docker:
-      - image: google/cloud-sdk:latest
+      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
     steps:
       - checkout
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
+            curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
+            tar -xf google-cloud-cli-linux-x86_64.tar.gz
+            ./google-cloud-sdk/install.sh
+            
+            
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
