@@ -73,6 +73,8 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
             
+            gcloud storage buckets list
+            
             export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
             export KOPS_STATE_STORE=gs://${KOPS_STATE_STORE}
             
