@@ -206,7 +206,7 @@ workflows:
               only:
                 - master
       - build-staging:
-          context: build
+          context: build-gcp
           filters:
             branches:
               only:
@@ -226,4 +226,4 @@ workflows:
             branches:
               only:
                 - develop
-          context: stage
+          context: build-gcp
