@@ -69,13 +69,9 @@ jobs:
             bash install.sh --disable-prompts
             source /root/google-cloud-sdk/path.bash.inc
             
-            echo $GCLOUD_SERVICE_KEY | base64 --decode
-            
-            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
+            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account circle-ci@osa-arch.iam.gserviceaccount.com --project=${GOOGLE_PROJECT_ID} --key-file=- 
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
-            
-            gcloud auth application-default login
             
             export KOPS_CLUSTER_NAME=kops-gcp.bwg.cl
             export KOPS_STATE_STORE=gs://osa-kubernetes-clusters/
