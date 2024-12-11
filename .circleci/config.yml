@@ -194,7 +194,7 @@ jobs:
     environment:
       NAMESPACE: andes-stage
       KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
-      KOPS_STATE_STORE: osa-kubernetes-clusters
+      KOPS_STATE_STORE: osa-kubernetes-clusters/
       INSTANCE_NUMBER: 1
       REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
 
