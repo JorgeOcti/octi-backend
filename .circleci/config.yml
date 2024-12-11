@@ -8,10 +8,8 @@ jobs:
       - run:
           name: Build and push Docker OSA-Andes image
           command: |
-            curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
-            tar -xf google-cloud-cli-linux-x86_64.tar.gz
-            ./google-cloud-sdk/install.sh
-            
+            curl https://sdk.cloud.google.com > install.sh
+            bash install.sh --disable-prompts
             
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -53,7 +51,7 @@ jobs:
             docker push $REGISTRY -a
   deploy-GCP: &deploy-GCP
     docker:
-      - image: google/cloud-sdk:latest
+      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
     steps:
       - attach_workspace:
           at: /tmp
@@ -61,18 +59,12 @@ jobs:
       - run:
           name: Deploying Andes
           command: |
+            curl https://sdk.cloud.google.com > install.sh
+            bash install.sh --disable-prompts
+            
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
-            
-            curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-            chmod +x kops
-            sudo mv kops /usr/local/bin/kops
-            
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x kubectl
-            mkdir -p ~/.local/bin
-            mv ./kubectl ~/.local/bin/kubectl
             
             export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
             export KOPS_STATE_STORE=gs://${KOPS_STATE_STORE}
