@@ -9,7 +9,8 @@ jobs:
           name: Build and push Docker OSA-Andes image
           command: |
             curl https://sdk.cloud.google.com > install.sh
-            bash install.sh --disable-prompts
+            bash install.sh --disable-prompts --install-dir=/usr/local/bin/
+            source /usr/local/bin/path.bash.inc
             
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -60,7 +61,8 @@ jobs:
           name: Deploying Andes
           command: |
             curl https://sdk.cloud.google.com > install.sh
-            bash install.sh --disable-prompts
+            bash install.sh --disable-prompts --install-dir=/usr/local/bin/
+            
             
             echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
