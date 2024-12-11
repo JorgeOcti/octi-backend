@@ -75,6 +75,8 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
             
+            gcloud auth application-default login
+            
             export KOPS_CLUSTER_NAME=kops-gcp.bwg.cl
             export KOPS_STATE_STORE=gs://osa-kubernetes-clusters/
             
