@@ -20,8 +20,8 @@ jobs:
 
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
 
-            docker build -t $REGISTRY/$NAMESPACE:$CIRCLE_SHA1 -t $REGISTRY/$NAMESPACE:latest .
-            docker push $REGISTRY/$NAMESPACE
+            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest .
+            docker push $REGISTRY
 
   build-AWS: &build-AWS
     docker:
