@@ -3,7 +3,10 @@ jobs:
   build-GCP: &build-GCP
     docker:
       - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
+        user: root
     steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
       - checkout
       - run:
           name: Build and push Docker OSA-Andes image
