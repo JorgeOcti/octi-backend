@@ -70,9 +70,8 @@ jobs:
             
             gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json
             gcloud --quiet config set compute/zone southamerica-east1
-            
-            gcloud auth application-default login 
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud auth application-default login 
             
             # install kops
             curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
