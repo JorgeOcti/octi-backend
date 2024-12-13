@@ -5,9 +5,13 @@ metadata:
   name: api-ingress-andes
   namespace: andes-stage
   annotations:
-    cert-manager.io/issuer: "gcp-issuer"
-    kubernetes.io/tls-acme: "true"
-    nginx:org/websocket-services: "osa-andes-service"
+    cert-manager.io/issuer: gcp-issuer
+    ingress.kubernetes.io/proxy-connect-timeout: '600'
+    ingress.kubernetes.io/proxy-read-timeout: '600'
+    ingress.kubernetes.io/proxy-send-timeout: '600'
+    ingress.kubernetes.io/send-timeout: '600'
+    kubernetes.io/tls-acme: 'true'
+    nginx.org/websocket-services: osa-andes-service
   labels:
     app: osa-andes
 spec:
