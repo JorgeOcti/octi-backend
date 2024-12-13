@@ -92,25 +92,26 @@ jobs:
             else
               exit 1
             fi
-            
+
             kops validate cluster --wait 15m
-  
+
             if kubectl --namespace=$NAMESPACE describe deployment/osa-andes ;then
               echo "Updating image on existing deployment"
             else
               echo "There's no deployments deployed in cluster"
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/gcp-registry.yaml
+              kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
+              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
+
+              envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
+              kubectl apply -f ${HOME}/patched-redis-cluster.yml
+
+              kubectl rollout status statefulset/redis
+
+              echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
             fi
-            
+
             kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-
-            envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
-            kubectl apply -f ${HOME}/patched-redis-cluster.yml
-
-            kubectl rollout status statefulset/redis
-
-            echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
 
             envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
             kubectl apply -f ${HOME}/patched-andes-deployment.yaml
@@ -119,7 +120,13 @@ jobs:
             envsubst < ~/repo/k8s/kube/andes-worker-deployment.yaml > ${HOME}/patched-andes-worker-deployment.yaml
             kubectl apply -f ${HOME}/patched-andes-worker-deployment.yaml
 
-            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service
+            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
+            kubectl apply -f ${HOME}/patched-andes-service.yaml
+
+            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
+
+            # block until deployment is running
+            kubectl rollout status deployment/osa-andes
 
   deploy-AWS: &deploy-AWS
     docker:
