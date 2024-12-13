@@ -64,13 +64,14 @@ jobs:
       - run:
           name: Deploying Andes
           command: |
+            apt-get update
+            apt-get install -y gettext-base
             
             echo $GCLOUD_SERVICE_KEY | base64 --decode | cat > /tmp/gcloud-service-key.json
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud-service-key.json
             
             gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json --project=${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone southamerica-east1
-            
             
             # install kops
             curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
