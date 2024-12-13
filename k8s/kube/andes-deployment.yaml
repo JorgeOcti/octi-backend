@@ -155,5 +155,3 @@ spec:
           requests:
             cpu: 500m
             memory: 512Mi
-      imagePullSecrets:
-          - name: awskey
