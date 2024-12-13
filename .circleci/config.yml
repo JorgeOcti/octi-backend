@@ -102,6 +102,8 @@ jobs:
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/gcp-registry.yaml
             fi
+            
+            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
 
             envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
             kubectl apply -f ${HOME}/patched-redis-cluster.yml
