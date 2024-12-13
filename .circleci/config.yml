@@ -24,7 +24,7 @@ jobs:
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
 
             docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest .
-            docker push $REGISTRY
+            docker push $REGISTRY -a
 
   build-AWS: &build-AWS
     docker:
