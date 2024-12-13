@@ -132,10 +132,7 @@ spec:
                 name: s3
                 key: REGION
           - name: SES_REGION
-            valueFrom:
-              secretKeyRef:
-                name: ses
-                key: REGION
+            value: us-west-2
           - name: PUSHER_INSTANCE_ID
             valueFrom:
               secretKeyRef:
