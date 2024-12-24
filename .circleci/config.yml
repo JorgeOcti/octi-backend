@@ -190,18 +190,18 @@ jobs:
             kubectl rollout status deployment/osa-andes
 
   build-production:
-    <<: *build-AWS
+    <<: *build-GCP
     environment:
-      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
+      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-prod
 
   deploy-production:
-    <<: *deploy-AWS
+    <<: *deploy-GCP
     environment:
-      NAMESPACE: andes-production
-      KOPS_CLUSTER_NAME: kops-production.osacontrol.com
-      KOPS_STATE_STORE: andes-kops-state-store
-      INSTANCE_NUMBER: 2
-      REGISTRY: 169428622952.dkr.ecr.sa-east-1.amazonaws.com/andes/production
+      NAMESPACE: andes-prod
+      KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
+      KOPS_STATE_STORE: osa-kubernetes-clusters
+      INSTANCE_NUMBER: 4
+      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-prod
 
   build-staging:
     <<: *build-GCP
@@ -223,7 +223,7 @@ workflows:
   deploy:
     jobs:
       - build-production:
-          context: build
+          context: build-gcp
           filters:
             branches:
               only:
@@ -241,7 +241,7 @@ workflows:
             branches:
               only:
                 - master
-          context: prod
+          context: deploy-gcp
       - deploy-staging:
           requires:
               - build-staging
