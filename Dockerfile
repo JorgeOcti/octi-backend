@@ -40,7 +40,7 @@ WORKDIR /srv
 
 RUN rm -rf /srv/node_modules
 
-RUN npm install -g npm@latest
+RUN npm install -g npm@10.9.2
 
 RUN npm i -g typescript@4.9.4 ts-node ts-node-dev pm2 ts-migrate-mongoose
 RUN touch /srv/s3-config.json
