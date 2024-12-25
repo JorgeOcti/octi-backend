@@ -767,7 +767,7 @@ class InventoryController {
   public async apiDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
-    logger.info(`apiDetail`);
+    logger.info(`apiDetail Inventory`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`
     );
