@@ -2863,6 +2863,69 @@ class InventoryController {
     }
   }
 
+  public async addStatusEvidence(req: IRequest, res: Response): Promise<any> {
+    logger.info(`InventoryController.addStatusEvidence {email: ${req.user.email} }`);
+    let { vin, status, images } = req.body;
+    const { id } = req.params;
+
+    try {
+      let car = await CarModel.findOne({vin: vin});
+      if (!car) {
+        return res.status(404).json({
+          message: 'El vehículo no se encuentra en el sistema.',
+          status: 404
+        });
+      }
+      let inventory = await InventoryModel.findById(id);
+      if (!inventory) {
+        return res.status(404).json({
+          message: 'El inventario no se encuentra en el sistema.',
+          status: 404
+        });
+      }
+
+      let inventoryCar = await InventoryCar.findOne({car: car._id, inventory: inventory._id});
+      if (!inventoryCar) {
+        return res.status(404).json({
+          message: 'El vehículo no se encuentra en el inventario.',
+          status: 404
+        });
+      }
+
+      let evidenceStatus = inventoryCar.evidenceStatus
+      if (evidenceStatus && evidenceStatus.find(e => e.status === status)) {
+        evidenceStatus = evidenceStatus.map(e => {
+          if (e.status === status) {
+            e.images = e.images.concat(images)
+          }
+          return e
+        })
+      } else {
+        evidenceStatus = evidenceStatus.concat({status, images})
+      }
+
+      inventoryCar.evidenceStatus = evidenceStatus
+      await inventoryCar.save()
+
+      return res.status(200).json({
+        message: 'Se ha registrado la evidencia correctamente.',
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addStatusEvidence: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+  }
+
   private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
@@ -2910,6 +2973,7 @@ class InventoryController {
       }
     });
   }
+
 }
 
 export default new InventoryController();
