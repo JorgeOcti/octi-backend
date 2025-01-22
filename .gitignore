@@ -58,3 +58,5 @@ buildcache
 
 updateAndesProdToLocal.sh
 updateAndesProdToStage.sh
+
+.DS_Store

@@ -1,16 +1,15 @@
-FROM node:10.16.0-stretch-slim
+FROM node:18.17.1-bullseye-slim
 
 LABEL maintainer = "gmunoz@osacontrol.com"
 
 RUN apt-get update && \
-    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         build-essential
 
-WORKDIR /srv/public/js/app
+COPY ./public/js/app/ /srv/public/js/app/
+COPY ./src/ /srv/src/
 
-COPY ./public/js/app/package.json /srv/public/js/app/package.json
+WORKDIR /srv/public/js/app/
 
 RUN npm install && \
-    npm i -g webpack && \
-    npm i -g webpack-cli
+    npm install -D webpack webpack-cli webpack-dev-server
