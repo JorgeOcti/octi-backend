@@ -83,6 +83,8 @@ WORKDIR /srv/public/js/app
 
 RUN npm i
 
+RUN echo S3_KEY
+
 RUN S3_KEY=${S3_KEY} S3_SECRET=${S3_SECRET} S3_BUCKET=${S3_BUCKET} S3_REGION=${S3_REGION} npm run build
 
 WORKDIR /srv
