@@ -36,6 +36,18 @@ RUN apt-get update && \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
+# Env from --build-arg S3_KEY=${S3_KEY} --build-arg S3_SECRET=${S3_SECRET} --build-arg S3_BUCKET=${S3_BUCKET} --build-arg S3_REGION=${S3_REGION}
+ARG S3_KEY
+ARG S3_SECRET
+ARG S3_BUCKET
+ARG S3_REGION
+
+ENV S3_KEY=${S3_KEY}
+ENV S3_SECRET=${S3_SECRET}
+ENV S3_BUCKET=${S3_BUCKET}
+ENV S3_REGION=${S3_REGION}
+
+
 WORKDIR /srv
 
 RUN rm -rf /srv/node_modules
