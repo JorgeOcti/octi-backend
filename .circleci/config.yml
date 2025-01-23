@@ -23,7 +23,7 @@ jobs:
 
             CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
 
-            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest . -f Dockerfile.prod
+            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest -f Dockerfile.prod  --build-arg S3_KEY=${S3_KEY} --build-arg S3_SECRET=${S3_SECRET} --build-arg S3_BUCKET=${S3_BUCKET} --build-arg S3_REGION=${S3_REGION} . 
             docker push $REGISTRY -a
 
   build-AWS: &build-AWS
