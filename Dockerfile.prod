@@ -1,6 +1,6 @@
 FROM node:18.17.1-bullseye-slim
 
-LABEL maintainer = "jorge@osacontrol.com"
+LABEL maintainer "jorge@osacontrol.com"
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -42,10 +42,11 @@ ARG S3_SECRET
 ARG S3_BUCKET
 ARG S3_REGION
 
-ENV S3_KEY=${S3_KEY}
-ENV S3_SECRET=${S3_SECRET}
-ENV S3_BUCKET=${S3_BUCKET}
-ENV S3_REGION=${S3_REGION}
+ENV S3_KEY ${S3_KEY}
+ENV S3_SECRET ${S3_SECRET}
+ENV S3_BUCKET ${S3_BUCKET}
+ENV S3_REGION ${S3_REGION}
+ENV SENTRY_RELEASE "1.0.0"
 
 WORKDIR /srv
 
@@ -55,7 +56,7 @@ RUN npm install -g npm@10.9.2
 
 RUN npm i -g typescript@4.9.4 ts-node ts-node-dev pm2 ts-migrate-mongoose
 RUN touch /srv/s3-config.json
-RUN echo "{}" >> /srv/s3-config.json
+RUN echo "{\"accessKeyId\":\"${S3_KEY}\",\"secretAccessKey\":\"${S3_SECRET}\",\"bucket\":\"${S3_BUCKET}\",\"region\":\"${S3_REGION}\"}" >> /srv/s3-config.json
 RUN touch /srv/ses-config.json
 RUN echo "{}" >> /srv/ses-config.json
 
@@ -68,9 +69,7 @@ COPY ./pm2.json /srv/pm2.json
 COPY ./pm2-worker.json /srv/pm2-worker.json
 COPY ./tsconfig.json /srv/tsconfig.json
 
-# Write a json file with the s3 configuration
-RUN touch /srv/s3-config.json
-RUN echo "{\"key\":\"${S3_KEY}\",\"secret\":\"${S3_SECRET}\",\"bucket\":\"${S3_BUCKET}\",\"region\":\"${S3_REGION}\"}" >> /srv/s3-config.json
+RUN cat /srv/s3-config.json
 
 RUN export PYTHON=python3
 
@@ -78,7 +77,7 @@ RUN npm i
 
 RUN tsc --project tsconfig.json
 
-RUN npm --production i && npm cache clean --force
+RUN npm i && npm cache clean --force
 
 WORKDIR /srv/public/js/app
 
