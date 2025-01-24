@@ -47,7 +47,6 @@ ENV S3_SECRET=${S3_SECRET}
 ENV S3_BUCKET=${S3_BUCKET}
 ENV S3_REGION=${S3_REGION}
 
-
 WORKDIR /srv
 
 RUN rm -rf /srv/node_modules
@@ -69,13 +68,15 @@ COPY ./pm2.json /srv/pm2.json
 COPY ./pm2-worker.json /srv/pm2-worker.json
 COPY ./tsconfig.json /srv/tsconfig.json
 
+# Write a json file with the s3 configuration
+RUN touch /srv/s3-config.json
+RUN echo "{\"key\":\"${S3_KEY}\",\"secret\":\"${S3_SECRET}\",\"bucket\":\"${S3_BUCKET}\",\"region\":\"${S3_REGION}\"}" >> /srv/s3-config.json
+
 RUN export PYTHON=python3
 
 RUN npm i
 
 RUN tsc --project tsconfig.json
-
-RUN rm -rf /srv/node_modules
 
 RUN npm --production i && npm cache clean --force
 
@@ -83,11 +84,11 @@ WORKDIR /srv/public/js/app
 
 RUN npm i
 
-RUN echo S3_KEY
-
-RUN S3_KEY=${S3_KEY} S3_SECRET=${S3_SECRET} S3_BUCKET=${S3_BUCKET} S3_REGION=${S3_REGION} npm run build
+RUN npm run build
 
 WORKDIR /srv
+
+RUN rm -rf /srv/node_modules
 
 EXPOSE 3000
 
