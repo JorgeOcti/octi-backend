@@ -14,6 +14,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   containers: any[];
+  originalContainers: any[];
+  blFilter: string;
+  containerFilter: string;
+  clientFilter: string;
+  statusFilter: string;
   selectedContainer: number;
   inventorySettings: any;
 }
@@ -25,7 +30,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     super(props);
     this.state = {
       error: null,
+      originalContainers: [],
       containers: [],
+      blFilter: '',
+      containerFilter: '',
+      clientFilter: '',
+      statusFilter: '',
       selectedContainer: -1,
       inventorySettings: {
           "leftoverDifferentVenue": true,
@@ -93,7 +103,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         })
 
         this.setState({
-          containers: containers
+          containers: containers,
+          originalContainers: containers
         })
       })
       .catch((error: any) => {
@@ -101,15 +112,40 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       })
   }
 
+  //use debounce to avoid multiple calls and filter the state.containers with the filters
+  componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    if (this.state.blFilter !== prevState.blFilter ||
+      this.state.containerFilter !== prevState.containerFilter ||
+      this.state.clientFilter !== prevState.clientFilter ||
+      this.state.statusFilter !== prevState.statusFilter) {
+      this.filterContainers();
+    }
+  }
+
+  filterContainers() {
+    let containers = this.state.originalContainers.filter((container: any) => {
+      // let bl = container.car.bl.toLowerCase().includes(this.state.blFilter.toLowerCase());
+      let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
+      // let clientFilter = container.car.client ? container.car.client.name.toLowerCase().includes(this.state.clientFilter.toLowerCase()) : true;
+      let statusFilter = this.state.statusFilter === '' ? true : container.status === this.state.statusFilter;
+      return containerFilter && statusFilter;
+    });
+
+
+    this.setState({
+      containers: containers
+    });
+  }
+
   columns = [
     {
       name: 'Contenedor',
       selector: (row: any) => row.car.vin,
+      sortable: true
     },
     {
       name: 'Imagenes',
       selector: (row: any) => {
-        console.log(row.images);
         return `${row.images.length || 0} Fotos`;
       }
     },
@@ -125,6 +161,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       selector: (row: any) => {
         return row.status;
       },
+      cell: (row: any) => {
+        let className = `${row.status}Class`;
+        return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
+         <span
+           className={`label label-${
+            inventorySettings.hasOwnProperty(className)
+            ? inventorySettings[className]
+            : ''
+            }`}
+            style={{
+              padding: '5px 10px'
+            }}>
+           {inventorySettings.hasOwnProperty(row.status)
+             ? inventorySettings[row.status]
+             : row.state}
+         </span>
+       </div>
+      }
     }
   ];
 
@@ -145,6 +199,68 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 Revisión Containers
               </h3>
             </div>
+            <div className="box-body">
+              <div className="row">
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>BL</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.blFilter}
+                      onChange={(e) => {
+                        this.setState({blFilter: e.target.value});
+                      }}
+                    />
+                  </div>
+                </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Contenedor</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.containerFilter}
+                      onChange={(e) => {
+                        this.setState({containerFilter: e.target.value});
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Cliente</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={this.state.clientFilter}
+                      onChange={(e) => {
+                        this.setState({clientFilter: e.target.value});
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Estado</label>
+                    <select
+                      className="form-control"
+                      value={this.state.statusFilter}
+                      onChange={(e) => {
+                        this.setState({statusFilter: e.target.value});
+                      }}
+                    >
+                      <option value="">Todos</option>
+                      <option value="pending">Pendientes</option>
+                      <option value="found">Encontrados</option>
+                      <option value="missing">Faltantes</option>
+                      <option value="leftover">Encontrados*</option>
+                      <option value="reported">Reportados</option>
+                    </select>
+                  </div>
+                </div>
+            </div>
             <DataTable
               columns={this.columns}
               data={this.state.containers}
@@ -153,7 +269,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               expandOnRowClicked={true}
               pagination
               paginationComponentOptions={this.paginationComponentOptions}
-              />
+            />
           </div>
         </section>
       </AppContainer>
@@ -201,7 +317,21 @@ const inventorySettings: { [key: string]: any } = {
 
 
 const ExpandedRowElement = ({ data }: {data: any}) => {
-  return <div className='box-body table-responsive request-list'>
+  return <div className='container box-body table-responsive request-list'>
+     <div className="row request bg-primary">
+                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                    <strong>BIC</strong>
+                  </div>
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    <strong>Cant. de elementos</strong>
+                  </div>
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    <strong>Marca</strong>
+                  </div>
+                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    <strong>Estado</strong>
+                  </div>
+                </div>
     { data.content.map((car: any, index: number) => {
     let className = `${car.status}Class`;
     return (
@@ -213,12 +343,7 @@ const ExpandedRowElement = ({ data }: {data: any}) => {
          <strong>{car.car.brand}</strong>
        </div>
        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         <strong>{car.car.denomination}</strong>
-       </div>
-       <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
          <strong>{car.car.color}</strong>
-       </div>
-       <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
        </div>
        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
          <span
