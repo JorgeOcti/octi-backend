@@ -11,7 +11,7 @@
 <br />
 
   <p align="center">
-    On Shelf Availability para controntrol de unidades.
+    On Shelf Availability para control de unidades.
     <br />
     <a href="https://andes.osacontrol.com/api-docs/"><strong>Api docs »</strong></a>
     <br />
@@ -49,7 +49,7 @@
 En la siguiente sección se detallan los pasos para poder configurar inicialmente la aplicación para poder correrla en un ambiente local.
 
 <a id="prerrequisites"></a>
-### Prerrequisitos
+### Requisitos
 
 La aplicación se encuentra completamente manejada en containers de docker, por lo anterior, la única dependencia necesaria inicialmente es tener docker y docker-compose instalado en la máquina local.
 
