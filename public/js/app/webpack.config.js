@@ -16,7 +16,8 @@ if (process.env.NODE_ENV === 'production') {
       ignoreFile: '.sentrycliignore',
       ignore: ['node_modules', 'webpack.config.js'],
       configFile: 'sentry.properties',
-      dryRun: true
+      dryRun: true,
+      release: process.env.SENTRY_RELEASE,
     })
   ];
 } else {

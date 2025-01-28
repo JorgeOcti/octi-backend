@@ -2896,12 +2896,14 @@ class InventoryController {
       if (evidenceStatus && evidenceStatus.find(e => e.status === status)) {
         evidenceStatus = evidenceStatus.map(e => {
           if (e.status === status) {
-            e.images = e.images.concat(images)
+            e.images = e.images.concat(images.map((img: string) => new mongoose.Types.ObjectId(img)))
           }
           return e
         })
       } else {
-        evidenceStatus = evidenceStatus.concat({status, images})
+        evidenceStatus = evidenceStatus.concat({
+          status,
+          images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
       }
 
       inventoryCar.evidenceStatus = evidenceStatus
