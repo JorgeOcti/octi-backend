@@ -172,17 +172,10 @@ Entrando lo primero que veremos será el login, si configuramos correctamente el
 <a id="user"></a>
 ### Usuarios disponibles por defecto
 A continuación se detallan los usuarios creados por defecto en la base de datos. Todos los usuarios tienen distintas cantidades de información, sin embargo, el usuario que tiene acceso a la información más completa y compleja es el que está marcado con una ```x``` en ```most_populated```.
-| email                        | password | venue      | company                    | team   | most_populated |
-| ---------------------------- | -------- | ---------- | -------------------------- | ------ | -------------- |
-| Regina_Ryan19@gmail.com      | perokuza | FUCHSIA    | METHI-RUBBED OSTRICH SALAD | fish   |                |
-| Tyler_Nolan@yahoo.com        | konilepa | FUCHSIA    | METHI-RUBBED OSTRICH SALAD | fish   |                |
-| Glenn_Nicolas73@hotmail.com  | havifiha | SKY BLUE   | LINGUINE WITH CLAMS        | fish   |                |
-| Victor.Oberbrunner@yahoo.com | bopafeji | MINT GREEN | CHICKEN STEAK              | rabbit | x              |
-| Lynne_OHara21@gmail.com      | nuxididu | SALMON     | MUSTARD-CRUSTED CHICKEN    | fish   |                |
-| Michelle.Mann@hotmail.com    | cehipozu | MAROON     | STINKY TOFU                | fish   |                |
-| Wallace.Davis82@hotmail.com  | hesusewi | MAROON     | STINKY TOFU                | fish   |                |
-| Casey_Grady@hotmail.com      | cameguwe | GREEN      | MUSTARD-CRUSTED CHICKEN    | fish   |                |
-| Tomas.Crooks@hotmail.com     | bujesebi | GOLD       | MEATBALLS WITH SAUC        | fox    |                |
-| Rene_Tillman55@gmail.com     | gudasapo | PLUM       | SULTANA-GLAZED EMU SKEWERS | fox    |                |
+| email                      | password | venue    | company                          | team  | most_populated |
+| -------------------------- | -------- | -------- | -------------------------------- | ----- | -------------- |
+| Garrett_Heller93@gmail.com | tenavero | MAGENTA  | POTATOES SALAD                   | whale |                |
+| Dan.Schowalter11@yahoo.com | waqotale | GOLD     | WARD'S SPECIAL BLUE SWIMMER CRAB | whale |                |
+| Marsha_Tromp@hotmail.com   | sememixo | LAVENDER | BUNNY CHOW                       | whale | x              |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
