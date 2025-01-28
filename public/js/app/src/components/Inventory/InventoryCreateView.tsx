@@ -20,7 +20,6 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
   dispatch: Dispatch<AlertReduxAction>;
-
   loadDataAction(
     title: string,
     body: JSX.Element,
@@ -873,6 +872,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 }
+
 
 const mapStateToProps = (state: { alerts: IAlertsState }) => {
   return {

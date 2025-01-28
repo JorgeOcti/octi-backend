@@ -13,6 +13,10 @@ import axios from "axios";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import * as moment from "moment-timezone";
+import {hasPermission} from "../../utils/common";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
@@ -107,6 +111,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       })
   }
 
+  create = () => {
+    this.props.history.push('/inventory/container/create/');
+  }
+
   render() {
     return (
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
@@ -117,61 +125,71 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 Revisión Containers
               </h3>
             </div>
+            <div className="pull-right box-tools">
+              {hasPermission(window.user, 'createInventory') ? (
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={this.create}>
+                  <i className="fa fa-plus"/> Crear inventario
+                </button>
+              ) : null}
+            </div>
             <div className='box-body table-responsive request-list'>
               {this.state.containers.length > 0 &&
                 <>
-                <div className="row request bg-primary">
-                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                    <strong>BIC</strong>
+                  <div className="row request bg-primary">
+                    <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                      <strong>BIC</strong>
+                    </div>
+                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                      <strong>Cant. de elementos</strong>
+                    </div>
                   </div>
-                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Cant. de elementos</strong>
-                  </div>
-                </div>
                   {this.state.containers.map((container: any, index: number) => {
-                        return (
-                          <div id={`request-${container._id}`} key={index}
-                               className='row request bg-request-title background-transition'>
-                            <div
-                              className='col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer center'
-                            >
-                              {/* <i className="fa fa-circle status-circle-red" /> */}
-                              <strong className='text-underline'>
-                                {container.car.vin}
-                              </strong>&nbsp;
-                            </div>
-                            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                              <strong className='text-info'>{`${container.content.length} Elemento/s`}</strong>
-                            </div>
-                            <div className='col-sm-8 col-xs-8 col-md-8 col-lg-8 '>
-                            </div>
-                            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer'
-                                 onClick={() => this.setState({selectedContainer: index})}
-                            >
-                              {
-                                this.state.selectedContainer === index ? (<i className='fa fa-chevron-up'/>) : (<i className='fa fa-chevron-down'/>)
-                              }
-                            </div>
-                            {this.state.selectedContainer === index && container.content && container.content.length &&
-                              container.content.map((car: any, index: number) => {
-                                let className = `${car.status}Class`;
-                                return (
-                                  <div key={index} className='row request bg-request-title background-transition'>
-                                    <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                                      <strong>{car.car.vin}</strong>
-                                    </div>
-                                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                                      <strong>{car.car.brand}</strong>
-                                    </div>
-                                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                                      <strong>{car.car.denomination}</strong>
-                                    </div>
-                                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                                      <strong>{car.car.color}</strong>
-                                    </div>
-                                    <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-                                    </div>
-                                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    return (
+                      <div id={`request-${container._id}`} key={index}
+                           className='row request bg-request-title background-transition'>
+                        <div
+                          className='col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer center'
+                        >
+                          {/* <i className="fa fa-circle status-circle-red" /> */}
+                          <strong className='text-underline'>
+                            {container.car.vin}
+                          </strong>&nbsp;
+                        </div>
+                        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                          <strong className='text-info'>{`${container.content.length} Elemento/s`}</strong>
+                        </div>
+                        <div className='col-sm-8 col-xs-8 col-md-8 col-lg-8 '>
+                        </div>
+                        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer'
+                             onClick={() => this.setState({selectedContainer: index})}
+                        >
+                          {
+                            this.state.selectedContainer === index ? (<i className='fa fa-chevron-up'/>) : (
+                              <i className='fa fa-chevron-down'/>)
+                          }
+                        </div>
+                        {this.state.selectedContainer === index && container.content && container.content.length &&
+                          container.content.map((car: any, index: number) => {
+                            let className = `${car.status}Class`;
+                            return (
+                              <div key={index} className='row request bg-request-title background-transition'>
+                                <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                                  <strong>{car.car.vin}</strong>
+                                </div>
+                                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                                  <strong>{car.car.brand}</strong>
+                                </div>
+                                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                                  <strong>{car.car.denomination}</strong>
+                                </div>
+                                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                                  <strong>{car.car.color}</strong>
+                                </div>
+                                <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
+                                </div>
+                                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                                       <span
                                         className={`label label-${
                                           this.state.inventorySettings.hasOwnProperty(className)
@@ -185,13 +203,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                           ? this.state.inventorySettings[car.status]
                                           : car.state}
                                       </span>
-                                    </div>
-                                  </div>
-                                )
-                              })
-                            }
-                          </div>
-                        )
+                                </div>
+                              </div>
+                            )
+                          })
+                        }
+                      </div>
+                    )
                   })
                   }
                 </>
