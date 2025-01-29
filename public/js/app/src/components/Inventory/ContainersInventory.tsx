@@ -203,7 +203,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               <div className="row">
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>BL</label>
+                    <label>¿Qué Bill of Lading (BL) buscas?</label>
                     <input
                       type="text"
                       className="form-control"
@@ -214,10 +214,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Contenedor</label>
+                    <label>¿Qué container buscas?</label>
                     <input
                       type="text"
                       className="form-control"
@@ -230,7 +229,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Cliente</label>
+                    <label>Filtrar por Cliente</label>
                     <input
                       type="text"
                       className="form-control"
@@ -243,7 +242,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Estado</label>
+                    <label>Filtrar por Estado</label>
                     <select
                       className="form-control"
                       value={this.state.statusFilter}
@@ -259,6 +258,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       <option value="reported">Reportados</option>
                     </select>
                   </div>
+                </div>
                 </div>
             </div>
             <DataTable
@@ -317,7 +317,7 @@ const inventorySettings: { [key: string]: any } = {
 
 
 const ExpandedRowElement = ({ data }: {data: any}) => {
-  return <div className='container box-body table-responsive request-list'>
+  return <div className='container-fluid box-body table-responsive request-list'>
      <div className="row request bg-primary">
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                     <strong>BIC</strong>
