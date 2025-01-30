@@ -26,18 +26,14 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   canDrop: boolean;
-  notification: boolean;
   loadingSettings: boolean;
-  carsByVenue: any;
-  venues: any[];
+  carsByContainer: any;
   loading: boolean;
   name: string;
   sending: boolean;
   file: File | null;
   backupFile: File | null;
   backupUri: string;
-  manualPhoto: number;
-  reportPhoto: number;
 }
 
 class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
@@ -47,27 +43,129 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     error: null,
     canDrop: false,
     loadingSettings: false,
-    carsByVenue: [],
-    venues: [],
+    carsByContainer: {},
     loading: true,
-    notification: true,
     name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
     sending: false,
     file: null,
     backupFile: null,
     backupUri: '',
-    manualPhoto: 1,
-    reportPhoto: 1
   };
 
   readonly inputFile: RefObject<HTMLInputElement>;
   readonly inputBackup: RefObject<HTMLInputElement>;
+
+  readonly excelHeaders = [
+    "BIC",
+    "VIN",
+    "Marca",
+    "Modelo",
+    "Color",
+    "Cliente Razón Social",
+    "RUT Cliente",
+    "Manifiesto",
+    "N° BL",
+    "Emplazamiento",
+    "Año DR",
+    "N° DR",
+    "Item",
+    "Mes",
+    "Contenedor",
+    "Tipo CTR",
+    "Tamaño CTR",
+    "Ubicación",
+    "Zona",
+    "Origen",
+    "Tipo Retiro",
+    "RUT Asociado",
+    "Cliente Asoc. Razón Social",
+    "Forwarder",
+    "Agencia",
+    "N° Destinación",
+    "Fecha Destinación",
+    "Línea Operadora",
+    "St.CTR IN",
+    "St.CTR OUT",
+    "Nave",
+    "N° Viaje",
+    "Tráfico",
+    "N° Booking IN",
+    "N° Booking OUT",
+    "Sello IN",
+    "Sello OUT",
+    "N° TATC",
+    "Puerto Origen",
+    "Doc.Pta IN",
+    "N° Doc.Pta IN",
+    "Doc.Pta OUT",
+    "N° Doc.Pta OUT",
+    "Estado",
+    "Fch.Inicio Alm.",
+    "F. Recep .Efec.",
+    "Fch. Provid.",
+    "Fch. Descon.",
+    "F. Sol. Retiro",
+    "F. Aut. Salida",
+    "F. Carga Camión",
+    "Tº Espera",
+    "Fch.Salida AEP",
+    "Días Alm.",
+    "Peso",
+    "Tipo IMO",
+    "N° UN",
+    "Patente IN",
+    "Patente OUT",
+    "Consignatario",
+    "Notificado",
+  ]
+  readonly mandatoryHeaders = [
+    "BIC",
+    "VIN",
+    "Marca",
+    "Modelo",
+    "Cliente Razón Social",
+    "RUT Cliente",
+    "N° BL",
+    "Emplazamiento",
+  ]
+  readonly containerHeaders = {
+      "vin": (data : any) => data.BIC.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', ''),
+      "vin2": (data : any) => data.BIC.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(-7),
+      "isContainer": (data: any) => true,
+      "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
+      "bl": (data: any) => data["N° BL"]
+  }
+  readonly carHeaders = {
+      "vin": (data : any) => data.VIN.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', ''),
+      "vin2": (data : any) => data.VIN.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6),
+      "brand": (data : any) => data.Marca,
+      "denomination": (data : any) => data.Modelo,
+      "isContainer": (data: any) => false,
+      "color": (data : any) => data.Color,
+      "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
+      "bl": (data: any) => data["N° BL"]
+    }
+
+
 
   constructor(props: IPropsType) {
     super(props);
 
     this.inputFile = React.createRef();
     this.inputBackup = React.createRef();
+
+    this.clickUploadFile = this.clickUploadFile.bind(this);
+    this.validateRow = this.validateRow.bind(this);
+    this.processDataRow = this.processDataRow.bind(this);
+    this.dragOverHandler = this.dragOverHandler.bind(this);
+    this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
+    this.dragEndHandler = this.dragEndHandler.bind(this);
+    this.downloadTemplate = this.downloadTemplate.bind(this);
+    this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
+    this.processSettings = this.processSettings.bind(this);
+    this.sendCreate = this.sendCreate.bind(this);
+
   }
 
   componentDidMount() {
@@ -76,13 +174,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   private sendCreate(): void {
     const {
-      carsByVenue,
+      carsByContainer,
       name,
-      notification,
       file,
       backupFile,
-      manualPhoto,
-      reportPhoto
     } = this.state;
     const { history } = this.props;
     this.setState({
@@ -97,7 +192,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       this.setState({
         sending: false
       });
-    } else if (!carsByVenue.length) {
+    } else if (!Object.keys(carsByContainer).length) {
       swal!(
         'Envió inventario',
         'No se ha importado la configuración o no contiene sucursales.',
@@ -112,14 +207,11 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       });
       api.getSource();
       api
-        .createInventory({
-          carsByVenue,
+        .createContainerInventory({
+          carsByContainer,
           name,
-          notification,
           file,
           backupFile,
-          manualPhoto,
-          reportPhoto
         })
         .then((response: any) => {
           const { message } = response.data;
@@ -146,8 +238,43 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     }
   }
 
+  private validateRow(data: any){
+    for (let header of this.mandatoryHeaders){
+      if (!data[header]){
+        console.log("Error", header, data)
+        return false
+      }
+    }
+    return true
+  }
+
+
+
+  private processDataRow(data: any): any|null {
+    if (this.validateRow(data)){
+      let extra : any = {}
+      this.excelHeaders.forEach((header: string) => {
+        let value = data[header]
+        if (value){
+          extra[header] = value
+        }
+      })
+      let container: any = {extra}
+      let car: any = {extra}
+      Object.keys(this.containerHeaders).forEach((key: string) => {
+        let getter: (data: any) => any = this.containerHeaders[key as keyof typeof this.containerHeaders];
+        container[key] = getter(data)
+      })
+      Object.keys(this.carHeaders).forEach((key: string) => {
+        let getter: (data: any) => any = this.carHeaders[key as keyof typeof this.carHeaders];
+        car[key] = getter(data)
+      })
+      return {container, car}
+    }
+    return null
+  }
+
   private processSettings(file: File): void {
-    const { venues } = this.state;
     this.setState({
       loadingSettings: true
     });
@@ -167,92 +294,37 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           const workbook: XLSX.WorkBook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array'
           });
-          const excelData = workbook.Sheets.hasOwnProperty('Autos')
-            ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos)
+          const excelData = workbook.Sheets.hasOwnProperty('Planilla OSA')
+            ? XLSX.utils.sheet_to_json(workbook.Sheets['Planilla OSA'])
             : [];
-          const carsByVenue: any = {};
+          const carsByContainer: any = {};
           if (excelData.length >= 1) {
             excelData.forEach((item: any) => {
-              if (
-                item.hasOwnProperty('vin') &&
-                item.vin &&
-                item.hasOwnProperty('sucursal') &&
-                item.sucursal
-              ) {
-                const vinWarning = item.vin.length < 17;
-                const patentWarning = item.patente && item.patente.length < 6;
-                const car = {
-                  vin: item.vin.trim(),
-                  internalNumber: item.NInterno ? item.NInterno.trim() : '',
-                  color: item.color ? item.color.trim() : '',
-                  denomination: item.denominacion
-                    ? item.denominacion.trim()
-                    : '',
-                  brand: item.marca ? item.marca.trim() : '',
-                  patent: item.patente ? item.patente.trim() : '',
-                  property: item.propiedad
-                    ? item.propiedad.trim().toUpperCase()
-                    : '',
-                  type: item.tipo ? item.tipo.trim() : '',
-                  hasWarnings: vinWarning || patentWarning,
-                  warning: {
-                    vin: vinWarning,
-                    patent: patentWarning
-                  }
-                };
-                if (!carsByVenue.hasOwnProperty(item.sucursal)) {
-                  // venues.push(item.sucursal);
-                  carsByVenue[item.sucursal] = {
-                    cars: []
-                  };
-                }
-                carsByVenue[item.sucursal].cars.push(car);
-                // cars.push(car);
-              } else {
+              let datum = this.processDataRow(item)
+              if (!datum){
                 /* tslint:disable:no-console */
                 // swal!('Error en archivo de configuracion', `Revise la linea ${item.__rowNum__}`, 'error');
                 console.log('Error en linea:');
                 console.log(item.__rowNum__);
                 return;
               }
-            });
-            const carsByVenueArray: any[] = [];
-            const venuesNotFound: string[] = [];
-            for (const cv in carsByVenue) {
-              if (carsByVenue.hasOwnProperty(cv)) {
-                const existVenue = venues.some((venue: any) => {
-                  return (
-                    venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
-                  );
-                });
-                if (!existVenue && !venuesNotFound.includes(cv.toLocaleUpperCase())) {
-                  venuesNotFound.push(cv.toLocaleUpperCase());
+              const car = datum.car;
+              const container = datum.container;
+              if (!carsByContainer.hasOwnProperty(container.vin)){
+                carsByContainer[container.vin] = {
+                  container,
+                  cars: []
                 }
-                carsByVenueArray.push({
-                  name: cv.trim(),
-                  warningNoExist: !existVenue,
-                  cars: carsByVenue[cv].cars.sort((x: any, y: any) => {
-                    return x.hasWarnings === y.hasWarnings
-                      ? 0
-                      : x.hasWarnings
-                        ? -1
-                        : 1;
-                  })
-                });
               }
-            }
-            if (venuesNotFound.length > 0) {
-              swal!('Sucursales no configuradas', `No se encontraron las siguientes sucursales:\n\n - ${venuesNotFound.join("\n- ")}\n\n Estas sucursales no existen o no tienes acceso a ellas.\n\nVuelve a subir el archivo con las sucursales correctas, o solicita la configuración de una nueva sucursal o acceso a una existente escribiéndonos a  soporte@osacontrol.com`, 'error');
-              this.setState({
-                loadingSettings: false
-              });
-            } else {
-              this.setState({
-                file,
-                carsByVenue: carsByVenueArray,
-                loadingSettings: false
-              });
-            }
+              carsByContainer[container.vin].cars.push(car);
+            });
+            // console.log(carsByContainer)
+            this.setState({
+              file,
+              carsByContainer: carsByContainer,
+              loadingSettings: false
+            });
+
           } else {
             swal!(
               'Importador de configuración',
@@ -343,42 +415,21 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   }
 
   private downloadTemplate(): void {
-    /* headers worksheet */
-    const data = [
-      {
-        sucursal: '',
-        NInterno: '',
-        vin: '',
-        marca: '',
-        patente: '',
-        denominacion: '',
-        color: '',
-        propiedad: '',
-        tipo: ''
-      }
-    ];
+
     /* make the worksheet */
-    const ws = XLSX.utils.json_to_sheet(data);
+    const ws = XLSX.utils.aoa_to_sheet([this.excelHeaders]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Autos');
+    XLSX.utils.book_append_sheet(wb, ws, 'Planilla OSA');
     /* generate an XLSX file */
-    XLSX.writeFile(wb, 'template_inventory_settings.xlsx');
-  }
-
-  private handleChangeNotification() {
-    this.setState({
-      notification: !this.state.notification
-    });
+    XLSX.writeFile(wb, 'template_container_inventory_settings.xlsx');
   }
 
   render() {
     const {
       loadingSettings,
-      carsByVenue,
+      carsByContainer,
       name,
-      sending,
-      notification,
       backupFile,
       backupUri,
       loading
@@ -560,110 +611,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
                 ref={this.inputFile}
                 accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
               />
-              <div className="row">
-                <div className="col-md-12">
-                  <div
-                    className="form-group"
-                    style={{ marginBottom: '0px', marginTop: '10px' }}>
-                    <label>Configuraciones</label>
-                  </div>
-                </div>
-                <div className="col-md-12 no-padding">
-                  <div className="col-sm-12 col-md-8 col-lg-6">
-                    <div className="form-horizontal">
-                      <div
-                        className="form-group"
-                        style={{ marginRight: '0', marginLeft: '0' }}>
-                        <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
-                          <span
-                            className="control-label"
-                            style={{
-                              paddingLeft: '0',
-                              textAlign: 'left',
-                              fontWeight: 600
-                            }}>
-                            Nº imágenes al inventariar
-                          </span>
-                          <br />
-                          <span className={'text-sm text-muted'}>
-                            Cantidad de fotografías solicitadas al ingresar
-                            unidad digitando el VIN.
-                          </span>
-                        </div>
-                        <input
-                          id="manual-photo"
-                          type="text"
-                          className="col-sm-6 col-md-4 col-lg-4 form-control"
-                        />
-                      </div>
-                    </div>
-                    {/*<div className="checkbox">*/}
-                    {/*  <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>*/}
-                    {/*    <Checkbox*/}
-                    {/*      active={manualPhoto === 1}*/}
-                    {/*      action={this.handleChangeManualPhoto}*/}
-                    {/*      classes="icheck-in-checkbox"*/}
-                    {/*      style={{marginTop: '-4px', marginRight: '5px'}}*/}
-                    {/*    />*/}
-                    {/*    Solicitar foto en modo manual*/}
-                    {/*  </label>*/}
-                    {/*</div>*/}
-                  </div>
-                </div>
-                <div className="col-sm-12 col-md-8 col-lg-6">
-                  <div className="form-horizontal">
-                    <div
-                      className="form-group"
-                      style={{ marginRight: '0', marginLeft: '0' }}>
-                      <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
-                        <span
-                          className="control-label"
-                          style={{
-                            paddingLeft: '0',
-                            textAlign: 'left',
-                            fontWeight: 600
-                          }}>
-                          Nº imágenes al reportar
-                        </span>
-                        <br />
-                        <span className={'text-sm text-muted'}>
-                          Cantidad de fotografías solicitadas al reportar una
-                          unidad.
-                        </span>
-                      </div>
-                      <input
-                        id="report-photo"
-                        type="text"
-                        className="col-sm-6 col-md-4 col-lg-4 form-control"
-                      />
-                    </div>
-                  </div>
-                  {/*<input*/}
-                  {/*  type="text"*/}
-                  {/*  id="report-photo"*/}
-                  {/*  className="input-sm form-control"*/}
-                  {/*  style={{*/}
-                  {/*    width: '35px'*/}
-                  {/*  }}*/}
-                  {/*/>*/}
-                  {/*<span>Cantidad de imágenes al reportar</span>*/}
-                </div>
-                <div className="col-md-8 col-sm-12">
-                  <div className="checkbox">
-                    <label
-                      style={{ paddingLeft: '0', fontWeight: 600 }}
-                      onClick={this.handleChangeNotification}>
-                      <Checkbox
-                        active={notification}
-                        action={this.handleChangeNotification}
-                        classes="icheck-in-checkbox"
-                        style={{ marginTop: '-4px', marginRight: '5px' }}
-                      />
-                      Enviar notificaciones push
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
             <div className="box-footer text-right">
               <button
