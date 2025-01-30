@@ -318,7 +318,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
               }
               carsByContainer[container.vin].cars.push(car);
             });
-            // console.log(carsByContainer)
             this.setState({
               file,
               carsByContainer: carsByContainer,

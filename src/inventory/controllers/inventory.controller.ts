@@ -26,7 +26,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory
+  ChoicesStatusCarInventory, ChoicesStatusContainer
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -1156,6 +1156,11 @@ class InventoryController {
             });
             // if car in inventory
             if (inventoryCar) {
+              if (car.isContainer){
+                inventoryCar.evidenceStatus = [
+                  {status: ChoicesStatusContainer.open, images},
+                ]
+              }
               inventoryCar.venueFound = venueId;
               if (containerFound){
                 let inventoryContainer = await InventoryCar.findOne({
@@ -2244,6 +2249,9 @@ class InventoryController {
                 },
                 {
                   path: 'images'
+                },
+                {
+                  path: "evidenceStatus.images",
                 },
                 {
                   path: 'files'
