@@ -1,0 +1,114 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  font-size: 10px;
+}
+
+.container {
+  max-width: 1000px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+}
+
+.logo {
+  flex: 1;
+}
+
+.logo img {
+  width: 90%;
+  height: auto;
+}
+
+.company-info {
+  text-align: left;
+  font-size: 12px;
+  line-height: 1;
+  flex: 2;
+}
+
+.company-info p {
+  line-height: 0.5;
+}
+
+.section {
+  margin-top: 15px;
+  display: block;
+  page-break-inside: avoid;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: bold;
+  background: #eee;
+  padding: 5px;
+  border-left: 5px solid #000;
+  margin-bottom: 8px;
+}
+
+.container-info, .info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.item span.label {
+  font-weight: bold;
+}
+
+.photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photos img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  display: inline-block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+table, th, td {
+  border: 1px solid #000;
+}
+
+th, td {
+  padding: 6px;
+  text-align: left;
+}
+
+th {
+  background: #eee;
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 10px;
+  color: #000;
+  border-top: 2px solid #000;
+  padding-top: 8px;
+}

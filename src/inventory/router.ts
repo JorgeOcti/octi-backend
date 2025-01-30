@@ -31,6 +31,7 @@ inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryCont
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
 inventoryRouter.get('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.listInventoryCarFiles);
 inventoryRouter.delete('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.removeInventoryCarFile);
+inventoryRouter.get('/api/pdf/inventory/tarja.pdf', InventoryController.pdf);
 
 // Labels API Web
 inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiList);

@@ -23,6 +23,78 @@ interface IStateType {
   inventorySettings: any;
 }
 
+const dataTableStyle = {
+  expanderCell: {
+    style: {
+      // this is to put expander button at the end of the row
+      order: 1,
+    }
+  }
+};
+
+const paginationComponentOptions = {
+  rowsPerPageText: 'Filas por página',
+  rangeSeparatorText: 'de',
+  selectAllRowsItem: true,
+  selectAllRowsItemText: 'Todos',
+};
+
+const columns = [
+  {
+    name: 'Contenedor',
+    selector: (row: any) => row.car.vin,
+    sortable: true
+  },
+  {
+    name: 'Imagenes',
+    selector: (row: any) => {
+      return `${row.images.length || 0} Fotos`;
+    }
+  },
+  {
+    name: 'Cliente',
+    selector: (row: any) => {
+          return row.car.client ? row.car.client.name : 'N/A';
+    }
+
+  },
+  {
+    name: 'Estado',
+    selector: (row: any) => {
+      return row.status;
+    },
+    cell: (row: any) => {
+      let className = `${row.status}Class`;
+      return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
+       <span
+         className={`label label-${
+          inventorySettings.hasOwnProperty(className)
+          ? inventorySettings[className]
+          : ''
+          }`}
+          style={{
+            padding: '5px 10px'
+          }}>
+         {inventorySettings.hasOwnProperty(row.status)
+           ? inventorySettings[row.status]
+           : row.state}
+       </span>
+     </div>
+    }
+  },
+  {
+    name: 'Tarja',
+    selector: (row: any) => {
+      return row.car.bl;
+    },
+    cell: (row: any) => {
+      return <button className="btn btn-primary" onClick={() => {
+        console.log("descargar tarja",  row.car.vin);
+      }}>Tarja</button> 
+    }
+  }
+];
+
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
 
@@ -112,7 +184,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       })
   }
 
-  //use debounce to avoid multiple calls and filter the state.containers with the filters
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
@@ -136,58 +207,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containers: containers
     });
   }
-
-  columns = [
-    {
-      name: 'Contenedor',
-      selector: (row: any) => row.car.vin,
-      sortable: true
-    },
-    {
-      name: 'Imagenes',
-      selector: (row: any) => {
-        return `${row.images.length || 0} Fotos`;
-      }
-    },
-    {
-      name: 'Cliente',
-      selector: (row: any) => {
-            return row.car.client ? row.car.client.name : 'N/A';
-      }
-
-    },
-    {
-      name: 'Estado',
-      selector: (row: any) => {
-        return row.status;
-      },
-      cell: (row: any) => {
-        let className = `${row.status}Class`;
-        return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
-         <span
-           className={`label label-${
-            inventorySettings.hasOwnProperty(className)
-            ? inventorySettings[className]
-            : ''
-            }`}
-            style={{
-              padding: '5px 10px'
-            }}>
-           {inventorySettings.hasOwnProperty(row.status)
-             ? inventorySettings[row.status]
-             : row.state}
-         </span>
-       </div>
-      }
-    }
-  ];
-
-  paginationComponentOptions = {
-    rowsPerPageText: 'Filas por página',
-    rangeSeparatorText: 'de',
-    selectAllRowsItem: true,
-    selectAllRowsItemText: 'Todos',
-  };
 
   render() {
     return (
@@ -229,15 +248,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Filtrar por Cliente</label>
-                    <input
-                      type="text"
+                    <label>Cliente</label>
+                    <select
                       className="form-control"
                       value={this.state.clientFilter}
                       onChange={(e) => {
                         this.setState({clientFilter: e.target.value});
                       }}
-                    />
+                    >
+                      <option value="">Todos</option>
+                    </select>
                   </div>
                 </div>
                 <div className="col-md-3">
@@ -262,13 +282,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
             </div>
             <DataTable
-              columns={this.columns}
+              columns={columns}
               data={this.state.containers}
+              customStyles={dataTableStyle}
               expandableRows
               expandableRowsComponent={ExpandedRowElement}
               expandOnRowClicked={true}
               pagination
-              paginationComponentOptions={this.paginationComponentOptions}
+              paginationComponentOptions={paginationComponentOptions}
             />
           </div>
         </section>
