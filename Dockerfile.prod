@@ -75,8 +75,6 @@ RUN npm i
 
 RUN tsc --project tsconfig.json
 
-RUN npm i && npm cache clean --force
-
 WORKDIR /srv/public/js/app
 
 RUN npm i
