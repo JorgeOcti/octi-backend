@@ -28,7 +28,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory
+  ChoicesStatusCarInventory, ChoicesStatusContainer
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -207,6 +207,66 @@ class InventoryController {
     return venue;
   }
 
+  public async createContainerInventory(req: IRequest, res: Response) {
+    let { name, carsByContainer } = req.body;
+    carsByContainer = JSON.parse(carsByContainer);
+    try {
+      const { company, team, venue } = req.user;
+      const inventory = new Inventory({
+        name,
+        company: company._id,
+        team: team._id,
+        venues: [venue._id],
+        createdBy: req.user._id,
+        status: ChoicesStatusInventory.pending,
+        containerInventory: true,
+        settings: {
+          photos: {
+            manual: false,
+            report: false
+          }
+        }
+      });
+      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+      if (file) {
+        file.team = team;
+        await inventory.attach('file', file);
+      }
+      const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
+      if (backup) {
+        backup.team = team;
+        await inventory.attach('backup', backup);
+      }
+
+      await inventory.save();
+      inventoryQueue.queue.add(
+        'createContainerInventory',
+        {
+          inventoryID: inventory._id,
+          userID: req.user._id,
+          venueID: venue._id,
+          name,
+          carsByContainer
+        },
+        { removeOnComplete: true }
+      );
+
+      return res.json({
+        message: 'Inventario de contenedores creado satisfactoriamente',
+        status: 200
+      });
+
+    } catch (e) {
+      logger.error(`createContainerInventory: Async Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      return res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+  }
+
   public async create(req: IRequest, res: Response) {
     const { name, manualPhoto, reportPhoto } = req.body;
     let { carsByVenue, notification } = req.body;
@@ -231,8 +291,8 @@ class InventoryController {
         status: ChoicesStatusInventory.pending,
         settings: {
           photos: {
-            manual: manualPhoto,
-            report: reportPhoto
+            manual: 3,
+            report: 3
           }
         }
       });
@@ -1098,6 +1158,11 @@ class InventoryController {
             });
             // if car in inventory
             if (inventoryCar) {
+              if (car.isContainer){
+                inventoryCar.evidenceStatus = [
+                  {status: ChoicesStatusContainer.open, images},
+                ]
+              }
               inventoryCar.venueFound = venueId;
               if (containerFound){
                 let inventoryContainer = await InventoryCar.findOne({
@@ -2186,6 +2251,9 @@ class InventoryController {
                 },
                 {
                   path: 'images'
+                },
+                {
+                  path: "evidenceStatus.images",
                 },
                 {
                   path: 'files'

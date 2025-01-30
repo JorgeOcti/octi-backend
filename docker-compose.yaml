@@ -13,7 +13,6 @@ services:
       - mongo:/data/db
       - mongoConf:/data/configdb
       - '~/backups/osa/andes/mongo:/backups'
-
   redis:
     image: redis:5.0.14
     restart: unless-stopped
@@ -22,7 +21,6 @@ services:
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "500mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis:/data
-
   backend:
     build:
       dockerfile: Dockerfile.development
@@ -44,6 +42,7 @@ services:
       REDIS_CLUSTERED: "false"
       SITE_URL: "http://localhost:3030/"
       SES_REGION: us-west-2
+#      MONGODB_URI: mongodb+srv://osacontrol:ENu5FyOjyTzScmmr@clusterandes.uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
@@ -101,5 +100,4 @@ volumes:
   mongo:
   mongoConf:
   backend-modules:
-  frontend-modules:
   redis:

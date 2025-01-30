@@ -7,6 +7,11 @@ import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 
 import DataTable from 'react-data-table-component';
+import * as moment from "moment-timezone";
+import {hasPermission} from "../../utils/common";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
@@ -207,6 +212,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containers: containers
     });
   }
+  
+  create = () => {
+    this.props.history.push('/inventory/container/create/');
+  }
 
   render() {
     return (
@@ -217,6 +226,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               <h3 className="box-title">
                 Revisión Containers
               </h3>
+            </div>
+            <div className="pull-right box-tools">
+              {hasPermission(window.user, 'createInventory') ? (
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={this.create}>
+                  <i className="fa fa-plus"/> Crear inventario
+                </button>
+              ) : null}
             </div>
             <div className="box-body">
               <div className="row">
