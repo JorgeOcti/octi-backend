@@ -23,26 +23,13 @@ mixin containerDetail(first, second, third, quarter, fifth, sixth)
 
 mixin carResumen(first, second, third, quarter, fifth, sixth)
   tr
-    td(width="8%", class="strong")=first
-    if second
-      td(width="25.3%")=second
-    else
-      td(width="25.3%")
-        .border-bottom-dashed
-    if third
-      td(width="8%", class="strong")=third
-      if quarter
-        td(width="25.3%")=quarter
-      else
-        td(width="25.3%")
-          .border-bottom-dashed
-    if fifth
-      td(width="8%", class="strong")=fifth
-      if sixth
-        td(width="25.3%")=sixth
-      else
-        td(width="25.3%")
-          .border-bottom-dashed
+    td=first
+    td VEHÍCULO
+    td=second
+    td=third
+    td=quarter
+    td=fifth
+    td=sixth
 
 mixin carDetail(first, second, third, quarter, fifth, sixth)
   tr
@@ -83,100 +70,91 @@ html
           h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SAI)
           p Giro: SERVICIOS EXTRAPORTUARIOS
           p Dirección: Camino Las Mercedes 14851 - San Antonio
-          p Emitido por: Juan Mella el {{moment().format('DD/MM/YYYY - HH:mm')}}
-          p REPORTE N° 2025 - 1313
+          p Emitido por: Juan Mella el !{moment().format('DD/MM/YYYY - HH:mm')}
       .section-wrapper
         .section
           .title CONTAINER
           .container-info
             .item
-              span.label CIBU 782725-9
+              span.label !{container.car.vin}
             .item
               span.label Fecha Desconsolidado:
-              span 24/01/2025 - 10:34
+              span !{moment(container.updatedAt).format('DD/MM/YYYY - HH:mm')}
             .item
               span.label Cliente:
-              span Dunder Mifflin P.C.
+              span !{container.car.client}
       .section-wrapper
         .section
           .info-grid
             .item
               span.label BL:
-              span ABC9876543
+              span !{container.car.bl}
             .item
               span.label Puerto Origen:
-              span WDSC WATERDEEP
+              span 
             .item
               span.label Nave:
-              span TITAN - 1C
+              span !{container.extra["Nave"]}
             .item
               span.label Peso:
-              span 24,097.56
+              span !{container.extra["Peso"]}
             .item
               span.label N° Viaje:
-              span NX4344A
+              span !{container.extra["N° Viaje"]}
             .item
               span.label Emplazamiento:
-              span A88
+              span !{container.extra["Emplazamiento"]}
       .section-wrapper
         .section
           .info-grid
             .item
               span.label Registra Desconsolidado:
-              span Ramón Valdés
+              span !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
             .item
               span.label Ubicación:
-              span SAI
+              span !{container.venueFound.name}
             .item
               span.label Precinto:
-              span FX32809162
+              span !{container.extra["Sello OUT"]}
       .section-wrapper
         .section
-          .title Evidencia Fotográfica Container (2 Fotos)
+          .title Evidencia Fotográfica Container ({container.evidences.length} Fotos)
           .photos
-            img(src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTan2CCumrn2xdObzSohpk3thnQ5L0xIpCFUg&s" alt="Foto 1")
-            img(src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTan2CCumrn2xdObzSohpk3thnQ5L0xIpCFUg&s" alt="Foto 2")
+            each photo in container.evidences
+              img(src=photo.file.url alt="Foto")
       .section-wrapper
         .section
-          .title Resumen Carga (2 Items)
+          .title Resumen Carga (!{cars.length} Items)
           table
             thead
               tr
                 th #
                 th Tipo
-                th Número
+                th VIN
+                th Marca
+                th Modelo
                 th Responsable
-                th Observaciones
-                th Daños
+                th Estado
             tbody
-              tr
-                td 1
-                td VEHÍCULO
-                td MBFVB3S39SG775398
-                td JIM
-                td VOLÁTILES INCOMPLETOS
-                td DAÑOS (2)
-              tr
-                td 2
-                td VEHÍCULO
-                td MBFVB3S39SB332345
-                td JIM
-                td -
-                td -
-      .section-wrapper
-        .section
-          .title CARGA
-          .item-info
-            .item
-              span.label ITEM:
-              span 1
-            .item
-              span.label VEHÍCULO:
-              span MBFVB3S39SG775398
-            .item
-              span.label MARCA:
-              span JIM
-          .details
-            p VOLÁTILES: INCOMPLETOS
-            ul
-              li ANTENA
+              each car, index in cars
+                +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
+      each car, index in cars
+        .section-wrapper
+          .section
+            .title CARGA
+            .item-info
+              .item
+                span.label ITEM:
+                span #{index + 1}
+              .item
+                span.label VEHÍCULO:
+                span !{car.car.vin} 
+              .item
+                span.label MARCA:
+                span !{car.car.brand}
+          .section
+            .title Evidencia Fotográfica Container (!{container.evidences.length} Fotos)
+            .photos
+              each photo in car.images
+                img(src=photo.file.url alt="Foto")
+

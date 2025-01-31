@@ -2368,7 +2368,6 @@ class InventoryController {
           status: 200
         });
       } else {
-        console.log('inventory', inventory);
         return res.status(404).json({
           message: 'Inventario no encontrado',
           status: 404
@@ -2401,10 +2400,16 @@ class InventoryController {
         car: new mongoose.Types.ObjectId(id)
       }).populate([
         { path: 'inventoriedBy' },
+        {path: 'images'},
+        {path: 'venueFound'},
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]);
+
+      container.evidences = container.evidenceStatus.map((e: any) => {
+        return e.images;
+      }).flat();
 
       if (!container) {
         return res.status(404).json({
@@ -2415,7 +2420,14 @@ class InventoryController {
 
       let cars = await InventoryCar.find({
         container: container._id
-      });
+      }).populate([
+        { path: 'inventoriedBy' },
+        {path: 'images'},
+        {path: 'venueFound'},
+        { path: 'car' },
+        { path: 'evidenceStatus.images' },
+        { path: 'files' }
+      ]);
 
       let template: string =
         path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';

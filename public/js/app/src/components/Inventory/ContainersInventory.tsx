@@ -130,7 +130,7 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return <button className="btn btn-primary" onClick={() => {
+      return row.status !== "pending" && <button className="btn btn-primary" onClick={() => {
         window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
