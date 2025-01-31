@@ -1,3 +1,72 @@
+mixin containerDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+mixin carResumen(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+mixin carDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
 doctype html
 html
   head
@@ -9,12 +78,12 @@ html
     .container
       header
         .logo
-          img(src="http://localhost:3030/static/images/medlog_logo.png", height="100px")
+          img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
         .company-info
           h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SAI)
           p Giro: SERVICIOS EXTRAPORTUARIOS
           p Dirección: Camino Las Mercedes 14851 - San Antonio
-          p Emitido por: Juan Mella el 28/01/2025 a las 12:35 horas
+          p Emitido por: Juan Mella el {{moment().format('DD/MM/YYYY - HH:mm')}}
           p REPORTE N° 2025 - 1313
       .section-wrapper
         .section

@@ -131,8 +131,8 @@ const columns = [
     },
     cell: (row: any) => {
       return <button className="btn btn-primary" onClick={() => {
-        console.log("descargar tarja",  row.car.vin);
-      }}>Tarja</button> 
+        window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
+      }}>Tarja</button>
     }
   }
 ];
@@ -304,7 +304,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containers: containers
     });
   }
-  
+
   create = () => {
     this.props.history.push('/inventory/container/create/');
   }
