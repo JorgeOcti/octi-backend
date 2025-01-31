@@ -2426,7 +2426,7 @@ const imageBase64 = fs.readFileSync(imagePath, 'base64');
           });
 
           const pdfBuffer = await page.pdf({
-            format: 'A4',
+            format: 'Letter',
             displayHeaderFooter: true,
             headerTemplate: `
          <div style="width: 100%; font-size: 9px; display: flex; align-items: center; justify-content: space-between; margin: 10px 50px;">

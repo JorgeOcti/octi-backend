@@ -23,6 +23,7 @@ interface IStateType {
   blFilter: string;
   containerFilter: string;
   clientFilter: string;
+  clientSelector: any[];
   statusFilter: string;
   selectedContainer: number;
   inventorySettings: any;
@@ -46,22 +47,58 @@ const paginationComponentOptions = {
 
 const columns = [
   {
+    name: 'Fecha',
+    selector: (row: any) => { 
+      return row.createdAt ? new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false, // Asegura formato 24h
+    }).format(new Date(row.createdAt)).replace(',', ''): '';
+  }
+  },
+  {
     name: 'Contenedor',
     selector: (row: any) => row.car.vin,
     sortable: true
   },
   {
+    name: 'BL',
+    selector: (row: any) => row.extra["N° BL"],
+  },
+  {
+    name: 'Puerto origen',
+    selector: (row: any) => row.extra["Emplazamiento"],
+  },
+  {
+    name: 'Nave',
+    selector: (row: any) => row.extra["Nave"],
+  },
+  {
     name: 'Imagenes',
-    selector: (row: any) => {
-      return `${row.images.length || 0} Fotos`;
+    cell: (row: any) => {
+      if(row.evidenceStatus && row.evidenceStatus.length > 0) {
+        row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
+      }
+      return imagesFormatter(row);
     }
   },
   {
     name: 'Cliente',
     selector: (row: any) => {
-          return row.car.client ? row.car.client.name : 'N/A';
+          return row.extra["Cliente Razón Social"];
+    },
+    cell: (row: any) => {
+      return <div>{row.extra["Cliente Razón Social"]}</div>
     }
-
+  },
+  {
+    name: 'Ubicación',
+    selector: (row: any) => {
+          return row.venue.name;
+    }
   },
   {
     name: 'Estado',
@@ -100,6 +137,49 @@ const columns = [
   }
 ];
 
+const foungStatusContainer = (container: any) => {
+  let status = container.status;
+  if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+    const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
+    if(statusList.includes('empty')) {
+      status = 'empty';
+    } else if(statusList.includes('check')) {
+      status = 'check';
+    } else if(statusList.includes('open')) {
+      status = 'open';
+    } else {
+      status = container.status;
+    }
+  }
+  return status;
+}
+
+const imagesFormatter = ( row: any) => {
+  if (row.images && row.images.length) {
+    return (
+      <div className="row">
+        {row.images.map((image: any, index: number) => (
+          <div
+            key={image._id}
+            className={'col-md-12 images-25 text-center'}
+            style={{ display: index === 0 ? '' : 'none' }}>
+            <a
+              href={decodeURI(image.file.url)}
+              data-toggle="lightbox"
+              data-gallery={row._id}>
+              <button className="btn btn-xs btn-default">
+                <i className="fa fa-fw fa-image" /> {row.images.length}
+              </button>
+              {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+            </a>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
 
@@ -112,6 +192,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       blFilter: '',
       containerFilter: '',
       clientFilter: '',
+      clientSelector: [],
       statusFilter: '',
       selectedContainer: -1,
       inventorySettings: {
@@ -159,7 +240,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }).flat();
 
         let containers = data.filter((car: any) => {
-          return car.car.isContainer;
+          if(car.car.isContainer) {
+            car.status = foungStatusContainer(car);
+            console.log(car.status);
+            return true;
+          }
+          return false;
         });
 
         let cars = data.filter((car: any) => {
@@ -179,10 +265,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
         })
 
+        console.log(containers);
         this.setState({
           containers: containers,
           originalContainers: containers
         })
+
+        let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
+        this.setState({
+          clientSelector: clients
+        });
       })
       .catch((error: any) => {
         console.log(error);
@@ -200,13 +292,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   filterContainers() {
     let containers = this.state.originalContainers.filter((container: any) => {
-      // let bl = container.car.bl.toLowerCase().includes(this.state.blFilter.toLowerCase());
+      let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      // let clientFilter = container.car.client ? container.car.client.name.toLowerCase().includes(this.state.clientFilter.toLowerCase()) : true;
+      let clientFilter = this.state.clientFilter === '' ? true : (container.extra["Cliente Razón Social"] ? container.extra["Cliente Razón Social"].toLowerCase().includes(this.state.clientFilter.toLowerCase()) : false);
       let statusFilter = this.state.statusFilter === '' ? true : container.status === this.state.statusFilter;
-      return containerFilter && statusFilter;
-    });
 
+      return bl && containerFilter && clientFilter && statusFilter;
+    });
 
     this.setState({
       containers: containers
@@ -222,19 +314,19 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border">
+            <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
                 Revisión Containers
               </h3>
-            </div>
-            <div className="pull-right box-tools">
-              {hasPermission(window.user, 'createInventory') ? (
-                <button
+              <div className="pull-right box-tools">
+                {hasPermission(window.user, 'createInventory') ? (
+                  <button
                   className="btn btn-sm btn-success"
                   onClick={this.create}>
-                  <i className="fa fa-plus"/> Crear inventario
-                </button>
-              ) : null}
+                    <i className="fa fa-plus"/> Crear inventario
+                  </button>
+                ) : null}
+              </div>
             </div>
             <div className="box-body">
               <div className="row">
@@ -275,6 +367,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       }}
                     >
                       <option value="">Todos</option>
+                      {this.state.clientSelector.map((client: any, index: number) => {
+                        return <option key={index} value={client}>{client}</option>
+                      })
+                      }
                     </select>
                   </div>
                 </div>
@@ -291,9 +387,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       <option value="">Todos</option>
                       <option value="pending">Pendientes</option>
                       <option value="found">Encontrados</option>
-                      <option value="missing">Faltantes</option>
-                      <option value="leftover">Encontrados*</option>
-                      <option value="reported">Reportados</option>
+                      <option value="oepn">Abierto</option>
+                      <option value="check">Descarga</option>
+                      <option value="empty">Vacio</option>
                     </select>
                   </div>
                 </div>
@@ -347,6 +443,12 @@ const inventorySettings: { [key: string]: any } = {
   "reported": "Reportados",
   "reportedClass": "gray-dark",
   "reportedColor": "#96a4b3",
+  "empty": "Vacio",
+  "emptyClass": "yellow",
+  "check": "Descarga",
+  "checkClass": "green",
+  "open": "Abierto",
+  "openClass": "gray-dark",
   "report": {
     "atLeastOne": true,
     "primaryRequired": false,
@@ -362,10 +464,10 @@ const ExpandedRowElement = ({ data }: {data: any}) => {
                     <strong>BIC</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Cant. de elementos</strong>
+                    <strong>Fotos</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Marca</strong>
+                    <strong>Color</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                     <strong>Estado</strong>
@@ -379,7 +481,7 @@ const ExpandedRowElement = ({ data }: {data: any}) => {
          <strong>{car.car.vin}</strong>
        </div>
        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         <strong>{car.car.brand}</strong>
+         {imagesFormatter(car)}
        </div>
        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
          <strong>{car.car.color}</strong>
@@ -392,7 +494,7 @@ const ExpandedRowElement = ({ data }: {data: any}) => {
             : ''
             }`}
             style={{
-              padding: '5px 10px'
+              padding: '5px 10px',
             }}>
            {inventorySettings.hasOwnProperty(car.status)
              ? inventorySettings[car.status]
