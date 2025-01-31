@@ -48,7 +48,7 @@ const paginationComponentOptions = {
 const columns = [
   {
     name: 'Fecha',
-    selector: (row: any) => { 
+    selector: (row: any) => {
       return row.createdAt ? new Intl.DateTimeFormat('es-ES', {
       day: '2-digit',
       month: '2-digit',
@@ -131,13 +131,13 @@ const columns = [
     },
     cell: (row: any) => {
       return row.status !== "pending" && <button className="btn btn-primary" onClick={() => {
-        window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
+        window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
   }
 ];
 
-const foungStatusContainer = (container: any) => {
+const foundStatusContainer = (container: any) => {
   let status = container.status;
   if(container.evidenceStatus && container.evidenceStatus.length > 0) {
     const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
@@ -241,8 +241,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
         let containers = data.filter((car: any) => {
           if(car.car.isContainer) {
-            car.status = foungStatusContainer(car);
-            console.log(car.status);
+            car.status = foundStatusContainer(car);
             return true;
           }
           return false;
@@ -265,7 +264,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
         })
 
-        console.log(containers);
         this.setState({
           containers: containers,
           originalContainers: containers
@@ -461,7 +459,7 @@ const ExpandedRowElement = ({ data }: {data: any}) => {
   return <div className='container-fluid box-body table-responsive request-list'>
      <div className="row request bg-primary">
                   <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                    <strong>BIC</strong>
+                    <strong>VIN</strong>
                   </div>
                   <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                     <strong>Fotos</strong>

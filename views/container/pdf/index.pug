@@ -62,7 +62,7 @@ html
     title Reporte de Desconsolidado
     style(type="text/css")=css
   body
-    .container
+
       header
         .logo
           img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
@@ -91,7 +91,7 @@ html
               span !{container.car.bl}
             .item
               span.label Puerto Origen:
-              span 
+              span
             .item
               span.label Nave:
               span !{container.extra["Nave"]}
@@ -118,10 +118,10 @@ html
               span !{container.extra["Sello OUT"]}
       .section-wrapper
         .section
-          .title Evidencia Fotográfica Container ({container.evidences.length} Fotos)
-          .photos
-            each photo in container.evidences
-              img(src=photo.file.url alt="Foto")
+          .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
+          each image in evidences
+            .image-box
+              img(src=image.file.url, alt="Image")
       .section-wrapper
         .section
           .title Resumen Carga (!{cars.length} Items)
@@ -148,13 +148,13 @@ html
                 span #{index + 1}
               .item
                 span.label VEHÍCULO:
-                span !{car.car.vin} 
+                span !{car.car.vin}
               .item
                 span.label MARCA:
                 span !{car.car.brand}
           .section
-            .title Evidencia Fotográfica Container (!{container.evidences.length} Fotos)
-            .photos
-              each photo in car.images
-                img(src=photo.file.url alt="Foto")
+            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
+            each image in car.images
+              .image-box
+                img(src=image.file.url, alt="Image")
 

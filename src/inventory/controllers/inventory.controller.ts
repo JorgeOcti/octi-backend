@@ -54,6 +54,7 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
+import ca from '../../../public/theme/bower_components/moment/src/locale/ca';
 
 class InventoryController {
   constructor() {
@@ -2394,22 +2395,47 @@ class InventoryController {
   }
 
   public async pdf(req: IRequest, res: Response) {
-    const { id } = req.params;
+    const { inventoryId, carId } = req.params;
+    const inventorySettings: { [key: string]: any } = {
+      "pending": "Pendientes",
+      "found": "Encontrados",
+      "missing": "Faltantes",
+      "leftover": "Encontrados*",
+      "reported": "Reportados",
+      "empty": "Vacio",
+      "check": "Descarga",
+      "open": "Abierto",
+    }
+
+    const foundStatusContainer = (container: any) => {
+      let status = container.status;
+      if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+        const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
+        if(statusList.includes('empty')) {
+          status = 'empty';
+        } else if(statusList.includes('check')) {
+          status = 'check';
+        } else if(statusList.includes('open')) {
+          status = 'open';
+        } else {
+          status = container.status;
+        }
+      }
+      return status;
+    }
+
     try{
       const container = await InventoryCar.findOne({
-        car: new mongoose.Types.ObjectId(id)
+        car: new mongoose.Types.ObjectId(carId),
+        inventory: new mongoose.Types.ObjectId(inventoryId)
       }).populate([
         { path: 'inventoriedBy' },
-        {path: 'images'},
-        {path: 'venueFound'},
+        { path: 'images'},
+        { path: 'venueFound'},
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]);
-
-      container.evidences = container.evidenceStatus.map((e: any) => {
-        return e.images;
-      }).flat();
 
       if (!container) {
         return res.status(404).json({
@@ -2417,6 +2443,14 @@ class InventoryController {
           status: 404
         });
       }
+
+      let evidences = container.evidenceStatus.length ? container.evidenceStatus.map((e: any) => {
+        return e.images;
+      }).flat() : container.images;
+
+      let statusContainer = inventorySettings[foundStatusContainer(container)];
+      container.status = statusContainer;
+
 
       let cars = await InventoryCar.find({
         container: container._id
@@ -2427,7 +2461,15 @@ class InventoryController {
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
-      ]);
+      ]).lean();
+
+      cars = cars.map((tmp: any) => {
+        let status = inventorySettings[foundStatusContainer(tmp)];
+        return {
+          ...tmp,
+          status
+        }
+      })
 
       let template: string =
         path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
@@ -2440,11 +2482,10 @@ class InventoryController {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         moment,
         cars,
-        container
+        container,
+        evidences
       })
-
-
-      if (false) {
+      if (0) {
         return res.send(html);
       } else {
         // launch a new chrome instance

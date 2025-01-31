@@ -71,20 +71,6 @@ header {
   font-weight: bold;
 }
 
-.photos {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.photos img {
-  width: 100%;
-  height: auto;
-  border: 1px solid #ddd;
-  display: inline-block;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -92,7 +78,7 @@ table {
 }
 
 table, th, td {
-  border: 1px solid #000;
+  border: 1px solid white;
 }
 
 th, td {
@@ -104,6 +90,12 @@ th {
   background: #eee;
 }
 
+.containers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 footer {
   margin-top: 20px;
   text-align: center;
@@ -111,4 +103,22 @@ footer {
   color: #000;
   border-top: 2px solid #000;
   padding-top: 8px;
+}
+
+
+.image-box {
+  display: inline-block;
+  width: 40%; /* Two images per row */
+  padding: 5px;
+  page-break-inside: avoid; /* Prevents breaking */
+}
+
+img {
+  max-width: 100%;
+  max-height: 300px;
+  height: auto;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 5px;
 }
