@@ -54,7 +54,6 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
-import ca from '../../../public/theme/bower_components/moment/src/locale/ca';
 
 class InventoryController {
   constructor() {
