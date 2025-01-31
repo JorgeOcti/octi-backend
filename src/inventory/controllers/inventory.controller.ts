@@ -2395,69 +2395,111 @@ class InventoryController {
   }
 
   public async pdf(req: IRequest, res: Response) {
-    let template: string =
-    path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
-    const css = fs.readFileSync(
-      path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
-      'utf8'
-    );
-    const imagePath = path.join(__dirname, '../../../public/') + 'images/medlog_logo.png';
-const imageBase64 = fs.readFileSync(imagePath, 'base64');
-    const html = GeneralUtils.generateHtmlFromPugFile(template, {css});
+    const { id } = req.params;
+    try{
+      const container = await InventoryCar.findOne({
+        car: new mongoose.Types.ObjectId(id)
+      }).populate([
+        { path: 'inventoriedBy' },
+        { path: 'car' },
+        { path: 'evidenceStatus.images' },
+        { path: 'files' }
+      ]);
 
-        if (false) {
-          return res.send(html);
-        } else {
-          // launch a new chrome instance
-          const browser = await puppeteer.launch({
-            executablePath: '/usr/bin/chromium',
-            args: [
-              '--no-sandbox',
-              '--allow-file-access-from-files',
-              '--enable-local-file-accesses'
-            ], // Required.
-            headless: true 
-          });
-          // create a new page
-          const page = await browser.newPage();
+      if (!container) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el contenedor',
+          status: 404
+        });
+      }
 
-          await page.setContent(html, {
-            waitUntil: 'networkidle0'
-          });
+      let cars = await InventoryCar.find({
+        container: container._id
+      });
 
-          const pdfBuffer = await page.pdf({
-            format: 'A4',
-            displayHeaderFooter: true,
-            headerTemplate: `
-         <div style="width: 100%; font-size: 9px; display: flex; align-items: center; justify-content: space-between; margin: 10px 50px;">
-          <img src="data:image/png;base64,${imageBase64}" style="width: 80px; height: auto; object-fit: contain;"/>
-          <h3 style="margin: 0; flex: 1; text-align: center;">CIBU 782725-9</h3>
-          <h3 style="margin: 0; text-align: right;">24/01/2025 10:25 hrs</h3>
-        </div>
-            `,
-            footerTemplate: `
+      let template: string =
+        path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
+      const css = fs.readFileSync(
+        path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
+        'utf8'
+      );
+
+      const html = GeneralUtils.generateHtmlFromPugFile(template, {
+        css: css.replace(/(\r\n|\n|\r)/gm, ''),
+        moment,
+        cars,
+        container
+      })
+
+
+      if (false) {
+        return res.send(html);
+      } else {
+        // launch a new chrome instance
+        const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
+          args: [
+            '--no-sandbox',
+            '--allow-file-access-from-files',
+            '--enable-local-file-accesses'
+          ], // Required.
+          headless: true
+        });
+        // create a new page
+        const page = await browser.newPage();
+
+        await page.setContent(html, {
+          waitUntil: 'networkidle0'
+        });
+
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          displayHeaderFooter: true,
+
+        //   headerTemplate: `
+        //  <div style="width: 100%; font-size: 9px; display: flex; align-items: center; justify-content: space-between; margin: 10px 50px;">
+        //   <img src="data:image/png;base64,${imageBase64}" style="width: 80px; height: auto; object-fit: contain;"/>
+        //   <h3 style="margin: 0; flex: 1; text-align: center;">CIBU 782725-9</h3>
+        //   <h3 style="margin: 0; text-align: right;">24/01/2025 10:25 hrs</h3>
+        // </div>
+        //     `,
+          footerTemplate: `
             <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
               Página <span class="pageNumber"></span> / <span class="totalPages"></span>
             </div>`,
-            // this is needed to prevent content from being placed over the footer
-            margin: { 
-              top: '70px',
-              left: '30px',
-              right: '30px',
-              bottom: '70px'
-            },
-          });
+          // this is needed to prevent content from being placed over the footer
+          margin: {
+            top: '70px',
+            left: '30px',
+            right: '30px',
+            bottom: '70px'
+          },
+        });
 
-          await browser.close();
+        await browser.close();
 
-          // Return Buffer
-          res.setHeader('Content-Type', 'application/pdf');
-          res.setHeader(
-            'Content-disposition',
-            `inline; filename=asdfasdf.pdf`
-          );
-          return res.send(pdfBuffer);
-        }
+        // Return Buffer
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+          'Content-disposition',
+          `inline; filename=asdfasdf.pdf`
+        );
+        return res.send(pdfBuffer);
+      }
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`pdf: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
   }
 
 
