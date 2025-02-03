@@ -5,6 +5,7 @@ import {connect} from "react-redux";
 import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
+import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
@@ -130,8 +131,8 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return row.status !== "pending" && <button className="btn btn-primary" onClick={() => {
-        window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
+      return row.status !== ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
+        window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
   }
@@ -141,12 +142,12 @@ const foundStatusContainer = (container: any) => {
   let status = container.status;
   if(container.evidenceStatus && container.evidenceStatus.length > 0) {
     const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
-    if(statusList.includes('empty')) {
-      status = 'empty';
-    } else if(statusList.includes('check')) {
-      status = 'check';
-    } else if(statusList.includes('open')) {
-      status = 'open';
+    if(statusList.includes(ContainerStatus.EMPTY)) {
+      status = ContainerStatus.EMPTY;
+    } else if(statusList.includes(ContainerStatus.CHECK)) {
+      status = ContainerStatus.CHECK;
+    } else if(statusList.includes(ContainerStatus.OPEN)) {
+      status = ContainerStatus.OPEN;
     } else {
       status = container.status;
     }
