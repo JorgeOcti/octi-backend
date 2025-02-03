@@ -172,6 +172,7 @@ Entrando lo primero que veremos será el login, si configuramos correctamente el
 <a id="user"></a>
 ### Usuarios disponibles por defecto
 A continuación se detallan los usuarios creados por defecto en la base de datos. Todos los usuarios tienen distintas cantidades de información, sin embargo, el usuario que tiene acceso a la información más completa y compleja es el que está marcado con una ```x``` en ```most_populated```.
+
 | email                      | password | venue    | company                          | team  | most_populated |
 | -------------------------- | -------- | -------- | -------------------------------- | ----- | -------------- |
 | Garrett_Heller93@gmail.com | tenavero | MAGENTA  | POTATOES SALAD                   | whale |                |
