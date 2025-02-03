@@ -3,4 +3,5 @@ export enum ContainerStatus {
     OPEN = 'open',
     CHECK = 'check',
     PENDING = 'pending',
+    FOUND = 'found',
 }

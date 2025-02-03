@@ -131,7 +131,7 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return row.status !== ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
+      return row.status === ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
         window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
@@ -384,11 +384,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       }}
                     >
                       <option value="">Todos</option>
-                      <option value="pending">Pendientes</option>
-                      <option value="found">Encontrados</option>
-                      <option value="oepn">Abierto</option>
-                      <option value="check">Descarga</option>
-                      <option value="empty">Vacio</option>
+                      <option value={ContainerStatus.PENDING}>Pendientes</option>
+                      <option value={ContainerStatus.FOUND}>Encontrados</option>
+                      <option value={ContainerStatus.OPEN}>Abierto</option>
+                      <option value={ContainerStatus.CHECK}>Descarga</option>
+                      <option value={ContainerStatus.EMPTY}>Vacio</option>
                     </select>
                   </div>
                 </div>
