@@ -2534,7 +2534,7 @@ class InventoryController {
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader(
           'Content-disposition',
-          `inline; filename=asdfasdf.pdf`
+          `inline; filename=Tarja-${container.car.vin}.pdf`
         );
         return res.send(pdfBuffer);
       }
