@@ -630,7 +630,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             <div className="box-footer text-right">
               <button
                 className="btn btn-sm btn-default"
-                onClick={() => this.props.history.push('/inventory/')}>
+                onClick={() => this.props.history.push('/inventory/containers/')}>
                 Cancelar
               </button>
               <button
