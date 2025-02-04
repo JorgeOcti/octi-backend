@@ -3148,7 +3148,7 @@ class InventoryController {
           status,
           images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
       }
-      inventoryCar.containerStatus = ChoicesStatusContainer.open;
+      inventoryCar.containerStatus = status;
       inventoryCar.evidenceStatus = evidenceStatus
       await inventoryCar.save()
 
