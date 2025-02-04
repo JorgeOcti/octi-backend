@@ -28,7 +28,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory, ChoicesStatusContainer
+  ChoicesStatusCarInventory, choicesStatusContainer, ChoicesStatusContainer
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -1159,11 +1159,6 @@ class InventoryController {
             });
             // if car in inventory
             if (inventoryCar) {
-              if (car.isContainer){
-                inventoryCar.evidenceStatus = [
-                  {status: ChoicesStatusContainer.open, images},
-                ]
-              }
               inventoryCar.venueFound = venueId;
               if (containerFound){
                 let inventoryContainer = await InventoryCar.findOne({
@@ -1189,6 +1184,12 @@ class InventoryController {
                     venue: venueId,
                     update: true
                   });
+              } else if (car.isContainer){
+                inventoryCar.evidenceStatus = [
+                  {status: ChoicesStatusContainer.open, images},
+                ]
+                inventoryCar.containerStatus = ChoicesStatusContainer.open;
+                inventoryCar.status = ChoicesStatusCarInventory.found;
               } else {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
                 socket()
@@ -3101,6 +3102,15 @@ class InventoryController {
     const { id } = req.params;
 
     try {
+      // Check if sent status is valid
+      if (!Object.values(choicesStatusContainer).includes(status)) {
+        return res.status(400).json({
+          message: 'El estado enviado no es válido.',
+          status: 400
+        });
+      }
+
+
       let car = await CarModel.findOne({vin: vin});
       if (!car) {
         return res.status(404).json({
@@ -3137,7 +3147,7 @@ class InventoryController {
           status,
           images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
       }
-
+      inventoryCar.containerStatus = ChoicesStatusContainer.open;
       inventoryCar.evidenceStatus = evidenceStatus
       await inventoryCar.save()
 
