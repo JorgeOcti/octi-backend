@@ -901,7 +901,8 @@ class InventoryController {
                   container: car.container,
                   containerFound: car.containerFound,
                   extra: car.extra,
-                  evidenceStatus: car.evidenceStatus
+                  evidenceStatus: car.evidenceStatus,
+                  containerStatus: car.containerStatus
                 };
               }),
               reasons: []
