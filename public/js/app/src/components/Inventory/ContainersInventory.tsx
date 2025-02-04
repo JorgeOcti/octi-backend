@@ -132,7 +132,7 @@ const columns = [
     },
     cell: (row: any) => {
       return row.status === ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
-        window.open(`/api/inventory/container/tarja/${row.car._id}`, '_blank')
+        window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
   }
