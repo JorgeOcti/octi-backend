@@ -112,10 +112,10 @@ html
               span !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
             .item
               span.label Ubicación:
-              span !{container.venueFound.name}
+              span !{container.extra["Ubicación"] || "San Antonio"}
             .item
               span.label Precinto:
-              span !{container.extra["Sello OUT"]}
+              span !{container.extra["Sello IN"]}
       .section-wrapper
         .section
           .title Evidencia Fotográfica Container (!{evidences.length} Fotos)

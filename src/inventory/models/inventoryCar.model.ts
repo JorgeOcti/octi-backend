@@ -113,6 +113,11 @@ const inventoryCarSchema = new mongoose.Schema({
     enum: choicesStatusCarInventory,
     default: ChoicesStatusCarInventory.pending
   },
+  containerStatus: {
+    type: String,
+    enum: choicesStatusContainer,
+    default: ChoicesStatusContainer.pending
+  },
   container: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'

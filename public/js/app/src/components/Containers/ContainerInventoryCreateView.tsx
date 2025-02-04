@@ -7,11 +7,13 @@ import * as React from 'react';
 import {RefObject} from "react";
 import AppContainer from "../../container/AppContainer";
 import Checkbox from "../Utils/CheckBox";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-color";
 import * as swal from 'sweetalert';
 import ApiService from "../../utils/axios";
 import {connect} from "react-redux";
 import * as moment from "moment/moment";
+import { hasPermission } from '../../utils/common';
+import DataTable from 'react-data-table-component';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -36,6 +38,22 @@ interface IStateType {
   backupUri: string;
 }
 
+const dataTableStyle = {
+  expanderCell: {
+    style: {
+      // this is to put expander button at the end of the row
+      order: 1,
+    }
+  }
+};
+
+const paginationComponentOptions = {
+  rowsPerPageText: 'Filas por página',
+  rangeSeparatorText: 'de',
+  selectAllRowsItem: true,
+  selectAllRowsItemText: 'Todos',
+};
+
 class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
@@ -54,6 +72,24 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   readonly inputFile: RefObject<HTMLInputElement>;
   readonly inputBackup: RefObject<HTMLInputElement>;
+
+  readonly mandatoryHeaders = [
+    "BIC",
+    "VIN",
+    "Marca",
+    "Modelo",
+    "Color",
+    "Cliente Razón Social",
+    "RUT Cliente",
+    "Manifiesto",
+    "N° BL",
+    "Nave",
+    "N° Viaje",
+    "Sello IN",
+    "Puerto Origen",
+    "Peso",
+    "Emplazamiento",
+  ]
 
   readonly excelHeaders = [
     "BIC",
@@ -118,16 +154,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     "Consignatario",
     "Notificado",
   ]
-  readonly mandatoryHeaders = [
-    "BIC",
-    "VIN",
-    "Marca",
-    "Modelo",
-    "Cliente Razón Social",
-    "RUT Cliente",
-    "N° BL",
-    "Emplazamiento",
-  ]
+
   readonly containerHeaders = {
       "vin": (data : any) => data.BIC.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', ''),
       "vin2": (data : any) => data.BIC.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(-7),
@@ -145,8 +172,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
       "bl": (data: any) => data["N° BL"]
     }
-
-
 
   constructor(props: IPropsType) {
     super(props);
@@ -221,7 +246,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
               sending: false
             });
             swal.close();
-            history.push('/inventory/');
+            history.push('/inventory/containers/');
           }, 2000);
         })
         .catch((e) => {
@@ -417,11 +442,93 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
     /* make the worksheet */
     const ws = XLSX.utils.aoa_to_sheet([this.excelHeaders]);
+
+    this.excelHeaders.forEach((header: string, index: number) => {
+      let style: any = {
+        font: {bold: true}
+      }
+      if (this.mandatoryHeaders.includes(header)){
+        style = {
+          font: {bold: true},
+          fill: {fgColor: {rgb: "95dcf7"}}
+        }
+      }
+      ws[XLSX.utils.encode_cell({c: index, r: 0})].s = style;
+    });
+
     /* add to workbook */
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Planilla OSA');
     /* generate an XLSX file */
     XLSX.writeFile(wb, 'template_container_inventory_settings.xlsx');
+  }
+
+  private columns = [
+    {
+      name: 'Contenedor',
+      selector: (row: any) => row.container.vin,
+      sortable: true
+    },
+    {
+      name: 'BL',
+      selector: (row: any) => row.container.extra["N° BL"],
+    },
+    {
+      name: 'Puerto origen',
+      selector: (row: any) => row.container.extra["Emplazamiento"],
+    },
+    {
+      name: 'Nave',
+      selector: (row: any) => row.container.extra["Nave"],
+    },
+    {
+      name: 'Cliente',
+      selector: (row: any) => {
+        return row.container.extra["Cliente Razón Social"];
+      },
+      cell: (row: any) => {
+        return <div>{row.container.extra["Cliente Razón Social"]}</div>
+      }
+    },
+    {
+      name: 'Ubicación',
+      selector: (row: any) => {
+        return row.container.extra["Ubicación"];
+      }
+    }
+  ];
+
+  private ExpandedRowElement = ({ data }: {data: any}) => {
+    return <div className='container-fluid box-body table-responsive request-list'>
+      <div className="row request bg-primary">
+        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <strong>VIN</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Marca</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Color</strong>
+        </div>
+      </div>
+      { data.cars.map((car: any, index: number) => {
+        let className = `${car.status}Class`;
+        return (
+          <div key={index} className='row request bg-request-title background-transition'>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              <strong>{car.vin}</strong>
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              {car.brand} - {car.denomination}
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <strong>{car.color}</strong>
+            </div>
+          </div>
+        )
+      })
+      }
+    </div>
   }
 
   render() {
@@ -456,152 +563,61 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
                   </div>
                 </div>
               </div>
-              { false ? null
-              // {carsByVenue.length ?
-              //   (
-              //   <div className="row">
-              //     <div className="col-md-12">
-              //       <div className="form-group">
-              //         <label>Configuración cargada</label>
-              //         <div
-              //           className="box-group"
-              //           id="accordion"
-              //           style={{ margin: '2px 0 10px 0' }}>
-              //           {carsByVenue.map((venue: any, index) => {
-              //             carsInSettings += venue.cars.length;
-              //             return (
-              //               <VenueDetail
-              //                 index={index}
-              //                 venue={venue}
-              //                 key={venue.name}
-              //                 deleteVenue={this.deleteVenue}
-              //               />
-              //             );
-              //           })}
-              //         </div>
-              //       </div>
-              //     </div>
-              //     <div className="col-md-6">
-              //       <p>
-              //         <strong>Total de sucursales:</strong> {carsByVenue.length}
-              //       </p>
-              //       <p>
-              //         <strong>Total de unidades:</strong> {carsInSettings}
-              //       </p>
-              //     </div>
-              //     <div className="col-md-6 text-right">
-              //       <button
-              //         className="btn btn-sm btn-primary"
-              //         onClick={this.downloadTemplate}>
-              //         <i className="fa fa-fw fa-download" /> Descargar Formato
-              //       </button>
-              //       <button
-              //         className="btn btn-sm btn-default"
-              //         onClick={this.clickUploadFile}
-              //         style={{ marginLeft: '5px' }}>
-              //         <i className="fa fa-fw fa-cogs" /> Cambiar configuración
-              //       </button>
-              //     </div>
-              //     <div className="col-md-12">
-              //       <div className="form-group" style={{ marginBottom: '0px' }}>
-              //         <label>Archivo de respaldo</label>
-              //       </div>
-              //       <div className="preview-files">
-              //         {backupFile && backupUri ? (
-              //           <div className="file">
-              //             <i
-              //               className="fa fa-minus-circle text-red pointer"
-              //               onClick={this.clearBackup}
-              //             />
-              //             <a
-              //               href={backupUri}
-              //               className="zoom-in"
-              //               data-toggle="lightbox"
-              //               data-title={`Vista previa de la imagen`}
-              //               data-footer={(backupFile as unknown as File).name}>
-              //               <img
-              //                 src={backupUri}
-              //                 data-toggle="tooltip"
-              //                 data-placement="bottom"
-              //                 title={(backupFile as unknown as File).name}
-              //               />
-              //             </a>
-              //           </div>
-              //         ) : backupFile ? (
-              //           <div className="file">
-              //             <i
-              //               className="fa fa-minus-circle text-red pointer"
-              //               onClick={this.clearBackup}
-              //             />
-              //             <div
-              //               className={`icon type-${getIconFromExtension(
-              //                 getExtension((backupFile as unknown as File).name)
-              //               )}`}
-              //             />
-              //             <div
-              //               className="name-file"
-              //               data-toggle="tooltip"
-              //               data-placement="bottom"
-              //               title={(backupFile as unknown as File).name}>
-              //               {(backupFile as unknown as File).name}
-              //             </div>
-              //           </div>
-              //         ) : (
-              //           <div
-              //             className="add-file"
-              //             onClick={this.clickUploadBackup}>
-              //             <i className="fa fa-plus" />
-              //             AGREGAR ARCHIVO
-              //           </div>
-              //         )}
-              //       </div>
-              //       <input
-              //         type="file"
-              //         onChange={this.handleChangeInputBackup}
-              //         style={{ display: 'None' }}
-              //         ref={this.inputBackup}
-              //       />
-              //     </div>
-              //   </div>
-              // )
-                :
+              {Object.keys(carsByContainer).length > 0 ?
+                <div className="box">
+                  <div className="box-header with-border flex flex-space-between">
+                    <h3 className="box-title">
+                      Containers ({Object.keys(carsByContainer).length})
+                    </h3>
+                  </div>
+                  <DataTable
+                    columns={this.columns}
+                    data={Object.values(carsByContainer)}
+                    customStyles={dataTableStyle}
+                    expandableRows
+                    expandableRowsComponent={this.ExpandedRowElement}
+                    expandOnRowClicked={true}
+                    pagination
+                    paginationComponentOptions={paginationComponentOptions}
+                  />
+                </div> :
                 (
-                <div className="row">
-                  <div className="col col-md-12">
-                    <div className="form-group">
-                      <label>Importar configuración</label>
-                      <div
-                        className="upload-file text-center pointer"
-                        onClick={this.clickUploadFile}
-                        onDrop={this.handleDrop}
-                        onDragOver={this.dragOverHandler}
-                        onDragEnd={this.dragEndHandler}
-                        onDragLeave={this.dragLeaveHandler}
-                        style={{
-                          backgroundColor: '#EEEEEE',
-                          border: this.state.canDrop
-                            ? '1px solid #979797'
-                            : '1px dashed #979797',
-                          padding: '40px 20px',
-                          color: this.state.canDrop ? '#aebccb' : '#6e7a89',
-                          borderRadius: '5px'
-                        }}>
-                        <i className="fa fa-2x fa-cloud-upload" />
-                        <br />
-                        Prueba soltando el excel aquí, o haz click para
-                        seleccionar el excel a cargar.
+                  <div className="row">
+                    <div className="col col-md-12">
+                      <div className="form-group">
+                        <label>Importar configuración</label>
+                        <div
+                          className="upload-file text-center pointer"
+                          onClick={this.clickUploadFile}
+                          onDrop={this.handleDrop}
+                          onDragOver={this.dragOverHandler}
+                          onDragEnd={this.dragEndHandler}
+                          onDragLeave={this.dragLeaveHandler}
+                          style={{
+                            backgroundColor: '#EEEEEE',
+                            border: this.state.canDrop
+                              ? '1px solid #979797'
+                              : '1px dashed #979797',
+                            padding: '40px 20px',
+                            color: this.state.canDrop ? '#aebccb' : '#6e7a89',
+                            borderRadius: '5px'
+                          }}>
+                          <i className="fa fa-2x fa-cloud-upload" />
+                          <br />
+                          Prueba soltando el excel aquí, o haz click para
+                          seleccionar el excel a cargar.
+                        </div>
                       </div>
                     </div>
+                    <div className="col-md-12 text-right">
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={this.downloadTemplate}>
+                        <i className="fa fa-fw fa-download" /> Descargar Formato
+                      </button>
+                    </div>
                   </div>
-                  <div className="col-md-12 text-right">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={this.downloadTemplate}>
-                      <i className="fa fa-fw fa-download" /> Descargar Formato
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
 
               <input
                 type="file"
