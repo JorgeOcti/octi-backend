@@ -5,7 +5,6 @@ import {connect} from "react-redux";
 import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
-
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
@@ -50,14 +49,14 @@ const columns = [
     name: 'Fecha',
     selector: (row: any) => {
       return row.createdAt ? new Intl.DateTimeFormat('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false, // Asegura formato 24h
-    }).format(new Date(row.createdAt)).replace(',', ''): '';
-  }
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false, // Asegura formato 24h
+      }).format(new Date(row.createdAt)).replace(',', ''): '';
+    }
   },
   {
     name: 'Contenedor',
@@ -130,7 +129,7 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return row.status !== "pending" && <button className="btn btn-primary" onClick={() => {
+      return <button className="btn btn-primary" onClick={() => {
         window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
