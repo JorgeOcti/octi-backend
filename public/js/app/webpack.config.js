@@ -71,9 +71,13 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
           loader: 'babel-loader'
         }, {
           loader: 'ts-loader',
-          // options: {
-          //   transpileOnly: true,
-          // },
+          options: {
+            compilerOptions: {
+              target: 'es5',
+              incremental: true  // this could also be in tsconfig.json directly
+            },
+            transpileOnly: true,
+          },
         }] : {
           loader: 'ts-loader',
           options: {

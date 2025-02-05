@@ -303,7 +303,7 @@ class CarController {
             color: true,
             patent: true,
             denomination: true,
-            isContainer: true
+            isContainer: true,
           }).lean();
           if (cars.length) {
             const carsByID = cars.reduce((acc: any, cur: any) => {
@@ -328,7 +328,7 @@ class CarController {
                     select: ['name']
                   }
                 ],
-                select: ['car', 'status', 'venue', 'isContainer', 'container', 'containerFound', 'extra' ]
+                select: ['car', 'status', 'venue', 'isContainer', 'container', 'containerFound', 'extra', 'containerStatus', 'evidenceStatus' ]
               }
             ]);
             if (inventoriedCar) {
@@ -349,6 +349,8 @@ class CarController {
                       color: carToAdd.color,
                       denomination: carToAdd.denomination,
                       status: car.status,
+                      containerStatus: car.containerStatus,
+                      evidenceStatus: car.evidenceStatus,
                       venue: car.venue,
                       brand: carToAdd.brand,
                       container: car.container,

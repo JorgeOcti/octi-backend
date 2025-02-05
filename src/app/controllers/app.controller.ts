@@ -211,7 +211,8 @@ class AppController {
     if (req.user) {
       return res.redirect('/');
     } else {
-      return res.render('app/forgotPassword', { csrfToken: req.csrfToken() });
+      let token : string = (req as any).csrfToken();
+      return res.render('app/forgotPassword', { csrfToken: token });
     }
   }
 
@@ -268,8 +269,9 @@ class AppController {
       /* istanbul ignore next */
       console.log(e);
     }
+    let token : string = (req as any).csrfToken();
     return res.render('app/forgotPassword', {
-      csrfToken: req.csrfToken(),
+      csrfToken: token,
       post: username && username.length
     });
   }
@@ -287,8 +289,9 @@ class AppController {
       const user = await UserModel.findOne({
         passwordResetToken: token
       });
+      let newToken : string = (req as any).csrfToken(true);
       return res.render('app/recovery', {
-        csrfToken: req.csrfToken(),
+        csrfToken: newToken,
         user
       });
     } catch (e) {

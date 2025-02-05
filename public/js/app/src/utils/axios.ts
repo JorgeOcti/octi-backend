@@ -507,6 +507,31 @@ export default class ApiService {
     });
   }
 
+  public createContainerInventory({
+    carsByContainer,
+    name,
+    file,
+    backupFile
+    }: {
+    carsByContainer: any;
+    name: string;
+    file: File | null;
+    backupFile: File | null;
+  }): AxiosPromise {
+    const formData = new FormData();
+    formData.append('carsByContainer', JSON.stringify(carsByContainer));
+    formData.append('name', name);
+    formData.append('file', file!);
+    if (backupFile) {
+      formData.append('backup', backupFile);
+    }
+    this.instance.defaults.headers.common['Content-Type'] =
+      'multipart/form-data';
+    return this.instance.post(`/api/inventory/container/`, formData, {
+      cancelToken: this.source.token
+    });
+  }
+
   // public createInventory({carsByVenue: any, name: string, notification: boolean, file: File, backup: File | null}): AxiosPromise {
   public createInventory({
     carsByVenue,
