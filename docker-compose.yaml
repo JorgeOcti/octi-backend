@@ -13,7 +13,6 @@ services:
       - mongo:/data/db
       - mongoConf:/data/configdb
       - '~/backups/osa/andes/mongo:/backups'
-
   redis:
     image: redis:5.0.14
     restart: unless-stopped
@@ -22,7 +21,6 @@ services:
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "500mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis:/data
-
   backend:
     build:
       dockerfile: Dockerfile.development
@@ -101,5 +99,4 @@ volumes:
   mongo:
   mongoConf:
   backend-modules:
-  frontend-modules:
   redis:

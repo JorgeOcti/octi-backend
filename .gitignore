@@ -55,6 +55,7 @@ buildcache
 /tools/
 .cache
 .vscode
+public/js/app/dist/
 
 updateAndesProdToLocal.sh
 updateAndesProdToStage.sh

@@ -1,4 +1,3 @@
-import * as csrf from 'csurf';
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
@@ -25,11 +24,31 @@ import historyController from './controllers/history.controller';
 import BorderController from './controllers/admin/border.admin.controller';
 import { distributionRouter } from '../distribution/router';
 import { AppListCompaniesSchema, AppListVenuesSchema } from './inputsSchema';
+import { doubleCsrf } from 'csrf-csrf';
 
 // setup route middlewares
 const appRouter = express.Router();
 
-const csrfProtection = csrf({ cookie: true });
+const {
+  doubleCsrfProtection,
+} = doubleCsrf({
+  getSecret: () => process.env.SECRET_KEY || 'secretKey', // A function that optionally takes the request and returns a secret
+  getSessionIdentifier: (req) => req.session.id,
+  getTokenFromRequest: (req) => {
+    if (req.body && req.body._csrf) {
+      return req.body._csrf;
+    } else if (req.cookies) {
+      return req.cookies["__Host-psifi.x-csrf-token"];
+    } else {
+      return req.headers["x-csrf-token"];
+    }
+  },
+
+  cookieName: "__Host-psifi.x-csrf-token",
+  ignoredMethods: ["GET", "HEAD", "OPTIONS"],
+});
+
+
 
 // DashBoard Principal
 appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
@@ -285,11 +304,11 @@ appRouter.get('/account/login/soo/:id', passport.authenticate('multy-saml'));
 appRouter.post('/account/login/soo/callback/', appController.processLoginSoo);
 
 
-appRouter.get('/account/forgot-password/', csrfProtection, appController.forgotPassword);
-appRouter.post('/account/forgot-password/', csrfProtection, appController.processForgotPassword);
+appRouter.get('/account/forgot-password/', doubleCsrfProtection, appController.forgotPassword);
+appRouter.post('/account/forgot-password/', doubleCsrfProtection, appController.processForgotPassword);
 
-appRouter.get('/account/recovery/:token', csrfProtection, appController.recovery);
-appRouter.post('/account/recovery/:token', csrfProtection, appController.processRecovery);
+appRouter.get('/account/recovery/:token', doubleCsrfProtection, appController.recovery);
+appRouter.post('/account/recovery/:token', doubleCsrfProtection, appController.processRecovery);
 
 appRouter.get('/account/logout/', Middlewares.isLoggedIn, appController.logout);
 
