@@ -11,6 +11,7 @@ import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
 import {IWindow} from "../../interfaces/window";
+import DateRangeInput from '../Utils/DateRangeInput';
 
 declare let window: IWindow;
 
@@ -29,6 +30,9 @@ interface IStateType {
   selectedContainer: number;
   inventorySettings: any;
   loading: boolean;
+  endDate: Date;
+  startDate: Date;
+  isFilteringByDate: boolean;
 }
 
 const dataTableStyle = {
@@ -47,20 +51,30 @@ const paginationComponentOptions = {
   selectAllRowsItemText: 'Todos',
 };
 
+const formaDate = (date: any) => {
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(date)).replace(',', '');
+}
+
 const columns = [
   {
-    name: 'Fecha',
+    name: 'F. Apertura',
     selector: (row: any) => {
-      return row.createdAt ? new Intl.DateTimeFormat('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false, // Asegura formato 24h
-      }).format(new Date(row.createdAt)).replace(',', ''): '';
+      return row.openDate ? formaDate(row.openDate) : 'Sin apertura';
     }
   },
+  {
+    name: 'F. Finalización',
+    selector: (row: any) => {
+      return row.emptyDate ? formaDate(row.emptyDate) : 'Sin finalizar';
+    }
+},
   {
     name: 'Contenedor',
     selector: (row: any) => row.car.vin,
@@ -182,6 +196,18 @@ const imagesFormatter = ( row: any) => {
   return null;
 }
 
+const getDateRangeOptions = ():daterangepicker.Options => {
+  return {
+    maxDate: moment().toDate(),
+    locale: {
+      format: 'DD/MM/YYYY',
+      customRangeLabel: 'Período personalizado',
+      applyLabel: 'Aplicar',
+      cancelLabel: 'Cancelar'
+    },
+  };
+}
+
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
 
@@ -198,6 +224,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       clientSelector: [],
       statusFilter: '',
       selectedContainer: -1,
+      endDate: moment().toDate(),
+      startDate: moment().toDate(),
+      isFilteringByDate: false,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",
@@ -267,6 +296,27 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
         })
 
+        containers = containers.map((container: any) => {
+          // if evidenceStatus is not empty, get the last status open and empty
+          if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+            let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+            let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
+            if (openEvidences.length > 0) {
+              //sort by date and get the last one
+              container.openDate = openEvidences.sort((a: any, b: any) => {
+                return moment(a.date).isAfter(b.date) ? -1 : 1;
+              })[0].date;
+            }
+            if (emptyEvidences.length > 0) {
+              //sort by date and get the last one
+              container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
+                return moment(a.date).isAfter(b.date) ? -1 : 1;
+              })[0].date;
+            }
+            return container;
+          }
+        });
+
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -287,9 +337,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
       this.state.clientFilter !== prevState.clientFilter ||
-      this.state.statusFilter !== prevState.statusFilter) {
+      this.state.statusFilter !== prevState.statusFilter ||
+      this.state.isFilteringByDate !== prevState.isFilteringByDate ||
+      this.state.startDate !== prevState.startDate ||
+      this.state.endDate !== prevState.endDate) {
       this.filterContainers();
     }
+  }
+
+  cleanFilters = () => {
+    this.setState({
+      blFilter: '',
+      containerFilter: '',
+      clientFilter: '',
+      statusFilter: '',
+      startDate: moment().toDate(),
+      endDate: moment().toDate(),
+      isFilteringByDate: false
+    });
   }
 
   filterContainers() {
@@ -298,8 +363,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let clientFilter = this.state.clientFilter === '' ? true : (container.extra["Cliente Razón Social"] ? container.extra["Cliente Razón Social"].toLowerCase().includes(this.state.clientFilter.toLowerCase()) : false);
       let statusFilter = this.state.statusFilter === '' ? true : container.status === this.state.statusFilter;
+      let dateFilter = true;
+      if (this.state.isFilteringByDate) {
+        if (container.openDate) {
+          let openDate = new Date(container.openDate);
+          let startDate = this.state.startDate? new Date(this.state.startDate) : null;
+          let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
+  
+          dateFilter = (!startDate || openDate >= startDate) && (!endDate || openDate <= endDate);
+        } else {
+          dateFilter = false;
+        }
+      }
 
-      return bl && containerFilter && clientFilter && statusFilter;
+      return bl && containerFilter && clientFilter && statusFilter && dateFilter;
     });
 
     this.setState({
@@ -354,7 +431,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               : <>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label>¿Qué Bill of Lading (BL) buscas?</label>
                         <input
@@ -367,7 +444,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label>¿Qué container buscas?</label>
                         <input
@@ -380,7 +457,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label>Cliente</label>
                         <select
@@ -398,7 +475,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label>Filtrar por Estado</label>
                         <select
@@ -417,7 +494,32 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
-                  </div>
+                    <div className="col-md-2">
+                      <div className="form-group">
+                        <label>Filtrar por Fecha de Apertura</label>
+                        <DateRangeInput
+                          options={getDateRangeOptions()}
+                          onChange={(start: Date, end: Date) => {
+                            console.log("onclick date range")
+                            this.setState({
+                              startDate: start,
+                              endDate: end,
+                              isFilteringByDate: true
+                            });
+                          }}
+                          startDate={this.state.startDate}
+                          endDate={this.state.endDate}
+                        />
+                      </div>
+                    </div>
+                        </div>
+                    <div className="col-md-1">
+                        <button
+                          className="btn btn-primary btn-block"
+                          onClick={this.cleanFilters}
+                        >
+                          Limpiar filtros
+                        </button>
                 </div>
                 <DataTable
                   columns={columns}
@@ -434,6 +536,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   }
                 />
+              </div>
               </>
             }
           </div>

@@ -66,5 +66,9 @@ class GeneralUtils implements IGeneralutils {
     }
     return undefined;
   }
+
+  public capitalizeFirstLetter(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLocaleLowerCase();
+  }
 }
 export default new GeneralUtils();

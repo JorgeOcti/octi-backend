@@ -2485,7 +2485,8 @@ class InventoryController {
         moment,
         cars,
         container,
-        evidences
+        evidences,
+        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
       })
       if (0) {
         return res.send(html);
