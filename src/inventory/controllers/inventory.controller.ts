@@ -1187,7 +1187,7 @@ class InventoryController {
                   });
               } else if (car.isContainer){
                 inventoryCar.evidenceStatus = [
-                  {status: ChoicesStatusContainer.open, images},
+                  {status: ChoicesStatusContainer.open, images, date: new Date()},
                 ]
                 inventoryCar.containerStatus = ChoicesStatusContainer.open;
                 inventoryCar.status = ChoicesStatusCarInventory.found;
