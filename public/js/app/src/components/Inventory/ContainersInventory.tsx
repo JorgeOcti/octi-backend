@@ -28,6 +28,7 @@ interface IStateType {
   statusFilter: string;
   selectedContainer: number;
   inventorySettings: any;
+  loading: boolean;
 }
 
 const dataTableStyle = {
@@ -104,7 +105,7 @@ const columns = [
   {
     name: 'Estado',
     selector: (row: any) => {
-      return row.status;
+      return row.containerStatus || row.status;
     },
     cell: (row: any) => {
       let className = `${row.status}Class`;
@@ -187,6 +188,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.state = {
+      loading: true,
       error: null,
       originalContainers: [],
       containers: [],
@@ -267,7 +269,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
         this.setState({
           containers: containers,
-          originalContainers: containers
+          originalContainers: containers,
+          loading: false
         })
 
         let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
@@ -309,13 +312,30 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   render() {
+    const {containers, loading} = this.state;
+    let statusCount = containers.reduce((acc: any, container: any) => {
+      if (container.containerStatus) {
+        let key = inventorySettings[container.containerStatus];
+        if (acc[key]) {
+          acc[key] += 1;
+        } else {
+          acc[key] = 1;
+        }
+      }
+      return acc;
+    }, {});
+
+    let details = Object.keys(statusCount).map((status: any) => {
+      return `${status}: ${statusCount[status]}`;
+    }).join(', ');
+
     return (
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers
+                Revisión Containers {containers.length} Total {details ? `(${details})` : ''}
               </h3>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (
@@ -327,83 +347,95 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 ) : null}
               </div>
             </div>
-            <div className="box-body">
-              <div className="row">
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>¿Qué Bill of Lading (BL) buscas?</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={this.state.blFilter}
-                      onChange={(e) => {
-                        this.setState({blFilter: e.target.value});
-                      }}
-                    />
+            {loading ?
+              <div className="overlay">
+                <i className="fa fa-refresh fa-spin"/>
+              </div>
+              : <>
+                <div className="box-body">
+                  <div className="row">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>¿Qué Bill of Lading (BL) buscas?</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={this.state.blFilter}
+                          onChange={(e) => {
+                            this.setState({ blFilter: e.target.value });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>¿Qué container buscas?</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={this.state.containerFilter}
+                          onChange={(e) => {
+                            this.setState({ containerFilter: e.target.value });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Cliente</label>
+                        <select
+                          className="form-control"
+                          value={this.state.clientFilter}
+                          onChange={(e) => {
+                            this.setState({ clientFilter: e.target.value });
+                          }}
+                        >
+                          <option value="">Todos</option>
+                          {this.state.clientSelector.map((client: any, index: number) => {
+                            return <option key={index} value={client}>{client}</option>
+                          })
+                          }
+                        </select>
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Filtrar por Estado</label>
+                        <select
+                          className="form-control"
+                          value={this.state.statusFilter}
+                          onChange={(e) => {
+                            this.setState({ statusFilter: e.target.value });
+                          }}
+                        >
+                          <option value="">Todos</option>
+                          <option value={ContainerStatus.PENDING}>Pendientes</option>
+                          <option value={ContainerStatus.FOUND}>Encontrados</option>
+                          <option value={ContainerStatus.OPEN}>Abierto</option>
+                          <option value={ContainerStatus.CHECK}>Descarga</option>
+                          <option value={ContainerStatus.EMPTY}>Vacio</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>¿Qué container buscas?</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={this.state.containerFilter}
-                      onChange={(e) => {
-                        this.setState({containerFilter: e.target.value});
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Cliente</label>
-                    <select
-                      className="form-control"
-                      value={this.state.clientFilter}
-                      onChange={(e) => {
-                        this.setState({clientFilter: e.target.value});
-                      }}
-                    >
-                      <option value="">Todos</option>
-                      {this.state.clientSelector.map((client: any, index: number) => {
-                        return <option key={index} value={client}>{client}</option>
-                      })
-                      }
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Filtrar por Estado</label>
-                    <select
-                      className="form-control"
-                      value={this.state.statusFilter}
-                      onChange={(e) => {
-                        this.setState({statusFilter: e.target.value});
-                      }}
-                    >
-                      <option value="">Todos</option>
-                      <option value={ContainerStatus.PENDING}>Pendientes</option>
-                      <option value={ContainerStatus.FOUND}>Encontrados</option>
-                      <option value={ContainerStatus.OPEN}>Abierto</option>
-                      <option value={ContainerStatus.CHECK}>Descarga</option>
-                      <option value={ContainerStatus.EMPTY}>Vacio</option>
-                    </select>
-                  </div>
-                </div>
-                </div>
-            </div>
-            <DataTable
-              columns={columns}
-              data={this.state.containers}
-              customStyles={dataTableStyle}
-              expandableRows
-              expandableRowsComponent={ExpandedRowElement}
-              expandOnRowClicked={true}
-              pagination
-              paginationComponentOptions={paginationComponentOptions}
-            />
+                <DataTable
+                  columns={columns}
+                  data={this.state.containers}
+                  customStyles={dataTableStyle}
+                  expandableRows
+                  expandableRowsComponent={ExpandedRowElement}
+                  expandOnRowClicked={true}
+                  pagination
+                  paginationComponentOptions={paginationComponentOptions}
+                  noDataComponent={
+                    <div className="text-center">
+                      <h4>No hay datos</h4>
+                    </div>
+                  }
+                />
+              </>
+            }
           </div>
         </section>
       </AppContainer>
@@ -443,9 +475,9 @@ const inventorySettings: { [key: string]: any } = {
   "reportedClass": "gray-dark",
   "reportedColor": "#96a4b3",
   "empty": "Vacio",
-  "emptyClass": "yellow",
+  "emptyClass": "green",
   "check": "Descarga",
-  "checkClass": "green",
+  "checkClass": "yellow",
   "open": "Abierto",
   "openClass": "gray-dark",
   "report": {
@@ -456,53 +488,53 @@ const inventorySettings: { [key: string]: any } = {
 }
 
 
-const ExpandedRowElement = ({ data }: {data: any}) => {
+const ExpandedRowElement = ({ data }: { data: any }) => {
   return <div className='container-fluid box-body table-responsive request-list'>
-     <div className="row request bg-primary">
-                  <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                    <strong>VIN</strong>
-                  </div>
-                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Fotos</strong>
-                  </div>
-                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Color</strong>
-                  </div>
-                  <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                    <strong>Estado</strong>
-                  </div>
-                </div>
-    { data.content.map((car: any, index: number) => {
-    let className = `${car.status}Class`;
-    return (
-      <div key={index} className='row request bg-request-title background-transition'>
-       <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-         <strong>{car.car.vin}</strong>
-       </div>
-       <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         {imagesFormatter(car)}
-       </div>
-       <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         <strong>{car.car.color}</strong>
-       </div>
-       <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+    <div className="row request bg-primary">
+      <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+        <strong>VIN</strong>
+      </div>
+      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+        <strong>Fotos</strong>
+      </div>
+      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+        <strong>Color</strong>
+      </div>
+      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+        <strong>Estado</strong>
+      </div>
+    </div>
+    {data.content.map((car: any, index: number) => {
+      let className = `${car.status}Class`;
+      return (
+        <div key={index} className='row request bg-request-title background-transition'>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            <strong>{car.car.vin}</strong>
+          </div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            {imagesFormatter(car)}
+          </div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            <strong>{car.car.color}</strong>
+          </div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
          <span
            className={`label label-${
-            inventorySettings.hasOwnProperty(className)
-            ? inventorySettings[className]
-            : ''
-            }`}
-            style={{
-              padding: '5px 10px',
-            }}>
+             inventorySettings.hasOwnProperty(className)
+               ? inventorySettings[className]
+               : ''
+           }`}
+           style={{
+             padding: '5px 10px',
+           }}>
            {inventorySettings.hasOwnProperty(car.status)
              ? inventorySettings[car.status]
              : car.state}
          </span>
-       </div>
-     </div>
-)
-})
-}
-</div>
+          </div>
+        </div>
+      )
+    })
+    }
+  </div>
 }
