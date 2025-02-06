@@ -127,7 +127,7 @@ const inventoryCarSchema = new mongoose.Schema({
     ref: 'InventoryCar'
   },
   evidenceStatus: {
-    type: [{status: String, images: [{type: mongoose.Schema.Types.ObjectId, ref: 'InventoryFile'}]}],
+    type: [{status: String, date: Date, images: [{type: mongoose.Schema.Types.ObjectId, ref: 'InventoryFile'}]}],
     default: []
   },
   extra: {
