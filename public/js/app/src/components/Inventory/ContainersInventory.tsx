@@ -36,6 +36,12 @@ interface IStateType {
 }
 
 const dataTableStyle = {
+  headCells: {
+    style:{
+      color: "white",
+      backgroundColor: "#3279B7"
+    }
+  },
   expanderCell: {
     style: {
       // this is to put expander button at the end of the row
@@ -593,7 +599,7 @@ const inventorySettings: { [key: string]: any } = {
 
 const ExpandedRowElement = ({ data }: { data: any }) => {
   return <div className='container-fluid box-body table-responsive request-list'>
-    <div className="row request bg-primary">
+    <div className="row request">
       <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
         <strong>VIN</strong>
       </div>
