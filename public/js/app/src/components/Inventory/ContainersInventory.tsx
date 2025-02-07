@@ -429,11 +429,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           container.car.vin,
           car.car.vin,
           `${car.car.brand} ${car.car.model}`,
-          car.extra["N° BL"],
-          car.extra["Emplazamiento"],
-          car.extra["Nave"],
-          car.extra["Cliente Razón Social"],
-          inventorySettings[car.containerStatus || car.status],
+          car.extra ? car.extra["N° BL"] ?? "" : "",
+          car.extra ? car.extra["Emplazamiento"] ?? "" : "",
+          car.extra ? car.extra["Nave"] ?? "" : "",
+          car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
+          inventorySettings[car.containerStatus || car.status] ?? "",
         ]
         rows.push(carRow);
       })
