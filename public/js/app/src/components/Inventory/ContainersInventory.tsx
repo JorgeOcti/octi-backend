@@ -12,6 +12,7 @@ import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
 import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
+import * as XLSX from 'xlsx-color';
 
 declare let window: IWindow;
 
@@ -57,6 +58,21 @@ const paginationComponentOptions = {
   selectAllRowsItemText: 'Todos',
 };
 
+
+const excelHeaders = [
+  'F. Apertura',
+  'F. Finalización',
+  'Contenedor',
+  "Carga",
+  "Descripción carga",
+  'BL',
+  'Puerto origen',
+  'Nave',
+  'Cliente',
+  'Ubicación',
+  'Estado',
+];
+
 const formaDate = (date: any) => {
   return new Intl.DateTimeFormat('es-ES', {
     day: '2-digit',
@@ -73,14 +89,22 @@ const columns = [
     name: 'F. Apertura',
     selector: (row: any) => {
       return row.openDate ? formaDate(row.openDate) : 'Sin apertura';
+    },
+    sortable: true,
+    sortFunction: (a: any, b: any) => {
+      return moment(a.openDate).isAfter(b.openDate) ? 1 : -1;
     }
   },
   {
     name: 'F. Finalización',
     selector: (row: any) => {
       return row.emptyDate ? formaDate(row.emptyDate) : 'Sin finalizar';
+    },
+    sortable: true,
+    sortFunction: (a: any, b: any) => {
+      return moment(a.emptyDate).isAfter(b.emptyDate) ? 1 : -1;
     }
-},
+  },
   {
     name: 'Contenedor',
     selector: (row: any) => row.car.vin,
@@ -144,7 +168,8 @@ const columns = [
            : row.state}
        </span>
      </div>
-    }
+    },
+    sortable: true
   },
   {
     name: 'Tarja',
@@ -313,14 +338,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 return moment(a.date).isAfter(b.date) ? -1 : 1;
               })[0].date;
             }
+
             if (emptyEvidences.length > 0) {
               //sort by date and get the last one
               container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
                 return moment(a.date).isAfter(b.date) ? -1 : 1;
               })[0].date;
             }
-            return container;
           }
+            return container;
         });
 
         this.setState({
@@ -375,7 +401,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           let openDate = new Date(container.openDate);
           let startDate = this.state.startDate? new Date(this.state.startDate) : null;
           let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
-  
+
           dateFilter = (!startDate || openDate >= startDate) && (!endDate || openDate <= endDate);
         } else {
           dateFilter = false;
@@ -394,10 +420,35 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
+  private downloadTemplate(): void {
+    //
+    // /* make the worksheet */
+    // const ws = XLSX.utils.aoa_to_sheet([this.excelHeaders]);
+    //
+    // this.excelHeaders.forEach((header: string, index: number) => {
+    //   let style: any = {
+    //     font: {bold: true}
+    //   }
+    //   if (this.mandatoryHeaders.includes(header)){
+    //     style = {
+    //       font: {bold: true},
+    //       fill: {fgColor: {rgb: "95dcf7"}}
+    //     }
+    //   }
+    //   ws[XLSX.utils.encode_cell({c: index, r: 0})].s = style;
+    // });
+    //
+    // /* add to workbook */
+    // const wb = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(wb, ws, 'Planilla OSA');
+    // /* generate an XLSX file */
+    // XLSX.writeFile(wb, 'template_container_inventory_settings.xlsx');
+  }
+
   render() {
     const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
-      if (container.containerStatus) {
+      if (container  && container.containerStatus) {
         let key = inventorySettings[container.containerStatus];
         if (acc[key]) {
           acc[key] += 1;
@@ -420,7 +471,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               <h3 className="box-title">
                 Revisión Containers {containers.length} Total {details ? `(${details})` : ''}
               </h3>
-              <div className="pull-right box-tools">
+              <div className="pull-right box-tools" style={{padding: "10px"}}>
                 {hasPermission(window.user, 'createInventory') ? (
                   <button
                   className="btn btn-sm btn-success"
@@ -475,7 +526,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           <option value="">Todos</option>
                           {this.state.clientSelector.map((client: any, index: number) => {
-                            return <option key={index} value={client}>{client}</option>
+                            return <option key={index} value={client}>{client}</option>;
                           })
                           }
                         </select>
@@ -506,7 +557,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         <DateRangeInput
                           options={getDateRangeOptions()}
                           onChange={(start: Date, end: Date) => {
-                            console.log("onclick date range")
                             this.setState({
                               startDate: start,
                               endDate: end,
@@ -518,24 +568,27 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                        </div>
-                    <div className="col-md-1">
+                    <div className="col-md-2">
+                      <div className="row pull-right box-tools" style={{ paddingTop: '10px', paddingRight: '25px' }}>
                         <button
-                          className="btn btn-primary btn-block"
+                          className="btn btn-sm btn-primary btn-block"
                           onClick={this.cleanFilters}
                         >
                           Limpiar filtros
                         </button>
-                </div>
-                <DataTable
-                  columns={columns}
-                  data={this.state.containers}
-                  customStyles={dataTableStyle}
-                  expandableRows
-                  expandableRowsComponent={ExpandedRowElement}
-                  expandOnRowClicked={true}
-                  pagination
-                  paginationComponentOptions={paginationComponentOptions}
+                      </div>
+                    </div>
+                  </div>
+
+                  <DataTable
+                    columns={columns}
+                    data={this.state.containers}
+                    customStyles={dataTableStyle}
+                    expandableRows
+                    expandableRowsComponent={ExpandedRowElement}
+                    expandOnRowClicked={true}
+                    pagination
+                    paginationComponentOptions={paginationComponentOptions}
                   noDataComponent={
                     <div className="text-center">
                       <h4>No hay datos</h4>
