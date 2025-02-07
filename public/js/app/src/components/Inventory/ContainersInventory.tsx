@@ -66,10 +66,9 @@ const excelHeaders = [
   "Carga",
   "Descripción carga",
   'BL',
-  'Puerto origen',
+  'Puerto',
   'Nave',
   'Cliente',
-  'Ubicación',
   'Estado',
 ];
 
@@ -115,7 +114,7 @@ const columns = [
     selector: (row: any) => row.extra["N° BL"],
   },
   {
-    name: 'Puerto origen',
+    name: 'Puerto',
     selector: (row: any) => row.extra["Emplazamiento"],
   },
   {
@@ -283,6 +282,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
       }
     };
+
+    this.downloadData = this.downloadData.bind(this);
   }
 
   componentDidMount() {
@@ -420,29 +421,38 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
-  private downloadTemplate(): void {
-    //
-    // /* make the worksheet */
-    // const ws = XLSX.utils.aoa_to_sheet([this.excelHeaders]);
-    //
-    // this.excelHeaders.forEach((header: string, index: number) => {
-    //   let style: any = {
-    //     font: {bold: true}
-    //   }
-    //   if (this.mandatoryHeaders.includes(header)){
-    //     style = {
-    //       font: {bold: true},
-    //       fill: {fgColor: {rgb: "95dcf7"}}
-    //     }
-    //   }
-    //   ws[XLSX.utils.encode_cell({c: index, r: 0})].s = style;
-    // });
-    //
-    // /* add to workbook */
-    // const wb = XLSX.utils.book_new();
-    // XLSX.utils.book_append_sheet(wb, ws, 'Planilla OSA');
-    // /* generate an XLSX file */
-    // XLSX.writeFile(wb, 'template_container_inventory_settings.xlsx');
+  private downloadData(): void {
+    const { containers } = this.state
+    let rows = [
+      [...excelHeaders]
+    ];
+
+    containers.map((container: any) => {
+      container.content.map((car: any) => {
+        let carRow = [
+          container.openDate ? moment(container.openDate).format('DD/MM/YYYY HH:mm') : "",
+          container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
+          container.car.vin,
+          car.car.vin,
+          `${car.car.brand} ${car.car.model}`,
+          car.extra["N° BL"],
+          car.extra["Emplazamiento"],
+          car.extra["Nave"],
+          car.extra["Cliente Razón Social"],
+          inventorySettings[car.containerStatus || car.status],
+        ]
+        rows.push(carRow);
+      })
+    });
+
+    /* make the worksheet */
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    /* add to workbook */
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
+    /* generate an XLSX file */
+    XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
   render() {
@@ -472,12 +482,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 Revisión Containers {containers.length} Total {details ? `(${details})` : ''}
               </h3>
               <div className="pull-right box-tools" style={{padding: "10px"}}>
-                {hasPermission(window.user, 'createInventory') ? (
-                  <button
-                  className="btn btn-sm btn-success"
-                  onClick={this.create}>
-                    <i className="fa fa-plus"/> Crear inventario
-                  </button>
+                {hasPermission(window.user, 'createInventory') ? (<>
+                    < button
+                      style={{marginRight: '10px'}}
+                    className = 'btn btn-sm btn-primary'
+                    onClick={this.downloadData}>
+                    <i className='fa fa-fw fa-download'/> Descargar Excel
+                    </button>
+
+                    <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.create}>
+                      <i className="fa fa-plus"/> Crear inventario
+                    </button>
+                  </>
                 ) : null}
               </div>
             </div>
