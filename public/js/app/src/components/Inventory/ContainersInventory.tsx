@@ -428,7 +428,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
           container.car.vin,
           car.car.vin,
-          `${car.car.brand} ${car.car.model}`,
+          `${car.car.brand ?? ""} ${car.car.model ?? ""}`,
           car.extra ? car.extra["N° BL"] ?? "" : "",
           car.extra ? car.extra["Emplazamiento"] ?? "" : "",
           car.extra ? car.extra["Nave"] ?? "" : "",
