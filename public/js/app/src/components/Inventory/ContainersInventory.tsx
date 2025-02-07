@@ -37,7 +37,7 @@ interface IStateType {
 }
 
 const dataTableStyle = {
-  headCells: {
+  headRow: {
     style:{
       color: "white",
       backgroundColor: "#3279B7"
