@@ -6,7 +6,8 @@ import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
-
+import { io } from "socket.io-client";
+import { Socket } from 'socket.io-client/build/esm/socket'
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
@@ -23,6 +24,7 @@ interface IStateType {
   originalContainers: any[];
   blFilter: string;
   containerFilter: string;
+  containerUpdated: any;
   clientFilter: string;
   clientSelector: any[];
   statusFilter: string;
@@ -192,6 +194,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containers: [],
       blFilter: '',
       containerFilter: '',
+      containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
       statusFilter: '',
@@ -222,10 +225,19 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
     };
   }
+  private socket: Socket;
+
+
+  public componentWillUnmount():void {
+    // cancel request if component is inmounted
+    this.socket.disconnect();
+  }
+
 
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
+    this.containerAlertScoket()
     api.getSource()
     api.getInventories(1, true)
       .then(async (response: any) => {
@@ -269,7 +281,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           containers: containers,
           originalContainers: containers
         })
-
+        console.log("containers2 :" , this.state)
         let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
         this.setState({
           clientSelector: clients
@@ -279,7 +291,74 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         console.log(error);
       })
   }
+  containerAlertScoket(){
+    this.socket = io(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: (window.user as any).token
+      }
+    });
+    this.socket.on('connect', () => { 
+      this.socket.emit('join', {
+        room: `dashboard-container-vin-view-${window.user.team._id}`
+      });
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      // Muestra alerta de un cambio
+      console.log("Data socket: "+ JSON.stringify(data))
+      const containerUpdated = data.metadata.data; 
+      let containers= [...this.state.containers]; 
+      let containerFound=[]; 
+      let indexContainer = -1; 
+      if(containerUpdated.isContainer){
+        console.log("buscando container...")
+        containerFound = containers.filter(e => e.vim === containerUpdated.vim)
+        indexContainer = containers.findIndex(e => e.vim === containerUpdated.vim)
+      }else{ 
+        console.log("Entre a la logica de la carga")
+        // for (let i = 0; i < this.state.containers.length; i++) {
+        //   const element = this.state.containers[i];
+          
+        // }
+        // containers= this.state.containers.filter(e => e.vim === containerUpdated.car.vim)
+      }
+      if(containerFound.length > 0){
+        ($ as any).toast({
+          heading: data.title,
+          text: data.text,
+          position: 'top-right',
+          loaderBg: '#e2e2e2',
+          icon: 'success',
+          hideAfter: 5000,
+          stack: 6
+        } as any);
+        console.log("indexContainer: " + indexContainer)
+        console.log("containers: " + containers)
+        if(indexContainer>=0){
+          
+          containers[indexContainer].evidenceStatus = [{status: 'open', images:[]}]
+          containers[indexContainer].status = "open";
+          containers[indexContainer].containerStatus = "open";
+          console.log("Container modificado : " + JSON.stringify(containers[indexContainer].status));
+          this.setState({
+            containers,
+            originalContainers: containers,
+            containerUpdated
+          });
+        }
 
+        console.log("contenedor final: " + JSON.stringify(this.state.containers[indexContainer]));
+        
+      }
+      
+      
+
+
+      // Llamar metodo que se le envia la data, hace las validaciones, envia alertas para avisar a usuario y genera efecto en tabla.
+    });
+  }
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
@@ -308,7 +387,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
+  
+
   render() {
+    const conditionalRowStyles2 = [
+      {
+        when: (row: any) => row.car.vin === this.state.containerUpdated?.vin,
+        classNames: ["highlight-info"],
+      },
+    ];
     return (
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
         <section className="content">
@@ -399,6 +486,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               data={this.state.containers}
               customStyles={dataTableStyle}
               expandableRows
+              conditionalRowStyles={conditionalRowStyles2}
               expandableRowsComponent={ExpandedRowElement}
               expandOnRowClicked={true}
               pagination
