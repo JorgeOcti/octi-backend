@@ -1185,7 +1185,7 @@ class InventoryController {
                     venue: venueId,
                     update: true
                   });
-                await this.sendUpdateNotification(venueId, team._id, inventory, ChoicesStatusCarInventory.leftover, req, car, updatedUser);
+                await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.leftover, req, car, updatedUser);
               } else if (car.isContainer){
                 inventoryCar.evidenceStatus = [
                   {status: ChoicesStatusContainer.open, images},
@@ -1214,7 +1214,7 @@ class InventoryController {
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
-              await this.sendUpdateNotification(venueId, team._id, inventory, ChoicesStatusCarInventory.found, req, car, updatedUser);
+              await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, car, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
                 status: 200
