@@ -295,6 +295,22 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         car[key] = getter(data)
       })
       return {container, car}
+    } else {
+      // show alert
+      swal({
+        title: "Error en archivo de configuracion",
+        text: `Revise que todas las filas contenagan los datos necesarios (${this.mandatoryHeaders.join(', ')})`,
+        icon: "error",
+        buttons: {
+          confirm: {
+            text: "OK",
+            value: true,
+            visible: true,
+            className: "",
+            closeModal: true
+          }
+        }
+      })
     }
     return null
   }

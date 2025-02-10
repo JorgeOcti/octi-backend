@@ -1187,7 +1187,7 @@ class InventoryController {
                   });
               } else if (car.isContainer){
                 inventoryCar.evidenceStatus = [
-                  {status: ChoicesStatusContainer.open, images},
+                  {status: ChoicesStatusContainer.open, images, date: new Date()},
                 ]
                 inventoryCar.containerStatus = ChoicesStatusContainer.open;
                 inventoryCar.status = ChoicesStatusCarInventory.found;
@@ -2485,7 +2485,8 @@ class InventoryController {
         moment,
         cars,
         container,
-        evidences
+        evidences,
+        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
       })
       if (0) {
         return res.send(html);
@@ -3140,12 +3141,14 @@ class InventoryController {
         evidenceStatus = evidenceStatus.map(e => {
           if (e.status === status) {
             e.images = e.images.concat(images.map((img: string) => new mongoose.Types.ObjectId(img)))
+            e.date = new Date()
           }
           return e
         })
       } else {
         evidenceStatus = evidenceStatus.concat({
           status,
+          date: new Date(),
           images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
       }
       inventoryCar.containerStatus = status;
