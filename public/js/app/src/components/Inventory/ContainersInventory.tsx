@@ -7,6 +7,9 @@ import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
@@ -184,6 +187,9 @@ const imagesFormatter = ( row: any) => {
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
 
+
+  private socket: Socket;
+
   constructor(props: IPropsType) {
     super(props);
     this.state = {
@@ -221,6 +227,30 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
       }
     };
+  }
+
+  componentWillMount() {
+
+    // socket
+        this.socket = io(`${location.protocol}//${location.host}`, {
+          secure: location.protocol === 'https:',
+          transports: ['websocket'],
+          reconnection: true,
+          query: {
+            token: (window.user as any).token
+          }
+        });
+    
+        this.socket.on('connect', () => {
+          this.socket.emit('join', {
+            room: `dashboard-container-vin-view-${window.user.team._id}`
+          });
+        });
+
+        this.socket.on('REFRESH', (data: any): void => {
+          console.log('message', data);
+        });
+
   }
 
   componentDidMount() {
