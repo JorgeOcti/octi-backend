@@ -1185,7 +1185,7 @@ class InventoryController {
                     venue: venueId,
                     update: true
                   });
-                await this.sendUpdateNotification(venueId, team._id, ChoicesStatusCarInventory.leftover, req, car, updatedUser);
+                await this.sendUpdateNotification(venueId, team._id, inventory, ChoicesStatusCarInventory.leftover, req, car, updatedUser);
               } else if (car.isContainer){
                 inventoryCar.evidenceStatus = [
                   {status: ChoicesStatusContainer.open, images},
@@ -1214,7 +1214,7 @@ class InventoryController {
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
-              await this.sendUpdateNotification(venueId, team._id, ChoicesStatusCarInventory.found, req, car, updatedUser);
+              await this.sendUpdateNotification(venueId, team._id, inventory, ChoicesStatusCarInventory.found, req, car, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
                 status: 200
@@ -1273,7 +1273,7 @@ class InventoryController {
     }
   }
 
-  private async sendUpdateNotification(venueId: string, teamId: string, status: string, req: IRequest, car: any, updatedUser:any): Promise<void> {
+  private async sendUpdateNotification(venueId: string, teamId: string, inventory: any, status: string, req: IRequest, car: any, updatedUser:any): Promise<void> {
     let title = `Vehículo encontrado`;
     let message = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
 
@@ -1291,7 +1291,10 @@ class InventoryController {
         venue: venueId,
         update: true,
         metadata: {
-          data: car
+          data: {
+            element_found:car,
+            inventory: inventory
+          }
         }
       });
   }
