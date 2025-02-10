@@ -12,6 +12,7 @@ import type { IInventoryLabel } from './inventoryLabel.interface';
 export interface IStatusEvidence {
   status: string;
   images: IInventoryFile[];
+  date: Date;
 }
 
 export interface IInventoryCar {
