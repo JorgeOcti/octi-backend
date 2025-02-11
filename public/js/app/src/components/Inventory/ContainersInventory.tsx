@@ -6,8 +6,10 @@ import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
-import { io } from "socket.io-client";
-import { Socket } from 'socket.io-client/build/esm/socket'
+
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
@@ -242,6 +244,9 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
+
+
+  private socket: Socket;
 
   constructor(props: IPropsType) {
     super(props);
