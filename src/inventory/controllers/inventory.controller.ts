@@ -1159,7 +1159,12 @@ class InventoryController {
             const inventoryCar = await InventoryCar.findOne({
               inventory: id,
               car: car._id
-            }).populate([{path: 'car'}]);
+            }).populate([
+              {path: 'car'},
+              {path: 'venue'},
+              {path: 'venueFound'},
+              {path: 'evidenceStatus'}
+            ]);
 
             // if car in inventory
             if (inventoryCar) {
