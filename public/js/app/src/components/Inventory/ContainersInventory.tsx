@@ -292,34 +292,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.downloadData = this.downloadData.bind(this);
   }
 
-  componentWillMount() {
-
-    // socket
-        this.socket = io(`${location.protocol}//${location.host}`, {
-          secure: location.protocol === 'https:',
-          transports: ['websocket'],
-          reconnection: true,
-          query: {
-            token: (window.user as any).token
-          }
-        });
-    
-        this.socket.on('connect', () => {
-          this.socket.emit('join', {
-            room: `dashboard-container-vin-view-${window.user.team._id}`
-          });
-        });
-
-        this.socket.on('REFRESH', (data: any): void => {
-          console.log('message', data);
-
-          console.log('containers', this.state.containers);
-          console.log('originalContainers', this.state.originalContainers);
-
-        });
-
-  }
-
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
