@@ -312,6 +312,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
         this.socket.on('REFRESH', (data: any): void => {
           console.log('message', data);
+
+          console.log('containers', this.state.containers);
+          console.log('originalContainers', this.state.originalContainers);
+
         });
 
   }
