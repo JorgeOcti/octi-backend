@@ -401,15 +401,36 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       console.log("Data socket: "+ JSON.stringify(data))
       const containerUpdated = data.metadata.inventory; 
       let containers = this.state.containers.map((container: any) => {
-        if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
-          let tmp = {...container}
-          tmp.evidenceStatus = containerUpdated.evidenceStatus
-          tmp.status = containerUpdated.status;
-          tmp.containerStatus = containerUpdated.containerStatus;
-          console.log("container modificado: ", tmp)
-          return tmp
-        } else {
-          return container
+        if(containerUpdated.car.isContainer){
+          if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
+            let tmp = {...container}
+            if(tmp.car.isContainer){
+              tmp.evidenceStatus = containerUpdated.evidenceStatus
+              tmp.status = containerUpdated.status;
+              tmp.containerStatus = containerUpdated.containerStatus;
+              tmp.openDate = containerUpdated.openDate;
+              console.log("container modificado: ", tmp)
+              return tmp
+            }
+          } else {
+            return container
+          }
+        }else{
+          if (container._id === containerUpdated.container){
+            let contents = container.content.map((e:any) => {
+              if(e.car.vin === containerUpdated.car.vin){
+                let tmp = {...e}
+                tmp.status = containerUpdated.status;
+                return e
+              }else{
+                return e
+              }
+            })
+            container.content = contents;
+            return container
+          }else{
+            return container
+          }
         }
       });
       
@@ -427,34 +448,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         hideAfter: 5000,
         stack: 6
       } as any); 
-      // let containerFound=[]; 
-      // let indexContainer = -1; 
-      // console.log()
-      // if(containerUpdated.car.isContainer){
-      //   containerFound = containers.filter(e => e.vin === containerUpdated.car.vin && e.inventory === containerUpdated.inventory)
-      //   indexContainer = containers.findIndex(e => e.vin === containerUpdated.car.vin && e.inventory === containerUpdated.inventory)
-      // }else{ 
-      //   console.log("Entre a la logica de la carga")
-      //   // for (let i = 0; i < this.state.containers.length; i++) {
-      //   //   const element = this.state.containers[i];
-          
-      //   // }
-      //   // containers= this.state.containers.filter(e => e.vim === containerUpdated.car.vim)
-      // }
-        
-        // if(indexContainer>=0){
-        //   containers[indexContainer].evidenceStatus = [{status: 'open', images:[]}]
-        //   containers[indexContainer].status = "open";
-        //   containers[indexContainer].containerStatus = "open";
-          
-        // }
-
-       
-      
-      
-
-
-      // Llamar metodo que se le envia la data, hace las validaciones, envia alertas para avisar a usuario y genera efecto en tabla.
     });
   }
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
