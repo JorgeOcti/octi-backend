@@ -126,7 +126,7 @@ const columns = [
     selector: (row: any) => row.extra["Nave"],
   },
   {
-    name: 'Imagenes',
+    name: 'Imágenes',
     cell: (row: any) => {
       if(row.evidenceStatus && row.evidenceStatus.length > 0) {
         row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
