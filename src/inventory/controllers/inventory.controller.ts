@@ -8,6 +8,8 @@ import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as tempfile from 'tempfile';
+import puppeteer from 'puppeteer';
+import * as path from 'path';
 
 import {
   default as Car,
@@ -26,7 +28,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory
+  ChoicesStatusCarInventory, choicesStatusContainer, ChoicesStatusContainer
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -205,6 +207,66 @@ class InventoryController {
     return venue;
   }
 
+  public async createContainerInventory(req: IRequest, res: Response) {
+    let { name, carsByContainer } = req.body;
+    carsByContainer = JSON.parse(carsByContainer);
+    try {
+      const { company, team, venue } = req.user;
+      const inventory = new Inventory({
+        name,
+        company: company._id,
+        team: team._id,
+        venues: [venue._id],
+        createdBy: req.user._id,
+        status: ChoicesStatusInventory.pending,
+        containerInventory: true,
+        settings: {
+          photos: {
+            manual: false,
+            report: false
+          }
+        }
+      });
+      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+      if (file) {
+        file.team = team;
+        await inventory.attach('file', file);
+      }
+      const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
+      if (backup) {
+        backup.team = team;
+        await inventory.attach('backup', backup);
+      }
+
+      await inventory.save();
+      inventoryQueue.queue.add(
+        'createContainerInventory',
+        {
+          inventoryID: inventory._id,
+          userID: req.user._id,
+          venueID: venue._id,
+          name,
+          carsByContainer
+        },
+        { removeOnComplete: true }
+      );
+
+      return res.json({
+        message: 'Inventario de contenedores creado satisfactoriamente',
+        status: 200
+      });
+
+    } catch (e) {
+      logger.error(`createContainerInventory: Async Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      return res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+  }
+
   public async create(req: IRequest, res: Response) {
     const { name, manualPhoto, reportPhoto } = req.body;
     let { carsByVenue, notification } = req.body;
@@ -229,8 +291,8 @@ class InventoryController {
         status: ChoicesStatusInventory.pending,
         settings: {
           photos: {
-            manual: manualPhoto,
-            report: reportPhoto
+            manual: 3,
+            report: 3
           }
         }
       });
@@ -838,7 +900,9 @@ class InventoryController {
                   status: car.status,
                   container: car.container,
                   containerFound: car.containerFound,
-                  extra: car.extra
+                  extra: car.extra,
+                  evidenceStatus: car.evidenceStatus,
+                  containerStatus: car.containerStatus
                 };
               }),
               reasons: []
@@ -1121,6 +1185,12 @@ class InventoryController {
                     venue: venueId,
                     update: true
                   });
+              } else if (car.isContainer){
+                inventoryCar.evidenceStatus = [
+                  {status: ChoicesStatusContainer.open, images, date: new Date()},
+                ]
+                inventoryCar.containerStatus = ChoicesStatusContainer.open;
+                inventoryCar.status = ChoicesStatusCarInventory.found;
               } else {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
                 socket()
@@ -2186,6 +2256,9 @@ class InventoryController {
                   path: 'images'
                 },
                 {
+                  path: "evidenceStatus.images",
+                },
+                {
                   path: 'files'
                 },
                 {
@@ -2298,7 +2371,6 @@ class InventoryController {
           status: 200
         });
       } else {
-        console.log('inventory', inventory);
         return res.status(404).json({
           message: 'Inventario no encontrado',
           status: 404
@@ -2323,6 +2395,169 @@ class InventoryController {
       });
     }
   }
+
+  public async pdf(req: IRequest, res: Response) {
+    const { inventoryId, carId } = req.params;
+    const inventorySettings: { [key: string]: any } = {
+      "pending": "Pendientes",
+      "found": "Encontrados",
+      "missing": "Faltantes",
+      "leftover": "Encontrados*",
+      "reported": "Reportados",
+      "empty": "Vacio",
+      "check": "Descarga",
+      "open": "Abierto",
+    }
+
+    const foundStatusContainer = (container: any) => {
+      let status = container.status;
+      if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+        const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
+        if(statusList.includes('empty')) {
+          status = 'empty';
+        } else if(statusList.includes('check')) {
+          status = 'check';
+        } else if(statusList.includes('open')) {
+          status = 'open';
+        } else {
+          status = container.status;
+        }
+      }
+      return status;
+    }
+
+    try{
+      const container = await InventoryCar.findOne({
+        car: new mongoose.Types.ObjectId(carId),
+        inventory: new mongoose.Types.ObjectId(inventoryId)
+      }).populate([
+        { path: 'inventoriedBy' },
+        { path: 'images'},
+        { path: 'venueFound'},
+        { path: 'car' },
+        { path: 'evidenceStatus.images' },
+        { path: 'files' }
+      ]);
+
+      if (!container) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el contenedor',
+          status: 404
+        });
+      }
+
+      let evidences = container.evidenceStatus.length ? container.evidenceStatus.map((e: any) => {
+        return e.images;
+      }).flat() : container.images;
+
+      let statusContainer = inventorySettings[foundStatusContainer(container)];
+      container.status = statusContainer;
+
+
+      let cars = await InventoryCar.find({
+        container: container._id
+      }).populate([
+        { path: 'inventoriedBy' },
+        {path: 'images'},
+        {path: 'venueFound'},
+        { path: 'car' },
+        { path: 'evidenceStatus.images' },
+        { path: 'files' }
+      ]).lean();
+
+      cars = cars.map((tmp: any) => {
+        let status = inventorySettings[foundStatusContainer(tmp)];
+        return {
+          ...tmp,
+          status
+        }
+      })
+
+      let template: string =
+        path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
+      const css = fs.readFileSync(
+        path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
+        'utf8'
+      );
+
+      const html = GeneralUtils.generateHtmlFromPugFile(template, {
+        css: css.replace(/(\r\n|\n|\r)/gm, ''),
+        moment,
+        cars,
+        container,
+        evidences,
+        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
+      })
+      if (0) {
+        return res.send(html);
+      } else {
+        // launch a new chrome instance
+        const browser = await puppeteer.launch({
+          executablePath: '/usr/bin/chromium',
+          args: [
+            '--no-sandbox',
+            '--allow-file-access-from-files',
+            '--enable-local-file-accesses'
+          ], // Required.
+          headless: true
+        });
+        // create a new page
+        const page = await browser.newPage();
+
+        await page.setContent(html, {
+          waitUntil: 'networkidle0'
+        });
+
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          displayHeaderFooter: true,
+
+        //   headerTemplate: `
+        //  <div style="width: 100%; font-size: 9px; display: flex; align-items: center; justify-content: space-between; margin: 10px 50px;">
+        //   <img src="data:image/png;base64,${imageBase64}" style="width: 80px; height: auto; object-fit: contain;"/>
+        //   <h3 style="margin: 0; flex: 1; text-align: center;">CIBU 782725-9</h3>
+        //   <h3 style="margin: 0; text-align: right;">24/01/2025 10:25 hrs</h3>
+        // </div>
+        //     `,
+          footerTemplate: `
+            <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
+              Página <span class="pageNumber"></span> / <span class="totalPages"></span>
+            </div>`,
+          // this is needed to prevent content from being placed over the footer
+          margin: {
+            top: '70px',
+            left: '30px',
+            right: '30px',
+            bottom: '70px'
+          },
+        });
+
+        await browser.close();
+
+        // Return Buffer
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+          'Content-disposition',
+          `inline; filename=Tarja-${container.car.vin}.pdf`
+        );
+        return res.send(pdfBuffer);
+      }
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`pdf: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
+  }
+
 
   public async dashboard(req: IRequest, res: Response): Promise<any> {
     let venuesPermissions: any = req.user.venuesPermissions();
@@ -2863,6 +3098,82 @@ class InventoryController {
     }
   }
 
+  public async addStatusEvidence(req: IRequest, res: Response): Promise<any> {
+    logger.info(`InventoryController.addStatusEvidence {email: ${req.user.email} }`);
+    let { vin, status, images } = req.body;
+    const { id } = req.params;
+
+    try {
+      // Check if sent status is valid
+      if (!Object.values(choicesStatusContainer).includes(status)) {
+        return res.status(400).json({
+          message: 'El estado enviado no es válido.',
+          status: 400
+        });
+      }
+
+
+      let car = await CarModel.findOne({vin: vin});
+      if (!car) {
+        return res.status(404).json({
+          message: 'El vehículo no se encuentra en el sistema.',
+          status: 404
+        });
+      }
+      let inventory = await InventoryModel.findById(id);
+      if (!inventory) {
+        return res.status(404).json({
+          message: 'El inventario no se encuentra en el sistema.',
+          status: 404
+        });
+      }
+
+      let inventoryCar = await InventoryCar.findOne({car: car._id, inventory: inventory._id});
+      if (!inventoryCar) {
+        return res.status(404).json({
+          message: 'El vehículo no se encuentra en el inventario.',
+          status: 404
+        });
+      }
+
+      let evidenceStatus = inventoryCar.evidenceStatus
+      if (evidenceStatus && evidenceStatus.find(e => e.status === status)) {
+        evidenceStatus = evidenceStatus.map(e => {
+          if (e.status === status) {
+            e.images = e.images.concat(images.map((img: string) => new mongoose.Types.ObjectId(img)))
+            e.date = new Date()
+          }
+          return e
+        })
+      } else {
+        evidenceStatus = evidenceStatus.concat({
+          status,
+          date: new Date(),
+          images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
+      }
+      inventoryCar.containerStatus = status;
+      inventoryCar.evidenceStatus = evidenceStatus
+      await inventoryCar.save()
+
+      return res.status(200).json({
+        message: 'Se ha registrado la evidencia correctamente.',
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addStatusEvidence: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+  }
+
   private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
@@ -2910,6 +3221,7 @@ class InventoryController {
       }
     });
   }
+
 }
 
 export default new InventoryController();

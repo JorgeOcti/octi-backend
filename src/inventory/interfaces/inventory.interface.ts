@@ -9,6 +9,12 @@ import type { IInventoryComment } from './inventoryComment.interface';
 import type { IInventoryFile } from './inventoryFile.interface';
 import type { IInventoryLabel } from './inventoryLabel.interface';
 
+export interface IStatusEvidence {
+  status: string;
+  images: IInventoryFile[];
+  date: Date;
+}
+
 export interface IInventoryCar {
   car: ICar;
   inventory?: mongoose.Schema.Types.ObjectId;
@@ -23,8 +29,10 @@ export interface IInventoryCar {
   images: IInventoryFile[];
   files: IInventoryFile[];
   status: string;
+  containerStatus: string;
   container?: mongoose.Schema.Types.ObjectId;
   containerFound?: mongoose.Schema.Types.ObjectId;
+  evidenceStatus: IStatusEvidence[];
   extra: any;
   updatedAt?: Date;
   createdAt?: Date;

@@ -1,0 +1,160 @@
+mixin containerDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+mixin carResumen(first, second, third, quarter, fifth, sixth)
+  tr
+    td=first
+    td VEHÍCULO
+    td=second
+    td=third
+    td=quarter
+    td=fifth
+    td=sixth
+
+mixin carDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Reporte de Desconsolidado
+    style(type="text/css")=css
+  body
+
+      header
+        .logo
+          img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
+        .company-info
+          h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SAI)
+          p Giro: SERVICIOS EXTRAPORTUARIOS
+          p Dirección: Camino Las Mercedes 14851 - San Antonio
+          p Emitido por: !{userName} el !{moment().format('DD/MM/YYYY - HH:mm')}
+      .section-wrapper
+        .section
+          .title CONTAINER
+          .container-info
+            .item
+              span.label !{container.car.vin}
+            .item
+              span.label Fecha Desconsolidado:
+              span !{moment(container.updatedAt).format('DD/MM/YYYY - HH:mm')}
+            .item
+              span.label Cliente:
+              span !{container.car.client}
+      .section-wrapper
+        .section
+          .info-grid
+            .item
+              span.label BL:
+              span !{container.car.bl}
+            .item
+              span.label Puerto Origen:
+              span
+            .item
+              span.label Nave:
+              span !{container.extra["Nave"]}
+            .item
+              span.label Peso:
+              span !{container.extra["Peso"]}
+            .item
+              span.label N° Viaje:
+              span !{container.extra["N° Viaje"]}
+            .item
+              span.label Emplazamiento:
+              span !{container.extra["Emplazamiento"]}
+      .section-wrapper
+        .section
+          .info-grid
+            .item
+              span.label Registra Desconsolidado:
+              span !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
+            .item
+              span.label Ubicación:
+              span !{container.extra["Ubicación"] || "San Antonio"}
+            .item
+              span.label Precinto:
+              span !{container.extra["Sello IN"]}
+      .section-wrapper
+        .section
+          .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
+          each image in evidences
+            .image-box
+              img(src=image.file.url, alt="Image")
+      .section-wrapper
+        .section
+          .title Resumen Carga (!{cars.length} Items)
+          table
+            thead
+              tr
+                th #
+                th Tipo
+                th VIN
+                th Marca
+                th Modelo
+                th Responsable
+                th Estado
+            tbody
+              each car, index in cars
+                +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
+      each car, index in cars
+        .section-wrapper
+          .section
+            .title CARGA
+            .item-info
+              .item
+                span.label ITEM:
+                span #{index + 1}
+              .item
+                span.label VEHÍCULO:
+                span !{car.car.vin}
+              .item
+                span.label MARCA:
+                span !{car.car.brand}
+          .section
+            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
+            each image in car.images
+              .image-box
+                img(src=image.file.url, alt="Image")
+

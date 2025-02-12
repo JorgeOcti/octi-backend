@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo:
     image: mongo:6.0.3
@@ -15,15 +13,14 @@ services:
       - mongo:/data/db
       - mongoConf:/data/configdb
       - '~/backups/osa/andes/mongo:/backups'
-
   redis:
     image: redis:5.0.14
     restart: unless-stopped
     ports:
       - 6379:6379
+    command: ["redis-server", "--appendonly", "no", "--maxmemory", "500mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis:/data
-
   backend:
     build:
       dockerfile: Dockerfile.development
@@ -45,9 +42,7 @@ services:
       REDIS_CLUSTERED: "false"
       SITE_URL: "http://localhost:3030/"
       SES_REGION: us-west-2
-      # MONGODB_URI: mongodb://osacontrol:osacontrol@host.docker.internal:27017/osaAndesProduction?authSource=admin
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
-#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority&readPreference=secondary
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
@@ -55,7 +50,7 @@ services:
       - 9229:9229
       - 3070:3070
     volumes:
-      - ./dist:/srv/dist
+      - ./dist/:/srv/public/js/app/dist/:ro
       - ./src:/srv/src
       - ./public:/srv/public
       - ./views:/srv/views
@@ -66,19 +61,19 @@ services:
     depends_on:
       - redis
       - mongo
-
-  # frontend:
-  #   build:
-  #     dockerfile: DockerFile.frontend
-  #     context: .
-  #   image: andes-frontend:latest
-  #   command: ['webpack', '--mode', 'development', '--watch']
-  #   volumes:
-  #     - ./src:/srv/src
-  #     - ./public/js/app:/srv/public/js/app
-  #     - frontend-modules:/srv/public/js/app/node_modules
-  #   environment:
-  #    NODE_ENV: development
+      - frontend
+  frontend:
+     build:
+       dockerfile: DockerFile.frontend
+       context: .
+     image: andes-frontend:latest
+     command: ['npm', 'run', 'start']
+     volumes:
+       - ./src:/srv/src
+       - ./public/js/app/src/:/srv/public/js/app/src/
+       - ./dist:/srv/public/js/app/dist
+     environment:
+      NODE_ENV: development
 
   #  billing:
   #    build:
@@ -104,5 +99,4 @@ volumes:
   mongo:
   mongoConf:
   backend-modules:
-  frontend-modules:
   redis:
