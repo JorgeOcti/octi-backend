@@ -1193,13 +1193,6 @@ class InventoryController {
                     venue: venueId,
                     update: true
                   });
-                // await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.leftover, req, car, updatedUser);
-              } else if (car.isContainer){
-                inventoryCar.evidenceStatus = [
-                  {status: ChoicesStatusContainer.open, images, date: new Date()},
-                ]
-                inventoryCar.containerStatus = ChoicesStatusContainer.open;
-                inventoryCar.status = ChoicesStatusCarInventory.found;
               } else {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
                 socket()
@@ -1212,6 +1205,13 @@ class InventoryController {
                     update: true
                   });
               }
+              if (car.isContainer){
+                inventoryCar.evidenceStatus = [
+                  {status: ChoicesStatusContainer.open, images, date: new Date()},
+                ]
+                inventoryCar.containerStatus = ChoicesStatusContainer.open;
+              }
+
               inventoryCar.images = images
                 ? images.map(
                     (image: string) => new mongoose.Types.ObjectId(image)
