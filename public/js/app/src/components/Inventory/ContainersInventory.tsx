@@ -155,7 +155,8 @@ const columns = [
       return row.containerStatus || row.status;
     },
     cell: (row: any) => {
-      let className = `${row.status}Class`;
+      const status = row.containerStatus || row.status
+      let className = `${status}Class`;
       return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
        <span
          className={`label label-${
@@ -166,9 +167,9 @@ const columns = [
           style={{
             padding: '5px 10px'
           }}>
-         {inventorySettings.hasOwnProperty(row.status)
-           ? inventorySettings[row.status]
-           : row.state}
+         {inventorySettings.hasOwnProperty(status)
+           ? inventorySettings[status]
+           : status}
        </span>
      </div>
     },
@@ -293,7 +294,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
     this.downloadData = this.downloadData.bind(this);
   }
-  private socket: Socket;
 
 
   public componentWillUnmount():void {
@@ -399,50 +399,57 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.on('REFRESH', (data: any): void => {
       // Muestra alerta de un cambio
       console.log("Data socket: "+ JSON.stringify(data))
-      const containerUpdated = data.metadata.data; 
-      let containers= [...this.state.containers]; 
-      let containerFound=[]; 
-      let indexContainer = -1; 
-      if(containerUpdated.isContainer){
-        console.log("buscando container...")
-        containerFound = containers.filter(e => e.vim === containerUpdated.vim)
-        indexContainer = containers.findIndex(e => e.vim === containerUpdated.vim)
-      }else{ 
-        console.log("Entre a la logica de la carga")
-        // for (let i = 0; i < this.state.containers.length; i++) {
-        //   const element = this.state.containers[i];
+      const containerUpdated = data.metadata.inventory; 
+      let containers = this.state.containers.map((container: any) => {
+        if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
+          let tmp = {...container}
+          tmp.evidenceStatus = containerUpdated.evidenceStatus
+          tmp.status = containerUpdated.status;
+          tmp.containerStatus = containerUpdated.containerStatus;
+          console.log("container modificado: ", tmp)
+          return tmp
+        } else {
+          return container
+        }
+      });
+      
+      this.setState({
+        containers,
+        originalContainers: containers,
+        containerUpdated
+      });
+      ($ as any).toast({
+        heading: data.title,
+        text: data.text,
+        position: 'top-right',
+        loaderBg: '#e2e2e2',
+        icon: 'success',
+        hideAfter: 5000,
+        stack: 6
+      } as any); 
+      // let containerFound=[]; 
+      // let indexContainer = -1; 
+      // console.log()
+      // if(containerUpdated.car.isContainer){
+      //   containerFound = containers.filter(e => e.vin === containerUpdated.car.vin && e.inventory === containerUpdated.inventory)
+      //   indexContainer = containers.findIndex(e => e.vin === containerUpdated.car.vin && e.inventory === containerUpdated.inventory)
+      // }else{ 
+      //   console.log("Entre a la logica de la carga")
+      //   // for (let i = 0; i < this.state.containers.length; i++) {
+      //   //   const element = this.state.containers[i];
+          
+      //   // }
+      //   // containers= this.state.containers.filter(e => e.vim === containerUpdated.car.vim)
+      // }
+        
+        // if(indexContainer>=0){
+        //   containers[indexContainer].evidenceStatus = [{status: 'open', images:[]}]
+        //   containers[indexContainer].status = "open";
+        //   containers[indexContainer].containerStatus = "open";
           
         // }
-        // containers= this.state.containers.filter(e => e.vim === containerUpdated.car.vim)
-      }
-      if(containerFound.length > 0){
-        ($ as any).toast({
-          heading: data.title,
-          text: data.text,
-          position: 'top-right',
-          loaderBg: '#e2e2e2',
-          icon: 'success',
-          hideAfter: 5000,
-          stack: 6
-        } as any);
-        console.log("indexContainer: " + indexContainer)
-        console.log("containers: " + containers)
-        if(indexContainer>=0){
-          
-          containers[indexContainer].evidenceStatus = [{status: 'open', images:[]}]
-          containers[indexContainer].status = "open";
-          containers[indexContainer].containerStatus = "open";
-          console.log("Container modificado : " + JSON.stringify(containers[indexContainer].status));
-          this.setState({
-            containers,
-            originalContainers: containers,
-            containerUpdated
-          });
-        }
 
-        console.log("contenedor final: " + JSON.stringify(this.state.containers[indexContainer]));
-        
-      }
+       
       
       
 
@@ -460,6 +467,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate) {
       this.filterContainers();
     }
+    console.log("Contenedores DidUpdate: ", this.state)
   }
 
   cleanFilters = () => {
@@ -539,51 +547,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
-<<<<<<< HEAD
-  
-
-  render() {
-    const conditionalRowStyles2 = [
-      {
-        when: (row: any) => row.car.vin === this.state.containerUpdated?.vin,
-        classNames: ["highlight-info"],
-      },
-    ];
-=======
-  private downloadData(): void {
-    const { containers } = this.state
-    let rows = [
-      [...excelHeaders]
-    ];
-
-    containers.map((container: any) => {
-      container.content.map((car: any) => {
-        let carRow = [
-          container.openDate ? moment(container.openDate).format('DD/MM/YYYY HH:mm') : "",
-          container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
-          container.car.vin,
-          car.car.vin,
-          `${car.car.brand ?? ""} ${car.car.model ?? ""}`,
-          car.extra ? car.extra["N° BL"] ?? "" : "",
-          car.extra ? car.extra["Emplazamiento"] ?? "" : "",
-          car.extra ? car.extra["Nave"] ?? "" : "",
-          car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
-          inventorySettings[car.containerStatus || car.status] ?? "",
-        ]
-        rows.push(carRow);
-      })
-    });
-
-    /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    /* add to workbook */
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
-    /* generate an XLSX file */
-    XLSX.writeFile(wb, 'container_inventory.xlsx');
-  }
-
   render() {
     const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
@@ -602,7 +565,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       return `${status}: ${statusCount[status]}`;
     }).join(', ');
 
->>>>>>> upstream/develop
+    const conditionalRowStyles2 = [
+      {
+        when: (row: any) => row.car.vin === this.state.containerUpdated?.car?.vin && row.inventory === this.state.containerUpdated?.inventory ,
+        classNames: ["highlight-info"],
+      },
+    ];
+
     return (
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
         <section className="content">
@@ -727,72 +696,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-<<<<<<< HEAD
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>¿Qué container buscas?</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={this.state.containerFilter}
-                      onChange={(e) => {
-                        this.setState({containerFilter: e.target.value});
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Cliente</label>
-                    <select
-                      className="form-control"
-                      value={this.state.clientFilter}
-                      onChange={(e) => {
-                        this.setState({clientFilter: e.target.value});
-                      }}
-                    >
-                      <option value="">Todos</option>
-                      {this.state.clientSelector.map((client: any, index: number) => {
-                        return <option key={index} value={client}>{client}</option>
-                      })
-                      }
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Filtrar por Estado</label>
-                    <select
-                      className="form-control"
-                      value={this.state.statusFilter}
-                      onChange={(e) => {
-                        this.setState({statusFilter: e.target.value});
-                      }}
-                    >
-                      <option value="">Todos</option>
-                      <option value={ContainerStatus.PENDING}>Pendientes</option>
-                      <option value={ContainerStatus.FOUND}>Encontrados</option>
-                      <option value={ContainerStatus.OPEN}>Abierto</option>
-                      <option value={ContainerStatus.CHECK}>Descarga</option>
-                      <option value={ContainerStatus.EMPTY}>Vacio</option>
-                    </select>
-                  </div>
-                </div>
-                </div>
-            </div>
-            <DataTable
-              columns={columns}
-              data={this.state.containers}
-              customStyles={dataTableStyle}
-              expandableRows
-              conditionalRowStyles={conditionalRowStyles2}
-              expandableRowsComponent={ExpandedRowElement}
-              expandOnRowClicked={true}
-              pagination
-              paginationComponentOptions={paginationComponentOptions}
-            />
-=======
 
                   <DataTable
                     columns={columns}
@@ -802,6 +705,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     expandableRowsComponent={ExpandedRowElement}
                     expandOnRowClicked={true}
                     pagination
+                    conditionalRowStyles={conditionalRowStyles2}
                     paginationComponentOptions={paginationComponentOptions}
                   noDataComponent={
                     <div className="text-center">
@@ -812,7 +716,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               </>
             }
->>>>>>> upstream/develop
           </div>
         </section>
       </AppContainer>
