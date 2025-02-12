@@ -51,6 +51,8 @@ buildcache
 
 .scannerwork/
 
+.packageHash
+
 /dist/
 /tools/
 .cache
