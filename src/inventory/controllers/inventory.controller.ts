@@ -1157,7 +1157,7 @@ class InventoryController {
               status: 200
             });
           } else {
-            const inventoryCar = await InventoryCar.findOne({
+            let inventoryCar = await InventoryCar.findOne({
               inventory: id,
               car: car._id
             });
@@ -1214,8 +1214,8 @@ class InventoryController {
                 : [];
 
               inventoryCar.inventoriedBy = req.user._id;
-              
-              inventoryCar.populate([
+              inventoryCar = await inventoryCar.save();
+              inventoryCar = await inventoryCar.populate([
                 {path: 'car'},
                 {path: 'venue'},
                 {path: 'venueFound'},
@@ -1223,9 +1223,6 @@ class InventoryController {
                 {path: 'evidenceStatus.images'},
                 {path: 'images'}
               ]);
-
-              await inventoryCar.save();
-              
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
