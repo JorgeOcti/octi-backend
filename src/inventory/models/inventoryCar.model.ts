@@ -133,6 +133,10 @@ const inventoryCarSchema = new mongoose.Schema({
   extra: {
     type: Object,
     default: {}
+  },
+  virtualInventory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'VirtualInventory'
   }
 }, {
   timestamps: true
