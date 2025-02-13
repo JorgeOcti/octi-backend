@@ -54,6 +54,7 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
+import { selectFilter } from '../../../public/js/app/src/types/react-bootstrap-table2-filter';
 
 class InventoryController {
   constructor() {
@@ -1159,15 +1160,7 @@ class InventoryController {
             const inventoryCar = await InventoryCar.findOne({
               inventory: id,
               car: car._id
-            }).populate([
-              {path: 'car'},
-              {path: 'venue'},
-              {path: 'venueFound'},
-              {path: 'evidenceStatus'},
-              {path: 'images'},
-              {path: 'files'}
-            ]);
-
+            });
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
@@ -1219,8 +1212,20 @@ class InventoryController {
                     (image: string) => new mongoose.Types.ObjectId(image)
                   )
                 : [];
+
               inventoryCar.inventoriedBy = req.user._id;
+              
+              inventoryCar.populate([
+                {path: 'car'},
+                {path: 'venue'},
+                {path: 'venueFound'},
+                {path: 'evidenceStatus'},
+                {path: 'evidenceStatus.images'},
+                {path: 'images'}
+              ]);
+
               await inventoryCar.save();
+              
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
