@@ -1163,7 +1163,9 @@ class InventoryController {
               {path: 'car'},
               {path: 'venue'},
               {path: 'venueFound'},
-              {path: 'evidenceStatus'}
+              {path: 'evidenceStatus'},
+              {path: 'images'},
+              {path: 'files'}
             ]);
 
             // if car in inventory
