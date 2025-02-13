@@ -398,7 +398,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       // Muestra alerta de un cambio
-      console.log("Data socket: "+ JSON.stringify(data))
+      console.log("Data socket: ", JSON.stringify(data))
       const containerUpdated = data.metadata.inventory; 
       let containers = this.state.containers.map((container: any) => {
         let tmp = {...container}
@@ -408,7 +408,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               tmp.evidenceStatus = containerUpdated.evidenceStatus
               tmp.status = containerUpdated.status;
               tmp.containerStatus = containerUpdated.containerStatus;
-              tmp.openDate = containerUpdated.openDate;
+              tmp.images = containerUpdated.images;
+              let openEvidences = tmp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+
+              if (openEvidences.length > 0) {
+                //sort by date and get the last one
+                tmp.openDate = openEvidences.sort((a: any, b: any) => {
+                  return moment(a.date).isAfter(b.date) ? -1 : 1;
+                })[0].date;
+              }
+
               ($ as any).toast({
                 heading: data.title,
                 text: data.text,
@@ -430,6 +439,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               if(e.car.vin === containerUpdated.car.vin){
                 let carga = {...e}
                 carga.status = containerUpdated.status;
+                carga.images = containerUpdated.images;
                 ($ as any).toast({
                   heading: data.title,
                   text: data.text,
