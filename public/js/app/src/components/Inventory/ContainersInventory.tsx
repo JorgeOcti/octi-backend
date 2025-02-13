@@ -401,15 +401,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       console.log("Data socket: "+ JSON.stringify(data))
       const containerUpdated = data.metadata.inventory; 
       let containers = this.state.containers.map((container: any) => {
+        let tmp = {...container}
         if(containerUpdated.car.isContainer){
           if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
-            let tmp = {...container}
             if(tmp.car.isContainer){
               tmp.evidenceStatus = containerUpdated.evidenceStatus
               tmp.status = containerUpdated.status;
               tmp.containerStatus = containerUpdated.containerStatus;
               tmp.openDate = containerUpdated.openDate;
-              console.log("container modificado: ", tmp)
+              ($ as any).toast({
+                heading: data.title,
+                text: data.text,
+                position: 'top-right',
+                loaderBg: '#e2e2e2',
+                icon: 'success',
+                hideAfter: 5000,
+                stack: 6
+              } as any); 
+
               return tmp
             }
           } else {
@@ -417,17 +426,31 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
         }else{
           if (container._id === containerUpdated.container){
-            let contents = container.content.map((e:any) => {
+            let contents = container.content.map((e:any, index:number) => {
               if(e.car.vin === containerUpdated.car.vin){
-                let tmp = {...e}
-                tmp.status = containerUpdated.status;
-                return e
+                let carga = {...e}
+                carga.status = containerUpdated.status;
+                ($ as any).toast({
+                  heading: data.title,
+                  text: data.text,
+                  position: 'top-right',
+                  loaderBg: '#e2e2e2',
+                  icon: 'success',
+                  hideAfter: 5000,
+                  stack: 6
+                } as any); 
+                console.log("1")
+
+                return carga
               }else{
                 return e
               }
             })
-            container.content = contents;
-            return container
+            console.log("Cargas de contenedor: ", contents)
+            tmp.content = contents;
+            console.log("2")
+
+            return tmp
           }else{
             return container
           }
@@ -439,15 +462,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         originalContainers: containers,
         containerUpdated
       });
-      ($ as any).toast({
-        heading: data.title,
-        text: data.text,
-        position: 'top-right',
-        loaderBg: '#e2e2e2',
-        icon: 'success',
-        hideAfter: 5000,
-        stack: 6
-      } as any); 
+     
     });
   }
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
@@ -540,8 +555,61 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
+  ExpandedRowElement = ({ data }: { data: any }) => {
+    return <div className='container-fluid box-body table-responsive request-list'>
+      <div className="row request">
+        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <strong>VIN</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Fotos</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Color</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Estado</strong>
+        </div>
+      </div>
+      {data.content.map((car: any, index: number) => {
+        let className = `${car.status}Class`;
+        let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+        return (
+          <div key={index} className={`row request bg-request-title background-transition ${classNameEfect}`}>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              <strong>{car.car.vin}</strong>
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              {imagesFormatter(car)}
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <strong>{car.car.color}</strong>
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+           <span
+             className={`label label-${
+               inventorySettings.hasOwnProperty(className)
+                 ? inventorySettings[className]
+                 : ''
+             }`}
+             style={{
+               padding: '5px 10px',
+             }}>
+             {inventorySettings.hasOwnProperty(car.status)
+               ? inventorySettings[car.status]
+               : car.state}
+           </span>
+            </div>
+          </div>
+        )
+      })
+      }
+    </div>
+  }
+  
+
   render() {
-    const {containers, loading} = this.state;
+    const {containers, loading, containerUpdated} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
         let key = inventorySettings[container.containerStatus];
@@ -560,7 +628,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
     const conditionalRowStyles2 = [
       {
-        when: (row: any) => row.car.vin === this.state.containerUpdated?.car?.vin && row.inventory === this.state.containerUpdated?.inventory ,
+        when: (row: any) => {
+          if(this.state.containerUpdated?.car?.isContainer){
+            if(row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory) return true
+            return false
+          }else{
+            if(row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory) return true
+            return false
+          }
+        } ,
         classNames: ["highlight-info"],
       },
     ];
@@ -695,7 +771,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     data={this.state.containers}
                     customStyles={dataTableStyle}
                     expandableRows
-                    expandableRowsComponent={ExpandedRowElement}
+                    expandableRowsComponent={this.ExpandedRowElement}
                     expandOnRowClicked={true}
                     pagination
                     conditionalRowStyles={conditionalRowStyles2}
@@ -761,53 +837,4 @@ const inventorySettings: { [key: string]: any } = {
 }
 
 
-const ExpandedRowElement = ({ data }: { data: any }) => {
-  return <div className='container-fluid box-body table-responsive request-list'>
-    <div className="row request">
-      <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-        <strong>VIN</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Fotos</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Color</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Estado</strong>
-      </div>
-    </div>
-    {data.content.map((car: any, index: number) => {
-      let className = `${car.status}Class`;
-      return (
-        <div key={index} className='row request bg-request-title background-transition'>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            <strong>{car.car.vin}</strong>
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-            {imagesFormatter(car)}
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-            <strong>{car.car.color}</strong>
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         <span
-           className={`label label-${
-             inventorySettings.hasOwnProperty(className)
-               ? inventorySettings[className]
-               : ''
-           }`}
-           style={{
-             padding: '5px 10px',
-           }}>
-           {inventorySettings.hasOwnProperty(car.status)
-             ? inventorySettings[car.status]
-             : car.state}
-         </span>
-          </div>
-        </div>
-      )
-    })
-    }
-  </div>
-}
+
