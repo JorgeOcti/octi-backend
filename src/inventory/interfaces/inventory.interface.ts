@@ -8,6 +8,7 @@ import type { IIFile } from '../../interfaces/file.interface';
 import type { IInventoryComment } from './inventoryComment.interface';
 import type { IInventoryFile } from './inventoryFile.interface';
 import type { IInventoryLabel } from './inventoryLabel.interface';
+import { IVirtualInventory } from './virtualInventory.interface';
 
 export interface IStatusEvidence {
   status: string;
@@ -34,6 +35,7 @@ export interface IInventoryCar {
   containerFound?: mongoose.Schema.Types.ObjectId;
   evidenceStatus: IStatusEvidence[];
   extra: any;
+  virtualInventory?: mongoose.Schema.Types.ObjectId;
   updatedAt?: Date;
   createdAt?: Date;
 }
@@ -51,6 +53,8 @@ export interface IInventory {
   backup: IIFile;
   status: string;
   containerInventory: boolean;
+  virtual: boolean;
+  virtualInventories: IVirtualInventory[];
   updatedAt: Date;
   createdAt: Date;
 }

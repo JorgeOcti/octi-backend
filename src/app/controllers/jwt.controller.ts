@@ -109,7 +109,7 @@ class JWTController {
           const teamSettings = await TeamSetting.findOne({
             team: user.team
           }).lean();
-          const version = await Version.findOne({}, ['ios', 'android'], {
+          const version = await Version.findOne({}, ['ios', 'android', 'docks'], {
             sort: {
               createdAt: -1
             }
@@ -174,7 +174,8 @@ class JWTController {
               ),
               iosVersion: version!.ios,
               androidVersion: version!.android,
-              user: userInfo
+              user: userInfo,
+              docks: version!.docks
             },
             status: 200
           });
@@ -250,7 +251,7 @@ class JWTController {
         const teamSettings = await TeamSetting.findOne({
           team: user.team
         }).lean();
-        const version = await Version.findOne({}, ['ios', 'android'], {
+        const version = await Version.findOne({}, ['ios', 'android', 'docks'], {
           sort: {
             createdAt: -1
           }
@@ -315,6 +316,7 @@ class JWTController {
             ),
             iosVersion: version!.ios,
             androidVersion: version!.android,
+            docks: version!.docks,
             user: userInfo
           },
           status: 200

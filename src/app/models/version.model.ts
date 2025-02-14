@@ -5,6 +5,14 @@ import type { IVersion } from '../interfaces/version.interface';
 
 export interface IVersionModel extends IVersion, mongoose.Document {}
 
+const appVersionSchema = new mongoose.Schema({
+  description: String,
+  ios: String,
+  android: String
+}, {
+  _id: false
+});
+
 const versionSchema = new mongoose.Schema(
   {
     name: {
@@ -19,6 +27,7 @@ const versionSchema = new mongoose.Schema(
     ios: {
       type: String
     },
+    docks: appVersionSchema,
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'

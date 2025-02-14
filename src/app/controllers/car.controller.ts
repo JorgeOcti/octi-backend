@@ -231,9 +231,11 @@ class CarController {
     }
   }
 
+  // @ts-ignore
   public async checkVIN(req: IRequest, res: Response) {
     let { vin, vin2 } = req.body;
-    const { inventory } = req.body;
+    let { inventory, virtual } = req.body;
+    virtual = virtual === "true";
     const team = req.user.team._id;
     logger.info(
       `CarController.checkVIN  ${req.user.email} body: ${JSON.stringify(
@@ -243,6 +245,27 @@ class CarController {
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
+    }
+    if (virtual) {
+      let possibleInventory = await InventoryModel.findOne({
+        virtualInventories: new mongoose.Types.ObjectId(inventory),
+        team: team,
+        status: ChoicesStatusInventory.inProcess
+      })
+      logger.info(JSON.stringify(possibleInventory));
+      inventory = possibleInventory ? possibleInventory._id : null;
+      if (!inventory){
+        logger.error(
+          `checkVIN: El inventario virtual señalado no existe.`
+        );
+        logger.error(
+          `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
+        );
+        return res.status(404).json({
+          message: 'Este inventario ya no se encuentra disponible.',
+          status: 404
+        });
+      }
     }
     if (inventory) {
       try {
@@ -357,7 +380,8 @@ class CarController {
                       containerFound: car.containerFound,
                       extra: car.extra,
                       isContainer: carToAdd.isContainer,
-                      inventoryCar_id: (car as any)._id
+                      inventoryCar_id: (car as any)._id,
+                      inventoryRef: inventory
                     });
                   }
                 }

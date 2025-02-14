@@ -21,6 +21,7 @@ import logger from '../../services/logger.service';
 import pushService from '../../services/push.service';
 import { socket } from '../../services/socket.service';
 import moment = require('moment');
+import VirtualInventory from '../models/virtualInventory.model';
 
 interface IInventoryQueueData {
   userID: string;
@@ -83,6 +84,7 @@ class InventoryQueue {
       const inventory = await Inventory.findById(inventoryID)
       let containersByBIC: any = {};
       let inventoryContainers = [];
+      let virtualInventories: any = {};
 
       for (const BIC of Object.keys(carsByContainer)) {
         const container = carsByContainer[BIC].container;
@@ -98,9 +100,30 @@ class InventoryQueue {
           })
           await currentContainer.save();
         }
+        // extra nave - extra cliente
+        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
+        if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
+          let virtualInventory = await VirtualInventory.findOne({
+            team,
+            company,
+            name: virtualInventoryName,
+            status: ChoicesStatusInventory.inProcess
+          });
+          if (!virtualInventory) {
+            virtualInventory = new VirtualInventory({
+              team,
+              company,
+              name: virtualInventoryName,
+              status: ChoicesStatusInventory.inProcess
+            });
+            await virtualInventory.save();
+          }
+          virtualInventories[virtualInventoryName] = virtualInventory;
+        }
         containersByBIC[BIC] = currentContainer._id;
         inventoryContainers.push({
           inventory: inventory!._id,
+          virtualInventory: virtualInventories[virtualInventoryName]._id,
           venue: venue._id,
           car: currentContainer._id,
           extra: container.extra,
@@ -135,6 +158,9 @@ class InventoryQueue {
       let inventoryCars = [];
 
       for (const BIC of Object.keys(carsByContainer)) {
+        const container = carsByContainer[BIC].container;
+        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
+        let virtualInventory = virtualInventories[virtualInventoryName];
         const cars = carsByContainer[BIC].cars;
         for (const car of cars) {
           let currentCar = await CarModel.findOne({
@@ -160,6 +186,7 @@ class InventoryQueue {
           }
           inventoryCars.push({
             inventory: inventory!._id,
+            virtualInventory: virtualInventory._id,
             venue: venue._id,
             car: currentCar._id,
             container: containersByBIC[BIC],
@@ -192,7 +219,9 @@ class InventoryQueue {
       await ActivityHistory.insertMany(activityHistories);
 
       await Inventory.findByIdAndUpdate(inventoryID, {
-        status: ChoicesStatusInventory.inProcess
+        status: ChoicesStatusInventory.inProcess,
+        virtualInventories: Object.values(virtualInventories).map((virtualInventory: any) => virtualInventory._id),
+        virtual: true
       });
 
       done(null, {});

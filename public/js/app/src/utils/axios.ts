@@ -522,6 +522,8 @@ export default class ApiService {
     formData.append('carsByContainer', JSON.stringify(carsByContainer));
     formData.append('name', name);
     formData.append('file', file!);
+    formData.append('manualPhoto', "4");
+    formData.append('reportPhoto', "3");
     if (backupFile) {
       formData.append('backup', backupFile);
     }
