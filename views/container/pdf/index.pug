@@ -67,9 +67,9 @@ html
         .logo
           img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
         .company-info
-          h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SAI)
+          h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (!{container.venueFound.abbreviation})
           p Giro: SERVICIOS EXTRAPORTUARIOS
-          p Dirección: Camino Las Mercedes 14851 - San Antonio
+          p Dirección: !{container.venueFound.code}
           p Emitido por: !{userName} el !{moment().format('DD/MM/YYYY - HH:mm')}
       .section-wrapper
         .section
@@ -112,7 +112,7 @@ html
               span !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
             .item
               span.label Ubicación:
-              span !{container.extra["Ubicación"] || "San Antonio"}
+              span !{container.extra["Ubicación"]}
             .item
               span.label Precinto:
               span !{container.extra["Sello IN"]}

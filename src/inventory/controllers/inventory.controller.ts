@@ -2543,8 +2543,8 @@ class InventoryController {
         container: container._id
       }).populate([
         { path: 'inventoriedBy' },
-        {path: 'images'},
-        {path: 'venueFound'},
+        { path: 'images'},
+        { path: 'venueFound'},
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
