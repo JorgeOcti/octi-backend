@@ -20,7 +20,7 @@ import {
 import {
   ChoicesStatusInventory,
   default as Inventory,
-  default as InventoryModel
+  default as InventoryModel, IInventoryModel
 } from '../models/inventory.model';
 import {
   IVenueModel,
@@ -34,12 +34,12 @@ import {
   default as InventoryFile,
   default as InventoryFileModel
 } from '../models/inventoryFile.model';
-import { PaginateOptions, PipelineStage } from 'mongoose';
+import { HydratedDocument, PaginateOptions, PipelineStage } from 'mongoose';
 
 import { Alignment } from 'exceljs';
 import GeneralUtils from '../../utils/general.utils';
 import History from '../../app/models/history.model';
-import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IInventory, IInventoryCar } from '../interfaces/inventory.interface';
 import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
@@ -54,7 +54,11 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
-import { selectFilter } from '../../../public/js/app/src/types/react-bootstrap-table2-filter';
+import {
+  IInventoryVirtualModel,
+} from '../models/virtualInventory.model';
+import { IUserModel } from '../../app/schemas/user.schema';
+import { IUser } from '../../app/interfaces/user.interface';
 
 class InventoryController {
   constructor() {
@@ -85,6 +89,9 @@ class InventoryController {
     this.checkExistVenue = this.checkExistVenue.bind(this);
     this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
     this.CarStatusList = this.CarStatusList.bind(this);
+    this.addStatusEvidence = this.addStatusEvidence.bind(this)
+    this.closeInventory = this.closeInventory.bind(this)
+    this.closeVirtualInventory = this.closeVirtualInventory.bind(this)
   }
 
   public async index(req: IRequest, res: Response) {
@@ -148,7 +155,7 @@ class InventoryController {
         _id: inventoryCarId
       }).populate({ path: 'files' });
       if (!inventoryCar) {
-        return res.status(404).json({ message: 'No encomtrado' });
+        return res.status(404).json({ message: 'No encontrado' });
       } else {
         return res.json(inventoryCar);
       }
@@ -209,7 +216,7 @@ class InventoryController {
   }
 
   public async createContainerInventory(req: IRequest, res: Response) {
-    let { name, carsByContainer } = req.body;
+    let { name, carsByContainer, manualPhoto, reportPhoto } = req.body;
     carsByContainer = JSON.parse(carsByContainer);
     try {
       const { company, team, venue } = req.user;
@@ -223,11 +230,12 @@ class InventoryController {
         containerInventory: true,
         settings: {
           photos: {
-            manual: false,
-            report: false
+            manual: parseInt(manualPhoto, 10),
+            report: parseInt(reportPhoto, 10)
           }
         }
       });
+
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
       if (file) {
         file.team = team;
@@ -830,6 +838,7 @@ class InventoryController {
   public async apiDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
+    const { virtual } = req.query as { virtual?: string };
     logger.info(`apiDetail Inventory`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${req.user.email}, inventory: ${id}}`
@@ -843,31 +852,36 @@ class InventoryController {
         });
       } else {
         // const venuesPermissions = req.user.venuesPermissions();
-        const inventory = await (Inventory as any)
-          .findOne({
-            $and: [
-              {
-                _id: id,
-                venues: updatedUser.venue,
-                status: {
-                  $in: [ChoicesStatusInventory.inProcess]
-                },
-                team
-              }
+        let inventoryMatch: any = {
+          venues: updatedUser.venue,
+          status: {
+            $in: [ChoicesStatusInventory.inProcess]
+          },
+          team
+        }
+        let inventoryCarsMatch: any = {
+          status: {
+            $in: [
+              ChoicesStatusCarInventory.pending,
+              ChoicesStatusCarInventory.found,
+              ChoicesStatusCarInventory.reported,
             ]
-          })
+          }
+        }
+        if (virtual === '1') {
+          logger.info(`apiDetail Inventory: Virtual Inventory`);
+          inventoryMatch["virtualInventories"] = new mongoose.Types.ObjectId(id)
+          inventoryCarsMatch["virtualInventory"] = new mongoose.Types.ObjectId(id)
+        } else {
+          inventoryMatch["_id"] = new mongoose.Types.ObjectId(id)
+        }
+
+        const inventory = await (Inventory as any)
+          .findOne(inventoryMatch)
           .populate([
             {
               path: 'cars',
-              match: {
-                status: {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.reported,
-                  ]
-                }
-              },
+              match: inventoryCarsMatch,
               populate: [
                 {
                   path: 'car',
@@ -903,7 +917,8 @@ class InventoryController {
                   containerFound: car.containerFound,
                   extra: car.extra,
                   evidenceStatus: car.evidenceStatus,
-                  containerStatus: car.containerStatus
+                  containerStatus: car.containerStatus,
+                  inventoryRef: car.inventory
                 };
               }),
               reasons: []
@@ -1099,6 +1114,37 @@ class InventoryController {
     }
   }
 
+  private async closeVirtualInventory(virtualInventory: IInventoryVirtualModel) {
+    const virtualInventoryCars = await InventoryCar.find({
+      virtualInventory: virtualInventory._id,
+      $or: [
+        {status: ChoicesStatusCarInventory.pending, container: {$exists: true}},
+        {containerStatus: {$ne: ChoicesStatusContainer.empty}, container: {$exists: false}}
+      ]
+    });
+    logger.info(`apiFoundCar: virtualInventoryCars: ${virtualInventoryCars.length}`);
+    if (virtualInventoryCars.length === 0) {
+      virtualInventory.status = ChoicesStatusInventory.finalized;
+      await virtualInventory.save();
+    }
+  }
+
+  private async closeInventory(inventory: IInventoryModel, user: IUserModel | IUser) {
+    const inventoryCars = await InventoryCar.find({
+      inventory: inventory._id,
+      $or: [
+        {status: ChoicesStatusCarInventory.pending, container: {$exists: true}},
+        {containerStatus: {$ne: ChoicesStatusContainer.empty}, container: {$exists: false}}
+      ]
+    });
+    if (inventoryCars.length === 0) {
+      inventory.status = ChoicesStatusInventory.finalized;
+      inventory.finalizedAt = new Date();
+      inventory.finalizedBy = user._id;
+      await inventory.save();
+    }
+  }
+
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
@@ -1226,7 +1272,22 @@ class InventoryController {
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
-              await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
+
+              // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
+              if (inventory.containerInventory) {
+                await this.closeInventory(inventory, req.user);
+
+                if (inventoryCar.virtualInventory) {
+                  const virtualInventory = await InventoryModel.findOne({
+                    _id: inventoryCar.virtualInventory
+                  });
+                  if (virtualInventory) {
+                    await this.closeVirtualInventory(virtualInventory)
+                    logger.info(`apiFoundCar: virtualInventory: ${virtualInventory}`);
+                  }
+                }
+              }
+
               return res.status(200).json({
                 vin: car.vin,
                 status: 200
@@ -1863,7 +1924,7 @@ class InventoryController {
       logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
       if (updatedUser) {
-        const inventories = await InventoryModel.find(
+        const inventories: IInventory[] = await InventoryModel.find(
           {
             team,
             venues: updatedUser.venue,
@@ -1875,11 +1936,32 @@ class InventoryController {
             _id: true,
             name: true,
             settings: true,
-            containerInventory: true
+            containerInventory: true,
+            virtual: true,
+            virtualInventories: true,
           }
-        ).lean();
+        ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
+
+        let dataInventories: any = {};
+
+        inventories.map((inventory:  HydratedDocument<IInventory>)  => {
+          if (inventory.virtual) {
+            inventory.virtualInventories = inventory.virtualInventories.map((virtualInventory: any ) => {
+              if (!Object.hasOwn(dataInventories, virtualInventory._id.toString())) {
+                dataInventories[virtualInventory._id.toString()] = {
+                  ...inventory,
+                  ...virtualInventory
+                }
+              }
+              return virtualInventory
+            })
+          } else {
+            dataInventories[inventory._id.toString()] = inventory
+          }
+        })
+
         return res.json({
-          data: inventories,
+          data: Object.values(dataInventories),
           status: 200
         });
       } else {
@@ -2514,8 +2596,8 @@ class InventoryController {
         container: container._id
       }).populate([
         { path: 'inventoriedBy' },
-        {path: 'images'},
-        {path: 'venueFound'},
+        { path: 'images'},
+        { path: 'venueFound'},
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
@@ -3210,6 +3292,20 @@ class InventoryController {
       inventoryCar.containerStatus = status;
       inventoryCar.evidenceStatus = evidenceStatus
       await inventoryCar.save()
+
+      // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
+      if (inventory.containerInventory) {
+        await this.closeInventory(inventory, req.user);
+        if (inventoryCar.virtualInventory) {
+          const virtualInventory = await InventoryModel.findOne({
+            _id: inventoryCar.virtualInventory
+          });
+          if (virtualInventory) {
+            await this.closeVirtualInventory(virtualInventory)
+            logger.info(`apiFoundCar: virtualInventory: ${virtualInventory}`);
+          }
+        }
+      }
 
       return res.status(200).json({
         message: 'Se ha registrado la evidencia correctamente.',
