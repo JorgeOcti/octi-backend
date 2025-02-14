@@ -54,6 +54,7 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
+import { selectFilter } from '../../../public/js/app/src/types/react-bootstrap-table2-filter';
 import {
   IInventoryVirtualModel,
 } from '../models/virtualInventory.model';
@@ -1288,6 +1289,7 @@ class InventoryController {
                 }
               }
 
+              await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
                 status: 200

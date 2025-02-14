@@ -305,7 +305,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
-    this.containerAlertScoket()
+    this.startSocket();
     api.getSource()
     api.getInventories(1, true)
       .then(async (response: any) => {
@@ -372,7 +372,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           originalContainers: containers,
           loading: false
         })
-        console.log("containers2 :" , this.state)
         let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
         this.setState({
           clientSelector: clients
@@ -382,7 +381,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         console.log(error);
       })
   }
-  containerAlertScoket(){
+  startSocket(){
     this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
@@ -397,84 +396,73 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       });
     });
     this.socket.on('REFRESH', (data: any): void => {
-      // Muestra alerta de un cambio
-      console.log("Data socket: ", JSON.stringify(data))
-      const containerUpdated = data.metadata.inventory; 
+     this.updateDataContainersRealTime(data);
+    });
+
+  }
+  updateDataContainersRealTime(data:any){
+    const containerUpdated = data.metadata.inventory; 
       let containers = this.state.containers.map((container: any) => {
         let tmp = {...container}
         if(containerUpdated.car.isContainer){
-          if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
-            if(tmp.car.isContainer){
-              tmp.evidenceStatus = containerUpdated.evidenceStatus
-              tmp.status = containerUpdated.status;
-              tmp.containerStatus = containerUpdated.containerStatus;
-              tmp.images = containerUpdated.images;
-              let openEvidences = tmp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-
-              if (openEvidences.length > 0) {
-                //sort by date and get the last one
-                tmp.openDate = openEvidences.sort((a: any, b: any) => {
-                  return moment(a.date).isAfter(b.date) ? -1 : 1;
-                })[0].date;
-              }
-
-              ($ as any).toast({
-                heading: data.title,
-                text: data.text,
-                position: 'top-right',
-                loaderBg: '#e2e2e2',
-                icon: 'success',
-                hideAfter: 5000,
-                stack: 6
-              } as any); 
-
-              return tmp
-            }
-          } else {
-            return container
-          }
+              // Metodo para modificar la data del contenedor
+          return this.updateDataContainer(tmp, containerUpdated, data)
         }else{
-          if (container._id === containerUpdated.container){
-            let contents = container.content.map((e:any, index:number) => {
-              if(e.car.vin === containerUpdated.car.vin){
-                let carga = {...e}
-                carga.status = containerUpdated.status;
-                carga.images = containerUpdated.images;
-                ($ as any).toast({
-                  heading: data.title,
-                  text: data.text,
-                  position: 'top-right',
-                  loaderBg: '#e2e2e2',
-                  icon: 'success',
-                  hideAfter: 5000,
-                  stack: 6
-                } as any); 
-                console.log("1")
-
-                return carga
-              }else{
-                return e
-              }
+          if (container._id !== containerUpdated.container) return container
+            let contents = container.content.map((e:any) => {
+              // Metodo para modificar el array de contents del contenedor
+              return this.updateContentContainer(e, containerUpdated, data)
             })
-            console.log("Cargas de contenedor: ", contents)
             tmp.content = contents;
-            console.log("2")
-
             return tmp
-          }else{
-            return container
-          }
         }
       });
-      
       this.setState({
         containers,
         originalContainers: containers,
         containerUpdated
       });
-     
-    });
   }
+  updateDataContainer(container:any, containerUpdated:any, data:any):any{
+    let containerTemp = {...container}
+    if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
+      containerTemp.evidenceStatus = containerUpdated.evidenceStatus
+      containerTemp.status = containerUpdated.status;
+      containerTemp.containerStatus = containerUpdated.containerStatus;
+      containerTemp.images = containerUpdated.images;
+      let openEvidences = containerTemp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+      if (openEvidences.length > 0) {
+        //sort by date and get the last one
+        containerTemp.openDate = openEvidences.sort((a: any, b: any) => {
+          return moment(a.date).isAfter(b.date) ? -1 : 1;
+        })[0].date;
+      }
+      this.showAlert(data)
+      return containerTemp
+    } else return container
+  }
+  updateContentContainer(content:any, containerUpdated:any, data:any){
+    if(content.car.vin === containerUpdated.car.vin){
+      let contentTemp = {...content}
+      contentTemp.status = containerUpdated.status;
+      contentTemp.images = containerUpdated.images;
+      this.showAlert(data);
+      return contentTemp
+    }else return content
+  }
+
+  showAlert(data:any){
+    ($ as any).toast({
+      heading: data.title,
+      text: data.text,
+      position: 'top-right',
+      loaderBg: '#e2e2e2',
+      icon: 'success',
+      hideAfter: 5000,
+      stack: 6
+    } as any); 
+  }
+
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
@@ -485,7 +473,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate) {
       this.filterContainers();
     }
-    console.log("Contenedores DidUpdate: ", this.state)
   }
 
   cleanFilters = () => {
@@ -636,7 +623,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       return `${status}: ${statusCount[status]}`;
     }).join(', ');
 
-    const conditionalRowStyles2 = [
+    const conditionalRowStyles = [
       {
         when: (row: any) => {
           if(this.state.containerUpdated?.car?.isContainer){
@@ -784,7 +771,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     expandableRowsComponent={this.ExpandedRowElement}
                     expandOnRowClicked={true}
                     pagination
-                    conditionalRowStyles={conditionalRowStyles2}
+                    conditionalRowStyles={conditionalRowStyles}
                     paginationComponentOptions={paginationComponentOptions}
                   noDataComponent={
                     <div className="text-center">
