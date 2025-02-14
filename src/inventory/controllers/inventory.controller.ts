@@ -54,7 +54,6 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
-import { selectFilter } from '../../../public/js/app/src/types/react-bootstrap-table2-filter';
 
 class InventoryController {
   constructor() {
@@ -1133,11 +1132,11 @@ class InventoryController {
         status: ChoicesStatusInventory.inProcess
       });
 
-      if (inventory) { // valido la existencia del inventario
+      if (inventory) {
 
         const car = await Car.findOne({ vin, team }); 
 
-        if (car) { // valido la existencia del vehículo
+        if (car) {
 
           const inventoriedCar = await InventoryCar.findOne({
             inventory: id,
@@ -1149,7 +1148,7 @@ class InventoryController {
               ]
             }
           });
-          if (inventoriedCar) { // si el vehículo ya ha sido inventariado
+          if (inventoriedCar) {
             logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
             logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
             return res.status(200).json({
@@ -1164,12 +1163,12 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
-              if (containerFound){ //si el parametro containerFound fue propagado por el request
-                let inventoryContainer = await InventoryCar.findOne({ //busco el contenedor en el inventario
+              if (containerFound){
+                let inventoryContainer = await InventoryCar.findOne({
                   _id: new mongoose.Types.ObjectId(containerFound),
                   inventory: id
                 });
-                if (inventoryContainer) { // si el contenedor existe en el inventario, asignamos el id del mismo a la del auto o carga
+                if (inventoryContainer) {
                   inventoryCar.containerFound = inventoryContainer._id;
                 }
               }
@@ -1295,24 +1294,7 @@ class InventoryController {
       message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.vin} en ${updatedUser.venue.name}.`;
     }
 
-    /*socket()
-      .to(`dashboard-container-vin-view-${teamId}`)
-      .emit('REFRESH', {
-        title: title,
-        text: message,
-        status: status,
-        venue: venueId,
-        update: true,
-        metadata: {
-          data: {
-            element_found:car,
-            inventory: inventory
-          }
-        }
-      });*/
-
-
-      socket()
+    socket()
       .to(`dashboard-container-vin-view-${teamId}`)
       .emit('REFRESH', {
         title: title,
