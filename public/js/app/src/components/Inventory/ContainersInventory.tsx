@@ -398,18 +398,17 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   updateDataContainersRealTime(data:any){
     const containerUpdated = data.metadata.inventory; 
       let containers = this.state.containers.map((container: any) => {
-        let tmp = {...container}
         if(containerUpdated.car.isContainer){
               // Metodo para modificar la data del contenedor
-          return this.updateDataContainer(tmp, containerUpdated, data)
+          return this.updateDataContainer(container, containerUpdated, data)
         }else{
           if (container._id !== containerUpdated.container) return container
             let contents = container.content.map((e:any) => {
               // Metodo para modificar el array de contents del contenedor
               return this.updateContentContainer(e, containerUpdated, data)
             })
-            tmp.content = contents;
-            return tmp
+            container.content = contents;
+            return container
         }
       });
       this.setState({
@@ -443,7 +442,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       contentTemp.images = containerUpdated.images;
       this.showAlert(data);
       return contentTemp
-    }else return content
+    }
+    return content
   }
 
   showAlert(data:any){
@@ -621,12 +621,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     const conditionalRowStyles = [
       {
         when: (row: any) => {
-          if(this.state.containerUpdated?.car?.isContainer){
-            if(row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory) return true
-            return false
+          const {containerUpdated} = this.state;
+
+          if(containerUpdated?.car?.isContainer){
+            return row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory
           }else{
-            if(row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory) return true
-            return false
+            return row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory
           }
         } ,
         classNames: ["highlight-info"],
