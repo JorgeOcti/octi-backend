@@ -315,17 +315,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return !car.car.isContainer;
         })
 
-        cars.map((car: any) => {
-          let container = containers.findIndex((container: any) => {
-            return container._id === (car.containerFound || car.container);
-          });
-
-          if (container >= 0) {
-            if (containers[container].content === undefined) {
-              containers[container].content = [];
-            }
-            containers[container].content.push(car);
-          }
+        containers = containers.map((container: any) => {
+          container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
+          return container;
         })
 
         containers = containers.map((container: any) => {
@@ -349,6 +341,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
+
+        console.log(containers);
+        console.log(containers.filter((container: any) => container.content === undefined));
 
         this.setState({
           containers: containers,
