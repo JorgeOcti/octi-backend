@@ -442,7 +442,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       contentTemp.images = containerUpdated.images;
       this.showAlert(data);
       return contentTemp
-    }else return content
+    }
+    return content
   }
 
   showAlert(data:any){
