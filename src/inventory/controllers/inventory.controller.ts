@@ -54,6 +54,7 @@ import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
+
 import {
   IInventoryVirtualModel,
 } from '../models/virtualInventory.model';
@@ -1156,31 +1157,35 @@ class InventoryController {
       }, body: ${JSON.stringify(req.body)}}`
     );
     try {
-      const updatedUser = await User.findById(req.user._id).populate([
-        {
+
+      const updatedUser = await User.findById(req.user._id).populate([{
           path: 'venue',
           select: ['name']
-        }
-      ]);
-      const teamSettings = await TeamSetting.findOne({ team });
+      }]);
+
       if (!updatedUser) {
         return res.status(404).json({
           message: 'No se ha encontrado el inventario solicitado.',
           status: 404
         });
       }
+
+      const teamSettings = await TeamSetting.findOne({ team });
+
       const venueId = updatedUser.venue._id;
+
       const inventory = await InventoryModel.findOne({
         _id: id,
         team,
         status: ChoicesStatusInventory.inProcess
       });
+
       if (inventory) {
-        const car = await Car.findOne({
-          vin,
-          team
-        });
+
+        const car = await Car.findOne({ vin, team }); 
+
         if (car) {
+
           const inventoriedCar = await InventoryCar.findOne({
             inventory: id,
             car: car._id,
@@ -1193,15 +1198,13 @@ class InventoryController {
           });
           if (inventoriedCar) {
             logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-            logger.error(
-              `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
-            );
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
             return res.status(200).json({
               message: 'Este vehículo ya ha sido inventariado',
               status: 200
             });
           } else {
-            const inventoryCar = await InventoryCar.findOne({
+            let inventoryCar = await InventoryCar.findOne({
               inventory: id,
               car: car._id
             });
@@ -1256,9 +1259,17 @@ class InventoryController {
                     (image: string) => new mongoose.Types.ObjectId(image)
                   )
                 : [];
-              inventoryCar.inventoriedBy = req.user._id;
-              await inventoryCar.save();
 
+              inventoryCar.inventoriedBy = req.user._id;
+              inventoryCar = await inventoryCar.save();
+              inventoryCar = await inventoryCar.populate([
+                {path: 'car'},
+                {path: 'venue'},
+                {path: 'venueFound'},
+                {path: 'evidenceStatus'},
+                {path: 'evidenceStatus.images'},
+                {path: 'images'}
+              ]);
               socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
@@ -1278,6 +1289,7 @@ class InventoryController {
                 }
               }
 
+              await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
                 status: 200
@@ -1335,6 +1347,32 @@ class InventoryController {
       });
     }
   }
+
+  private async sendUpdateNotification(venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
+   
+    let title = `Vehículo encontrado`;
+    let message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
+
+    if (inventory.car.isContainer) {
+      title = `Contenedor encontrado`;
+      message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+    }
+
+    socket()
+      .to(`dashboard-container-vin-view-${teamId}`)
+      .emit('REFRESH', {
+        title: title,
+        text: message,
+        status: status,
+        venue: venueId,
+        update: true,
+        metadata: {
+          inventory: inventory
+        }
+      });
+
+  }
+
 
   public async finishInventory(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;

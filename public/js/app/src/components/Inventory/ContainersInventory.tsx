@@ -7,6 +7,9 @@ import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/build/esm/socket';
+
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
@@ -25,6 +28,7 @@ interface IStateType {
   originalContainers: any[];
   blFilter: string;
   containerFilter: string;
+  containerUpdated: any;
   clientFilter: string;
   clientSelector: any[];
   statusFilter: string;
@@ -151,7 +155,8 @@ const columns = [
       return row.containerStatus || row.status;
     },
     cell: (row: any) => {
-      let className = `${row.status}Class`;
+      const status = row.containerStatus || row.status
+      let className = `${status}Class`;
       return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
        <span
          className={`label label-${
@@ -162,9 +167,9 @@ const columns = [
           style={{
             padding: '5px 10px'
           }}>
-         {inventorySettings.hasOwnProperty(row.status)
-           ? inventorySettings[row.status]
-           : row.state}
+         {inventorySettings.hasOwnProperty(status)
+           ? inventorySettings[status]
+           : status}
        </span>
      </div>
     },
@@ -241,6 +246,9 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   title = "Revisión Containers";
 
+
+  private socket: Socket;
+
   constructor(props: IPropsType) {
     super(props);
     this.state = {
@@ -250,6 +258,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containers: [],
       blFilter: '',
       containerFilter: '',
+      containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
       statusFilter: '',
@@ -286,9 +295,17 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.downloadData = this.downloadData.bind(this);
   }
 
+
+  public componentWillUnmount():void {
+    // cancel request if component is inmounted
+    this.socket.disconnect();
+  }
+
+
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
+    this.startSocket();
     api.getSource()
     api.getInventories(1, true)
       .then(async (response: any) => {
@@ -350,7 +367,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           originalContainers: containers,
           loading: false
         })
-
         let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
         this.setState({
           clientSelector: clients
@@ -359,6 +375,87 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       .catch((error: any) => {
         console.log(error);
       })
+  }
+  startSocket(){
+    this.socket = io(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: (window.user as any).token
+      }
+    });
+    this.socket.on('connect', () => { 
+      this.socket.emit('join', {
+        room: `dashboard-container-vin-view-${window.user.team._id}`
+      });
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+     this.updateDataContainersRealTime(data);
+    });
+
+  }
+  updateDataContainersRealTime(data:any){
+    const containerUpdated = data.metadata.inventory; 
+      let containers = this.state.containers.map((container: any) => {
+        if(containerUpdated.car.isContainer){
+              // Metodo para modificar la data del contenedor
+          return this.updateDataContainer(container, containerUpdated, data)
+        }else{
+          if (container._id !== containerUpdated.container) return container
+            let contents = container.content.map((e:any) => {
+              // Metodo para modificar el array de contents del contenedor
+              return this.updateContentContainer(e, containerUpdated, data)
+            })
+            container.content = contents;
+            return container
+        }
+      });
+      this.setState({
+        containers,
+        originalContainers: containers,
+        containerUpdated
+      });
+  }
+  updateDataContainer(container:any, containerUpdated:any, data:any):any{
+    let containerTemp = {...container}
+    if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
+      containerTemp.evidenceStatus = containerUpdated.evidenceStatus
+      containerTemp.status = containerUpdated.status;
+      containerTemp.containerStatus = containerUpdated.containerStatus;
+      containerTemp.images = containerUpdated.images;
+      let openEvidences = containerTemp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+      if (openEvidences.length > 0) {
+        //sort by date and get the last one
+        containerTemp.openDate = openEvidences.sort((a: any, b: any) => {
+          return moment(a.date).isAfter(b.date) ? -1 : 1;
+        })[0].date;
+      }
+      this.showAlert(data)
+      return containerTemp
+    } else return container
+  }
+  updateContentContainer(content:any, containerUpdated:any, data:any){
+    if(content.car.vin === containerUpdated.car.vin){
+      let contentTemp = {...content}
+      contentTemp.status = containerUpdated.status;
+      contentTemp.images = containerUpdated.images;
+      this.showAlert(data);
+      return contentTemp
+    }
+    return content
+  }
+
+  showAlert(data:any){
+    ($ as any).toast({
+      heading: data.title,
+      text: data.text,
+      position: 'top-right',
+      loaderBg: '#e2e2e2',
+      icon: 'success',
+      hideAfter: 5000,
+      stack: 6
+    } as any); 
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
@@ -450,8 +547,61 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
+  ExpandedRowElement = ({ data }: { data: any }) => {
+    return <div className='container-fluid box-body table-responsive request-list'>
+      <div className="row request">
+        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <strong>VIN</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Fotos</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Color</strong>
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <strong>Estado</strong>
+        </div>
+      </div>
+      {data.content.map((car: any, index: number) => {
+        let className = `${car.status}Class`;
+        let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+        return (
+          <div key={index} className={`row request bg-request-title background-transition ${classNameEfect}`}>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              <strong>{car.car.vin}</strong>
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              {imagesFormatter(car)}
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <strong>{car.car.color}</strong>
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+           <span
+             className={`label label-${
+               inventorySettings.hasOwnProperty(className)
+                 ? inventorySettings[className]
+                 : ''
+             }`}
+             style={{
+               padding: '5px 10px',
+             }}>
+             {inventorySettings.hasOwnProperty(car.status)
+               ? inventorySettings[car.status]
+               : car.state}
+           </span>
+            </div>
+          </div>
+        )
+      })
+      }
+    </div>
+  }
+  
+
   render() {
-    const {containers, loading} = this.state;
+    const {containers, loading, containerUpdated} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
         let key = inventorySettings[container.containerStatus];
@@ -467,6 +617,21 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     let details = Object.keys(statusCount).map((status: any) => {
       return `${status}: ${statusCount[status]}`;
     }).join(', ');
+
+    const conditionalRowStyles = [
+      {
+        when: (row: any) => {
+          const {containerUpdated} = this.state;
+
+          if(containerUpdated?.car?.isContainer){
+            return row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory
+          }else{
+            return row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory
+          }
+        } ,
+        classNames: ["highlight-info"],
+      },
+    ];
 
     return (
       <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
@@ -598,9 +763,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     data={this.state.containers}
                     customStyles={dataTableStyle}
                     expandableRows
-                    expandableRowsComponent={ExpandedRowElement}
+                    expandableRowsComponent={this.ExpandedRowElement}
                     expandOnRowClicked={true}
                     pagination
+                    conditionalRowStyles={conditionalRowStyles}
                     paginationComponentOptions={paginationComponentOptions}
                   noDataComponent={
                     <div className="text-center">
@@ -663,53 +829,4 @@ const inventorySettings: { [key: string]: any } = {
 }
 
 
-const ExpandedRowElement = ({ data }: { data: any }) => {
-  return <div className='container-fluid box-body table-responsive request-list'>
-    <div className="row request">
-      <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-        <strong>VIN</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Fotos</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Color</strong>
-      </div>
-      <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-        <strong>Estado</strong>
-      </div>
-    </div>
-    {data.content.map((car: any, index: number) => {
-      let className = `${car.status}Class`;
-      return (
-        <div key={index} className='row request bg-request-title background-transition'>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            <strong>{car.car.vin}</strong>
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-            {imagesFormatter(car)}
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-            <strong>{car.car.color}</strong>
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-         <span
-           className={`label label-${
-             inventorySettings.hasOwnProperty(className)
-               ? inventorySettings[className]
-               : ''
-           }`}
-           style={{
-             padding: '5px 10px',
-           }}>
-           {inventorySettings.hasOwnProperty(car.status)
-             ? inventorySettings[car.status]
-             : car.state}
-         </span>
-          </div>
-        </div>
-      )
-    })
-    }
-  </div>
-}
+
