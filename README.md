@@ -30,6 +30,8 @@
       <ul>
         <li><a href="#prerequisites">Prerrequisitos</a></li>
         <li><a href="#installation">Instalación</a></li>
+        <li><a href="#git">Configuración de Git</a></li>
+        <li><a href="#bitbucket">Configuración de Bitbucket</a></li>
         <li><a href="#readme-env">Configuración del .env</a></li>
       </ul>
     </li>
@@ -38,6 +40,8 @@
       <ul>
         <li><a href="#open">Como abrir la aplicación</a></li>
         <li><a href="#user">Usuarios disponibles por defecto</a></li>
+        <li><a href="#upload">Como subir código</a></li>
+        <li><a href="#feedback">Proceso de revisión</a></li>
       </ul>
     </li>
   </ol>
@@ -62,9 +66,28 @@ La aplicación se encuentra completamente manejada en containers de docker, por 
   npm install npm@latest -g
   ```
 
+<a id="bitbucket"></a>
+### Configuración de Bitbucket
+
+Al entrar a OSA, se te entregará un correo electrónico oficial. Con este, debes crear una cuenta en Bitbucket.
+
+Una vez creada la cuenta, te aparecerá en la página principal la opción de crear un nuevo workspace.
+
+![Pantalla principal](docs/first.jpeg)
+
+Una vez que comiences con el proceso de creación del workspace, vas a tener que seleccionar un nombre. Aquí tienes completa libertad de poner el nombre que quieras, recordando que este será tu workspace personal para trabajar, pero que otros podrán ver el nombre.
+
+![Seleccion del nombre](docs/second.jpeg)
+
+Una vez seleccionado el nombre, debes pulsar el botón para poder crear tu workspace. Esto tomará un tiempo y la aparición del workspace en tu cuenta puede no ser inmediata, por lo tanto, espera unos minutos y, si demora demasiado puedes probar refrescando la página.
+
+![Pantalla principal](docs/third.jpeg)
+
+Con esto, tu cuenta de Bitbucket debería estar lista para trabajar y con un workspace personal vacío. Como último paso, debes solicitar que te otorguen acceso al workspace oficial de OSA. Es muy importante que solo solicites el acceso luego de tener tu workspace personal creado, ya que, de otra manera, el proceso será mucho más engorroso.
+
 <a id="installation"></a>
 ### Instalación
-1. Hacer un fork del repo en bitbucket
+1. Hacer un fork del repo en bitbucket ocupando tu workspace personal
 
 2. Clonar el repo
    ```sh
@@ -92,6 +115,54 @@ setear las <a href="#readme-env">Configuración inicial</a>
    ```sh
    ./dataLoad.sh <nombre-del-contenedor>
    ```
+
+<a id="git"></a>
+### Configuración de git
+
+En OSA se ocupa un flujo de trabajo basado en forks y pull requests. Por lo tanto, cada desarrollador trabaja en su propio fork para luego hacer PR (pull request) de su trabajo al repositorio original.
+
+Por lo anterior, siempre se trabajará con dos referencias remotas: la del repositorio principal, que servirá para mantener el código actualizado con lo último subido, y la del fork personal, que servirá para subir nuestro código a la nube.
+
+Para trabajar con dos referencias, hay dos métodos principales:
+
+1. **Crear un nuevo remote**
+
+    Con esto tendremos un remote para cada repositorio. Suponiendo que clonamos nuestro repositorio y no el principal, entonces el remote `origin` contendrá la referencia a nuestro repositorio.
+
+    Para crear el nuevo remote, ocupamos el siguiente comando:
+
+    ```bash
+    git remote add mainOrigin <link_del_repo_principal>
+    ```
+
+    Con esto podemos comenzar a operar con el siguiente comando para trabajar:
+
+    ```bash
+    git push/pull <nombre_remote>
+    ```
+
+    Adicionalmente, se pueden cambiar los upstream para mayor comodidad al trabajar.
+
+2. **Cambiar la URL de push**
+
+    Con esto lo que buscamos es mantener un solo remote que pueda traer los cambios desde el repositorio principal, pero que todos los push los haga hacia el repositorio personal.
+
+    Para esto, empezamos seteando la URL principal del remote para que ocupe el repositorio principal. Este paso puede ser evitado si se clona el proyecto directo desde el principal.
+
+    ```bash
+    git remote set-url origin <url_del_repo_principal>
+    ```
+
+    Luego cambiamos solo la URL para push, con el siguiente comando:
+
+    ```bash
+    git remote set-url --push origin <url_del_repo_fork>
+    ```
+
+    Con esta configuración, cada vez que se use `git push`, el código será enviado hacia el repositorio fork, y cada vez que se haga `git pull`, el contenido será traído desde el repositorio principal.
+
+    Esto no evita poder crear remotes hacia otros repositorios ocupando el caso 1.
+
 
 <a id="readme-env"></a>
 ### Configuración del .env
@@ -180,3 +251,35 @@ A continuación se detallan los usuarios creados por defecto en la base de datos
 | Marsha_Tromp@hotmail.com   | sememixo | LAVENDER | BUNNY CHOW                       | whale | x              |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<a id="upload"></a>
+### Como subir código
+
+Como ya se ha mencionado antes, OSA ocupa un flujo de trabajo de fork y pull request. Por lo mismo, la mayor parte del tiempo de trabajo se pasará en el repositorio fork personal creado durante el onboarding.
+
+Se espera que, dentro del repositorio personal, se trabaje usando la metodología de Gitflow, y se da por hecho en el siguiente flujo presentado. Para publicar código, se deberían seguir los siguientes pasos:
+
+1.  Clonar el repositorio y configurarlo para usar el repositorio fork para almacenar el código.
+
+2.  Actualizar `develop` con el repositorio principal antes de empezar a trabajar.
+
+3.  Comenzar a trabajar ocupando Gitflow.
+
+4.  Al terminar el proceso de trabajo, actualizar `develop` nuevamente con el repositorio principal y mergearlo con las ramas que se quieran enviar al repositorio principal.
+
+5.  En Bitbucket, realizar un PR (pull request) desde la rama `develop` de nuestro repositorio fork a la rama `develop` del repositorio principal.
+
+A continuación, se presenta un diagrama de flujo que representa lo antes descrito como ayuda visual.
+
+![Workflow](docs/workflow.jpg)
+
+<a id="feedback"></a>
+### Proceso de revisión 
+
+Una vez que un PR es enviado a `develop`, comienza el proceso de revisión. Inicialmente, otro miembro del equipo revisará el PR y aprobará o rechazará, pidiendo mejoras según sea necesario.
+
+Cuando un PR es aprobado y pasa a `develop`, entra en *stage*, el cual es un ambiente igual al de producción, pero para uso interno del equipo y de los QA. En este ambiente es donde se realizan todos los testeos de calidad en búsqueda de bugs.
+
+Periódicamente se hacen PR desde `develop` a `master` en el repositorio principal. Cuando estos son hechos y aprobados, se pasa el código a producción para uso de los clientes.
+
+La mayor parte del proceso está automatizado; por ende, una vez que cae código nuevo a `develop` o `master`, se hacen los *rebuilds* y se cargan las nuevas *features* en el ambiente correspondiente.
