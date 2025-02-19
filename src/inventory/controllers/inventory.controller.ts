@@ -3309,24 +3309,21 @@ class InventoryController {
       }
 
       if(car.isContainer) {
-        const updatedUser = await User.findById(req.user._id).populate([{
-          path: 'venue',
-          select: ['name']
-        }]);
-    
-        const venueId = updatedUser.venue._id;
+        
+        const { user } = req;
+        const venueId = user.venue._id;
         const { team } = req.user;
-  
+
         inventoryCar = await inventoryCar.populate([
-          {path: 'car'},
-          {path: 'venue'},
-          {path: 'venueFound'},
-          {path: 'evidenceStatus'},
-          {path: 'evidenceStatus.images'},
-          {path: 'images'}
+          { path: 'car' },
+          { path: 'venue' },
+          { path: 'venueFound' },
+          { path: 'evidenceStatus' },
+          { path: 'evidenceStatus.images' },
+          { path: 'images' }
         ]);
-  
-        await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, updatedUser);
+
+        await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
 
       return res.status(200).json({
