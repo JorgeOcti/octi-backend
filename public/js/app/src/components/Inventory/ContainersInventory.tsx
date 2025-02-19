@@ -454,7 +454,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       loaderBg: '#e2e2e2',
       icon: 'success',
       hideAfter: 5000,
-      stack: 6
+      stack: 6,
+      beforeShow: () => {
+        const $toastEl = $('.jq-toast-heading');
+        $toastEl.css({ 
+          'fontSize': '13px', 
+          'padding-top': '2px', 
+          'padding-right': '2px'
+        });
+      },
     } as any); 
   }
 

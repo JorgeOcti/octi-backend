@@ -39,7 +39,7 @@ import { HydratedDocument, PaginateOptions, PipelineStage } from 'mongoose';
 import { Alignment } from 'exceljs';
 import GeneralUtils from '../../utils/general.utils';
 import History from '../../app/models/history.model';
-import { IInventory, IInventoryCar } from '../interfaces/inventory.interface';
+import { IInventory, IInventoryCar, MessageType } from '../interfaces/inventory.interface';
 import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
@@ -60,6 +60,7 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
+import { json } from 'console-probe';
 
 class InventoryController {
   constructor() {
@@ -1289,7 +1290,7 @@ class InventoryController {
                 }
               }
 
-              await this.sendUpdateNotification(venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
+              await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
                 status: 200
@@ -1348,14 +1349,31 @@ class InventoryController {
     }
   }
 
-  private async sendUpdateNotification(venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
+  private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
    
-    let title = `Vehículo encontrado`;
-    let message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
+    const statusMap: Record<string, string> = {
+      found: 'Encontrado',
+      pending: 'Pendiente',
+      open: 'Abierto',
+      check: 'En descarga',
+      empty: 'Vacío',
+      missing: 'Faltante'
+    };
 
-    if (inventory.car.isContainer) {
-      title = `Contenedor encontrado`;
-      message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+    const messageStatus = statusMap[`${status}`];
+
+    let title = `${req.user.firstName} ${req.user.lastName} agregó evidencia al contenedor ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+    let message = `Ahora el contenedor está ${ messageStatus }.`;
+
+    if(notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND"){
+      
+      title = `Vehículo encontrado`;
+      message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
+
+      if (inventory.car.isContainer) {
+        title = `Contenedor encontrado`;
+        message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+      }
     }
 
     socket()
@@ -1369,8 +1387,7 @@ class InventoryController {
         metadata: {
           inventory: inventory
         }
-      });
-
+      } );
   }
 
 
@@ -3276,7 +3293,7 @@ class InventoryController {
       }
       inventoryCar.containerStatus = status;
       inventoryCar.evidenceStatus = evidenceStatus
-      await inventoryCar.save()
+      inventoryCar = await inventoryCar.save()
 
       // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
       if (inventory.containerInventory) {
@@ -3290,6 +3307,27 @@ class InventoryController {
             logger.info(`apiFoundCar: virtualInventory: ${virtualInventory}`);
           }
         }
+      }
+
+      if(car.isContainer) {
+        const updatedUser = await User.findById(req.user._id).populate([{
+          path: 'venue',
+          select: ['name']
+        }]);
+    
+        const venueId = updatedUser.venue._id;
+        const { team } = req.user;
+  
+        inventoryCar = await inventoryCar.populate([
+          {path: 'car'},
+          {path: 'venue'},
+          {path: 'venueFound'},
+          {path: 'evidenceStatus'},
+          {path: 'evidenceStatus.images'},
+          {path: 'images'}
+        ]);
+  
+        await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, updatedUser);
       }
 
       return res.status(200).json({
