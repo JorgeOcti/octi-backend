@@ -44,7 +44,19 @@ const dataTableStyle = {
   headRow: {
     style:{
       color: "white",
+      backgroundColor: "#3279B7",
+      marginBottom: "10px"
+    }
+  },
+  headCell: {
+    style:{
+      color: "white",
       backgroundColor: "#3279B7"
+    }
+  },
+  cells:{
+    style:{ 
+      backgroundColor: "#F9F9F9"
     }
   },
   expanderCell: {
@@ -185,7 +197,7 @@ const columns = [
         window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
       }}>Tarja</button>
     }
-  }
+  },
 ];
 
 const foundStatusContainer = (container: any) => {
@@ -548,18 +560,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   ExpandedRowElement = ({ data }: { data: any }) => {
-    return <div className='container-fluid box-body table-responsive request-list'>
-      <div className="row request">
-        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+    return <div className='table-responsive request-list'>
+      <div className="row request bg-request-title ">
+        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
           <strong>VIN</strong>
         </div>
         <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
           <strong>Fotos</strong>
         </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
           <strong>Color</strong>
         </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
           <strong>Estado</strong>
         </div>
       </div>
@@ -567,17 +579,17 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         let className = `${car.status}Class`;
         let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
         return (
-          <div key={index} className={`row request bg-request-title background-transition ${classNameEfect}`}>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <div key={index} className={`row request background-transition ${classNameEfect}`}>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
               <strong>{car.car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {imagesFormatter(car)}
             </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
               <strong>{car.car.color}</strong>
             </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
            <span
              className={`label label-${
                inventorySettings.hasOwnProperty(className)
@@ -601,10 +613,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   
 
   render() {
-    const {containers, loading, containerUpdated} = this.state;
+    const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
-        let key = inventorySettings[container.containerStatus];
+        let key = container.containerStatus;
         if (acc[key]) {
           acc[key] += 1;
         } else {
@@ -615,10 +627,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     }, {});
 
     let details = Object.keys(statusCount).map((status: any) => {
-      return `${status}: ${statusCount[status]}`;
-    }).join(', ');
-
+      let className = `${status}Color`;
+      let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
+      let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
+      return <span
+          key={status}
+          style={{color: `${color}`, paddingRight: "5px"}}>
+         {label}: {statusCount[status]}
+       </span>
+    });
     const conditionalRowStyles = [
+      {
+        when: (row:any, index:number) => index === 0, // Condición para la primera fila
+        style: {
+          backgroundColor: '#3279B7', // Estilo para la primera fila
+        },
+      },
       {
         when: (row: any) => {
           const {containerUpdated} = this.state;
@@ -628,7 +652,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }else{
             return row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory
           }
-        } ,
+        },
         classNames: ["highlight-info"],
       },
     ];
@@ -639,9 +663,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers {containers.length} Total {details ? `(${details})` : ''}
+                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray"}}>{containers.length}</span> - {details.length>0 ? details : ''}</span>  
               </h3>
-              <div className="pull-right box-tools" style={{padding: "10px"}}>
+              <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
                     < button
                       style={{marginRight: '10px'}}
@@ -653,7 +677,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <button
                     className="btn btn-sm btn-success"
                     onClick={this.create}>
-                      <i className="fa fa-plus"/> Crear inventario
+                      <i className="fa fa-plus"/> Cargar Anuncio
                     </button>
                   </>
                 ) : null}
@@ -725,7 +749,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           <option value={ContainerStatus.FOUND}>Encontrados</option>
                           <option value={ContainerStatus.OPEN}>Abierto</option>
                           <option value={ContainerStatus.CHECK}>Descarga</option>
-                          <option value={ContainerStatus.EMPTY}>Vacio</option>
+                          <option value={ContainerStatus.EMPTY}>Vacío</option>
                         </select>
                       </div>
                     </div>
@@ -757,23 +781,26 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-
-                  <DataTable
-                    columns={columns}
-                    data={this.state.containers}
-                    customStyles={dataTableStyle}
-                    expandableRows
-                    expandableRowsComponent={this.ExpandedRowElement}
-                    expandOnRowClicked={true}
-                    pagination
-                    conditionalRowStyles={conditionalRowStyles}
-                    paginationComponentOptions={paginationComponentOptions}
-                  noDataComponent={
-                    <div className="text-center">
-                      <h4>No hay datos</h4>
+                  <div className="row">
+                    <div className="col-md-12">
+                        <DataTable
+                          columns={columns}
+                          data={this.state.containers}
+                          customStyles={dataTableStyle}
+                          expandableRows
+                          expandableRowsComponent={this.ExpandedRowElement}
+                          expandOnRowClicked={true}
+                          pagination
+                          conditionalRowStyles={conditionalRowStyles}
+                          paginationComponentOptions={paginationComponentOptions}
+                          noDataComponent={
+                            <div className="text-center">
+                              <h4>No hay datos</h4>
+                            </div>
+                          }
+                        />
                     </div>
-                  }
-                />
+                  </div>     
               </div>
               </>
             }
@@ -802,7 +829,7 @@ const inventorySettings: { [key: string]: any } = {
   "_id": "5e68fb3e0f7cfc00245e4954",
   "pending": "Pendientes",
   "pendingClass": "aqua",
-  "pendingColor": "#00c2f4",
+  "pendingColor": "#2DBDFD",
   "found": "Encontrados",
   "foundClass": "green",
   "foundColor": "#00aa51",
@@ -815,12 +842,15 @@ const inventorySettings: { [key: string]: any } = {
   "reported": "Reportados",
   "reportedClass": "gray-dark",
   "reportedColor": "#96a4b3",
-  "empty": "Vacio",
+  "empty": "Vacío",
   "emptyClass": "green",
+  "emptyColor": "#00AA51",
   "check": "Descarga",
+  "checkColor": "#C1BB21",
   "checkClass": "yellow",
   "open": "Abierto",
   "openClass": "gray-dark",
+  "openColor": "#E08406",
   "report": {
     "atLeastOne": true,
     "primaryRequired": false,
