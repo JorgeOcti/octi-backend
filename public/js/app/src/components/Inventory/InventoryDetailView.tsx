@@ -814,7 +814,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       percentageMissing
     } = this.calculateDetails(summary.results);
 
-    const showDownloadFile =
+    const showDownloadFile = true ||
       isDercoDercocenter(this.props.inventories.detail) ||
       moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
@@ -1174,7 +1174,6 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     )}
                   </h3>
                   <div className="box-tools pull-right">
-                    {showDownloadFile ? (
                       <button
                         className="btn btn-sm btn-primary hidden-xs hidden-sm"
                         onClick={() =>
@@ -1188,7 +1187,6 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         }>
                         <i className="fa fa-fw fa-download" /> Exportar Excel
                       </button>
-                    ) : null}
                     <div
                       className="btn-group btn-group-sm hidden-xs hidden-sm"
                       style={{ marginLeft: '5px' }}>
