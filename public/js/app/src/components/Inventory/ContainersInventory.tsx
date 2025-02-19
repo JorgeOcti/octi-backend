@@ -48,15 +48,10 @@ const dataTableStyle = {
       marginBottom: "10px"
     }
   },
-  headCell: {
-    style:{
-      color: "white",
-      backgroundColor: "#3279B7"
-    }
-  },
-  cells:{
+  rows:{
     style:{ 
-      backgroundColor: "#F9F9F9"
+      backgroundColor: "#F5F5F5",
+      border: "1px solid #DADADA"
     }
   },
   expanderCell: {
@@ -561,18 +556,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   ExpandedRowElement = ({ data }: { data: any }) => {
     return <div className='table-responsive request-list'>
-      <div className="row request bg-request-title ">
-        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-          <strong>VIN</strong>
+      <div className="row request-header bg-request-title ">
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          Unidad
         </div>
         <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Fotos</strong>
+          Fotos
+        </div>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2center'>
+          Color
         </div>
         <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-          <strong>Color</strong>
-        </div>
-        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-          <strong>Estado</strong>
+          Estado
         </div>
       </div>
       {data.content.map((car: any, index: number) => {
@@ -580,13 +575,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
         return (
           <div key={index} className={`row request background-transition ${classNameEfect}`}>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-              <strong>{car.car.vin}</strong>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {imagesFormatter(car)}
             </div>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               <strong>{car.car.color}</strong>
             </div>
             <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
@@ -630,19 +625,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let className = `${status}Color`;
       let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
       let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
-      return <span
+      return <> - <span
           key={status}
-          style={{color: `${color}`, paddingRight: "5px"}}>
+          style={{color: `${color}`, fontWeight: "600"}}>
          {label}: {statusCount[status]}
-       </span>
+       </span> </>
     });
     const conditionalRowStyles = [
-      {
-        when: (row:any, index:number) => index === 0, // Condición para la primera fila
-        style: {
-          backgroundColor: '#3279B7', // Estilo para la primera fila
-        },
-      },
       {
         when: (row: any) => {
           const {containerUpdated} = this.state;
@@ -663,7 +652,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray"}}>{containers.length}</span> - {details.length>0 ? details : ''}</span>  
+                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>  
               </h3>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
