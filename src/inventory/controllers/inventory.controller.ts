@@ -60,7 +60,6 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
-import { json } from 'console-probe';
 
 class InventoryController {
   constructor() {
