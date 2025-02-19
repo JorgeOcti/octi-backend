@@ -29,9 +29,10 @@
       <a href="#getting-started">Configuración inicial</a>
       <ul>
         <li><a href="#prerequisites">Prerrequisitos</a></li>
+        <li><a href="#bitbucket">Configuración de Bitbucket</a></li>
+        <li><a href="#ssh">Configuración de ssh</a></li>
         <li><a href="#installation">Instalación</a></li>
         <li><a href="#git">Configuración de Git</a></li>
-        <li><a href="#bitbucket">Configuración de Bitbucket</a></li>
         <li><a href="#readme-env">Configuración del .env</a></li>
       </ul>
     </li>
@@ -42,6 +43,7 @@
         <li><a href="#user">Usuarios disponibles por defecto</a></li>
         <li><a href="#upload">Como subir código</a></li>
         <li><a href="#feedback">Proceso de revisión</a></li>
+        <li><a href="#makefile">Makefile</a></li>
       </ul>
     </li>
   </ol>
@@ -65,6 +67,7 @@ La aplicación se encuentra completamente manejada en containers de docker, por 
   ```sh
   npm install npm@latest -g
   ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="bitbucket"></a>
 ### Configuración de Bitbucket
@@ -81,9 +84,44 @@ Una vez que comiences con el proceso de creación del workspace, vas a tener que
 
 Una vez seleccionado el nombre, debes pulsar el botón para poder crear tu workspace. Esto tomará un tiempo y la aparición del workspace en tu cuenta puede no ser inmediata, por lo tanto, espera unos minutos y, si demora demasiado puedes probar refrescando la página.
 
-![Pantalla principal](docs/third.jpeg)
+![Crear workspace](docs/third.jpeg)
 
 Con esto, tu cuenta de Bitbucket debería estar lista para trabajar y con un workspace personal vacío. Como último paso, debes solicitar que te otorguen acceso al workspace oficial de OSA. Es muy importante que solo solicites el acceso luego de tener tu workspace personal creado, ya que, de otra manera, el proceso será mucho más engorroso.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<a id="ssh"></a>
+### Configuración de ssh 
+
+Uno de los protocolos más usados a la hora de cifrar información para mayor seguridad, en este caso en concreto, es el método principal de autenticación que usa Bitbucket para permitir push y pull de código de un repositorio.
+
+Dado lo anterior, va a ser necesario que configures tus llaves SSH en tu cuenta de Bitbucket. Si no tienes una llave ya creada, puedes crear una ejecutando el siguiente comando:
+
+```sh
+ssh-keygen
+```
+
+Te va a pedir varios datos, los cuales, en general, puedes dejar por defecto solo dando enter. Sin embargo, cuando se te pida ingresar una contraseña, es importante que ingreses una que luego recuerdes, ya que te será pedida cada vez que te comuniques con Bitbucket.
+
+Luego de seguir las instrucciones, anda a la carpeta donde se guardaron los archivos, busca el que sea `<nombre_de_llave>.pub`, ábrelo y copia todo el contenido del archivo.
+
+Abre tu cuenta de Bitbucket, entra a configuraciones e ingresa a las *Personal Bitbucket settings*.
+
+![Settings](docs/ssh_1.png)
+![Bitbucket Settings](docs/ssh_2.png)
+
+Dirígete a la sección *SSH keys* y pulsa *Add key*.
+
+![Ssh keys](docs/ssh_3.png)
+![Add](docs/ssh_4.png)
+
+Agrégale un nombre en donde se pone una etiqueta, pega el contenido del archivo `.pub` en donde va la llave y para finalizar pulsa en *Add key*.
+
+![Etiqueta](docs/ssh_5.png)
+![Llave](docs/ssh_6.png)
+![Final](docs/ssh_7.png)
+
+Con esto, tu llave ya está creada y agregada a tu cuenta de Bitbucket para poder autenticar.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="installation"></a>
 ### Instalación
@@ -115,6 +153,7 @@ setear las <a href="#readme-env">Configuración inicial</a>
    ```sh
    ./dataLoad.sh <nombre-del-contenedor>
    ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="git"></a>
 ### Configuración de git
@@ -162,6 +201,7 @@ Para trabajar con dos referencias, hay dos métodos principales:
     Con esta configuración, cada vez que se use `git push`, el código será enviado hacia el repositorio fork, y cada vez que se haga `git pull`, el contenido será traído desde el repositorio principal.
 
     Esto no evita poder crear remotes hacia otros repositorios ocupando el caso 1.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <a id="readme-env"></a>
@@ -239,6 +279,7 @@ En esta sección se explica brevemente como ocupar la aplicación.
 Luego de tener corriendo toda la aplicación con lo visto en la sección pasada. Se debe ingresar a la aplicación por medio del navegador, entrando al [localhost:3030](http://localhost:3030/).
 
 Entrando lo primero que veremos será el login, si configuramos correctamente el .env y subimos los datos de prueba a la base de datos, entonces podremos usar cualquiera de los usuarios que se detallan en la siguiente sección y entrar a la aplicación.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="user"></a>
 ### Usuarios disponibles por defecto
@@ -272,6 +313,7 @@ Se espera que, dentro del repositorio personal, se trabaje usando la metodologí
 A continuación, se presenta un diagrama de flujo que representa lo antes descrito como ayuda visual.
 
 ![Workflow](docs/workflow.jpg)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="feedback"></a>
 ### Proceso de revisión 
@@ -283,3 +325,44 @@ Cuando un PR es aprobado y pasa a `develop`, entra en *stage*, el cual es un amb
 Periódicamente se hacen PR desde `develop` a `master` en el repositorio principal. Cuando estos son hechos y aprobados, se pasa el código a producción para uso de los clientes.
 
 La mayor parte del proceso está automatizado; por ende, una vez que cae código nuevo a `develop` o `master`, se hacen los *rebuilds* y se cargan las nuevas *features* en el ambiente correspondiente.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<a id="makefile"></a>
+### Makefile
+
+Este Makefile facilita el desarrollo al automatizar tareas comunes relacionadas con la configuración de repositorios, dependencias y servicios. A continuación, se detallan las recetas disponibles:
+
+**Limpieza:**
+
+* **`make cleanMongo`:** Elimina los volúmenes del servicio MongoDB en Docker.
+* **`make cleanRedis`:** Elimina el volumen del servicio Redis en Docker.
+* **`make cleanBackend`:** Elimina el volumen del servicio backend en Docker.
+* **`make clean`:** Limpia todos los volúmenes de los contenedores, eliminando la información almacenada.
+
+**Construcción:**
+
+* **`make build`:** Reconstruye todos los servicios sin usar caché. Si el archivo `package.json` ha cambiado, limpia el volumen del servicio backend.
+
+**Gestión de Servicios:**
+
+* **`make startMongo`:** Inicia el servicio MongoDB en modo desacoplado, asegurándose de que esté detenido previamente.
+* **`make startRedis`:** Inicia el servicio Redis en modo desacoplado, asegurándose de que esté detenido previamente.
+* **`make startBackend`:** Inicia el servicio backend en modo desacoplado, asegurándose de que esté detenido previamente.
+* **`make startFrontend`:** Inicia el servicio frontend en modo desacoplado, asegurándose de que esté detenido previamente.
+* **`make start`:** Inicia todos los servicios en modo desacoplado, asegurándose de que estén detenidos previamente.
+* **`make stop`:** Detiene todos los servicios en ejecución.
+
+**Logs:**
+
+* **`make logsBackend`:** Muestra los logs del backend en la terminal, eliminando las etiquetas de Docker para una mejor legibilidad.
+* **`make logsFrontend`:** Muestra los logs del frontend en la terminal, eliminando las etiquetas de Docker para una mejor legibilidad.
+* **`make logs`:** Muestra los logs del backend y frontend en la terminal.
+
+**Utilidades:**
+
+* **`make dumpLoad`:** Inicia el servicio MongoDB y carga los datos desde la carpeta `dump` a la base de datos.
+* **`make gitRemote`:** Solicita las URLs SSH para configurar los repositorios remotos de Git.
+* **`make workflow`:** Ejecuta las recetas `gitRemote` y `dumpLoad` en secuencia.
+
+**Nota:** Para más información sobre la configuración de Git, consulta la segunda opción en la sección <a href="#git">"Configuración de git"</a>.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
