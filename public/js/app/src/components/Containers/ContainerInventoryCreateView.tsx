@@ -63,7 +63,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     loadingSettings: false,
     carsByContainer: {},
     loading: true,
-    name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
+    name: `Anuncio del ${moment().format('DD-MM-YYYY')}`,
     sending: false,
     file: null,
     backupFile: null,

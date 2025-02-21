@@ -45,14 +45,32 @@ const dataTableStyle = {
     style:{
       color: "white",
       backgroundColor: "#3279B7",
-      marginBottom: "10px"
+      whiteSpace: 'normal !important'
+    }
+  },
+  headCells:{
+    style: {
+      '& > div': { // Selecciona el div directo dentro de la celda
+        '& > div': {
+          overflow: 'visible'
+        },
+        overflow: 'visible'
+      }
     }
   },
   rows:{
     style:{ 
       backgroundColor: "#F5F5F5",
-      border: "1px solid #DADADA"
+      border: "1px solid #DADADA",
+      marginTop:"10px"
     }
+  },
+  cells: {
+    style: {
+      '& > div': { // Selecciona el div directo dentro de la celda
+        whiteSpace: 'normal !important'
+      }
+    },
   },
   expanderCell: {
     style: {
@@ -163,10 +181,9 @@ const columns = [
     },
     cell: (row: any) => {
       const status = row.containerStatus || row.status
-      let className = `${status}Class`;
-      return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
-       <span
-         className={`label label-${
+      let className = `${status}ClassContainer`;
+      return <span
+         className={`label-container label-container-${
           inventorySettings.hasOwnProperty(className)
           ? inventorySettings[className]
           : ''
@@ -178,7 +195,7 @@ const columns = [
            ? inventorySettings[status]
            : status}
        </span>
-     </div>
+   
     },
     sortable: true
   },
@@ -188,9 +205,11 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return row.status === ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
+      return row.containerStatus === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
         window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
-      }}>Tarja</button>
+      }}>
+      <i className="fa fa-fw fa-print" /> Tarja
+    </button>
     }
   },
 ];
@@ -365,9 +384,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-
-        console.log(containers);
-        console.log(containers.filter((container: any) => container.content === undefined));
 
         this.setState({
           containers: containers,
@@ -586,7 +602,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
            <span
-             className={`label label-${
+             className={`label-units label-${
                inventorySettings.hasOwnProperty(className)
                  ? inventorySettings[className]
                  : ''
@@ -631,6 +647,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
          {label}: {statusCount[status]}
        </span> </>
     });
+
     const conditionalRowStyles = [
       {
         when: (row: any) => {
@@ -678,10 +695,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               : <>
                 <div className="box-body">
-                  <div className="row">
-                    <div className="col-md-2">
+                  <div className="row" style={{margin: "10px 0"}}>
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>¿Qué Bill of Lading (BL) buscas?</label>
+                        <label style={{color:"black"}}>¿Qué Bill of Lading (BL) buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -692,9 +709,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>¿Qué container buscas?</label>
+                        <label style={{color:"black"}}>¿Qué container buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -705,9 +722,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Cliente</label>
+                        <label style={{color:"black"}}>Cliente</label>
                         <select
                           className="form-control"
                           value={this.state.clientFilter}
@@ -723,9 +740,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Filtrar por Estado</label>
+                        <label style={{color:"black"}} >Filtrar por Estado</label>
                         <select
                           className="form-control"
                           value={this.state.statusFilter}
@@ -742,9 +759,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Filtrar por Fecha de Apertura</label>
+                        <label style={{color:"black"}}>Filtrar por Fecha de Apertura</label>
                         <DateRangeInput
                           options={getDateRangeOptions()}
                           onChange={(start: Date, end: Date) => {
@@ -759,14 +776,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
-                      <div className="row pull-right box-tools" style={{ paddingTop: '10px', paddingRight: '25px' }}>
-                        <button
-                          className="btn btn-sm btn-primary btn-block"
-                          onClick={this.cleanFilters}
-                        >
-                          Limpiar filtros
-                        </button>
+                    <div className="col-md-3">
+                      <div className='form-group'>
+                        <div className="row pull-left box-tools" style={{ paddingTop: '25px', paddingLeft: "15px" }}>
+                          <button
+                            className="btn btn-sm btn-primary btn-block"
+                            onClick={this.cleanFilters}
+                          >
+                            Limpiar filtros
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -818,6 +837,7 @@ const inventorySettings: { [key: string]: any } = {
   "_id": "5e68fb3e0f7cfc00245e4954",
   "pending": "Pendientes",
   "pendingClass": "aqua",
+  "pendingClassContainer": "pending",
   "pendingColor": "#2DBDFD",
   "found": "Encontrados",
   "foundClass": "green",
@@ -833,12 +853,15 @@ const inventorySettings: { [key: string]: any } = {
   "reportedColor": "#96a4b3",
   "empty": "Vacío",
   "emptyClass": "green",
+  "emptyClassContainer": "empty",
   "emptyColor": "#00AA51",
   "check": "Descarga",
   "checkColor": "#C1BB21",
   "checkClass": "yellow",
+  "checkClassContainer": "check",
   "open": "Abierto",
   "openClass": "gray-dark",
+  "openClassContainer": "open",
   "openColor": "#E08406",
   "report": {
     "atLeastOne": true,
