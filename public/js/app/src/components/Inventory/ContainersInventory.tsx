@@ -606,7 +606,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               {imagesFormatter(car)}
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong>{car.car.color}</strong>
+              <strong className="text-black">{car.car.color}</strong>
             </div>
             <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
            <span
@@ -706,7 +706,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   <div className="row" style={{margin: "10px 0"}}>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label style={{color:"black"}}>¿Qué Bill of Lading (BL) buscas?</label>
+                        <label className="text-black">¿Qué Bill of Lading (BL) buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -719,7 +719,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label style={{color:"black"}}>¿Qué container buscas?</label>
+                        <label className="text-black">¿Qué container buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -732,7 +732,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label style={{color:"black"}}>Cliente</label>
+                        <label className="text-black">Cliente</label>
                         <select
                           className="form-control"
                           value={this.state.clientFilter}
@@ -750,7 +750,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label style={{color:"black"}} >Filtrar por Estado</label>
+                        <label className="text-black" >Filtrar por Estado</label>
                         <select
                           className="form-control"
                           value={this.state.statusFilter}
@@ -769,7 +769,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label style={{color:"black"}}>Filtrar por Fecha de Apertura</label>
+                        <label className="text-black">Filtrar por Fecha de Apertura</label>
                         <DateRangeInput
                           options={getDateRangeOptions()}
                           onChange={(start: Date, end: Date) => {
