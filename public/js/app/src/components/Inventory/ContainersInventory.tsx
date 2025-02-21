@@ -44,8 +44,33 @@ const dataTableStyle = {
   headRow: {
     style:{
       color: "white",
-      backgroundColor: "#3279B7"
+      backgroundColor: "#3279B7",
+      whiteSpace: 'normal !important'
     }
+  },
+  headCells:{
+    style: {
+      '& > div': { // Selecciona el div directo dentro de la celda
+        '& > div': {
+          overflow: 'visible'
+        },
+        overflow: 'visible'
+      }
+    }
+  },
+  rows:{
+    style:{ 
+      backgroundColor: "#F5F5F5",
+      border: "1px solid #DADADA",
+      marginTop:"10px"
+    }
+  },
+  cells: {
+    style: {
+      '& > div': { // Selecciona el div directo dentro de la celda
+        whiteSpace: 'normal !important'
+      }
+    },
   },
   expanderCell: {
     style: {
@@ -156,10 +181,9 @@ const columns = [
     },
     cell: (row: any) => {
       const status = row.containerStatus || row.status
-      let className = `${status}Class`;
-      return <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 text-left'>
-       <span
-         className={`label label-${
+      let className = `${status}ClassContainer`;
+      return <span
+         className={`label-container label-container-${
           inventorySettings.hasOwnProperty(className)
           ? inventorySettings[className]
           : ''
@@ -171,7 +195,7 @@ const columns = [
            ? inventorySettings[status]
            : status}
        </span>
-     </div>
+   
     },
     sortable: true
   },
@@ -181,11 +205,13 @@ const columns = [
       return row.car.bl;
     },
     cell: (row: any) => {
-      return row.status === ContainerStatus.EMPTY && <button className="btn btn-primary" onClick={() => {
+      return row.containerStatus === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
         window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
-      }}>Tarja</button>
+      }}>
+      <i className="fa fa-fw fa-print" /> Tarja
+    </button>
     }
-  }
+  },
 ];
 
 const foundStatusContainer = (container: any) => {
@@ -358,9 +384,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-
-        console.log(containers);
-        console.log(containers.filter((container: any) => container.content === undefined));
 
         this.setState({
           containers: containers,
@@ -556,28 +579,28 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   ExpandedRowElement = ({ data }: { data: any }) => {
-    return <div className='container-fluid box-body table-responsive request-list'>
-      <div className="row request">
-        <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-          <strong>VIN</strong>
+    return <div className='table-responsive request-list'>
+      <div className="row request-header bg-request-title ">
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          Unidad
         </div>
         <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Fotos</strong>
+          Fotos
         </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Color</strong>
+        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2center'>
+          Color
         </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Estado</strong>
+        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
+          Estado
         </div>
       </div>
       {data.content.map((car: any, index: number) => {
         let className = `${car.status}Class`;
         let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
         return (
-          <div key={index} className={`row request bg-request-title background-transition ${classNameEfect}`}>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              <strong>{car.car.vin}</strong>
+          <div key={index} className={`row request background-transition ${classNameEfect}`}>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {imagesFormatter(car)}
@@ -585,9 +608,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               <strong>{car.car.color}</strong>
             </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
            <span
-             className={`label label-${
+             className={`label-units label-${
                inventorySettings.hasOwnProperty(className)
                  ? inventorySettings[className]
                  : ''
@@ -609,10 +632,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   
 
   render() {
-    const {containers, loading, containerUpdated} = this.state;
+    const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
-        let key = inventorySettings[container.containerStatus];
+        let key = container.containerStatus;
         if (acc[key]) {
           acc[key] += 1;
         } else {
@@ -623,8 +646,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     }, {});
 
     let details = Object.keys(statusCount).map((status: any) => {
-      return `${status}: ${statusCount[status]}`;
-    }).join(', ');
+      let className = `${status}Color`;
+      let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
+      let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
+      return <> - <span
+          key={status}
+          style={{color: `${color}`, fontWeight: "600"}}>
+         {label}: {statusCount[status]}
+       </span> </>
+    });
 
     const conditionalRowStyles = [
       {
@@ -636,7 +666,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }else{
             return row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory
           }
-        } ,
+        },
         classNames: ["highlight-info"],
       },
     ];
@@ -647,9 +677,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers {containers.length} Total {details ? `(${details})` : ''}
+                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>  
               </h3>
-              <div className="pull-right box-tools" style={{padding: "10px"}}>
+              <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
                     < button
                       style={{marginRight: '10px'}}
@@ -661,7 +691,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <button
                     className="btn btn-sm btn-success"
                     onClick={this.create}>
-                      <i className="fa fa-plus"/> Crear inventario
+                      <i className="fa fa-plus"/> Cargar Anuncio
                     </button>
                   </>
                 ) : null}
@@ -673,10 +703,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               : <>
                 <div className="box-body">
-                  <div className="row">
-                    <div className="col-md-2">
+                  <div className="row" style={{margin: "10px 0"}}>
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>¿Qué Bill of Lading (BL) buscas?</label>
+                        <label style={{color:"black"}}>¿Qué Bill of Lading (BL) buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -687,9 +717,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>¿Qué container buscas?</label>
+                        <label style={{color:"black"}}>¿Qué container buscas?</label>
                         <input
                           type="text"
                           className="form-control"
@@ -700,9 +730,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Cliente</label>
+                        <label style={{color:"black"}}>Cliente</label>
                         <select
                           className="form-control"
                           value={this.state.clientFilter}
@@ -718,9 +748,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Filtrar por Estado</label>
+                        <label style={{color:"black"}} >Filtrar por Estado</label>
                         <select
                           className="form-control"
                           value={this.state.statusFilter}
@@ -733,13 +763,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           <option value={ContainerStatus.FOUND}>Encontrados</option>
                           <option value={ContainerStatus.OPEN}>Abierto</option>
                           <option value={ContainerStatus.CHECK}>Descarga</option>
-                          <option value={ContainerStatus.EMPTY}>Vacio</option>
+                          <option value={ContainerStatus.EMPTY}>Vacío</option>
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <div className="form-group">
-                        <label>Filtrar por Fecha de Apertura</label>
+                        <label style={{color:"black"}}>Filtrar por Fecha de Apertura</label>
                         <DateRangeInput
                           options={getDateRangeOptions()}
                           onChange={(start: Date, end: Date) => {
@@ -754,34 +784,39 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
-                      <div className="row pull-right box-tools" style={{ paddingTop: '10px', paddingRight: '25px' }}>
-                        <button
-                          className="btn btn-sm btn-primary btn-block"
-                          onClick={this.cleanFilters}
-                        >
-                          Limpiar filtros
-                        </button>
+                    <div className="col-md-3">
+                      <div className='form-group'>
+                        <div className="row pull-left box-tools" style={{ paddingTop: '25px', paddingLeft: "15px" }}>
+                          <button
+                            className="btn btn-sm btn-primary btn-block"
+                            onClick={this.cleanFilters}
+                          >
+                            Limpiar filtros
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  <DataTable
-                    columns={columns}
-                    data={this.state.containers}
-                    customStyles={dataTableStyle}
-                    expandableRows
-                    expandableRowsComponent={this.ExpandedRowElement}
-                    expandOnRowClicked={true}
-                    pagination
-                    conditionalRowStyles={conditionalRowStyles}
-                    paginationComponentOptions={paginationComponentOptions}
-                  noDataComponent={
-                    <div className="text-center">
-                      <h4>No hay datos</h4>
+                  <div className="row">
+                    <div className="col-md-12">
+                        <DataTable
+                          columns={columns}
+                          data={this.state.containers}
+                          customStyles={dataTableStyle}
+                          expandableRows
+                          expandableRowsComponent={this.ExpandedRowElement}
+                          expandOnRowClicked={true}
+                          pagination
+                          conditionalRowStyles={conditionalRowStyles}
+                          paginationComponentOptions={paginationComponentOptions}
+                          noDataComponent={
+                            <div className="text-center">
+                              <h4>No hay datos</h4>
+                            </div>
+                          }
+                        />
                     </div>
-                  }
-                />
+                  </div>     
               </div>
               </>
             }
@@ -810,7 +845,8 @@ const inventorySettings: { [key: string]: any } = {
   "_id": "5e68fb3e0f7cfc00245e4954",
   "pending": "Pendientes",
   "pendingClass": "aqua",
-  "pendingColor": "#00c2f4",
+  "pendingClassContainer": "pending",
+  "pendingColor": "#2DBDFD",
   "found": "Encontrados",
   "foundClass": "green",
   "foundColor": "#00aa51",
@@ -823,12 +859,18 @@ const inventorySettings: { [key: string]: any } = {
   "reported": "Reportados",
   "reportedClass": "gray-dark",
   "reportedColor": "#96a4b3",
-  "empty": "Vacio",
+  "empty": "Vacío",
   "emptyClass": "green",
+  "emptyClassContainer": "empty",
+  "emptyColor": "#00AA51",
   "check": "Descarga",
+  "checkColor": "#C1BB21",
   "checkClass": "yellow",
+  "checkClassContainer": "check",
   "open": "Abierto",
   "openClass": "gray-dark",
+  "openClassContainer": "open",
+  "openColor": "#E08406",
   "report": {
     "atLeastOne": true,
     "primaryRequired": false,
