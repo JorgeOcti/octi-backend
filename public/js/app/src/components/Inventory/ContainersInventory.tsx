@@ -719,7 +719,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className="text-black">¿Qué container buscas?</label>
+                        <label className="text-black">¿Qué contenedor buscas?</label>
                         <input
                           type="text"
                           className="form-control"
