@@ -843,7 +843,7 @@ export default connect<{}, {}, IPropsType>(
 const inventorySettings: { [key: string]: any } = {
   "leftoverDifferentVenue": true,
   "_id": "5e68fb3e0f7cfc00245e4954",
-  "pending": "Pendientes",
+  "pending": "Pendiente",
   "pendingClass": "aqua",
   "pendingClassContainer": "pending",
   "pendingColor": "#2DBDFD",
