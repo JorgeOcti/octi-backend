@@ -38,7 +38,7 @@ const photoSettingSchema = new mongoose.Schema({
 const settingSchema = new mongoose.Schema({
   photos: {
     type: photoSettingSchema
-  }
+  },
 }, {
   _id: false
 });
@@ -112,7 +112,15 @@ const inventorySchema = new mongoose.Schema({
   },
   containerInventory: {
     type: Boolean
-  }
+  },
+  virtual: {
+    type: Boolean,
+    default: false
+  },
+  virtualInventories: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'VirtualInventory'
+  }]
 }, {
   timestamps: true
 });

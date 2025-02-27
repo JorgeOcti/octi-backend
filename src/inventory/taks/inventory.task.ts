@@ -21,6 +21,7 @@ import logger from '../../services/logger.service';
 import pushService from '../../services/push.service';
 import { socket } from '../../services/socket.service';
 import moment = require('moment');
+import VirtualInventory from '../models/virtualInventory.model';
 
 interface IInventoryQueueData {
   userID: string;
@@ -31,6 +32,14 @@ interface IInventoryQueueData {
   carsByVenue: any[];
   venuesIDs: string[];
   inventoryID: any;
+}
+
+interface IContainerInventoryQueueData {
+  userID: string;
+  name: string;
+  inventoryID: string;
+  carsByContainer: any;
+  venueID: string;
 }
 
 class InventoryQueue {
@@ -53,7 +62,177 @@ class InventoryQueue {
 
   public run() {
     this.queue.process('create', this.processCreateInventory);
+    this.queue.process('createContainerInventory', this.processCreateContainerInventory);
     this.queue.process('updateCar', this.processUpdateCar);
+  }
+
+  private async processCreateContainerInventory(
+    job: Queue.Job<IContainerInventoryQueueData>,
+    done: Queue.DoneCallback
+  ) {
+    const { userID, inventoryID, venueID } = job.data;
+    logger.info(`InventoryQueue.processCreateContainerInventory userID: ${userID}`);
+    let { carsByContainer } = job.data;
+    let user = (await User.findById(userID).populate([
+      { path: 'company' },
+      { path: 'team' }
+    ])) as IUserModel;
+    let venue = (await Venue.findById(venueID)) as IVenueModel;
+    try{
+      const { company, team } = user;
+      const activityHistories: IActivityHistoryInterface[] = [];
+      const inventory = await Inventory.findById(inventoryID)
+      let containersByBIC: any = {};
+      let inventoryContainers = [];
+      let virtualInventories: any = {};
+
+      for (const BIC of Object.keys(carsByContainer)) {
+        const container = carsByContainer[BIC].container;
+        let currentContainer = await CarModel.findOne({
+          team,
+          vin: container.vin.trim()
+        });
+        if (!currentContainer) {
+          currentContainer = new CarModel({
+            ...container,
+            team,
+            company
+          })
+          await currentContainer.save();
+        }
+        // extra nave - extra cliente
+        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
+        if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
+          let virtualInventory = await VirtualInventory.findOne({
+            team,
+            company,
+            name: virtualInventoryName,
+            status: ChoicesStatusInventory.inProcess
+          });
+          if (!virtualInventory) {
+            virtualInventory = new VirtualInventory({
+              team,
+              company,
+              name: virtualInventoryName,
+              status: ChoicesStatusInventory.inProcess
+            });
+            await virtualInventory.save();
+          }
+          virtualInventories[virtualInventoryName] = virtualInventory;
+        }
+        containersByBIC[BIC] = currentContainer._id;
+        inventoryContainers.push({
+          inventory: inventory!._id,
+          virtualInventory: virtualInventories[virtualInventoryName]._id,
+          venue: venue._id,
+          car: currentContainer._id,
+          extra: container.extra,
+          comments: [],
+          images: []
+        });
+        activityHistories.push({
+          team: team._id,
+          company: company._id,
+          user: user._id,
+          type: ChoicesTypeActivity.inventory,
+          car: {
+            _id: container._id,
+            vin: container.vin
+          },
+          inventory: {
+            _id: inventoryID,
+            name: job.data.name
+          }
+        });
+      }
+
+      logger.info(
+        `InventoryQueue.processCreateContainerInventory {venue: ${venue._id}, inventoryContainers: ${inventoryContainers.length}}`
+      );
+
+      inventoryContainers = await InventoryCar.insertMany(inventoryContainers);
+      inventoryContainers.forEach((container: any) => {
+        containersByBIC[container.extra.BIC] = container._id;
+      })
+
+      let inventoryCars = [];
+
+      for (const BIC of Object.keys(carsByContainer)) {
+        const container = carsByContainer[BIC].container;
+        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
+        let virtualInventory = virtualInventories[virtualInventoryName];
+        const cars = carsByContainer[BIC].cars;
+        for (const car of cars) {
+          let currentCar = await CarModel.findOne({
+            team,
+            vin: car.vin.trim()
+          });
+          if (!currentCar) {
+            currentCar = new CarModel({
+              team,
+              company,
+              vin: car.vin,
+              vin2: car.vin.substr(car.vin.length - 6),
+              color: car.color,
+              type: car.type,
+              property: car.property,
+              denomination: car.denomination,
+              brand: car.brand,
+              patent: car.patent,
+              createdBy: user._id,
+              status: ChoicesStatusCar.active
+            });
+            await currentCar.save();
+          }
+          inventoryCars.push({
+            inventory: inventory!._id,
+            virtualInventory: virtualInventory._id,
+            venue: venue._id,
+            car: currentCar._id,
+            container: containersByBIC[BIC],
+            extra: car.extra,
+            comments: [],
+            images: []
+          });
+          activityHistories.push({
+            team: team._id,
+            company: company._id,
+            user: user._id,
+            type: ChoicesTypeActivity.inventory,
+            car: {
+              _id: currentCar._id,
+              vin: currentCar.vin
+            },
+            inventory: {
+              _id: inventoryID,
+              name: job.data.name
+            }
+          });
+        }
+      }
+
+      logger.info(
+        `InventoryQueue.processCreateContainerInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${inventoryCars.length}}`
+      );
+
+      await InventoryCar.insertMany(inventoryCars);
+      await ActivityHistory.insertMany(activityHistories);
+
+      await Inventory.findByIdAndUpdate(inventoryID, {
+        status: ChoicesStatusInventory.inProcess,
+        virtualInventories: Object.values(virtualInventories).map((virtualInventory: any) => virtualInventory._id),
+        virtual: true
+      });
+
+      done(null, {});
+    } catch (e) {
+      logger.error(`create: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${user._id}, email: ${user.email}}`);
+      /* istanbul ignore next */
+      console.log(e);
+      done(e);
+    }
   }
 
   private async processCreateInventory(

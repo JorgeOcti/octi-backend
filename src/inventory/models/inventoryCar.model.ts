@@ -38,6 +38,24 @@ export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.deleted
 ];
 
+
+export enum ChoicesStatusContainer {
+  pending = 'pending',
+  open = 'open',
+  check = 'check',
+  empty = 'empty',
+  missing = 'missing',
+}
+
+export const choicesStatusContainer = [
+  ChoicesStatusContainer.pending,
+  ChoicesStatusContainer.open,
+  ChoicesStatusContainer.check,
+  ChoicesStatusContainer.empty,
+  ChoicesStatusContainer.missing
+];
+
+
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Document { }
 
 const inventoryCarSchema = new mongoose.Schema({
@@ -95,6 +113,11 @@ const inventoryCarSchema = new mongoose.Schema({
     enum: choicesStatusCarInventory,
     default: ChoicesStatusCarInventory.pending
   },
+  containerStatus: {
+    type: String,
+    enum: choicesStatusContainer,
+    default: ChoicesStatusContainer.pending
+  },
   container: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'
@@ -103,9 +126,17 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryCar'
   },
+  evidenceStatus: {
+    type: [{status: String, date: Date, images: [{type: mongoose.Schema.Types.ObjectId, ref: 'InventoryFile'}]}],
+    default: []
+  },
   extra: {
     type: Object,
     default: {}
+  },
+  virtualInventory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'VirtualInventory'
   }
 }, {
   timestamps: true

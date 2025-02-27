@@ -16,7 +16,8 @@ if (process.env.NODE_ENV === 'production') {
       ignoreFile: '.sentrycliignore',
       ignore: ['node_modules', 'webpack.config.js'],
       configFile: 'sentry.properties',
-      dryRun: true
+      dryRun: true,
+      release: process.env.SENTRY_RELEASE,
     })
   ];
 } else {
@@ -70,9 +71,13 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
           loader: 'babel-loader'
         }, {
           loader: 'ts-loader',
-          // options: {
-          //   transpileOnly: true,
-          // },
+          options: {
+            compilerOptions: {
+              target: 'es5',
+              incremental: true  // this could also be in tsconfig.json directly
+            },
+            transpileOnly: true,
+          },
         }] : {
           loader: 'ts-loader',
           options: {
