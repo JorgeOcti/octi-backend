@@ -65,7 +65,7 @@ La aplicación se encuentra completamente manejada en containers de docker, por 
 * npm  
   Opcionalmente, se puede mantener la última versión de npm, para poder correr alguno de los componentes de la app sin ocupar docker.
   ```sh
-  npm install npm@latest -g
+  npm install npm@10.9.2 -g
   ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -357,6 +357,7 @@ Este Makefile facilita el desarrollo al automatizar tareas comunes relacionadas 
 * **`make logsBackend`:** Muestra los logs del backend en la terminal, eliminando las etiquetas de Docker para una mejor legibilidad.
 * **`make logsFrontend`:** Muestra los logs del frontend en la terminal, eliminando las etiquetas de Docker para una mejor legibilidad.
 * **`make logs`:** Muestra los logs del backend y frontend en la terminal.
+* **`typescriptCheck`:** Muestra los logs de la compilación del código en ts.
 
 **Utilidades:**
 
