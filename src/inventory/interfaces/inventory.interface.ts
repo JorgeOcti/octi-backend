@@ -10,6 +10,8 @@ import type { IInventoryFile } from './inventoryFile.interface';
 import type { IInventoryLabel } from './inventoryLabel.interface';
 import { IVirtualInventory } from './virtualInventory.interface';
 
+export type MessageType = "VEHICLE_FOUND" | "CONTAINER_FOUND" | "EVIDENCE_ADDED";
+
 export interface IStatusEvidence {
   status: string;
   images: IInventoryFile[];
