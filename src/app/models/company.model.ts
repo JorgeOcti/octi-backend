@@ -118,6 +118,10 @@ const companySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  handler: {
+    type: Boolean,
+    default: true
+  },
   iFrameURL: {
     type: String
   },

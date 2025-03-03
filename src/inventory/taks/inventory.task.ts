@@ -22,6 +22,8 @@ import pushService from '../../services/push.service';
 import { socket } from '../../services/socket.service';
 import moment = require('moment');
 import VirtualInventory from '../models/virtualInventory.model';
+import Company from '../../app/models/company.model';
+
 
 interface IInventoryQueueData {
   userID: string;
@@ -48,12 +50,14 @@ class InventoryQueue {
   readonly debug: boolean = false;
 
   constructor() {
+    
     this.queue = new Queue('inventory', {
       createClient: () => {
         return createRedisClient();
       },
       prefix: '{andes}'
     });
+
     this.processUpdateCar = this.processUpdateCar.bind(this);
     this.processCreateInventory = this.processCreateInventory.bind(this);
     this.checkExistVenue = this.checkExistVenue.bind(this);
@@ -65,6 +69,25 @@ class InventoryQueue {
     this.queue.process('createContainerInventory', this.processCreateContainerInventory);
     this.queue.process('updateCar', this.processUpdateCar);
   }
+
+
+  /*
+  
+        inventoryQueue.queue.add(
+        'createContainerInventory',
+        {
+          inventoryID: inventory._id,
+          userID: req.user._id,
+          venueID: venue._id,
+          name,
+          carsByContainer
+        },
+        { removeOnComplete: true }
+      );
+
+  */
+
+
 
   private async processCreateContainerInventory(
     job: Queue.Job<IContainerInventoryQueueData>,
@@ -162,7 +185,29 @@ class InventoryQueue {
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         let virtualInventory = virtualInventories[virtualInventoryName];
         const cars = carsByContainer[BIC].cars;
+
         for (const car of cars) {
+
+          if(car.extra["RUT Cliente"]){
+            const rutCompany:string = car.extra["RUT Cliente"];
+            let clientCompany = await Company.findOne({
+              rut: rutCompany.trim(),
+            });
+            if (!clientCompany) {
+              clientCompany = new Company({
+                name: car.extra["Cliente Razón Social"],
+                businessName: car.extra["Cliente Razón Social"],
+                rut: rutCompany.trim(),
+                team,
+                createdBy: user._id,
+                active: true,
+                deleted: false,
+                handler: false,
+              });
+              await clientCompany.save();
+            }
+          }
+
           let currentCar = await CarModel.findOne({
             team,
             vin: car.vin.trim()
@@ -180,10 +225,12 @@ class InventoryQueue {
               brand: car.brand,
               patent: car.patent,
               createdBy: user._id,
-              status: ChoicesStatusCar.active
+              status: ChoicesStatusCar.active,
+              handlerCompany: company._id
             });
             await currentCar.save();
           }
+
           inventoryCars.push({
             inventory: inventory!._id,
             virtualInventory: virtualInventory._id,
