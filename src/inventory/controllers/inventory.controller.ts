@@ -44,6 +44,7 @@ import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
 import { Response } from 'express';
+import { StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import TeamSetting from '../../app/models/teamSetting.model';
@@ -1287,6 +1288,7 @@ class InventoryController {
                   }
                 }
               }
+
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
@@ -3064,6 +3066,13 @@ class InventoryController {
             {
               company,
               current: true,
+              status: {
+                $in: [
+                  StatusHistory.available,
+                  StatusHistory.inTransit,
+                  StatusHistory.sale
+                ]
+              },
               createdAt: {
                 $gt: moment().subtract(45, 'days')
               }
