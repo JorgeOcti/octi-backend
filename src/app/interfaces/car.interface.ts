@@ -52,6 +52,7 @@ export interface ICar {
   isContainer: boolean;
   team: ITeam | any;
   company: ICompany | any;
+  clientCompany: ICompany | any;
   lastForm: IParticipant | any;
   participants?: IParticipant[];
   inventories?: IInventoryCar[];

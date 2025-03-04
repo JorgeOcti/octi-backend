@@ -44,7 +44,6 @@ import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
 import { Response } from 'express';
-import { StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import TeamSetting from '../../app/models/teamSetting.model';
@@ -60,6 +59,7 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
+import Company from '../../app/models/company.model';
 
 class InventoryController {
   constructor() {
@@ -1146,6 +1146,23 @@ class InventoryController {
     }
   }
 
+  private async changeCompanyCar(inventoryCar: IInventoryCar) {
+
+    const clientRut:string = inventoryCar.extra["RUT Cliente"];
+
+    let clientCompany = await Company.findOne({
+      rut: clientRut.trim(),
+    });
+
+    if(clientCompany){
+      const carUpdated = await  Car.findOneAndUpdate(
+        {_id: inventoryCar.car._id},
+        {company: clientCompany}
+      );
+      logger.info(`changeCompanyCar: carUpdated: ${ carUpdated?.id }`);
+    }
+  }
+
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
@@ -1289,6 +1306,9 @@ class InventoryController {
                 }
               }
 
+              if(!inventoryCar.car.isContainer){
+                await this.changeCompanyCar(inventoryCar);
+              }
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
@@ -3066,13 +3086,6 @@ class InventoryController {
             {
               company,
               current: true,
-              status: {
-                $in: [
-                  StatusHistory.available,
-                  StatusHistory.inTransit,
-                  StatusHistory.sale
-                ]
-              },
               createdAt: {
                 $gt: moment().subtract(45, 'days')
               }

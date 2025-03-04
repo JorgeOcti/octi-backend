@@ -22,6 +22,8 @@ import pushService from '../../services/push.service';
 import { socket } from '../../services/socket.service';
 import moment = require('moment');
 import VirtualInventory from '../models/virtualInventory.model';
+import Company from '../../app/models/company.model';
+
 
 interface IInventoryQueueData {
   userID: string;
@@ -48,12 +50,14 @@ class InventoryQueue {
   readonly debug: boolean = false;
 
   constructor() {
+    
     this.queue = new Queue('inventory', {
       createClient: () => {
         return createRedisClient();
       },
       prefix: '{andes}'
     });
+
     this.processUpdateCar = this.processUpdateCar.bind(this);
     this.processCreateInventory = this.processCreateInventory.bind(this);
     this.checkExistVenue = this.checkExistVenue.bind(this);
@@ -162,7 +166,31 @@ class InventoryQueue {
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         let virtualInventory = virtualInventories[virtualInventoryName];
         const cars = carsByContainer[BIC].cars;
+
         for (const car of cars) {
+
+          let clientCompany =  null;
+
+          if(car.extra["RUT Cliente"]){            
+            const rutCompany:string = car.extra["RUT Cliente"];
+             clientCompany = await Company.findOne({
+              rut: rutCompany.trim(),
+            });
+            if (!clientCompany) {
+              clientCompany = new Company({
+                name: car.extra["Cliente Razón Social"],
+                businessName: car.extra["Cliente Razón Social"],
+                rut: rutCompany.trim(),
+                team,
+                createdBy: user._id,
+                active: true,
+                deleted: false,
+                handler: false,
+              });
+              clientCompany =  await clientCompany.save();
+            }
+          }
+
           let currentCar = await CarModel.findOne({
             team,
             vin: car.vin.trim()
@@ -180,10 +208,12 @@ class InventoryQueue {
               brand: car.brand,
               patent: car.patent,
               createdBy: user._id,
-              status: ChoicesStatusCar.active
+              status: ChoicesStatusCar.active,
+              clientCompany: clientCompany?._id
             });
             await currentCar.save();
           }
+
           inventoryCars.push({
             inventory: inventory!._id,
             virtualInventory: virtualInventory._id,
