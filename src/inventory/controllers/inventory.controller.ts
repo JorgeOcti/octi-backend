@@ -59,7 +59,6 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
-import Company from '../../app/models/company.model';
 
 class InventoryController {
   constructor() {
