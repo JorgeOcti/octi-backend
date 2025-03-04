@@ -1146,23 +1146,6 @@ class InventoryController {
     }
   }
 
-  private async changeCompanyCar(inventoryCar: IInventoryCar) {
-
-    const clientRut:string = inventoryCar.extra["RUT Cliente"];
-
-    let clientCompany = await Company.findOne({
-      rut: clientRut.trim(),
-    });
-
-    if(clientCompany){
-      const carUpdated = await  Car.findOneAndUpdate(
-        {_id: inventoryCar.car._id},
-        {company: clientCompany}
-      );
-      logger.info(`changeCompanyCar: carUpdated: ${ carUpdated?.id }`);
-    }
-  }
-
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
     const { team } = req.user;
     const { id } = req.params;
@@ -1304,10 +1287,6 @@ class InventoryController {
                     logger.info(`apiFoundCar: virtualInventory: ${virtualInventory}`);
                   }
                 }
-              }
-
-              if(!inventoryCar.car.isContainer){
-                await this.changeCompanyCar(inventoryCar);
               }
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
