@@ -58,10 +58,6 @@ export const baseCarSchema = new mongoose.Schema({
     ref: 'Company'
   },
   clientCompany: {
-    type: String,
-    default: ''
-  },
-  handlerCompany: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
   },

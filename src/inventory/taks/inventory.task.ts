@@ -70,25 +70,6 @@ class InventoryQueue {
     this.queue.process('updateCar', this.processUpdateCar);
   }
 
-
-  /*
-  
-        inventoryQueue.queue.add(
-        'createContainerInventory',
-        {
-          inventoryID: inventory._id,
-          userID: req.user._id,
-          venueID: venue._id,
-          name,
-          carsByContainer
-        },
-        { removeOnComplete: true }
-      );
-
-  */
-
-
-
   private async processCreateContainerInventory(
     job: Queue.Job<IContainerInventoryQueueData>,
     done: Queue.DoneCallback
@@ -188,9 +169,11 @@ class InventoryQueue {
 
         for (const car of cars) {
 
-          if(car.extra["RUT Cliente"]){
+          let clientCompany =  null;
+
+          if(car.extra["RUT Cliente"]){            
             const rutCompany:string = car.extra["RUT Cliente"];
-            let clientCompany = await Company.findOne({
+             clientCompany = await Company.findOne({
               rut: rutCompany.trim(),
             });
             if (!clientCompany) {
@@ -204,7 +187,7 @@ class InventoryQueue {
                 deleted: false,
                 handler: false,
               });
-              await clientCompany.save();
+              clientCompany =  await clientCompany.save();
             }
           }
 
@@ -226,7 +209,7 @@ class InventoryQueue {
               patent: car.patent,
               createdBy: user._id,
               status: ChoicesStatusCar.active,
-              handlerCompany: company._id
+              clientCompany: clientCompany?._id
             });
             await currentCar.save();
           }
