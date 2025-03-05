@@ -3098,15 +3098,8 @@ class InventoryController {
     logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
     try {
 
-
       const { company } = req.user;
-
-
-      const userCompany = await Company.findById(company._id).populate([
-        { path: 'clientCompanies', select: ['_id', 'name'] }
-      ]);
-
-
+      let userCompany = await Company.findById(company._id);
 
       const historyCars = await History.find(
         {
@@ -3189,6 +3182,11 @@ class InventoryController {
         .lean();
 
       if (userCompany && userCompany?.handler) {
+
+        userCompany = await  userCompany.populate([
+          { path: 'clientCompanies', select: ['_id', 'name'] }
+        ])
+
         return res.status(200).json({
           cars: historyCars,
           clients: userCompany.clientCompanies
