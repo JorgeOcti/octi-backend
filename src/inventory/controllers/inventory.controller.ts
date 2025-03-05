@@ -3102,7 +3102,9 @@ class InventoryController {
       const { company } = req.user;
 
 
-      const userCompany = await Company.findById(company._id);
+      const userCompany = await Company.findById(company._id).populate([
+        { path: 'clientCompanies', select: ['_id', 'name'] }
+      ]);
 
 
 
@@ -3186,21 +3188,16 @@ class InventoryController {
         ])
         .lean();
 
-      if(userCompany && userCompany?.handler) {
-
-
-      return res.status(200).json({
-        cars: historyCars,
-        clients: userCompany.clientCompanies
-      });
-    } else {  
-
-
-      return res.status(200).json({
-        cars: historyCars
-      });
-
-    }
+      if (userCompany && userCompany?.handler) {
+        return res.status(200).json({
+          cars: historyCars,
+          clients: userCompany.clientCompanies
+        });
+      } else {
+        return res.status(200).json({
+          cars: historyCars
+        });
+      }
 
     } catch (e) {
       /* istanbul ignore next */
