@@ -27,6 +27,8 @@ export interface IBaseCompany {
   marker: any;
   markerURI?: string | null;
   billing: IBillingCompany;
+  clientCompanies?: string[] | null;
+  handler?: string | null;
   notifications: IBillingNotifications[];
 }
 

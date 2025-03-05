@@ -122,6 +122,10 @@ const companySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  clientCompanies: [{ 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company'
+  }],
   iFrameURL: {
     type: String
   },

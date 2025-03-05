@@ -44,7 +44,7 @@ import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
 import { Response } from 'express';
-import { StatusHistory } from '../../app/models/history.types';
+import { ModuleHistory, StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import TeamSetting from '../../app/models/teamSetting.model';
@@ -60,6 +60,7 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
+import Company from '../../app/models/company.model';
 
 class InventoryController {
   constructor() {
@@ -1289,6 +1290,11 @@ class InventoryController {
                 }
               }
 
+
+              if(!inventoryCar.car.isContainer){
+                this.addFoundCarToHistory(inventoryCar, inventory);
+              }
+
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
@@ -1346,6 +1352,37 @@ class InventoryController {
         status: 400
       });
     }
+  }
+
+  private async addFoundCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory) {
+    const {car} = inventoryCar;
+    logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
+
+    let history = await new History({
+      status: StatusHistory.readyToClient,
+      module: ModuleHistory.inventory,
+      car: car._id,
+      team: car.team._id,
+      company: car.company._id, // duda que company es 
+      venue: inventoryCar.venue._id,
+      inventoryCar: inventoryCar,
+      inventory: inventory,
+      createdBy: car.createdBy,
+      executedAt: car.createdAt,
+      current: true
+    }).save();
+
+    await Car.updateOne(
+      {
+        _id: car
+      },
+      {
+        $set: {
+          event: history._id
+        }
+      }
+    );
+
   }
 
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
@@ -3055,6 +3092,132 @@ class InventoryController {
       });
     }
   }
+
+
+  public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
+    logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
+    try {
+
+
+      const { company } = req.user;
+
+
+      const userCompany = await Company.findById(company._id);
+
+
+
+      const historyCars = await History.find(
+        {
+          $and: [
+            {
+              company,
+              current: true,
+              status: {
+                $in: [
+                  StatusHistory.readyToClient,
+                ]
+              },
+              createdAt: {
+                $gt: moment().subtract(45, 'days') // este limite para el nuevo endpoint no aplica
+              }
+            }
+          ]
+        },
+        {
+          status: true,
+          from: true,
+          to: true,
+          participant: true,
+          createdAt: true
+        }
+      ).allowDiskUse(true)
+        .populate([
+          {
+            path: 'participant',
+            select: ['name']
+          },
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'vin2',
+              'internalNumber',
+              'color',
+              'denomination',
+              'brand',
+              'venue',
+              'patent',
+              'internalNumber',
+              'property',
+              'type',
+              'meta',
+              'createdAt'
+            ],
+            populate: [
+              {
+                path: 'events',
+                select: ['_id', 'module'],
+                match: {
+                  changeLocation: true
+                }
+              }
+            ]
+          },
+          {
+            path: 'from',
+            select: ['name'],
+            populate: [
+              /*{
+          path: 'region',
+          select: ['code', 'name']
+        }*/
+            ]
+          },
+          {
+            path: 'to',
+            select: ['name'],
+            populate: [
+              /*{
+          path: 'region',
+          select: ['code', 'name']
+        }*/
+            ]
+          }
+        ])
+        .lean();
+
+      if(userCompany && userCompany?.handler) {
+
+
+      return res.status(200).json({
+        cars: historyCars,
+        clients: userCompany.clientCompanies
+      });
+    } else {  
+
+
+      return res.status(200).json({
+        cars: historyCars
+      });
+
+    }
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`inventory currentStock: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      // Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {

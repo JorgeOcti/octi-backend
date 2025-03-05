@@ -187,7 +187,11 @@ class InventoryQueue {
                 deleted: false,
                 handler: false,
               });
+              
               clientCompany =  await clientCompany.save();
+              company.clientCompanies.push(clientCompany._id);
+              await company.save();
+              
             }
           }
 
