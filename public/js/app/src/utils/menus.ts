@@ -330,6 +330,40 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
 }
 
 /* *****************
+ * 6 Control de carga
+ *****************/
+const AdminLoadControl: any[] = [];
+
+if (hasPermission(window.user, 'viewContainerReview') ) {
+  AdminLoadControl.push({
+    id: '6.1',
+    icon: 'fa-circle-o',
+    text: 'Revisión Contenedores',
+    url: '/inventory/containers/'
+  });
+}
+
+
+if (hasPermission(window.user, 'viewClient') ) {
+  AdminLoadControl.push({
+    id: '6.2',
+    icon: 'fa-circle-o',
+    text: 'Vista Cliente',
+    url: '/stock/'
+  });
+}
+
+if (AdminLoadControl.length) {
+  menus.push({
+    id: '6',
+    text: 'Control de carga',
+    icon: `fa-container-red`,
+    url: AdminLoadControl[0].url,
+    items: AdminLoadControl
+  });
+}
+
+/* *****************
  * 10. Settings
  *****************/
 const settingItems = [
@@ -493,5 +527,6 @@ if (hasPermission(window.user, 'viewVersion') && window.user.isAdmin) {
     url: '/settings/versions/'
   });
 }
+
 
 export default menus;
