@@ -1355,16 +1355,17 @@ class InventoryController {
   }
 
   private async addFoundCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory) {
+
     const {car} = inventoryCar;
     logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
 
     let history = await new History({
       status: StatusHistory.readyToClient,
       module: ModuleHistory.inventory,
-      car: car._id,
-      team: car.team._id,
-      company: car.company._id, // duda que company es 
-      venue: inventoryCar.venue._id,
+      car: car,
+      team: car.team,
+      company: car.clientCompany,//(no handler)
+      venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,
       createdBy: car.createdBy,
@@ -1372,15 +1373,9 @@ class InventoryController {
       current: true
     }).save();
 
-    await Car.updateOne(
-      {
-        _id: car
-      },
-      {
-        $set: {
-          event: history._id
-        }
-      }
+    await Car.updateOne(  // es necesario actualizar el car con el id del history?
+      {_id: car},
+      {$set: {event: history._id}}
     );
 
   }
@@ -3095,26 +3090,39 @@ class InventoryController {
 
 
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
-    logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
     try {
-
+      logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
       const { company } = req.user;
-      let userCompany = await Company.findById(company._id);
+      let { companyId }  = req.query as { companyId?: string };
 
-      const historyCars = await History.find(
-        {
+      let userCompany = await Company.findById(company._id);
+      let filterCompanies: any[] = [];
+
+      if(userCompany?.handler){
+        if(companyId !== undefined && companyId !== ""){
+          filterCompanies =[companyId];
+        }else{
+          userCompany = await userCompany.populate([{
+            path:'clientCompanies',
+            select:['_id']
+          }]);
+          filterCompanies = userCompany.clientCompanies || [];
+        }
+      }else{
+        filterCompanies = [company._id];
+      }
+
+      const historyCars = await History.find({
           $and: [
             {
-              company,
-              current: true,
+              company: {
+                $in: filterCompanies
+              },
               status: {
                 $in: [
                   StatusHistory.readyToClient,
                 ]
               },
-              createdAt: {
-                $gt: moment().subtract(45, 'days') // este limite para el nuevo endpoint no aplica
-              }
             }
           ]
         },
@@ -3126,86 +3134,27 @@ class InventoryController {
           createdAt: true
         }
       ).allowDiskUse(true)
-        .populate([
+      .populate([
           {
-            path: 'participant',
-            select: ['name']
-          },
-          {
-            path: 'car',
-            select: [
-              'vin',
-              'vin2',
-              'internalNumber',
-              'color',
-              'denomination',
-              'brand',
-              'venue',
-              'patent',
-              'internalNumber',
-              'property',
-              'type',
-              'meta',
-              'createdAt'
-            ],
+            path: 'inventoryCar',
             populate: [
               {
-                path: 'events',
-                select: ['_id', 'module'],
-                match: {
-                  changeLocation: true
-                }
+                path: 'car'
               }
             ]
-          },
-          {
-            path: 'from',
-            select: ['name'],
-            populate: [
-              /*{
-          path: 'region',
-          select: ['code', 'name']
-        }*/
-            ]
-          },
-          {
-            path: 'to',
-            select: ['name'],
-            populate: [
-              /*{
-          path: 'region',
-          select: ['code', 'name']
-        }*/
-            ]
           }
-        ])
-        .lean();
+        ]).lean();
 
-      if (userCompany && userCompany?.handler) {
-
-        userCompany = await  userCompany.populate([
-          { path: 'clientCompanies', select: ['_id', 'name'] }
-        ])
-
+    
         return res.status(200).json({
-          cars: historyCars,
-          clients: userCompany.clientCompanies
+          history: historyCars
         });
-      } else {
-        return res.status(200).json({
-          cars: historyCars
-        });
-      }
+
 
     } catch (e) {
-      /* istanbul ignore next */
-      logger.error(`inventory currentStock: Async Error.`);
-      /* istanbul ignore next */
+      logger.error(`InventoryController.currentCompanyStock: Error.`);
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-      /* istanbul ignore next */
       logger.error(e);
-      // Raven.captureException(e, {req});
-      /* istanbul ignore next */
       return res.status(500).json({
         message: JSON.stringify(e),
         status: 500
