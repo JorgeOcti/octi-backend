@@ -187,8 +187,13 @@ class InventoryQueue {
                 deleted: false,
                 handler: false,
               });
-              clientCompany =  await clientCompany.save();
+              clientCompany =  await clientCompany.save();              
             }
+
+            if(!company.clientCompanies.includes(clientCompany._id)){
+              company.clientCompanies.push(clientCompany._id);
+            }
+            await company.save();
           }
 
           let currentCar = await CarModel.findOne({

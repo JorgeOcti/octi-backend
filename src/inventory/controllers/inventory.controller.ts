@@ -44,7 +44,7 @@ import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
 import { Response } from 'express';
-import { StatusHistory } from '../../app/models/history.types';
+import { ModuleHistory, StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import TeamSetting from '../../app/models/teamSetting.model';
@@ -60,6 +60,7 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
+import Company from '../../app/models/company.model';
 
 class InventoryController {
   constructor() {
@@ -1289,6 +1290,11 @@ class InventoryController {
                 }
               }
 
+
+              if(!inventoryCar.car.isContainer){
+                this.addFoundCarToHistory(inventoryCar, inventory);
+              }
+
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
@@ -1346,6 +1352,32 @@ class InventoryController {
         status: 400
       });
     }
+  }
+
+  private async addFoundCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory) {
+
+    const {car} = inventoryCar;
+    logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
+
+    let history = await new History({
+      status: StatusHistory.readyToClient,
+      module: ModuleHistory.inventory,
+      car: car,
+      team: car.team,
+      company: car.clientCompany,//(no handler)
+      venue: inventoryCar.venue,
+      inventoryCar: inventoryCar,
+      inventory: inventory,
+      createdBy: car.createdBy,
+      executedAt: car.createdAt,
+      current: true
+    }).save();
+
+    await Car.updateOne(  // es necesario actualizar el car con el id del history?
+      {_id: car},
+      {$set: {event: history._id}}
+    );
+
   }
 
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
@@ -3055,6 +3087,81 @@ class InventoryController {
       });
     }
   }
+
+
+  public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
+    try {
+      logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
+      const { company } = req.user;
+      let { companyId }  = req.query as { companyId?: string };
+
+      let userCompany = await Company.findById(company._id);
+      let filterCompanies: any[] = [];
+
+      if(userCompany?.handler){
+        if(companyId !== undefined && companyId !== ""){
+          filterCompanies =[companyId];
+        }else{
+          userCompany = await userCompany.populate([{
+            path:'clientCompanies',
+            select:['_id']
+          }]);
+          filterCompanies = userCompany.clientCompanies || [];
+        }
+      }else{
+        filterCompanies = [company._id];
+      }
+
+      const historyCars = await History.find({
+          $and: [
+            {
+              company: {
+                $in: filterCompanies
+              },
+              status: {
+                $in: [
+                  StatusHistory.readyToClient,
+                ]
+              },
+            }
+          ]
+        },
+        {
+          status: true,
+          from: true,
+          to: true,
+          participant: true,
+          createdAt: true
+        }
+      ).allowDiskUse(true)
+      .populate([
+          {
+            path: 'inventoryCar',
+            populate: [
+              {
+                path: 'car'
+              }
+            ]
+          }
+        ]).lean();
+
+    
+        return res.status(200).json({
+          history: historyCars
+        });
+
+
+    } catch (e) {
+      logger.error(`InventoryController.currentCompanyStock: Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {

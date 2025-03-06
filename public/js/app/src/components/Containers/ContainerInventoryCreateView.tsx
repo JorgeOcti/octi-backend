@@ -269,42 +269,15 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         console.log("Error", header, data)
         return false
       }
-
-      if ("RUT Cliente" === header) {
-        let rut: string = `${data[header]}`.replace('-', '');
-        // Limpiar y formatear el RUT
-        const cleanRUT = rut.replace(/[^0-9kK]/g, '').toUpperCase();
-        // Validar longitud mínima
-        if (cleanRUT.length < 2) return false;
-        // Separar número y dígito verificador
-        const checkDigit = cleanRUT.slice(-1);
-        const numPart = cleanRUT.slice(0, -1);
-        // Validar que la parte numérica sea correcta
-        if (!/^\d+$/.test(numPart)) return false;
-        const calculatedDigit = this.calculateDV(numPart);
-        return (calculatedDigit === checkDigit)
-      }
     }
     return true
   }
 
-  private calculateDV(rut: string) {
-    const reversedDigits = rut.split('').reverse().map(Number);
-    let sum = 0;
-    let multiplier = 2;
-
-    for (const digit of reversedDigits) {
-      sum += digit * multiplier;
-      multiplier = multiplier === 7 ? 2 : multiplier + 1;
-    }
-
-    const remainder = sum % 11;
-    const result = 11 - remainder;
-    return result === 11
-      ? '0'
-      : result === 10
-        ? 'K'
-        : result.toString();
+  private normalizeIdentifier(identifier: string): string {
+    return identifier
+        .toUpperCase()
+        .replace(/[^a-zA-Z0-9-]/g, '') //letras, números y guiones
+        .trim();
   }
 
   private processDataRow(data: any): any|null {
@@ -313,7 +286,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       this.excelHeaders.forEach((header: string) => {
         let value = data[header]
         if (value){
-          extra[header] = value
+          extra[header] = (header !== "RUT Cliente")? value : this.normalizeIdentifier(value);
         }
       })
       let container: any = {extra}

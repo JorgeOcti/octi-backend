@@ -3,7 +3,8 @@ export enum StatusHistory {
   available = 'available',
   inTransit = 'inTransit',
   unknown = 'unknown',
-  sale = 'sale'
+  sale = 'sale',
+  readyToClient = 'readyToClient',
 }
 
 export const statusHistory= [
@@ -11,7 +12,8 @@ export const statusHistory= [
   StatusHistory.available,
   StatusHistory.inTransit,
   StatusHistory.unknown,
-  StatusHistory.sale
+  StatusHistory.sale,
+  StatusHistory.readyToClient,
 ];
 
 export enum ModuleHistory {
