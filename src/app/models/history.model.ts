@@ -37,6 +37,11 @@ const historySchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
+  clientCompany: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: true
+  },
   car: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Car',

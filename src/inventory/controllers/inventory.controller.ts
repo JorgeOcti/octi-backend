@@ -1364,7 +1364,8 @@ class InventoryController {
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
-      company: car.clientCompany,//(no handler)
+      company: car.company,//(handler)
+      clientCompany: car.clientCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,
@@ -3092,47 +3093,45 @@ class InventoryController {
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     try {
       logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
-      const { company } = req.user;
-      let { companyId }  = req.query as { companyId?: string };
+
+      const { company } = req.user; // user request company 
+      let { companyId }  = req.query as { companyId?: string }; //filter param company 
 
       let userCompany = await Company.findById(company._id);
-      let filterCompanies: any[] = [];
+      let filterCompanies: any = {};
 
-      if(userCompany?.handler){
-        if(companyId !== undefined && companyId !== ""){
-          filterCompanies =[companyId];
-        }else{
-          userCompany = await userCompany.populate([{
-            path:'clientCompanies',
-            select:['_id']
-          }]);
-          filterCompanies = userCompany.clientCompanies || [];
+      if(userCompany?.handler && companyId !== undefined && companyId !== ""){
+
+        logger.error(`InventoryController.currentCompanyStock handler company ${company._id}  client company ${companyId} `);
+
+
+        userCompany = await userCompany.populate([{
+          path:'clientCompanies',
+          select:['_id']
+        }]);
+
+        if(userCompany.clientCompanies?.includes(companyId)){
+
+          logger.error(`InventoryController.currentCompanyStock (el cliente pertenece a sus companies) handler company ${company._id}  client company ${companyId} `);
+
+          filterCompanies = {
+            $and:[{
+              company: company._id,
+              clientCompany: companyId,
+              status: StatusHistory.readyToClient
+          }]}
+
         }
+
       }else{
-        filterCompanies = [company._id];
+        filterCompanies = {
+          clientCompany: company._id,
+          status: StatusHistory.readyToClient
+        }
       }
 
-      const historyCars = await History.find({
-          $and: [
-            {
-              company: {
-                $in: filterCompanies
-              },
-              status: {
-                $in: [
-                  StatusHistory.readyToClient,
-                ]
-              },
-            }
-          ]
-        },
-        {
-          status: true,
-          from: true,
-          to: true,
-          participant: true,
-          createdAt: true
-        }
+      const historyCars = await History.find(
+        filterCompanies
       ).allowDiskUse(true)
       .populate([
           {
