@@ -8,6 +8,7 @@ import type { IUserModel } from '../app/schemas/user.schema';
 import type { IRequest } from '../interfaces/global.interface';
 import logger from '../services/logger.service';
 import redisClient from '../services/redis.service';
+import { serveFiles } from 'swagger-ui-express';
 
 class Middlewares {
 
@@ -160,7 +161,11 @@ class Middlewares {
               select: ['name']
             }, {
               path: 'company',
-              select: ['name', 'iFrameURL', 'iFrameURLInventory', 'handler', 'clientCompanies']
+              select: ['name', 'iFrameURL', 'iFrameURLInventory', 'handler'],
+              populate: {
+                path: 'clientCompanies',
+                select: ['name']
+              }
             }, {
               path: 'team',
               select: ['name']
