@@ -8,7 +8,6 @@ import type { IUserModel } from '../app/schemas/user.schema';
 import type { IRequest } from '../interfaces/global.interface';
 import logger from '../services/logger.service';
 import redisClient from '../services/redis.service';
-import { serveFiles } from 'swagger-ui-express';
 
 class Middlewares {
 
