@@ -23,7 +23,8 @@ import { socket } from '../../services/socket.service';
 import moment = require('moment');
 import VirtualInventory from '../models/virtualInventory.model';
 import Company from '../../app/models/company.model';
-
+import { ModuleHistory, StatusHistory } from '../../app/models/history.types';
+import History from '../../app/models/history.model';
 
 interface IInventoryQueueData {
   userID: string;
@@ -210,7 +211,7 @@ class InventoryQueue {
           if (!currentCar) {
             currentCar = new CarModel({
               team,
-              company,
+              company: clientCompany?._id,
               vin: car.vin,
               vin2: car.vin.substr(car.vin.length - 6),
               color: car.color,
@@ -221,7 +222,7 @@ class InventoryQueue {
               patent: car.patent,
               createdBy: user._id,
               status: ChoicesStatusCar.active,
-              clientCompany: clientCompany?._id
+              handlerCompany: company
             });
             await currentCar.save();
           }
@@ -257,13 +258,42 @@ class InventoryQueue {
         `InventoryQueue.processCreateContainerInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${inventoryCars.length}}`
       );
 
-      await InventoryCar.insertMany(inventoryCars);
+      const inventoryCarsSaved = await InventoryCar.insertMany(inventoryCars);
       await ActivityHistory.insertMany(activityHistories);
 
       await Inventory.findByIdAndUpdate(inventoryID, {
         status: ChoicesStatusInventory.inProcess,
         virtualInventories: Object.values(virtualInventories).map((virtualInventory: any) => virtualInventory._id),
         virtual: true
+      });
+
+      inventoryCarsSaved.map( async inventoryCar => {
+
+        await inventoryCar.populate([
+          {path: 'car', populate:[
+            {path: 'team'},
+            {path: 'company'},
+            {path: 'handlerCompany'},
+          ]},
+          {path: 'venue'},
+          {path: 'inventory'}
+        ]);
+
+        await new History({
+              status: StatusHistory.created,
+              module: ModuleHistory.inventory,
+              car: inventoryCar.car._id,
+              team: inventoryCar.car.team._id,
+              company: inventoryCar.car.company._id,
+              handlerCompany: inventoryCar.car.handlerCompany._id,//(handler)
+              venue: inventoryCar.venue._id,
+              inventoryCar,
+              inventory: inventoryCar.inventory,
+              createdBy: inventoryCar.car.createdBy,
+              executedAt: inventoryCar.car.createdAt,
+              current: true
+            }).save();
+
       });
 
       done(null, {});

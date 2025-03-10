@@ -1365,7 +1365,7 @@ class InventoryController {
       car: car,
       team: car.team,
       company: car.company,//(handler)
-      clientCompany: car.clientCompany,
+      handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,
