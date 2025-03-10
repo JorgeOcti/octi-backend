@@ -1366,6 +1366,9 @@ class InventoryController {
       team: car.team,
       company: car.company,//(handler)
       clientCompany: car.clientCompany,
+      //TODO: cambiar
+      //  company: car.company,
+      // handlerCompany: car.handlerCompany,     
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,
@@ -3104,7 +3107,6 @@ class InventoryController {
 
         logger.error(`InventoryController.currentCompanyStock handler company ${company._id}  client company ${companyId} `);
 
-
         userCompany = await userCompany.populate([{
           path:'clientCompanies',
           select:['_id']
@@ -3118,15 +3120,31 @@ class InventoryController {
             $and:[{
               company: company._id,
               clientCompany: companyId,
-              status: StatusHistory.readyToClient
+              //TODO: cambiar
+              // company: companyId,
+              // clientCompany: company._id,
+              status: {
+                $in: [
+                  StatusHistory.inTransit,
+                  StatusHistory.readyToClient
+                ]
+              },
           }]}
 
         }
 
       }else{
+        //for clients
         filterCompanies = {
           clientCompany: company._id,
-          status: StatusHistory.readyToClient
+          //TODO: cambiar
+          // company: company._id,
+          status: {
+            $in: [
+              StatusHistory.inTransit,
+              StatusHistory.readyToClient
+            ]
+          },
         }
       }
 
