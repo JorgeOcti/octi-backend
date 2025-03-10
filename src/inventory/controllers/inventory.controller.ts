@@ -3115,11 +3115,8 @@ class InventoryController {
 
           filterCompanies = {
             $and:[{
-              company: company._id,
-              clientCompany: companyId,
-              //TODO: cambiar
-              // company: companyId,
-              // clientCompany: company._id,
+              company: companyId,
+              handlerCompany: company._id,
               status: {
                 $in: [
                   StatusHistory.inTransit,
@@ -3133,9 +3130,7 @@ class InventoryController {
       }else{
         //for clients
         filterCompanies = {
-          clientCompany: company._id,
-          //TODO: cambiar
-          // company: company._id,
+          company: company._id,
           status: {
             $in: [
               StatusHistory.inTransit,
