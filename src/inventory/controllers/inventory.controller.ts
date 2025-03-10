@@ -1364,11 +1364,8 @@ class InventoryController {
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
-      company: car.company,//(handler)
-      clientCompany: car.clientCompany,
-      //TODO: cambiar
-      //  company: car.company,
-      // handlerCompany: car.handlerCompany,     
+      company: car.company,
+      handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,

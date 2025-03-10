@@ -37,7 +37,7 @@ const historySchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
-  clientCompany: {
+  handlerCompany: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
     required: true
