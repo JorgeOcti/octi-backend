@@ -190,10 +190,17 @@ class InventoryQueue {
               clientCompany =  await clientCompany.save();              
             }
 
+            // add client company to clientCompanies
             if(!company.clientCompanies.includes(clientCompany._id)){
               company.clientCompanies.push(clientCompany._id);
             }
+
+            // add handler company to handlerCompanies
+            if(Array.isArray(clientCompany.handlerCompanies) && !clientCompany.handlerCompanies.includes(company._id)){
+              clientCompany.handlerCompanies.push(company._id);
+            }
             await company.save();
+            await clientCompany.save();
           }
 
           let currentCar = await CarModel.findOne({
