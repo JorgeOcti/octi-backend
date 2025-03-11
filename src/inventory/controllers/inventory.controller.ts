@@ -3102,29 +3102,23 @@ class InventoryController {
 
       let userCompany = await Company.findById(company._id);
 
-      if(userCompany?.handler && companyId !== undefined && companyId !== ""){
+      if (userCompany?.handler && companyId !== undefined && companyId !== ""
+        && userCompany.clientCompanies?.includes(companyId)) {
 
-        userCompany = await userCompany.populate([{
-          path: 'clientCompanies',
-          select: ['_id']
-        }]);
-
-        const arrClientCompanies: string[] = userCompany.clientCompanies?.map((cli: any) => `${cli._id}`) || []
-
-        if (arrClientCompanies.includes(companyId)) {
-          filterCompanies = {
-            $and:[{
-              company: companyId,
-              handlerCompany: company._id,
-              status: {
-                $in: [
-                  StatusHistory.inTransit,
-                  StatusHistory.readyToClient
-                ]
-              },
-          }]}
+        filterCompanies = {
+          $and: [{
+            company: companyId,
+            handlerCompany: company._id,
+            status: {
+              $in: [
+                StatusHistory.inTransit,
+                StatusHistory.readyToClient
+              ]
+            },
+          }]
         }
-      }else{
+
+      } else {
         //for clients
         filterCompanies = {
           company: company._id,
@@ -3437,11 +3431,10 @@ class InventoryController {
 
         logger.error(`add evidence, container status : ${ status }`)
 
-        if(status === 'empty'){
-          if (inventoryCar.inventory) {
-            await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
-          }
+        if(status === 'empty' && inventoryCar.inventory){
+          await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
         }
+
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
 
