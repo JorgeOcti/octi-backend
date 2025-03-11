@@ -3435,9 +3435,13 @@ class InventoryController {
           { path: 'images' }
         ]);
 
+        logger.error(`add evidence, container status : ${ status }`)
 
-        this.addCarToHistory(inventoryCar, inventory, StatusHistory.found);
-
+        if(status === 'empty'){
+          if (inventoryCar.inventory) {
+            await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
+          }
+        }
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
 
@@ -3458,6 +3462,41 @@ class InventoryController {
         status: 500
       });
     }
+  }
+
+  private async addHistoryToCarOfEmptyContainer(inventoryId: string): Promise<void> {
+
+    const inventoryCarList = await InventoryCar.find({
+      inventory: new mongoose.Types.ObjectId(inventoryId)
+    }).populate([{
+      path: 'car', populate: [
+        { path: 'team' },
+        { path: 'company' },
+        { path: 'handlerCompany' },
+      ]
+    }]);
+
+    const histories: any[] = [];
+    inventoryCarList.forEach(inventoryCar => {
+      if (!inventoryCar.car.isContainer) {
+        histories.push({
+          status: StatusHistory.readyToClient,
+          module: ModuleHistory.inventory,
+          car: inventoryCar.car,
+          team: inventoryCar.car.team,
+          company: inventoryCar.car.company,
+          handlerCompany: inventoryCar.car.handlerCompany,
+          venue: inventoryCar.venue,
+          inventoryCar,
+          inventory: inventoryCar.inventory,
+          createdBy: inventoryCar.car.createdBy,
+          executedAt: inventoryCar.car.createdAt,
+          current: true
+        });
+      }
+    });
+
+    await History.insertMany(histories);
   }
 
   private autoRotate(path: string): Promise<any> {
