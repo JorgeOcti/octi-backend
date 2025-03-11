@@ -61,7 +61,6 @@ import {
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
-import { toString } from 'qrcode';
 
 class InventoryController {
   constructor() {
