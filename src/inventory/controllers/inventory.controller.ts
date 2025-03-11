@@ -1359,7 +1359,18 @@ class InventoryController {
     const {car} = inventoryCar;
     logger.info(`inventory.addCarToHistory ${ JSON.stringify(car)}`);
 
-    let history = await new History({
+    await History.updateMany(
+      {
+        car: car,
+        team: car.team,
+        company: car.company,
+        handlerCompany: car.handlerCompany,
+        current: true
+      },
+      { $set: { current: false } }
+    );
+
+    const history = await new History({
       status: status, 
       module: ModuleHistory.inventory,
       car: car,
@@ -3488,6 +3499,21 @@ class InventoryController {
         });
       }
     });
+
+    const updateHistories = histories.map(histori=>{
+      return {
+          car: histori.car,
+          team: histori.team,
+          company: histori.company,
+          handlerCompany: histori.handlerCompany,
+          current: true
+      }
+    })
+
+    await History.updateMany(
+      {$or: updateHistories},
+      { $set: {current: false}}
+    );
 
     await History.insertMany(histories);
   }

@@ -312,6 +312,22 @@ class InventoryQueue {
       const resolvedHistories = await Promise.all(promiseHistories);
 
       if(resolvedHistories.length > 0){
+
+        const updateHistories = resolvedHistories.map(histori=>{
+          return {
+              car: histori.car,
+              team: histori.team,
+              company: histori.company,
+              handlerCompany: histori.handlerCompany,
+              current: true
+          }
+        })
+    
+        await History.updateMany(
+          {$or: updateHistories},
+          { $set: {current: false}}
+        );
+
         await History.insertMany( resolvedHistories );
       }
 
