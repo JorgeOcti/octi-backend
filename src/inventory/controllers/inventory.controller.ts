@@ -1366,6 +1366,7 @@ class InventoryController {
       car: car,
       team: car.team,
       company: car.company,
+      company: car.company,
       handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
@@ -3102,8 +3103,11 @@ class InventoryController {
       let historyCarsResult: never[] = [];
 
       let userCompany = await Company.findById(company._id);
-      
-      if (userCompany?.handler && id !== undefined && id !== "") {
+      let filterCompanies: any = {};
+
+      if(userCompany?.handler && companyId !== undefined && companyId !== ""){
+
+        logger.error(`InventoryController.currentCompanyStock handler company ${company._id}  client company ${companyId} `);
 
         userCompany = await userCompany.populate([{
           path: 'clientCompanies',
@@ -3114,17 +3118,29 @@ class InventoryController {
 
         if (arrClientCompanies.includes(id)) {
           filterCompanies = {
-            $and: [{
-              company: id,
+            $and:[{
+              company: companyId,
               handlerCompany: company._id,
-              status: StatusHistory.created
-            }
-            ]
-          }
+              status: {
+                $in: [
+                  StatusHistory.inTransit,
+                  StatusHistory.readyToClient
+                ]
+              },
+          }]}
+
         }
 
-      } else {
+      }else{
+        //for clients
         filterCompanies = {
+          company: company._id,
+          status: {
+            $in: [
+              StatusHistory.inTransit,
+              StatusHistory.readyToClient
+            ]
+          },
           $and: [{
             company: id || company._id,
             status: StatusHistory.created
