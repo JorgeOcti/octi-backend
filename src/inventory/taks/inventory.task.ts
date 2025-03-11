@@ -172,17 +172,32 @@ class InventoryQueue {
 
           let clientCompany =  null;
 
-          if(car.extra["RUT Cliente"]){            
+          if(car.extra["RUT Cliente"]){    
+
             const rutCompany:string = car.extra["RUT Cliente"];
              clientCompany = await Company.findOne({
               rut: rutCompany.trim(),
             });
+
             if (!clientCompany) {
+
+              const companyName = car.extra["Cliente Razón Social"];
+              let existCompanyTeam = await Team.find({
+                name: companyName
+              });
+
+              if(!existCompanyTeam || existCompanyTeam.length === 0){
+                const newTeam = await new Team({
+                  name: companyName
+                }).save();
+                existCompanyTeam = [newTeam];
+              }
+
               clientCompany = new Company({
-                name: car.extra["Cliente Razón Social"],
-                businessName: car.extra["Cliente Razón Social"],
+                name: companyName,
+                businessName: companyName,
                 rut: rutCompany.trim(),
-                team,
+                team: existCompanyTeam[0],
                 createdBy: user._id,
                 active: true,
                 deleted: false,
@@ -281,7 +296,7 @@ class InventoryQueue {
             status: StatusHistory.created,
             module: ModuleHistory.inventory,
             car: inventoryCar.car,
-            team: inventoryCar.car.team,
+            team: inventoryCar.car.team, // TODO: validar que team dejar en el historial
             company: inventoryCar.car.company,
             handlerCompany: inventoryCar.car.handlerCompany,
             venue: inventoryCar.venue,
