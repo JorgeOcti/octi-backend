@@ -1292,7 +1292,7 @@ class InventoryController {
 
 
               if(!inventoryCar.car.isContainer){
-                this.addFoundCarToHistory(inventoryCar, inventory);
+                this.addCarToHistory(inventoryCar, inventory, StatusHistory.found);
               }
 
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
@@ -1354,13 +1354,13 @@ class InventoryController {
     }
   }
 
-  private async addFoundCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory) {
+  private async addCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory, status: StatusHistory) {
 
     const {car} = inventoryCar;
-    logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
+    logger.info(`inventory.addCarToHistory ${ JSON.stringify(car)}`);
 
     let history = await new History({
-      status: StatusHistory.available, 
+      status: status, 
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
@@ -3434,6 +3434,9 @@ class InventoryController {
           { path: 'evidenceStatus.images' },
           { path: 'images' }
         ]);
+
+
+        this.addCarToHistory(inventoryCar, inventory, StatusHistory.found);
 
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
