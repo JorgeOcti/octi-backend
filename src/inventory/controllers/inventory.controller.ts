@@ -1366,7 +1366,6 @@ class InventoryController {
       car: car,
       team: car.team,
       company: car.company,
-      company: car.company,
       handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
@@ -3097,13 +3096,12 @@ class InventoryController {
       logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
 
       const { company } = req.user; // user request company 
-      let { id } = req.params; //filter param company
+      let { companyId } = req.params; //filter param company
 
       let filterCompanies: any = null;
       let historyCarsResult: never[] = [];
 
       let userCompany = await Company.findById(company._id);
-      let filterCompanies: any = {};
 
       if(userCompany?.handler && companyId !== undefined && companyId !== ""){
 
@@ -3116,7 +3114,7 @@ class InventoryController {
 
         const arrClientCompanies: string[] = userCompany.clientCompanies?.map((cli: any) => `${cli._id}`) || []
 
-        if (arrClientCompanies.includes(id)) {
+        if (arrClientCompanies.includes(companyId)) {
           filterCompanies = {
             $and:[{
               company: companyId,
@@ -3140,11 +3138,7 @@ class InventoryController {
               StatusHistory.inTransit,
               StatusHistory.readyToClient
             ]
-          },
-          $and: [{
-            company: id || company._id,
-            status: StatusHistory.created
-          }]
+          }
         }
       }
 
