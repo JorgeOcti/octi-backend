@@ -258,7 +258,7 @@ class InventoryQueue {
         `InventoryQueue.processCreateContainerInventory {inventoryID: ${inventoryID}, totalInventoryCars: ${inventoryCars.length}}`
       );
 
-      const inventoryCarsSaved = await InventoryCar.insertMany(inventoryCars);
+      const inventoryCarSaved = await InventoryCar.insertMany(inventoryCars);
       await ActivityHistory.insertMany(activityHistories);
 
       await Inventory.findByIdAndUpdate(inventoryID, {
@@ -267,33 +267,30 @@ class InventoryQueue {
         virtual: true
       });
 
-      inventoryCarsSaved.map( async inventoryCar => {
+      inventoryCarSaved.forEach( async inventoryCar => {
 
         await inventoryCar.populate([
           {path: 'car', populate:[
             {path: 'team'},
             {path: 'company'},
             {path: 'handlerCompany'},
-          ]},
-          {path: 'venue'},
-          {path: 'inventory'}
+          ]}
         ]);
 
         await new History({
               status: StatusHistory.created,
               module: ModuleHistory.inventory,
-              car: inventoryCar.car._id,
-              team: inventoryCar.car.team._id,
-              company: inventoryCar.car.company._id,
-              handlerCompany: inventoryCar.car.handlerCompany._id,//(handler)
-              venue: inventoryCar.venue._id,
+              car: inventoryCar.car,
+              team: inventoryCar.car.team,
+              company: inventoryCar.car.company,
+              handlerCompany: inventoryCar.car.handlerCompany,
+              venue: inventoryCar.venue,
               inventoryCar,
               inventory: inventoryCar.inventory,
               createdBy: inventoryCar.car.createdBy,
               executedAt: inventoryCar.car.createdAt,
               current: true
             }).save();
-
       });
 
       done(null, {});

@@ -61,6 +61,7 @@ import {
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
+import { toString } from 'qrcode';
 
 class InventoryController {
   constructor() {
@@ -1360,11 +1361,11 @@ class InventoryController {
     logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
 
     let history = await new History({
-      status: StatusHistory.readyToClient,
+      status: StatusHistory.available, 
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
-      company: car.company,//(handler)
+      company: car.company,
       handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
@@ -3095,45 +3096,46 @@ class InventoryController {
       logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
 
       const { company } = req.user; // user request company 
-      let { companyId }  = req.query as { companyId?: string }; //filter param company 
+      let { id } = req.params; //filter param company
+
+      let filterCompanies: any = null;
+      let historyCarsResult: never[] = [];
 
       let userCompany = await Company.findById(company._id);
-      let filterCompanies: any = {};
-
-      if(userCompany?.handler && companyId !== undefined && companyId !== ""){
-
-        logger.error(`InventoryController.currentCompanyStock handler company ${company._id}  client company ${companyId} `);
-
+      
+      if (userCompany?.handler && id !== undefined && id !== "") {
 
         userCompany = await userCompany.populate([{
-          path:'clientCompanies',
-          select:['_id']
+          path: 'clientCompanies',
+          select: ['_id']
         }]);
 
-        if(userCompany.clientCompanies?.includes(companyId)){
+        const arrClientCompanies: string[] = userCompany.clientCompanies?.map((cli: any) => `${cli._id}`) || []
 
-          logger.error(`InventoryController.currentCompanyStock (el cliente pertenece a sus companies) handler company ${company._id}  client company ${companyId} `);
-
+        if (arrClientCompanies.includes(id)) {
           filterCompanies = {
-            $and:[{
-              company: company._id,
-              clientCompany: companyId,
-              status: StatusHistory.readyToClient
-          }]}
-
+            $and: [{
+              company: id,
+              handlerCompany: company._id,
+              status: StatusHistory.created
+            }
+            ]
+          }
         }
 
-      }else{
+      } else {
         filterCompanies = {
-          clientCompany: company._id,
-          status: StatusHistory.readyToClient
+          $and: [{
+            company: id || company._id,
+            status: StatusHistory.created
+          }]
         }
       }
 
-      const historyCars = await History.find(
-        filterCompanies
-      ).allowDiskUse(true)
-      .populate([
+      if(filterCompanies){
+        historyCarsResult = await History.find(filterCompanies)
+        .allowDiskUse(true)
+        .populate([
           {
             path: 'inventoryCar',
             populate: [
@@ -3143,12 +3145,11 @@ class InventoryController {
             ]
           }
         ]).lean();
+      }
 
-    
-        return res.status(200).json({
-          history: historyCars
-        });
-
+      return res.status(200).json({
+        history: historyCarsResult
+      });
 
     } catch (e) {
       logger.error(`InventoryController.currentCompanyStock: Error.`);
