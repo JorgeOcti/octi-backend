@@ -1292,7 +1292,7 @@ class InventoryController {
 
 
               if(!inventoryCar.car.isContainer){
-                this.addFoundCarToHistory(inventoryCar, inventory);
+                this.addCarToHistory(inventoryCar, inventory, StatusHistory.found);
               }
 
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
@@ -1354,17 +1354,18 @@ class InventoryController {
     }
   }
 
-  private async addFoundCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory) {
+  private async addCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory, status: StatusHistory) {
 
     const {car} = inventoryCar;
-    logger.info(`addFoundCarToHistory ${ JSON.stringify(car)}`);
+    logger.info(`inventory.addCarToHistory ${ JSON.stringify(car)}`);
 
     let history = await new History({
-      status: StatusHistory.readyToClient,
+      status: status, 
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
-      company: car.clientCompany,//(no handler)
+      company: car.company,
+      handlerCompany: car.handlerCompany,
       venue: inventoryCar.venue,
       inventoryCar: inventoryCar,
       inventory: inventory,
@@ -3092,49 +3093,54 @@ class InventoryController {
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     try {
       logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
-      const { company } = req.user;
-      let { companyId }  = req.query as { companyId?: string };
+
+      const { company } = req.user; // user request company 
+      let { companyId } = req.params; //filter param company
+
+      let filterCompanies: any = null;
+      let historyCarsResult: never[] = [];
 
       let userCompany = await Company.findById(company._id);
-      let filterCompanies: any[] = [];
 
-      if(userCompany?.handler){
-        if(companyId !== undefined && companyId !== ""){
-          filterCompanies =[companyId];
-        }else{
-          userCompany = await userCompany.populate([{
-            path:'clientCompanies',
-            select:['_id']
-          }]);
-          filterCompanies = userCompany.clientCompanies || [];
-        }
-      }else{
-        filterCompanies = [company._id];
-      }
+      if(userCompany?.handler && companyId !== undefined && companyId !== ""){
 
-      const historyCars = await History.find({
-          $and: [
-            {
-              company: {
-                $in: filterCompanies
-              },
+        userCompany = await userCompany.populate([{
+          path: 'clientCompanies',
+          select: ['_id']
+        }]);
+
+        const arrClientCompanies: string[] = userCompany.clientCompanies?.map((cli: any) => `${cli._id}`) || []
+
+        if (arrClientCompanies.includes(companyId)) {
+          filterCompanies = {
+            $and:[{
+              company: companyId,
+              handlerCompany: company._id,
               status: {
                 $in: [
-                  StatusHistory.readyToClient,
+                  StatusHistory.inTransit,
+                  StatusHistory.readyToClient
                 ]
               },
-            }
-          ]
-        },
-        {
-          status: true,
-          from: true,
-          to: true,
-          participant: true,
-          createdAt: true
+          }]}
         }
-      ).allowDiskUse(true)
-      .populate([
+      }else{
+        //for clients
+        filterCompanies = {
+          company: company._id,
+          status: {
+            $in: [
+              StatusHistory.inTransit,
+              StatusHistory.readyToClient
+            ]
+          }
+        }
+      }
+
+      if(filterCompanies){
+        historyCarsResult = await History.find(filterCompanies)
+        .allowDiskUse(true)
+        .populate([
           {
             path: 'inventoryCar',
             populate: [
@@ -3144,12 +3150,11 @@ class InventoryController {
             ]
           }
         ]).lean();
+      }
 
-    
-        return res.status(200).json({
-          history: historyCars
-        });
-
+      return res.status(200).json({
+        history: historyCarsResult
+      });
 
     } catch (e) {
       logger.error(`InventoryController.currentCompanyStock: Error.`);
@@ -3430,6 +3435,13 @@ class InventoryController {
           { path: 'images' }
         ]);
 
+        logger.error(`add evidence, container status : ${ status }`)
+
+        if(status === 'empty'){
+          if (inventoryCar.inventory) {
+            await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
+          }
+        }
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
 
@@ -3450,6 +3462,41 @@ class InventoryController {
         status: 500
       });
     }
+  }
+
+  private async addHistoryToCarOfEmptyContainer(inventoryId: string): Promise<void> {
+
+    const inventoryCarList = await InventoryCar.find({
+      inventory: new mongoose.Types.ObjectId(inventoryId)
+    }).populate([{
+      path: 'car', populate: [
+        { path: 'team' },
+        { path: 'company' },
+        { path: 'handlerCompany' },
+      ]
+    }]);
+
+    const histories: any[] = [];
+    inventoryCarList.forEach(inventoryCar => {
+      if (!inventoryCar.car.isContainer) {
+        histories.push({
+          status: StatusHistory.readyToClient,
+          module: ModuleHistory.inventory,
+          car: inventoryCar.car,
+          team: inventoryCar.car.team,
+          company: inventoryCar.car.company,
+          handlerCompany: inventoryCar.car.handlerCompany,
+          venue: inventoryCar.venue,
+          inventoryCar,
+          inventory: inventoryCar.inventory,
+          createdBy: inventoryCar.car.createdBy,
+          executedAt: inventoryCar.car.createdAt,
+          current: true
+        });
+      }
+    });
+
+    await History.insertMany(histories);
   }
 
   private autoRotate(path: string): Promise<any> {

@@ -16,6 +16,7 @@ export interface IHistory {
   _id?: any;
   team: ITeam | any;
   company: ICompany | any;
+  handlerCompany: ICompany | any;
   from: IVenue | any;
   to: IVenue | any;
   status: StatusHistory;
