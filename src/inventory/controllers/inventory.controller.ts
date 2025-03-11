@@ -3104,8 +3104,6 @@ class InventoryController {
 
       if(userCompany?.handler && companyId !== undefined && companyId !== ""){
 
-        logger.error(`InventoryController.currentCompanyStock handler company ${company._id}  client company ${companyId} `);
-
         userCompany = await userCompany.populate([{
           path: 'clientCompanies',
           select: ['_id']
@@ -3125,9 +3123,7 @@ class InventoryController {
                 ]
               },
           }]}
-
         }
-
       }else{
         //for clients
         filterCompanies = {

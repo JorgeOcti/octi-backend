@@ -267,31 +267,38 @@ class InventoryQueue {
         virtual: true
       });
 
-      inventoryCarSaved.forEach( async inventoryCar => {
-
-        await inventoryCar.populate([
-          {path: 'car', populate:[
-            {path: 'team'},
-            {path: 'company'},
-            {path: 'handlerCompany'},
-          ]}
-        ]);
-
-        await new History({
-              status: StatusHistory.created,
-              module: ModuleHistory.inventory,
-              car: inventoryCar.car,
-              team: inventoryCar.car.team,
-              company: inventoryCar.car.company,
-              handlerCompany: inventoryCar.car.handlerCompany,
-              venue: inventoryCar.venue,
-              inventoryCar,
-              inventory: inventoryCar.inventory,
-              createdBy: inventoryCar.car.createdBy,
-              executedAt: inventoryCar.car.createdAt,
-              current: true
-            }).save();
+      const promiseHistories: Promise<any>[] = [];
+      inventoryCarSaved.forEach(inventoryCar => {
+        promiseHistories.push((async()=>{
+          await inventoryCar.populate([
+            {path: 'car', populate:[
+              {path: 'team'},
+              {path: 'company'},
+              {path: 'handlerCompany'},
+            ]}
+          ]);
+          return {
+            status: StatusHistory.created,
+            module: ModuleHistory.inventory,
+            car: inventoryCar.car,
+            team: inventoryCar.car.team,
+            company: inventoryCar.car.company,
+            handlerCompany: inventoryCar.car.handlerCompany,
+            venue: inventoryCar.venue,
+            inventoryCar,
+            inventory: inventoryCar.inventory,
+            createdBy: inventoryCar.car.createdBy,
+            executedAt: inventoryCar.car.createdAt,
+            current: true
+          }
+        })());
       });
+
+      const resolvedHistories = await Promise.all(promiseHistories);
+
+      if(resolvedHistories.length > 0){
+        await History.insertMany( resolvedHistories );
+      }
 
       done(null, {});
     } catch (e) {
