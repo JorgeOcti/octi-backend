@@ -1290,11 +1290,6 @@ class InventoryController {
                 }
               }
 
-
-              if(!inventoryCar.car.isContainer){
-                this.addCarToHistory(inventoryCar, inventory, StatusHistory.found);
-              }
-
               await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
               return res.status(200).json({
                 vin: car.vin,
@@ -1354,7 +1349,7 @@ class InventoryController {
     }
   }
 
-  private async addCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory, status: StatusHistory) {
+  /*private async addCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory, status: StatusHistory) {
 
     const {car} = inventoryCar;
     logger.info(`inventory.addCarToHistory ${ JSON.stringify(car)}`);
@@ -1363,9 +1358,7 @@ class InventoryController {
       {
         car: car,
         team: car.team,
-        company: car.company,
-        handlerCompany: car.handlerCompany,
-        current: true
+        company: car.company
       },
       { $set: { current: false } }
     );
@@ -1390,7 +1383,7 @@ class InventoryController {
       {$set: {event: history._id}}
     );
 
-  }
+  }*/
 
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
    
@@ -3113,8 +3106,7 @@ class InventoryController {
 
       let userCompany = await Company.findById(company._id);
 
-      if (userCompany?.handler && companyId !== undefined && companyId !== ""
-        && userCompany.clientCompanies?.includes(companyId)) {
+      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
 
         filterCompanies = {
           $and: [{
@@ -3440,9 +3432,7 @@ class InventoryController {
           { path: 'images' }
         ]);
 
-        logger.error(`add evidence, container status : ${ status }`)
-
-        if(status === 'empty' && inventoryCar.inventory){
+        if(status === ChoicesStatusContainer.empty && inventoryCar.inventory){
           await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
         }
 
@@ -3471,7 +3461,8 @@ class InventoryController {
   private async addHistoryToCarOfEmptyContainer(inventoryId: string): Promise<void> {
 
     const inventoryCarList = await InventoryCar.find({
-      inventory: new mongoose.Types.ObjectId(inventoryId)
+      inventory: new mongoose.Types.ObjectId(inventoryId),
+      status: ChoicesStatusCarInventory.found
     }).populate([{
       path: 'car', populate: [
         { path: 'team' },
@@ -3500,18 +3491,16 @@ class InventoryController {
       }
     });
 
-    const updateHistories = histories.map(histori=>{
+    const updateHistories = histories.map(history=>{
       return {
-          car: histori.car,
-          team: histori.team,
-          company: histori.company,
-          handlerCompany: histori.handlerCompany,
-          current: true
+          car: history.car,
+          team: history.team,
+          company: history.company
       }
     })
 
     await History.updateMany(
-      {$or: updateHistories},
+      { $and: updateHistories },
       { $set: {current: false}}
     );
 

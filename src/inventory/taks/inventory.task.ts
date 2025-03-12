@@ -170,63 +170,61 @@ class InventoryQueue {
 
         for (const car of cars) {
 
-          let clientCompany =  null;
+          const rutCompany:string = car.extra["RUT Cliente"];
+          const companyName = car.extra["Cliente Razón Social"];
 
-          if(car.extra["RUT Cliente"]){    
+          let clientCompany =  await Company.findOne({
+            rut: rutCompany.trim(),
+          });
 
-            const rutCompany:string = car.extra["RUT Cliente"];
-             clientCompany = await Company.findOne({
-              rut: rutCompany.trim(),
+          if (!clientCompany) {
+
+            let existCompanyTeam = await Team.findOne({
+              name: rutCompany.trim()
             });
 
-            if (!clientCompany) {
-
-              const companyName = car.extra["Cliente Razón Social"];
-              let existCompanyTeam = await Team.find({
-                name: companyName
-              });
-
-              if(!existCompanyTeam || existCompanyTeam.length === 0){
-                const newTeam = await new Team({
-                  name: companyName
-                }).save();
-                existCompanyTeam = [newTeam];
-              }
-
-              clientCompany = new Company({
-                name: companyName,
-                businessName: companyName,
-                rut: rutCompany.trim(),
-                team: existCompanyTeam[0],
-                createdBy: user._id,
-                active: true,
-                deleted: false,
-                handler: false,
-              });
-              clientCompany =  await clientCompany.save();              
+            if (!existCompanyTeam) {
+              const newTeam = await new Team({
+                name: rutCompany.trim()
+              }).save();
+              existCompanyTeam = newTeam;
             }
 
-            // add client company to clientCompanies
-            if(!company.clientCompanies.includes(clientCompany._id)){
-              company.clientCompanies.push(clientCompany._id);
-            }
+            clientCompany = new Company({
+              name: companyName,
+              businessName: companyName,
+              rut: rutCompany.trim(),
+              team: existCompanyTeam,
+              createdBy: user._id,
+              active: true,
+              deleted: false,
+              handler: false,
+            });
 
-            // add handler company to handlerCompanies
-            if(Array.isArray(clientCompany.handlerCompanies) && !clientCompany.handlerCompanies.includes(company._id)){
-              clientCompany.handlerCompanies.push(company._id);
-            }
-            await company.save();
-            await clientCompany.save();
+            clientCompany = await clientCompany.save();
           }
+
+          // add client company to clientCompanies
+          if (!company.clientCompanies.includes(clientCompany._id)) {
+            company.clientCompanies.push(clientCompany._id);
+          }
+
+          // add handler company to handlerCompanies
+          if (Array.isArray(clientCompany.handlerCompanies) && !clientCompany.handlerCompanies.includes(company._id)) {
+            clientCompany.handlerCompanies.push(company._id);
+          }
+          await company.save();
+          await clientCompany.save();
 
           let currentCar = await CarModel.findOne({
             team,
             vin: car.vin.trim()
           });
+
           if (!currentCar) {
             currentCar = new CarModel({
-              team,
-              company: clientCompany?._id,
+              team: clientCompany.team,
+              company: clientCompany._id,
               vin: car.vin,
               vin2: car.vin.substr(car.vin.length - 6),
               color: car.color,
@@ -283,20 +281,21 @@ class InventoryQueue {
       });
 
       const promiseHistories: Promise<any>[] = [];
+
+
       inventoryCarSaved.forEach(inventoryCar => {
+
         promiseHistories.push((async()=>{
+
           await inventoryCar.populate([
-            {path: 'car', populate:[
-              {path: 'team'},
-              {path: 'company'},
-              {path: 'handlerCompany'},
-            ]}
+            {path: 'car'}
           ]);
+
           return {
             status: StatusHistory.created,
             module: ModuleHistory.inventory,
             car: inventoryCar.car,
-            team: inventoryCar.car.team, // TODO: validar que team dejar en el historial
+            team: inventoryCar.car.team,
             company: inventoryCar.car.company,
             handlerCompany: inventoryCar.car.handlerCompany,
             venue: inventoryCar.venue,
@@ -313,18 +312,16 @@ class InventoryQueue {
 
       if(resolvedHistories.length > 0){
 
-        const updateHistories = resolvedHistories.map(histori=>{
+        const updateHistories = resolvedHistories.map(history=>{
           return {
-              car: histori.car,
-              team: histori.team,
-              company: histori.company,
-              handlerCompany: histori.handlerCompany,
-              current: true
+              car: history.car,
+              team: history.team,
+              company: history.company
           }
         })
     
         await History.updateMany(
-          {$or: updateHistories},
+          { $and: updateHistories },
           { $set: {current: false}}
         );
 

@@ -4,7 +4,6 @@ export enum StatusHistory {
   inTransit = 'inTransit',
   unknown = 'unknown',
   sale = 'sale',
-  found = 'found',
   readyToClient = 'readyToClient',
 }
 
@@ -14,7 +13,6 @@ export const statusHistory= [
   StatusHistory.inTransit,
   StatusHistory.unknown,
   StatusHistory.sale,
-  StatusHistory.found,
   StatusHistory.readyToClient,
 ];
 

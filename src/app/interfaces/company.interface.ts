@@ -29,7 +29,7 @@ export interface IBaseCompany {
   billing: IBillingCompany;
   clientCompanies?: string[] | null;
   handlerCompanies?: string[] | null;
-  handler?: string | null;
+  handler?: boolean | null;
   notifications: IBillingNotifications[];
 }
 
