@@ -290,9 +290,25 @@ class CarController {
             status: 404
           });
         } else {
-          let carQuery: any = {
+          let carQuery: any = {};
+
+          if (!req.user.company.handler) {
+            carQuery = {
             $and: [{ team }]
           };
+          } else {
+            carQuery = {
+              $and: [
+                {
+                  $or: [
+                    { company: req.user.company },
+                    { handlerCompany: req.user.company }
+                  ]
+                }
+              ]
+            };
+          }
+
           if (vin) {
             carQuery = {
               $and: [...carQuery['$and'], { vin }]
