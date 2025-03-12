@@ -63,7 +63,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     loadingSettings: false,
     carsByContainer: {},
     loading: true,
-    name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
+    name: `Anuncio del ${moment().format('DD-MM-YYYY')}`,
     sending: false,
     file: null,
     backupFile: null,
@@ -263,9 +263,9 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     }
   }
 
-  private validateRow(data: any){
-    for (let header of this.mandatoryHeaders){
-      if (!data[header]){
+  private validateRow(data: any) {
+    for (let header of this.mandatoryHeaders) {
+      if (!data[header]) {
         console.log("Error", header, data)
         return false
       }
@@ -273,7 +273,12 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     return true
   }
 
-
+  private normalizeIdentifier(identifier: string): string {
+    return identifier
+        .toUpperCase()
+        .replace(/[^a-zA-Z0-9-]/g, '') //letras, números y guiones
+        .trim();
+  }
 
   private processDataRow(data: any): any|null {
     if (this.validateRow(data)){
@@ -281,7 +286,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       this.excelHeaders.forEach((header: string) => {
         let value = data[header]
         if (value){
-          extra[header] = value
+          extra[header] = (header !== "RUT Cliente")? value : this.normalizeIdentifier(value);
         }
       })
       let container: any = {extra}
