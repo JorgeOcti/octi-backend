@@ -111,7 +111,7 @@ class CarController {
       });
 
       if (newCar) {
-        newCar.vin2 = car.vin2;
+        newCar.vin2 = car.vin2 || car.vin.trim().slice(-6);
         newCar.color = car.color ? car.color : newCar.color;
         newCar.denomination = car.denomination
           ? car.denomination
