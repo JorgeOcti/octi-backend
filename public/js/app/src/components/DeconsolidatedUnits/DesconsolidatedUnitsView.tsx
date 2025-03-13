@@ -200,7 +200,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   }
 
-
+    cleanFilters = () => {
+    this.setState({
+      blFilter: '',
+      containerFilter: '',
+      statusFilter: '',
+      unitFilter: '',
+    });
+  }
 
   componentDidMount() {
     super.componentDidMount();
@@ -227,6 +234,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             originalUnits: data.data.history,
             loading: false
           })
+        this.cleanFilters()
     })
   }
 
@@ -247,7 +255,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
-      let unitFilter = this.state.unitFilter === '' ? true : unit.inventoryCar.car.vin.toLowerCase() === this.state.unitFilter.toLowerCase();
+      let unitFilter = this.state.unitFilter === '' ? true : unit.inventoryCar.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
       return bl && containerFilter && statusFilter && unitFilter;
     });
 
