@@ -13,7 +13,6 @@ import TeamSetting from '../models/teamSetting.model';
 import Version from '../models/version.model';
 import emailQueue from '../tasks/email.task';
 import logger from '../../services/logger.service';
-import path = require('path');
 
 class JWTController {
   constructor() {

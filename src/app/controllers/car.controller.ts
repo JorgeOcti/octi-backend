@@ -290,9 +290,20 @@ class CarController {
             status: 404
           });
         } else {
-          let carQuery: any = {
+          let carQuery: any = req.user.company.handler ? 
+          {
             $and: [{ team }]
+          } : {
+            $and: [
+              {
+                $or: [
+                  { company: req.user.company },
+                  { handlerCompany: req.user.company }
+                ]
+              }
+            ]
           };
+
           if (vin) {
             carQuery = {
               $and: [...carQuery['$and'], { vin }]
@@ -1933,12 +1944,11 @@ class CarController {
     const { id } = req.params;
 
     let carFilter = req.user.company.handler ?
-      {_id: id, $or: [{company: req.user.company._id}, {handlerCompany: req.user.company._id}]} :
-      {
-        _id: id,
-        team
-      }
-
+    {_id: id, $or: [{company: req.user.company._id}, {handlerCompany: req.user.company._id}]} :
+    {
+      _id: id,
+      team
+    }
 
     try {
       const venuesPermissions = req.user.venuesPermissions();
@@ -1967,18 +1977,25 @@ class CarController {
         {
           $or: [
             // { team: {$in: handlerCompanies.map(c => c.team)}},
-            {$and: [
             {
-              team,
-              venues: {
-                $in: venuesPermissions
-              },
-              createdAt: {
-                $gte: car!.createdAt
-              }
-              // status: ChoicesStatusInventory.finalized
+              $and: [
+                {
+                  $and: [
+                    {
+                      team,
+                      venues: {
+                        $in: venuesPermissions
+                      },
+                      createdAt: {
+                        $gte: car!.createdAt
+                      }
+                      // status: ChoicesStatusInventory.finalized
+                    }
+                  ]
+                }
+              ]
             }
-          ]}]
+          ]
         },
         {
           _id: true

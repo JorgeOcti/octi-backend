@@ -74,6 +74,12 @@ services:
        - ./dist:/srv/public/js/app/dist
      environment:
       NODE_ENV: development
+  sass:
+    image: node:18.17.1-bullseye-slim
+    working_dir: /app
+    volumes:
+      - ./public/css:/app
+    command: "npm run start"
 
   #  billing:
   #    build:
