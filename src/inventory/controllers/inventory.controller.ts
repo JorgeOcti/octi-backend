@@ -1183,7 +1183,11 @@ class InventoryController {
 
       if (inventory) {
 
-        const car = await Car.findOne({ vin, team }); 
+        let carFilter = req.user.company.handler ?
+          { vin, $or: [{company: req.user.company._id }, {companyHandler: req.user.company._id }] } :
+          { vin, team };
+
+        const car = await Car.findOne(carFilter);
 
         if (car) {
 
@@ -1364,7 +1368,7 @@ class InventoryController {
     );
 
     const history = await new History({
-      status: status, 
+      status: status,
       module: ModuleHistory.inventory,
       car: car,
       team: car.team,
@@ -1386,7 +1390,7 @@ class InventoryController {
   }*/
 
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
-   
+
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
       pending: 'Pendiente',
@@ -1402,7 +1406,7 @@ class InventoryController {
     let message = `Ahora el contenedor está ${ messageStatus }.`;
 
     if(notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND"){
-      
+
       title = `Vehículo encontrado`;
       message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
 
@@ -2035,6 +2039,30 @@ class InventoryController {
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
+      let carFilter = {
+          $or: [
+            {
+              'cars.venue': {
+                $in: venuesPermissions
+              }
+            },
+            {
+              'cars.venueFound': {
+                $in: venuesPermissions
+              }
+            }
+          ],
+          'cars.status': {
+            $in: [
+              ChoicesStatusCarInventory.pending,
+              ChoicesStatusCarInventory.found,
+              ChoicesStatusCarInventory.missing,
+              ChoicesStatusCarInventory.leftover,
+              ChoicesStatusCarInventory.reported
+            ]
+          }
+        }
+
       const [
         inventory,
         detailByVenues,
@@ -2067,29 +2095,7 @@ class InventoryController {
               $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $group: {
@@ -2190,29 +2196,7 @@ class InventoryController {
               $unwind: '$cars'
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $group: {
@@ -2284,29 +2268,7 @@ class InventoryController {
               $unwind: '$cars'
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $lookup: {
@@ -2380,29 +2342,7 @@ class InventoryController {
           .populate([
             {
               path: 'cars',
-              match: {
-                $or: [
-                  {
-                    venue: {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    venueFound: {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                status: {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              },
+              match: carFilter,
               populate: [
                 {
                   path: 'car',
@@ -3098,7 +3038,7 @@ class InventoryController {
     try {
       logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
 
-      const { company } = req.user; // user request company 
+      const { company } = req.user; // user request company
       let { companyId } = req.params; //filter param company
 
       let filterCompanies: any = null;
@@ -3418,7 +3358,7 @@ class InventoryController {
       }
 
       if(car.isContainer) {
-        
+
         const { user } = req;
         const venueId = user.venue._id;
         const { team } = req.user;

@@ -40,7 +40,8 @@ const historySchema = new mongoose.Schema({
   handlerCompany: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: false,
+    default: null
   },
   car: {
     type: mongoose.Schema.Types.ObjectId,
