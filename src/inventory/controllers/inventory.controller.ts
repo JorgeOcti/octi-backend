@@ -3435,8 +3435,6 @@ class InventoryController {
       }
     });
 
-    logger.error(`updateHistories ${ JSON.stringify( updateHistories ) } `)
-
     await History.updateMany(
       {  updateHistories },
       { $set: {current: false}}
