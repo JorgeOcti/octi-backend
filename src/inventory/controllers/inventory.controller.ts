@@ -3404,11 +3404,7 @@ class InventoryController {
       inventory: new mongoose.Types.ObjectId(inventoryId),
       status: ChoicesStatusCarInventory.found
     }).populate([{
-      path: 'car', populate: [
-        { path: 'team' },
-        { path: 'company' },
-        { path: 'handlerCompany' },
-      ]
+      path: 'car'
     }]);
 
     const histories: any[] = [];
@@ -3431,17 +3427,17 @@ class InventoryController {
       }
     });
 
-    const updateHistories = histories.map(history=>{
+    const updateHistories = histories.map(history => {
       return {
-          car: history.car,
-          team: history.team,
-          company: history.company
+        car: history.car._id,
+        team: history.team,
+        company: history.company
       }
-    })
+    });
 
     await History.updateMany(
-      { $and: updateHistories },
-      { $set: {current: false}}
+      { updateHistories },
+      { $set: { current: false } }
     );
 
     await History.insertMany(histories);
