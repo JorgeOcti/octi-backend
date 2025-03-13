@@ -286,7 +286,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       this.excelHeaders.forEach((header: string) => {
         let value = data[header]
         if (value){
-          extra[header] = (header !== "RUT Cliente")? value : this.normalizeIdentifier(value);
+          extra[header] = (header !== "RUT Cliente") ? (header === "BIC") ? value.trim().replace("-", "") : value : this.normalizeIdentifier(value);
         }
       })
       let container: any = {extra}

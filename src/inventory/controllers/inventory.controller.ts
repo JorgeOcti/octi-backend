@@ -1781,6 +1781,7 @@ class InventoryController {
         const car = await CarModel.findOneOrCreate(findCOnditions, {
           vin,
           vin2: vin.substr(vin.length - 6),
+          isContainer: false,
           patent,
           brand,
           denomination,
@@ -3373,7 +3374,7 @@ class InventoryController {
         ]);
 
         if(status === ChoicesStatusContainer.empty && inventoryCar.inventory){
-          await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
+          await this.addHistoryToCarOfEmptyContainer(inventoryCar);
         }
 
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
@@ -3398,17 +3399,18 @@ class InventoryController {
     }
   }
 
-  private async addHistoryToCarOfEmptyContainer(inventoryId: string): Promise<void> {
+  private async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
 
     const inventoryCarList = await InventoryCar.find({
-      inventory: new mongoose.Types.ObjectId(inventoryId),
+      containerFound: container,
       status: ChoicesStatusCarInventory.found
-    }).populate([{
-      path: 'car'
-    }]);
+    }).populate([{path: 'car'}]);
+
+    let carsId : any[] = [];
 
     const histories: any[] = [];
     inventoryCarList.forEach(inventoryCar => {
+      carsId.push(inventoryCar.car._id);
       if (!inventoryCar.car.isContainer) {
         histories.push({
           status: StatusHistory.readyToClient,
@@ -3427,17 +3429,9 @@ class InventoryController {
       }
     });
 
-    const updateHistories = histories.map(history => {
-      return {
-        car: history.car._id,
-        team: history.team,
-        company: history.company
-      }
-    });
-
     await History.updateMany(
-      { updateHistories },
-      { $set: { current: false } }
+      { _id: {$in: carsId} },
+      { $set: {current: false}}
     );
 
     await History.insertMany(histories);
