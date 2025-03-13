@@ -672,7 +672,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     return (
-      <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
+      <AppContainer title="Revisión Containers" cMenu="6" cSubMenu="6.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
@@ -843,7 +843,7 @@ export default connect<{}, {}, IPropsType>(
 const inventorySettings: { [key: string]: any } = {
   "leftoverDifferentVenue": true,
   "_id": "5e68fb3e0f7cfc00245e4954",
-  "pending": "Pendientes",
+  "pending": "Pendiente",
   "pendingClass": "aqua",
   "pendingClassContainer": "pending",
   "pendingColor": "#2DBDFD",

@@ -494,6 +494,13 @@ export default class ApiService {
     });
   }
 
+  public getUnitsByCompany(companyId: string): AxiosPromise {
+    let url = `/api/company/stock/${companyId}`
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getInventory(id: string): AxiosPromise {
     return this.instance.get(`/api/inventory/${id}/`, {
       cancelToken: this.source.token

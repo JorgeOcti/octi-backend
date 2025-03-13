@@ -158,14 +158,7 @@ if (hasPermission(window.user, 'viewLabel')) {
   });
 }
 
-if (hasPermission(window.user, 'viewInventory')) {
-  inventoryItems.push({
-    id: '2.6',
-    icon: 'fa-circle-o',
-    text: 'Revisión Containers',
-    url: '/inventory/containers/'
-  });
-}
+
 
 if (inventoryItems.length) {
   menus.push({
@@ -326,6 +319,40 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
     icon: 'fa-calendar-check-o',
     url: '/planning/',
     items: planningItems
+  });
+}
+
+/* *****************
+ * 6 Control de carga
+ *****************/
+const AdminLoadControl: any[] = [];
+
+
+if (hasPermission(window.user, 'viewInventory')) {
+  AdminLoadControl.push({
+    id: '6.1',
+    icon: 'fa-circle-o',
+    text: 'Revisión Contenedores',
+    url: '/inventory/containers/'
+  });
+}
+
+if (hasPermission(window.user, 'viewClient') ) {
+  AdminLoadControl.push({
+    id: '6.2',
+    icon: 'fa-circle-o',
+    text: 'Vista Cliente',
+    url: '/desconsolidated/unit/'
+  });
+}
+
+if (AdminLoadControl.length) {
+  menus.push({
+    id: '6',
+    text: 'Control de carga',
+    icon: `fa-container-red`,
+    url: AdminLoadControl[0].url,
+    items: AdminLoadControl
   });
 }
 
@@ -493,5 +520,6 @@ if (hasPermission(window.user, 'viewVersion') && window.user.isAdmin) {
     url: '/settings/versions/'
   });
 }
+
 
 export default menus;

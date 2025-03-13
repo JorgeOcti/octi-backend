@@ -73,7 +73,7 @@ import OSAView from "./components/OSA/OSAView";
 import {LBZView} from "./components/LBZ/LBZ";
 import ContainersInventory from "./components/Inventory/ContainersInventory";
 import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView";
-
+import DesconsolidatedUnitsView from './components/DeconsolidatedUnits/DesconsolidatedUnitsView';
 
 declare let window: IWindow;
 
@@ -105,6 +105,7 @@ const App = () => (
         <Route exact path='/stock/import/' component={StockImportView} />
         <Route exact path='/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/deliveries/cars/:id/' component={DashboardVinDetail} />
+        <Route exact path='/desconsolidated/unit/' component={DesconsolidatedUnitsView} />
         <Route exact path='/inventory/' component={InventoryListView} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
         <Route exact path='/inventory/container/create/' component={ContainerInventoryCreateView} />
