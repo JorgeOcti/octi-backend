@@ -34,7 +34,7 @@ import {
   default as InventoryFile,
   default as InventoryFileModel
 } from '../models/inventoryFile.model';
-import { HydratedDocument, PaginateOptions, PipelineStage } from 'mongoose';
+import { HydratedDocument, PaginateOptions, PipelineStage, Types } from 'mongoose';
 
 import { Alignment } from 'exceljs';
 import GeneralUtils from '../../utils/general.utils';
@@ -3043,7 +3043,7 @@ class InventoryController {
       let { companyId } = req.params; //filter param company
 
       let filterCompanies: any = null;
-      let historyCarsResult: never[] = [];
+      let historyCarsResult: any[] = [];
 
       let userCompany = await Company.findById(company._id);
 
@@ -3051,8 +3051,8 @@ class InventoryController {
 
         filterCompanies = {
           $and: [{
-            company: companyId,
-            handlerCompany: company._id,
+            company: new Types.ObjectId(companyId),
+            handlerCompany: new Types.ObjectId(company._id),
             status: {
               $in: [
                 StatusHistory.inTransit,
@@ -3066,6 +3066,7 @@ class InventoryController {
         //for clients
         filterCompanies = {
           company: company._id,
+          handlerCompany: {$exists: true},
           status: {
             $in: [
               StatusHistory.inTransit,
@@ -3076,22 +3077,61 @@ class InventoryController {
       }
 
       if(filterCompanies){
-        historyCarsResult = await History.find(filterCompanies)
-        .allowDiskUse(true)
-        .populate([
+        historyCarsResult = await History.aggregate([
+          {$match: filterCompanies},
+          // get the inventory cars with the inventory id and the car id
           {
-            path: 'inventoryCar',
-            populate: [
-              {
-                path: 'car'
+            $lookup: {
+              from: 'inventorycars',
+              let: { car: '$car', inventory: '$inventory' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$car'] },
+                        { $eq: ['$inventory', '$$inventory'] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'inventoryCar'
+            }
+          },
+          {
+            $group: {
+              _id: "$car",
+              histories: {
+                $push: {
+                  status: '$status',
+                  from: '$from',
+                  to: '$to',
+                  participant: '$participant',
+                  createdAt: '$createdAt',
+                  inventoryCar: '$inventoryCar',
+                  current: "$current"
+                }
               }
-            ]
+            }
           }
-        ]).lean();
+        ])
+
+        let cars = await CarModel.find({
+          _id: {$in: historyCarsResult.map((h: any) => h._id)}
+        }).lean();
+
+        historyCarsResult = historyCarsResult.map(hc =>{
+          let car = cars.find((c: any) => c._id.toString() === hc._id.toString());
+          return {
+            car,
+            histories: hc.histories
+          }
+        })
       }
 
       return res.status(200).json({
-        history: historyCarsResult
+        cars: historyCarsResult
       });
 
     } catch (e) {
