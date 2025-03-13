@@ -349,6 +349,7 @@ Este Makefile facilita el desarrollo al automatizar tareas comunes relacionadas 
 * **`make startRedis`:** Inicia el servicio Redis en modo desacoplado, asegurándose de que esté detenido previamente.
 * **`make startBackend`:** Inicia el servicio backend en modo desacoplado, asegurándose de que esté detenido previamente.
 * **`make startFrontend`:** Inicia el servicio frontend en modo desacoplado, asegurándose de que esté detenido previamente.
+* **`make startSass`:** Inicia el servicio sass en modo desacoplado, asegurándose de que esté detenido previamente.
 * **`make start`:** Inicia todos los servicios en modo desacoplado, asegurándose de que estén detenidos previamente.
 * **`make stop`:** Detiene todos los servicios en ejecución.
 

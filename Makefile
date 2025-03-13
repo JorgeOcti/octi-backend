@@ -51,6 +51,9 @@ stopRedis:
 stopFrontend:
 	docker compose down frontend
 
+stopSass:
+	docker compose down sass
+
 stop:
 	docker compose down
 
@@ -67,6 +70,9 @@ startRedis: stopRedis
 
 startFrontend: stopFrontend
 	docker compose up frontend -d
+
+startSass: stopSass
+	docker compose up sass -d
 
 start: stop
 	docker compose up -d
