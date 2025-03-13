@@ -44,7 +44,7 @@ import { IRequest } from '../../interfaces/global.interface';
 import { IStockCar } from '../interfaces/stock.interface';
 import InventoryLabel from '../models/inventoryLabel.model';
 import { Response } from 'express';
-import { StatusHistory } from '../../app/models/history.types';
+import { ModuleHistory, StatusHistory } from '../../app/models/history.types';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 import TeamSetting from '../../app/models/teamSetting.model';
@@ -60,6 +60,7 @@ import {
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
+import Company from '../../app/models/company.model';
 
 class InventoryController {
   constructor() {
@@ -1182,7 +1183,11 @@ class InventoryController {
 
       if (inventory) {
 
-        const car = await Car.findOne({ vin, team }); 
+        let carFilter = req.user.company.handler ?
+          { vin, $or: [{company: req.user.company._id }, {companyHandler: req.user.company._id }] } :
+          { vin, team };
+
+        const car = await Car.findOne(carFilter);
 
         if (car) {
 
@@ -1348,8 +1353,44 @@ class InventoryController {
     }
   }
 
+  /*private async addCarToHistory(inventoryCar: IInventoryCar, inventory:IInventory, status: StatusHistory) {
+
+    const {car} = inventoryCar;
+    logger.info(`inventory.addCarToHistory ${ JSON.stringify(car)}`);
+
+    await History.updateMany(
+      {
+        car: car,
+        team: car.team,
+        company: car.company
+      },
+      { $set: { current: false } }
+    );
+
+    const history = await new History({
+      status: status,
+      module: ModuleHistory.inventory,
+      car: car,
+      team: car.team,
+      company: car.company,
+      handlerCompany: car.handlerCompany,
+      venue: inventoryCar.venue,
+      inventoryCar: inventoryCar,
+      inventory: inventory,
+      createdBy: car.createdBy,
+      executedAt: car.createdAt,
+      current: true
+    }).save();
+
+    await Car.updateOne(  // es necesario actualizar el car con el id del history?
+      {_id: car},
+      {$set: {event: history._id}}
+    );
+
+  }*/
+
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
-   
+
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
       pending: 'Pendiente',
@@ -1365,7 +1406,7 @@ class InventoryController {
     let message = `Ahora el contenedor está ${ messageStatus }.`;
 
     if(notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND"){
-      
+
       title = `Vehículo encontrado`;
       message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
 
@@ -1998,6 +2039,30 @@ class InventoryController {
       const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
+      let carFilter = {
+          $or: [
+            {
+              'cars.venue': {
+                $in: venuesPermissions
+              }
+            },
+            {
+              'cars.venueFound': {
+                $in: venuesPermissions
+              }
+            }
+          ],
+          'cars.status': {
+            $in: [
+              ChoicesStatusCarInventory.pending,
+              ChoicesStatusCarInventory.found,
+              ChoicesStatusCarInventory.missing,
+              ChoicesStatusCarInventory.leftover,
+              ChoicesStatusCarInventory.reported
+            ]
+          }
+        }
+
       const [
         inventory,
         detailByVenues,
@@ -2030,29 +2095,7 @@ class InventoryController {
               $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $group: {
@@ -2153,29 +2196,7 @@ class InventoryController {
               $unwind: '$cars'
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $group: {
@@ -2247,29 +2268,7 @@ class InventoryController {
               $unwind: '$cars'
             },
             {
-              $match: {
-                $or: [
-                  {
-                    'cars.venue': {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    'cars.venueFound': {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                'cars.status': {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              }
+              $match: carFilter
             },
             {
               $lookup: {
@@ -2343,29 +2342,7 @@ class InventoryController {
           .populate([
             {
               path: 'cars',
-              match: {
-                $or: [
-                  {
-                    venue: {
-                      $in: venuesPermissions
-                    }
-                  },
-                  {
-                    venueFound: {
-                      $in: venuesPermissions
-                    }
-                  }
-                ],
-                status: {
-                  $in: [
-                    ChoicesStatusCarInventory.pending,
-                    ChoicesStatusCarInventory.found,
-                    ChoicesStatusCarInventory.missing,
-                    ChoicesStatusCarInventory.leftover,
-                    ChoicesStatusCarInventory.reported
-                  ]
-                }
-              },
+              match: carFilter,
               populate: [
                 {
                   path: 'car',
@@ -3056,6 +3033,78 @@ class InventoryController {
     }
   }
 
+
+  public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
+    try {
+      logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
+
+      const { company } = req.user; // user request company
+      let { companyId } = req.params; //filter param company
+
+      let filterCompanies: any = null;
+      let historyCarsResult: never[] = [];
+
+      let userCompany = await Company.findById(company._id);
+
+      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+
+        filterCompanies = {
+          $and: [{
+            company: companyId,
+            handlerCompany: company._id,
+            status: {
+              $in: [
+                StatusHistory.inTransit,
+                StatusHistory.readyToClient
+              ]
+            },
+          }]
+        }
+
+      } else {
+        //for clients
+        filterCompanies = {
+          company: company._id,
+          status: {
+            $in: [
+              StatusHistory.inTransit,
+              StatusHistory.readyToClient
+            ]
+          }
+        }
+      }
+
+      if(filterCompanies){
+        historyCarsResult = await History.find(filterCompanies)
+        .allowDiskUse(true)
+        .populate([
+          {
+            path: 'inventoryCar',
+            populate: [
+              {
+                path: 'car'
+              }
+            ]
+          }
+        ]).lean();
+      }
+
+      return res.status(200).json({
+        history: historyCarsResult
+      });
+
+    } catch (e) {
+      logger.error(`InventoryController.currentCompanyStock: Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
+
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {
       const { company } = req.user;
@@ -3309,7 +3358,7 @@ class InventoryController {
       }
 
       if(car.isContainer) {
-        
+
         const { user } = req;
         const venueId = user.venue._id;
         const { team } = req.user;
@@ -3322,6 +3371,10 @@ class InventoryController {
           { path: 'evidenceStatus.images' },
           { path: 'images' }
         ]);
+
+        if(status === ChoicesStatusContainer.empty && inventoryCar.inventory){
+          await this.addHistoryToCarOfEmptyContainer(inventoryCar.inventory.toString());
+        }
 
         await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
       }
@@ -3343,6 +3396,55 @@ class InventoryController {
         status: 500
       });
     }
+  }
+
+  private async addHistoryToCarOfEmptyContainer(inventoryId: string): Promise<void> {
+
+    const inventoryCarList = await InventoryCar.find({
+      inventory: new mongoose.Types.ObjectId(inventoryId),
+      status: ChoicesStatusCarInventory.found
+    }).populate([{
+      path: 'car', populate: [
+        { path: 'team' },
+        { path: 'company' },
+        { path: 'handlerCompany' },
+      ]
+    }]);
+
+    const histories: any[] = [];
+    inventoryCarList.forEach(inventoryCar => {
+      if (!inventoryCar.car.isContainer) {
+        histories.push({
+          status: StatusHistory.readyToClient,
+          module: ModuleHistory.inventory,
+          car: inventoryCar.car,
+          team: inventoryCar.car.team,
+          company: inventoryCar.car.company,
+          handlerCompany: inventoryCar.car.handlerCompany,
+          venue: inventoryCar.venue,
+          inventoryCar,
+          inventory: inventoryCar.inventory,
+          createdBy: inventoryCar.car.createdBy,
+          executedAt: inventoryCar.car.createdAt,
+          current: true
+        });
+      }
+    });
+
+    const updateHistories = histories.map(history=>{
+      return {
+          car: history.car,
+          team: history.team,
+          company: history.company
+      }
+    })
+
+    await History.updateMany(
+      { $and: updateHistories },
+      { $set: {current: false}}
+    );
+
+    await History.insertMany(histories);
   }
 
   private autoRotate(path: string): Promise<any> {

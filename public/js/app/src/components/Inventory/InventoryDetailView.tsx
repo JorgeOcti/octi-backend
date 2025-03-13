@@ -1822,7 +1822,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     // Order data
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
-        if (status.includes(car.status) && car.car?.vin) {
+        if (status.includes(car.status) && car.car?.vin || car.car?.patent) {
           data.push({
             VIN: car.car.vin,
             Patente:

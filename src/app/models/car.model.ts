@@ -57,6 +57,10 @@ export const baseCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
   },
+  handlerCompany: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   internalNumber: {
     type: String,
     default: '',

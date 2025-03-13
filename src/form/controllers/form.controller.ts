@@ -823,10 +823,13 @@ class FormController {
       let car: any = null;
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
-        car = await Car.findOne({
-          $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-          team
-        });
+        let carFilter = req.user.company.handler ?
+          {$and: [{$or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }]}, {$or: [{company: company}, {hanlderCompany: company}]}]} :
+          {
+            $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
+            team
+          }
+        car = await Car.findOne(carFilter);
       } else if (carId) {
         car = await Car.findOne({ _id: carId });
       }
@@ -1177,7 +1180,9 @@ class FormController {
             }
             // save the participant
             await newParticipant.save();
-            await carTracker.fromParticipant({ id: newParticipant._id });
+            req.user.company.handler ?
+              await carTracker.fromParticipant({ id: newParticipant._id, handlerCompany: req.user.company }) :
+              await carTracker.fromParticipant({ id: newParticipant._id })
             // associate transmittalItem to participant
             if (transmittalItem?.length) {
               newParticipant.transmittalItem = transmittalItem;
