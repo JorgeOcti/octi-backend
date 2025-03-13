@@ -160,7 +160,14 @@ class Middlewares {
               select: ['name']
             }, {
               path: 'company',
-              select: ['name', 'iFrameURL', 'iFrameURLInventory']
+              select: ['name', 'iFrameURL', 'iFrameURLInventory', 'handler'],
+              populate: [{
+                path: 'clientCompanies',
+                select: ['name']
+              }, {
+                path: 'handlerCompanies',
+                select: ['name']
+              }],
             }, {
               path: 'team',
               select: ['name']

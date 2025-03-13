@@ -111,7 +111,7 @@ class CarController {
       });
 
       if (newCar) {
-        newCar.vin2 = car.vin2;
+        newCar.vin2 = car.vin2 || car.vin.trim().slice(-6);
         newCar.color = car.color ? car.color : newCar.color;
         newCar.denomination = car.denomination
           ? car.denomination
@@ -1931,15 +1931,21 @@ class CarController {
   public async apiCarDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
+
+    let carFilter = req.user.company.handler ?
+      {_id: id, $or: [{company: req.user.company._id}, {handlerCompany: req.user.company._id}]} :
+      {
+        _id: id,
+        team
+      }
+
+
     try {
       const venuesPermissions = req.user.venuesPermissions();
       let car = await CarModel.findOne(
         {
           $and: [
-            {
-              _id: id,
-              team
-            }
+            carFilter
           ]
         },
         {
@@ -1954,9 +1960,14 @@ class CarController {
         }
       ).allowDiskUse(true);
 
+      // let handlerCompaniesIds = req.user.company.handlerCompanies.map((company: any) => company._id);
+      // let handlerCompanies = await Company.find({_id: {$in: handlerCompaniesIds}})
+
       const inventoriesIDS = await InventoryModel.find(
         {
-          $and: [
+          $or: [
+            // { team: {$in: handlerCompanies.map(c => c.team)}},
+            {$and: [
             {
               team,
               venues: {
@@ -1967,7 +1978,7 @@ class CarController {
               }
               // status: ChoicesStatusInventory.finalized
             }
-          ]
+          ]}]
         },
         {
           _id: true

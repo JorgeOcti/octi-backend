@@ -229,16 +229,18 @@ class AdminCarController {
         }, query: ${JSON.stringify(req.query)}`
       );
 
-      let filter: any = {
-        $and: [
-          {
-            vin: {
-              $nin: ['', null]
-            },
-            team
-          }
-        ]
-      }
+      let filter: any = req.user.company.handler ?
+        { $or: [{company: req.user.company._id }, {handlerCompany: req.user.company._id}] } :
+        {
+          $and: [
+            {
+              vin: {
+                $nin: ['', null]
+              },
+              team
+            }
+          ]
+        }
 
 
 
