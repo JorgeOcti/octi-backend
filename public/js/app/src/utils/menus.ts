@@ -158,14 +158,7 @@ if (hasPermission(window.user, 'viewLabel')) {
   });
 }
 
-if (hasPermission(window.user, 'viewInventory')) {
-  inventoryItems.push({
-    id: '2.6',
-    icon: 'fa-circle-o',
-    text: 'Revisión Containers',
-    url: '/inventory/containers/'
-  });
-}
+
 
 if (inventoryItems.length) {
   menus.push({
@@ -334,7 +327,8 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
  *****************/
 const AdminLoadControl: any[] = [];
 
-if (hasPermission(window.user, 'viewContainerReview') ) {
+
+if (hasPermission(window.user, 'viewInventory')) {
   AdminLoadControl.push({
     id: '6.1',
     icon: 'fa-circle-o',
@@ -342,7 +336,6 @@ if (hasPermission(window.user, 'viewContainerReview') ) {
     url: '/inventory/containers/'
   });
 }
-
 
 if (hasPermission(window.user, 'viewClient') ) {
   AdminLoadControl.push({

@@ -672,7 +672,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     return (
-      <AppContainer title="Revisión Containers" cMenu="2" cSubMenu="2.6">
+      <AppContainer title="Revisión Containers" cMenu="6" cSubMenu="6.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">

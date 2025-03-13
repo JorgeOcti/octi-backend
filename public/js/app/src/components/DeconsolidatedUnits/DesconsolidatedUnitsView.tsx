@@ -31,6 +31,7 @@ interface IStateType {
   statusFilter: string;
   selectedContainer: number;
   loading: boolean;
+  isUserHandler:boolean;
   isFilteringByDate: boolean;
 }
 
@@ -181,7 +182,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.state = {
-      loading: false,
+      loading: true,
       error: null,
       originalUnits: [],
       units: [],
@@ -191,6 +192,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
+      isUserHandler:false,
       statusFilter: '',
       selectedContainer: -1,
       isFilteringByDate: false
@@ -202,284 +204,51 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
+    console.log("user", window.user)
+    const {company} = window.user
+    if(company?.handler){
+        // En caso de ser usuario handler filtro por el primer cliente del listado
+        this.setState({isUserHandler: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies}) 
+        this.getUnitsByCompanyId(company.clientCompanies[0]._id)
+    } else {
+        const companyList = [{_id:company._id, name: company.name}]
+        this.setState({isUserHandler: false, clientFilter:company?.clientCompanies._id, clientSelector: companyList}) 
+        this.getUnitsByCompanyId(company._id)
+    }
+  }
+
+  getUnitsByCompanyId(companyId:string){
+    this.setState({loading: true})
     const api: ApiService = new ApiService();
     api.getSource()
-    console.log("Llegaste nene", window.user )
-    const dumy2 = {
-        "history": [
-          {
-            "_id": "67cb32e58a86fc3916dd2d3c",
-            "team": "679943369a2aca8814cb604b",
-            "company": "679943607d645cc1955932ac",
-            "clientCompany": "67cb2ee6ccea1f31031606f2",
-            "car": "67cb2ee6ccea1f31031606f7",
-            "status": "readyToClient",
-            "module": "inventory",
-            "inventory": "67cb2ee5ccea1f31031606bb",
-            "inventoryCar": {
-              "_id": "67cb2ee6ccea1f3103160731",
-              "inventory": "67cb2ee5ccea1f31031606bb",
-              "car": {
-                "_id": "67cb2ee6ccea1f31031606f7",
-                "vin": "LVUDB21B7SF014902",
-                "vin2": "014902",
-                "entry": "",
-                "team": "679943369a2aca8814cb604b",
-                "company": "679943607d645cc1955932ac",
-                "clientCompany": "67cb2ee6ccea1f31031606f2",
-                "internalNumber": "",
-                "patent": "",
-                "engineNumber": "",
-                "engineSize": "",
-                "driveType": "",
-                "brand": "JETOUR",
-                "denomination": "X70 1.5T+8AT  Ⅲ",
-                "color": "SIN INFO",
-                "firstColorOption": "",
-                "secondColorOption": "",
-                "thirdColorOption": "",
-                "isContainer": false,
-                "meta": {
-                  "_id": "67cb2ee6ccea1f31031606f6"
-                },
-                "invoice": "",
-                "client": "",
-                "bl": "",
-                "shippingDate": null,
-                "isExhibition": false,
-                "imported": true,
-                "lastForm": null,
-                "status": "active",
-                "event": "67cb32e58a86fc3916dd2d3c",
-                "createdBy": "679943c34c128e65ba1ddeb8",
-                "createdAt": "2025-03-07T17:37:42.657Z",
-                "updatedAt": "2025-03-07T17:54:45.579Z",
-                "__v": 0
-              },
-              "venue": "6799438bc325e3e448d1392f",
-              "images": [],
-              "files": [],
-              "comments": [],
-              "labelText": "",
-              "customizedStatusText": "",
-              "status": "found",
-              "containerStatus": "pending",
-              "container": "67cb2ee6ccea1f31031606da",
-              "extra": {
-                "BIC": "CAAU6245078",
-                "VIN": "LVUDB21B7SF014902",
-                "Marca": "JETOUR",
-                "Modelo": "X70 1.5T+8AT  Ⅲ",
-                "Color": "SIN INFO",
-                "Cliente Razón Social": "YAMAHA ANDES SPA",
-                "RUT Cliente": "46005909-9",
-                "Manifiesto": "SIN INFO",
-                "N° BL": "MEDUYP426230",
-                "Emplazamiento": "A92",
-                "Ubicación": "San Antonio",
-                "Nave": "MSC CASSANDRE",
-                "N° Viaje": "QM452A ",
-                "Sello IN": "FX38055822",
-                "Puerto Origen": "China",
-                "Peso": 100
-              },
-              "virtualInventory": "67cb2ee6ccea1f31031606ca",
-              "evidenceStatus": [],
-              "__v": 0,
-              "createdAt": "2025-03-07T17:37:42.765Z",
-              "updatedAt": "2025-03-07T17:54:45.523Z",
-              "inventoriedBy": "679943c34c128e65ba1ddeb8",
-              "venueFound": "6799438bc325e3e448d1392f"
-            },
-            "changeLocation": false,
-            "current": true,
-            "createdBy": "679943c34c128e65ba1ddeb8",
-            "executedAt": "2025-03-07T17:37:42.657Z",
-            "alerts": [],
-            "createdAt": "2025-03-07T17:54:45.563Z",
-            "updatedAt": "2025-03-07T17:54:45.563Z",
-            "__v": 0
-          },
-          {
-            "_id": "67cb32f48a86fc3916dd2d50",
-            "team": "679943369a2aca8814cb604b",
-            "company": "679943607d645cc1955932ac",
-            "clientCompany": "67cb2ee6ccea1f31031606fb",
-            "car": "67cb2ee6ccea1f3103160700",
-            "status": "readyToClient",
-            "module": "inventory",
-            "inventory": "67cb2ee5ccea1f31031606bb",
-            "inventoryCar": {
-              "_id": "67cb2ee6ccea1f3103160732",
-              "inventory": "67cb2ee5ccea1f31031606bb",
-              "car": {
-                "_id": "67cb2ee6ccea1f3103160700",
-                "vin": "HJRPBGGB2SF014776",
-                "vin2": "014776",
-                "entry": "",
-                "team": "679943369a2aca8814cb604b",
-                "company": "679943607d645cc1955932ac",
-                "clientCompany": "67cb2ee6ccea1f31031606fb",
-                "internalNumber": "",
-                "patent": "",
-                "engineNumber": "",
-                "engineSize": "",
-                "driveType": "",
-                "brand": "JETOUR",
-                "denomination": "X70PLUS 1.6T 7DCT",
-                "color": "SIN INFO",
-                "firstColorOption": "",
-                "secondColorOption": "",
-                "thirdColorOption": "",
-                "isContainer": false,
-                "meta": {
-                  "_id": "67cb2ee6ccea1f31031606ff"
-                },
-                "invoice": "",
-                "client": "",
-                "bl": "",
-                "shippingDate": null,
-                "isExhibition": false,
-                "imported": true,
-                "lastForm": null,
-                "status": "active",
-                "event": "67cb32f48a86fc3916dd2d50",
-                "createdBy": "679943c34c128e65ba1ddeb8",
-                "createdAt": "2025-03-07T17:37:42.676Z",
-                "updatedAt": "2025-03-07T17:55:00.862Z",
-                "__v": 0
-              },
-              "venue": "6799438bc325e3e448d1392f",
-              "images": [],
-              "files": [],
-              "comments": [],
-              "labelText": "",
-              "customizedStatusText": "",
-              "status": "found",
-              "containerStatus": "pending",
-              "container": "67cb2ee6ccea1f31031606db",
-              "extra": {
-                "BIC": "CAAU7359521",
-                "VIN": "HJRPBGGB2SF014776",
-                "Marca": "JETOUR",
-                "Modelo": " X70PLUS 1.6T 7DCT",
-                "Color": "SIN INFO",
-                "Cliente Razón Social": "BLACK MAIND ANDES SPA",
-                "RUT Cliente": "56005909-9",
-                "Manifiesto": "SIN INFO",
-                "N° BL": "MEDUYP426276",
-                "Emplazamiento": "A92",
-                "Ubicación": "San Antonio",
-                "Nave": "MSC CASSANDRE",
-                "N° Viaje": "QM452A ",
-                "Sello IN": "FX38055644",
-                "Puerto Origen": "China",
-                "Peso": 100
-              },
-              "virtualInventory": "67cb2ee6ccea1f31031606d1",
-              "evidenceStatus": [],
-              "__v": 0,
-              "createdAt": "2025-03-07T17:37:42.765Z",
-              "updatedAt": "2025-03-07T17:55:00.810Z",
-              "inventoriedBy": "679943c34c128e65ba1ddeb8",
-              "venueFound": "6799438bc325e3e448d1392f"
-            },
-            "changeLocation": false,
-            "current": true,
-            "createdBy": "679943c34c128e65ba1ddeb8",
-            "executedAt": "2025-03-07T17:37:42.676Z",
-            "alerts": [],
-            "createdAt": "2025-03-07T17:55:00.850Z",
-            "updatedAt": "2025-03-07T17:55:00.850Z",
-            "__v": 0
-          }
-        ]
-      }
-    const dumy = [
-        {
-          "car": {
-            "marca": "Toyota",
-            "color": "Rojo",
-            "modelo": "Corolla"
-          },
-          "bl": "BL123456789",
-          "date": "2023-03-05T16:10:00Z",
-          "numeroContainer": 1234567,
-          "unitCode": "ABC1234"
-        },
-        {
-          "car": {
-            "marca": "Honda",
-            "color": "Azul",
-            "modelo": "Civic"
-          },
-          "bl": "BL987654321",
-          "date": "2023-03-05T16:10:00Z",
-          "numeroContainer": 9876543,
-          "unitCode": "DEF5678"
-        },
-        {
-          "car": {
-            "marca": "Ford",
-            "color": "Negro",
-            "modelo": "Focus"
-          },
-          "bl": "BL102938475",
-          "date": "2023-03-05T16:10:00Z",
-          "numeroContainer": 1029384,
-          "unitCode": "GHI9012"
-        },
-        {
-          "car": {
-            "marca": "Chevrolet",
-            "color": "Blanco",
-            "modelo": "Cruze"
-          },
-          "bl": "BL756453829",
-          "date": "2023-03-05T16:10:00Z",
-          "numeroContainer": 7564538,
-          "unitCode": "JKL3456"
-        },
-        {
-          "car": {
-            "marca": "Nissan",
-            "color": "Gris",
-            "modelo": "Sentra"
-          },
-          "bl": "BL918273645",
-          "date": "2023-03-05T16:10:00Z",
-          "numeroContainer": 9182736,
-          "unitCode": "MNO7890"
-        }
-      ]
-    this.setState({
-        units: dumy2.history,
-        originalUnits: dumy2.history,
-        loading: false
-      })
+    api.getUnitsByCompany(companyId).then((data:any) => {
+        this.setState({
+            units: data.data.history,
+            originalUnits: data.data.history,
+            loading: false
+          })
+    })
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
-      this.state.clientFilter !== prevState.clientFilter ||
       this.state.statusFilter !== prevState.statusFilter || 
       this.state.unitFilter !== prevState.unitFilter) {
       this.filterUnits();
+    }
+    if(this.state.clientFilter !== prevState.clientFilter){
+        this.getUnitsByCompanyId(this.state.clientFilter)
     }
   }
 
   filterUnits() {
     let units = this.state.originalUnits.filter((unit: any) => {
-        console.log(unit)
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      let clientFilter = this.state.clientFilter === '' ? true : (unit.inventoryCar.extra["Cliente Razón Social"] ? unit.inventoryCar.extra["Cliente Razón Social"].toLowerCase().includes(this.state.clientFilter.toLowerCase()) : false);
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.inventoryCar.car.vin.toLowerCase() === this.state.unitFilter.toLowerCase();
-     
-
-      return bl && containerFilter && clientFilter && statusFilter && unitFilter;
+      return bl && containerFilter && statusFilter && unitFilter;
     });
 
     this.setState({
@@ -488,7 +257,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   render() {
-    const {units, loading} = this.state;
+    const {units, loading, isUserHandler} = this.state;
 
     return (
       <AppContainer title="" cMenu="6" cSubMenu="6.2">
@@ -496,7 +265,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-              Unidades Desconsolidadas <span className='font-12' style={{color:"gray", fontWeight: "600"}}>{units.length}</span>
+              Unidades Desconsolidadas <span className='font-12' style={{color:"gray", fontWeight: "600"}}>{units?.length}</span>
               </h3>
             </div>
             {loading ?
@@ -561,7 +330,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     </select>
                     </div>
                 </div>
-                    <div className="col-md-3">
+                {isUserHandler? <><div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black" >Filtrar por Cliente</label>
                         <select
@@ -571,14 +340,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                             this.setState({ clientFilter: e.target.value });
                           }}
                         >
-                          <option value="">Todos</option>
                           {this.state.clientSelector.map((client: any, index: number) => {
-                            return <option key={index} value={client}>{client}</option>;
+                            return <option key={index} value={client._id}>{client.name}</option>;
                           })
                           }
                         </select>
                       </div>
-                    </div>
+                    </div></> : null}
+                    
 
                   </div>
                   <div className="row">
