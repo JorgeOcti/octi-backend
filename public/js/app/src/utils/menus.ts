@@ -349,7 +349,7 @@ if (hasPermission(window.user, 'viewClient') ) {
     id: '6.2',
     icon: 'fa-circle-o',
     text: 'Vista Cliente',
-    url: '/stock/'
+    url: '/desconsolidated/unit/'
   });
 }
 
