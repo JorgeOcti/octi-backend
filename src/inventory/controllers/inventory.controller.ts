@@ -3427,17 +3427,17 @@ class InventoryController {
       }
     });
 
-    const updateHistories = histories.map(history=>{
+    const updateHistories = histories.map(history => {
       return {
-          car: history.car._id,
-          team: history.team,
-          company: history.company
+        car: history.car._id,
+        team: history.team,
+        company: history.company
       }
     });
 
     await History.updateMany(
-      {  updateHistories },
-      { $set: {current: false}}
+      { updateHistories },
+      { $set: { current: false } }
     );
 
     await History.insertMany(histories);
