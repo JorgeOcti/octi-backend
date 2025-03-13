@@ -417,6 +417,8 @@ const inventorySettings: { [key: string]: any } = {
     "reportedColor": "#96a4b3",
     "readyToClient": "Disponible",
     "readyToClientClassContainer": "pending",
+    "inTransit": "En Tránsito",
+    "inTransitClassContainer": "green",
     "emptyClassContainer": "empty",
     "emptyColor": "#00AA51",
     "check": "Descarga",
