@@ -13,7 +13,6 @@ import History from '../../models/history.model';
 import { ModuleHistory, StatusHistory } from '../../models/history.types';
 import { Venue } from '../../models/venue.model';
 import {
-  fromParticipantProps,
   importToSistemProps,
   InventoryCarProps
 } from './car.tracker.types';
@@ -122,7 +121,8 @@ class CarTracker {
     });
   }
 
-  public async fromParticipant({ id }: fromParticipantProps) {
+  public async fromParticipant({ id, handlerCompany }: {id: any, handlerCompany?: any | null}) {
+    console.log('fromParticipant', id, handlerCompany);
     return new Promise(async (resolve, reject) => {
       try {
         const participant = await Participant.findById(id, {
@@ -157,7 +157,9 @@ class CarTracker {
           {
             path: 'car',
             select: {
-              _id: true
+              _id: true,
+              company: true,
+              team: true
             }
           }
         ]);
@@ -165,8 +167,6 @@ class CarTracker {
         if (participant && participant.car) {
           const {
             car,
-            team,
-            company,
             venue,
             user,
             createdAt,
@@ -179,8 +179,9 @@ class CarTracker {
             module: ModuleHistory.form,
             car,
             participant,
-            team,
-            company,
+            team: car.team,
+            company: car.company,
+            handlerCompany,
             executedAt: createdAt,
             createdBy: user
           };

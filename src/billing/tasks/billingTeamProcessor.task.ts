@@ -307,58 +307,58 @@ class BillingTeamProcessor {
   private calculateDolar(teamBilling: any, countByModule: any): number {
     let sumUFbyModule: any = {};
     let totalDolar: number = 0;
-    let totalUnits: number = 0;
+    // let totalUnits: number = 0;
 
     teamBilling.modules.forEach((module: any) => {
       if (module.module in countByModule) {
-        totalUnits += countByModule[`${module.module}`].count
+        // totalUnits += countByModule[`${module.module}`].count
+        //
+        // const section  = module.sections.find((section: any) => {
+        //   return section.start <= totalUnits && totalUnits <= section.end
+        // })
+        //
+        // sumUFbyModule[`${module.module}`] = {
+        //   count: countByModule[`${module.module}`].count,
+        //   total: section.price * countByModule[`${module.module}`].count
+        // };
+        //
+        // totalDolar += section.price * countByModule[`${module.module}`].count
 
-        const section  = module.sections.find((section: any) => {
-          return section.start <= totalUnits && totalUnits <= section.end
-        })
-
-        sumUFbyModule[`${module.module}`] = {
-          count: countByModule[`${module.module}`].count,
-          total: section.price * countByModule[`${module.module}`].count
-        };
-
-        totalDolar += section.price * countByModule[`${module.module}`].count
-
-        // module.sections.sort((a: any, b: any) => {
-        //     if (a.start < b.start) {
-        //       return -1;
-        //     }
-        //     if (a.start > b.start) {
-        //       return 1;
-        //     }
-        //     return 0;
-        //   })
-        //   .forEach((section: any) => {
-        //     new Array(countByModule[`${module.module}`].count)
-        //       .fill(0)
-        //       .forEach((_, index: number) => {
-        //         const item = index + 1;
-        //         if (item >= section.start && item <= section.end) {
-        //           totalDolar += section.price;
-        //           if (module.module in sumUFbyModule) {
-        //             const count =
-        //               sumUFbyModule[`${module.module}`].count + 1;
-        //             const total =
-        //               sumUFbyModule[`${module.module}`].total +
-        //               section.price;
-        //             sumUFbyModule[`${module.module}`] = {
-        //               count,
-        //               total
-        //             };
-        //           } else {
-        //             sumUFbyModule[`${module.module}`] = {
-        //               count: 1,
-        //               total: section.price
-        //             };
-        //           }
-        //         }
-        //       });
-        //   });
+        module.sections.sort((a: any, b: any) => {
+            if (a.start < b.start) {
+              return -1;
+            }
+            if (a.start > b.start) {
+              return 1;
+            }
+            return 0;
+          })
+          .forEach((section: any) => {
+            new Array(countByModule[`${module.module}`].count)
+              .fill(0)
+              .forEach((_, index: number) => {
+                const item = index + 1;
+                if (item >= section.start && item <= section.end) {
+                  totalDolar += section.price;
+                  if (module.module in sumUFbyModule) {
+                    const count =
+                      sumUFbyModule[`${module.module}`].count + 1;
+                    const total =
+                      sumUFbyModule[`${module.module}`].total +
+                      section.price;
+                    sumUFbyModule[`${module.module}`] = {
+                      count,
+                      total
+                    };
+                  } else {
+                    sumUFbyModule[`${module.module}`] = {
+                      count: 1,
+                      total: section.price
+                    };
+                  }
+                }
+              });
+          });
       }
     });
 
