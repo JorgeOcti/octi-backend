@@ -131,7 +131,7 @@ const columns = [
     selector: (row: any) => {
       return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
     }
-  }{
+  }, {
     name: 'Estado',
     selector: (row: any) => {
       return row.status;
@@ -162,7 +162,7 @@ const columns = [
       return row.inventoryCar.containerFound;
     },
     cell: (row: any) => {
-      return row.histories.filter((history) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
+      return row.histories.filter((history: any) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
         window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
       }}>
       <i className="fa fa-fw fa-print" /> Tarja
