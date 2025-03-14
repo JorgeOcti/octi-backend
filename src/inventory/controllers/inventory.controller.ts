@@ -3065,7 +3065,7 @@ class InventoryController {
       } else {
         //for clients
         filterCompanies = {
-          company: company._id,
+          company: new Types.ObjectId(company._id),
           handlerCompany: {$exists: true},
           status: {
             $in: [
@@ -3097,6 +3097,25 @@ class InventoryController {
                 }
               ],
               as: 'inventoryCar'
+            }
+          },
+          {$unwind: {
+              path: '$inventoryCar',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'inventorycars',
+              localField: 'inventoryCar.containerFound',
+              foreignField: '_id',
+              as: 'inventoryCar.containerFound'
+            }
+          },
+          {
+            $unwind: {
+              path: '$inventoryCar.containerFound',
+              preserveNullAndEmptyArrays: true
             }
           },
           {

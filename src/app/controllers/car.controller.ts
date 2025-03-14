@@ -290,7 +290,7 @@ class CarController {
             status: 404
           });
         } else {
-          let carQuery: any = req.user.company.handler ? 
+          let carQuery: any = !req.user.company.handler ?
           {
             $and: [{ team }]
           } : {

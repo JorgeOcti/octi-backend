@@ -54,7 +54,7 @@ const dataTableStyle = {
     }
   },
   rows:{
-    style:{ 
+    style:{
       backgroundColor: "#F5F5F5",
       border: "1px solid #DADADA",
       marginTop:"10px"
@@ -97,10 +97,10 @@ const columns = [
   {
     name: 'Código de unidad',
     selector: (row: any) => {
-      return <CopyText value={row.inventoryCar.car.vin}>
+      return <CopyText value={row.car.vin}>
       <strong
         className="text-primary text-underline">
-        {row.inventoryCar.car.vin}
+        {row.car.vin}
       </strong>
     </CopyText>;
     }
@@ -108,36 +108,33 @@ const columns = [
   {
     name: 'Marca',
     selector: (row: any) => {
-      return row.inventoryCar.car.brand;
+      return row.car.brand;
     }
   },
   {
     name: 'Modelo',
-    selector: (row: any) => row.inventoryCar.car.brand,
+    selector: (row: any) => row.car.denomination,
   },
   {
-    name: 'Color',
-    selector: (row: any) => row.inventoryCar.car.color,
-  },{
-    name: 'F. Descarga',
-    selector: (row: any) => {
-      return row.date;
-    }
-  },
-  {
-    name: 'N Container',
-    selector: (row: any) => {
-          return row.inventoryCar.extra["BIC"];
-    }
-  },
-  {
+    name: 'Contendor',
+    selector: (row: any) => row.inventoryCar.extra["BIC"],
+  }, {
     name: 'BL',
     selector: (row: any) => row.inventoryCar.extra["N° BL"],
-  },
-  {
+  }, {
+    name: 'F. Descarga',
+    selector: (row: any) => {
+      return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
+    }
+  },{
+    name: 'F. Despacho',
+    selector: (row: any) => {
+      return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
+    }
+  }{
     name: 'Estado',
     selector: (row: any) => {
-      return row.containerStatus || row.status;
+      return row.status;
     },
     cell: (row: any) => {
       const status = row.status
@@ -155,18 +152,18 @@ const columns = [
            ? inventorySettings[status]
            : status}
        </span>
-   
+
     },
     sortable: true
   },
   {
     name: 'Tarja',
     selector: (row: any) => {
-      return row.car.bl;
+      return row.inventoryCar.containerFound;
     },
     cell: (row: any) => {
-      return row.status === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
-        window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
+      return row.histories.filter((history) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
+        window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
       }}>
       <i className="fa fa-fw fa-print" /> Tarja
     </button>
@@ -211,15 +208,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
-    console.log("user", window.user)
     const {company} = window.user
     if(company?.handler){
         // En caso de ser usuario handler filtro por el primer cliente del listado
-        this.setState({isUserHandler: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies}) 
+        this.setState({isUserHandler: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
         this.getUnitsByCompanyId(company.clientCompanies[0]._id)
     } else {
         const companyList = [{_id:company._id, name: company.name}]
-        this.setState({isUserHandler: false, clientFilter:company?.clientCompanies._id, clientSelector: companyList}) 
+        this.setState({isUserHandler: false, clientFilter:company?.clientCompanies._id, clientSelector: companyList})
         this.getUnitsByCompanyId(company._id)
     }
   }
@@ -229,9 +225,21 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     api.getSource()
     api.getUnitsByCompany(companyId).then((data:any) => {
+      let units = data.data.cars.map((datum:any) => {
+        let inventoryCar = datum.histories.find((history:any) => history.status === "readyToClient")?.inventoryCar;
+        let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
+        let car = datum.car;
+        let histories = datum.histories;
+        return {
+          inventoryCar,
+          car,
+          histories,
+          status
+        }
+      })
         this.setState({
-            units: data.data.history,
-            originalUnits: data.data.history,
+            units: units,
+            originalUnits: units,
             loading: false
           })
         this.cleanFilters()
@@ -241,7 +249,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
-      this.state.statusFilter !== prevState.statusFilter || 
+      this.state.statusFilter !== prevState.statusFilter ||
       this.state.unitFilter !== prevState.unitFilter) {
       this.filterUnits();
     }
@@ -255,7 +263,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
-      let unitFilter = this.state.unitFilter === '' ? true : unit.inventoryCar.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
+      let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
       return bl && containerFilter && statusFilter && unitFilter;
     });
 
@@ -334,7 +342,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     >
                         <option value="">Todos</option>
                         <option value="readyToClient">Disponible</option>
-                        <option value="transito">En Transito</option>
+                        <option value="inTransit">En Transito</option>
                     </select>
                     </div>
                 </div>
@@ -355,7 +363,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div></> : null}
-                    
+
 
                   </div>
                   <div className="row">
@@ -373,7 +381,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           }
                         />
                     </div>
-                  </div>     
+                  </div>
               </div>
               </>
             }
@@ -398,7 +406,7 @@ export default connect<{}, {}, IPropsType>(
 )(DesconsolidatedUnits);
 
 const inventorySettings: { [key: string]: any } = {
-   
+
     "pending": "Pendiente",
     "pendingClass": "aqua",
     "pendingClassContainer": "pending",
@@ -418,7 +426,7 @@ const inventorySettings: { [key: string]: any } = {
     "readyToClient": "Disponible",
     "readyToClientClassContainer": "pending",
     "inTransit": "En Tránsito",
-    "inTransitClassContainer": "green",
+    "inTransitClassContainer": "empty",
     "emptyClassContainer": "empty",
     "emptyColor": "#00AA51",
     "check": "Descarga",
