@@ -857,22 +857,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
 
                     <div className="col-md-3">
-                      <div className="form-group">
-                        <label className="text-black">Unidades pendientes</label>
+                      <div className="form-group form-check">
+                      <label className="form-check-label text-black" >Unidades pendientes</label>
                         <input
                           type="checkbox"
-                          className="form-control"
+                          className="form-check-input"
                           checked={this.state.unidPending}
                           onChange={(e) => {
                             this.setState({ unidPending: e.target.checked });
                           }}
                         />
-
                       </div>
                     </div>
 
                     <div className="col-md-3">  
-
                       <div className="form-group">
                         <label className="text-black">Filtrar por Fecha de Apertura</label>
                         <DateRangeInput
@@ -887,18 +885,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           startDate={this.state.startDate}
                           endDate={this.state.endDate}
                         />
-
                       </div>
                     </div>
-                    
                   </div>
 
-
-                  <div className="row" style={{margin: "10px 0"}}>
-
-                  <div className="col-md-12">
+                  <div className="row " style={{ margin: "10px 0" }}>
+                    <div className="col-md-12">
                       <div className='form-group'>
-                        <div className="row pull-left box-tools" style={{ paddingTop: '25px', paddingLeft: "15px" }}>
+                        <div className="row pull-right box-tools" style={{ marginRight: "0px" }}>
                           <button
                             className="btn btn-sm btn-primary btn-block"
                             onClick={this.cleanFilters}
@@ -908,7 +902,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                       </div>
                     </div>
-                  
                   </div>
 
 
