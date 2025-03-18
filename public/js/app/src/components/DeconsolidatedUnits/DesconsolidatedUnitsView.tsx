@@ -122,14 +122,29 @@ const columns = [
     name: 'BL',
     selector: (row: any) => row.inventoryCar.extra["N° BL"],
   }, {
+    name: 'Sucursal',
+    selector: (row: any) => row.inventoryCar.venue.name,
+  }, {
     name: 'F. Descarga',
     selector: (row: any) => {
       return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
+    },
+    sortable: true,
+    sortFunction: (a: any, b: any) => {
+      const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
+      const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
+      return moment(dateA).isAfter(dateB) ? 1 : -1;
     }
   },{
     name: 'F. Despacho',
     selector: (row: any) => {
       return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
+    },
+    sortable: true,
+    sortFunction: (a: any, b: any) => {
+      const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
+      const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
+      return moment(dateA).isAfter(dateB) ? 1 : -1;
     }
   }, {
     name: 'Estado',
@@ -237,6 +252,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           status
         }
       })
+      console.log(units)
         this.setState({
             units: units,
             originalUnits: units,
