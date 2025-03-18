@@ -563,7 +563,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     } = this.state;
 
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
+      <AppContainer title="" cMenu="6" cSubMenu="6.1" cAction="Creación">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
