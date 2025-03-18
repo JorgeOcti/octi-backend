@@ -61,6 +61,7 @@ import {
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
+import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 
 class InventoryController {
   constructor() {
@@ -1223,6 +1224,8 @@ class InventoryController {
                 });
                 if (inventoryContainer) {
                   inventoryCar.containerFound = inventoryContainer._id;
+                  inventoryContainer.containerStatus = ContainerStatus.CHECK;
+                  inventoryContainer = await inventoryContainer.save();
                 }
               }
 
