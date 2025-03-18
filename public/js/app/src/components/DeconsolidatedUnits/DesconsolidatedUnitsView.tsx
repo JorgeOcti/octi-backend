@@ -12,6 +12,8 @@ import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {hasPermission} from "../../utils/common";
 import {IWindow} from "../../interfaces/window";
+import DateRangeInput from '../Utils/DateRangeInput';
+import { start } from 'repl';
 
 declare let window: IWindow;
 
@@ -24,15 +26,21 @@ interface IStateType {
   units: any[];
   blFilter: string;
   containerFilter: string;
+  shipFilter: string;
+  tripFilter:string;
+  venueFilter:string;
   containerUpdated: any;
   clientFilter: string;
   unitFilter:string;
   clientSelector: any[];
+  venueSelector: any[];
   statusFilter: string;
+  endDate: Date;
+  startDate: Date;
   selectedContainer: number;
+  isFilteringByDate: boolean;
   loading: boolean;
   isUserHandler:boolean;
-  isFilteringByDate: boolean;
 }
 
 const dataTableStyle = {
@@ -186,6 +194,18 @@ const columns = [
   },
 ];
 
+const getDateRangeOptions = ():daterangepicker.Options => {
+  return {
+    maxDate: moment().toDate(),
+    locale: {
+      format: 'DD/MM/YYYY',
+      customRangeLabel: 'Período personalizado',
+      applyLabel: 'Aplicar',
+      cancelLabel: 'Cancelar'
+    },
+  };
+}
+
 class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   title = "Unidades Desconsolidadas";
 
@@ -201,13 +221,19 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
+      shipFilter: '',
+      venueFilter: '',
+      tripFilter: '',
       containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
+      venueSelector: [],
       isUserHandler:false,
+      endDate: moment().toDate(),
+      startDate: moment().toDate(),
       statusFilter: '',
+      isFilteringByDate:false,
       selectedContainer: -1,
-      isFilteringByDate: false
     };
 
   }
@@ -218,6 +244,12 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       containerFilter: '',
       statusFilter: '',
       unitFilter: '',
+      shipFilter: '',
+      tripFilter: '',
+      venueFilter: '',
+      startDate: moment().toDate(),
+      endDate: moment().toDate(),
+      isFilteringByDate: false
     });
   }
 
@@ -240,11 +272,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     api.getSource()
     api.getUnitsByCompany(companyId).then((data:any) => {
+      let venueOptions:any[] = []
       let units = data.data.cars.map((datum:any) => {
         let inventoryCar = datum.histories.find((history:any) => history.status === "readyToClient")?.inventoryCar;
         let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
         let car = datum.car;
         let histories = datum.histories;
+        if(!venueOptions.includes(inventoryCar.venue?.name.toLowerCase())) venueOptions.push(inventoryCar.venue?.name.toLowerCase()) 
+
         return {
           inventoryCar,
           car,
@@ -252,11 +287,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           status
         }
       })
-      console.log(units)
         this.setState({
             units: units,
             originalUnits: units,
-            loading: false
+            loading: false,
+            venueSelector:venueOptions
           })
         this.cleanFilters()
     })
@@ -266,7 +301,12 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
       this.state.statusFilter !== prevState.statusFilter ||
-      this.state.unitFilter !== prevState.unitFilter) {
+      this.state.unitFilter !== prevState.unitFilter ||
+      this.state.tripFilter !== prevState.tripFilter ||
+      this.state.shipFilter !== prevState.shipFilter ||
+      this.state.startDate !== prevState.startDate ||
+      this.state.venueFilter !== prevState.venueFilter ||
+      this.state.endDate !== prevState.endDate) {
       this.filterUnits();
     }
     if(this.state.clientFilter !== prevState.clientFilter){
@@ -277,16 +317,33 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   filterUnits() {
     let units = this.state.originalUnits.filter((unit: any) => {
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
+      let ship = unit.inventoryCar.extra["Nave"] ? unit.inventoryCar.extra["Nave"].toLowerCase().includes(this.state.shipFilter.toLowerCase()) : true;
+      let trip = unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter.toLowerCase()) : true;
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
-      return bl && containerFilter && statusFilter && unitFilter;
+      let venueFilter = this.state.venueFilter === '' ? true : unit.inventoryCar.venue.name.toLowerCase().includes(this.state.venueFilter.toLowerCase());
+      let dateFilter = true;
+      if (this.state.isFilteringByDate) {
+        const dwonloadDate = unit.histories.find((history:any) => history.status === "readyToClient")?.createdAt
+        const shippingDate = unit.histories.find((history:any) => history.status === "inTransit")?.createdAt
+        if (dwonloadDate || shippingDate) {
+          let startDate = this.state.startDate? new Date(this.state.startDate) : null;
+          let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
+          dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
+        } else {
+          dateFilter = false;
+        }
+      }
+      return bl && containerFilter && statusFilter && unitFilter && ship && trip && venueFilter && dateFilter;
     });
 
     this.setState({
         units: units
     });
   }
+
+  
 
   render() {
     const {units, loading, isUserHandler} = this.state;
@@ -347,39 +404,101 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col-md-3">
-                    <div className="form-group">
-                    <label className="text-black" >Filtrar por Estado</label>
-                    <select
-                        className="form-control"
-                        value={this.state.statusFilter}
-                        onChange={(e) => {
-                        this.setState({ statusFilter: e.target.value });
-                        }}
-                    >
-                        <option value="">Todos</option>
-                        <option value="readyToClient">Disponible</option>
-                        <option value="inTransit">En Transito</option>
-                    </select>
-                    </div>
-                </div>
-                {isUserHandler? <><div className="col-md-3">
                       <div className="form-group">
-                        <label className="text-black" >Filtrar por Cliente</label>
-                        <select
+                      <label className="text-black" >Filtrar por Estado</label>
+                      <select
                           className="form-control"
-                          value={this.state.clientFilter}
+                          value={this.state.statusFilter}
                           onChange={(e) => {
-                            this.setState({ clientFilter: e.target.value });
+                          this.setState({ statusFilter: e.target.value });
                           }}
-                        >
-                          {this.state.clientSelector.map((client: any, index: number) => {
-                            return <option key={index} value={client._id}>{client.name}</option>;
-                          })
-                          }
-                        </select>
+                      >
+                          <option value="">Todos</option>
+                          <option value="readyToClient">Disponible</option>
+                          <option value="inTransit">En Transito</option>
+                      </select>
                       </div>
-                    </div></> : null}
-
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label className="text-black">Filtrar por nave</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={this.state.shipFilter}
+                          onChange={(e) => {
+                            this.setState({ shipFilter: e.target.value });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label className="text-black">Filtrar por viaje</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={this.state.tripFilter}
+                          onChange={(e) => {
+                            this.setState({ tripFilter: e.target.value });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label className="text-black">Filtrar por Sucursal</label>
+                        <select
+                            className="form-control"
+                            value={this.state.venueFilter}
+                            onChange={(e) => {
+                              this.setState({ venueFilter: e.target.value });
+                            }}
+                          >
+                            {this.state.venueSelector.map((venue: any, index: number) => {
+                              return <option key={index} value={venue}>{venue}</option>;
+                            })
+                            }
+                          </select>
+                      </div>
+                    </div>
+                    {isUserHandler?
+                      <div className="col-md-3">
+                        <div className="form-group">
+                          <label className="text-black" >Filtrar por Cliente</label>
+                          <select
+                            className="form-control"
+                            value={this.state.clientFilter}
+                            onChange={(e) => {
+                              this.setState({ clientFilter: e.target.value });
+                            }}
+                          >
+                            {this.state.clientSelector.map((client: any, index: number) => {
+                              return <option key={index} value={client._id}>{client.name}</option>;
+                            })
+                            }
+                          </select>
+                        </div>
+                      </div>
+                    
+                 : null}
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label className="text-black">Filtrar por Fecha de Apertura</label>
+                        <DateRangeInput
+                          options={getDateRangeOptions()}
+                          onChange={(start: Date, end: Date) => {
+                            this.setState({
+                              startDate: start,
+                              endDate: end,
+                              isFilteringByDate: true
+                            });
+                          }}
+                          startDate={this.state.startDate}
+                          endDate={this.state.endDate}
+                        />
+                      </div>
+                    </div>
 
                   </div>
                   <div className="row">
