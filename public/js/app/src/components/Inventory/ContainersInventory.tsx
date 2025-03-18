@@ -33,10 +33,9 @@ interface IStateType {
   clientSelector: any[];
   statusFilter: string;
   selectedContainer: number;
-  naveFilter: string;
-  naveSelector: any[];
-  viajeFilter: string;
-  unidPending: boolean;
+  shipFilter: string;
+  shipSelector: any[];
+  tripFilter: string;
   inventorySettings: any;
   loading: boolean;
   endDate: Date;
@@ -63,7 +62,7 @@ const dataTableStyle = {
     }
   },
   rows:{
-    style:{ 
+    style:{
       backgroundColor: "#F5F5F5",
       border: "1px solid #DADADA",
       marginTop:"10px"
@@ -186,6 +185,16 @@ const columns = [
     cell: (row: any) => {
       const status = row.containerStatus || row.status
       let className = `${status}ClassContainer`;
+      let getLabel = (container: any) => {
+        const status = row.containerStatus || row.status
+        let label = inventorySettings.hasOwnProperty(status) ?
+          inventorySettings[status]
+          : status
+        if (status === ContainerStatus.EMPTY && container.pendingUnits) {
+          label = `${label}(*)`
+        }
+        return label;
+      }
       return <span
          className={`label-container label-container-${
           inventorySettings.hasOwnProperty(className)
@@ -195,11 +204,8 @@ const columns = [
           style={{
             padding: '5px 10px'
           }}>
-         {inventorySettings.hasOwnProperty(status)
-           ? inventorySettings[status]
-           : status}
+         {getLabel(row)}
        </span>
-   
     },
     sortable: true
   },
@@ -292,10 +298,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       clientFilter: '',
       clientSelector: [],
       statusFilter: '',
-      naveFilter: '',
-      naveSelector: [],
-      viajeFilter: '',
-      unidPending: false,
+      shipFilter: '',
+      shipSelector: [],
+      tripFilter: '',
       selectedContainer: -1,
       endDate: moment().toDate(),
       startDate: moment().toDate(),
@@ -363,12 +368,27 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return false;
         });
 
+        let clients = new Set();
         let cars = data.filter((car: any) => {
           return !car.car.isContainer;
         })
+        cars.forEach((car: any) => {
+          if (car.car.company && car.car.company.name){
+            clients.add(car.car.company.name);
+          }
+        })
+
+
 
         containers = containers.map((container: any) => {
           container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
+          container.filterStatus = container.containerStatus || container.status;
+          container.pendingUnits = container.content.filter((car: any) => {
+            return car.status === "pending";
+          }).length > 0;
+          if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
+            container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
+          }
           return container;
         })
 
@@ -394,20 +414,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             return container;
         });
 
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
+
         this.setState({
           containers: containers,
           originalContainers: containers,
+          clientSelector: Array.from(clients),
+          shipSelector: ships,
           loading: false
-        })
-        let clients = Array.from(new Set(containers.map((container: any) => container.extra["Cliente Razón Social"]).filter((client: any) => client !== undefined)));
-        this.setState({
-          clientSelector: clients
-        });
-
-        let naves = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
-
-        this.setState({
-          naveSelector: naves
         })
 
       })
@@ -424,7 +438,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         token: (window.user as any).token
       }
     });
-    this.socket.on('connect', () => { 
+    this.socket.on('connect', () => {
       this.socket.emit('join', {
         room: `dashboard-container-vin-view-${window.user.team._id}`
       });
@@ -435,7 +449,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   }
   updateDataContainersRealTime(data:any){
-    const containerUpdated = data.metadata.inventory; 
+    const containerUpdated = data.metadata.inventory;
       let containers = this.state.containers.map((container: any) => {
         if(containerUpdated.car.isContainer){
               // Metodo para modificar la data del contenedor
@@ -496,13 +510,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       stack: 6,
       beforeShow: () => {
         const $toastEl = $('.jq-toast-heading');
-        $toastEl.css({ 
-          'fontSize': '13px', 
-          'padding-top': '2px', 
+        $toastEl.css({
+          'fontSize': '13px',
+          'padding-top': '2px',
           'padding-right': '2px'
         });
       },
-    } as any); 
+    } as any);
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
@@ -513,9 +527,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       this.state.isFilteringByDate !== prevState.isFilteringByDate ||
       this.state.startDate !== prevState.startDate ||
       this.state.endDate !== prevState.endDate ||
-      this.state.naveFilter !== prevState.naveFilter ||
-      this.state.viajeFilter !== prevState.viajeFilter ||
-      this.state.unidPending !== prevState.unidPending) {
+      this.state.shipFilter !== prevState.shipFilter ||
+      this.state.tripFilter !== prevState.tripFilter) {
       this.filterContainers();
     }
   }
@@ -526,9 +539,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containerFilter: '',
       clientFilter: '',
       statusFilter: '',
-      naveFilter: '',
-      viajeFilter: '',
-      unidPending: false,
+      shipFilter: '',
+      tripFilter: '',
       startDate: moment().toDate(),
       endDate: moment().toDate(),
       isFilteringByDate: false
@@ -538,15 +550,23 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
 
   filterContainers() {
-
     let containers = this.state.originalContainers.filter((container: any) => {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      let clientFilter = this.state.clientFilter === '' ? true : (container.extra["Cliente Razón Social"] ? container.extra["Cliente Razón Social"].toLowerCase().includes(this.state.clientFilter.toLowerCase()) : false);
-      let statusFilter = this.state.statusFilter === '' ? true : container.status === this.state.statusFilter;
-      let naveFilter = this.state.naveFilter === '' ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.naveFilter.toLowerCase()) : false);
-      let viajeFilter = container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.viajeFilter.toLowerCase()) : true;
-      
+      let statusFilter = this.state.statusFilter === '' ? true : container.filterStatus === this.state.statusFilter;
+      let naveFilter = this.state.shipFilter === '' ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter.toLowerCase()) : false);
+      let viajeFilter = this.state.tripFilter === '' ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter.toLowerCase()) : false);
+
+      let clientFilter = true;
+      if (this.state.clientFilter !== '') {
+        clientFilter = container.content.filter((car: any) => {
+          if (car.car.company && car.car.company.name) {
+            return car.car.company.name.toLowerCase() === this.state.clientFilter.toLowerCase();
+          }
+          return false;
+        }).length > 0;
+      }
+
       let dateFilter = true;
       if (this.state.isFilteringByDate) {
         if (container.openDate) {
@@ -559,32 +579,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = false;
         }
       }
-
-      return bl && containerFilter && clientFilter && statusFilter && dateFilter && naveFilter && viajeFilter;
-    });
-
-
-    //copio el arreglo previamente filtrado a primer nivel
-    const containersCopia: any[] = containers.map(container => ({
-      ...container,
-      content: [...container.content], 
-    }));
-
-    const containersFiltrados = containersCopia.map(container => {
-      const contentFiltradas = this.state.unidPending
-        ? container.content.filter((content: {
-          [x: string]: any; status: string; 
-        }) => content.car.isContainer == false && content.status.toLowerCase() === 'pending')
-        : container.content; // Sin filtro
-    
-      return {
-        ...container,
-        content: contentFiltradas,
-      };
+      return bl && clientFilter && containerFilter && statusFilter && dateFilter && naveFilter && viajeFilter;
     });
 
     this.setState({
-      containers: containersFiltrados
+      containers: containers
     });
 
   }
@@ -678,7 +677,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
     </div>
   }
-  
+
 
   render() {
     const {containers, loading} = this.state;
@@ -726,7 +725,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>  
+                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>
               </h3>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
@@ -794,7 +793,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           }}
                         >
                           <option value="">Todos</option>
-                          {this.state.clientSelector.map((client: any, index: number) => {
+                          {this.state.clientSelector
+                            .sort((a: any, b: any) => a.localeCompare(b))
+                            .map((client: any, index: number) => {
                             return <option key={index} value={client}>{client}</option>;
                           })
                           }
@@ -819,6 +820,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           <option value={ContainerStatus.OPEN}>Abierto</option>
                           <option value={ContainerStatus.CHECK}>Descarga</option>
                           <option value={ContainerStatus.EMPTY}>Vacío</option>
+                          <option value={`${ContainerStatus.EMPTY}(*)`}>Vacío(*)</option>
                         </select>
                       </div>
                     </div>
@@ -828,13 +830,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         <label className="text-black">Nave</label>
                         <select
                           className="form-control"
-                          value={this.state.naveFilter}
+                          value={this.state.shipFilter}
                           onChange={(e) => {
-                            this.setState({ naveFilter: e.target.value });
+                            this.setState({ shipFilter: e.target.value });
                           }}
                         >
                           <option value="">Todos</option>
-                          {this.state.naveSelector.map((nave: any, index: number) => {
+                          {this.state.shipSelector.map((nave: any, index: number) => {
                             return <option key={index} value={nave}>{nave}</option>;
                           })
                           }
@@ -848,29 +850,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         <input
                           type="text"
                           className="form-control"
-                          value={this.state.viajeFilter}
+                          value={this.state.tripFilter}
                           onChange={(e) => {
-                            this.setState({ viajeFilter: e.target.value });
+                            this.setState({ tripFilter: e.target.value });
                           }}
                         />
                       </div>
                     </div>
 
                     <div className="col-md-3">
-                      <div className="form-group form-check">
-                      <label className="form-check-label text-black" >Unidades pendientes</label>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          checked={this.state.unidPending}
-                          onChange={(e) => {
-                            this.setState({ unidPending: e.target.checked });
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="col-md-3">  
                       <div className="form-group">
                         <label className="text-black">Filtrar por Fecha de Apertura</label>
                         <DateRangeInput
@@ -924,7 +912,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           }
                         />
                     </div>
-                  </div>     
+                  </div>
               </div>
               </>
             }
