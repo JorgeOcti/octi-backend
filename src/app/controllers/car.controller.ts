@@ -456,9 +456,19 @@ class CarController {
       }
     } else {
       try {
-        let carFilter: any = {
-          $and: [{ team }]
-        };
+        let carFilter: any = !req.user.company.handler ?
+          {
+            $and: [{ team }]
+          } : {
+            $and: [
+              {
+                $or: [
+                  { company: req.user.company },
+                  { handlerCompany: req.user.company }
+                ]
+              }
+            ]
+          };
         if (vin) {
           carFilter = {
             $and: [...carFilter['$and'], { vin }]
