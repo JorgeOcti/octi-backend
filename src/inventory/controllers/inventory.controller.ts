@@ -2362,8 +2362,14 @@ class InventoryController {
                     'internalNumber',
                     'property',
                     'type',
-                    'isContainer'
-                  ]
+                    'isContainer',
+                    'company'
+                  ],
+                  populate: [
+                    {
+                      path: 'company'
+                    }
+                    ]
                 },
                 {
                   path: 'label'
@@ -2392,7 +2398,7 @@ class InventoryController {
                 {
                   path: 'comments.user',
                   select: ['_id', 'firstName', 'lastName']
-                }
+                },
               ],
               select: { meta: false }
             },
