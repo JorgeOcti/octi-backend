@@ -4,16 +4,11 @@ import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
 import * as React from "react";
 import ApiService from "../../utils/axios";
-import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
-import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import CopyText from '../Utils/CopyText';
-
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
-import {hasPermission} from "../../utils/common";
 import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
-import { start } from 'repl';
 
 declare let window: IWindow;
 
@@ -278,7 +273,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
         let car = datum.car;
         let histories = datum.histories;
-        if(!venueOptions.includes(inventoryCar.venue?.name.toLowerCase())) venueOptions.push(inventoryCar.venue?.name.toLowerCase()) 
+        if(!venueOptions.includes(inventoryCar.venue?.name)) venueOptions.push(inventoryCar.venue?.name)
 
         return {
           inventoryCar,
@@ -318,7 +313,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     let units = this.state.originalUnits.filter((unit: any) => {
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let ship = unit.inventoryCar.extra["Nave"] ? unit.inventoryCar.extra["Nave"].toLowerCase().includes(this.state.shipFilter.toLowerCase()) : true;
-      let trip = unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter.toLowerCase()) : true;
+      let trip = unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toString().toLowerCase().includes(this.state.tripFilter.toLowerCase()) : true;
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
@@ -343,7 +338,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  
+
 
   render() {
     const {units, loading, isUserHandler} = this.state;
@@ -480,7 +475,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           </select>
                         </div>
                       </div>
-                    
+
                  : null}
                     <div className="col-md-3">
                       <div className="form-group">
