@@ -420,7 +420,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
 
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
-        console.log(containers)
         this.setState({
           containers: containers,
           originalContainers: containers,
