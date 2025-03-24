@@ -2332,7 +2332,8 @@ class InventoryController {
             affected: true,
             sendTo: true,
             isExhibition: true,
-            requireCustomText: true
+            requireCustomText: true,
+            isForContainer: true,
           }
         ),
         InventoryModel.findById(id, {
