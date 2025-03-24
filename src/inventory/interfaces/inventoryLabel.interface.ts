@@ -12,5 +12,6 @@ export interface IInventoryLabel {
   requireCustomText: boolean;
   isExhibition: boolean;
   active: boolean;
+  isForContainer: boolean;
   updatedBy?: IUser;
 }
