@@ -357,7 +357,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     let rows = [
       [...excelHeaders]
     ];
-    let client = clientSelector.find((client:any) => client._id === clientFilter)
+
+
+    let client = window.user.company.handler ?
+      clientSelector.find((client:any) => client._id === clientFilter) :
+      clientSelector[0]
 
     units.map((container: any) => {
       let row = [
