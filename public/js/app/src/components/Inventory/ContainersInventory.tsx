@@ -101,6 +101,7 @@ const excelHeaders = [
   'Puerto',
   'Nave',
   'Cliente',
+  'Viaje',
   'Estado',
 ];
 
@@ -154,21 +155,25 @@ const columns = [
     selector: (row: any) => row.extra["Nave"],
   },
   {
-    name: 'Imágenes',
-    cell: (row: any) => {
-      if(row.evidenceStatus && row.evidenceStatus.length > 0) {
-        row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
-      }
-      return imagesFormatter(row);
-    }
-  },
-  {
     name: 'Cliente',
     selector: (row: any) => {
           return row.extra["Cliente Razón Social"];
     },
     cell: (row: any) => {
       return <div>{row.extra["Cliente Razón Social"]}</div>
+    }
+  },
+  {
+    name: 'Viaje',
+    selector: (row: any) => row.extra["N° Viaje"],
+  },
+  {
+    name: 'Imágenes',
+    cell: (row: any) => {
+      if(row.evidenceStatus && row.evidenceStatus.length > 0) {
+        row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
+      }
+      return imagesFormatter(row);
     }
   },
   {
@@ -415,7 +420,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
 
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
-
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -610,6 +614,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           car.extra ? car.extra["Emplazamiento"] ?? "" : "",
           car.extra ? car.extra["Nave"] ?? "" : "",
           car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
+          car.extra ? car.extra["N° Viaje"] ?? "" : "",
           inventorySettings[car.containerStatus || car.status] ?? "",
         ]
         rows.push(carRow);
