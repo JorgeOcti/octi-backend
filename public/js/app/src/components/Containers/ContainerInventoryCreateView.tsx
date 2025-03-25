@@ -14,6 +14,7 @@ import {connect} from "react-redux";
 import * as moment from "moment/moment";
 import { hasPermission } from '../../utils/common';
 import DataTable from 'react-data-table-component';
+import { format, validate } from '../../utils/rut';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -268,6 +269,8 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       if (!data[header]) {
         console.log("Error", header, data)
         return false
+      } else if (header === "RUT Cliente"){
+        return validate(data[header])
       }
     }
     return true
@@ -286,7 +289,14 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       this.excelHeaders.forEach((header: string) => {
         let value = data[header]
         if (value){
-          extra[header] = (header !== "RUT Cliente") ? (header === "BIC") ? value.trim().replace("-", "") : value : this.normalizeIdentifier(value);
+          if (header === "RUT Cliente"){
+            value = format(value, { dots: false })
+          } else if (header === "BIC"){
+            value = value.trim().replace("-", "")
+          } else {
+            value = value.trim()
+          }
+          extra[header] = value
         }
       })
       let container: any = {extra}

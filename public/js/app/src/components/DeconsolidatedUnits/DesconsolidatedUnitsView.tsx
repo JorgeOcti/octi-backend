@@ -9,6 +9,8 @@ import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
+import { hasPermission } from '../../utils/common';
+import * as XLSX from 'xlsx-color';
 
 declare let window: IWindow;
 
@@ -95,6 +97,18 @@ const formaDate = (date: any) => {
     hour12: false,
   }).format(new Date(date)).replace(',', '');
 }
+
+const excelHeaders = [
+  "Código de unidad",
+  "Marca",
+  "Modelo",
+  "Contenedor",
+  "BL",
+  "Sucursal",
+  "F. Descarga",
+  "F. Despacho",
+  "Estado"
+];
 
 const columns = [
   {
@@ -230,7 +244,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       isFilteringByDate:false,
       selectedContainer: -1,
     };
-
+    this.downloadData = this.downloadData.bind(this);
   }
 
     cleanFilters = () => {
@@ -338,6 +352,44 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
+  private downloadData(): void {
+    const { units, clientFilter, clientSelector } = this.state
+    let rows = [
+      [...excelHeaders]
+    ];
+
+
+    let client = window.user.company.handler ?
+      clientSelector.find((client:any) => client._id === clientFilter) :
+      clientSelector[0]
+
+    units.map((container: any) => {
+      let row = [
+        container.car.vin,
+        container.car.brand,
+        container.car.denomination,
+        container.inventoryCar.extra["BIC"],
+        container.inventoryCar.extra["N° BL"],
+        container.inventoryCar.venue.name,
+        container.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-",
+        container.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-",
+        inventorySettings.hasOwnProperty(container.status)
+          ? inventorySettings[container.status]
+          : container.status
+      ];
+      rows.push(row);
+    });
+
+    /* make the worksheet */
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    /* add to workbook */
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
+    /* generate an XLSX file */
+    XLSX.writeFile(wb, `${client.name}_units.xlsx`);
+  }
+
 
 
   render() {
@@ -349,16 +401,25 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-              Unidades Desconsolidadas <span className='font-12' style={{color:"gray", fontWeight: "600"}}>{units?.length}</span>
+                Unidades Desconsolidadas <span className="font-12"
+                                               style={{ color: 'gray', fontWeight: '600' }}>{units?.length}</span>
               </h3>
+              <div className="pull-right box-tools">
+                    < button
+                      style={{ marginRight: '10px' }}
+                      className="btn btn-sm btn-primary"
+                      onClick={this.downloadData}>
+                      <i className="fa fa-fw fa-download" /> Descargar Excel
+                    </button>
+              </div>
             </div>
             {loading ?
               <div className="overlay">
-                <i className="fa fa-refresh fa-spin"/>
+                <i className="fa fa-refresh fa-spin" />
               </div>
               : <>
                 <div className="box-body">
-                  <div className="row" style={{margin: "10px 0"}}>
+                  <div className="row" style={{ margin: '10px 0' }}>
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">¿Qué Bill of Lading (BL) buscas?</label>
