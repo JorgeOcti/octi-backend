@@ -16,6 +16,7 @@ import {hasPermission} from "../../utils/common";
 import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as XLSX from 'xlsx-color';
+import BootstrapSelect from '../Utils/BootstrapSelect';
 
 declare let window: IWindow;
 
@@ -33,9 +34,10 @@ interface IStateType {
   clientSelector: any[];
   statusFilter: string;
   selectedContainer: number;
-  shipFilter: string;
+  shipFilter: string[];
   shipSelector: any[];
-  tripFilter: string;
+  tripSelector: any[];
+  tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
   endDate: Date;
@@ -303,9 +305,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       clientFilter: '',
       clientSelector: [],
       statusFilter: '',
-      shipFilter: '',
+      shipFilter: [],
       shipSelector: [],
-      tripFilter: '',
+      tripSelector: [],
+      tripFilter: [],
       selectedContainer: -1,
       endDate: moment().toDate(),
       startDate: moment().toDate(),
@@ -420,11 +423,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
 
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined)));
         this.setState({
           containers: containers,
           originalContainers: containers,
           clientSelector: Array.from(clients),
           shipSelector: ships,
+          tripSelector: trips,
           loading: false
         })
 
@@ -543,8 +548,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containerFilter: '',
       clientFilter: '',
       statusFilter: '',
-      shipFilter: '',
-      tripFilter: '',
+      shipFilter: [],
+      tripFilter: [],
       startDate: moment().toDate(),
       endDate: moment().toDate(),
       isFilteringByDate: false
@@ -558,8 +563,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : container.filterStatus === this.state.statusFilter;
-      let naveFilter = this.state.shipFilter === '' ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter.toLowerCase()) : false);
-      let viajeFilter = this.state.tripFilter === '' ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter.toLowerCase()) : false);
+      let naveFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
+      let viajeFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
 
       let clientFilter = true;
       if (this.state.clientFilter !== '') {
@@ -583,7 +588,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = false;
         }
       }
-      return bl && clientFilter && containerFilter && statusFilter && dateFilter && naveFilter && viajeFilter;
+      return bl && clientFilter && containerFilter && statusFilter && dateFilter && viajeFilter && naveFilter;
     });
 
     this.setState({
@@ -833,33 +838,53 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">Nave</label>
-                        <select
-                          className="form-control"
-                          value={this.state.shipFilter}
-                          onChange={(e) => {
-                            this.setState({ shipFilter: e.target.value });
+                        <BootstrapSelect
+                          noneSelectedText="Todas las naves"
+                          displayItems={2}
+                          selectedText="Naves Seleccionadas."
+                          selected={this.state.shipFilter}
+                          autoClouse={true}
+                          search={true}
+                          allOption={false}
+                          options={this.state.shipSelector.map((ship: any) => ({
+                            value: ship,
+                            rend: (
+                             <>
+                               <strong>{ship.toUpperCase()}</strong>
+                             </>
+                           ),
+                           text: `${ship.toUpperCase()}`
+                         }))}
+                          onClick={(selected: any) => {
+                            this.setState({ shipFilter: new Array(selected)});
                           }}
-                        >
-                          <option value="">Todos</option>
-                          {this.state.shipSelector.map((nave: any, index: number) => {
-                            return <option key={index} value={nave}>{nave}</option>;
-                          })
-                          }
-                        </select>
+                         /> 
                       </div>
                     </div>
 
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">Viaje</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={this.state.tripFilter}
-                          onChange={(e) => {
-                            this.setState({ tripFilter: e.target.value });
+                        <BootstrapSelect
+                          noneSelectedText="Todos los viajes"
+                          displayItems={2}
+                          selectedText="Naves Seleccionadas."
+                          selected={this.state.tripFilter}
+                          autoClouse={true}
+                          search={true}
+                          options={this.state.tripSelector.map((trip: any) => ({
+                            value: trip,
+                            rend: (
+                             <>
+                               <strong>{trip.toUpperCase()}</strong>
+                             </>
+                           ),
+                           text: `${trip.toUpperCase()}`
+                         }))}
+                          onClick={(selected: any) => {
+                            this.setState({ tripFilter: new Array(selected)});
                           }}
-                        />
+                         /> 
                       </div>
                     </div>
 
