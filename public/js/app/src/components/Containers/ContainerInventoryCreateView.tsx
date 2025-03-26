@@ -266,25 +266,26 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   private validateRow(data: any) {
     for (let header of this.mandatoryHeaders) {
-      if (!data[header]) {
-        console.log("Error", header, data)
-        return false
-      } else if (header === "RUT Cliente"){
-        return validate(data[header])
+      if (header === "RUT Cliente") {
+        let value = data[header].replaceAll(" ", "")
+        let validateRut = validate(value)
+        if (!validateRut) {
+          console.log("Error", header, data)
+          return { error: true, message: `Rut incorrecto` }
+        }
+      } else {
+        if (!data[header]) {
+          console.log("Error", header, data)
+          return { error: true, message: `Falta el campo ${header}` }
+        }
       }
     }
-    return true
-  }
-
-  private normalizeIdentifier(identifier: string): string {
-    return identifier
-        .toUpperCase()
-        .replace(/[^a-zA-Z0-9-]/g, '') //letras, números y guiones
-        .trim();
+    return { error: false }
   }
 
   private processDataRow(data: any): any|null {
-    if (this.validateRow(data)){
+    let isValid = this.validateRow(data)
+    if (!isValid.error) {
       let extra : any = {}
       this.excelHeaders.forEach((header: string) => {
         let value = data[header]
@@ -294,7 +295,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           } else if (header === "BIC"){
             value = value.trim().replace("-", "")
           } else {
-            value = value.trim()
+            value = value ? value.trim() : null
           }
           extra[header] = value
         }
@@ -314,7 +315,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       // show alert
       swal({
         title: "Error en archivo de configuracion",
-        text: `Revise que todas las filas contenagan los datos necesarios (${this.mandatoryHeaders.join(', ')})`,
+        text: `Revise la linea ${data.__rowNum__}, ${isValid.message}`,
         icon: "error",
         buttons: {
           confirm: {
@@ -350,19 +351,19 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           const workbook: XLSX.WorkBook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array'
           });
-          const excelData = workbook.Sheets.hasOwnProperty('Planilla OSA')
+          const excelData: any[] = workbook.Sheets.hasOwnProperty('Planilla OSA')
             ? XLSX.utils.sheet_to_json(workbook.Sheets['Planilla OSA'])
             : [];
           const carsByContainer: any = {};
           if (excelData.length >= 1) {
-            excelData.forEach((item: any) => {
-              let datum = this.processDataRow(item)
+            for (const item of excelData) {
+              let datum: any = this.processDataRow(item)
               if (!datum){
                 /* tslint:disable:no-console */
                 // swal!('Error en archivo de configuracion', `Revise la linea ${item.__rowNum__}`, 'error');
                 console.log('Error en linea:');
                 console.log(item.__rowNum__);
-                return;
+                break;
               }
               const car = datum.car;
               const container = datum.container;
@@ -373,7 +374,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
                 }
               }
               carsByContainer[container.vin].cars.push(car);
-            });
+            }
             this.setState({
               file,
               carsByContainer: carsByContainer,
@@ -580,20 +581,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
               <h3 className="box-title">Cargando Inventario de Containers</h3>
             </div>
             <div className="box-body margin">
-              <div className="row">
-                <div className="col col-md-6">
-                  <div className="form-group">
-                    <label htmlFor="name">Nombre</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="name"
-                      value={name}
-                      onChange={(e) => this.setState({ name: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
               {Object.keys(carsByContainer).length > 0 ?
                 <div className="box">
                   <div className="box-header with-border flex flex-space-between">
