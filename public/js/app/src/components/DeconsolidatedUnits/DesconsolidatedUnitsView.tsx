@@ -141,7 +141,14 @@ const columns = [
   }, {
     name: 'BL',
     selector: (row: any) => row.inventoryCar.extra["N° BL"],
+  }, 
+  {
+    name: 'Nave',
+    selector: (row: any) => row.inventoryCar.extra["Nave"],
   }, {
+    name: 'Cliente',
+    selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
+  },{
     name: 'Sucursal',
     selector: (row: any) => row.inventoryCar.venue.name,
   }, {

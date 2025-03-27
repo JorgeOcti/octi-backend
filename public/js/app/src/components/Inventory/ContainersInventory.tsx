@@ -6,6 +6,7 @@ import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
+import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
@@ -20,7 +21,9 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 
 declare let window: IWindow;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+export type CarStatusType = Extract<keyof IInventorySetting, string>;
+
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {  
 }
 
 interface IStateType {
@@ -32,7 +35,7 @@ interface IStateType {
   containerUpdated: any;
   clientFilter: string;
   clientSelector: any[];
-  statusFilter: string;
+  statusFilterSelected: string[],
   selectedContainer: number;
   shipFilter: string[];
   shipSelector: any[];
@@ -287,10 +290,18 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 }
 
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
+  
   title = "Revisión Containers";
 
-
   private socket: Socket;
+  private statusText: any = {
+    'pending': 'Pendientes',
+    'found': 'Encontrado',
+    'open': 'Abierto',
+    'check': 'Descarga',
+    'empty': 'Vacío',
+    'empty(*)': 'Vacío(*)',
+  };
 
   constructor(props: IPropsType) {
     super(props);
@@ -304,7 +315,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
-      statusFilter: '',
+      statusFilterSelected: [],
       shipFilter: [],
       shipSelector: [],
       tripSelector: [],
@@ -532,7 +543,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
       this.state.clientFilter !== prevState.clientFilter ||
-      this.state.statusFilter !== prevState.statusFilter ||
+      this.state.statusFilterSelected !== prevState.statusFilterSelected ||
       this.state.isFilteringByDate !== prevState.isFilteringByDate ||
       this.state.startDate !== prevState.startDate ||
       this.state.endDate !== prevState.endDate ||
@@ -547,9 +558,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       blFilter: '',
       containerFilter: '',
       clientFilter: '',
-      statusFilter: '',
       shipFilter: [],
       tripFilter: [],
+      statusFilterSelected: [],
       startDate: moment().toDate(),
       endDate: moment().toDate(),
       isFilteringByDate: false
@@ -562,7 +573,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     let containers = this.state.originalContainers.filter((container: any) => {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      let statusFilter = this.state.statusFilter === '' ? true : container.filterStatus === this.state.statusFilter;
+      let statusFilter = this.state.statusFilterSelected.length === 0 ? true : this.state.statusFilterSelected.includes(container.filterStatus);
       let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
       let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
 
@@ -817,25 +828,38 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black" >Filtrar por Estado</label>
-                        <select
-                          className="form-control"
-                          value={this.state.statusFilter}
-                          onChange={(e) => {
-                            this.setState({ statusFilter: e.target.value });
+                        <BootstrapSelect
+                          noneSelectedText="Todos"
+                          displayItems={4}
+                          sm={true}
+                          selectedText="estados seleccionados."
+                          separator=" - "
+                          options={Object.keys(this.statusText).map(
+                            (status: CarStatusType) => ({
+                              value: status,
+                              text: inventorySettings[status],
+                              className: `label label-${inventorySettings[
+                                `${status}Class` as CarStatusType
+                                ]
+                                }`
+                            })
+                          )}
+                          selected={this.state.statusFilterSelected}
+                          onClick={(e: any) => {
+                            const { statusFilterSelected } = this.state;
+                            let filters = statusFilterSelected.includes(e)
+                              ? statusFilterSelected.filter((state) => state !== e)
+                              : [e, ...statusFilterSelected];
+                            this.setState({ statusFilterSelected: filters });
                           }}
-                        >
-                          <option value="">Todos</option>
-                          <option value={ContainerStatus.PENDING}>Pendientes</option>
-                          <option value={ContainerStatus.FOUND}>Encontrados</option>
-                          <option value={ContainerStatus.OPEN}>Abierto</option>
-                          <option value={ContainerStatus.CHECK}>Descarga</option>
-                          <option value={ContainerStatus.EMPTY}>Vacío</option>
-                          <option value={`${ContainerStatus.EMPTY}(*)`}>Vacío(*)</option>
-                        </select>
+                        />
                       </div>
                     </div>
+                  </div>
 
-                    <div className="col-md-3">
+                  <div className="row" style={{margin: "10px 0"}}>
+
+                  <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">Nave</label>
                         <BootstrapSelect
@@ -905,12 +929,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="row " style={{ margin: "10px 0" }}>
-                    <div className="col-md-12">
+                    <div className="col-md-3">
                       <div className='form-group'>
-                        <div className="row pull-right box-tools" style={{ marginRight: "0px" }}>
+                        <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
                           <button
                             className="btn btn-sm btn-primary btn-block"
                             onClick={this.cleanFilters}
@@ -989,6 +1010,10 @@ const inventorySettings: { [key: string]: any } = {
   "emptyClass": "green",
   "emptyClassContainer": "empty",
   "emptyColor": "#00AA51",
+  "empty(*)": "Vacío(*)",
+  "empty(*)Class": "green",
+  "empty(*)ClassContainer": "empty(*)",
+  "empty(*)Color": "#00AA51",
   "check": "Descarga",
   "checkColor": "#C1BB21",
   "checkClass": "yellow",

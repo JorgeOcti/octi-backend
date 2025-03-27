@@ -2187,8 +2187,10 @@ class CarController {
         ?.split(',')
         .filter((f) => f.trim().length);
 
-      const formsIds = searchForms?.length
-        ? user.userForms
+      let formsIds : any[] = []
+
+      if (searchForms?.length) {
+        formsIds = user.userForms
           .filter((form) => {
             if (searchForms?.length) {
               return searchForms.includes(form._id.toString());
@@ -2196,7 +2198,18 @@ class CarController {
             return true;
           })
           .map((form) => new Types.ObjectId(form._id))
-        : user.userForms.map((form) => new Types.ObjectId(form._id));
+      } else {
+        if (user.company.handler) {
+          formsIds = user.userForms.map((form) => new Types.ObjectId(form._id));
+        } else {
+          formsIds = user.userForms.map((form) => new Types.ObjectId(form._id));
+          let handlerForms = await Form.find({
+            company: {$in: user.company.handlerCompanies.map((company: any)=> new  mongoose.Types.ObjectId(company._id))}
+          })
+          let hanlderFormIds = handlerForms.map((form) => new Types.ObjectId(form._id));
+          formsIds = [...formsIds, ...hanlderFormIds]
+        }
+      }
 
       // search text in participant
       let searchParticipantText: any = {};
@@ -2206,24 +2219,54 @@ class CarController {
         };
       }
 
-      let baseMatch: any = {
-        team: new mongoose.Types.ObjectId(user.team._id),
-        car: {
+      let baseMatch: any = {}
+      if (user.company.handler) {
+        baseMatch = {
+          handlerCompany: new mongoose.Types.ObjectId(user.company._id),
+            car: {
           $ne: null
         },
-        venue: {
-          $in: req.user.venuesPermissions()
-        },
-        deliveryToCustomer: deliveries === '1',
-        kind,
-        form: {
+          venue: {
+            $in: req.user.venuesPermissions()
+          },
+          deliveryToCustomer: deliveries === '1',
+            kind,
+            form: {
           $in: formsIds
         },
-        createdAt: {
-          $gte: moment(from).startOf('day').utc().toDate(),
-          $lte: moment(to).endOf('day').utc().toDate()
+          createdAt: {
+            $gte: moment(from).startOf('day').utc().toDate(),
+              $lte: moment(to).endOf('day').utc().toDate()
+          }
+        };
+      } else {
+        let handlerVenues = await Venue.find({
+          company: {
+            $in: user.company.handlerCompanies.map((company: any)=> new  mongoose.Types.ObjectId(company._id))
+          }
+        });
+
+        baseMatch = {
+          team: new mongoose.Types.ObjectId(user.team._id),
+          car: {
+            $ne: null
+          },
+          venue: {
+            $in: [
+              ...handlerVenues.map((venue) => new Types.ObjectId(venue._id)),
+              ...req.user.venuesPermissions()]
+          },
+          deliveryToCustomer: deliveries === '1',
+          kind,
+          form: {
+            $in: formsIds
+          },
+          createdAt: {
+            $gte: moment(from).startOf('day').utc().toDate(),
+            $lte: moment(to).endOf('day').utc().toDate()
+          }
         }
-      };
+      }
 
       if (req.user.userBrands?.length || brands) {
         let brandsRelated = req.user.userBrands.map((brand) => brand._id.toString());
