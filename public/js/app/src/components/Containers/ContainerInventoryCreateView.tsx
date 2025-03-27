@@ -295,7 +295,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           } else if (header === "BIC"){
             value = value.trim().replace("-", "")
           } else {
-            value = value ? value.trim() : null
+            value = value ? value.toString().trim() : null
           }
           extra[header] = value
         }
