@@ -294,11 +294,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   private socket: Socket;
   private statusText: any = {
-    pending: 'Pendientes',
-    found: 'Encontrado',
-    open: 'Abierto',
-    check: 'Descarga',
-    empty: 'Vacío'
+    'pending': 'Pendientes',
+    'found': 'Encontrado',
+    'open': 'Abierto',
+    'check': 'Descarga',
+    'empty': 'Vacío',
+    'empty(*)': 'Vacío(*)',
   };
 
   constructor(props: IPropsType) {
@@ -985,6 +986,14 @@ const inventorySettings: { [key: string]: any } = {
   "emptyClass": "green",
   "emptyClassContainer": "empty",
   "emptyColor": "#00AA51",
+
+
+  "empty(*)": "Vacío(*)",
+  "empty(*)Class": "green",
+  "empty(*)ClassContainer": "empty(*)",
+  "empty(*)Color": "#00AA51",
+
+
   "check": "Descarga",
   "checkColor": "#C1BB21",
   "checkClass": "yellow",
