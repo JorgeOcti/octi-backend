@@ -9,6 +9,9 @@ import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
+import BootstrapSelect from '../Utils/BootstrapSelect';
+import { hasPermission } from '../../utils/common';
+import * as XLSX from 'xlsx-color';
 
 declare let window: IWindow;
 
@@ -21,14 +24,16 @@ interface IStateType {
   units: any[];
   blFilter: string;
   containerFilter: string;
-  shipFilter: string;
-  tripFilter:string;
+  shipFilter: string[];
+  tripFilter:string[];
   venueFilter:string;
   containerUpdated: any;
   clientFilter: string;
   unitFilter:string;
   clientSelector: any[];
   venueSelector: any[];
+  tripSelector: any[];
+  shipSelector: any[];
   statusFilter: string;
   endDate: Date;
   startDate: Date;
@@ -96,6 +101,18 @@ const formaDate = (date: any) => {
   }).format(new Date(date)).replace(',', '');
 }
 
+const excelHeaders = [
+  "Código de unidad",
+  "Marca",
+  "Modelo",
+  "Contenedor",
+  "BL",
+  "Sucursal",
+  "F. Descarga",
+  "F. Despacho",
+  "Estado"
+];
+
 const columns = [
   {
     name: 'Código de unidad',
@@ -124,7 +141,14 @@ const columns = [
   }, {
     name: 'BL',
     selector: (row: any) => row.inventoryCar.extra["N° BL"],
+  }, 
+  {
+    name: 'Nave',
+    selector: (row: any) => row.inventoryCar.extra["Nave"],
   }, {
+    name: 'Cliente',
+    selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
+  },{
     name: 'Sucursal',
     selector: (row: any) => row.inventoryCar.venue.name,
   }, {
@@ -216,12 +240,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
-      shipFilter: '',
+      shipFilter: [],
       venueFilter: '',
-      tripFilter: '',
+      tripFilter: [],
       containerUpdated: {},
       clientFilter: '',
       clientSelector: [],
+      shipSelector: [],
+      tripSelector: [],
       venueSelector: [],
       isUserHandler:false,
       endDate: moment().toDate(),
@@ -230,7 +256,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       isFilteringByDate:false,
       selectedContainer: -1,
     };
-
+    this.downloadData = this.downloadData.bind(this);
   }
 
     cleanFilters = () => {
@@ -239,8 +265,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       containerFilter: '',
       statusFilter: '',
       unitFilter: '',
-      shipFilter: '',
-      tripFilter: '',
+      shipFilter: [],
+      tripFilter: [],
       venueFilter: '',
       startDate: moment().toDate(),
       endDate: moment().toDate(),
@@ -268,12 +294,17 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     api.getSource()
     api.getUnitsByCompany(companyId).then((data:any) => {
       let venueOptions:any[] = []
+      let shipOptions:any[] = []
+      let tripOptions:any[] = []
       let units = data.data.cars.map((datum:any) => {
         let inventoryCar = datum.histories.find((history:any) => history.status === "readyToClient")?.inventoryCar;
         let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
         let car = datum.car;
         let histories = datum.histories;
+       
         if(!venueOptions.includes(inventoryCar.venue?.name)) venueOptions.push(inventoryCar.venue?.name)
+        if(!tripOptions.includes(inventoryCar.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar.extra["N° Viaje"].toString().toLowerCase())
+        if(!shipOptions.includes(inventoryCar.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar.extra["Nave"].toString().toLowerCase())
 
         return {
           inventoryCar,
@@ -282,11 +313,15 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           status
         }
       })
+
+      
         this.setState({
             units: units,
             originalUnits: units,
             loading: false,
-            venueSelector:venueOptions
+            venueSelector:venueOptions,
+            shipSelector:shipOptions,
+            tripSelector:tripOptions
           })
         this.cleanFilters()
     })
@@ -312,8 +347,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   filterUnits() {
     let units = this.state.originalUnits.filter((unit: any) => {
       let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
-      let ship = unit.inventoryCar.extra["Nave"] ? unit.inventoryCar.extra["Nave"].toLowerCase().includes(this.state.shipFilter.toLowerCase()) : true;
-      let trip = unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toString().toLowerCase().includes(this.state.tripFilter.toLowerCase()) : true;
+      let ship = this.state.shipFilter.length == 0 ? true : (unit.inventoryCar.extra["Nave"] ? unit.inventoryCar.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
+      let trip = this.state.tripFilter.length === 0 ? true  : (unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
@@ -330,12 +365,50 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = false;
         }
       }
-      return bl && containerFilter && statusFilter && unitFilter && ship && trip && venueFilter && dateFilter;
+      return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship;
     });
 
     this.setState({
         units: units
     });
+  }
+
+  private downloadData(): void {
+    const { units, clientFilter, clientSelector } = this.state
+    let rows = [
+      [...excelHeaders]
+    ];
+
+
+    let client = window.user.company.handler ?
+      clientSelector.find((client:any) => client._id === clientFilter) :
+      clientSelector[0]
+
+    units.map((container: any) => {
+      let row = [
+        container.car.vin,
+        container.car.brand,
+        container.car.denomination,
+        container.inventoryCar.extra["BIC"],
+        container.inventoryCar.extra["N° BL"],
+        container.inventoryCar.venue.name,
+        container.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-",
+        container.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-",
+        inventorySettings.hasOwnProperty(container.status)
+          ? inventorySettings[container.status]
+          : container.status
+      ];
+      rows.push(row);
+    });
+
+    /* make the worksheet */
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    /* add to workbook */
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
+    /* generate an XLSX file */
+    XLSX.writeFile(wb, `${client.name}_units.xlsx`);
   }
 
 
@@ -349,16 +422,25 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-              Unidades Desconsolidadas <span className='font-12' style={{color:"gray", fontWeight: "600"}}>{units?.length}</span>
+                Unidades Desconsolidadas <span className="font-12"
+                                               style={{ color: 'gray', fontWeight: '600' }}>{units?.length}</span>
               </h3>
+              <div className="pull-right box-tools">
+                    < button
+                      style={{ marginRight: '10px' }}
+                      className="btn btn-sm btn-primary"
+                      onClick={this.downloadData}>
+                      <i className="fa fa-fw fa-download" /> Descargar Excel
+                    </button>
+              </div>
             </div>
             {loading ?
               <div className="overlay">
-                <i className="fa fa-refresh fa-spin"/>
+                <i className="fa fa-refresh fa-spin" />
               </div>
               : <>
                 <div className="box-body">
-                  <div className="row" style={{margin: "10px 0"}}>
+                  <div className="row" style={{ margin: '10px 0' }}>
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">¿Qué Bill of Lading (BL) buscas?</label>
@@ -417,27 +499,52 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">Filtrar por nave</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={this.state.shipFilter}
-                          onChange={(e) => {
-                            this.setState({ shipFilter: e.target.value });
+                        <BootstrapSelect
+                          noneSelectedText="Todas las naves"
+                          displayItems={2}
+                          selectedText="Naves Seleccionadas."
+                          selected={this.state.shipFilter}
+                          autoClouse={true}
+                          search={true}
+                          allOption={false}
+                          options={this.state.shipSelector.map((ship: any) => ({
+                            value: ship,
+                            rend: (
+                             <>
+                               <strong>{ship.toUpperCase()}</strong>
+                             </>
+                           ),
+                           text: `${ship.toUpperCase()}`
+                         }))}
+                          onClick={(selected: any) => {
+                            this.setState({ shipFilter: new Array(selected)});
                           }}
-                        />
+                         /> 
                       </div>
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">Filtrar por viaje</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={this.state.tripFilter}
-                          onChange={(e) => {
-                            this.setState({ tripFilter: e.target.value });
+                        <BootstrapSelect
+                          noneSelectedText="Todos los viajes"
+                          displayItems={2}
+                          selectedText="Naves Seleccionadas."
+                          selected={this.state.tripFilter}
+                          autoClouse={true}
+                          search={true}
+                          options={this.state.tripSelector.map((trip: any) => ({
+                            value: trip,
+                            rend: (
+                             <>
+                               <strong>{trip.toUpperCase()}</strong>
+                             </>
+                           ),
+                           text: `${trip.toUpperCase()}`
+                         }))}
+                          onClick={(selected: any) => {
+                            this.setState({ tripFilter: new Array(selected)});
                           }}
-                        />
+                         /> 
                       </div>
                     </div>
                     <div className="col-md-3">
