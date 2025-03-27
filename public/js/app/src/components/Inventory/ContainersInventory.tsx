@@ -986,14 +986,10 @@ const inventorySettings: { [key: string]: any } = {
   "emptyClass": "green",
   "emptyClassContainer": "empty",
   "emptyColor": "#00AA51",
-
-
   "empty(*)": "Vacío(*)",
   "empty(*)Class": "green",
   "empty(*)ClassContainer": "empty(*)",
   "empty(*)Color": "#00AA51",
-
-
   "check": "Descarga",
   "checkColor": "#C1BB21",
   "checkClass": "yellow",
