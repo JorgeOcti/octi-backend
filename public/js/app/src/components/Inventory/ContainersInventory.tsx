@@ -563,8 +563,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : container.filterStatus === this.state.statusFilter;
-      let naveFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
-      let viajeFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
+      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
+      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
 
       let clientFilter = true;
       if (this.state.clientFilter !== '') {
@@ -588,7 +588,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = false;
         }
       }
-      return bl && clientFilter && containerFilter && statusFilter && dateFilter && viajeFilter && naveFilter;
+      return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter;
     });
 
     this.setState({
