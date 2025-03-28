@@ -205,17 +205,48 @@ const columns = [
         }
         return label;
       }
-      return <span
-         className={`label-container label-container-${
-          inventorySettings.hasOwnProperty(className)
-          ? inventorySettings[className]
-          : ''
-          }`}
-          style={{
-            padding: '5px 10px'
-          }}>
-         {getLabel(row)}
-       </span>
+
+      return <div className="btn-group" style={{padding: "8px"}}>
+
+        <div className="dropdown" style={{paddingBottom: "5px"}}>
+          <button
+            className={`btn custom-dropdown-toggle dropdown-toggle 
+              label-container-${inventorySettings.hasOwnProperty(className)
+              ? inventorySettings[className] : ''}`}
+            type="button"
+            data-toggle="dropdown"
+            style={{
+              minWidth: "120px",
+              color: "white",
+              borderRadius: "100px",
+              border: "none",
+              padding: "2px 35px 2px 15px",
+              position: "relative",
+              textAlign: "center",
+              cursor: "pointer"
+            }}>
+            <span className="label-text">
+              {getLabel(row)}
+            </span>
+            <i className="fa fa-plus" style={{
+              position: "absolute",
+              right: "15px",
+              top: "50%",
+              transform: "translateY(-50%)"
+            }}></i>
+          </button>
+          <ul className="dropdown-menu" style={{top: "23px", left: "-48px"}}>
+            <li><div style={{display:"inline"}}><strong>Cambiar estado asignando etiqueta</strong></div></li>
+            <li role="separator" className="divider"></li>
+            <li><a href="#">Cambiar </a></li>
+            <li><a href="#">Opción 2</a></li>
+            <li><a href="#">Opción 3</a></li>
+          </ul>
+        </div>
+
+        <span style={{paddingTop:"5px"}}> <i className="fa fa-tag"></i> Container se undio de subito</span>
+
+      </div>
     },
     sortable: true
   },
@@ -931,11 +962,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className='form-group'>
-                        <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
+                        <div className="row pull-left box-tools" style={{ paddingTop: "26px", paddingLeft: "15px" }}>
                           <button
-                            className="btn btn-sm btn-primary btn-block"
+                            className="btn btn-sm btn-outline-default text-dark btn-block"
                             onClick={this.cleanFilters}
-                          >
+                            >
                             Limpiar filtros
                           </button>
                         </div>
