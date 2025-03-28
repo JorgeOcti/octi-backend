@@ -105,24 +105,67 @@ class InventoryQueue {
           })
           await currentContainer.save();
         }
+
+        const rutCompany:string = container.extra["RUT Cliente"];
+        let companyName = container.extra["Cliente Razón Social"];
+        let clientCompanyId = null;
+
+        let clientCompany =  await Company.findOne({
+          rut: rutCompany.trim(),
+        });
         // extra nave - extra cliente
-        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
+        if(clientCompany) {
+          companyName = clientCompany.name
+          clientCompanyId = clientCompany._id
+        }else{
+          // Creo el company 
+          let existCompanyTeam = await Team.findOne({
+            name: rutCompany.trim()
+          });
+
+          if (!existCompanyTeam) {
+            const newTeam = await new Team({
+              name: rutCompany.trim()
+            }).save();
+            existCompanyTeam = newTeam;
+          }
+
+          clientCompany = new Company({
+            name: companyName,
+            businessName: companyName,
+            rut: rutCompany.trim(),
+            team: existCompanyTeam,
+            createdBy: user._id,
+            active: true,
+            deleted: false,
+            handler: false,
+          });
+
+          clientCompany = await clientCompany.save();
+
+          clientCompanyId = clientCompany._id
+        }
+
+        let virtualInventoryName = `${container.extra["Nave"]} - ${companyName}`;
         if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
           let virtualInventory = await VirtualInventory.findOne({
             team,
             company,
-            name: virtualInventoryName,
-            status: ChoicesStatusInventory.inProcess
+            //clientCompany: clientCompanyId,
+            name: virtualInventoryName
           });
           if (!virtualInventory) {
             virtualInventory = new VirtualInventory({
               team,
               company,
+              clientCompany: clientCompanyId,
               name: virtualInventoryName,
               status: ChoicesStatusInventory.inProcess
             });
             await virtualInventory.save();
-          }
+          }else if(virtualInventory.status === ChoicesStatusInventory.finalized){
+            await VirtualInventory.updateOne({_id: virtualInventory._id}, {status:ChoicesStatusInventory.inProcess})
+          } 
           virtualInventories[virtualInventoryName] = virtualInventory;
         }
         containersByBIC[BIC] = currentContainer._id;
