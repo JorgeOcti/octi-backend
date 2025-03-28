@@ -892,8 +892,8 @@ class FormController {
           // initialize participant
           const participantObject: any = {
             name: form.name,
-            team,
-            company,
+            team: car.team,
+            company: car.company,
             form: form._id,
             deliveryToCustomer: form.deliveryToCustomer,
             car,
@@ -909,6 +909,10 @@ class FormController {
             reliability,
             keyRawAnswers
           };
+
+          if (req.user.company.handler) {
+            participantObject.handlerCompany = company;
+          }
 
           if (form.reception) {
             participantObject.reception = form.reception;
