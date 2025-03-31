@@ -92,7 +92,7 @@ class InventoryQueue {
       let virtualInventories: any = {};
 
       for (const BIC of Object.keys(carsByContainer)) {
-        const container = carsByContainer[BIC].container;
+        let container = carsByContainer[BIC].container;
         let currentContainer = await CarModel.findOne({
           team,
           vin: container.vin.trim()
@@ -107,7 +107,6 @@ class InventoryQueue {
         }
 
         const rutCompany:string = container.extra["RUT Cliente"];
-        let companyName = container.extra["Cliente Razón Social"];
         let clientCompanyId = null;
 
         let clientCompany =  await Company.findOne({
@@ -115,7 +114,7 @@ class InventoryQueue {
         });
         // extra nave - extra cliente
         if(clientCompany) {
-          companyName = clientCompany.name
+          container.extra["Cliente Razón Social"] = clientCompany.name
           clientCompanyId = clientCompany._id
         }else{
           // Creo el company 
@@ -131,8 +130,8 @@ class InventoryQueue {
           }
 
           clientCompany = new Company({
-            name: companyName,
-            businessName: companyName,
+            name: container.extra["Cliente Razón Social"],
+            businessName: container.extra["Cliente Razón Social"],
             rut: rutCompany.trim(),
             team: existCompanyTeam,
             createdBy: user._id,
@@ -146,7 +145,7 @@ class InventoryQueue {
           clientCompanyId = clientCompany._id
         }
 
-        let virtualInventoryName = `${container.extra["Nave"]} - ${companyName}`;
+        let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
           let virtualInventory = await VirtualInventory.findOne({
             team,
@@ -206,7 +205,12 @@ class InventoryQueue {
       let inventoryCars = [];
 
       for (const BIC of Object.keys(carsByContainer)) {
-        const container = carsByContainer[BIC].container;
+        let container = carsByContainer[BIC].container;
+        const rutContainerCompany:string = container.extra["RUT Cliente"];
+        let clientContainerCompany =  await Company.findOne({
+          rut: rutContainerCompany.trim(),
+        });
+        if(clientContainerCompany) container.extra["Cliente Razón Social"] = clientContainerCompany.name
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         let virtualInventory = virtualInventories[virtualInventoryName];
         const cars = carsByContainer[BIC].cars;
