@@ -2,11 +2,23 @@ import AppContainer from '../../container/AppContainer';
 import TrackingBasePage from "../Utils/TrackingBasePage";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
+import { RouterState } from 'react-router-redux';
+import { Dispatch } from 'redux';
+
 import * as React from "react";
 import ApiService from "../../utils/axios";
-import {IInventory} from "../../../../../../src/inventory/interfaces/inventory.interface";
+import {IInventory, IInventoryCar} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
+import {
+    changeLabelAction,
+    changeTempLabelAction,
+    createLabelAction,
+    deleteLabelAction,
+    getLabelsAction,
+    ILabelsState,
+    LabelsReduxAction
+  } from '../../actions/labels.actions';
 
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
@@ -18,17 +30,36 @@ import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as XLSX from 'xlsx-color';
 import BootstrapSelect from '../Utils/BootstrapSelect';
+import { IFilterCar } from '../../reducers/inventory.reducer';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
+import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import { labelsReducer } from '../../reducers/labels.reducer';
+import swal = require('sweetalert');
+import { AxiosError, AxiosResponse } from 'axios';
+import Inventory from '../../../../../../src/inventory/models/inventory.model';
+
 
 declare let window: IWindow;
 
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {  
+  dispatch: Dispatch<LabelsReduxAction>;
+  //labels: ILabelsState;
+
+  changeTempLabelAction(tempLabel: IInventoryLabel): LabelsReduxAction;
+  getLabelsAction(page: number): LabelsReduxAction;
+  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  createLabelAction(label: IInventoryLabel): LabelsReduxAction;
+  changeLabelAction(label: IInventoryLabel, message?: boolean): LabelsReduxAction;
+  deleteLabelAction(id: string): LabelsReduxAction;
+  
 }
 
 interface IStateType {
   error: Error | null;
   containers: any[];
+  labels: any[],
   originalContainers: any[];
   blFilter: string;
   containerFilter: string;
@@ -121,150 +152,6 @@ const formaDate = (date: any) => {
   }).format(new Date(date)).replace(',', '');
 }
 
-const columns = [
-  {
-    name: 'F. Apertura',
-    selector: (row: any) => {
-      return row.openDate ? formaDate(row.openDate) : 'Sin apertura';
-    },
-    sortable: true,
-    sortFunction: (a: any, b: any) => {
-      return moment(a.openDate).isAfter(b.openDate) ? 1 : -1;
-    }
-  },
-  {
-    name: 'F. Finalización',
-    selector: (row: any) => {
-      return row.emptyDate ? formaDate(row.emptyDate) : 'Sin finalizar';
-    },
-    sortable: true,
-    sortFunction: (a: any, b: any) => {
-      return moment(a.emptyDate).isAfter(b.emptyDate) ? 1 : -1;
-    }
-  },
-  {
-    name: 'Contenedor',
-    selector: (row: any) => row.car.vin,
-    sortable: true
-  },
-  {
-    name: 'BL',
-    selector: (row: any) => row.extra["N° BL"],
-  },
-  {
-    name: 'Puerto',
-    selector: (row: any) => row.extra["Emplazamiento"],
-  },
-  {
-    name: 'Nave',
-    selector: (row: any) => row.extra["Nave"],
-  },
-  {
-    name: 'Cliente',
-    selector: (row: any) => {
-          return row.extra["Cliente Razón Social"];
-    },
-    cell: (row: any) => {
-      return <div>{row.extra["Cliente Razón Social"]}</div>
-    }
-  },
-  {
-    name: 'Viaje',
-    selector: (row: any) => row.extra["N° Viaje"],
-  },
-  {
-    name: 'Imágenes',
-    cell: (row: any) => {
-      if(row.evidenceStatus && row.evidenceStatus.length > 0) {
-        row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
-      }
-      return imagesFormatter(row);
-    }
-  },
-  {
-    name: 'Ubicación',
-    selector: (row: any) => {
-          return row.venue.name;
-    }
-  },
-  {
-    name: 'Estado',
-    selector: (row: any) => {
-      return row.containerStatus || row.status;
-    },
-    cell: (row: any) => {
-      const status = row.containerStatus || row.status
-      let className = `${status}ClassContainer`;
-      let getLabel = (container: any) => {
-        const status = row.containerStatus || row.status
-        let label = inventorySettings.hasOwnProperty(status) ?
-          inventorySettings[status]
-          : status
-        if (status === ContainerStatus.EMPTY && container.pendingUnits) {
-          label = `${label}(*)`
-        }
-        return label;
-      }
-
-      return <div className="btn-group" style={{padding: "8px"}}>
-
-        <div className="dropdown" style={{paddingBottom: "5px"}}>
-          <button
-            className={`btn custom-dropdown-toggle dropdown-toggle 
-              label-container-${inventorySettings.hasOwnProperty(className)
-              ? inventorySettings[className] : ''}`}
-            type="button"
-            data-toggle="dropdown"
-            style={{
-              minWidth: "120px",
-              color: "white",
-              borderRadius: "100px",
-              border: "none",
-              padding: "2px 35px 2px 15px",
-              position: "relative",
-              textAlign: "center",
-              cursor: "pointer"
-            }}>
-            <span className="label-text">
-              {getLabel(row)}
-            </span>
-            <i className="fa fa-plus" style={{
-              position: "absolute",
-              right: "15px",
-              top: "50%",
-              transform: "translateY(-50%)"
-            }}></i>
-          </button>
-          <ul className="dropdown-menu" style={{top: "23px", left: "-48px"}}>
-            <li><div style={{display:"inline"}}><strong>Cambiar estado asignando etiqueta</strong></div></li>
-            <li role="separator" className="divider"></li>
-            <li><a href="#">Cambiar </a></li>
-            <li><a href="#">Opción 2</a></li>
-            <li><a href="#">Opción 3</a></li>
-          </ul>
-        </div>
-
-        <span style={{paddingTop:"5px"}}> <i className="fa fa-tag"></i> Container se undio de subito</span>
-
-      </div>
-    },
-    sortable: true
-  },
-  {
-    name: 'Tarja',
-    selector: (row: any) => {
-      return row.car.bl;
-    },
-    cell: (row: any) => {
-      return row.containerStatus === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
-        window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
-      }}>
-      <i className="fa fa-fw fa-print" /> Tarja
-    </button>
-    }
-  },
-];
-
 const foundStatusContainer = (container: any) => {
   let status = container.status;
   if(container.evidenceStatus && container.evidenceStatus.length > 0) {
@@ -333,7 +220,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     'empty': 'Vacío',
     'empty(*)': 'Vacío(*)',
   };
-
+  private readonly columns: any[] = [];
+              
   constructor(props: IPropsType) {
     super(props);
     this.state = {
@@ -341,6 +229,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       error: null,
       originalContainers: [],
       containers: [],
+      labels: [],
       blFilter: '',
       containerFilter: '',
       containerUpdated: {},
@@ -382,7 +271,234 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     };
 
     this.downloadData = this.downloadData.bind(this);
+    this.columns = [
+      {
+        name: 'F. Apertura',
+        selector: (row: any) => {
+          return row.openDate ? formaDate(row.openDate) : 'Sin apertura';
+        },
+        sortable: true,
+        sortFunction: (a: any, b: any) => {
+          return moment(a.openDate).isAfter(b.openDate) ? 1 : -1;
+        }
+      },
+      {
+        name: 'F. Finalización',
+        selector: (row: any) => {
+          return row.emptyDate ? formaDate(row.emptyDate) : 'Sin finalizar';
+        },
+        sortable: true,
+        sortFunction: (a: any, b: any) => {
+          return moment(a.emptyDate).isAfter(b.emptyDate) ? 1 : -1;
+        }
+      },
+      {
+        name: 'Contenedor',
+        selector: (row: any) => row.car.vin,
+        sortable: true
+      },
+      {
+        name: 'BL',
+        selector: (row: any) => row.extra["N° BL"],
+      },
+      {
+        name: 'Puerto',
+        selector: (row: any) => row.extra["Emplazamiento"],
+      },
+      {
+        name: 'Nave',
+        selector: (row: any) => row.extra["Nave"],
+      },
+      {
+        name: 'Cliente',
+        selector: (row: any) => {
+              return row.extra["Cliente Razón Social"];
+        },
+        cell: (row: any) => {
+          return <div>{row.extra["Cliente Razón Social"]}</div>
+        }
+      },
+      {
+        name: 'Viaje',
+        selector: (row: any) => row.extra["N° Viaje"],
+      },
+      {
+        name: 'Imágenes',
+        cell: (row: any) => {
+          if(row.evidenceStatus && row.evidenceStatus.length > 0) {
+            row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
+          }
+          return imagesFormatter(row);
+        }
+      },
+      {
+        name: 'Ubicación',
+        selector: (row: any) => {
+              return row.venue.name;
+        }
+      },
+      {
+        name: 'Estado',
+        selector: (row: any) => {
+          return row.containerStatus || row.status;
+        },
+        cell: (row: any) => {
+
+
+          console.log(row) 
+
+
+          const { labels } = this.state;
+          const status = row.containerStatus || row.status
+          let className = `${status}ClassContainer`;
+          let getLabel = (container: any) => {
+            const status = row.containerStatus || row.status
+            let label = inventorySettings.hasOwnProperty(status) ?
+              inventorySettings[status]
+              : status
+            if (status === ContainerStatus.EMPTY && container.pendingUnits) {
+              label = `${label}(*)`
+            }
+            return label;
+          }
+
+          return <div className="btn-group" style={{ padding: "8px" }}>
+
+            <div className="dropdown" style={{ paddingBottom: "5px" }}>
+              <button
+                className={`btn custom-dropdown-toggle dropdown-toggle 
+                  label-container-${inventorySettings.hasOwnProperty(className)
+                    ? inventorySettings[className] : ''}`}
+                type="button"
+                data-toggle="dropdown"
+                style={{
+                  minWidth: "120px",
+                  color: "white",
+                  borderRadius: "100px",
+                  border: "none",
+                  padding: "2px 35px 2px 15px",
+                  position: "relative",
+                  textAlign: "center",
+                  cursor: "pointer"
+                }}>
+                <span className="label-text">
+                  {getLabel(row)}
+                </span>
+                <i className="fa fa-plus" style={{
+                  position: "absolute",
+                  right: "15px",
+                  top: "50%",
+                  transform: "translateY(-50%)"
+                }}></i>
+              </button>
+              <ul className="dropdown-menu dropdown-menu-right dropdown-menu-scrollable"
+                role="menu">
+                {labels.filter(label => label.isForContainer).map((option) => {
+                  return (
+                    <li
+                      key={option._id}
+                      onClick={() => {
+                        //inventory, car, carID, label._id, custom
+                        //this.props.actionSetLabel(id, row._id, row.carID, option);
+
+
+                        console.log('actionSetLabel a', JSON.stringify(row));
+
+                        this.actionSetLabel(row.inventory, row.car._id, row.car._id, option);
+                      }}>
+                      <a href="javascript:void(0)">
+                        <i className={`fa ${this.iconStatus[option.sendTo]}`} />
+                        {option.name}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            { (row.labelText && row.labelText !== '') ? 
+              <span style={{ paddingTop: "5px" }}> <i className="fa fa-tag"></i> { row.labelText }</span> : 
+            '' }
+          </div>
+        },
+        sortable: true
+      },
+      {
+        name: 'Tarja',
+        selector: (row: any) => {
+          return row.car.bl;
+        },
+        cell: (row: any) => {
+          return row.containerStatus === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
+            window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
+          }}>
+          <i className="fa fa-fw fa-print" /> Tarja
+        </button>
+        }
+      },
+    ];
+
   }
+
+  // inventory: string, car: string, carID: string, label: IInventoryLabel
+  private actionSetLabel( inventory: string, car: string, cardID: string, label: IInventoryLabel ){
+
+    const api: ApiService = new ApiService();
+
+    console.log('actionSetLabel b', inventory, car, cardID, label);
+
+    if (label.requireCustomText) {
+      (swal as any)('Agregar datos adicionales:', {
+        content: 'input'
+      }).then((custom: string) => {
+        if (custom && custom.trim().length) {
+          // inventory, car, carID, label._id, custom
+
+          
+          api.setLabel(inventory, inventory, cardID, label._id, custom)
+            .then((response: AxiosResponse) => {
+              swal(response.data.message, {
+                icon: 'success'
+              });
+              setTimeout(() => {
+                (swal as any).close();
+              }, 1000);
+            })
+            .catch((err: AxiosError) => {
+              api.errorHandler(err);
+            });
+        } else {
+          swal('Operación cancelada', {
+            icon: 'error'
+          });
+        }
+      });
+    } else {
+      api.setLabel(inventory, inventory, cardID, label._id)
+        .then((response: AxiosResponse) => {
+          swal(response.data.message, {
+            icon: 'success'
+          });
+          setTimeout(() => {
+            (swal as any).close();
+          }, 1500);
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
+
+  }
+
+
+  private iconStatus: any = {
+    pending: 'fa-clock-o',
+    found: 'fa-check',
+    leftover: 'fa-arrow-up',
+    missing: 'fa-arrow-down',
+    reported: 'fa-exclamation',
+    deleted: 'fa-close'
+  };
+
 
 
   public componentWillUnmount():void {
@@ -395,7 +511,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     super.componentDidMount();
     const api: ApiService = new ApiService();
     this.startSocket();
+    ///this.props.getLabelsAction(1);
+
+
+
     api.getSource()
+    api.getLabels(1)
+      .then(async (response: any) => {
+        this.setState(
+          { labels: response.data.results }
+        )
+      })
+      .catch((error: any) => {
+        console.log(error);
+      }
+      );
+
     api.getInventories(1, true)
       .then(async (response: any) => {
 
@@ -731,7 +862,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
 
-  render() {
+  render() : React.ReactElement<IPropsType> {
     const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
@@ -978,7 +1109,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   <div className="row">
                     <div className="col-md-12">
                         <DataTable
-                          columns={columns}
+                          columns={this.columns}
                           data={this.state.containers}
                           customStyles={dataTableStyle}
                           expandableRows
@@ -1005,13 +1136,33 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: any) => {
-  return {};
+const mapStateToProps = (state: { labels: ILabelsState }) => {
+  return {
+    labels: state.labels
+  };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {};
+  return {
+    dispatch,
+    changeTempLabelAction: (tempLabel: IInventoryLabel) => dispatch(changeTempLabelAction(tempLabel)),
+    createLabelAction: (label: IInventoryLabel) => dispatch(createLabelAction(label)),
+    changeLabelAction: (label: IInventoryLabel, message?: boolean) => dispatch(changeLabelAction(label, message)),
+    deleteLabelAction: (id: string) => dispatch(deleteLabelAction(id)),
+    getLabelsAction: (page: number) => dispatch(getLabelsAction(page)),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+  };
 };
+
+
+/*
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(InventoryDetailView);
+
+*/
+
 
 export default connect<{}, {}, IPropsType>(
   mapStateToProps,
