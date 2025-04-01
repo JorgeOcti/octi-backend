@@ -1185,7 +1185,7 @@ class InventoryController {
       if (inventory) {
 
         let carFilter = req.user.company.handler ?
-          { vin, $or: [{company: req.user.company._id }, {companyHandler: req.user.company._id }] } :
+          { vin, $or: [{company: req.user.company._id }, {handlerCompany: req.user.company._id }] } :
           { vin, team };
 
         const car = await Car.findOne(carFilter);
