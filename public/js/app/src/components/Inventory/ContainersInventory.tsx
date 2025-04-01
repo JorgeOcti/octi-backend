@@ -398,13 +398,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <li
                       key={option._id}
                       onClick={() => {
-                        //inventory, car, carID, label._id, custom
-                        //this.props.actionSetLabel(id, row._id, row.carID, option);
-
-
-                        console.log('actionSetLabel a', JSON.stringify(row));
-
-                        this.actionSetLabel(row.inventory, row.car._id, row.car._id, option);
+                        this.actionSetLabel(row.inventory, row._id, row.car._id, option);
                       }}>
                       <a href="javascript:void(0)">
                         <i className={`fa ${this.iconStatus[option.sendTo]}`} />
@@ -454,7 +448,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           // inventory, car, carID, label._id, custom
 
           
-          api.setLabel(inventory, inventory, cardID, label._id, custom)
+          api.setLabel(inventory, car, cardID, label._id, custom)
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -473,7 +467,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         }
       });
     } else {
-      api.setLabel(inventory, inventory, cardID, label._id)
+      api.setLabel(inventory, car, cardID, label._id)
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'
