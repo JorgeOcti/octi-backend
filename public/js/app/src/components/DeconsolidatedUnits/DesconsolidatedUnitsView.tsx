@@ -601,7 +601,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-
+                    <div className="col-md-3">
+                      <div className='form-group'>
+                        <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
+                          <button
+                            className="btn btn-sm btn-primary btn-block"
+                            onClick={this.cleanFilters}
+                          >
+                            Limpiar filtros
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="row">
                     <div className="col-md-12">
