@@ -603,7 +603,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className='form-group'>
-                        <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
+                        <div className="row pull-right box-tools" style={{ paddingRight: "16px" }}>
                           <button
                             className="btn btn-sm btn-primary btn-block"
                             onClick={this.cleanFilters}
