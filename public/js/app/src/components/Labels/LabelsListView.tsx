@@ -125,11 +125,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
-
   private changeTab(name: string): void {
-
-    console.log('changeTab', name);
-
     this.setState(
       {
         tab: name
@@ -434,10 +430,6 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private processAddLabel(): void {
     const { tempLabel} = this.props.labels;
-
-
-    console.log(`processAddLabel   ${JSON.stringify(tempLabel)}`);
-
     if (this.validateLabel(tempLabel, 'Agregar Etiqueta')) {
       statusFooterButttonsModal(true);
       this.props.createLabelAction(tempLabel);

@@ -2,24 +2,12 @@ import AppContainer from '../../container/AppContainer';
 import TrackingBasePage from "../Utils/TrackingBasePage";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
-import { RouterState } from 'react-router-redux';
-import { Dispatch } from 'redux';
 
 import * as React from "react";
 import ApiService from "../../utils/axios";
 import {IInventory, IInventoryCar} from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-import {
-    changeLabelAction,
-    changeTempLabelAction,
-    createLabelAction,
-    deleteLabelAction,
-    getLabelsAction,
-    ILabelsState,
-    LabelsReduxAction
-  } from '../../actions/labels.actions';
-
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
 
@@ -30,36 +18,27 @@ import {IWindow} from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
 import * as XLSX from 'xlsx-color';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import { IFilterCar } from '../../reducers/inventory.reducer';
-import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
-import { labelsReducer } from '../../reducers/labels.reducer';
 import swal = require('sweetalert');
 import { AxiosError, AxiosResponse } from 'axios';
-import Inventory from '../../../../../../src/inventory/models/inventory.model';
 
 
 declare let window: IWindow;
 
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {  
-  dispatch: Dispatch<LabelsReduxAction>;
-  //labels: ILabelsState;
-
-  changeTempLabelAction(tempLabel: IInventoryLabel): LabelsReduxAction;
-  getLabelsAction(page: number): LabelsReduxAction;
-  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  createLabelAction(label: IInventoryLabel): LabelsReduxAction;
-  changeLabelAction(label: IInventoryLabel, message?: boolean): LabelsReduxAction;
-  deleteLabelAction(id: string): LabelsReduxAction;
-  
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 interface IStateType {
   error: Error | null;
   containers: any[];
   labels: any[],
+  activeIndex: number,
+  inventorySelected: string, 
+  carSelected: string, 
+  cardIDSelected: string, 
+  labelSelected: any,
   originalContainers: any[];
   blFilter: string;
   containerFilter: string;
@@ -230,6 +209,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       originalContainers: [],
       containers: [],
       labels: [],
+      activeIndex: 0,
+      inventorySelected: '', 
+      carSelected: '', 
+      cardIDSelected: '', 
+      labelSelected: null,
       blFilter: '',
       containerFilter: '',
       containerUpdated: {},
@@ -343,76 +327,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return row.containerStatus || row.status;
         },
         cell: (row: any) => {
-
-
-          console.log(row) 
-
-
-          const { labels } = this.state;
-          const status = row.containerStatus || row.status
-          let className = `${status}ClassContainer`;
-          let getLabel = (container: any) => {
-            const status = row.containerStatus || row.status
-            let label = inventorySettings.hasOwnProperty(status) ?
-              inventorySettings[status]
-              : status
-            if (status === ContainerStatus.EMPTY && container.pendingUnits) {
-              label = `${label}(*)`
-            }
-            return label;
-          }
-
-          return <div className="btn-group" style={{ padding: "8px" }}>
-
-            <div className="dropdown" style={{ paddingBottom: "5px" }}>
-              <button
-                className={`btn custom-dropdown-toggle dropdown-toggle 
-                  label-container-${inventorySettings.hasOwnProperty(className)
-                    ? inventorySettings[className] : ''}`}
-                type="button"
-                data-toggle="dropdown"
-                style={{
-                  minWidth: "120px",
-                  color: "white",
-                  borderRadius: "100px",
-                  border: "none",
-                  padding: "2px 35px 2px 15px",
-                  position: "relative",
-                  textAlign: "center",
-                  cursor: "pointer"
-                }}>
-                <span className="label-text">
-                  {getLabel(row)}
-                </span>
-                <i className="fa fa-plus" style={{
-                  position: "absolute",
-                  right: "15px",
-                  top: "50%",
-                  transform: "translateY(-50%)"
-                }}></i>
-              </button>
-              <ul className="dropdown-menu dropdown-menu-right dropdown-menu-scrollable"
-                role="menu">
-                {labels.filter(label => label.isForContainer).map((option) => {
-                  return (
-                    <li
-                      key={option._id}
-                      onClick={() => {
-                        this.actionSetLabel(row.inventory, row._id, row.car._id, option);
-                      }}>
-                      <a href="javascript:void(0)">
-                        <i className={`fa ${this.iconStatus[option.sendTo]}`} />
-                        {option.name}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            { (row.labelText && row.labelText !== '') ? 
-              <span style={{ paddingTop: "5px" }}> <i className="fa fa-tag"></i> { row.labelText }</span> : 
-            '' }
-          </div>
+          return this.getDropDownLabels(row);
         },
         sortable: true
       },
@@ -430,24 +345,82 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         }
       },
     ];
-
   }
 
-  // inventory: string, car: string, carID: string, label: IInventoryLabel
+  handleClick = (index: any) => {
+    this.setState({ activeIndex: index });
+  };
+
+  private getDropDownLabels(row: { containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
+
+    const { labels } = this.state;
+    const status = row.containerStatus || row.status
+    let className = `${status}ClassContainer`;
+
+    let getLabel = (container: any) => {
+      const status = row.containerStatus || row.status
+      let label = inventorySettings.hasOwnProperty(status) ?
+        inventorySettings[status]
+        : status
+      if (status === ContainerStatus.EMPTY && container.pendingUnits) {
+        label = `${label}(*)`
+      }
+      return label;
+    }
+
+    return <div className="btn-group" style={{ padding: "8px" }}>
+      <div className="dropdown" style={{ padding: "5px" }}>
+        <button
+          data-toggle="modal"
+          data-target="#modalForAddLabel"
+          className={`btn custom-dropdown-toggle dropdown-toggle 
+          label-container-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`}
+          type="button"
+          onClick={() => {
+            this.setState({
+              inventorySelected: row.inventory, //inventario
+              carSelected: row._id, //inventory car
+              cardIDSelected: row.car._id, // car
+              labelSelected: labels[this.state.activeIndex] //label
+            });
+          }
+          }
+          style={{
+            minWidth: "120px",
+            color: "white",
+            borderRadius: "100px",
+            border: "none",
+            padding: "2px 35px 2px 15px",
+            position: "relative",
+            textAlign: "center",
+            cursor: "pointer"
+          }}>
+          <span className="label-text">
+            {getLabel(row)}
+          </span>
+          <i className="fa fa-plus" style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)"
+          }}></i>
+        </button>
+      </div>
+      {
+        (row.labelText && row.labelText !== '') ?
+        <span style={{ paddingTop: "5px" }}> <i className="fa fa-tag"></i> {row.labelText}</span> :
+        ''
+        }
+    </div>
+  }
+
   private actionSetLabel( inventory: string, car: string, cardID: string, label: IInventoryLabel ){
-
     const api: ApiService = new ApiService();
-
-    console.log('actionSetLabel b', inventory, car, cardID, label);
-
     if (label.requireCustomText) {
       (swal as any)('Agregar datos adicionales:', {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          // inventory, car, carID, label._id, custom
-
-          
           api.setLabel(inventory, car, cardID, label._id, custom)
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
@@ -455,6 +428,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               });
               setTimeout(() => {
                 (swal as any).close();
+                this.componentDidMount(); // reload data after set label
+                $('#modalForAddLabel').modal('toggle');
               }, 1000);
             })
             .catch((err: AxiosError) => {
@@ -474,41 +449,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           });
           setTimeout(() => {
             (swal as any).close();
+            $('#modalForAddLabel').modal('toggle');
           }, 1500);
         })
         .catch((err: AxiosError) => {
           api.errorHandler(err);
         });
     }
-
   }
-
-
-  private iconStatus: any = {
-    pending: 'fa-clock-o',
-    found: 'fa-check',
-    leftover: 'fa-arrow-up',
-    missing: 'fa-arrow-down',
-    reported: 'fa-exclamation',
-    deleted: 'fa-close'
-  };
-
-
 
   public componentWillUnmount():void {
     // cancel request if component is inmounted
     this.socket.disconnect();
   }
 
-
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
     this.startSocket();
-    ///this.props.getLabelsAction(1);
-
-
-
     api.getSource()
     api.getLabels(1)
       .then(async (response: any) => {
@@ -1120,6 +1078,59 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                     </div>
                   </div>
+                  <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
+                    <div className="modal-dialog " role="document">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                          <h4 className="modal-title" id="modalForAddLabel">Cambiar estado asignando etiqueta</h4>
+                        </div>
+                        <div className="modal-body">
+                          <ul className="list-group">
+                            {
+                              this.state.labels.filter(label => label.isForContainer).map((option, index) => {
+                                return (
+                                  <li key={index} onClick={() => this.handleClick(index)}
+                                    className={index === this.state.activeIndex ? 'list-group-item active' : 'list-group-item'}>
+                                    <div className='row' >
+                                      <div className='col-md-7'>
+                                        {option.name}
+                                      </div>
+                                      <div className='col-md-2'>
+                                        <i className="fa fa-arrow-right" />
+                                      </div>
+                                      <div className='col-md-3'>
+                                        <span
+                                          style={{
+                                            color: "white",
+                                            borderRadius: "100px", padding: "4px"
+                                          }}
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                        >
+                                          {inventorySettings[option.sendTo]}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                          </ul>
+                        </div>
+                        <div className="modal-footer">                          
+                          <button type="button" className="btn btn-primary"
+                            onClick={() => {
+                              this.actionSetLabel(
+                                this.state.inventorySelected, 
+                                this.state.carSelected, 
+                                this.state.cardIDSelected, 
+                                this.state.labelSelected
+                              );
+                            }}
+                          >Aplicar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
               </div>
               </>
             }
@@ -1130,33 +1141,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: { labels: ILabelsState }) => {
-  return {
-    labels: state.labels
-  };
+const mapStateToProps = (state: any) => {
+  return {};
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {
-    dispatch,
-    changeTempLabelAction: (tempLabel: IInventoryLabel) => dispatch(changeTempLabelAction(tempLabel)),
-    createLabelAction: (label: IInventoryLabel) => dispatch(createLabelAction(label)),
-    changeLabelAction: (label: IInventoryLabel, message?: boolean) => dispatch(changeLabelAction(label, message)),
-    deleteLabelAction: (id: string) => dispatch(deleteLabelAction(id)),
-    getLabelsAction: (page: number) => dispatch(getLabelsAction(page)),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
-  };
+  return {};
 };
-
-
-/*
-export default connect<{}, {}, IPropsType>(
-  mapStateToProps,
-  mapDispatchToProps
-)(InventoryDetailView);
-
-*/
-
 
 export default connect<{}, {}, IPropsType>(
   mapStateToProps,
@@ -1204,6 +1195,3 @@ const inventorySettings: { [key: string]: any } = {
     "secondaryRequired": false
   }
 }
-
-
-
