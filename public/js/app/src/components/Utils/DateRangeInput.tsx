@@ -43,6 +43,17 @@ class DateRangeInput extends React.Component<IPropsType, IStateType> {
     });
   };
 
+  componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    const { startDate, endDate, options } = this.props;
+    if (
+      startDate !== prevState.from ||
+      endDate !== prevState.to) {
+        $(this.pickerRef.current!).daterangepicker({ ...options, startDate, endDate }, (from: any, to: any) => {
+          this.onChange(from, to);
+        });
+    }
+  }
+
   public componentWillUnmount() {
     $('.daterangepicker').remove();
   }
