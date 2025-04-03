@@ -54,9 +54,9 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
 
 
   render(): React.ReactElement<IPropsType> | null {
-    const {changeTempLabelAction} = this.props;
+    const { changeTempLabelAction } = this.props;
     if (this.props.labels) {
-      const {tempLabel} = this.props.labels;
+      const { tempLabel } = this.props.labels;
       return (
         <div className="row">
           <div className="col-md-12">
@@ -106,50 +106,51 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
               />
             </div>
           </div>
-          <div className="col-md-12">
-            <div className="form-group-switch">
-              <BootstrapSwitch
-                checked={tempLabel.isExhibition}
-                color="blue"
-                onChange={() => {
-                  this.props.changeTempLabelAction({
-                    ...tempLabel,
-                    isExhibition: !tempLabel.isExhibition
-                  });
-                }}/>
-              <label className="switch-label">Unidad de la marca</label>
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group-switch">
-              <BootstrapSwitch
-                checked={tempLabel.requireCustomText}
-                color="blue"
-                onChange={() => {
-                  this.props.changeTempLabelAction({
-                    ...tempLabel,
-                    requireCustomText: !tempLabel.requireCustomText
-                  });
-                }}/>
-              <label className="switch-label">Requerir datos adicionales</label>
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label>Descripción</label>
-              <textarea
-                name="description"
-                className="form-control"
-                defaultValue={tempLabel ? tempLabel.description : ''}
-                onChange={
-                  (e: React.ChangeEvent<HTMLTextAreaElement>) => changeTempLabelAction({
-                    ...tempLabel,
-                    description: e.target.value.trim()
-                  }, 300)
-                }
-              />
-            </div>
-          </div>
+
+          {(!tempLabel.isForContainer) ?
+
+            <><div className="col-md-12">
+              <div className="form-group-switch">
+                <BootstrapSwitch
+                  checked={tempLabel.isExhibition}
+                  color="blue"
+                  onChange={() => {
+                    this.props.changeTempLabelAction({
+                      ...tempLabel,
+                      isExhibition: !tempLabel.isExhibition
+                    });
+                  }} />
+                <label className="switch-label">Unidad de la marca</label>
+              </div>
+            </div><div className="col-md-12">
+                <div className="form-group-switch">
+                  <BootstrapSwitch
+                    checked={tempLabel.requireCustomText}
+                    color="blue"
+                    onChange={() => {
+                      this.props.changeTempLabelAction({
+                        ...tempLabel,
+                        requireCustomText: !tempLabel.requireCustomText
+                      });
+                    }} />
+                  <label className="switch-label">Requerir datos adicionales</label>
+                </div>
+              </div><div className="col-md-12">
+                <div className="form-group">
+                  <label>Descripción</label>
+                  <textarea
+                    name="description"
+                    className="form-control"
+                    defaultValue={tempLabel ? tempLabel.description : ''}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => changeTempLabelAction({
+                      ...tempLabel,
+                      description: e.target.value.trim()
+                    }, 300)} />
+                </div>
+              </div></>
+
+            : null}
+
         </div>
       );
     } else {

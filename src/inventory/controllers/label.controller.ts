@@ -77,6 +77,7 @@ class LabelController {
         sendTo: body.sendTo,
         description: body.description,
         isExhibition: body.isExhibition,
+        isForContainer: body.isForContainer,
         color: body.color,
         requireCustomText: body.requireCustomText,
         updatedBy: req.user._id,
