@@ -34,11 +34,14 @@ interface IStateType {
   error: Error | null;
   containers: any[];
   labels: any[],
+  unitLabels: any[],
   activeIndex: number,
+  activeUnitIndex: number,
   inventorySelected: string, 
   carSelected: string, 
   cardIDSelected: string, 
   labelSelected: any,
+  unitLabelSelected: any,
   originalContainers: any[];
   blFilter: string;
   containerFilter: string;
@@ -209,11 +212,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       originalContainers: [],
       containers: [],
       labels: [],
-      activeIndex: 0,
+      unitLabels:[],
+      activeIndex: -1,
+      activeUnitIndex: -1,
       inventorySelected: '', 
       carSelected: '', 
       cardIDSelected: '', 
       labelSelected: null,
+      unitLabelSelected: null,
       blFilter: '',
       containerFilter: '',
       containerUpdated: {},
@@ -348,7 +354,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   handleClick = (index: any) => {
-    this.setState({ activeIndex: index });
+    this.setState({ 
+      activeIndex: index,
+      labelSelected: this.state.labels[index]
+    });
+  };
+
+  handleUnitClick = (index: any) => {
+    this.setState({ 
+      activeUnitIndex: index, 
+      unitLabelSelected: this.state.unitLabels[index]
+    });
+
   };
 
   private getDropDownLabels(row: { containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
@@ -408,13 +425,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       </div>
       {
         (row.labelText && row.labelText !== '') ?
-        <span style={{ paddingTop: "5px" }}> <i className="fa fa-tag"></i> {row.labelText}</span> :
+        <span style={{ paddingTop: "5px", paddingLeft:"5px" }}> <i className="fa fa-tag"></i> {row.labelText}</span> :
         ''
         }
     </div>
   }
 
-  private actionSetLabel( inventory: string, car: string, cardID: string, label: IInventoryLabel ){
+  private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
       (swal as any)('Agregar datos adicionales:', {
@@ -429,7 +446,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               setTimeout(() => {
                 (swal as any).close();
                 this.componentDidMount(); // reload data after set label
-                $('#modalForAddLabel').modal('toggle');
+
+                if (isUnit) {
+                  $('#modalForAddLabelUnit').modal('toggle');
+                } else {
+                  $('#modalForAddLabel').modal('toggle');
+                }
               }, 1000);
             })
             .catch((err: AxiosError) => {
@@ -449,7 +471,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           });
           setTimeout(() => {
             (swal as any).close();
-            $('#modalForAddLabel').modal('toggle');
+            this.componentDidMount(); // reload data after set label
+            if (isUnit) {
+              $('#modalForAddLabelUnit').modal('toggle');
+            } else {
+              $('#modalForAddLabel').modal('toggle');
+            }
           }, 1500);
         })
         .catch((err: AxiosError) => {
@@ -470,8 +497,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     api.getSource()
     api.getLabels(1)
       .then(async (response: any) => {
+        const containerLabels = response.data.results.filter((label: { isForContainer: any; })=>label.isForContainer);
+        const unitLabels = response.data.results.filter((label: { isForContainer: any; })=>!label.isForContainer);
         this.setState(
-          { labels: response.data.results }
+          { 
+            labels: containerLabels,
+            unitLabels: unitLabels
+          }
         )
       })
       .catch((error: any) => {
@@ -762,6 +794,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   ExpandedRowElement = ({ data }: { data: any }) => {
+
+    const { unitLabels } = this.state;
+
     return <div className='table-responsive request-list'>
       <div className="row request-header bg-request-title ">
         <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
@@ -783,7 +818,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         return (
           <div key={index} className={`row request background-transition ${classNameEfect}`}>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
+              <strong style={{ "textDecoration": "underline" }}>{car.car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {imagesFormatter(car)}
@@ -791,20 +826,59 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               <strong className="text-black">{car.car.color}</strong>
             </div>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-           <span
-             className={`label-units label-${
-               inventorySettings.hasOwnProperty(className)
-                 ? inventorySettings[className]
-                 : ''
-             }`}
-             style={{
-               padding: '5px 10px',
-             }}>
-             {inventorySettings.hasOwnProperty(car.status)
-               ? inventorySettings[car.status]
-               : car.state}
-           </span>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center' style={{
+                display:"inline"
+              }}>
+          
+
+              <div style={{
+                display:"inline"
+              }}>
+
+
+              <span
+                data-toggle="modal"
+                data-target="#modalForAddLabelUnit"
+
+                onClick={() => {
+                  console.log(unitLabels, unitLabels[this.state.activeUnitIndex] );
+                  this.setState({
+                    inventorySelected: car.inventory, //inventario
+                    carSelected: car._id, //inventory car
+                    cardIDSelected: car.car._id, // car
+                    unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
+                  });
+                }}
+
+                className={`label-units label-${inventorySettings.hasOwnProperty(className)
+                    ? inventorySettings[className]
+                    : ''
+                  }`}
+
+                style={{
+                  padding: '5px 10px',
+                  cursor: 'pointer'
+                }}>
+                {inventorySettings.hasOwnProperty(car.status)
+                  ? inventorySettings[car.status]
+                  : car.state}
+                <i className="fa fa-plus" style={{
+                  position: "relative",
+                  left: "7.5%",
+                  top: "50%",
+                  transform: "translateY(-50%)"
+                }}></i>
+              </span>
+
+              </div>
+                {
+                  (car.labelText && car.labelText !== '') ?
+                   <div style={{
+                    display:"inline"
+                  }}><span style={{ paddingTop: "5px", paddingLeft:"5px"  }}> <i className="fa fa-tag"></i> {car.labelText}</span></div>:
+                    ''
+                }
+              
             </div>
           </div>
         )
@@ -1078,6 +1152,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         />
                     </div>
                   </div>
+
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">
                       <div className="modal-content">
@@ -1088,18 +1163,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         <div className="modal-body">
                           <ul className="list-group">
                             {
-                              this.state.labels.filter(label => label.isForContainer).map((option, index) => {
+                              this.state.labels.map((option, index) => {
                                 return (
                                   <li key={index} onClick={() => this.handleClick(index)}
                                     className={index === this.state.activeIndex ? 'list-group-item active' : 'list-group-item'}>
                                     <div className='row' >
-                                      <div className='col-md-7'>
+                                      <div className='col-md-7 col-xs-7'>
                                         {option.name}
                                       </div>
-                                      <div className='col-md-2'>
+                                      <div className='col-md-2 col-xs-2'>
                                         <i className="fa fa-arrow-right" />
                                       </div>
-                                      <div className='col-md-3'>
+                                      <div className='col-md-3 col-xs-3'>
                                         <span
                                           style={{
                                             color: "white",
@@ -1123,7 +1198,63 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                 this.state.inventorySelected, 
                                 this.state.carSelected, 
                                 this.state.cardIDSelected, 
-                                this.state.labelSelected
+                                this.state.labelSelected,
+                                false
+                              );
+                            }}
+                          >Aplicar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="modal fade" id="modalForAddLabelUnit" role="dialog" aria-labelledby="modalForAddLabelUnit">
+                    <div className="modal-dialog " role="document">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                          <h4 className="modal-title" id="modalForAddLabelUnit">Cambiar estado asignando etiqueta</h4>
+                        </div>
+                        <div className="modal-body">
+                          <ul className="list-group">
+                            {
+                              this.state.unitLabels.map((option, index) => {
+                                return (
+                                  <li key={index} onClick={() => this.handleUnitClick(index)}
+                                    className={index === this.state.activeUnitIndex ? 'list-group-item active' : 'list-group-item'}>
+                                    <div className='row' >
+                                      <div className='col-md-7 col-xs-7'>
+                                        {option.name}
+                                      </div>
+                                      <div className='col-md-2 col-xs-2'>
+                                        <i className="fa fa-arrow-right" />
+                                      </div>
+                                      <div className='col-md-3 col-xs-3'>
+                                        <span
+                                          style={{
+                                            color: "white",
+                                            borderRadius: "100px", padding: "4px"
+                                          }}
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                        >
+                                          {inventorySettings[option.sendTo]}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                          </ul>
+                        </div>
+                        <div className="modal-footer">                          
+                          <button type="button" className="btn btn-primary"
+                            onClick={() => {
+                              this.actionSetLabel(
+                                this.state.inventorySelected, 
+                                this.state.carSelected, 
+                                this.state.cardIDSelected, 
+                                this.state.unitLabelSelected,
+                                true
                               );
                             }}
                           >Aplicar</button>
