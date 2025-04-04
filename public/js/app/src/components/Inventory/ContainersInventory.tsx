@@ -43,8 +43,8 @@ interface IStateType {
   tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
-  endDate: Date;
-  startDate: Date;
+  endDate: any;
+  startDate: any;
   isFilteringByDate: boolean;
 }
 
@@ -322,8 +322,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripFilter: [],
       selectedContainer: -1,
       endDate: moment().toDate(),
-      startDate: moment().toDate(),
-      isFilteringByDate: false,
+      startDate: moment().subtract(1, 'month').startOf('month'),
+      isFilteringByDate: true,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",
@@ -443,6 +443,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           tripSelector: trips,
           loading: false
         })
+        console.log(containers)
 
       })
       .catch((error: any) => {
@@ -561,9 +562,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       statusFilterSelected: [],
-      startDate: moment().toDate(),
-      endDate: moment().toDate(),
-      isFilteringByDate: false
     });
   }
 
@@ -594,9 +592,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           let startDate = this.state.startDate? new Date(this.state.startDate) : null;
           let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
 
-          dateFilter = (!startDate || openDate >= startDate) && (!endDate || openDate <= endDate);
+          dateFilter = ((!startDate || openDate >= startDate) && (!endDate || openDate <= endDate));
         } else {
-          dateFilter = false;
+          dateFilter = true;
         }
       }
       return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter;
@@ -741,7 +739,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     return (
-      <AppContainer title="Revisión Containers" cMenu="6" cSubMenu="6.1">
+      <AppContainer title={
+        <div style={{ width: '180px' }}>
+           <DateRangeInput
+              options={getDateRangeOptions()}
+              onChange={(start: Date, end: Date) => {
+                this.setState({
+                  startDate: start,
+                  endDate: end,
+                  isFilteringByDate: true
+                });
+              }}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+            />
+          </div>
+      } cMenu="6" cSubMenu="6.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
@@ -772,7 +785,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               : <>
                 <div className="box-body">
-
                   <div className="row" style={{margin: "10px 0"}}>
 
                     <div className="col-md-3">
@@ -912,24 +924,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
 
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label className="text-black">Filtrar por Fecha de Apertura</label>
-                        <DateRangeInput
-                          options={getDateRangeOptions()}
-                          onChange={(start: Date, end: Date) => {
-                            this.setState({
-                              startDate: start,
-                              endDate: end,
-                              isFilteringByDate: true
-                            });
-                          }}
-                          startDate={this.state.startDate}
-                          endDate={this.state.endDate}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
+                    
+                    <div className="col-md-6">
                       <div className='form-group'>
                         <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
                           <button

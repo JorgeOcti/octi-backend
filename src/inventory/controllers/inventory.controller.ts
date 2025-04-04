@@ -3456,6 +3456,7 @@ class InventoryController {
         ]);
 
         if(status === ChoicesStatusContainer.empty && inventoryCar.inventory){
+          logger.info("LLegue")
           await this.addHistoryToCarOfEmptyContainer(inventoryCar);
         }
 

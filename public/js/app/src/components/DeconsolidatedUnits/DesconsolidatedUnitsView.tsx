@@ -35,8 +35,8 @@ interface IStateType {
   tripSelector: any[];
   shipSelector: any[];
   statusFilter: string;
-  endDate: Date;
-  startDate: Date;
+  endDate: any;
+  startDate: any;
   selectedContainer: number;
   isFilteringByDate: boolean;
   loading: boolean;
@@ -145,7 +145,11 @@ const columns = [
   {
     name: 'Nave',
     selector: (row: any) => row.inventoryCar.extra["Nave"],
-  }, {
+  }, 
+  {
+    name: 'Viaje',
+    selector: (row: any) => row.inventoryCar.extra["N° Viaje"],
+  },{
     name: 'Cliente',
     selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
   },{
@@ -251,9 +255,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       venueSelector: [],
       isUserHandler:false,
       endDate: moment().toDate(),
-      startDate: moment().toDate(),
+      startDate: moment().subtract(1, 'month').startOf('month'),
       statusFilter: '',
-      isFilteringByDate:false,
+      isFilteringByDate:true,
       selectedContainer: -1,
     };
     this.downloadData = this.downloadData.bind(this);
@@ -268,9 +272,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       venueFilter: '',
-      endDate: moment().toDate(),
-      startDate: moment().toDate(),
-      isFilteringByDate: false
     });
   }
 
@@ -353,17 +354,23 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
       let venueFilter = this.state.venueFilter === '' ? true : unit.inventoryCar.venue.name.toLowerCase().includes(this.state.venueFilter.toLowerCase());
-      let dateFilter = true;
+      let dateFilter = false;
+      // Revisar filtro de fechas, consultar si es solo por fecha de descarga
       if (this.state.isFilteringByDate) {
         const dwonloadDate = unit.histories.find((history:any) => history.status === "readyToClient")?.createdAt
         const shippingDate = unit.histories.find((history:any) => history.status === "inTransit")?.createdAt
-        if (dwonloadDate || shippingDate) {
-          let startDate = this.state.startDate? new Date(this.state.startDate) : null;
-          let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
-          dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
-        } else {
-          dateFilter = false;
+        let startDate = this.state.startDate? new Date(this.state.startDate) : null;
+        let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
+        if (dwonloadDate) {
+          dateFilter = (!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate);
+        } 
+        if(shippingDate){
+          dateFilter = (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate);
         }
+        if(dwonloadDate && shippingDate) {
+          dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
+        }
+
       }
       return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship;
     });
@@ -417,7 +424,23 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const {units, loading, isUserHandler} = this.state;
 
     return (
-      <AppContainer title="Unidades Desconsolidadas" cMenu="6" cSubMenu="6.2">
+      <AppContainer title={
+        <div style={{ width: '180px' }}>
+          <DateRangeInput
+            options={getDateRangeOptions()}
+            onChange={(start: Date, end: Date) => {
+              this.setState({
+                startDate: start,
+                endDate: end,
+                isFilteringByDate: true
+              });
+            }}
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+        />
+        </div>
+      } 
+          cMenu="6" cSubMenu="6.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
@@ -584,26 +607,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
 
                  : null}
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label className="text-black">Filtrar por Fecha de Apertura</label>
-                        <DateRangeInput
-                          options={getDateRangeOptions()}
-                          onChange={(start: Date, end: Date) => {
-                            this.setState({
-                              startDate: start,
-                              endDate: end,
-                              isFilteringByDate: true
-                            });
-                          }}
-                          startDate={this.state.startDate}
-                          endDate={this.state.endDate}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
+                    <div className="col-md-12">
                       <div className='form-group'>
-                        <div className="row pull-right box-tools" style={{ paddingRight: "16px" }}>
+                        <div className="row pull-right box-tools" style={{ paddingTop: "20px", paddingRight: "16px" }}>
                           <button
                             className="btn btn-sm btn-primary btn-block"
                             onClick={this.cleanFilters}
