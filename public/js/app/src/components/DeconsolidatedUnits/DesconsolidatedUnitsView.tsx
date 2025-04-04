@@ -355,7 +355,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
       let venueFilter = this.state.venueFilter === '' ? true : unit.inventoryCar.venue.name.toLowerCase().includes(this.state.venueFilter.toLowerCase());
       let dateFilter = false;
-      // Revisar filtro de fechas, consultar si es solo por fecha de descarga
       if (this.state.isFilteringByDate) {
         const dwonloadDate = unit.histories.find((history:any) => history.status === "readyToClient")?.createdAt
         const shippingDate = unit.histories.find((history:any) => history.status === "inTransit")?.createdAt
