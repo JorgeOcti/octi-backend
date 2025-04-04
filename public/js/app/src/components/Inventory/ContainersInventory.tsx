@@ -23,7 +23,7 @@ declare let window: IWindow;
 
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {  
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 interface IStateType {
@@ -290,7 +290,7 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 }
 
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
-  
+
   title = "Revisión Containers";
 
   private socket: Socket;
@@ -432,9 +432,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined)));
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"].toString()).filter((nave: any) => nave !== undefined)));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"].toString()).filter((viaje: any) => viaje !== undefined)));
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -572,8 +571,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilterSelected.length === 0 ? true : this.state.statusFilterSelected.includes(container.filterStatus);
-      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
-      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
+      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toString().toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
+      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toString().toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
 
       let clientFilter = true;
       if (this.state.clientFilter !== '') {
@@ -699,6 +698,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
 
   render() {
+
     const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
@@ -894,7 +894,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ shipFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
 
@@ -920,7 +920,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ tripFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
 

@@ -28,7 +28,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory, choicesStatusContainer, ChoicesStatusContainer
+  ChoicesStatusCarInventory, choicesStatusContainer, ChoicesStatusContainer, IInventoryCarModel
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -55,13 +55,14 @@ import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
 import Form, {KindForm} from "../../form/models/form.model";
 
-import {
+import VirtualInventoryModel, {
   IInventoryVirtualModel,
 } from '../models/virtualInventory.model';
 import { IUserModel } from '../../app/schemas/user.schema';
 import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
 import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
+import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 
 class InventoryController {
   constructor() {
@@ -95,6 +96,8 @@ class InventoryController {
     this.addStatusEvidence = this.addStatusEvidence.bind(this)
     this.closeInventory = this.closeInventory.bind(this)
     this.closeVirtualInventory = this.closeVirtualInventory.bind(this)
+    this.checkCarToInventory = this.checkCarToInventory.bind(this)
+    this.inventoryCar = this.inventoryCar.bind(this)
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1117,7 +1120,7 @@ class InventoryController {
     }
   }
 
-  private async closeVirtualInventory(virtualInventory: IInventoryVirtualModel) {
+  public async closeVirtualInventory(virtualInventory: IInventoryVirtualModel) {
     const virtualInventoryCars = await InventoryCar.find({
       virtualInventory: virtualInventory._id,
       $or: [
@@ -1132,7 +1135,7 @@ class InventoryController {
     }
   }
 
-  private async closeInventory(inventory: IInventoryModel, user: IUserModel | IUser) {
+  public async closeInventory(inventory: IInventoryModel, user: IUserModel | IUser) {
     const inventoryCars = await InventoryCar.find({
       inventory: inventory._id,
       $or: [
@@ -1148,8 +1151,126 @@ class InventoryController {
     }
   }
 
+  public async checkCarToInventory(user: IUserModel, vin: string, inventoryId: string): Promise<{ok: boolean, message: string, code: number, car?: ICarModel, inventoryCar?: IInventoryCarModel, inventory?: IInventoryModel}> {
+    const { team } = user;
+    let carFilter = user.company.handler ?
+      { vin, $or: [{company: user.company._id }, {handlerCompany: user.company._id }] } :
+      { vin, team };
+    const car = await Car.findOne(carFilter);
+    if (!car){
+      return {ok: false, message: 'El vehículo no existe', code: 404};
+    }
+    const inventory = await InventoryModel.findOne({_id: inventoryId, team: user.team._id});
+    if (!inventory){
+      return {ok: false, message: 'El inventario no existe', code: 404};
+    }
+    const inventoryCar = await InventoryCar.findOne({car: car._id, inventory: inventory._id})
+      .populate([
+        {'path': 'car'},
+      ]);
+    if (!inventoryCar){
+      return {ok: false, message: 'El vehículo no está en el inventario', code: 404};
+    }
+    if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
+      return {ok: false, message: 'El vehículo ya ha sido inventariado', code: 404};
+    }
+    return {ok: true, message: '', code: 200, inventoryCar: inventoryCar, inventory: inventory};
+  }
+
+  public async inventoryCar(user: IUserModel, inventory: IInventoryModel, inventoryCar: IInventoryCarModel, images?: IInventoryFile[], containerFound?: string, createHistory: boolean = true): Promise<IInventoryCarModel> {
+    try {
+      const venueId = user.venue._id;
+      const {team} = user;
+      const teamSettings = await TeamSetting.findOne({ team });
+      inventoryCar.venueFound = venueId;
+      if (containerFound){
+        let inventoryContainer = await InventoryCar.findOne({
+          _id: new mongoose.Types.ObjectId(containerFound),
+          inventory: inventory._id
+        });
+        if (inventoryContainer){
+          inventoryCar.containerFound = inventoryContainer._id;
+          if (inventoryContainer.containerStatus !== ContainerStatus.CHECK){
+            inventoryContainer.containerStatus = ContainerStatus.CHECK;
+            inventoryContainer = await inventoryContainer.save();
+          }
+        }
+      }
+
+      if (
+        teamSettings!.inventory.leftoverDifferentVenue &&
+        inventoryCar.venue.toString() !== venueId.toString()
+      ) {
+        inventoryCar.status = ChoicesStatusCarInventory.leftover;
+        socket()
+          .to(`inventory-detail-${inventory._id}`)
+          .emit('REFRESH', {
+            title: 'Vehículo encontrado',
+            text: `${user.firstName} ${user.lastName} encontró ${inventoryCar.car.brand} (${inventoryCar.car.denomination}) en ${user.venue.name}.`,
+            status: ChoicesStatusCarInventory.leftover,
+            venue: venueId,
+            update: true
+          });
+      } else {
+        inventoryCar.status = ChoicesStatusCarInventory.found;
+        socket()
+          .to(`inventory-detail-${inventory._id}`)
+          .emit('REFRESH', {
+            title: 'Vehículo encontrado',
+            text: `${user.firstName} ${user.lastName} encontró ${inventoryCar.car.brand} (${inventoryCar.car.denomination}) en ${user.venue.name}.`,
+            status: ChoicesStatusCarInventory.found,
+            venue: venueId,
+            update: true
+          });
+      }
+      if (inventoryCar.car.isContainer){
+        if (images) {
+          inventoryCar.evidenceStatus = [
+            { status: ChoicesStatusContainer.open, images, date: new Date() },
+          ]
+        }
+        inventoryCar.containerStatus = ChoicesStatusContainer.open;
+      }
+
+      inventoryCar.images = images
+        ? images
+        : [];
+
+      inventoryCar.inventoriedBy = user._id;
+      inventoryCar = await inventoryCar.save();
+
+      socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
+        update: true
+      });
+
+      // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
+      if (inventory.containerInventory) {
+        await this.closeInventory(inventory, user);
+
+        if (inventoryCar.virtualInventory) {
+          const virtualInventory = await VirtualInventoryModel.findOne({
+            _id: inventoryCar.virtualInventory
+          });
+          if (virtualInventory) {
+            await this.closeVirtualInventory(virtualInventory)
+          }
+        }
+      }
+      await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, user);
+      return inventoryCar;
+    } catch (e) {
+        /* istanbul ignore next */
+        logger.error(`inventoryCar: Async Error.`);
+        /* istanbul ignore next */
+        logger.error(`{user: {_id: ${user._id}, email: ${user.email}}`);
+        /* istanbul ignore next */
+        logger.error(e);
+        /* istanbul ignore next */
+        throw e;
+    }
+  }
+
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
-    const { team } = req.user;
     const { id } = req.params;
     const { vin, images, containerFound } = req.body;
     logger.info(`apiFoundCar`);
@@ -1159,10 +1280,9 @@ class InventoryController {
       }, body: ${JSON.stringify(req.body)}}`
     );
     try {
-
       const updatedUser = await User.findById(req.user._id).populate([{
-          path: 'venue',
-          select: ['name']
+        path: 'venue',
+        select: ['name']
       }]);
 
       if (!updatedUser) {
@@ -1171,174 +1291,34 @@ class InventoryController {
           status: 404
         });
       }
+      req.user.venue = updatedUser.venue;
 
-      const teamSettings = await TeamSetting.findOne({ team });
-
-      const venueId = updatedUser.venue._id;
-
-      const inventory = await InventoryModel.findOne({
-        _id: id,
-        team,
-        status: ChoicesStatusInventory.inProcess
-      });
-
-      if (inventory) {
-
-        let carFilter = req.user.company.handler ?
-          { vin, $or: [{company: req.user.company._id }, {handlerCompany: req.user.company._id }] } :
-          { vin, team };
-
-        const car = await Car.findOne(carFilter);
-
-        if (car) {
-
-          const inventoriedCar = await InventoryCar.findOne({
-            inventory: id,
-            car: car._id,
-            status: {
-              $in: [
-                ChoicesStatusCarInventory.found,
-                ChoicesStatusCarInventory.leftover
-              ]
-            }
-          });
-          if (inventoriedCar) {
-            logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-            return res.status(200).json({
-              message: 'Este vehículo ya ha sido inventariado',
-              status: 200
-            });
-          } else {
-            let inventoryCar = await InventoryCar.findOne({
-              inventory: id,
-              car: car._id
-            });
-            // if car in inventory
-            if (inventoryCar) {
-              inventoryCar.venueFound = venueId;
-              if (containerFound){
-                let inventoryContainer = await InventoryCar.findOne({
-                  _id: new mongoose.Types.ObjectId(containerFound),
-                  inventory: id
-                });
-                if (inventoryContainer) {
-                  inventoryCar.containerFound = inventoryContainer._id;
-                  inventoryContainer.containerStatus = ContainerStatus.CHECK;
-                  inventoryContainer = await inventoryContainer.save();
-                }
-              }
-
-              if (
-                teamSettings!.inventory.leftoverDifferentVenue &&
-                inventoryCar.venue.toString() !== venueId.toString()
-              ) {
-                inventoryCar.status = ChoicesStatusCarInventory.leftover;
-                socket()
-                  .to(`inventory-detail-${inventory._id}`)
-                  .emit('REFRESH', {
-                    title: 'Vehículo encontrado',
-                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                    status: ChoicesStatusCarInventory.leftover,
-                    venue: venueId,
-                    update: true
-                  });
-              } else {
-                inventoryCar.status = ChoicesStatusCarInventory.found;
-                socket()
-                  .to(`inventory-detail-${inventory._id}`)
-                  .emit('REFRESH', {
-                    title: 'Vehículo encontrado',
-                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                    status: ChoicesStatusCarInventory.found,
-                    venue: venueId,
-                    update: true
-                  });
-              }
-              if (car.isContainer){
-                inventoryCar.evidenceStatus = [
-                  {status: ChoicesStatusContainer.open, images, date: new Date()},
-                ]
-                inventoryCar.containerStatus = ChoicesStatusContainer.open;
-              }
-
-              inventoryCar.images = images
-                ? images.map(
-                    (image: string) => new mongoose.Types.ObjectId(image)
-                  )
-                : [];
-
-              inventoryCar.inventoriedBy = req.user._id;
-              inventoryCar = await inventoryCar.save();
-              inventoryCar = await inventoryCar.populate([
-                {path: 'car'},
-                {path: 'venue'},
-                {path: 'venueFound'},
-                {path: 'evidenceStatus'},
-                {path: 'evidenceStatus.images'},
-                {path: 'images'}
-              ]);
-              socket().to(`inventory-list-${team._id}`).emit('REFRESH', {
-                update: true
-              });
-
-              // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
-              if (inventory.containerInventory) {
-                await this.closeInventory(inventory, req.user);
-
-                if (inventoryCar.virtualInventory) {
-                  const virtualInventory = await InventoryModel.findOne({
-                    _id: inventoryCar.virtualInventory
-                  });
-                  if (virtualInventory) {
-                    await this.closeVirtualInventory(virtualInventory)
-                    logger.info(`apiFoundCar: virtualInventory: ${virtualInventory}`);
-                  }
-                }
-              }
-
-              await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, req, updatedUser);
-              return res.status(200).json({
-                vin: car.vin,
-                status: 200
-              });
-            } else {
-              logger.error(
-                `apiFoundCar: Este vehículo no se encuentra en el inventario.`
-              );
-              logger.error(
-                `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
-              );
-              return res.status(400).json({
-                message: 'Este vehículo no se encuentra en el inventario.',
-                status: 400
-              });
-            }
-          }
-        } else {
-          // if car no exist
-          logger.error(
-            `apiFoundCar: Este vehículo no se encuentra en el inventario.`
-          );
-          logger.error(
-            `{user: {_id: ${req.user._id}, email: ${req.user.email}}`
-          );
-          return res.status(400).json({
-            message: 'Este vehículo no se encuentra en el inventario.',
-            status: 400
-          });
-        }
-      } else {
-        // if inventory no exist
-        logger.error(
-          `apiFoundCar: Este inventario no existe o ya no se encuentra activo.`
-        );
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-        return res.status(404).json({
-          message: 'Este inventario no existe o ya no se encuentra activo.',
-          status: 404
+      let check = await this.checkCarToInventory(req.user as IUserModel, vin, id);
+      if (!check.ok) {
+        return res.status(check.code).json({
+          message: check.message,
+          status: check.code
         });
       }
+      let { inventoryCar, inventory } = check;
+      inventoryCar = await inventoryCar!.populate([
+        {path: 'car'},
+        {path: 'evidenceStatus'},
+        {path: 'evidenceStatus.images'},
+        {path: 'images'}
+      ]);
+
+      let imageFiles: any[] = [];
+      if (images){
+        imageFiles = await InventoryFile.find({_id: {$in: images.map((i: string) => new mongoose.Types.ObjectId(i))}});
+      }
+
+      let inventoriedCar = await this.inventoryCar(updatedUser, inventory!, inventoryCar, imageFiles, containerFound);
+
+      return res.status(200).json({
+        vin: inventoriedCar.car.vin,
+        status: 200
+      })
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`apiFoundCar: Async Error.`);
@@ -1392,7 +1372,7 @@ class InventoryController {
 
   }*/
 
-  private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, req: IRequest, updatedUser:any): Promise<void> {
+  private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
 
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
@@ -1405,17 +1385,17 @@ class InventoryController {
 
     const messageStatus = statusMap[`${status}`];
 
-    let title = `${req.user.firstName} ${req.user.lastName} agregó evidencia al contenedor ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+    let title = `${user.firstName} ${user.lastName} agregó evidencia al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
     let message = `Ahora el contenedor está ${ messageStatus }.`;
 
     if(notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND"){
 
       title = `Vehículo encontrado`;
-      message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${updatedUser.venue.name}.`;
+      message = `${user.firstName} ${user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${user.venue.name}.`;
 
       if (inventory.car.isContainer) {
         title = `Contenedor encontrado`;
-        message = `${req.user.firstName} ${req.user.lastName} encontró ${inventory.car.vin} en ${updatedUser.venue.name}.`;
+        message = `${user.firstName} ${user.lastName} encontró ${inventory.car.vin} en ${user.venue.name}.`;
       }
     }
 
@@ -1985,6 +1965,7 @@ class InventoryController {
             containerInventory: true,
             virtual: true,
             virtualInventories: true,
+            unitForm: true,
           }
         ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
 
@@ -2561,6 +2542,7 @@ class InventoryController {
         { path: 'images'},
         { path: 'venueFound'},
         { path: 'car' },
+        { path: 'participant' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]);
@@ -3430,7 +3412,7 @@ class InventoryController {
       if (inventory.containerInventory) {
         await this.closeInventory(inventory, req.user);
         if (inventoryCar.virtualInventory) {
-          const virtualInventory = await InventoryModel.findOne({
+          const virtualInventory = await VirtualInventoryModel.findOne({
             _id: inventoryCar.virtualInventory
           });
           if (virtualInventory) {
@@ -3455,12 +3437,15 @@ class InventoryController {
           { path: 'images' }
         ]);
 
-        if(status === ChoicesStatusContainer.empty && inventoryCar.inventory){
-          logger.info("LLegue")
+        if (status === ChoicesStatusContainer.empty && inventoryCar.inventory){
           await this.addHistoryToCarOfEmptyContainer(inventoryCar);
         }
 
-        await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, req, user);
+        const updatedUser = await User.findById(req.user._id).populate([{
+          path: 'venue',
+          select: ['name']
+        }]);
+        await this.sendUpdateNotification("EVIDENCE_ADDED", venueId, team._id, inventoryCar, status, updatedUser);
       }
 
       return res.status(200).json({
@@ -3504,6 +3489,7 @@ class InventoryController {
           handlerCompany: inventoryCar.car.handlerCompany,
           venue: inventoryCar.venue,
           inventoryCar,
+          participant: inventoryCar.participant ?? null,
           inventory: inventoryCar.inventory,
           createdBy: inventoryCar.car.createdBy,
           executedAt: inventoryCar.car.createdAt,
