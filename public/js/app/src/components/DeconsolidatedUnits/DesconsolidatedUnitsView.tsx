@@ -35,8 +35,8 @@ interface IStateType {
   tripSelector: any[];
   shipSelector: any[];
   statusFilter: string;
-  endDate: any;
-  startDate: any;
+  endDate: Date;
+  startDate: Date;
   selectedContainer: number;
   isFilteringByDate: boolean;
   loading: boolean;
@@ -255,7 +255,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       venueSelector: [],
       isUserHandler:false,
       endDate: moment().toDate(),
-      startDate: moment().subtract(1, 'month').startOf('month'),
+      startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       statusFilter: '',
       isFilteringByDate:true,
       selectedContainer: -1,

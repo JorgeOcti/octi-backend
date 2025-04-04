@@ -43,8 +43,8 @@ interface IStateType {
   tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
-  endDate: any;
-  startDate: any;
+  endDate: Date;
+  startDate: Date;
   isFilteringByDate: boolean;
 }
 
@@ -322,7 +322,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripFilter: [],
       selectedContainer: -1,
       endDate: moment().toDate(),
-      startDate: moment().subtract(1, 'month').startOf('month'),
+      startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
       inventorySettings: {
           "leftoverDifferentVenue": true,
@@ -442,7 +442,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           tripSelector: trips,
           loading: false
         })
-        console.log(containers)
 
       })
       .catch((error: any) => {
