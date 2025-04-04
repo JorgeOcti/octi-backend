@@ -46,7 +46,7 @@ import { socket } from '../../services/socket.service';
 import GeneralUtils from '../../utils/general.utils';
 import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
-import Form, { IFormModel, KindForm, KindQuestion } from '../models/form.model';
+import Form, { IFormModel, KindForm, KindQuestion, KindQuestionImage } from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
 import Participant, {
   IParticipantAnswerModel,
@@ -57,6 +57,10 @@ import ScaleModel, { IScaleModel } from '../models/scale.model';
 import { KindTrigger } from '../models/trigger.types';
 import TriggerHandler from './triggers/triggerHandler';
 import axios from 'axios';
+import Inventory from '../../inventory/models/inventory.model';
+import InventoryController from '../../inventory/controllers/inventory.controller';
+import InventoryFileModel from '../../inventory/models/inventoryFile.model';
+import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -89,6 +93,7 @@ class FormController {
     this.allControls = this.allControls.bind(this);
     this.allControlsByVIN = this.allControlsByVIN.bind(this);
     this.getExternalOrder = this.getExternalOrder.bind(this);
+    this.copyFormFileToInventoryFile = this.copyFormFileToInventoryFile.bind(this);
   }
 
   public async getExternalOrder(req: IRequest, res: Response): Promise<any> {
@@ -784,9 +789,32 @@ class FormController {
     }
   }
 
+  private async copyFormFileToInventoryFile(ids: string[], inventory: string, car: ICarModel, user: IUserModel): Promise<IInventoryFile[]> {
+    const participantFiles = await ParticipantFile.find({
+      _id: { $in: ids.map((id: string) => new mongoose.Types.ObjectId(id)) }
+    });
+    const files: IInventoryFile[] = [];
+    if (participantFiles.length) {
+      const inventoryItem = await Inventory.findById(inventory);
+      if (inventoryItem) {
+        for (const file of participantFiles) {
+          const newFile = new InventoryFileModel({
+            company: car.company,
+            inventory: inventoryItem._id,
+            user: user._id,
+            file: file.file,
+          });
+          await newFile.save();
+          files.push(newFile);
+        }
+      }
+    }
+    return files;
+  }
+
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
-    let { vin, answers, transmittalItem, transmittal, reliability } = req.body;
+    let { vin, answers, transmittalItem, transmittal, reliability, inventory, containerFound } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
     logger.info(`FormController.complete email: ${req.user.email}`);
@@ -818,13 +846,13 @@ class FormController {
         status: 404
       });
     }
-
+    req.user.venue = updatedUser.venue;
     try {
       let car: any = null;
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
         let carFilter = req.user.company.handler ?
-          {$and: [{$or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }]}, {$or: [{company: company}, {hanlderCompany: company}]}]} :
+          {$and: [{$or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }]}, {$or: [{company: company}, {handlerCompany: company}]}]} :
           {
             $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
             team
@@ -832,6 +860,23 @@ class FormController {
         car = await Car.findOne(carFilter);
       } else if (carId) {
         car = await Car.findOne({ _id: carId });
+      }
+
+      let inventoryCar: any = null;
+      let inventoryItem : any = null;
+      let images : string[] = [];
+      if (inventory) {
+        let check =  await InventoryController.checkCarToInventory(req.user as IUserModel, vin, inventory);
+        const {ok, message, code } = check;
+        if (!ok) {
+          logger.error(`InventoryController.checkCarToInventory: ${message}`);
+          return res.status(400).json({
+            message,
+            status: code
+          });
+        }
+        inventoryCar = check.inventoryCar
+        inventoryItem = check.inventory
       }
 
       if (car || transmittal) {
@@ -892,8 +937,8 @@ class FormController {
           // initialize participant
           const participantObject: any = {
             name: form.name,
-            team,
-            company,
+            team: car.team,
+            company: car.company,
             form: form._id,
             deliveryToCustomer: form.deliveryToCustomer,
             car,
@@ -909,6 +954,10 @@ class FormController {
             reliability,
             keyRawAnswers
           };
+
+          if (req.user.company.handler) {
+            participantObject.handlerCompany = company;
+          }
 
           if (form.reception) {
             participantObject.reception = form.reception;
@@ -1003,6 +1052,13 @@ class FormController {
                 questionID,
                 null
               );
+
+
+              if  (question.kind === KindQuestion.image && [KindQuestionImage.picture, KindQuestionImage.photo].includes(question.imageType as KindQuestionImage)) {
+                if (answer && answer.images && answer.images.length) {
+                  images = [...images, ...answer.images];
+                }
+              }
               // find choice selected
               const choice = question.scale
                 ? question.scale.choices.find((choice) => {
@@ -1183,6 +1239,18 @@ class FormController {
             req.user.company.handler ?
               await carTracker.fromParticipant({ id: newParticipant._id, handlerCompany: req.user.company }) :
               await carTracker.fromParticipant({ id: newParticipant._id })
+
+            if (inventoryCar) {
+              logger.info("Actualizando inventoryCar")
+              let files: IInventoryFile[] = []
+              if (images && images.length > 0) {
+                files = await this.copyFormFileToInventoryFile(images, inventory, car, req.user as IUserModel);
+              }
+              let inventoriedCar = await InventoryController.inventoryCar(req.user as IUserModel, inventoryItem, inventoryCar, files, containerFound);
+              inventoriedCar.participant = newParticipant._id;
+              await inventoryCar.save();
+            }
+
             // associate transmittalItem to participant
             if (transmittalItem?.length) {
               newParticipant.transmittalItem = transmittalItem;

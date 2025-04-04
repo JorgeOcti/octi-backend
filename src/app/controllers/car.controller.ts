@@ -2276,7 +2276,7 @@ class CarController {
           let tmp = brands.split(',')
           brandsRelated = brandsRelated.length > 0  ? brandsRelated.filter((brand) => tmp.includes(brand)) : tmp
         }
-        logger.info("Final Userbrands: "+ JSON.stringify(brandsRelated))
+
         const cars = await Car.aggregate([
           {
             $match: {

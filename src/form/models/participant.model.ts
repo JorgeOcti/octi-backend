@@ -378,7 +378,11 @@ const participantSchema = new mongoose.Schema(
       ref: 'Company',
       required: true
     },
-
+    handlerCompany: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: false
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'

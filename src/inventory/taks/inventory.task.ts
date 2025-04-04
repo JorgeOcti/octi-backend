@@ -92,7 +92,7 @@ class InventoryQueue {
       let virtualInventories: any = {};
 
       for (const BIC of Object.keys(carsByContainer)) {
-        const container = carsByContainer[BIC].container;
+        let container = carsByContainer[BIC].container;
         let currentContainer = await CarModel.findOne({
           team,
           vin: container.vin.trim()
@@ -105,24 +105,66 @@ class InventoryQueue {
           })
           await currentContainer.save();
         }
+
+        const rutCompany:string = container.extra["RUT Cliente"];
+        let clientCompanyId = null;
+
+        let clientCompany =  await Company.findOne({
+          rut: rutCompany.trim(),
+        });
         // extra nave - extra cliente
+        if(clientCompany) {
+          container.extra["Cliente Razón Social"] = clientCompany.name
+          clientCompanyId = clientCompany._id
+        }else{
+          // Creo el company 
+          let existCompanyTeam = await Team.findOne({
+            name: rutCompany.trim()
+          });
+
+          if (!existCompanyTeam) {
+            const newTeam = await new Team({
+              name: rutCompany.trim()
+            }).save();
+            existCompanyTeam = newTeam;
+          }
+
+          clientCompany = new Company({
+            name: container.extra["Cliente Razón Social"],
+            businessName: container.extra["Cliente Razón Social"],
+            rut: rutCompany.trim(),
+            team: existCompanyTeam,
+            createdBy: user._id,
+            active: true,
+            deleted: false,
+            handler: false,
+          });
+
+          clientCompany = await clientCompany.save();
+
+          clientCompanyId = clientCompany._id
+        }
+
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
           let virtualInventory = await VirtualInventory.findOne({
             team,
             company,
-            name: virtualInventoryName,
-            status: ChoicesStatusInventory.inProcess
+            //clientCompany: clientCompanyId,
+            name: virtualInventoryName
           });
           if (!virtualInventory) {
             virtualInventory = new VirtualInventory({
               team,
               company,
+              clientCompany: clientCompanyId,
               name: virtualInventoryName,
               status: ChoicesStatusInventory.inProcess
             });
             await virtualInventory.save();
-          }
+          }else if(virtualInventory.status === ChoicesStatusInventory.finalized){
+            await VirtualInventory.updateOne({_id: virtualInventory._id}, {status:ChoicesStatusInventory.inProcess})
+          } 
           virtualInventories[virtualInventoryName] = virtualInventory;
         }
         containersByBIC[BIC] = currentContainer._id;
@@ -163,7 +205,12 @@ class InventoryQueue {
       let inventoryCars = [];
 
       for (const BIC of Object.keys(carsByContainer)) {
-        const container = carsByContainer[BIC].container;
+        let container = carsByContainer[BIC].container;
+        const rutContainerCompany:string = container.extra["RUT Cliente"];
+        let clientContainerCompany =  await Company.findOne({
+          rut: rutContainerCompany.trim(),
+        });
+        if(clientContainerCompany) container.extra["Cliente Razón Social"] = clientContainerCompany.name
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         let virtualInventory = virtualInventories[virtualInventoryName];
         const cars = carsByContainer[BIC].cars;

@@ -23,7 +23,7 @@ declare let window: IWindow;
 
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {  
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 interface IStateType {
@@ -290,7 +290,7 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 }
 
 class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
-  
+
   title = "Revisión Containers";
 
   private socket: Socket;
@@ -322,8 +322,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripFilter: [],
       selectedContainer: -1,
       endDate: moment().toDate(),
-      startDate: moment().toDate(),
-      isFilteringByDate: false,
+      startDate: moment().subtract(1, 'month').startOf('month').toDate(),
+      isFilteringByDate: true,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",
@@ -432,9 +432,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined)));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined)));
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"].toString()).filter((nave: any) => nave !== undefined)));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"].toString()).filter((viaje: any) => viaje !== undefined)));
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -561,9 +560,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       statusFilterSelected: [],
-      startDate: moment().toDate(),
-      endDate: moment().toDate(),
-      isFilteringByDate: false
     });
   }
 
@@ -574,8 +570,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilterSelected.length === 0 ? true : this.state.statusFilterSelected.includes(container.filterStatus);
-      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
-      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
+      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toString().toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
+      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toString().toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
 
       let clientFilter = true;
       if (this.state.clientFilter !== '') {
@@ -594,9 +590,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           let startDate = this.state.startDate? new Date(this.state.startDate) : null;
           let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
 
-          dateFilter = (!startDate || openDate >= startDate) && (!endDate || openDate <= endDate);
+          dateFilter = ((!startDate || openDate >= startDate) && (!endDate || openDate <= endDate));
         } else {
-          dateFilter = false;
+          dateFilter = true;
         }
       }
       return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter;
@@ -701,6 +697,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
 
   render() {
+
     const {containers, loading} = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
@@ -741,7 +738,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     return (
-      <AppContainer title="Revisión Containers" cMenu="6" cSubMenu="6.1">
+      <AppContainer title={
+        <div style={{ width: '180px' }}>
+           <DateRangeInput
+              options={getDateRangeOptions()}
+              onChange={(start: Date, end: Date) => {
+                this.setState({
+                  startDate: start,
+                  endDate: end,
+                  isFilteringByDate: true
+                });
+              }}
+              startDate={this.state.startDate}
+              endDate={this.state.endDate}
+            />
+          </div>
+      } cMenu="6" cSubMenu="6.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
@@ -772,7 +784,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               : <>
                 <div className="box-body">
-
                   <div className="row" style={{margin: "10px 0"}}>
 
                     <div className="col-md-3">
@@ -882,7 +893,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ shipFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
 
@@ -908,28 +919,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ tripFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
 
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label className="text-black">Filtrar por Fecha de Apertura</label>
-                        <DateRangeInput
-                          options={getDateRangeOptions()}
-                          onChange={(start: Date, end: Date) => {
-                            this.setState({
-                              startDate: start,
-                              endDate: end,
-                              isFilteringByDate: true
-                            });
-                          }}
-                          startDate={this.state.startDate}
-                          endDate={this.state.endDate}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
+                    
+                    <div className="col-md-6">
                       <div className='form-group'>
                         <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
                           <button

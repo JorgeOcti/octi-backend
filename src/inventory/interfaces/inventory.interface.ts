@@ -9,6 +9,8 @@ import type { IInventoryComment } from './inventoryComment.interface';
 import type { IInventoryFile } from './inventoryFile.interface';
 import type { IInventoryLabel } from './inventoryLabel.interface';
 import { IVirtualInventory } from './virtualInventory.interface';
+import { IForm } from '../../form/interfaces/form.interface';
+import { IParticipant } from '../../form/interfaces/participant.interface';
 
 export type MessageType = "VEHICLE_FOUND" | "CONTAINER_FOUND" | "EVIDENCE_ADDED";
 
@@ -38,6 +40,7 @@ export interface IInventoryCar {
   evidenceStatus: IStatusEvidence[];
   extra: any;
   virtualInventory?: mongoose.Schema.Types.ObjectId;
+  participant?: IParticipant;
   updatedAt?: Date;
   createdAt?: Date;
 }
@@ -57,6 +60,7 @@ export interface IInventory {
   containerInventory: boolean;
   virtual: boolean;
   virtualInventories: IVirtualInventory[];
+  unitForm?: IForm;
   updatedAt: Date;
   createdAt: Date;
 }

@@ -328,7 +328,7 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
 const AdminLoadControl: any[] = [];
 
 
-if (hasPermission(window.user, 'viewInventory')) {
+if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
     id: '6.1',
     icon: 'fa-circle-o',
