@@ -431,6 +431,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     </div>
   }
 
+  private setActionCallback(isUnit: boolean) {
+    setTimeout(() => {
+
+      (swal as any).close();
+
+      this.componentDidMount(); // reload data after set label
+
+      if (isUnit) {
+        $('#modalForAddLabelUnit').modal('toggle');
+      } else {
+        $('#modalForAddLabel').modal('toggle');
+      }
+    }, 1000);
+  }
+
+
   private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
@@ -443,18 +459,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               swal(response.data.message, {
                 icon: 'success'
               });
-              setTimeout(() => {
-                (swal as any).close();
-                this.componentDidMount(); // reload data after set label
-
-                if (isUnit) {
-                  $('#modalForAddLabelUnit').modal('toggle');
-                } else {
-                  $('#modalForAddLabel').modal('toggle');
-                }
-              }, 1000);
-            })
-            .catch((err: AxiosError) => {
+              this.setActionCallback(isUnit);
+            }).catch((err: AxiosError) => {
               api.errorHandler(err);
             });
         } else {
@@ -469,15 +475,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           swal(response.data.message, {
             icon: 'success'
           });
-          setTimeout(() => {
-            (swal as any).close();
-            this.componentDidMount(); // reload data after set label
-            if (isUnit) {
-              $('#modalForAddLabelUnit').modal('toggle');
-            } else {
-              $('#modalForAddLabel').modal('toggle');
-            }
-          }, 1500);
+          this.setActionCallback(isUnit);
         })
         .catch((err: AxiosError) => {
           api.errorHandler(err);
@@ -497,8 +495,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     api.getSource()
     api.getLabels(1)
       .then(async (response: any) => {
-        const containerLabels = response.data.results.filter((label: { isForContainer: any; })=>label.isForContainer);
-        const unitLabels = response.data.results.filter((label: { isForContainer: any; })=>!label.isForContainer);
+        const containerLabels = response.data.results.filter((label: { isForContainer: boolean; })=>label.isForContainer);
+        const unitLabels = response.data.results.filter((label: { isForContainer: boolean; })=>!label.isForContainer);
         this.setState(
           { 
             labels: containerLabels,
@@ -841,7 +839,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 data-target="#modalForAddLabelUnit"
 
                 onClick={() => {
-                  console.log(unitLabels, unitLabels[this.state.activeUnitIndex] );
                   this.setState({
                     inventorySelected: car.inventory, //inventario
                     carSelected: car._id, //inventory car

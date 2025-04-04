@@ -68,13 +68,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     this.processEditLabel = this.processEditLabel.bind(this);
     this.deleteLabel = this.deleteLabel.bind(this);
     this.changePage = this.changePage.bind(this);
-
     this.changeTab = this.changeTab.bind(this);
-
-    const { tab } = this.props.match.params;
-    if (tab && tab === 'container') {
-      this.state.tab = 'container';
-    }
   }
 
   public componentWillMount(): void {
