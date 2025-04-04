@@ -268,8 +268,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       venueFilter: '',
-      startDate: moment().toDate(),
       endDate: moment().toDate(),
+      startDate: moment().toDate(),
       isFilteringByDate: false
     });
   }
@@ -417,7 +417,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const {units, loading, isUserHandler} = this.state;
 
     return (
-      <AppContainer title="" cMenu="6" cSubMenu="6.2">
+      <AppContainer title="Unidades Desconsolidadas" cMenu="6" cSubMenu="6.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
@@ -601,7 +601,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-
+                    <div className="col-md-3">
+                      <div className='form-group'>
+                        <div className="row pull-right box-tools" style={{ paddingRight: "16px" }}>
+                          <button
+                            className="btn btn-sm btn-primary btn-block"
+                            onClick={this.cleanFilters}
+                          >
+                            Limpiar filtros
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="row">
                     <div className="col-md-12">

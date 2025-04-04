@@ -17,6 +17,10 @@ const virtualInventorySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Company'
   },
+  clientCompany: {
+    type: Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   team: {
     type: Schema.Types.ObjectId,
     ref: 'Team'
