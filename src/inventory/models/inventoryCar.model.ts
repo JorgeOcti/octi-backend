@@ -137,6 +137,11 @@ const inventoryCarSchema = new mongoose.Schema({
   virtualInventory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'VirtualInventory'
+  },
+  participant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    required: false
   }
 }, {
   timestamps: true

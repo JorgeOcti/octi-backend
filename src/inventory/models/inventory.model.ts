@@ -120,7 +120,12 @@ const inventorySchema = new mongoose.Schema({
   virtualInventories: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'VirtualInventory'
-  }]
+  }],
+  unitForm: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form',
+    required: false
+  }
 }, {
   timestamps: true
 });

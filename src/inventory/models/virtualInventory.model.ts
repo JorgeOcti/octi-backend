@@ -1,7 +1,6 @@
 import { model, Model, PaginateModel, Schema } from 'mongoose';
 import { IVirtualInventory } from '../interfaces/virtualInventory.interface';
 import { ChoicesStatusInventory, choicesStatusInventory } from './inventory.model';
-import type { IInventory } from '../interfaces/inventory.interface';
 import mongoose from 'mongoose';
 
 const virtualInventorySchema = new Schema({
@@ -26,7 +25,7 @@ const virtualInventorySchema = new Schema({
   timestamps: true
 });
 
-export interface IInventoryVirtualModel extends IInventory, mongoose.Document {}
+export interface IInventoryVirtualModel extends IVirtualInventory, mongoose.Document {}
 
 export type VirtualInventorySchema = Model<IVirtualInventory> & PaginateModel<IVirtualInventory>;
 
