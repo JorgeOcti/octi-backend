@@ -431,13 +431,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     </div>
   }
 
-  private setActionCallback(isUnit: boolean) {
+  private setLabelCallback(isUnit: boolean) {
     setTimeout(() => {
-
       (swal as any).close();
-
       this.componentDidMount(); // reload data after set label
-
       if (isUnit) {
         $('#modalForAddLabelUnit').modal('toggle');
       } else {
@@ -445,7 +442,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
     }, 1000);
   }
-
 
   private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
@@ -459,7 +455,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               swal(response.data.message, {
                 icon: 'success'
               });
-              this.setActionCallback(isUnit);
+              this.setLabelCallback(isUnit);
             }).catch((err: AxiosError) => {
               api.errorHandler(err);
             });
@@ -475,7 +471,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           swal(response.data.message, {
             icon: 'success'
           });
-          this.setActionCallback(isUnit);
+          this.setLabelCallback(isUnit);
         })
         .catch((err: AxiosError) => {
           api.errorHandler(err);
