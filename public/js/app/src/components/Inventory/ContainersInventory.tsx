@@ -28,7 +28,6 @@ declare let window: IWindow;
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 }
 
 interface IStateType {
