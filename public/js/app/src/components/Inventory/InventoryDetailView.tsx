@@ -687,9 +687,6 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       });
     }
 
-
-    console.log(labels, row, id);
-
     const options = newLabels.filter((label) => {
       return label.affected.includes(row.status);
     });
