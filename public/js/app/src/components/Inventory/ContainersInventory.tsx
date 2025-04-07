@@ -390,7 +390,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         <button
           data-toggle="modal"
           data-target="#modalForAddLabel"
-          className={`btn custom-dropdown-toggle dropdown-toggle 
+          className={`btn custom-dropdown-toggle dropdown-toggle btn-modal-add-label
           label-container-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`}
           type="button"
           onClick={() => {
@@ -402,30 +402,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             });
           }
           }
-          style={{
-            minWidth: "120px",
-            color: "white",
-            borderRadius: "100px",
-            border: "none",
-            padding: "2px 35px 2px 15px",
-            position: "relative",
-            textAlign: "center",
-            cursor: "pointer"
-          }}>
+         >
           <span className="label-text">
             {getLabel(row)}
           </span>
-          <i className="fa fa-plus" style={{
-            position: "absolute",
-            right: "15px",
-            top: "50%",
-            transform: "translateY(-50%)"
-          }}></i>
+          <i className="fa fa-plus"></i>
         </button>
       </div>
       {
         (row.labelText && row.labelText !== '') ?
-        <span style={{ paddingTop: "5px", paddingLeft:"5px" }}> <i className="fa fa-tag"></i> {row.labelText}</span> :
+        <span className='added-label'> <i className="fa fa-tag"></i> {row.labelText}</span> :
         ''
         }
     </div>
@@ -816,15 +802,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               <strong className="text-black">{car.car.color}</strong>
             </div>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center' style={{
-                display:"inline"
-              }}>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
           
-
-              <div style={{
-                display:"inline"
-              }}>
-
+              <div className='inline-element'>
 
               <span
                 data-toggle="modal"
@@ -839,32 +819,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   });
                 }}
 
-                className={`label-units label-${inventorySettings.hasOwnProperty(className)
+                className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
                     ? inventorySettings[className]
                     : ''
-                  }`}
-
-                style={{
-                  padding: '5px 10px',
-                  cursor: 'pointer'
-                }}>
+                  }`}>
                 {inventorySettings.hasOwnProperty(car.status)
                   ? inventorySettings[car.status]
                   : car.state}
-                <i className="fa fa-plus" style={{
-                  position: "relative",
-                  left: "7.5%",
-                  top: "50%",
-                  transform: "translateY(-50%)"
-                }}></i>
+                <i className="fa fa-plus icon-add-label-units"></i>
               </span>
 
               </div>
                 {
                   (car.labelText && car.labelText !== '') ?
-                   <div style={{
-                    display:"inline"
-                  }}><span style={{ paddingTop: "5px", paddingLeft:"5px"  }}> <i className="fa fa-tag"></i> {car.labelText}</span></div>:
+                   <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div>:
                     ''
                 }
               
