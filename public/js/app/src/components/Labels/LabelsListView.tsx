@@ -201,11 +201,11 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
-                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
-                    <th className="middle" style={{width: '80px'}}>Envia a</th>
-                    <th className="middle-center" style={{width: '80px'}}>Activo</th>
-                    <th style={{width: '1%'}} className="width-10"/>
-                    <th style={{width: '1%'}} className="width-10"/>
+                    <th className="middle th-default-w100px">Agregar opción en</th>
+                    <th className="middle th-default-w80px">Envia a</th>
+                    <th className="middle-center th-default-w80px">Activo</th>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
@@ -241,7 +241,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                               {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
-                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                          <td className="td-padding-top15 middle-center">
                             <BootstrapSwitch
                               checked={label.active}
                               onChange={() => {
@@ -304,8 +304,8 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                     <th className="middle th-default-w100px">Agregar opción en</th>
                     <th className="middle th-default-w80px">Envia a</th>
                     <th className="middle-center th-default-w80px">Activo</th>
-                    <th style={{width: '1%'}} className="width-10"/>
-                    <th style={{width: '1%'}} className="width-10"/>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
@@ -341,7 +341,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                               {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
-                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                          <td className="td-padding-top15 middle-center" >
                             <BootstrapSwitch
                               checked={label.active}
                               onChange={() => {
