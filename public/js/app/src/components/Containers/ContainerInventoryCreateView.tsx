@@ -570,7 +570,8 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       name,
       backupFile,
       backupUri,
-      loading
+      loading,
+      sending
     } = this.state;
 
     return (
@@ -655,7 +656,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
                 className="btn btn-sm btn-primary"
                 style={{ marginLeft: '5px' }}
                 onClick={this.sendCreate}
-                // disabled={sending}
+                disabled={sending}
               >
                 Crear
                 {/*{sending || loading ? (*/}
