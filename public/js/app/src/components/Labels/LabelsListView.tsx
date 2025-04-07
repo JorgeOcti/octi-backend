@@ -46,6 +46,11 @@ interface IStateType {
   tab: string;
 }
 
+enum LabelTabsEnum {
+  Container = 'container',
+  Units = 'units'
+}
+
 declare let window: IWindow;
 
 class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
@@ -53,7 +58,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
   readonly state = {
-    tab: 'container',
+    tab: LabelTabsEnum.Container,
     error: null
   };
 
@@ -139,16 +144,13 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     const unitLabesCount = unitsLabes.length;
 
 
-
     return (
       <AppContainer title="" 
       cMenu="2" 
       cSubMenu="2.1" 
-
-      cAction={tab === 'container' ? 'Contenedor' : 'Unidades'}
+      cAction={tab === LabelTabsEnum.Container ? 'Contenedor' : 'Unidades'}
       >
         <section className="content">
-
 
         <Row>
             <div className="col-md-12 col-lg-12">
@@ -156,28 +158,27 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 <ul className="nav nav-pills nav-justified">
                   <li
                     className={
-                      tab === 'container' ? 'no-margin active' : 'no-margin'
+                      tab === LabelTabsEnum.Container ? 'no-margin active' : 'no-margin'
                     }>
                     <a
                       href="javascript:void(0);"
                       className={
-                        tab === 'container' ? 'tabs-labels background-transition' : 'tabs-labels'
+                        tab === LabelTabsEnum.Container ? 'tabs-labels background-transition' : 'tabs-labels'
                       }
-                      onClick={() => this.changeTab('container')}>
+                      onClick={() => this.changeTab(LabelTabsEnum.Container)}>
                       Contenedor
                     </a>
                   </li>
                   <li
                     className={
-                      tab === 'units' ? 'no-margin active' : 'no-margin'
+                      tab === LabelTabsEnum.Units  ? 'no-margin active' : 'no-margin'
                     }>
                     <a
                       className={
-                        tab === 'units' ? 'tabs-labels background-transition' : 'tabs-labels'
+                        tab === LabelTabsEnum.Units ? 'tabs-labels background-transition' : 'tabs-labels'
                       }
                       href="javascript:void(0);"
-                      style={{ borderTop: '0', marginBottom: '0' }}
-                      onClick={() => this.changeTab('units')}>
+                      onClick={() => this.changeTab(LabelTabsEnum.Units)}>
                       Unidades
                     </a>
                   </li>
@@ -186,7 +187,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
           </Row>
 
-          <Row className={  tab === 'container' ? 'label-shown' : 'label-no-shown' }>
+          <Row className={  tab === LabelTabsEnum.Container ? 'label-shown' : 'label-no-shown' }>
             <div className="col-md-12 col-lg-12">
             <div className="box">
             <div className="box-header with-border">
@@ -200,11 +201,11 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
-                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
-                    <th className="middle" style={{width: '80px'}}>Envia a</th>
-                    <th className="middle-center" style={{width: '80px'}}>Activo</th>
-                    <th style={{width: '1%'}} className="width-10"/>
-                    <th style={{width: '1%'}} className="width-10"/>
+                    <th className="middle th-default-w100px">Agregar opción en</th>
+                    <th className="middle th-default-w80px">Envia a</th>
+                    <th className="middle-center th-default-w80px">Activo</th>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,7 +241,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                               {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
-                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                          <td className="td-padding-top15 middle-center">
                             <BootstrapSwitch
                               checked={label.active}
                               onChange={() => {
@@ -286,7 +287,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
           </Row>              
           
-          <Row className={  tab === 'units' ? 'label-shown' : 'label-no-shown' }>
+          <Row className={  tab === LabelTabsEnum.Units ? 'label-shown' : 'label-no-shown' }>
           <div className="col-md-12 col-lg-12">
             <div className="box">
             <div className="box-header with-border">
@@ -303,8 +304,8 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                     <th className="middle th-default-w100px">Agregar opción en</th>
                     <th className="middle th-default-w80px">Envia a</th>
                     <th className="middle-center th-default-w80px">Activo</th>
-                    <th style={{width: '1%'}} className="width-10"/>
-                    <th style={{width: '1%'}} className="width-10"/>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
@@ -340,7 +341,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                               {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
-                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                          <td className="td-padding-top15 middle-center" >
                             <BootstrapSwitch
                               checked={label.active}
                               onChange={() => {
@@ -395,7 +396,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private addLabel(): void {
 
-    const modalTitle = this.state.tab === 'container' ? 'Agregar Etiqueta (contenedores)' : 'Agregar Etiqueta (unidades)';
+    const modalTitle = this.state.tab === LabelTabsEnum.Container ? 'Agregar Etiqueta (contenedores)' : 'Agregar Etiqueta (unidades)';
 
     this.props.changeTempLabelAction({
       _id: '',
@@ -406,7 +407,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
       sendTo: '',
       requireCustomText: false,
       isExhibition: false,
-      isForContainer: this.state.tab === 'container' ? true : false,
+      isForContainer: this.state.tab === LabelTabsEnum.Container ? true : false,
       active: true
     });
     setTimeout(() => {
