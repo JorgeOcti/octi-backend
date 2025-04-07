@@ -431,13 +431,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     </div>
   }
 
-  private setActionCallback(isUnit: boolean) {
+  private setLabelCallback(isUnit: boolean) {
     setTimeout(() => {
-
       (swal as any).close();
-
       this.componentDidMount(); // reload data after set label
-
       if (isUnit) {
         $('#modalForAddLabelUnit').modal('toggle');
       } else {
@@ -445,7 +442,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
     }, 1000);
   }
-
 
   private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
@@ -459,7 +455,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               swal(response.data.message, {
                 icon: 'success'
               });
-              this.setActionCallback(isUnit);
+              this.setLabelCallback(isUnit);
             }).catch((err: AxiosError) => {
               api.errorHandler(err);
             });
@@ -475,7 +471,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           swal(response.data.message, {
             icon: 'success'
           });
-          this.setActionCallback(isUnit);
+          this.setLabelCallback(isUnit);
         })
         .catch((err: AxiosError) => {
           api.errorHandler(err);
@@ -1167,11 +1163,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                       </div>
                                       <div className='col-md-3 col-xs-3'>
                                         <span
-                                          style={{
-                                            color: "white",
-                                            borderRadius: "100px", padding: "4px"
-                                          }}
-                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
                                           {inventorySettings[option.sendTo]}
                                         </span>
@@ -1221,12 +1213,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                         <i className="fa fa-arrow-right" />
                                       </div>
                                       <div className='col-md-3 col-xs-3'>
-                                        <span
-                                          style={{
-                                            color: "white",
-                                            borderRadius: "100px", padding: "4px"
-                                          }}
-                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                        <span                  
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
                                           {inventorySettings[option.sendTo]}
                                         </span>

@@ -31,7 +31,8 @@ const initialState: ILabelsState = {
     sendTo: '',
     requireCustomText: false,
     isExhibition: false,
-    active: true
+    active: true,
+    isForContainer: false
   },
   source: null,
   pagination: {
