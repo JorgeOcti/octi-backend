@@ -161,9 +161,8 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                     <a
                       href="javascript:void(0);"
                       className={
-                        tab === 'container' ? 'background-transition' : ''
+                        tab === 'container' ? 'tabs-labels background-transition' : 'tabs-labels'
                       }
-                      style={{ borderTop: '0', marginBottom: '0' }}
                       onClick={() => this.changeTab('container')}>
                       Contenedor
                     </a>
@@ -174,7 +173,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                     }>
                     <a
                       className={
-                        tab === 'units' ? 'background-transition' : ''
+                        tab === 'units' ? 'tabs-labels background-transition' : 'tabs-labels'
                       }
                       href="javascript:void(0);"
                       style={{ borderTop: '0', marginBottom: '0' }}
@@ -187,7 +186,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
           </Row>
 
-          <Row style={{ display: tab === 'container' ? 'block' : 'none' }}>
+          <Row className={  tab === 'container' ? 'label-shown' : 'label-no-shown' }>
             <div className="col-md-12 col-lg-12">
             <div className="box">
             <div className="box-header with-border">
@@ -286,8 +285,8 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
           </div>
             </div>
           </Row>              
-
-          <Row style={{ display: tab === 'units' ? 'block' : 'none' }}>
+          
+          <Row className={  tab === 'units' ? 'label-shown' : 'label-no-shown' }>
           <div className="col-md-12 col-lg-12">
             <div className="box">
             <div className="box-header with-border">
@@ -301,9 +300,9 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
-                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
-                    <th className="middle" style={{width: '80px'}}>Envia a</th>
-                    <th className="middle-center" style={{width: '80px'}}>Activo</th>
+                    <th className="middle th-default-w100px">Agregar opción en</th>
+                    <th className="middle th-default-w80px">Envia a</th>
+                    <th className="middle-center th-default-w80px">Activo</th>
                     <th style={{width: '1%'}} className="width-10"/>
                     <th style={{width: '1%'}} className="width-10"/>
                   </tr>

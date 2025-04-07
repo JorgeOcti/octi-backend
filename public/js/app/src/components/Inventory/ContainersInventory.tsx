@@ -1163,11 +1163,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                       </div>
                                       <div className='col-md-3 col-xs-3'>
                                         <span
-                                          style={{
-                                            color: "white",
-                                            borderRadius: "100px", padding: "4px"
-                                          }}
-                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
                                           {inventorySettings[option.sendTo]}
                                         </span>
@@ -1217,12 +1213,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                         <i className="fa fa-arrow-right" />
                                       </div>
                                       <div className='col-md-3 col-xs-3'>
-                                        <span
-                                          style={{
-                                            color: "white",
-                                            borderRadius: "100px", padding: "4px"
-                                          }}
-                                          className={`label label-${inventorySettings[option.sendTo + `Class`]}`}
+                                        <span                  
+                                          className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
                                           {inventorySettings[option.sendTo]}
                                         </span>
