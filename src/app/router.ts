@@ -288,6 +288,7 @@ appRouter.post('/api/v1/cars/', Middlewares.isJWTAuthenticated, CarController.cr
 
 // Car history
 appRouter.get('/api/v1/cars/:id', Middlewares.isJWTAuthenticated, CarController.apiCarDetail);
+appRouter.get('/api/v1/cars/history/:id', Middlewares.isJWTAuthenticated, CarController.apiCarHistory);
 
 //Participant detail
 appRouter.get('/api/v1/participant/:id/', Middlewares.isJWTAuthenticated, CarController.apiParticipantDetail);
