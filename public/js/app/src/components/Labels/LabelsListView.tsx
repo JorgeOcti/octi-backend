@@ -219,11 +219,11 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                           <td className="middle text-ellipsis">
                             <strong className='text-primary'>{label.name}</strong>
                             <p
-                              className={"text-muted text-sm"}
-                              style={{marginBottom: "0"}}
+                              className="text-muted text-sm zero-marging-botton"
+                              
                             >{label.description}</p>
                           </td>
-                          <td className="middle" style={{lineHeight: 1.6}}>
+                          <td className="middle table-line-Height">
                             {
                               label.affected.map((aff, key)=>(
                                 <React.Fragment key={key}>
@@ -319,11 +319,10 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                           <td className="middle text-ellipsis">
                             <strong className='text-primary'>{label.name}</strong>
                             <p
-                              className={"text-muted text-sm"}
-                              style={{marginBottom: "0"}}
+                              className="text-muted text-sm zero-marging-botton"
                             >{label.description}</p>
                           </td>
-                          <td className="middle" style={{lineHeight: 1.6}}>
+                          <td className="middle table-line-Height">
                             {
                               label.affected.map((aff, key)=>(
                                 <React.Fragment key={key}>

@@ -385,8 +385,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       return label;
     }
 
-    return <div className="btn-group" style={{ padding: "8px" }}>
-      <div className="dropdown" style={{ padding: "5px" }}>
+    return <div className="btn-group default-padding-8px">
+      <div className="dropdown default-padding-5px">
         <button
           data-toggle="modal"
           data-target="#modalForAddLabel"
@@ -794,7 +794,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         return (
           <div key={index} className={`row request background-transition ${classNameEfect}`}>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong style={{ "textDecoration": "underline" }}>{car.car.vin}</strong>
+              <strong className='unit-vin-decorator'>{car.car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {imagesFormatter(car)}
@@ -1074,7 +1074,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     
                     <div className="col-md-6">
                       <div className='form-group'>
-                        <div className="row pull-left box-tools" style={{ paddingTop: "26px", paddingLeft: "15px" }}>
+                        <div className="row pull-left box-tools clean-filter-wrapper">
                           <button
                             className="btn btn-sm btn-outline-default text-dark btn-block"
                             onClick={this.cleanFilters}
