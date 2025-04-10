@@ -365,7 +365,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     this.startSocket();
     api.getSource()
-    api.getInventories(1, true)
+    api.getInventories(1, true, 50)
       .then(async (response: any) => {
 
         let inventories: IInventory[] = response.data.inventories;
@@ -923,7 +923,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
 
-                    
+
                     <div className="col-md-6">
                       <div className='form-group'>
                         <div className="row pull-right box-tools" style={{ paddingTop: "26px", paddingRight: "16px" }}>
