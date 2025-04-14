@@ -234,6 +234,7 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
+        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : null,
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),
