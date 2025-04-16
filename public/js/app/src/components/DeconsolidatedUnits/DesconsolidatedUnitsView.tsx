@@ -12,10 +12,21 @@ import DateRangeInput from '../Utils/DateRangeInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import { hasPermission } from '../../utils/common';
 import * as XLSX from 'xlsx-color';
+import { Dispatch } from 'redux';
+import {
+  DashboardReduxAction,
+  getParticipant,
+  IDashboardState
+} from '../../actions/dashboard.actions';
+import ShowIf from '../Utils/ShowIf';
+import ModalView from '../Modal/ModalView';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<DashboardReduxAction>;
+  getParticipant(id: string): void;
+  dashboard: IDashboardState;
 }
 
 interface IStateType {
@@ -113,109 +124,7 @@ const excelHeaders = [
   "Estado"
 ];
 
-const columns = [
-  {
-    name: 'Código de unidad',
-    selector: (row: any) => {
-      return <CopyText value={row.car.vin}>
-      <strong
-        className="text-primary text-underline">
-        {row.car.vin}
-      </strong>
-    </CopyText>;
-    }
-  },
-  {
-    name: 'Marca',
-    selector: (row: any) => {
-      return row.car.brand;
-    }
-  },
-  {
-    name: 'Modelo',
-    selector: (row: any) => row.car.denomination,
-  },
-  {
-    name: 'Contendor',
-    selector: (row: any) => row.inventoryCar.extra["BIC"],
-  }, {
-    name: 'BL',
-    selector: (row: any) => row.inventoryCar.extra["N° BL"],
-  }, 
-  {
-    name: 'Nave',
-    selector: (row: any) => row.inventoryCar.extra["Nave"],
-  }, 
-  {
-    name: 'Viaje',
-    selector: (row: any) => row.inventoryCar.extra["N° Viaje"],
-  },{
-    name: 'Cliente',
-    selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
-  },{
-    name: 'Sucursal',
-    selector: (row: any) => row.inventoryCar.venue.name,
-  }, {
-    name: 'F. Descarga',
-    selector: (row: any) => {
-      return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
-    },
-    sortable: true,
-    sortFunction: (a: any, b: any) => {
-      const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-      const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-      return moment(dateA).isAfter(dateB) ? 1 : -1;
-    }
-  },{
-    name: 'F. Despacho',
-    selector: (row: any) => {
-      return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
-    },
-    sortable: true,
-    sortFunction: (a: any, b: any) => {
-      const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
-      const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
-      return moment(dateA).isAfter(dateB) ? 1 : -1;
-    }
-  }, {
-    name: 'Estado',
-    selector: (row: any) => {
-      return row.status;
-    },
-    cell: (row: any) => {
-      const status = row.status
-      let className = `${status}ClassContainer`;
-      return <span
-         className={`label-container label-container-${
-          inventorySettings.hasOwnProperty(className)
-          ? inventorySettings[className]
-          : ''
-          }`}
-          style={{
-            padding: '5px 10px'
-          }}>
-         {inventorySettings.hasOwnProperty(status)
-           ? inventorySettings[status]
-           : status}
-       </span>
 
-    },
-    sortable: true
-  },
-  {
-    name: 'Tarja',
-    selector: (row: any) => {
-      return row.inventoryCar.containerFound;
-    },
-    cell: (row: any) => {
-      return row.histories.filter((history: any) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
-        window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
-      }}>
-      <i className="fa fa-fw fa-print" /> Tarja
-    </button>
-    }
-  },
-];
 
 const getDateRangeOptions = ():daterangepicker.Options => {
   return {
@@ -421,6 +330,153 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   render() {
     const {units, loading, isUserHandler} = this.state;
+    const { getParticipant } = this.props;
+    const {
+      loadingParticipant
+    } = this.props.dashboard;
+
+    const columns = [
+      {
+        name: 'Código de unidad',
+        selector: (row: any) => {
+          return <CopyText value={row.car.vin}>
+          <strong
+            className="text-primary text-underline">
+            {row.car.vin}
+          </strong>
+        </CopyText>;
+        }
+      },
+      {
+        name: 'Marca',
+        selector: (row: any) => {
+          return row.car.brand;
+        }
+      },
+      {
+        name: 'Modelo',
+        selector: (row: any) => row.car.denomination,
+      },
+      {
+        name: 'Contendor',
+        selector: (row: any) => row.inventoryCar.extra["BIC"],
+      }, {
+        name: 'BL',
+        selector: (row: any) => row.inventoryCar.extra["N° BL"],
+      }, 
+      {
+        name: 'Nave',
+        selector: (row: any) => row.inventoryCar.extra["Nave"],
+      }, 
+      {
+        name: 'Viaje',
+        selector: (row: any) => row.inventoryCar.extra["N° Viaje"],
+      },{
+        name: 'Cliente',
+        selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
+      },{
+        name: 'Sucursal',
+        selector: (row: any) => row.inventoryCar.venue.name,
+      },{
+        name: 'F. Descarga',
+        selector: (row: any) => {
+          return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
+        },
+        cell: (row: any) => {
+          const data = row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? row.histories.find((history:any) => history.status === "readyToClient") : "-";
+          return <div
+                    key={row._id}
+                    className={data.inventoryCar.participant ? "div-date date-checklist" : "div-date"}
+                    onClick={data.inventoryCar.participant ? () => getParticipant(data.inventoryCar.participant) : () => {}}
+                    >
+                      <span className='text-center center text-date' style={{ display: data.inventoryCar.participant ? 'none' : ''}}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
+                      <div 
+                        className="btn btn-xs btn-transparent text-date"
+                        style={{ display: data.inventoryCar.participant ? '' : 'none' }}
+                        
+                      >
+                        {data.createdAt ? formaDate(data.createdAt) : "-"}
+                        <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                      </div>
+                  </div>
+        },
+        sortable: true,
+        minWidth: '140px',
+        sortFunction: (a: any, b: any) => {
+          const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
+          const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
+          return moment(dateA).isAfter(dateB) ? 1 : -1;
+        },
+
+      },{
+        name: 'F. Despacho',
+        selector: (row: any) => {
+          return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
+        },
+        cell: (row: any) => {
+          const data = row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? row.histories.find((history:any) => history.status === "inTransit") : "-";
+          return <div
+                    key={row._id}
+                    className={data.participant ? "div-date date-checklist" : "div-date"}
+                    onClick={data.participant ? () => getParticipant(data.participant) : () => {}}
+                    >
+                      <span className='text-center center text-date' style={{ display: data.participant ? 'none' : '' }}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
+                      <div 
+                        className="btn btn-xs btn-transparent text-date"
+                        style={{ display: data.participant ? '' : 'none'}}
+                        
+                      >
+                        {data.createdAt ? formaDate(data.createdAt) : "-"}
+                        <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                      </div>
+                  </div>
+        },
+        sortable: true,
+        minWidth: '140px',
+        sortFunction: (a: any, b: any) => {
+          const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
+          const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
+          return moment(dateA).isAfter(dateB) ? 1 : -1;
+        }
+      }, {
+        name: 'Estado',
+        selector: (row: any) => {
+          return row.status;
+        },
+        cell: (row: any) => {
+          const status = row.status
+          let className = `${status}ClassContainer`;
+          return <span
+             className={`label-container label-container-${
+              inventorySettings.hasOwnProperty(className)
+              ? inventorySettings[className]
+              : ''
+              }`}
+              style={{
+                padding: '5px 10px'
+              }}>
+             {inventorySettings.hasOwnProperty(status)
+               ? inventorySettings[status]
+               : status}
+           </span>
+    
+        },
+        sortable: true
+      },
+      {
+        name: 'Tarja',
+        selector: (row: any) => {
+          return row.inventoryCar.containerFound;
+        },
+        cell: (row: any) => {
+          return row.histories.filter((history: any) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
+            window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
+          }}>
+          <i className="fa fa-fw fa-print" /> Tarja
+        </button>
+        }
+      },
+    ];
 
     return (
       <AppContainer title={
@@ -445,7 +501,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
                 Unidades Desconsolidadas <span className="font-12"
-                                               style={{ color: 'gray', fontWeight: '600' }}>{units?.length}</span>
+                                               style={{ color: 'gray', fontWeight: '700' }}>{units?.length}</span>
               </h3>
               <div className="pull-right box-tools">
                     < button
@@ -639,18 +695,24 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
               </>
             }
           </div>
+          <ModalView />
         </section>
       </AppContainer>
     );
   }
 }
 
-const mapStateToProps = (state: any) => {
-  return {};
+const mapStateToProps = (state: { dashboard: IDashboardState }) => {
+  return {
+    dashboard: state.dashboard
+  };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {};
+  return {
+    dispatch,
+    getParticipant: (id: string) => dispatch(getParticipant(id))
+  };
 };
 
 export default connect<{}, {}, IPropsType>(

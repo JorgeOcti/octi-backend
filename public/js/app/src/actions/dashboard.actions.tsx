@@ -392,6 +392,7 @@ export function loadingParticipantAction(
 }
 
 export function getParticipant(id: string) {
+
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
