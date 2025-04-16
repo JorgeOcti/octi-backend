@@ -1852,21 +1852,35 @@ class CarController {
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
     const { id } = req.params;
-    const team = req.user.team._id;
     try {
-      const venuesPermissions = req.user.venuesPermissions();
+      let participantFilter: any = {_id: id}
+      if (req.user.company.handler) {
+        participantFilter = {
+          ...participantFilter,
+          handlerCompany: new mongoose.Types.ObjectId(req.user.company._id),
+          venue: {
+            $in: req.user.venuesPermissions()
+          },
+        };
+      } else {
+        let handlerVenues = await Venue.find({
+          company: {
+            $in: req.user.company.handlerCompanies.map((company: any)=> new  mongoose.Types.ObjectId(company._id))
+          }
+        });
+
+        participantFilter = {
+          ...participantFilter,
+          team: new mongoose.Types.ObjectId(req.user.team._id),
+          venue: {
+            $in: [
+              ...handlerVenues.map((venue) => new Types.ObjectId(venue._id)),
+              ...req.user.venuesPermissions()]
+          },
+        }
+      }
       const participant = await ParticipantModel.findOne(
-        {
-          $and: [
-            {
-              _id: id,
-              team,
-              venue: {
-                $in: venuesPermissions
-              }
-            }
-          ]
-        },
+        participantFilter,
         {
           name: true,
           user: true,
