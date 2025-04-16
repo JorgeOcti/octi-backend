@@ -392,10 +392,8 @@ export function loadingParticipantAction(
 }
 
 export function getParticipant(id: string) {
-  console.log("Entre")
 
   return (dispatch: Dispatch<DashboardReduxAction>) => {
-    console.log("Entre")
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(loadingParticipantAction(id));
@@ -403,7 +401,6 @@ export function getParticipant(id: string) {
       .getParticipant(id)
       .then((response: AxiosResponse) => {
         const data = response.data.data;
-        console.log(data)
         dispatch(
           loadDataAction(
            <strong className='text-muted'>{data.name}</strong>,

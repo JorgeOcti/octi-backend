@@ -453,7 +453,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           tripSelector: trips,
           loading: false
         })
-        console.log(containers)
       })
       .catch((error: any) => {
         console.log(error);
