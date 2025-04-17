@@ -507,6 +507,12 @@ export default class ApiService {
     });
   }
 
+  public getSummaryInventory(id: string): AxiosPromise {
+    return this.instance.get(`/api/inventory/${id}/summary`, {
+      cancelToken: this.source.token
+    });
+  }
+
   public addComment(id: string, carId: string, comment: string): AxiosPromise {
     return this.instance.post(`/api/inventory/${id}/comment/`, {
       _id: carId,

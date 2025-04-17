@@ -346,6 +346,15 @@ if (hasPermission(window.user, 'viewClient') ) {
   });
 }
 
+if (hasPermission(window.user, 'viewContainerInventory') ) {
+  AdminLoadControl.push({
+    id: '6.3',
+    icon: 'fa-circle-o',
+    text: 'Gestion',
+    url: '/inventory/management/'
+  });
+}
+
 if (AdminLoadControl.length) {
   menus.push({
     id: '6',
