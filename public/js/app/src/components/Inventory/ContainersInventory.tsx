@@ -443,8 +443,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"].toString()).filter((nave: any) => nave !== undefined)));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"].toString()).filter((viaje: any) => viaje !== undefined)));
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -653,7 +653,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
-  
+
 
 
   render() {
@@ -786,7 +786,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         <i className="fa fw fa-spin fa-spinner" />
                       </ShowIf>
                 </button>: <></> }
-                
+
               </div>
             </div>
           )
