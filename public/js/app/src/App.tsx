@@ -109,9 +109,7 @@ const App = () => (
         <Route exact path='/desconsolidated/unit/' component={DesconsolidatedUnitsView} />
         <Route exact path='/inventory/' component={InventoryListView} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
-
         <Route exact path='/inventory/management/' component={InventoryManagement} />
-
         <Route exact path='/inventory/container/create/' component={ContainerInventoryCreateView} />
         <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />
