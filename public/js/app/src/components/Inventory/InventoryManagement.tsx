@@ -375,12 +375,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       </div>
     </div>
   }
-  finishInventoryAction(inventory: any): void {
-    throw new Error('Method not implemented.');
-  }
-  deleteInventoryAction(inventory: any): void {
-    throw new Error('Method not implemented.');
-  }
 
 
   private labelStatus(option: string): React.ReactElement<IPropsType> {
@@ -412,20 +406,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
   }
-
-  private setLabelCallback(isUnit: boolean) {
-    setTimeout(() => {
-      (swal as any).close();
-      this.componentDidMount(); // reload data after set label
-      if (isUnit) {
-        $('#modalForAddLabelUnit').modal('toggle');
-      } else {
-        $('#modalForAddLabel').modal('toggle');
-      }
-    }, 1000);
-  }
-
-
 
   componentDidMount() {
     super.componentDidMount();
