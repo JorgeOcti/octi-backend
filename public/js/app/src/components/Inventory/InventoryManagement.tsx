@@ -8,20 +8,14 @@ import ApiService from "../../utils/axios";
 import { IInventory, IInventoryCar } from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-import { io } from 'socket.io-client';
-import { Socket } from 'socket.io-client/build/esm/socket';
 
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import { hasPermission } from "../../utils/common";
 import { IWindow } from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
-import * as XLSX from 'xlsx-color';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import swal = require('sweetalert');
-import { AxiosError, AxiosResponse } from 'axios';
-import s = require('mongoose-crate-s3');
 import { Link } from 'react-router-dom';
 
 
@@ -39,8 +33,9 @@ interface IStateType {
   originalSummary: any[];
 
   containers: any[];
-  labels: any[],
-  unitLabels: any[],
+  originalContainers: any[];
+
+
   activeIndex: number,
   activeUnitIndex: number,
   inventorySelected: string,
@@ -48,7 +43,7 @@ interface IStateType {
   cardIDSelected: string,
   labelSelected: any,
   unitLabelSelected: any,
-  originalContainers: any[];
+
   blFilter: string;
   containerFilter: string;
   containerUpdated: any;
@@ -56,10 +51,12 @@ interface IStateType {
   clientSelector: any[];
   statusFilterSelected: string[],
   selectedContainer: number;
+  
   shipFilter: string[];
   shipSelector: any[];
   tripSelector: any[];
   tripFilter: string[];
+
   inventorySettings: any;
   loading: boolean;
   endDate: Date;
@@ -140,31 +137,6 @@ const foundStatusContainer = (container: any) => {
   return status;
 }
 
-const imagesFormatter = (row: any) => {
-  if (row.images && row.images.length) {
-    return (
-      <div className="row">
-        {row.images.map((image: any, index: number) => (
-          <div
-            key={image._id}
-            className={'col-md-12 images-25 text-center'}
-            style={{ display: index === 0 ? '' : 'none' }}>
-            <a
-              href={decodeURI(image.file.url)}
-              data-toggle="lightbox"
-              data-gallery={row._id}>
-              <button className="btn btn-xs btn-default">
-                <i className="fa fa-fw fa-image" /> {row.images.length}
-              </button>
-              {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
-            </a>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-}
 
 const getDateRangeOptions = (): daterangepicker.Options => {
   return {
@@ -182,7 +154,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
   title = "Revisión Containers";
 
-  private socket: Socket;
   private statusText: any = {
     'pending': 'Pendientes',
     'found': 'Encontrado',
@@ -203,8 +174,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
       originalContainers: [],
       containers: [],
-      labels: [],
-      unitLabels: [],
+
 
       loading: true,
       error: null,
@@ -255,7 +225,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       }
     };
 
-    this.downloadData = this.downloadData.bind(this);
     this.columns = [
       {
         name: 'data',
@@ -267,21 +236,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
   }
-
-  handleClick = (index: any) => {
-    this.setState({
-      activeIndex: index,
-      labelSelected: this.state.labels[index]
-    });
-  };
-
-  handleUnitClick = (index: any) => {
-    this.setState({
-      activeUnitIndex: index,
-      unitLabelSelected: this.state.unitLabels[index]
-    });
-  };
-
 
 
   private formatData(row: {
@@ -296,20 +250,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     name: string; containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined;
   }) {
 
-    const { labels } = this.state;
-    const status = row.containerStatus || row.status
-    let className = `${status}ClassContainer`;
-
-    let getLabel = (container: any) => {
-      const status = row.containerStatus || row.status
-      let label = inventorySettings.hasOwnProperty(status) ?
-        inventorySettings[status]
-        : status
-      if (status === ContainerStatus.EMPTY && container.pendingUnits) {
-        label = `${label}(*)`
-      }
-      return label;
-    }
 
 
     return <div className="container-fluid" style={{ width: '100%' }}>
@@ -428,8 +368,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                     {row.container['empty(*)']}
                   </strong>
                 </div>
-
-
               </div>
             </div>
           </div>
@@ -576,51 +514,11 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     }, 1000);
   }
 
-  private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
-    const api: ApiService = new ApiService();
-    if (label.requireCustomText) {
-      (swal as any)('Agregar datos adicionales:', {
-        content: 'input'
-      }).then((custom: string) => {
-        if (custom && custom.trim().length) {
-          api.setLabel(inventory, car, cardID, label._id, custom)
-            .then((response: AxiosResponse) => {
-              swal(response.data.message, {
-                icon: 'success'
-              });
-              this.setLabelCallback(isUnit);
-            }).catch((err: AxiosError) => {
-              api.errorHandler(err);
-            });
-        } else {
-          swal('Operación cancelada', {
-            icon: 'error'
-          });
-        }
-      });
-    } else {
-      api.setLabel(inventory, car, cardID, label._id)
-        .then((response: AxiosResponse) => {
-          swal(response.data.message, {
-            icon: 'success'
-          });
-          this.setLabelCallback(isUnit);
-        })
-        .catch((err: AxiosError) => {
-          api.errorHandler(err);
-        });
-    }
-  }
 
-  public componentWillUnmount(): void {
-    // cancel request if component is inmounted
-    this.socket.disconnect();
-  }
 
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
-    this.startSocket();
     api.getSource()
 
     api.getInventories(1)
@@ -643,6 +541,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           })
 
           return {
+            _id: inventory._id,
             name: inventory.name,
             createdAt: inventory.createdAt,
             createdBy: inventory.createdBy,
@@ -651,6 +550,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
             unit: units,
             nave: nave,
             client: client,
+            status: inventory.status
           };
 
         });
@@ -671,96 +571,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       })
 
   }
-  startSocket() {
-    this.socket = io(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      transports: ['websocket'],
-      reconnection: true,
-      query: {
-        token: (window.user as any).token
-      }
-    });
-    this.socket.on('connect', () => {
-      this.socket.emit('join', {
-        room: `dashboard-container-vin-view-${window.user.team._id}`
-      });
-    });
-    this.socket.on('REFRESH', (data: any): void => {
-      this.updateDataContainersRealTime(data);
-    });
-
-  }
-  updateDataContainersRealTime(data: any) {
-    const containerUpdated = data.metadata.inventory;
-    let containers = this.state.containers.map((container: any) => {
-      if (containerUpdated.car.isContainer) {
-        // Metodo para modificar la data del contenedor
-        return this.updateDataContainer(container, containerUpdated, data)
-      } else {
-        if (container._id !== containerUpdated.container) return container
-        let contents = container.content.map((e: any) => {
-          // Metodo para modificar el array de contents del contenedor
-          return this.updateContentContainer(e, containerUpdated, data)
-        })
-        container.content = contents;
-        return container
-      }
-    });
-    this.setState({
-      containers,
-      originalContainers: containers,
-      containerUpdated
-    });
-  }
-  updateDataContainer(container: any, containerUpdated: any, data: any): any {
-    let containerTemp = { ...container }
-    if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory) {
-      containerTemp.evidenceStatus = containerUpdated.evidenceStatus
-      containerTemp.status = containerUpdated.status;
-      containerTemp.containerStatus = containerUpdated.containerStatus;
-      containerTemp.images = containerUpdated.images;
-      let openEvidences = containerTemp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-      if (openEvidences.length > 0) {
-        //sort by date and get the last one
-        containerTemp.openDate = openEvidences.sort((a: any, b: any) => {
-          return moment(a.date).isAfter(b.date) ? -1 : 1;
-        })[0].date;
-      }
-      this.showAlert(data)
-      return containerTemp
-    } else return container
-  }
-  updateContentContainer(content: any, containerUpdated: any, data: any) {
-    if (content.car.vin === containerUpdated.car.vin) {
-      let contentTemp = { ...content }
-      contentTemp.status = containerUpdated.status;
-      contentTemp.images = containerUpdated.images;
-      this.showAlert(data);
-      return contentTemp
-    }
-    return content
-  }
-
-  showAlert(data: any) {
-    ($ as any).toast({
-      heading: data.title,
-      text: data.text,
-      position: 'top-right',
-      loaderBg: '#e2e2e2',
-      icon: 'success',
-      hideAfter: 5000,
-      stack: 6,
-      beforeShow: () => {
-        const $toastEl = $('.jq-toast-heading');
-        $toastEl.css({
-          'fontSize': '13px',
-          'padding-top': '2px',
-          'padding-right': '2px'
-        });
-      },
-    } as any);
-  }
-
+  
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.blFilter !== prevState.blFilter ||
       this.state.containerFilter !== prevState.containerFilter ||
@@ -771,7 +582,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate ||
       this.state.shipFilter !== prevState.shipFilter ||
       this.state.tripFilter !== prevState.tripFilter) {
-      this.filterContainers();
+      this.filterSummary();
     }
   }
 
@@ -789,7 +600,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
 
-  filterContainers() {
+  filterSummary() {
 
     let summary = this.state.originalSummary.filter((summary: any) =>{
 
@@ -797,7 +608,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
       let shipFilter = this.state.shipFilter.length == 0 ? true : ( this.state.shipFilter.includes(nave) || this.state.shipFilter.includes(client) );
 
-      console.log('summary ', summary, 'this.state.shipFilter', this.state.shipFilter, 'shipFilter ', shipFilter);
 
       let countStatusFilter = 0;
 
@@ -840,42 +650,9 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
-  private downloadData(): void {
-    const { containers } = this.state
-    let rows = [
-      [...excelHeaders]
-    ];
-
-    containers.map((container: any) => {
-      container.content.map((car: any) => {
-        let carRow = [
-          container.openDate ? moment(container.openDate).format('DD/MM/YYYY HH:mm') : "",
-          container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
-          container.car.vin,
-          car.car.vin,
-          `${car.car.brand ?? ""} ${car.car.model ?? ""}`,
-          car.extra ? car.extra["N° BL"] ?? "" : "",
-          car.extra ? car.extra["Emplazamiento"] ?? "" : "",
-          car.extra ? car.extra["Nave"] ?? "" : "",
-          car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
-          car.extra ? car.extra["N° Viaje"] ?? "" : "",
-          inventorySettings[car.containerStatus || car.status] ?? "",
-        ]
-        rows.push(carRow);
-      })
-    });
-
-    /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    /* add to workbook */
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
-    /* generate an XLSX file */
-    XLSX.writeFile(wb, 'container_inventory.xlsx');
-  }
 
   render(): React.ReactElement<IPropsType> {
+
     const { containers, loading } = this.state;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container && container.containerStatus) {
@@ -916,7 +693,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     return (
-      <AppContainer title="" cMenu="6" cSubMenu="6.1">
+      <AppContainer title="" cMenu="6" cSubMenu="6.3">
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">

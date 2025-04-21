@@ -564,10 +564,20 @@ class InventoryController {
 
       const inventoryResult = await InventoryCar.find({
         inventory
-      }).populate([{
-        path: 'car'
-      }]);
+      }).populate([
+        {
+          path: 'car'
+        },
+        {
+          path: 'participant',
+          select: ['hasDamages']
+        }
+    
+    
+    ]);
 
+
+    console.log('inventoryResult' , JSON.stringify(inventoryResult) )
 
       const inventoryMap: any = {};
       const containers = new Map(); //contenedores por _id
