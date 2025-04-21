@@ -570,14 +570,11 @@ class InventoryController {
         },
         {
           path: 'participant',
-          select: ['hasDamages']
+          select: ['hasDamages'] // TODO: validar para contar
         }
-    
-    
     ]);
 
 
-    console.log('inventoryResult' , JSON.stringify(inventoryResult) )
 
       const inventoryMap: any = {};
       const containers = new Map(); //contenedores por _id

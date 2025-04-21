@@ -1,14 +1,10 @@
 import AppContainer from '../../container/AppContainer';
 import TrackingBasePage from "../Utils/TrackingBasePage";
 import { RouteComponentProps } from "react-router";
-import { connect } from "react-redux";
-
 import * as React from "react";
 import ApiService from "../../utils/axios";
-import { IInventory, IInventoryCar } from "../../../../../../src/inventory/interfaces/inventory.interface";
-import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
+import { IInventory } from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
 import { hasPermission } from "../../utils/common";
@@ -28,35 +24,13 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
-
   summaryInventory: any[];
   originalSummary: any[];
-
-  containers: any[];
-  originalContainers: any[];
-
-
-  activeIndex: number,
-  activeUnitIndex: number,
-  inventorySelected: string,
-  carSelected: string,
-  cardIDSelected: string,
-  labelSelected: any,
-  unitLabelSelected: any,
-
-  blFilter: string;
-  containerFilter: string;
   containerUpdated: any;
-  clientFilter: string;
-  clientSelector: any[];
   statusFilterSelected: string[],
   selectedContainer: number;
-  
   shipFilter: string[];
   shipSelector: any[];
-  tripSelector: any[];
-  tripFilter: string[];
-
   inventorySettings: any;
   loading: boolean;
   endDate: Date;
@@ -94,50 +68,6 @@ const paginationComponentOptions = {
   selectAllRowsItemText: 'Todos',
 };
 
-
-const excelHeaders = [
-  'F. Apertura',
-  'F. Finalización',
-  'Contenedor',
-  "Carga",
-  "Descripción carga",
-  'BL',
-  'Puerto',
-  'Nave',
-  'Cliente',
-  'Viaje',
-  'Estado',
-];
-
-const formaDate = (date: any) => {
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(date)).replace(',', '');
-}
-
-const foundStatusContainer = (container: any) => {
-  let status = container.status;
-  if (container.evidenceStatus && container.evidenceStatus.length > 0) {
-    const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
-    if (statusList.includes(ContainerStatus.EMPTY)) {
-      status = ContainerStatus.EMPTY;
-    } else if (statusList.includes(ContainerStatus.CHECK)) {
-      status = ContainerStatus.CHECK;
-    } else if (statusList.includes(ContainerStatus.OPEN)) {
-      status = ContainerStatus.OPEN;
-    } else {
-      status = container.status;
-    }
-  }
-  return status;
-}
-
-
 const getDateRangeOptions = (): daterangepicker.Options => {
   return {
     maxDate: moment().toDate(),
@@ -170,31 +100,12 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
       summaryInventory: [],
       originalSummary: [],
-
-
-      originalContainers: [],
-      containers: [],
-
-
       loading: true,
       error: null,
-      activeIndex: -1,
-      activeUnitIndex: -1,
-      inventorySelected: '',
-      carSelected: '',
-      cardIDSelected: '',
-      labelSelected: null,
-      unitLabelSelected: null,
-      blFilter: '',
-      containerFilter: '',
       containerUpdated: {},
-      clientFilter: '',
-      clientSelector: [],
       statusFilterSelected: [],
       shipFilter: [],
       shipSelector: [],
-      tripSelector: [],
-      tripFilter: [],
       selectedContainer: -1,
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
@@ -573,31 +484,22 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
   }
   
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
-    if (this.state.blFilter !== prevState.blFilter ||
-      this.state.containerFilter !== prevState.containerFilter ||
-      this.state.clientFilter !== prevState.clientFilter ||
-      this.state.statusFilterSelected !== prevState.statusFilterSelected ||
+    if (this.state.statusFilterSelected !== prevState.statusFilterSelected ||
       this.state.isFilteringByDate !== prevState.isFilteringByDate ||
       this.state.startDate !== prevState.startDate ||
       this.state.endDate !== prevState.endDate ||
-      this.state.shipFilter !== prevState.shipFilter ||
-      this.state.tripFilter !== prevState.tripFilter) {
+      this.state.shipFilter !== prevState.shipFilter ) {
       this.filterSummary();
     }
   }
 
   cleanFilters = () => {
     this.setState({
-      blFilter: '',
-      containerFilter: '',
-      clientFilter: '',
       shipFilter: [],
-      tripFilter: [],
       statusFilterSelected: [],
       isFilteringByDate: false,
     });
   }
-
 
 
   filterSummary() {
@@ -607,7 +509,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       const { nave, client } = summary;
 
       let shipFilter = this.state.shipFilter.length == 0 ? true : ( this.state.shipFilter.includes(nave) || this.state.shipFilter.includes(client) );
-
 
       let countStatusFilter = 0;
 
@@ -639,7 +540,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       
     });
 
-
     this.setState({
       summaryInventory: summary
     });
@@ -650,32 +550,9 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
-
   render(): React.ReactElement<IPropsType> {
 
-    const { containers, loading } = this.state;
-    let statusCount = containers.reduce((acc: any, container: any) => {
-      if (container && container.containerStatus) {
-        let key = container.containerStatus;
-        if (acc[key]) {
-          acc[key] += 1;
-        } else {
-          acc[key] = 1;
-        }
-      }
-      return acc;
-    }, {});
-
-    let details = Object.keys(statusCount).map((status: any) => {
-      let className = `${status}Color`;
-      let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
-      let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
-      return <> - <span
-        key={status}
-        style={{ color: `${color}`, fontWeight: "600" }}>
-        {label}: {statusCount[status]}
-      </span> </>
-    });
+    const { loading } = this.state;
 
     const conditionalRowStyles = [
       {
@@ -698,7 +575,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h4 className="box-title">
-                Gesti&oacute;n de Anuncios <span className="font-12 font-bold"> <span style={{ color: "gray", fontWeight: "600" }}>{containers.length}</span> {details.length > 0 ? details : ''}</span>
+                Gesti&oacute;n de Anuncios 
               </h4>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
@@ -808,16 +685,12 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
 
-
                   <div className="row">
                     <div className="col-md-12">
                       <DataTable
-
                         columns={this.columns}
                         data={this.state.summaryInventory}
                         customStyles={dataTableStyle}
-                        // expandableRows
-                        // expandableRowsComponent={this.ExpandedRowElement}
                         // expandOnRowClicked={true}
                         pagination
                         conditionalRowStyles={conditionalRowStyles}
@@ -830,10 +703,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-
-                  
-
-                  
                 </div>
               </>
             }
@@ -844,18 +713,9 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: any) => {
-  return {};
-};
 
-const mapDispatchToProps = (dispatch: any) => {
-  return {};
-};
 
-export default connect<{}, {}, IPropsType>(
-  mapStateToProps,
-  mapDispatchToProps
-)(InventoryManagement);
+export default InventoryManagement;
 
 const inventorySettings: { [key: string]: any } = {
   "leftoverDifferentVenue": true,
