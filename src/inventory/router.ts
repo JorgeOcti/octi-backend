@@ -14,6 +14,7 @@ inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryContr
 inventoryRouter.get('/inventory/excel/', Middlewares.isLoggedIn, InventoryController.inventoryByCars);
 inventoryRouter.get('/inventory/containers/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/desconsolidated/unit/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/management/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/container/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detail);
 inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryController.detail);
@@ -26,6 +27,7 @@ inventoryRouter.post('/api/inventory/container/', Middlewares.isLoggedIn, Invent
 inventoryRouter.post('/api/external/inventory/', Middlewares.isJWTAuthenticated, InventoryController.test);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', Middlewares.isLoggedIn, InventoryController.addComment);
+inventoryRouter.get('/api/inventory/:inventory/summary/', Middlewares.isJWTAuthenticated, InventoryController.summary);
 inventoryRouter.post('/api/inventory/:id/download-images/', Middlewares.isJWTAuthenticated, InventoryController.downloadImages);
 inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, InventoryController.finishInventory);
 inventoryRouter.post('/api/inventory/:id/set-label/', Middlewares.isLoggedIn, InventoryController.setLabel);

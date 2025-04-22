@@ -46,6 +46,7 @@ export interface IInventoryCar {
 }
 
 export interface IInventory {
+  _id: any;
   name: string;
   company: ICompany;
   team: ITeam;
