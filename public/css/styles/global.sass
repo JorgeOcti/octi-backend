@@ -135,6 +135,19 @@ textarea
     a
       padding: 5px 8px
 
+.cursor-pointer 
+  cursor: pointer
+
+.text-underline
+  text-decoration: underline
+
+.date-checklist
+  cursor: pointer
+  &:hover 
+    text-decoration: underline
+      
+
+
 
 .input-group-addon
   &.input-group-primary
@@ -437,6 +450,28 @@ textarea
 .font-32
   font-size: 32px
 
+.date-checklist 
+  display: flex
+  justify-content: center
+
+  span 
+    display: inline-flex
+    align-items: center
+    flex-wrap: wrap
+    text-align: center
+    i 
+      margin-left: 0.25rem
+    
+.btn-transparent
+  background: transparent
+
+
+.d-flex
+  display: flex !important
+
+.justify-content-center
+  justify-content: center
+
 .fa-container-red 
   margin-right: 3px
   transform: translateY(2px)
@@ -446,7 +481,29 @@ textarea
   background-size: contain
   background-repeat: no-repeat
   color: red
-    
+
+.fa-checklist-blue 
+  margin-right: 3px
+  margin-left: 3px
+  transform: translateY(2px)
+  width: 18px !important
+  height: 14px
+  background-image: url('../../images/clipboard-check.svg')
+  background-size: contain
+  background-repeat: no-repeat
+  color: #666666
+
+.div-date
+  display: flex 
+  width: 100% 
+  justify-content: center
+
+.text-date  
+  font-weight: 700 
+  color: #333333
+  font-size: 13px
+  border: none
+  padding: 0px
 
 @media (max-width: 768px)
   .xs-center-text

@@ -22,12 +22,23 @@ import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inve
 import swal = require('sweetalert');
 import { AxiosError, AxiosResponse } from 'axios';
 
+import { Dispatch } from 'redux';
+import {
+  DashboardReduxAction,
+  getParticipant,
+  IDashboardState
+} from '../../actions/dashboard.actions';
+import ShowIf from '../Utils/ShowIf';
+import ModalView from '../Modal/ModalView';
 
 declare let window: IWindow;
 
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+    dispatch: Dispatch<DashboardReduxAction>;
+    getParticipant(id: string): void;
+    dashboard: IDashboardState;
 }
 
 interface IStateType {
@@ -506,7 +517,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
       );
 
-    api.getInventories(1, true)
+    api.getInventories(1, true, 50)
       .then(async (response: any) => {
 
         let inventories: IInventory[] = response.data.inventories;
@@ -573,8 +584,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }
             return container;
         });
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"].toString()).filter((nave: any) => nave !== undefined)));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"].toString()).filter((viaje: any) => viaje !== undefined)));
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
         this.setState({
           containers: containers,
           originalContainers: containers,
@@ -583,7 +594,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           tripSelector: trips,
           loading: false
         })
-
       })
       .catch((error: any) => {
         console.log(error);
@@ -876,6 +886,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   render() : React.ReactElement<IPropsType> {
     const {containers, loading} = this.state;
+    const { getParticipant } = this.props;
+    const {
+      loadingParticipant
+    } = this.props.dashboard;
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container  && container.containerStatus) {
         let key = container.containerStatus;
@@ -913,6 +927,100 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         classNames: ["highlight-info"],
       },
     ];
+
+    const ExpandedRowElement = ({ data }: { data: any }) => {
+      return <div className='table-responsive request-list'>
+        <div className="row request-header bg-request-title ">
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Unidad
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Marca
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Modelo
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Color
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Fotos
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Fecha desconsolidado
+          </div>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            Estado
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+            Revisión
+          </div>
+        </div>
+        {data.content.map((car: any, index: number) => {
+          let className = `${car.status}Class`;
+          let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+          return (
+            <div key={index} className={`row request background-transition ${classNameEfect}`}>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                <strong className="text-black">{car.extra["Marca"]}</strong>
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                <strong className="text-black">{car.extra["Modelo"]}</strong>
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                <strong className="text-black">{car.car.color}</strong>
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                {imagesFormatter(car)}
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
+              </div>
+              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+             <span
+               className={`label-units label-${
+                 inventorySettings.hasOwnProperty(className)
+                   ? inventorySettings[className]
+                   : ''
+               }`}
+               style={{
+                 padding: '5px 10px',
+               }}>
+               {inventorySettings.hasOwnProperty(car.status)
+                 ? inventorySettings[car.status]
+                 : car.state}
+             </span>
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+                {car.participant? <button
+                    className="btn btn-primary btn-sm"
+                    onClick={
+                       () => getParticipant(car.participant)
+                    }>
+                      <ShowIf
+                        condition={
+                          !!(
+                            loadingParticipant &&
+                            loadingParticipant === car.participant
+                          )
+                        }
+                        alternative={
+                          <i className="fa fw fa-check-square-o" />
+                        }>
+                        <i className="fa fw fa-spin fa-spinner" />
+                      </ShowIf>
+                </button>: <></> }
+
+              </div>
+            </div>
+          )
+        })
+        }
+      </div>
+    }
 
     return (
       <AppContainer title={
@@ -1100,7 +1208,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
 
-                    
+
                     <div className="col-md-6">
                       <div className='form-group'>
                         <div className="row pull-left box-tools clean-filter-wrapper">
@@ -1123,7 +1231,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           data={this.state.containers}
                           customStyles={dataTableStyle}
                           expandableRows
-                          expandableRowsComponent={this.ExpandedRowElement}
+                          expandableRowsComponent={ExpandedRowElement}
                           expandOnRowClicked={true}
                           pagination
                           conditionalRowStyles={conditionalRowStyles}
@@ -1242,18 +1350,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </>
             }
           </div>
+          <ModalView />
         </section>
       </AppContainer>
     );
   }
 }
 
-const mapStateToProps = (state: any) => {
-  return {};
+const mapStateToProps = (state: { dashboard: IDashboardState }) => {
+  return {
+    dashboard: state.dashboard
+  };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {};
+  return {
+    dispatch,
+    getParticipant: (id: string) => dispatch(getParticipant(id))
+  };
 };
 
 export default connect<{}, {}, IPropsType>(

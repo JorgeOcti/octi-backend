@@ -234,6 +234,7 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
+        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : null,
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),
@@ -2704,12 +2705,41 @@ class InventoryController {
         { path: 'inventoriedBy' },
         { path: 'images'},
         { path: 'venueFound'},
+        {path: 'participant',
+          populate: [
+            {
+              path: 'sections.answers.damagesSelected.kind',
+              model: 'Kind'
+            },
+            {
+              path: 'sections.answers.damagesSelected.part',
+              model: 'Part'
+            },
+            {
+              path: 'sections.answers.damagesSelected.position',
+              model: 'Position'
+            },
+            {
+              path: 'sections.answers.damagesSelected.images',
+            }
+          ]
+        },
         { path: 'car' },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]).lean();
 
       cars = cars.map((tmp: any) => {
+        tmp.damages = []; 
+        tmp?.participant?.sections.map((section: any) => {
+          section.answers.map((answer: any) => {
+            if (answer.kind === 'damage') {
+              answer.damagesSelected.map((damage: any) => {
+                tmp.damages.push(damage);
+              })
+            }
+          })
+        })
         let status = inventorySettings[foundStatusContainer(tmp)];
         return {
           ...tmp,

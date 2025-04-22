@@ -484,10 +484,13 @@ export default class ApiService {
     });
   }
 
-  public getInventories(page: number, containers?: boolean): AxiosPromise {
+  public getInventories(page: number, containers?: boolean, pageSize?: number): AxiosPromise {
     let url = `/api/inventory/?page=${page}`
     if (containers != null) {
       url += `&containers=${containers ? 1 : 0}`
+    }
+    if (pageSize) {
+      url += `&pageSize=${pageSize}`
     }
     return this.instance.get(url, {
       cancelToken: this.source.token
