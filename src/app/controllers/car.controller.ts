@@ -2007,7 +2007,6 @@ class CarController {
       }
     } catch (error) {
       console.error(error);
-      logger.error(error);
       return res.status(500).json(error);
     }
   }
