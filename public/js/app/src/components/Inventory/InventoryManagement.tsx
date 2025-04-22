@@ -91,6 +91,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     'check': 'Descarga',
     'empty': 'Vacío',
     'empty(*)': 'Vacío(*)',
+    'hasDamages': 'Con Daños',
   };
   private readonly columns: any[] = [];
 
@@ -163,21 +164,21 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
 
-    return <div className="container-fluid" style={{ width: '100%' }}>
+    return <div className="container-fluid col-md-12" >
 
-      <div className="row" style={{ padding: '0px' }}>
+      <div className="row">
         <div className="col-md-10">
           <h4 className='text-left text-primary pointer'>{row.name}</h4>
         </div>
         <div className="col-md-2">
-          <div className='text-right' style={{ paddingTop: '12px' }}>
+          <div className='text-right summary-label-status-p-top'>
             {this.labelStatus(row.status)}
           </div>
         </div>
       </div>
 
 
-      <div className="row" style={{ padding: '6px', background: '#ecf0f5' }}>
+      <div className="row summary-label-created-absolute">
         <div className="col-md-3 text-left">
           <div className={'detail-info  text-muted'}>
             <i className="fa fa-fw fa-clock-o text-primary" />
@@ -197,7 +198,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
         </div>
 
-        <div className="col-md-3 text-left" style={{ marginLeft: '-21px' }}>
+        <div className="col-md-3 text-left summary-label-finalized">
           <div className={'detail-info  text-muted'}>
             <i className="fa fa-fw fa-clock-o text-success" />
             {row.finalizedAt ? (
@@ -212,11 +213,11 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         </div>
       </div>
 
-      <div className="row" style={{ padding: '5px', paddingTop: '10px' }}>
+      <div className="row container-row-wrapper">
 
         <div className="col-md-5">
 
-          <div className='row' style={{ paddingBottom: '10px' }}>
+          <div className='row container-row-b-padding'>
             <div className='col-md-12'>
               <i className="fa fa-container-red" />
               <strong>
@@ -285,11 +286,11 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         </div>
 
 
-        <div className="col-md-5" style={{ borderLeft: '2px solid rgba(204,204,204,.3019607843)' }}>
+        <div className="col-md-5 div-border-left">
 
-          <div className='row' style={{ paddingBottom: '10px', paddingLeft: '28px' }}>
+          <div className='row div-row-padding'>
             <div className='col-md-12'>
-              <i className="fa fa-cube" style={{ marginRight: '3px' }} />
+              <i className="fa fa-cube unit-icon-margin" />
               <strong>
                 Unidades
               </strong>
@@ -310,6 +311,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                     {row.unit.pending}
                   </strong>
                 </div>
+
                 <div className='col-md-3'>
                   <strong className='text-green h4'>
                     Encontrados
@@ -319,6 +321,18 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                     {row.unit.found}
                   </strong>
                 </div>
+
+
+                <div className='col-md-3'>
+                  <strong className='has-damages h4'>
+                    Con Daños
+                  </strong>
+                  <br />
+                  <strong className='has-damages h2'>
+                    {row.unit.hasDamages}
+                  </strong>
+                </div>
+
               </div>
             </div>
           </div>
@@ -399,7 +413,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
     return (
-      <span className={`${spanClass} `} style={{ padding: '5px', borderRadius: '100px' }}>
+      <span className={`${spanClass} label-status-badge`} >
         <i className={`${iconClass}`} /> {statusName}
       </span>
     );
@@ -575,7 +589,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
               : <>
                 <div className="box-body">
 
-                  <div className="row" style={{ marginTop: "10px" }}>
+                  <div className="row filter-row-top-margin">
 
                     <div className="col-md-3">
                       <div className="form-group">
@@ -716,6 +730,12 @@ const inventorySettings: { [key: string]: any } = {
   "reported": "Reportados",
   "reportedClass": "gray-dark",
   "reportedColor": "#96a4b3",
+
+
+  "hasDamages": "Con Daños",
+  "hasDamagesClass": "has-damages",
+  "hasDamagesColor": "#DD4B39",
+
   "empty": "Vacío",
   "emptyClass": "green",
   "emptyClassContainer": "empty",

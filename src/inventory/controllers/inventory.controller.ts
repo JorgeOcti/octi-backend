@@ -572,9 +572,9 @@ class InventoryController {
           path: 'participant',
           select: ['hasDamages'] // TODO: validar para contar
         }
-    ]);
+      ]);
 
-
+      console.log('inventoryResult', JSON.stringify(inventoryResult))
 
       const inventoryMap: any = {};
       const containers = new Map(); //contenedores por _id
@@ -591,7 +591,7 @@ class InventoryController {
           inventoryMap[inventoryId] = {
             nave: item.extra.Nave,
             client: item.extra['Cliente Razón Social'],
-            units: { pending: 0, found: 0 },
+            units: { pending: 0, found: 0 , hasDamages: 0 },
             containers: {
               pending: 0,
               found: 0,
@@ -652,21 +652,26 @@ class InventoryController {
           const inventoryId: any = item.inventory;
           const summary = inventoryMap[inventoryId];
           const status = item.status;
+
           if (status === "pending" || status === "found") {
             summary.units[status]++;
+          }
+
+          if(item.participant && item.participant.hasDamages){
+            summary.units['hasDamages']++;
           }
         }
       });
 
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         summary: inventoryMap,
         metadata: {
           filters: {
-              clients: Array.from(clientsSet),
-              ships: Array.from(shipsSet)
+            clients: Array.from(clientsSet),
+            ships: Array.from(shipsSet)
           }
-      }
+        }
       });
 
     } catch (e) {

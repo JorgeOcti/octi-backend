@@ -371,6 +371,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   private getDropDownLabels(row: { containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
 
     const { labels } = this.state;
+
     const status = row.containerStatus || row.status
     let className = `${status}ClassContainer`;
 
@@ -383,6 +384,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         label = `${label}(*)`
       }
       return label;
+    }
+
+
+    if (labels.length === 0) {
+      return <span
+        className={`label-container label-container-${inventorySettings.hasOwnProperty(className)
+            ? inventorySettings[className]
+            : ''
+          }`}
+        style={{
+          padding: '5px 10px'
+        }}>
+        {getLabel(row)}
+      </span>
     }
 
     return <div className="btn-group default-padding-8px">
@@ -802,41 +817,55 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               <strong className="text-black">{car.car.color}</strong>
             </div>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
-          
-              <div className='inline-element'>
+            {
+              (unitLabels.length > 0) ?
+                <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
+                  <div className='inline-element'>
+                    <span
+                      data-toggle="modal"
+                      data-target="#modalForAddLabelUnit"
 
-              <span
-                data-toggle="modal"
-                data-target="#modalForAddLabelUnit"
+                      onClick={() => {
+                        this.setState({
+                          inventorySelected: car.inventory, //inventario
+                          carSelected: car._id, //inventory car
+                          cardIDSelected: car.car._id, // car
+                          unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
+                        });
+                      }}
 
-                onClick={() => {
-                  this.setState({
-                    inventorySelected: car.inventory, //inventario
-                    carSelected: car._id, //inventory car
-                    cardIDSelected: car.car._id, // car
-                    unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
-                  });
-                }}
-
-                className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
-                    ? inventorySettings[className]
-                    : ''
-                  }`}>
-                {inventorySettings.hasOwnProperty(car.status)
-                  ? inventorySettings[car.status]
-                  : car.state}
-                <i className="fa fa-plus icon-add-label-units"></i>
-              </span>
-
-              </div>
-                {
-                  (car.labelText && car.labelText !== '') ?
-                   <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div>:
-                    ''
-                }
-              
-            </div>
+                      className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
+                        ? inventorySettings[className]
+                        : ''
+                        }`}>
+                      {inventorySettings.hasOwnProperty(car.status)
+                        ? inventorySettings[car.status]
+                        : car.state}
+                      <i className="fa fa-plus icon-add-label-units"></i>
+                    </span>
+                  </div>
+                  {
+                    (car.labelText && car.labelText !== '') ?
+                      <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div> :
+                      ''
+                  }
+                </div>
+                :
+                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                  <span
+                    className={`label-units label-${inventorySettings.hasOwnProperty(className)
+                        ? inventorySettings[className]
+                        : ''
+                      }`}
+                    style={{
+                      padding: '5px 10px',
+                    }}>
+                    {inventorySettings.hasOwnProperty(car.status)
+                      ? inventorySettings[car.status]
+                      : car.state}
+                  </span>
+                </div>
+            }
           </div>
         )
       })
