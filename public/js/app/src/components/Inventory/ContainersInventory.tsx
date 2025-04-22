@@ -794,96 +794,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
-  ExpandedRowElement = ({ data }: { data: any }) => {
-
-    const { unitLabels } = this.state;
-
-    return <div className='table-responsive request-list'>
-      <div className="row request-header bg-request-title ">
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          Unidad
-        </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          Fotos
-        </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2center'>
-          Color
-        </div>
-        <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-          Estado
-        </div>
-      </div>
-      {data.content.map((car: any, index: number) => {
-        let className = `${car.status}Class`;
-        let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
-        return (
-          <div key={index} className={`row request background-transition ${classNameEfect}`}>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong className='unit-vin-decorator'>{car.car.vin}</strong>
-            </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              {imagesFormatter(car)}
-            </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong className="text-black">{car.car.color}</strong>
-            </div>
-            {
-              (unitLabels.length > 0) ?
-                <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
-                  <div className='inline-element'>
-                    <span
-                      data-toggle="modal"
-                      data-target="#modalForAddLabelUnit"
-
-                      onClick={() => {
-                        this.setState({
-                          inventorySelected: car.inventory, //inventario
-                          carSelected: car._id, //inventory car
-                          cardIDSelected: car.car._id, // car
-                          unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
-                        });
-                      }}
-
-                      className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
-                        ? inventorySettings[className]
-                        : ''
-                        }`}>
-                      {inventorySettings.hasOwnProperty(car.status)
-                        ? inventorySettings[car.status]
-                        : car.state}
-                      <i className="fa fa-plus icon-add-label-units"></i>
-                    </span>
-                  </div>
-                  {
-                    (car.labelText && car.labelText !== '') ?
-                      <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div> :
-                      ''
-                  }
-                </div>
-                :
-                <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-                  <span
-                    className={`label-units label-${inventorySettings.hasOwnProperty(className)
-                        ? inventorySettings[className]
-                        : ''
-                      }`}
-                    style={{
-                      padding: '5px 10px',
-                    }}>
-                    {inventorySettings.hasOwnProperty(car.status)
-                      ? inventorySettings[car.status]
-                      : car.state}
-                  </span>
-                </div>
-            }
-          </div>
-        )
-      })
-      }
-    </div>
-  }
-
-
   render() : React.ReactElement<IPropsType> {
     const {containers, loading} = this.state;
     const { getParticipant } = this.props;
@@ -929,6 +839,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     ];
 
     const ExpandedRowElement = ({ data }: { data: any }) => {
+
+      const { unitLabels } = this.state;
+
       return <div className='table-responsive request-list'>
         <div className="row request-header bg-request-title ">
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
@@ -980,19 +893,55 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
               </div>
               <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-             <span
-               className={`label-units label-${
-                 inventorySettings.hasOwnProperty(className)
-                   ? inventorySettings[className]
-                   : ''
-               }`}
-               style={{
-                 padding: '5px 10px',
-               }}>
-               {inventorySettings.hasOwnProperty(car.status)
-                 ? inventorySettings[car.status]
-                 : car.state}
-             </span>
+                {
+                  (unitLabels.length > 0) ?
+                    <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
+                      <div className='inline-element'>
+                        <span
+                          data-toggle="modal"
+                          data-target="#modalForAddLabelUnit"
+
+                          onClick={() => {
+                            this.setState({
+                              inventorySelected: car.inventory, //inventario
+                              carSelected: car._id, //inventory car
+                              cardIDSelected: car.car._id, // car
+                              unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
+                            });
+                          }}
+
+                          className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
+                            ? inventorySettings[className]
+                            : ''
+                            }`}>
+                          {inventorySettings.hasOwnProperty(car.status)
+                            ? inventorySettings[car.status]
+                            : car.state}
+                          <i className="fa fa-plus icon-add-label-units"></i>
+                        </span>
+                      </div>
+                      {
+                        (car.labelText && car.labelText !== '') ?
+                          <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div> :
+                          ''
+                      }
+                    </div>
+                    :
+                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                      <span
+                        className={`label-units label-${inventorySettings.hasOwnProperty(className)
+                          ? inventorySettings[className]
+                          : ''
+                          }`}
+                        style={{
+                          padding: '5px 10px',
+                        }}>
+                        {inventorySettings.hasOwnProperty(car.status)
+                          ? inventorySettings[car.status]
+                          : car.state}
+                      </span>
+                    </div>
+                }
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {car.participant? <button
