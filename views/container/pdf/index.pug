@@ -158,3 +158,34 @@ html
               .image-box
                 img(src=image.file.url, alt="Image")
 
+        .section-wrapper
+          .section
+            if car.damages.length == 0
+              .title SIN DAÑOS
+            else
+              .title DAÑOS
+            each damage, index in car.damages
+              .item-info.bottom-margin
+                .item
+                  span.label DAÑO:
+                  span #{index + 1}
+                if damage.kind
+                  .item
+                    span.label TIPO:
+                    span !{damage.kind.name}
+                if damage.position
+                  .item
+                    span.label POSICIÓN:
+                    span !{damage.position.name}
+                if damage.part
+                  .item
+                    span.label PARTE:
+                    span !{damage.part.name}
+                if damage.severity
+                  .item
+                    span.label SEVERIDAD:
+                    span !{damage.severity}
+                each image in damage.images
+                  .image-box
+                    img(src=image.file.url, alt="Image")
+        hr 
