@@ -575,7 +575,6 @@ class InventoryController {
         }
       ]);
 
-      console.log('inventoryResult', JSON.stringify(inventoryResult))
 
       const inventoryMap: any = {};
       const containers = new Map(); //contenedores por _id

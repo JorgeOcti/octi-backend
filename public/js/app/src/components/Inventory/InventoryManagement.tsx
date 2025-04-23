@@ -429,10 +429,10 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     api.getInventories(1, true, 50)
       .then(async (response: any) => {
 
-        let inventories: IInventory[] = response.data.inventories;
+        let inventories: any[] = response.data.inventories;
         let filters = new Set();
 
-        const summary = inventories.map(async (inventory: IInventory) => {
+        const summary = inventories.map(async (inventory: any) => {
 
           const inventoryResponse = await api.getSummaryInventory((inventory as any)._id);
           const { metadata, summary } = inventoryResponse.data;
