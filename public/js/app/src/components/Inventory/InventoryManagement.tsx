@@ -426,7 +426,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     api.getSource()
 
-    api.getInventories(1)
+    api.getInventories(1, true, 50)
       .then(async (response: any) => {
 
         let inventories: IInventory[] = response.data.inventories;
