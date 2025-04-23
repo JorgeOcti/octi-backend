@@ -20,6 +20,7 @@ import {
 } from '../../actions/dashboard.actions';
 import ShowIf from '../Utils/ShowIf';
 import ModalView from '../Modal/ModalView';
+import Checkbox from '../Utils/CheckBox';
 
 declare let window: IWindow;
 
@@ -49,6 +50,7 @@ interface IStateType {
   endDate: Date;
   startDate: Date;
   selectedContainer: number;
+  filterHasDamage:boolean;
   isFilteringByDate: boolean;
   loading: boolean;
   isUserHandler:boolean;
@@ -163,6 +165,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       tripSelector: [],
       venueSelector: [],
       isUserHandler:false,
+      filterHasDamage:false,
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       statusFilter: '',
@@ -181,6 +184,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       venueFilter: '',
+      filterHasDamage: false,
     });
   }
 
@@ -224,7 +228,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         }
       })
 
-      
+      console.log(units)
         this.setState({
             units: units,
             originalUnits: units,
@@ -246,6 +250,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.state.shipFilter !== prevState.shipFilter ||
       this.state.startDate !== prevState.startDate ||
       this.state.venueFilter !== prevState.venueFilter ||
+      this.state.filterHasDamage !== prevState.filterHasDamage ||
       this.state.endDate !== prevState.endDate) {
       this.filterUnits();
     }
@@ -263,10 +268,23 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
       let venueFilter = this.state.venueFilter === '' ? true : unit.inventoryCar.venue.name.toLowerCase().includes(this.state.venueFilter.toLowerCase());
-      let dateFilter = false;
+      const historyReadyToClient = unit.histories.find((history:any) => history.status === "readyToClient")
+      const historyInTransit = unit.histories.find((history:any) => history.status === "inTransit")
+
+      let damageFilter = true
+      if(this.state.filterHasDamage){
+        //const damageReadyToClient = unit.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
+        const damageReadyToClient = historyReadyToClient?.inventoryCar.participant?.hasDamages? true : false; 
+        const damageinTransit = historyInTransit?.participant?.hasDamages? true : false;
+        console.log(damageReadyToClient)
+        console.log(damageinTransit)
+        if(!damageReadyToClient && !damageinTransit) damageFilter = false 
+      }
+      console.log("damageFilter: ", damageFilter)
+      let dateFilter = true;
       if (this.state.isFilteringByDate) {
-        const dwonloadDate = unit.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-        const shippingDate = unit.histories.find((history:any) => history.status === "inTransit")?.createdAt
+        const dwonloadDate = historyReadyToClient?.createdAt
+        const shippingDate = historyInTransit?.createdAt
         let startDate = this.state.startDate? new Date(this.state.startDate) : null;
         let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
         if (dwonloadDate) {
@@ -278,9 +296,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         if(dwonloadDate && shippingDate) {
           dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
         }
-
       }
-      return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship;
+      
+      return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
     });
 
     this.setState({
@@ -387,7 +405,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           return <div
                     key={row._id}
                     className={data.inventoryCar.participant ? "div-date date-checklist" : "div-date"}
-                    onClick={data.inventoryCar.participant ? () => getParticipant(data.inventoryCar.participant) : () => {}}
+                    onClick={data.inventoryCar.participant ? () => getParticipant(data.inventoryCar.participant._id) : () => {}}
                     >
                       <span className='text-center center text-date' style={{ display: data.inventoryCar.participant ? 'none' : ''}}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
                       <div 
@@ -396,7 +414,23 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         
                       >
                         {data.createdAt ? formaDate(data.createdAt) : "-"}
-                        <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                          <ShowIf condition={data.inventoryCar.participant?.hasDamages}>
+                            <React.Fragment>
+                              {' '}
+                              <i
+                                className="fa fa-warning text-red pointer"
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Daños encontrados en esta revisión."
+                              />
+                            </React.Fragment>
+                          </ShowIf> 
+                          <ShowIf condition={!data.inventoryCar.participant?.hasDamages}>
+                            <React.Fragment>
+                              {' '}
+                              <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                            </React.Fragment>
+                          </ShowIf> 
                       </div>
                   </div>
         },
@@ -418,7 +452,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           return <div
                     key={row._id}
                     className={data.participant ? "div-date date-checklist" : "div-date"}
-                    onClick={data.participant ? () => getParticipant(data.participant) : () => {}}
+                    onClick={data.participant ? () => getParticipant(data.participant._id) : () => {}}
                     >
                       <span className='text-center center text-date' style={{ display: data.participant ? 'none' : '' }}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
                       <div 
@@ -427,7 +461,23 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         
                       >
                         {data.createdAt ? formaDate(data.createdAt) : "-"}
-                        <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                        <ShowIf condition={data.participant?.hasDamages}>
+                          <React.Fragment>
+                            {' '}
+                            <i
+                              className="fa fa-warning text-red pointer"
+                              data-toggle="tooltip"
+                              data-placement="top"
+                              title="Daños encontrados en esta revisión."
+                            />
+                          </React.Fragment>
+                        </ShowIf> 
+                        <ShowIf condition={!data.participant?.hasDamages}>
+                          <React.Fragment>
+                            {' '}
+                            <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
+                          </React.Fragment>
+                        </ShowIf> 
                       </div>
                   </div>
         },
@@ -642,6 +692,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           </select>
                       </div>
                     </div>
+                    
                     {isUserHandler?
                       <div className="col-md-3">
                         <div className="form-group">
@@ -662,7 +713,22 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
 
                  : null}
-                    <div className="col-md-12">
+                  <div className='col-md-3'>
+                      <div className="checkbox">
+                        <label
+                          style={{ paddingLeft: '0', fontWeight: 600 }}
+                          onClick={() => {}}>
+                          <Checkbox
+                            active={this.state.filterHasDamage}
+                            action={() => {this.setState({filterHasDamage: !this.state.filterHasDamage})}}
+                            classes="icheck-in-checkbox"
+                            style={{ marginTop: '-4px', marginRight: '5px' }}
+                          />
+                          Mostrar solo unidades con daño 
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-md-9">
                       <div className='form-group'>
                         <div className="row pull-right box-tools" style={{ paddingTop: "20px", paddingRight: "16px" }}>
                           <button
