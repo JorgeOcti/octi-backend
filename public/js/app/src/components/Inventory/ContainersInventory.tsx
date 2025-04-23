@@ -621,9 +621,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       
       return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter && damageFilter;
     });
-    let contenedores = containers;
     if(containersHasDamages) {
-      contenedores = contenedores.map((container) => {
+      containers = containers.map((container) => {
         return {
           ...container,
           content: container.content.filter((car: any) => car.participant?.hasDamages)
@@ -631,7 +630,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       })
     }
     this.setState({
-      containers: contenedores
+      containers: containers
     });
 
   }
