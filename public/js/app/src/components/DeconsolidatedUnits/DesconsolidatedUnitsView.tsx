@@ -228,7 +228,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         }
       })
 
-      console.log(units)
         this.setState({
             units: units,
             originalUnits: units,
@@ -276,11 +275,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         //const damageReadyToClient = unit.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
         const damageReadyToClient = historyReadyToClient?.inventoryCar.participant?.hasDamages? true : false; 
         const damageinTransit = historyInTransit?.participant?.hasDamages? true : false;
-        console.log(damageReadyToClient)
-        console.log(damageinTransit)
         if(!damageReadyToClient && !damageinTransit) damageFilter = false 
       }
-      console.log("damageFilter: ", damageFilter)
       let dateFilter = true;
       if (this.state.isFilteringByDate) {
         const dwonloadDate = historyReadyToClient?.createdAt

@@ -564,7 +564,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       this.state.filterHasDamage !== prevState.filterHasDamage ||
       this.state.shipFilter !== prevState.shipFilter ||
       this.state.tripFilter !== prevState.tripFilter) {
-        console.log(this.state.originalContainers)
       this.filterContainers();
     }
   }
