@@ -231,7 +231,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
               <div className='row'>
 
-                <div className='col-md-2'>
+                <div className='col-md-3'>
                   <strong className='text-primary h4'>
                     Pendientes
                   </strong>
@@ -251,7 +251,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                   </strong>
                 </div>
 
-                <div className='col-md-2'>
+                <div className='col-md-3'>
                   <strong className='text-yellow h4'>
                     Descarga
                   </strong>
