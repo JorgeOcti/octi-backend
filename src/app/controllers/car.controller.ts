@@ -1963,6 +1963,59 @@ class CarController {
     }
   }
 
+  public async apiCarHistory(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    const { id } = req.params;
+
+    logger.info(`Entering apiCarHistory - User: { id: ${req.user._id}, email: ${req.user.email} }, Car ID: ${id}`);
+
+    let carFilter = req.user.company.handler ?
+    {_id: id, $or: [{company: req.user.company._id}, {handlerCompany: req.user.company._id}]} :
+    {
+      _id: id,
+      team
+    }
+
+    try {
+      let car = await CarModel.findOne(
+        carFilter,
+        {
+          vin: true,
+          brand: true,
+          material: true,
+          internalNumber: true,
+          createdAt: true,
+          patent: true,
+          denomination: true,
+          color: true
+        }
+      )
+      .lean()
+      .populate({
+        path: 'events',
+        populate: [
+          { path: 'inventory', select: 'name' },
+          { path: 'form', select: 'name' },
+        ],
+      });
+
+      if (!car) {
+        return res.status(404).json({
+          messsage: 'Auto no encontrado.',
+          status: 404
+        });
+      } else {
+        return res.json({
+          data: car,
+          status: 200
+        });
+      }
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json(error);
+    }
+  }
+
   public async apiCarDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
