@@ -1976,11 +1976,7 @@ class CarController {
 
     try {
       let car = await CarModel.findOne(
-        {
-          $and: [
-            carFilter
-          ]
-        },
+        carFilter,
         {
           vin: true,
           brand: true,
@@ -1991,7 +1987,7 @@ class CarController {
           denomination: true,
           color: true
         }
-      ).allowDiskUse(true)
+      )
       .lean()
       .populate({
         path: 'events',
