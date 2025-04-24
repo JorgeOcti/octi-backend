@@ -247,6 +247,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         carID: (car as any).car._id,
         vin: car.car.vin,
         brand: car.car.brand,
+        isContainer: car.car.isContainer,
         denomination: car.car.denomination,
         internalNumber: car.car.internalNumber,
         label: car.label,
