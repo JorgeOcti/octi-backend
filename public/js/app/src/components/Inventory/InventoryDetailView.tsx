@@ -682,12 +682,16 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         isExhibition: false,
         affected: ['reported'],
         color: '',
-        active: true
+        active: true,
+        isForContainer: false
       });
     }
+
     const options = newLabels.filter((label) => {
       return label.affected.includes(row.status);
     });
+
+
     if (options.length) {
       return (
         <div
@@ -708,7 +712,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           <ul
             className="dropdown-menu dropdown-menu-right dropdown-menu-scrollable"
             role="menu">
-            {options.map((option) => {
+            {options.filter(label => label.isForContainer === row.isContainer).map((option) => {
               return (
                 <li
                   key={option._id}

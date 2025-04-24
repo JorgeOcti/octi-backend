@@ -27,8 +27,9 @@ import { CarStatusType } from '../Inventory/InventoryDetailView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client/build/esm/socket';
+import Row from '../Utils/Row';
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+interface IPropsType extends RouteComponentProps<{ ticket: string, tab?: string  }> {
   dispatch: Dispatch<LabelsReduxAction>;
   labels: ILabelsState;
 
@@ -42,12 +43,24 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  tab: string;
+}
+
+enum LabelTabsEnum {
+  Container = 'container',
+  Units = 'units'
 }
 
 declare let window: IWindow;
 
 class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
+
   title : string;
+
+  readonly state = {
+    tab: LabelTabsEnum.Container,
+    error: null
+  };
 
   private socket: Socket;
 
@@ -60,6 +73,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     this.processEditLabel = this.processEditLabel.bind(this);
     this.deleteLabel = this.deleteLabel.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.changeTab = this.changeTab.bind(this);
   }
 
   public componentWillMount(): void {
@@ -110,14 +124,74 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
+  private changeTab(name: string): void {
+    this.setState(
+      {
+        tab: name
+      }
+    );
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {loading, labels, pagination, inventorySettings} = this.props.labels;
+    const { tab } = this.state;
+
+
+    const containerLabes = labels.filter(label => label.isForContainer);
+    const containerLabesCount = containerLabes.length;
+
+    const unitsLabes = labels.filter(label => !label.isForContainer);
+    const unitLabesCount = unitsLabes.length;
+
+
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.2" cAction="Listado">
+      <AppContainer title="" 
+      cMenu="2" 
+      cSubMenu="2.1" 
+      cAction={tab === LabelTabsEnum.Container ? 'Contenedor' : 'Unidades'}
+      >
         <section className="content">
-          <div className="box">
+
+        <Row>
+            <div className="col-md-12 col-lg-12">
+              <div className="box box-solid">
+                <ul className="nav nav-pills nav-justified">
+                  <li
+                    className={
+                      tab === LabelTabsEnum.Container ? 'no-margin active' : 'no-margin'
+                    }>
+                    <a
+                      href="javascript:void(0);"
+                      className={
+                        tab === LabelTabsEnum.Container ? 'tabs-labels background-transition' : 'tabs-labels'
+                      }
+                      onClick={() => this.changeTab(LabelTabsEnum.Container)}>
+                      Contenedor
+                    </a>
+                  </li>
+                  <li
+                    className={
+                      tab === LabelTabsEnum.Units  ? 'no-margin active' : 'no-margin'
+                    }>
+                    <a
+                      className={
+                        tab === LabelTabsEnum.Units ? 'tabs-labels background-transition' : 'tabs-labels'
+                      }
+                      href="javascript:void(0);"
+                      onClick={() => this.changeTab(LabelTabsEnum.Units)}>
+                      Unidades
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Row>
+
+          <Row className={  tab === LabelTabsEnum.Container ? 'label-shown' : 'label-no-shown' }>
+            <div className="col-md-12 col-lg-12">
+            <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Etiquetas <small>{pagination.count}</small></h3>
+              <h3 className="box-title">Etiquetas <small>{containerLabesCount}</small></h3>
               <div className="box-tools pull-right">
                 <button className="btn btn-sm btn-success" onClick={this.addLabel}>Agregar</button>
               </div>
@@ -127,16 +201,16 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
-                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
-                    <th className="middle" style={{width: '80px'}}>Envia a</th>
-                    <th className="middle-center" style={{width: '80px'}}>Activo</th>
-                    <th style={{width: '1%'}} className="width-10"/>
-                    <th style={{width: '1%'}} className="width-10"/>
+                    <th className="middle th-default-w100px">Agregar opción en</th>
+                    <th className="middle th-default-w80px">Envia a</th>
+                    <th className="middle-center th-default-w80px">Activo</th>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
                   {
-                    labels.map((label) => {
+                    containerLabes.map((label) => {
                       return (
                         <tr
                           key={label._id} id={`label-${label._id}`}
@@ -145,11 +219,11 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                           <td className="middle text-ellipsis">
                             <strong className='text-primary'>{label.name}</strong>
                             <p
-                              className={"text-muted text-sm"}
-                              style={{marginBottom: "0"}}
+                              className="text-muted text-sm zero-marging-botton"
+                              
                             >{label.description}</p>
                           </td>
-                          <td className="middle" style={{lineHeight: 1.6}}>
+                          <td className="middle table-line-Height">
                             {
                               label.affected.map((aff, key)=>(
                                 <React.Fragment key={key}>
@@ -167,7 +241,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                               {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
-                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                          <td className="td-padding-top15 middle-center">
                             <BootstrapSwitch
                               checked={label.active}
                               onChange={() => {
@@ -210,6 +284,109 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
             }
           </div>
+            </div>
+          </Row>              
+          
+          <Row className={  tab === LabelTabsEnum.Units ? 'label-shown' : 'label-no-shown' }>
+          <div className="col-md-12 col-lg-12">
+            <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Etiquetas <small>{unitLabesCount}</small></h3>
+              <div className="box-tools pull-right">
+                <button className="btn btn-sm btn-success" onClick={this.addLabel}>Agregar</button>
+              </div>
+            </div>
+            <div className="box-body no-padding">
+              <table className="table  table-andes table-striped">
+                <thead>
+                  <tr>
+                    <th className="middle">Nombre</th>
+                    <th className="middle th-default-w100px">Agregar opción en</th>
+                    <th className="middle th-default-w80px">Envia a</th>
+                    <th className="middle-center th-default-w80px">Activo</th>
+                    <th className="width-10"/>
+                    <th className="width-10"/>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    unitsLabes.map((label) => {
+                      return (
+                        <tr
+                          key={label._id} id={`label-${label._id}`}
+                          className={`background-transition ${!label.active ? 'text-muted' : ''}`}
+                        >
+                          <td className="middle text-ellipsis">
+                            <strong className='text-primary'>{label.name}</strong>
+                            <p
+                              className="text-muted text-sm zero-marging-botton"
+                            >{label.description}</p>
+                          </td>
+                          <td className="middle table-line-Height">
+                            {
+                              label.affected.map((aff, key)=>(
+                                <React.Fragment key={key}>
+                                  <label
+                                    className={`label label-${inventorySettings[`${aff}Class` as CarStatusType]}`}
+                                  >
+                                    {inventorySettings[aff as CarStatusType]}
+                                  </label><br />
+                                  </React.Fragment>
+                              ))
+                            }
+                          </td>
+                          <td className="middle">
+                            <label className={`label label-${inventorySettings[`${label.sendTo}Class` as CarStatusType]}`}>
+                              {inventorySettings[label.sendTo as CarStatusType]}
+                            </label>
+                          </td>
+                          <td className="td-padding-top15 middle-center" >
+                            <BootstrapSwitch
+                              checked={label.active}
+                              onChange={() => {
+                                this.props.changeLabelAction({
+                                  ...label,
+                                  active: !label.active
+                                });
+                              }}
+                            />
+                          </td>
+                          <td
+                            onClick={() => this.editLabel(label)}
+                            className="middle text-blue pointer"
+                          >
+                            <i className="fa fa-pencil"/>
+                          </td>
+                          <td
+                            onClick={() => this.deleteLabel(label)}
+                            className={'middle text-red pointer'}
+                          >
+                            <i className="fa fa-minus-circle"/>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  }
+                </tbody>
+              </table>
+            </div>
+            {
+              pagination.pages > 1 &&
+                <div className="box-footer text-right">
+                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                </div>
+            }
+            {
+              loading &&
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div>
+            }
+          </div>
+            </div>
+          </Row>   
+
+
           <ModalView />
         </section>
       </AppContainer>
@@ -217,6 +394,9 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private addLabel(): void {
+
+    const modalTitle = this.state.tab === LabelTabsEnum.Container ? 'Agregar Etiqueta (contenedores)' : 'Agregar Etiqueta (unidades)';
+
     this.props.changeTempLabelAction({
       _id: '',
       name: '',
@@ -226,11 +406,12 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
       sendTo: '',
       requireCustomText: false,
       isExhibition: false,
+      isForContainer: this.state.tab === LabelTabsEnum.Container ? true : false,
       active: true
     });
     setTimeout(() => {
       this.props.loadDataAction(
-        'Agregar Etiqueta',
+        modalTitle,
         <LabelFormView changeTempLabelAction={changeTempLabelAction}/>,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>

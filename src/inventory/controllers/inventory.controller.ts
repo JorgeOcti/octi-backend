@@ -556,6 +556,140 @@ class InventoryController {
     }
   }
 
+
+  public async summary(req: IRequest, res: Response) {
+
+    const { inventory } = req.params;
+
+    try {
+
+      const inventoryResult = await InventoryCar.find({
+        inventory
+      }).populate([
+        {
+          path: 'car'
+        },
+        {
+          path: 'participant',
+          select: ['hasDamages'] // TODO: validar para contar
+        }
+      ]);
+
+
+      const inventoryMap: any = {};
+      const containers = new Map(); //contenedores por _id
+      const unitsByContainer = new Map(); //Agrupa unidades por container
+      const clientsSet = new Set();
+      const shipsSet = new Set();
+
+      // Primero: clasificamos contenedores y unidades
+      inventoryResult.forEach(item => {
+
+        const inventoryId: any = item.inventory;
+
+        if (!inventoryMap[inventoryId]) {
+          inventoryMap[inventoryId] = {
+            nave: item.extra.Nave,
+            client: item.extra['Cliente Razón Social'],
+            units: { pending: 0, found: 0 , hasDamages: 0 },
+            containers: {
+              pending: 0,
+              found: 0,
+              open: 0,
+              check: 0,
+              empty: 0,
+              'empty(*)': 0
+            }
+          };
+        }
+
+        // Recolectar metadata
+        if (item.extra) {
+          if (item.extra['Cliente Razón Social']) clientsSet.add(item.extra['Cliente Razón Social']);
+          if (item.extra.Nave) shipsSet.add(item.extra.Nave);
+        }
+
+        if (item.car.isContainer) {
+          containers.set(item._id, item); // Guardar contenedor
+        } else {
+          const containerId = item.container;
+          if (containerId) {
+            if (!unitsByContainer.has(containerId)) {
+              unitsByContainer.set(containerId, []);
+            }
+            unitsByContainer.get(containerId).push(item);
+          }
+        }
+      });
+
+      // Segundo: procesar contenedores
+      containers.forEach((container, containerId) => {
+        const inventoryId = container.inventory;
+        const summary = inventoryMap[inventoryId];
+        const units = unitsByContainer.get(containerId) || [];
+        const containerStatus = container.containerStatus;
+
+        // Contar containerStatus (solo los estados válidos)
+        if (summary.containers.hasOwnProperty(containerStatus)) {
+          summary.containers[containerStatus]++;
+        }
+
+        //empty(*) vs empty
+        if (containerStatus === "empty") {
+          const allUnitsFound = units.every((unit: { status: string; }) => unit.status === "found");
+          if (allUnitsFound.lenght === 0) {
+            // summary.containers.empty++; //verificar
+          } else {
+            summary.containers['empty(*)']++;
+            summary.containers.empty--; // Ajustar el contador original
+          }
+        }
+      });
+
+      // Tercero: contar unidades
+      inventoryResult.forEach(item => {
+        if (!item.car.isContainer) {
+          const inventoryId: any = item.inventory;
+          const summary = inventoryMap[inventoryId];
+          const status = item.status;
+
+          if (status === "pending" || status === "found") {
+            summary.units[status]++;
+          }
+
+          if(item.participant && item.participant.hasDamages){
+            summary.units['hasDamages']++;
+          }
+        }
+      });
+
+
+      return res.status(200).json({
+        summary: inventoryMap,
+        metadata: {
+          filters: {
+            clients: Array.from(clientsSet),
+            ships: Array.from(shipsSet)
+          }
+        }
+      });
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`list: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+
+  }
+
   public async list(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { page, pageSize, containers } = req.query as { page: string; pageSize: string, containers?: string };
@@ -2314,7 +2448,8 @@ class InventoryController {
             affected: true,
             sendTo: true,
             isExhibition: true,
-            requireCustomText: true
+            requireCustomText: true,
+            isForContainer: true,
           }
         ),
         InventoryModel.findById(id, {

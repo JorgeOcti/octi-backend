@@ -44,6 +44,10 @@ export const inventoryLabelSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isForContainer: {
+    type: Boolean,
+    default: false
+  },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
