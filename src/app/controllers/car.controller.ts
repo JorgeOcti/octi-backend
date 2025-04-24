@@ -1967,6 +1967,8 @@ class CarController {
     const team = req.user.team._id;
     const { id } = req.params;
 
+    logger.info(`Entering apiCarHistory - User: { id: ${req.user._id}, email: ${req.user.email} }, Car ID: ${id}`);
+
     let carFilter = req.user.company.handler ?
     {_id: id, $or: [{company: req.user.company._id}, {handlerCompany: req.user.company._id}]} :
     {
@@ -2009,7 +2011,7 @@ class CarController {
         });
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       return res.status(500).json(error);
     }
   }
