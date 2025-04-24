@@ -163,12 +163,12 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
   }) {
 
 
-
-    return <div className="container-fluid col-md-12" >
-
+    return <div className="container-fluid col-md-12">
       <div className="row">
         <div className="col-md-10">
-          <h4 className='text-left text-primary pointer'>{row.name}</h4>
+          <Link to={`/inventory/${row._id}/`}>
+            <h4 className='text-left text-primary pointer'>{row.name}</h4>
+          </Link>
         </div>
         <div className="col-md-2">
           <div className='text-right summary-label-status-p-top'>
@@ -176,7 +176,6 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
         </div>
       </div>
-
 
       <div className="row summary-label-created-absolute">
         <div className="col-md-3 text-left">
@@ -186,7 +185,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
             {moment(row.createdAt).format('LLL')}
           </div>
         </div>
-        <div className="col-md-2 text-left">
+        <div className="col-md-4 text-left">
           <div className={'detail-info  text-muted'}>
             {row.createdBy ? (
               <React.Fragment>
@@ -214,9 +213,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       </div>
 
       <div className="row container-row-wrapper">
-
-        <div className="col-md-5">
-
+        <div className="col-md-7">
           <div className='row container-row-b-padding'>
             <div className='col-md-12'>
               <i className="fa fa-container-red" />
@@ -225,69 +222,85 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
               </strong>
             </div>
           </div>
-
           <div className='row'>
             <div className='col-md-12 text-center'>
-
               <div className='row'>
-
                 <div className='col-md-3'>
-                  <strong className='text-primary h4'>
-                    Pendientes
-                  </strong>
-                  <br />
-                  <strong className='text-primary h2'>
-                    {row.container.pending}
-                  </strong>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-primary h4'>
+                        Pendientes
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-primary h2'>
+                        {row.container.pending}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
-
                 <div className='col-md-2'>
-                  <strong className='text-orange h4'>
-                    Abierto
-                  </strong>
-                  <br />
-                  <strong className='text-orange h2'>
-                    {row.container.open}
-                  </strong>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-orange h4'>
+                        Abierto
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-orange h2'>
+                        {row.container.open}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
-
                 <div className='col-md-3'>
-                  <strong className='text-yellow h4'>
-                    Descarga
-                  </strong>
-                  <br />
-                  <strong className='text-yellow h2'>
-                    {row.container.check}
-                  </strong>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-yellow h4'>
+                        Descarga
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-yellow h2'>
+                        {row.container.check}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
-
                 <div className='col-md-2'>
-                  <strong className='text-green h4'>
-                    Vacios
-                  </strong>
-                  <br />
-                  <strong className='text-green h2'>
-                    {row.container.empty}
-                  </strong>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-green h4'>
+                        Vacios
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-green h2'>
+                        {row.container.empty}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
-
                 <div className='col-md-2'>
-                  <strong className='text-green h4'>
-                    Vacios*
-                  </strong>
-                  <br />
-                  <strong className='text-green h2'>
-                    {row.container['empty(*)']}
-                  </strong>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-green h4'>
+                        Vacios*
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-green h2'>
+                        {row.container['empty(*)']}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-
         <div className="col-md-5 div-border-left">
-
           <div className='row div-row-padding'>
             <div className='col-md-12'>
               <i className="fa fa-cube unit-icon-margin" />
@@ -296,96 +309,56 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
               </strong>
             </div>
           </div>
-
-          <div className='row' >
-            <div className='col-md-12'>
-
-              <div className='row text-center'>
-
-                <div className='col-md-3'>
-                  <strong className='text-primary h4'>
-                    Pendientes
-                  </strong>
-                  <br />
-                  <strong className='text-primary h2'>
-                    {row.unit.pending}
-                  </strong>
-                </div>
-
-                <div className='col-md-3'>
-                  <strong className='text-green h4'>
-                    Encontrados
-                  </strong>
-                  <br />
-                  <strong className='text-green h2'>
-                    {row.unit.found}
-                  </strong>
-                </div>
-
-
-                <div className='col-md-3'>
-                  <strong className='has-damages h4'>
-                    Con Daños
-                  </strong>
-                  <br />
-                  <strong className='has-damages h2'>
-                    {row.unit.hasDamages}
-                  </strong>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-2">
           <div className='row'>
-            <div className="col-md-12 text-right">
-              <div className="btn-group btn-group-sm">
-                {row.status === 'inProcess' ? (
-                  <button
-                    type="button"
-                    className="btn btn-default"
-                    onClick={() => {
-
-                    }
-                    }>
-                    <i className="fa fa-fw fa-area-chart" /> Ver
-                    Progreso
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-default"
-                    onClick={() => { }
-                    }>
-                    <i className="fa fa-fw fa-area-chart" /> Ver
-                    Reporte
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="btn btn-default dropdown-toggle"
-                  data-toggle="dropdown">
-                  <span className="caret" />
-                  <span className="sr-only">Toggle Dropdown</span>
-                </button>
-                <ul
-                  className="dropdown-menu pull-right"
-                  role="menu">
-                  <li>
-                    <Link
-                      to={`/inventory/${row._id}/detail/`}>
-                      {/* <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}> */}
-                      <i className="fa fa-fw fa-table" />
-                      Ver Detalle
-                      {/* </a> */}
-                    </Link>
-                  </li>
-                </ul>
+            <div className='col-md-12'>
+              <div className='row text-center'>
+                <div className='col-md-4'>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-primary h4'>
+                        Pendientes
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-primary h2'>
+                        {row.unit.pending}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+                <div className='col-md-4'>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='text-green h4'>
+                        Encontrados
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='text-green h2'>
+                        {row.unit.found}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+                <div className='col-md-4'>
+                  <div className='row'>
+                    <div className='col-md-12'>
+                      <strong className='has-damages h4'>
+                        Con Daños
+                      </strong>
+                    </div>
+                    <div className='col-md-12'>
+                      <strong className='has-damages h2'>
+                        {row.unit.hasDamages}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   }
