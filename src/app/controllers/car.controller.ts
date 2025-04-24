@@ -1992,7 +1992,14 @@ class CarController {
           color: true
         }
       ).allowDiskUse(true)
-      .populate('events');
+      .lean()
+      .populate({
+        path: 'events',
+        populate: [
+          { path: 'inventory', select: 'name' },
+          { path: 'form', select: 'name' },
+        ],
+      });
 
       if (!car) {
         return res.status(404).json({
