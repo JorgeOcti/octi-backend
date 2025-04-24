@@ -2505,6 +2505,10 @@ class InventoryController {
                   path: 'files'
                 },
                 {
+                  path: 'participant',
+                  select: ['hasDamages']
+                },
+                {
                   path: 'venueFound',
                   select: ['name']
                 },
@@ -3285,6 +3289,34 @@ class InventoryController {
           {
             $unwind: {
               path: '$inventoryCar.venue',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant'
+            }
+          },
+          {
+            $unwind: {
+              path: '$participant',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'inventoryCar.participant',
+              foreignField: '_id',
+              as: 'inventoryCar.participant'
+            }
+          },
+          {
+            $unwind: {
+              path: '$inventoryCar.participant',
               preserveNullAndEmptyArrays: true
             }
           },
