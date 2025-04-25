@@ -271,7 +271,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='row'>
                     <div className='col-md-12'>
                       <strong className='text-green h4'>
-                        Vacios
+                        Vacíos
                       </strong>
                     </div>
                     <div className='col-md-12'>
@@ -285,7 +285,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='row'>
                     <div className='col-md-12'>
                       <strong className='text-green h4'>
-                        Vacios*
+                        Vacíos*
                       </strong>
                     </div>
                     <div className='col-md-12'>
