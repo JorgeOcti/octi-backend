@@ -1017,8 +1017,8 @@ class InventoryController {
           inventoryMatch["_id"] = new mongoose.Types.ObjectId(id)
         }
 
-        const inventory = await (Inventory as any)
-          .findOne(inventoryMatch)
+        const inventories = await (Inventory as any)
+          .find(inventoryMatch)
           .populate([
             {
               path: 'cars',
@@ -1044,24 +1044,32 @@ class InventoryController {
             }
           ])
           .lean();
-        if (inventory) {
+
+        if (inventories) {
+          logger.info(
+            `apiDetail Inventory: ${inventories.length} inventarios encontrados`
+          );
+          let cars = inventories.flatMap((inventory: any) => {
+            return inventory.cars.map((car: IInventoryCar) => {
+              return {
+                ...car.car,
+                _id: (car as any)._id,
+                car_id: car.car._id,
+                venue: car.venue,
+                status: car.status,
+                container: car.container,
+                containerFound: car.containerFound,
+                extra: car.extra,
+                evidenceStatus: car.evidenceStatus,
+                containerStatus: car.containerStatus,
+                inventoryRef: car.inventory
+              };
+            })
+            })
+
           res.status(200).json({
             data: {
-              cars: inventory.cars.map((car: IInventoryCar) => {
-                return {
-                  ...car.car,
-                  _id: (car as any)._id,
-                  car_id: car.car._id,
-                  venue: car.venue,
-                  status: car.status,
-                  container: car.container,
-                  containerFound: car.containerFound,
-                  extra: car.extra,
-                  evidenceStatus: car.evidenceStatus,
-                  containerStatus: car.containerStatus,
-                  inventoryRef: car.inventory
-                };
-              }),
+              cars: cars,
               reasons: []
             },
             status: 200
@@ -2729,7 +2737,7 @@ class InventoryController {
       ]).lean();
 
       cars = cars.map((tmp: any) => {
-        tmp.damages = []; 
+        tmp.damages = [];
         tmp?.participant?.sections.map((section: any) => {
           section.answers.map((answer: any) => {
             if (answer.kind === 'damage') {
