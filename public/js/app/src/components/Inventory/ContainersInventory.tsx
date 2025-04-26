@@ -30,6 +30,7 @@ import {
 } from '../../actions/dashboard.actions';
 import ShowIf from '../Utils/ShowIf';
 import ModalView from '../Modal/ModalView';
+import Checkbox from '../Utils/CheckBox';
 
 declare let window: IWindow;
 
@@ -67,6 +68,7 @@ interface IStateType {
   tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
+  filterHasDamage:boolean;
   endDate: Date;
   startDate: Date;
   isFilteringByDate: boolean;
@@ -242,6 +244,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripSelector: [],
       tripFilter: [],
       selectedContainer: -1,
+      filterHasDamage:false,
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
@@ -582,7 +585,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               })[0].date;
             }
           }
-            return container;
+          // Verifico si el contendedor tiene alguna unidad con daños
+          container.hasDamage = container.content?.some((e:any) => e.participant?.hasDamages === true);
+          return container;
         });
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
         let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
@@ -697,6 +702,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       this.state.isFilteringByDate !== prevState.isFilteringByDate ||
       this.state.startDate !== prevState.startDate ||
       this.state.endDate !== prevState.endDate ||
+      this.state.filterHasDamage !== prevState.filterHasDamage ||
       this.state.shipFilter !== prevState.shipFilter ||
       this.state.tripFilter !== prevState.tripFilter) {
       this.filterContainers();
@@ -711,12 +717,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       shipFilter: [],
       tripFilter: [],
       statusFilterSelected: [],
+      filterHasDamage: false,
     });
   }
 
 
 
   filterContainers() {
+    let containersHasDamages = false; 
     let containers = this.state.originalContainers.filter((container: any) => {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
@@ -733,7 +741,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return false;
         }).length > 0;
       }
-
+      let damageFilter = true
+      if(this.state.filterHasDamage){
+        // Verificamos que content tiene daños
+        damageFilter = container.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
+        if(!damageFilter) containersHasDamages = true
+      }
       let dateFilter = true;
       if (this.state.isFilteringByDate) {
         if (container.openDate) {
@@ -746,9 +759,17 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = true;
         }
       }
-      return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter;
+      
+      return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter && damageFilter;
     });
-
+    if(containersHasDamages) {
+      containers = containers.map((container) => {
+        return {
+          ...container,
+          content: container.content.filter((car: any) => car.participant?.hasDamages)
+        }
+      })
+    }
     this.setState({
       containers: containers
     });
@@ -944,24 +965,42 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 }
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                {car.participant? <button
-                    className="btn btn-primary btn-sm"
-                    onClick={
-                       () => getParticipant(car.participant)
-                    }>
-                      <ShowIf
-                        condition={
-                          !!(
-                            loadingParticipant &&
-                            loadingParticipant === car.participant
-                          )
-                        }
-                        alternative={
-                          <i className="fa fw fa-check-square-o" />
-                        }>
-                        <i className="fa fw fa-spin fa-spinner" />
-                      </ShowIf>
-                </button>: <></> }
+                {car.participant? <><ShowIf condition={car.participant?.hasDamages}>
+                                    <React.Fragment>
+                                      {' '}
+                                      <i
+                                        className="fa fa-warning text-red pointer"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="Daños encontrados en esta revisión."
+                                        onClick={
+                                          () => getParticipant(car.participant._id)
+                                        }
+                                      />
+                                    </React.Fragment>
+                                  </ShowIf> 
+                                  <ShowIf condition={!car.participant?.hasDamages}>
+                                    <button
+                                      className="btn btn-primary btn-sm"
+                                      onClick={
+                                        () => getParticipant(car.participant._id)
+                                      }>
+                                        <ShowIf
+                                          condition={
+                                            !!(
+                                              loadingParticipant &&
+                                              loadingParticipant === car.participant._id
+                                            )
+                                          }
+                                          alternative={
+                                            <i className="fa fw fa-check-square-o" />
+                                          }>
+                                          <i className="fa fw fa-spin fa-spinner" />
+                                        </ShowIf>
+                                  </button>
+                                  </ShowIf>
+                                  </>
+                                  : <></> }
 
               </div>
             </div>
@@ -1156,9 +1195,23 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                          />
                       </div>
                     </div>
+                    <div className='col-md-3'>
+                      <div className="checkbox">
+                        <label
+                          style={{ paddingLeft: '0', fontWeight: 600 }}
+                          onClick={() => {}}>
+                          <Checkbox
+                            active={this.state.filterHasDamage}
+                            action={() => {this.setState({filterHasDamage: !this.state.filterHasDamage})}}
+                            classes="icheck-in-checkbox"
+                            style={{ marginTop: '-4px', marginRight: '5px' }}
+                          />
+                          Mostrar solo unidades con daño 
+                        </label>
+                      </div>
+                    </div>
 
-
-                    <div className="col-md-6">
+                    <div className="col-md-3">
                       <div className='form-group'>
                         <div className="row pull-left box-tools clean-filter-wrapper">
                           <button
