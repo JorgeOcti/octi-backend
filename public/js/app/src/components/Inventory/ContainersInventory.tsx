@@ -9,6 +9,7 @@ import {IInventory, IInventoryCar} from "../../../../../../src/inventory/interfa
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { io } from 'socket.io-client';
+
 import { Socket } from 'socket.io-client/build/esm/socket';
 
 import DataTable from 'react-data-table-component';
