@@ -10,6 +10,7 @@ import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import {CarStatusType} from "../Inventory/InventoryDetailView";
 
 interface IPropsType {
+  isForContainer?: boolean;
   labels?: ILabelsState;
   update?: boolean;
   changeTempLabelAction: (label: IInventoryLabel, debounce?: number) => LabelsReduxAction;
@@ -25,6 +26,12 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
     pending: 'Pendiente',
     found: 'Encontrado',
     leftover: 'Sobrante',
+    missing: 'Faltante',
+    reported: 'Reportado'
+  };
+
+  private containersStatusText: any = {
+    pending: 'Pendiente',
     missing: 'Faltante',
     reported: 'Reportado'
   };
@@ -161,7 +168,7 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
   private getOptions() {
     const {inventorySettings} = this.props.labels!;
     return Object
-      .keys(this.statusText)
+      .keys((this.props.isForContainer) ? this.containersStatusText: this.statusText)
       .map((status: CarStatusType) => ({
         value: status,
         text: inventorySettings[status],

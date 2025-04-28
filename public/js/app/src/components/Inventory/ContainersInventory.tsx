@@ -348,6 +348,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return row.containerStatus || row.status;
         },
         cell: (row: any) => {
+
+          console.log('cell getDropDownLabels ----> ', JSON.stringify(row));
           return this.getDropDownLabels(row);
         },
         sortable: true
@@ -383,12 +385,17 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   };
 
-  private getDropDownLabels(row: { containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
+  private getDropDownLabels(row: { isContainer: boolean, containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
 
     const { labels } = this.state;
 
     const status = row.containerStatus || row.status
+
+
+
     let className = `${status}ClassContainer`;
+
+
 
     let getLabel = (container: any) => {
       const status = row.containerStatus || row.status
@@ -466,7 +473,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          api.setLabel(inventory, car, cardID, label._id, custom)
+          api.setLabel(isUnit, inventory, car, cardID, label._id, custom)
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -482,7 +489,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         }
       });
     } else {
-      api.setLabel(inventory, car, cardID, label._id)
+      api.setLabel(isUnit, inventory, car, cardID, label._id)
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'
@@ -1388,9 +1395,12 @@ const inventorySettings: { [key: string]: any } = {
   "found": "Encontrados",
   "foundClass": "green",
   "foundColor": "#00aa51",
+
   "missing": "Faltantes",
   "missingClass": "red",
   "missingColor": "#f1392c",
+  "missingClassContainer": "missing",
+
   "leftover": "Encontrados*",
   "leftoverClass": "yellow",
   "leftoverColor": "#ff9600",
@@ -1413,6 +1423,10 @@ const inventorySettings: { [key: string]: any } = {
   "openClass": "gray-dark",
   "openClassContainer": "open",
   "openColor": "#E08406",
+
+
+
+
   "report": {
     "atLeastOne": true,
     "primaryRequired": false,
