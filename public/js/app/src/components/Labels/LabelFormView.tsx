@@ -32,8 +32,8 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
 
   private containersStatusText: any = {
     pending: 'Pendiente',
-    missing: 'Faltante',
-    reported: 'Reportado'
+    open: 'Abierto',
+    check: 'Descarga'
   };
 
   constructor(props: IPropsType) {

@@ -348,8 +348,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return row.containerStatus || row.status;
         },
         cell: (row: any) => {
-
-          console.log('cell getDropDownLabels ----> ', JSON.stringify(row));
           return this.getDropDownLabels(row);
         },
         sortable: true
@@ -951,8 +949,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                       {
                         (car.labelText && car.labelText !== '') ?
-                          <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div> :
-                          ''
+                        <div className='row'>
+                            <div className='col-xs-12 label-min-with-170'>
+                              <p className='text-center-xs label-m-top-16 text-left-sm'>
+                                <i className='fa fa-tag' aria-hidden='true'></i> {car.labelText}
+                              </p>
+                            </div>
+                          </div> : ''
                       }
                     </div>
                     :
@@ -1420,13 +1423,9 @@ const inventorySettings: { [key: string]: any } = {
   "checkClass": "yellow",
   "checkClassContainer": "check",
   "open": "Abierto",
-  "openClass": "gray-dark",
+  "openClass": "orange",
   "openClassContainer": "open",
   "openColor": "#E08406",
-
-
-
-
   "report": {
     "atLeastOne": true,
     "primaryRequired": false,
