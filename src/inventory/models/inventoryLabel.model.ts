@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 import type { IInventoryLabel } from '../interfaces/inventoryLabel.interface';
-import { choicesStatusCarInventory } from './inventoryCar.model';
+import { allPosibleStatuses} from './inventoryCar.model';
 
 export interface IInventoryLabelModel extends IInventoryLabel, mongoose.Document<any> { }
 
@@ -25,11 +25,11 @@ export const inventoryLabelSchema = new mongoose.Schema({
   },
   affected: [{
     type: String,
-    enum: choicesStatusCarInventory
+    enum: allPosibleStatuses
   }],
   sendTo: {
     type: String,
-    enum: choicesStatusCarInventory,
+    enum: allPosibleStatuses,
     required: true
   },
   isExhibition: {
