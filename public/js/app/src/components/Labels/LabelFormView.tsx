@@ -33,7 +33,8 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
   private containersStatusText: any = {
     pending: 'Pendiente',
     open: 'Abierto',
-    check: 'Descarga'
+    check: 'Descarga',
+    empty: 'Vacio',
   };
 
   constructor(props: IPropsType) {
@@ -167,8 +168,9 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
 
   private getOptions() {
     const {inventorySettings} = this.props.labels!;
+    let options = (this.props.isForContainer) ? this.containersStatusText: this.statusText;
     return Object
-      .keys((this.props.isForContainer) ? this.containersStatusText: this.statusText)
+      .keys(options)
       .map((status: CarStatusType) => ({
         value: status,
         text: inventorySettings[status],
