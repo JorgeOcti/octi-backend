@@ -649,17 +649,20 @@ export default class ApiService {
   }
 
   public setLabel(
+    isUnit: boolean,
     inventory: string,
     car: string,
     carID: string,
     label: string,
     custom?: string
+    
   ): AxiosPromise {
     return this.instance.post(`/api/inventory/${inventory}/set-label/`, {
       car,
       label,
       carID,
-      custom
+      custom,
+      isUnit
     });
   }
 

@@ -126,6 +126,24 @@ const inventorySettingSchema = new mongoose.Schema({
   },
   reportedColor: {
     type: String
+  },
+  open: {
+    type: String
+  },
+  openClass: {
+    type: String
+  },
+  openColor: {
+    type: String
+  },
+  check: {
+    type: String
+  },
+  checkClass: {
+    type: String
+  },
+  checkColor: {
+    type: String
   }
 });
 

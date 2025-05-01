@@ -26,6 +26,12 @@ export interface IInventorySetting {
   reported: string;
   reportedClass: string;
   reportedColor: string;
+  open: string;
+  openClass: string;
+  openColor: string;
+  check: string;
+  checkClass: string;
+  checkColor: string;
 }
 
 export interface IRequestSetting {

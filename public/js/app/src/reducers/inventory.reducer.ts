@@ -23,7 +23,13 @@ const initialState: IInventoryState = {
     leftoverColor: "",
     reported: "",
     reportedClass: "gray-dark",
-    reportedColor: ""
+    reportedColor: "",
+    open: "",
+    openClass: "",
+    openColor: "",
+    check: "",
+    checkClass: "",
+    checkColor: ""
   },
   brands: [],
   loading: true,
