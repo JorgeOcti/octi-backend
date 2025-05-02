@@ -749,6 +749,7 @@ class FormController {
             _id: form._id,
             name: form.name,
             description: form.description,
+            autosave: form.autosave,
             // norrmalize questions in sections
             sections: form.sections.map((section) => {
               return {

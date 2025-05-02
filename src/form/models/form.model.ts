@@ -354,6 +354,10 @@ const formSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    autosave: {
+      type: Boolean,
+      default: false
+    },
     active: {
       type: Boolean,
       default: true
