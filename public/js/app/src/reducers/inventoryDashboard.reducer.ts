@@ -29,7 +29,13 @@ const initialState: IInventoryDashboardState = {
     leftoverColor: "",
     reported: "",
     reportedClass: "gray-dark",
-    reportedColor: ""
+    reportedColor: "",
+    open: "",
+    openClass: "",
+    openColor: "",
+    check: "",
+    checkClass: "",
+    checkColor: ""
   },
   venues: [],
   monthlyReport: [],
