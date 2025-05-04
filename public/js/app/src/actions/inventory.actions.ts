@@ -459,7 +459,7 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          api.setLabel(inventory, car, carID, label._id, custom)
+          api.setLabel({ inventory, car, carID, label: label._id, custom })
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -478,7 +478,7 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
         }
       });
     } else {
-      api.setLabel(inventory, car, carID, label._id)
+      api.setLabel({inventory, car, carID, label: label._id})
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'

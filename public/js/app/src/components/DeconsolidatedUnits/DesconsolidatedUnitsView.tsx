@@ -196,9 +196,16 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         this.setState({isUserHandler: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
         this.getUnitsByCompanyId(company.clientCompanies[0]._id)
     } else {
-        const companyList = [{_id:company._id, name: company.name}]
-        this.setState({isUserHandler: false, clientFilter:company?.clientCompanies._id, clientSelector: companyList})
-        this.getUnitsByCompanyId(company._id)
+        if (company && company._id) {
+          console.log("company", company)
+          const companyList = [{ _id: company._id, name: company.name }]
+          this.setState({
+            isUserHandler: false,
+            clientFilter: company?.clientCompanies._id,
+            clientSelector: companyList
+          })
+          this.getUnitsByCompanyId(company._id)
+        }
     }
   }
 
@@ -215,7 +222,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
         let car = datum.car;
         let histories = datum.histories;
-       
+
         if(!venueOptions.includes(inventoryCar.venue?.name)) venueOptions.push(inventoryCar.venue?.name)
         if(!tripOptions.includes(inventoryCar.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar.extra["N° Viaje"].toString().toLowerCase())
         if(!shipOptions.includes(inventoryCar.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar.extra["Nave"].toString().toLowerCase())
@@ -273,9 +280,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let damageFilter = true
       if(this.state.filterHasDamage){
         //const damageReadyToClient = unit.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
-        const damageReadyToClient = historyReadyToClient?.inventoryCar.participant?.hasDamages? true : false; 
+        const damageReadyToClient = historyReadyToClient?.inventoryCar.participant?.hasDamages? true : false;
         const damageinTransit = historyInTransit?.participant?.hasDamages? true : false;
-        if(!damageReadyToClient && !damageinTransit) damageFilter = false 
+        if(!damageReadyToClient && !damageinTransit) damageFilter = false
       }
       let dateFilter = true;
       if (this.state.isFilteringByDate) {
@@ -285,7 +292,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
         if (dwonloadDate) {
           dateFilter = (!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate);
-        } 
+        }
         if(shippingDate){
           dateFilter = (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate);
         }
@@ -293,7 +300,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
         }
       }
-      
+
       return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
     });
 
@@ -377,11 +384,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       }, {
         name: 'BL',
         selector: (row: any) => row.inventoryCar.extra["N° BL"],
-      }, 
+      },
       {
         name: 'Nave',
         selector: (row: any) => row.inventoryCar.extra["Nave"],
-      }, 
+      },
       {
         name: 'Viaje',
         selector: (row: any) => row.inventoryCar.extra["N° Viaje"],
@@ -404,10 +411,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     onClick={data.inventoryCar.participant ? () => getParticipant(data.inventoryCar.participant._id) : () => {}}
                     >
                       <span className='text-center center text-date' style={{ display: data.inventoryCar.participant ? 'none' : ''}}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
-                      <div 
+                      <div
                         className="btn btn-xs btn-transparent text-date"
                         style={{ display: data.inventoryCar.participant ? '' : 'none' }}
-                        
+
                       >
                         {data.createdAt ? formaDate(data.createdAt) : "-"}
                           <ShowIf condition={data.inventoryCar.participant?.hasDamages}>
@@ -420,13 +427,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                                 title="Daños encontrados en esta revisión."
                               />
                             </React.Fragment>
-                          </ShowIf> 
+                          </ShowIf>
                           <ShowIf condition={!data.inventoryCar.participant?.hasDamages}>
                             <React.Fragment>
                               {' '}
                               <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
                             </React.Fragment>
-                          </ShowIf> 
+                          </ShowIf>
                       </div>
                   </div>
         },
@@ -451,10 +458,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     onClick={data.participant ? () => getParticipant(data.participant._id) : () => {}}
                     >
                       <span className='text-center center text-date' style={{ display: data.participant ? 'none' : '' }}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
-                      <div 
+                      <div
                         className="btn btn-xs btn-transparent text-date"
                         style={{ display: data.participant ? '' : 'none'}}
-                        
+
                       >
                         {data.createdAt ? formaDate(data.createdAt) : "-"}
                         <ShowIf condition={data.participant?.hasDamages}>
@@ -467,13 +474,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                               title="Daños encontrados en esta revisión."
                             />
                           </React.Fragment>
-                        </ShowIf> 
+                        </ShowIf>
                         <ShowIf condition={!data.participant?.hasDamages}>
                           <React.Fragment>
                             {' '}
                             <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
                           </React.Fragment>
-                        </ShowIf> 
+                        </ShowIf>
                       </div>
                   </div>
         },
@@ -505,7 +512,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                ? inventorySettings[status]
                : status}
            </span>
-    
+
         },
         sortable: true
       },
@@ -540,7 +547,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             endDate={this.state.endDate}
         />
         </div>
-      } 
+      }
           cMenu="6" cSubMenu="6.2">
         <section className="content">
           <div className="box">
@@ -643,7 +650,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ shipFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -668,7 +675,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={(selected: any) => {
                             this.setState({ tripFilter: new Array(selected)});
                           }}
-                         /> 
+                         />
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -688,7 +695,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           </select>
                       </div>
                     </div>
-                    
+
                     {isUserHandler?
                       <div className="col-md-3">
                         <div className="form-group">
@@ -720,7 +727,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                             classes="icheck-in-checkbox"
                             style={{ marginTop: '-4px', marginRight: '5px' }}
                           />
-                          Mostrar solo unidades con daño 
+                          Mostrar solo unidades con daño
                         </label>
                       </div>
                     </div>
