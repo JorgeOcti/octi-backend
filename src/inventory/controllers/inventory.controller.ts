@@ -3307,34 +3307,6 @@ class InventoryController {
           {
             $lookup: {
               from: 'venues',
-              localField: 'from',
-              foreignField: '_id',
-              as: 'from' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
-            }
-          },
-          {
-            $unwind: {
-              path: '$from',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'venues',
-              localField: 'to',
-              foreignField: '_id',
-              as: 'to' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
-            }
-          },
-          {
-            $unwind: {
-              path: '$to',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'venues',
               localField: 'inventoryCar.venue',
               foreignField: '_id',
               as: 'inventoryCar.venue' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
