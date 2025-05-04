@@ -143,9 +143,13 @@ class Middlewares {
               email: true,
               preferred: true,
               isAdmin: true,
-              venuesAccess: true
+              venuesAccess: true,
+              companiesAccess: true,
             })
             .populate([{
+              path: 'companiesAccess',
+              select: ['name']
+            }, {
               path: 'userPermissions',
               select: ['codeName']
             }, {

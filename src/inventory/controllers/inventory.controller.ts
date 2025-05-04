@@ -3244,8 +3244,14 @@ class InventoryController {
 
       } else {
         //for clients
+        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+          return res.status(403).json({
+            message: 'No tienes acceso a este inventario',
+            status: 403
+          });
+        }
         filterCompanies = {
-          company: new Types.ObjectId(company._id),
+          company: new Types.ObjectId(companyId),
           handlerCompany: {$exists: true},
           status: {
             $in: [
@@ -3301,6 +3307,34 @@ class InventoryController {
           {
             $lookup: {
               from: 'venues',
+              localField: 'from',
+              foreignField: '_id',
+              as: 'from' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
+            }
+          },
+          {
+            $unwind: {
+              path: '$from',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'venues',
+              localField: 'to',
+              foreignField: '_id',
+              as: 'to' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
+            }
+          },
+          {
+            $unwind: {
+              path: '$to',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'venues',
               localField: 'inventoryCar.venue',
               foreignField: '_id',
               as: 'inventoryCar.venue' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
@@ -3345,6 +3379,7 @@ class InventoryController {
               _id: "$car",
               histories: {
                 $push: {
+                  _id: '$_id',
                   status: '$status',
                   from: '$from',
                   to: '$to',

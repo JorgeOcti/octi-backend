@@ -53,7 +53,7 @@ interface IStateType {
   filterHasDamage:boolean;
   isFilteringByDate: boolean;
   loading: boolean;
-  isUserHandler:boolean;
+  multiCompany:boolean;
 }
 
 const dataTableStyle = {
@@ -164,7 +164,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       shipSelector: [],
       tripSelector: [],
       venueSelector: [],
-      isUserHandler:false,
+      multiCompany:false,
       filterHasDamage:false,
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
@@ -192,17 +192,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     super.componentDidMount();
     const {company} = window.user
     if(company?.handler){
+        console.log("adfs")
         // En caso de ser usuario handler filtro por el primer cliente del listado
-        this.setState({isUserHandler: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
+        this.setState({multiCompany: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
         this.getUnitsByCompanyId(company.clientCompanies[0]._id)
     } else {
         if (company && company._id) {
           console.log("company", company)
           const companyList = [{ _id: company._id, name: company.name }]
           this.setState({
-            isUserHandler: false,
-            clientFilter: company?.clientCompanies._id,
-            clientSelector: companyList
+            multiCompany: window.user.companiesAccess.length > 1,
+            clientFilter: window.user.companiesAccess[0]._id,
+            clientSelector: window.user.companiesAccess.length > 1 ? window.user.companiesAccess : companyList
           })
           this.getUnitsByCompanyId(company._id)
         }
@@ -219,11 +220,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let tripOptions:any[] = []
       let units = data.data.cars.map((datum:any) => {
         let inventoryCar = datum.histories.find((history:any) => history.status === "readyToClient")?.inventoryCar;
-        let status = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].status;
+        // Sorting histories by createdAt in descending order
+        let histories = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        let status = histories[0].status;
         let car = datum.car;
-        let histories = datum.histories;
+        let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
+        car.venue = venue.name ?? ""
+        car.lastDate = histories[0].createdAt;
 
-        if(!venueOptions.includes(inventoryCar.venue?.name)) venueOptions.push(inventoryCar.venue?.name)
+        if(car.venue && !venueOptions.includes(car.venue)) {
+          venueOptions.push(car.venue)
+        }
+
         if(!tripOptions.includes(inventoryCar.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar.extra["N° Viaje"].toString().toLowerCase())
         if(!shipOptions.includes(inventoryCar.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar.extra["Nave"].toString().toLowerCase())
 
@@ -260,7 +268,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate) {
       this.filterUnits();
     }
-    if(this.state.clientFilter !== prevState.clientFilter){
+    if(!prevState.loading && this.state.clientFilter !== prevState.clientFilter){
         this.getUnitsByCompanyId(this.state.clientFilter)
     }
   }
@@ -273,7 +281,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
       let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
       let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
-      let venueFilter = this.state.venueFilter === '' ? true : unit.inventoryCar.venue.name.toLowerCase().includes(this.state.venueFilter.toLowerCase());
+      let venueFilter = this.state.venueFilter === '' ? true : unit.car.venue.toLowerCase().includes(this.state.venueFilter.toLowerCase());
+
       const historyReadyToClient = unit.histories.find((history:any) => history.status === "readyToClient")
       const historyInTransit = unit.histories.find((history:any) => history.status === "inTransit")
 
@@ -284,23 +293,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         const damageinTransit = historyInTransit?.participant?.hasDamages? true : false;
         if(!damageReadyToClient && !damageinTransit) damageFilter = false
       }
+
       let dateFilter = true;
       if (this.state.isFilteringByDate) {
-        const dwonloadDate = historyReadyToClient?.createdAt
-        const shippingDate = historyInTransit?.createdAt
-        let startDate = this.state.startDate? new Date(this.state.startDate) : null;
-        let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
-        if (dwonloadDate) {
-          dateFilter = (!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate);
-        }
-        if(shippingDate){
-          dateFilter = (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate);
-        }
-        if(dwonloadDate && shippingDate) {
-          dateFilter = ((!startDate || new Date(dwonloadDate) >= startDate) && (!endDate || new Date(dwonloadDate) <= endDate) || (!startDate || new Date(shippingDate) >= startDate) && (!endDate || new Date(shippingDate) <= endDate));
-        }
+        dateFilter = moment(unit.car.lastDate).isBetween(this.state.startDate, this.state.endDate, 'day', '[]');
       }
-
       return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
     });
 
@@ -350,11 +347,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
 
   render() {
-    const {units, loading, isUserHandler} = this.state;
+    const {units, loading, multiCompany} = this.state;
     const { getParticipant } = this.props;
-    const {
-      loadingParticipant
-    } = this.props.dashboard;
 
     const columns = [
       {
@@ -399,6 +393,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         name: 'Sucursal',
         selector: (row: any) => row.inventoryCar.venue.name,
       },{
+        id: "date",
         name: 'F. Descarga',
         selector: (row: any) => {
           return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
@@ -682,21 +677,22 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       <div className="form-group">
                         <label className="text-black">Filtrar por Sucursal</label>
                         <select
-                            className="form-control"
-                            value={this.state.venueFilter}
-                            onChange={(e) => {
-                              this.setState({ venueFilter: e.target.value });
-                            }}
-                          >
-                            {this.state.venueSelector.map((venue: any, index: number) => {
-                              return <option key={index} value={venue}>{venue}</option>;
-                            })
-                            }
-                          </select>
+                          className="form-control"
+                          value={this.state.venueFilter}
+                          onChange={(e) => {
+                            this.setState({ venueFilter: e.target.value });
+                          }}
+                        >
+                          <option value="">Todas</option>
+                          {this.state.venueSelector.map((venue: any, index: number) => {
+                            return <option key={index} value={venue}>{venue}</option>;
+                          })
+                          }
+                        </select>
                       </div>
                     </div>
 
-                    {isUserHandler?
+                    {multiCompany?
                       <div className="col-md-3">
                         <div className="form-group">
                           <label className="text-black" >Filtrar por Cliente</label>
@@ -748,6 +744,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-md-12">
                         <DataTable
                           columns={columns}
+                          defaultSortFieldId="date"
+                          defaultSortAsc={false}
                           data={units}
                           customStyles={dataTableStyle}
                           pagination
