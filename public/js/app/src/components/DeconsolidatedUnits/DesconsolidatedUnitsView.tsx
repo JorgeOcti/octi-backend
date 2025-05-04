@@ -192,13 +192,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     super.componentDidMount();
     const {company} = window.user
     if(company?.handler){
-        console.log("adfs")
         // En caso de ser usuario handler filtro por el primer cliente del listado
         this.setState({multiCompany: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
         this.getUnitsByCompanyId(company.clientCompanies[0]._id)
     } else {
         if (company && company._id) {
-          console.log("company", company)
           const companyList = [{ _id: company._id, name: company.name }]
           this.setState({
             multiCompany: window.user.companiesAccess.length > 1,
