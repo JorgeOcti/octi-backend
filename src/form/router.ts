@@ -4,6 +4,7 @@ import AdminDamagesController from './controllers/admin/damages.admin.controller
 import AdminFormsController from './controllers/admin/form.admin.controller';
 import FormController from './controllers/form.controller';
 import { FormListControls } from './inputsSchema';
+import DraftController from './controllers/draft.controller';
 
 const router = express.Router();
 
@@ -119,6 +120,7 @@ router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list
 router.get('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.detail);
 // answer form
 router.post('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.complete);
+router.post('/api/v1/forms/:id/save', Middlewares.isJWTAuthenticated, DraftController.save);
 
 // admin forms
 router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiList);

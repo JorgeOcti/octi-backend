@@ -52,6 +52,12 @@ async function createTeamSettings() {
             reported: "Reportados",
             reportedClass: "gray-dark",
             reportedColor: "#96a4b3",
+            open: "Abierto",
+            openClass: "orange",
+            openColor: "#ff851b",
+            check: "Descarga",
+            checkClass: "yellow",
+            checkColor: "#f39c12"
           }
         }).save();
       }

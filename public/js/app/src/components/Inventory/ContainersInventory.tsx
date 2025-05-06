@@ -9,6 +9,7 @@ import {IInventory, IInventoryCar} from "../../../../../../src/inventory/interfa
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { io } from 'socket.io-client';
+
 import { Socket } from 'socket.io-client/build/esm/socket';
 
 import DataTable from 'react-data-table-component';
@@ -49,9 +50,9 @@ interface IStateType {
   unitLabels: any[],
   activeIndex: number,
   activeUnitIndex: number,
-  inventorySelected: string, 
-  carSelected: string, 
-  cardIDSelected: string, 
+  inventorySelected: string,
+  carSelected: string,
+  cardIDSelected: string,
   labelSelected: any,
   unitLabelSelected: any,
   originalContainers: any[];
@@ -216,7 +217,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     'empty(*)': 'Vacío(*)',
   };
   private readonly columns: any[] = [];
-              
+
   constructor(props: IPropsType) {
     super(props);
     this.state = {
@@ -228,9 +229,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       unitLabels:[],
       activeIndex: -1,
       activeUnitIndex: -1,
-      inventorySelected: '', 
-      carSelected: '', 
-      cardIDSelected: '', 
+      inventorySelected: '',
+      carSelected: '',
+      cardIDSelected: '',
       labelSelected: null,
       unitLabelSelected: null,
       blFilter: '',
@@ -368,26 +369,31 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   handleClick = (index: any) => {
-    this.setState({ 
+    this.setState({
       activeIndex: index,
       labelSelected: this.state.labels[index]
     });
   };
 
   handleUnitClick = (index: any) => {
-    this.setState({ 
-      activeUnitIndex: index, 
+    this.setState({
+      activeUnitIndex: index,
       unitLabelSelected: this.state.unitLabels[index]
     });
 
   };
 
-  private getDropDownLabels(row: { containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
+  private getDropDownLabels(row: { isContainer: boolean, containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
 
     const { labels } = this.state;
 
     const status = row.containerStatus || row.status
+
+
+
     let className = `${status}ClassContainer`;
+
+
 
     let getLabel = (container: any) => {
       const status = row.containerStatus || row.status
@@ -451,21 +457,21 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       (swal as any).close();
       this.componentDidMount(); // reload data after set label
       if (isUnit) {
-        $('#modalForAddLabelUnit').modal('toggle');
+        $('#modalForAddLabelUnit').modal('close');
       } else {
-        $('#modalForAddLabel').modal('toggle');
+        $('#modalForAddLabel').modal('close');
       }
     }, 1000);
   }
 
-  private actionSetLabel(inventory: string, car: string, cardID: string, label: IInventoryLabel, isUnit: boolean) {
+  private actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
       (swal as any)('Agregar datos adicionales:', {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          api.setLabel(inventory, car, cardID, label._id, custom)
+          api.setLabel({isUnit: isUnit, inventory, car, carID: carID, label: label._id, custom})
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -481,7 +487,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         }
       });
     } else {
-      api.setLabel(inventory, car, cardID, label._id)
+      api.setLabel({ isUnit, inventory, car, carID, label: label._id })
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'
@@ -509,7 +515,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         const containerLabels = response.data.results.filter((label: { isForContainer: boolean; })=>label.isForContainer);
         const unitLabels = response.data.results.filter((label: { isForContainer: boolean; })=>!label.isForContainer);
         this.setState(
-          { 
+          {
             labels: containerLabels,
             unitLabels: unitLabels
           }
@@ -724,7 +730,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
 
   filterContainers() {
-    let containersHasDamages = false; 
+    let containersHasDamages = false;
     let containers = this.state.originalContainers.filter((container: any) => {
       let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
       let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
@@ -759,7 +765,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           dateFilter = true;
         }
       }
-      
+
       return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter && damageFilter;
     });
     if(containersHasDamages) {
@@ -943,8 +949,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                       {
                         (car.labelText && car.labelText !== '') ?
-                          <div className='inline-element'><span className='added-label'> <i className="fa fa-tag"></i> {car.labelText}</span></div> :
-                          ''
+                        <div className='row'>
+                            <div className='col-xs-12 label-min-with-170'>
+                              <p className='text-center-xs label-m-top-16 text-left-sm'>
+                                <i className='fa fa-tag' aria-hidden='true'></i> {car.labelText}
+                              </p>
+                            </div>
+                          </div> : ''
                       }
                     </div>
                     :
@@ -978,7 +989,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                         }
                                       />
                                     </React.Fragment>
-                                  </ShowIf> 
+                                  </ShowIf>
                                   <ShowIf condition={!car.participant?.hasDamages}>
                                     <button
                                       className="btn btn-primary btn-sm"
@@ -1206,7 +1217,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                             classes="icheck-in-checkbox"
                             style={{ marginTop: '-4px', marginRight: '5px' }}
                           />
-                          Mostrar solo unidades con daño 
+                          Mostrar solo unidades con daño
                         </label>
                       </div>
                     </div>
@@ -1281,13 +1292,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                               })}
                           </ul>
                         </div>
-                        <div className="modal-footer">                          
+                        <div className="modal-footer">
                           <button type="button" className="btn btn-primary"
                             onClick={() => {
                               this.actionSetLabel(
-                                this.state.inventorySelected, 
-                                this.state.carSelected, 
-                                this.state.cardIDSelected, 
+                                this.state.inventorySelected,
+                                this.state.carSelected,
+                                this.state.cardIDSelected,
                                 this.state.labelSelected,
                                 false
                               );
@@ -1320,7 +1331,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                         <i className="fa fa-arrow-right" />
                                       </div>
                                       <div className='col-md-3 col-xs-3'>
-                                        <span                  
+                                        <span
                                           className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
                                           {inventorySettings[option.sendTo]}
@@ -1332,13 +1343,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                               })}
                           </ul>
                         </div>
-                        <div className="modal-footer">                          
+                        <div className="modal-footer">
                           <button type="button" className="btn btn-primary"
                             onClick={() => {
                               this.actionSetLabel(
-                                this.state.inventorySelected, 
-                                this.state.carSelected, 
-                                this.state.cardIDSelected, 
+                                this.state.inventorySelected,
+                                this.state.carSelected,
+                                this.state.cardIDSelected,
                                 this.state.unitLabelSelected,
                                 true
                               );
@@ -1387,9 +1398,12 @@ const inventorySettings: { [key: string]: any } = {
   "found": "Encontrados",
   "foundClass": "green",
   "foundColor": "#00aa51",
+
   "missing": "Faltantes",
   "missingClass": "red",
   "missingColor": "#f1392c",
+  "missingClassContainer": "missing",
+
   "leftover": "Encontrados*",
   "leftoverClass": "yellow",
   "leftoverColor": "#ff9600",
@@ -1409,7 +1423,7 @@ const inventorySettings: { [key: string]: any } = {
   "checkClass": "yellow",
   "checkClassContainer": "check",
   "open": "Abierto",
-  "openClass": "gray-dark",
+  "openClass": "orange",
   "openClassContainer": "open",
   "openColor": "#E08406",
   "report": {
