@@ -1013,8 +1013,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let percentagePending = '';
     let percentageFound = '';
     let percentageHasDamages = '';
-
-
+    
     let percentageContainerPending = '';
     let percentageContainerOpen = '';
     let percentageContainerCheck = '';
@@ -1047,7 +1046,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
             {this.state.inventoryName}
           </h1>
         </div>
-      } cMenu="6" cSubMenu="6.1">
+      } cMenu="6" cSubMenu="6.3" cAction="Detalle Anuncio">
 
         <section className="content">
           <div className="box" style={{ padding: '5px', fontSize: '12px' }}>
