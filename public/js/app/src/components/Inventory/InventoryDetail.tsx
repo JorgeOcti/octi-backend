@@ -1,46 +1,37 @@
-import AppContainer from '../../container/AppContainer';
+import { RouteComponentProps } from "react-router";
 import TrackingBasePage from "../Utils/TrackingBasePage";
-import {RouteComponentProps} from "react-router";
-import {connect} from "react-redux";
-
-import * as React from "react";
-import ApiService from "../../utils/axios";
-import {IInventory, IInventoryCar} from "../../../../../../src/inventory/interfaces/inventory.interface";
+import { connect } from "react-redux";
+import { getParticipant, IDashboardState } from "../../actions/dashboard.actions";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
-import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
-import { io } from 'socket.io-client';
-import { Socket } from 'socket.io-client/build/esm/socket';
-import * as moment from "moment-timezone";
-import {hasPermission} from "../../utils/common";
-import {IWindow} from "../../interfaces/window";
-import DateRangeInput from '../Utils/DateRangeInput';
+import React = require("react");
+import moment = require("moment");
+import AppContainer from "../../container/AppContainer";
+import { hasPermission } from "../../utils/common";
+import { Filters } from "./FilterDetailComponent";
+import { InventoryTable } from "./TableDetailComponent";
+import ModalView from "../Modal/ModalView";
+import { IWindow } from "../../interfaces/window";
 import * as XLSX from 'xlsx-color';
-import { IInventoryLabel } from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
-import swal = require('sweetalert');
-import { AxiosError, AxiosResponse } from 'axios';
-
-import { Dispatch } from 'redux';
-import {
-  DashboardReduxAction,
-  getParticipant,
-  IDashboardState
-} from '../../actions/dashboard.actions';
-import ShowIf from '../Utils/ShowIf';
-import ModalView from '../Modal/ModalView';
-import { InventoryTable } from './TableDetailComponent';
-import { Filters } from './FilterDetailComponent';
+import ShowIf from "../Utils/ShowIf";
+import swal = require("sweetalert");
+import ApiService from "../../utils/axios";
+import { AxiosError, AxiosResponse } from "axios";
+import { IInventoryLabel } from "../../../../../../src/inventory/interfaces/inventoryLabel.interface";
+import { IInventory } from "../../../../../../src/inventory/interfaces/inventory.interface";
+import { FilterSummryDetail } from "./FilterSummaryDetailComponent";
 
 declare let window: IWindow;
 
-export type CarStatusType = Extract<keyof IInventorySetting, string>;
-
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-    dispatch: Dispatch<DashboardReduxAction>;
-    getParticipant(id: string): void;
-    dashboard: IDashboardState;
+  dashboard: IDashboardState;
 }
 
 interface IStateType {
+  summary: any;
+  inventory: IInventory | null,
+  inventoryName: string,
+  totalUnits: number,
+  totalContainers: number,
   error: Error | null;
   containers: any[];
   labels: any[],
@@ -59,6 +50,7 @@ interface IStateType {
   clientFilter: string;
   clientSelector: any[];
   statusFilterSelected: string[],
+  unitFilter: string;
   selectedContainer: number;
   shipFilter: string[];
   shipSelector: any[];
@@ -66,7 +58,7 @@ interface IStateType {
   tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
-  filterHasDamage:boolean;
+  filterHasDamage: boolean;
   endDate: Date;
   startDate: Date;
   isFilteringByDate: boolean;
@@ -74,13 +66,13 @@ interface IStateType {
 
 const dataTableStyle = {
   headRow: {
-    style:{
+    style: {
       color: "white",
       backgroundColor: "#3279B7",
       whiteSpace: 'normal !important'
     }
   },
-  headCells:{
+  headCells: {
     style: {
       '& > div': { // Selecciona el div directo dentro de la celda
         '& > div': {
@@ -90,11 +82,11 @@ const dataTableStyle = {
       }
     }
   },
-  rows:{
-    style:{
+  rows: {
+    style: {
       backgroundColor: "#F5F5F5",
       border: "1px solid #DADADA",
-      marginTop:"10px"
+      marginTop: "10px"
     }
   },
   cells: {
@@ -111,14 +103,6 @@ const dataTableStyle = {
     }
   }
 };
-
-const paginationComponentOptions = {
-  rowsPerPageText: 'Filas por página',
-  rangeSeparatorText: 'de',
-  selectAllRowsItem: true,
-  selectAllRowsItemText: 'Todos',
-};
-
 
 const excelHeaders = [
   'F. Apertura',
@@ -145,24 +129,61 @@ const formaDate = (date: any) => {
   }).format(new Date(date)).replace(',', '');
 }
 
-const foundStatusContainer = (container: any) => {
-  let status = container.status;
-  if(container.evidenceStatus && container.evidenceStatus.length > 0) {
-    const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
-    if(statusList.includes(ContainerStatus.EMPTY)) {
-      status = ContainerStatus.EMPTY;
-    } else if(statusList.includes(ContainerStatus.CHECK)) {
-      status = ContainerStatus.CHECK;
-    } else if(statusList.includes(ContainerStatus.OPEN)) {
-      status = ContainerStatus.OPEN;
-    } else {
-      status = container.status;
-    }
+const paginationComponentOptions = {
+  rowsPerPageText: 'Filas por página',
+  rangeSeparatorText: 'de',
+  selectAllRowsItem: true,
+  selectAllRowsItemText: 'Todos',
+};
+
+
+const inventorySettings: { [key: string]: any } = {
+  "leftoverDifferentVenue": true,
+  "_id": "5e68fb3e0f7cfc00245e4954",
+  "pending": "Pendiente",
+  "pendingClass": "aqua",
+  "pendingClassContainer": "pending",
+  "pendingColor": "#2DBDFD",
+  "found": "Encontrados",
+  "foundClass": "green",
+  "foundColor": "#00aa51",
+
+  "missing": "Faltantes",
+  "missingClass": "red",
+  "missingColor": "#f1392c",
+  "missingClassContainer": "missing",
+
+  "leftover": "Encontrados*",
+  "leftoverClass": "yellow",
+  "leftoverColor": "#ff9600",
+  "reported": "Reportados",
+  "reportedClass": "gray-dark",
+  "reportedColor": "#96a4b3",
+  "empty": "Vacío",
+  "emptyClass": "green",
+  "emptyClassContainer": "empty",
+  "emptyColor": "#00AA51",
+  "empty(*)": "Vacío(*)",
+  "empty(*)Class": "green",
+  "empty(*)ClassContainer": "empty(*)",
+  "empty(*)Color": "#00AA51",
+  "check": "Descarga",
+  "checkColor": "#C1BB21",
+  "checkClass": "yellow",
+  "checkClassContainer": "check",
+  "open": "Abierto",
+  "openClass": "orange",
+  "openClassContainer": "open",
+  "openColor": "#E08406",
+  "report": {
+    "atLeastOne": true,
+    "primaryRequired": false,
+    "secondaryRequired": false
   }
-  return status;
 }
 
-const imagesFormatter = ( row: any) => {
+
+const imagesFormatter = (row: any) => {
   if (row.images && row.images.length) {
     return (
       <div className="row">
@@ -188,23 +209,27 @@ const imagesFormatter = ( row: any) => {
   return null;
 }
 
-const getDateRangeOptions = ():daterangepicker.Options => {
-  return {
-    maxDate: moment().toDate(),
-    locale: {
-      format: 'DD/MM/YYYY',
-      customRangeLabel: 'Período personalizado',
-      applyLabel: 'Aplicar',
-      cancelLabel: 'Cancelar'
-    },
-  };
+const foundStatusContainer = (container: any) => {
+  let status = container.status;
+  if (container.evidenceStatus && container.evidenceStatus.length > 0) {
+    const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
+    if (statusList.includes(ContainerStatus.EMPTY)) {
+      status = ContainerStatus.EMPTY;
+    } else if (statusList.includes(ContainerStatus.CHECK)) {
+      status = ContainerStatus.CHECK;
+    } else if (statusList.includes(ContainerStatus.OPEN)) {
+      status = ContainerStatus.OPEN;
+    } else {
+      status = container.status;
+    }
+  }
+  return status;
 }
 
-class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
-  title = "Revisión Containers";
+class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
 
-  private socket: Socket;
+  title: string;
 
   private statusText: any = {
     'pending': 'Pendientes',
@@ -215,18 +240,23 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     'empty(*)': 'Vacío(*)',
   };
 
-
   private readonly columns: any[] = [];
 
   constructor(props: IPropsType) {
     super(props);
     this.state = {
+      unitFilter: '',
+      summary: null,
+      inventory: null,
+      inventoryName: '',
+      totalContainers: 0,
+      totalUnits: 0,
       loading: true,
       error: null,
       originalContainers: [],
       containers: [],
       labels: [],
-      unitLabels:[],
+      unitLabels: [],
       activeIndex: -1,
       activeUnitIndex: -1,
       inventorySelected: '',
@@ -245,37 +275,37 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripSelector: [],
       tripFilter: [],
       selectedContainer: -1,
-      filterHasDamage:false,
+      filterHasDamage: false,
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
       inventorySettings: {
-          "leftoverDifferentVenue": true,
-          "_id": "5e68fb3e0f7cfc00245e4954",
-          "pending": "Pendientes",
-          "pendingClass": "aqua",
-          "pendingColor": "#00c2f4",
-          "found": "Encontrados",
-          "foundClass": "green",
-          "foundColor": "#00aa51",
-          "missing": "Faltantes",
-          "missingClass": "red",
-          "missingColor": "#f1392c",
-          "leftover": "Encontrados*",
-          "leftoverClass": "yellow",
-          "leftoverColor": "#ff9600",
-          "reported": "Reportados",
-          "reportedClass": "gray-dark",
-          "reportedColor": "#96a4b3",
-          "report": {
-            "atLeastOne": true,
-            "primaryRequired": false,
-            "secondaryRequired": false
-          }
+        "leftoverDifferentVenue": true,
+        "_id": "5e68fb3e0f7cfc00245e4954",
+        "pending": "Pendientes",
+        "pendingClass": "aqua",
+        "pendingColor": "#00c2f4",
+        "found": "Encontrados",
+        "foundClass": "green",
+        "foundColor": "#00aa51",
+        "missing": "Faltantes",
+        "missingClass": "red",
+        "missingColor": "#f1392c",
+        "leftover": "Encontrados*",
+        "leftoverClass": "yellow",
+        "leftoverColor": "#ff9600",
+        "reported": "Reportados",
+        "reportedClass": "gray-dark",
+        "reportedColor": "#96a4b3",
+        "report": {
+          "atLeastOne": true,
+          "primaryRequired": false,
+          "secondaryRequired": false
+        }
       }
-    };
-
-    this.downloadData = this.downloadData.bind(this);
+    }
+    const { loadingParticipant } = this.props.dashboard;
+    this.title = "Inventory Detail";
     this.columns = [
       {
         name: 'F. Apertura',
@@ -307,39 +337,55 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         selector: (row: any) => row.extra["N° BL"],
       },
       {
-        name: 'Puerto',
-        selector: (row: any) => row.extra["Emplazamiento"],
-      },
-      {
-        name: 'Nave',
-        selector: (row: any) => row.extra["Nave"],
-      },
-      {
-        name: 'Cliente',
+        name: 'Daños',
         selector: (row: any) => {
-              return row.extra["Cliente Razón Social"];
+          {
+            row.participant ? <><ShowIf condition={row.participant?.hasDamages}>
+              <React.Fragment>
+                {' '}
+                <i
+                  className="fa fa-warning text-red pointer"
+                  data-toggle="tooltip"
+                  data-placement="top"
+                  title="Daños encontrados en esta revisión."
+                  onClick={
+                    () => getParticipant(row.participant._id)
+                  }
+                />
+              </React.Fragment>
+            </ShowIf>
+              <ShowIf condition={!row.participant?.hasDamages}>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={
+                    () => getParticipant(row.participant._id)
+                  }>
+                  <ShowIf
+                    condition={
+                      !!(
+                        loadingParticipant &&
+                        loadingParticipant === row.participant._id
+                      )
+                    }
+                    alternative={
+                      <i className="fa fw fa-check-square-o" />
+                    }>
+                    <i className="fa fw fa-spin fa-spinner" />
+                  </ShowIf>
+                </button>
+              </ShowIf>
+            </>
+            : <></>
+          }
         },
-        cell: (row: any) => {
-          return <div>{row.extra["Cliente Razón Social"]}</div>
-        }
-      },
-      {
-        name: 'Viaje',
-        selector: (row: any) => row.extra["N° Viaje"],
       },
       {
         name: 'Imágenes',
         cell: (row: any) => {
-          if(row.evidenceStatus && row.evidenceStatus.length > 0) {
+          if (row.evidenceStatus && row.evidenceStatus.length > 0) {
             row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
           }
           return imagesFormatter(row);
-        }
-      },
-      {
-        name: 'Ubicación',
-        selector: (row: any) => {
-              return row.venue.name;
         }
       },
       {
@@ -361,39 +407,19 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return row.containerStatus === ContainerStatus.EMPTY && <button className="btn btn-m btn-default" onClick={() => {
             window.open(`/api/inventory/${row.inventory}/container/tarja/${row.car._id}`, '_blank')
           }}>
-          <i className="fa fa-fw fa-print" /> Tarja
-        </button>
+            <i className="fa fa-fw fa-print" /> Tarja
+          </button>
         }
       },
     ];
+
   }
-
-  handleClick = (index: any) => {
-    this.setState({
-      activeIndex: index,
-      labelSelected: this.state.labels[index]
-    });
-  };
-
-  handleUnitClick = (index: any) => {
-    this.setState({
-      activeUnitIndex: index,
-      unitLabelSelected: this.state.unitLabels[index]
-    });
-
-  };
 
   private getDropDownLabels(row: { isContainer: boolean, containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
 
     const { labels } = this.state;
-
     const status = row.containerStatus || row.status
-
-
-
     let className = `${status}ClassContainer`;
-
-
 
     let getLabel = (container: any) => {
       const status = row.containerStatus || row.status
@@ -410,8 +436,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     if (labels.length === 0) {
       return <span
         className={`label-container label-container-${inventorySettings.hasOwnProperty(className)
-            ? inventorySettings[className]
-            : ''
+          ? inventorySettings[className]
+          : ''
           }`}
         style={{
           padding: '5px 10px'
@@ -426,7 +452,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           data-toggle="modal"
           data-target="#modalForAddLabel"
           className={`btn custom-dropdown-toggle dropdown-toggle btn-modal-add-label
-          label-container-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`}
+            label-container-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`}
           type="button"
           onClick={() => {
             this.setState({
@@ -437,7 +463,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             });
           }
           }
-         >
+        >
           <span className="label-text">
             {getLabel(row)}
           </span>
@@ -446,11 +472,27 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       </div>
       {
         (row.labelText && row.labelText !== '') ?
-        <span className='added-label'> <i className="fa fa-tag"></i> {row.labelText}</span> :
-        ''
-        }
+          <span className='added-label'> <i className="fa fa-tag"></i> {row.labelText}</span> :
+          ''
+      }
     </div>
   }
+
+
+  private handleClick = (index: any) => {
+    this.setState({
+      activeIndex: index,
+      labelSelected: this.state.labels[index]
+    });
+  };
+
+  private handleUnitClick = (index: any) => {
+    this.setState({
+      activeUnitIndex: index,
+      unitLabelSelected: this.state.unitLabels[index]
+    });
+
+  };
 
   private setLabelCallback(isUnit: boolean) {
     setTimeout(() => {
@@ -464,6 +506,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     }, 1000);
   }
 
+
   private actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel, isUnit: boolean) {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
@@ -471,7 +514,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          api.setLabel({isUnit: isUnit, inventory, car, carID: carID, label: label._id, custom})
+          api.setLabel({ isUnit: isUnit, inventory, car, carID: carID, label: label._id, custom })
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -500,20 +543,131 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
-  public componentWillUnmount():void {
-    // cancel request if component is inmounted
-    this.socket.disconnect();
+  create = () => {
+    this.props.history.push('/inventory/container/create/');
+  }
+
+
+  componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    if (this.state.containerFilter !== prevState.containerFilter ||
+      this.state.statusFilterSelected !== prevState.statusFilterSelected ||
+      this.state.filterHasDamage !== prevState.filterHasDamage ||
+      this.state.unitFilter !== prevState.unitFilter ) {
+      this.filterContainers();
+    }
+  }
+
+  filterContainers() {
+
+    let containersHasDamages = false;
+    let containers = this.state.originalContainers.filter((container: any) => {
+
+      let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
+      let statusFilter = this.state.statusFilterSelected.length === 0 ? true : this.state.statusFilterSelected.includes(container.filterStatus);
+      let damageFilter = true
+      if (this.state.filterHasDamage) {
+        // Verificamos que content tiene daños
+        damageFilter = container.content?.filter((e: any) => e.participant?.hasDamages).length === 0 ? false : true
+        if (!damageFilter) containersHasDamages = true
+      }
+      return  containerFilter && statusFilter && damageFilter;
+    });
+
+
+    if (this.state.unitFilter !== '') {
+      containers = containers.map((container: any) => {
+        return {
+          ...container,
+          content: container.content.filter((car: any) => car.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase()))
+        }
+      });
+    }
+
+
+    if (containersHasDamages) {
+      containers = containers.map((container) => {
+        return {
+          ...container,
+          content: container.content.filter((car: any) => car.participant?.hasDamages)
+        }
+      })
+    }
+
+    this.setState({
+      containers: containers
+    });
+
+  }
+
+  cleanFilters = () => {
+    this.setState({
+      unitFilter: '',
+      containerFilter: '',
+      statusFilterSelected: [],
+      filterHasDamage: false,
+    });
+  }
+
+
+  private labelStatus(option: string): React.ReactElement<IPropsType> {
+
+    let spanClass = 'label label-default';
+    let iconClass = 'fa fa-fw fa-circle';
+    let statusName = ' Sin estado';
+
+    if (option === 'finalized') {
+      spanClass = 'label label-success';
+      iconClass = 'fa fa-fw fa-check';
+      statusName = ' Finalizado';
+    } else if (option === 'inProcess') {
+      spanClass = 'label label-primary';
+      iconClass = 'fa fa-fw fa-spin fa-spinner';
+      statusName = ' En progreso';
+    } else {
+      spanClass = 'label label-warning"';
+      iconClass = 'fa fa-fw fa-spin fa-spinner';
+      statusName = ' Creando inventario...';
+    }
+
+
+    return (
+      <span className={`${spanClass} label-status-badge`} >
+        <i className={`${iconClass}`} /> {statusName}
+      </span>
+    );
+
+
   }
 
   componentDidMount() {
+
+    const params: any = this.props.match.params;
     super.componentDidMount();
     const api: ApiService = new ApiService();
-    this.startSocket();
+    // this.startSocket();
     api.getSource()
+    api.getSummaryInventory(params['id']).then(async (response: any) => {
+
+      const { metadata, summary } = response.data;
+      const { containers, units, nave, client } = summary[`${params['id']}`];
+      const { pending, found, hasDamages } = units;
+      const { pending: pendingContainers, found: foundContainers, open, check, empty, "empty(*)": emptyStar } = containers;
+
+      let totalUnits = pending + found + hasDamages;
+      let totalContainers = pendingContainers + foundContainers + open + check + empty + containers["empty(*)"];
+
+      this.setState({
+        summary: summary[`${params['id']}`],
+        totalContainers: totalContainers,
+        totalUnits: totalUnits,
+      });
+
+    });
+
     api.getLabels(1)
       .then(async (response: any) => {
-        const containerLabels = response.data.results.filter((label: { isForContainer: boolean; })=>label.isForContainer);
-        const unitLabels = response.data.results.filter((label: { isForContainer: boolean; })=>!label.isForContainer);
+        const containerLabels = response.data.results.filter((label: { isForContainer: boolean; }) => label.isForContainer);
+        const unitLabels = response.data.results.filter((label: { isForContainer: boolean; }) => !label.isForContainer);
         this.setState(
           {
             labels: containerLabels,
@@ -541,7 +695,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           }).flat();
 
         let containers = data.filter((car: any) => {
-          if(car.car.isContainer) {
+          if (car.car.isContainer) {
             car.status = foundStatusContainer(car);
             return true;
           }
@@ -553,7 +707,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return !car.car.isContainer;
         })
         cars.forEach((car: any) => {
-          if (car.car.company && car.car.company.name){
+          if (car.car.company && car.car.company.name) {
             clients.add(car.car.company.name);
           }
         })
@@ -574,7 +728,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
         containers = containers.map((container: any) => {
           // if evidenceStatus is not empty, get the last status open and empty
-          if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+          if (container.evidenceStatus && container.evidenceStatus.length > 0) {
             let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
             let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
             if (openEvidences.length > 0) {
@@ -592,12 +746,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             }
           }
           // Verifico si el contendedor tiene alguna unidad con daños
-          container.hasDamage = container.content?.some((e:any) => e.participant?.hasDamages === true);
+          container.hasDamage = container.content?.some((e: any) => e.participant?.hasDamages === true);
           return container;
         });
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
         let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
+
+
         this.setState({
+          inventoryName: inventories[0].name,
+          inventory: inventories[0],
           containers: containers,
           originalContainers: containers,
           clientSelector: Array.from(clients),
@@ -610,226 +768,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         console.log(error);
       })
   }
-  startSocket(){
-    this.socket = io(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      transports: ['websocket'],
-      reconnection: true,
-      query: {
-        token: (window.user as any).token
-      }
-    });
-    this.socket.on('connect', () => {
-      this.socket.emit('join', {
-        room: `dashboard-container-vin-view-${window.user.team._id}`
-      });
-    });
-    this.socket.on('REFRESH', (data: any): void => {
-     this.updateDataContainersRealTime(data);
-    });
-
-  }
-  updateDataContainersRealTime(data:any){
-    const containerUpdated = data.metadata.inventory;
-      let containers = this.state.containers.map((container: any) => {
-        if(containerUpdated.car.isContainer){
-              // Metodo para modificar la data del contenedor
-          return this.updateDataContainer(container, containerUpdated, data)
-        }else{
-          if (container._id !== containerUpdated.container) return container
-            let contents = container.content.map((e:any) => {
-              // Metodo para modificar el array de contents del contenedor
-              return this.updateContentContainer(e, containerUpdated, data)
-            })
-            container.content = contents;
-            return container
-        }
-      });
-      this.setState({
-        containers,
-        originalContainers: containers,
-        containerUpdated
-      });
-  }
-  updateDataContainer(container:any, containerUpdated:any, data:any):any{
-    let containerTemp = {...container}
-    if (container.car.vin === containerUpdated.car.vin && container.inventory === containerUpdated.inventory){
-      containerTemp.evidenceStatus = containerUpdated.evidenceStatus
-      containerTemp.status = containerUpdated.status;
-      containerTemp.containerStatus = containerUpdated.containerStatus;
-      containerTemp.images = containerUpdated.images;
-      let openEvidences = containerTemp.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-      if (openEvidences.length > 0) {
-        //sort by date and get the last one
-        containerTemp.openDate = openEvidences.sort((a: any, b: any) => {
-          return moment(a.date).isAfter(b.date) ? -1 : 1;
-        })[0].date;
-      }
-      this.showAlert(data)
-      return containerTemp
-    } else return container
-  }
-  updateContentContainer(content:any, containerUpdated:any, data:any){
-    if(content.car.vin === containerUpdated.car.vin){
-      let contentTemp = {...content}
-      contentTemp.status = containerUpdated.status;
-      contentTemp.images = containerUpdated.images;
-      this.showAlert(data);
-      return contentTemp
-    }
-    return content
-  }
-
-  showAlert(data:any){
-    ($ as any).toast({
-      heading: data.title,
-      text: data.text,
-      position: 'top-right',
-      loaderBg: '#e2e2e2',
-      icon: 'success',
-      hideAfter: 5000,
-      stack: 6,
-      beforeShow: () => {
-        const $toastEl = $('.jq-toast-heading');
-        $toastEl.css({
-          'fontSize': '13px',
-          'padding-top': '2px',
-          'padding-right': '2px'
-        });
-      },
-    } as any);
-  }
-
-  componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
-    if (this.state.blFilter !== prevState.blFilter ||
-      this.state.containerFilter !== prevState.containerFilter ||
-      this.state.clientFilter !== prevState.clientFilter ||
-      this.state.statusFilterSelected !== prevState.statusFilterSelected ||
-      this.state.isFilteringByDate !== prevState.isFilteringByDate ||
-      this.state.startDate !== prevState.startDate ||
-      this.state.endDate !== prevState.endDate ||
-      this.state.filterHasDamage !== prevState.filterHasDamage ||
-      this.state.shipFilter !== prevState.shipFilter ||
-      this.state.tripFilter !== prevState.tripFilter) {
-      this.filterContainers();
-    }
-  }
-
-  cleanFilters = () => {
-    this.setState({
-      blFilter: '',
-      containerFilter: '',
-      clientFilter: '',
-      shipFilter: [],
-      tripFilter: [],
-      statusFilterSelected: [],
-      filterHasDamage: false,
-    });
-  }
 
 
+  render() {
 
-  filterContainers() {
 
-    let containersHasDamages = false;
-    let containers = this.state.originalContainers.filter((container: any) => {
-      let bl = container.extra["N° BL"] ? container.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
-      let containerFilter = container.car.vin.toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      let statusFilter = this.state.statusFilterSelected.length === 0 ? true : this.state.statusFilterSelected.includes(container.filterStatus);
-      let shipFilter = this.state.shipFilter.length == 0 ? true : (container.extra["Nave"] ? container.extra["Nave"].toString().toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
-      let tripFilter = this.state.tripFilter.length === 0 ? true  : (container.extra["N° Viaje"] ? container.extra["N° Viaje"].toString().toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
+    const { containers, loading, summary, totalContainers, totalUnits } = this.state;
+    const { loadingParticipant } = this.props.dashboard;
 
-      let clientFilter = true;
-      if (this.state.clientFilter !== '') {
-        clientFilter = container.content.filter((car: any) => {
-          if (car.car.company && car.car.company.name) {
-            return car.car.company.name.toLowerCase() === this.state.clientFilter.toLowerCase();
-          }
-          return false;
-        }).length > 0;
-      }
-      let damageFilter = true
-      if(this.state.filterHasDamage){
-        // Verificamos que content tiene daños
-        damageFilter = container.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
-        if(!damageFilter) containersHasDamages = true
-      }
-      let dateFilter = true;
-      if (this.state.isFilteringByDate) {
-        if (container.openDate) {
-          let openDate = new Date(container.openDate);
-          let startDate = this.state.startDate? new Date(this.state.startDate) : null;
-          let endDate = this.state.endDate ? new Date(this.state.endDate) : null;
-
-          dateFilter = ((!startDate || openDate >= startDate) && (!endDate || openDate <= endDate));
-        } else {
-          dateFilter = true;
-        }
-      }
-
-      return bl && clientFilter && containerFilter && statusFilter && dateFilter && tripFilter && shipFilter && damageFilter;
-    });
-    if(containersHasDamages) {
-      containers = containers.map((container) => {
-        return {
-          ...container,
-          content: container.content.filter((car: any) => car.participant?.hasDamages)
-        }
-      })
-    }
-    this.setState({
-      containers: containers
-    });
-
-  }
-
-  create = () => {
-    this.props.history.push('/inventory/container/create/');
-  }
-
-  private downloadData(): void {
-    const { containers } = this.state
-    let rows = [
-      [...excelHeaders]
-    ];
-
-    containers.map((container: any) => {
-      container.content.map((car: any) => {
-        let carRow = [
-          container.openDate ? moment(container.openDate).format('DD/MM/YYYY HH:mm') : "",
-          container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
-          container.car.vin,
-          car.car.vin,
-          `${car.car.brand ?? ""} ${car.car.model ?? ""}`,
-          car.extra ? car.extra["N° BL"] ?? "" : "",
-          car.extra ? car.extra["Emplazamiento"] ?? "" : "",
-          car.extra ? car.extra["Nave"] ?? "" : "",
-          car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
-          car.extra ? car.extra["N° Viaje"] ?? "" : "",
-          inventorySettings[car.containerStatus || car.status] ?? "",
-        ]
-        rows.push(carRow);
-      })
-    });
-
-    /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    /* add to workbook */
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
-    /* generate an XLSX file */
-    XLSX.writeFile(wb, 'container_inventory.xlsx');
-  }
-
-  render() : React.ReactElement<IPropsType> {
-    const {containers, loading} = this.state;
-    const { getParticipant } = this.props;
-    const {
-      loadingParticipant
-    } = this.props.dashboard;
     let statusCount = containers.reduce((acc: any, container: any) => {
-      if (container  && container.containerStatus) {
+      if (container && container.containerStatus) {
         let key = container.containerStatus;
         if (acc[key]) {
           acc[key] += 1;
@@ -845,20 +793,21 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
       let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
       return <> - <span
-          key={status}
-          style={{color: `${color}`, fontWeight: "600"}}>
-         {label}: {statusCount[status]}
-       </span> </>
+        key={status}
+        style={{ color: `${color}`, fontWeight: "600" }}>
+        {label}: {statusCount[status]}
+      </span> </>
     });
+
 
     const conditionalRowStyles = [
       {
         when: (row: any) => {
-          const {containerUpdated} = this.state;
+          const { containerUpdated } = this.state;
 
-          if(containerUpdated?.car?.isContainer){
+          if (containerUpdated?.car?.isContainer) {
             return row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory
-          }else{
+          } else {
             return row._id === containerUpdated.container && row.inventory === containerUpdated?.inventory
           }
         },
@@ -876,25 +825,25 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             Unidad
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Marca
+            Denominacion
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Modelo
+            Daños
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Color
+            Revisado por
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Fotos
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Fecha desconsolidado
+            Hora Revisión
           </div>
           <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+            Imagenes
+          </div>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
             Estado
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Revisión
+            Tarja
           </div>
         </div>
         {data.content.map((car: any, index: number) => {
@@ -903,24 +852,59 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return (
             <div key={index} className={`row request background-transition ${classNameEfect}`}>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
-              </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.extra["Marca"]}</strong>
+                <strong style={{ "textDecoration": "underline" }}>{car.car.vin}</strong>
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 <strong className="text-black">{car.extra["Modelo"]}</strong>
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.car.color}</strong>
+                {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                  <React.Fragment>
+                    {' '}
+                    <i
+                      className="fa fa-warning text-red pointer"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      title="Daños encontrados en esta revisión."
+                      onClick={
+                        () => getParticipant(car.participant._id)
+                      }
+                    />
+                  </React.Fragment>
+                </ShowIf>
+                  <ShowIf condition={!car.participant?.hasDamages}>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={
+                        () => getParticipant(car.participant._id)
+                      }>
+                      <ShowIf
+                        condition={
+                          !!(
+                            loadingParticipant &&
+                            loadingParticipant === car.participant._id
+                          )
+                        }
+                        alternative={
+                          <i className="fa fw fa-check-square-o" />
+                        }>
+                        <i className="fa fw fa-spin fa-spinner" />
+                      </ShowIf>
+                    </button>
+                  </ShowIf>
+                </>
+                  : <></>}
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                {imagesFormatter(car)}
+
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
               </div>
               <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                {imagesFormatter(car)}
+              </div>
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {
                   (unitLabels.length > 0) ?
                     <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
@@ -950,7 +934,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                       {
                         (car.labelText && car.labelText !== '') ?
-                        <div className='row'>
+                          <div className='row'>
                             <div className='col-xs-12 label-min-with-170'>
                               <p className='text-center-xs label-m-top-16 text-left-sm'>
                                 <i className='fa fa-tag' aria-hidden='true'></i> {car.labelText}
@@ -975,45 +959,48 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </span>
                     </div>
                 }
+
+
+
+
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                {car.participant? <><ShowIf condition={car.participant?.hasDamages}>
-                                    <React.Fragment>
-                                      {' '}
-                                      <i
-                                        className="fa fa-warning text-red pointer"
-                                        data-toggle="tooltip"
-                                        data-placement="top"
-                                        title="Daños encontrados en esta revisión."
-                                        onClick={
-                                          () => getParticipant(car.participant._id)
-                                        }
-                                      />
-                                    </React.Fragment>
-                                  </ShowIf>
-                                  <ShowIf condition={!car.participant?.hasDamages}>
-                                    <button
-                                      className="btn btn-primary btn-sm"
-                                      onClick={
-                                        () => getParticipant(car.participant._id)
-                                      }>
-                                        <ShowIf
-                                          condition={
-                                            !!(
-                                              loadingParticipant &&
-                                              loadingParticipant === car.participant._id
-                                            )
-                                          }
-                                          alternative={
-                                            <i className="fa fw fa-check-square-o" />
-                                          }>
-                                          <i className="fa fw fa-spin fa-spinner" />
-                                        </ShowIf>
-                                  </button>
-                                  </ShowIf>
-                                  </>
-                                  : <></> }
-
+                {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                  <React.Fragment>
+                    {' '}
+                    <i
+                      className="fa fa-warning text-red pointer"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      title="Daños encontrados en esta revisión."
+                      onClick={
+                        () => getParticipant(car.participant._id)
+                      }
+                    />
+                  </React.Fragment>
+                </ShowIf>
+                  <ShowIf condition={!car.participant?.hasDamages}>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={
+                        () => getParticipant(car.participant._id)
+                      }>
+                      <ShowIf
+                        condition={
+                          !!(
+                            loadingParticipant &&
+                            loadingParticipant === car.participant._id
+                          )
+                        }
+                        alternative={
+                          <i className="fa fw fa-check-square-o" />
+                        }>
+                        <i className="fa fw fa-spin fa-spinner" />
+                      </ShowIf>
+                    </button>
+                  </ShowIf>
+                </>
+                  : <></>}
               </div>
             </div>
           )
@@ -1023,70 +1010,204 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     }
 
 
+    let percentagePending = '';
+    let percentageFound = '';
+    let percentageHasDamages = '';
+
+
+    let percentageContainerPending = '';
+    let percentageContainerOpen = '';
+    let percentageContainerCheck = '';
+    let percentageContainerEmpty = '';
+    let percentageContainerEmptyStar = '';
+
+    if (!loading) {
+
+      const { units, containers } = summary;
+      const { pending, found, hasDamages } = units;
+      const { pending: pendingContainers, found: foundContainers, open, check, empty, "empty(*)": emptyStar } = containers;
+
+      percentagePending = totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
+      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%'
+      percentageHasDamages = totalUnits > 0 ? `${Math.round((hasDamages / totalUnits) * 100)}%` : '0%'
+
+      percentageContainerPending = totalContainers > 0 ? `${Math.round((pendingContainers / totalContainers) * 100)}%` : '0%';
+      percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%'
+      percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%'
+      percentageContainerEmpty = totalContainers > 0 ? `${Math.round((empty / totalContainers) * 100)}%` : '0%'
+      percentageContainerEmptyStar = totalContainers > 0 ? `${Math.round((emptyStar / totalContainers) * 100)}%` : '0%'
+
+    }
+
+
     return (
       <AppContainer title={
-        <div style={{ width: '180px' }}>
-           <DateRangeInput
-              options={getDateRangeOptions()}
-              onChange={(start: Date, end: Date) => {
-                this.setState({
-                  startDate: start,
-                  endDate: end,
-                  isFilteringByDate: true
-                });
-              }}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-            />
-          </div>
+        <div style={{}}>
+          <h1 className="page-header">
+            {this.state.inventoryName}
+          </h1>
+        </div>
       } cMenu="6" cSubMenu="6.1">
+
         <section className="content">
+          <div className="box" style={{ padding: '5px', fontSize: '12px' }}>
+            <div className="box-header  flex flex-space-between">
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-primary">
+                <i className="fa fa-fw fa-user" />
+                <strong> {this.state.inventory?.createdBy.fullName}</strong>
+              </div>
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2">
+                <i className="fa fa-fw fa-clock-o" />
+                <strong> {moment(this.state.inventory?.createdAt).format('LLL')}</strong>
+              </div>
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-success">
+                <i className="fa fa-fw fa-clock-o" />
+                <strong> {(this.state.inventory?.finalizedAt) ? moment(this.state.inventory?.finalizedAt).format('LLL') : ' - '}</strong>
+              </div>
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2">
+                <i className="fa fa-fw fa-map-marker" />
+                <strong> {this.state.summary?.location}</strong>
+              </div>
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2">
+                <small>viaje</small>
+                <strong> {this.state.summary?.trip}</strong>
+              </div>
+              <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-right">
+                {this.labelStatus(this.state.inventory?.status || '')}
+              </div>
+            </div>
+          </div>
+
+          <div className="box" style={{ padding: '5px', paddingBottom: '15px', fontSize: '12px' }}>
+            <div className="box-header flex-space-between">
+              <div className="row" style={{ minWidth: '100%' }}>
+                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2" style={{ paddingBottom: '15px' }}>
+                  <i className="fa fa-container-red" />
+                  <strong>Contenedores </strong>
+                  <small> {this.state.totalContainers}</small>
+                </div>
+
+                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12" style={{ paddingBottom: '15px' }}>
+                  <div className="progress">
+                    <div className="progress-bar label-aqua" style={{ width: percentageContainerPending, textAlign: 'left', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageContainerPending !== '0%') ?
+                            <span>Pendientes</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+                    <div className="progress-bar label-orange" style={{ width: percentageContainerOpen, textAlign: 'left', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageContainerOpen !== '0%') ?
+                            <span>Abierto</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+
+                    <div className="progress-bar label-yellow" style={{ width: percentageContainerCheck, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageContainerCheck !== '0%') ?
+                            <span>Descarga</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+
+                    <div className="progress-bar label-green" style={{ width: percentageContainerEmpty, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageContainerEmpty !== '0%') ?
+                            <span>Vacíos</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+
+                    <div className="progress-bar label-green" style={{ width: percentageContainerEmptyStar, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageContainerEmptyStar !== '0%') ?
+                            <span>Vacíos*</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <div className="row" style={{ minWidth: '100%' }}>
+                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2" style={{ paddingBottom: '15px' }}>
+                  <i className="fa fa-cube" />
+                  <strong>Unidades </strong>
+                  <small>  {this.state.totalUnits}</small>
+                </div>
+                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                  <div className="progress">
+                    <div className="progress-bar label-aqua" style={{ width: percentagePending, textAlign: 'left', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentagePending !== '0%') ?
+                            <span>{inventorySettings.pending}</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+                    <div className="progress-bar   label-green" style={{ width: percentageFound, textAlign: 'left', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                        {
+                          (percentageFound !== '0%') ?
+                            <span>Encontrados</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+                    <div className="progress-bar label-has-damages" style={{ width: percentageHasDamages, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
+                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+
+                        {
+                          (percentageHasDamages !== '0%') ?
+                            <span>Con Daños</span>
+                            : ''
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>
+                Revisión Containers <span className="font-12 font-bold"> <span style={{ color: "gray", fontWeight: "600" }}>{containers.length}</span> {details.length > 0 ? details : ''}</span>
               </h3>
-              <div className="pull-right box-tools">
-                {hasPermission(window.user, 'createInventory') ? (<>
-                    < button
-                      style={{marginRight: '10px'}}
-                    className = 'btn btn-sm btn-primary'
-                    onClick={this.downloadData}>
-                    <i className='fa fa-fw fa-download'/> Descargar Excel
-                    </button>
-
-                    <button
-                    className="btn btn-sm btn-success"
-                    onClick={this.create}>
-                      <i className="fa fa-plus"/> Cargar Anuncio
-                    </button>
-                  </>
-                ) : null}
-              </div>
             </div>
             {loading ?
+
               <div className="overlay">
-                <i className="fa fa-refresh fa-spin"/>
+                <i className="fa fa-refresh fa-spin" />
               </div>
               : <>
                 <div className="box-body">
-                  
-                  <Filters
-                    blFilter={this.state.blFilter}
+
+                  <FilterSummryDetail
                     containerFilter={this.state.containerFilter}
-                    clientFilter={this.state.clientFilter}
-                    clientSelector={this.state.clientSelector}
                     statusFilterSelected={this.state.statusFilterSelected}
-                    shipFilter={this.state.shipFilter}
-                    shipSelector={this.state.shipSelector}
-                    tripFilter={this.state.tripFilter}
-                    tripSelector={this.state.tripSelector}
-                    filterHasDamage={this.state.filterHasDamage}
                     inventorySettings={inventorySettings}
                     statusText={this.statusText}
                     onFilterChange={(filter, value) => this.setState((prevState) => ({ ...prevState, [filter]: value }))}
-                    onCleanFilters={this.cleanFilters}
-                  />
+                    onCleanFilters={this.cleanFilters} 
+                    unitFilter={this.state.unitFilter}                 
+                     />
 
                   <InventoryTable
                     columns={this.columns}
@@ -1095,7 +1216,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     paginationComponentOptions={paginationComponentOptions}
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
-                  />        
+                  />
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">
@@ -1198,7 +1319,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-              </div>
+                </div>
               </>
             }
           </div>
@@ -1207,7 +1328,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+
 }
+
 
 const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   return {
@@ -1222,52 +1345,8 @@ const mapDispatchToProps = (dispatch: any) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(
+
+export default connect<{}, { getParticipant: (id: string) => Promise<any> }, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
-)(ContainersInventory);
-
-const inventorySettings: { [key: string]: any } = {
-  "leftoverDifferentVenue": true,
-  "_id": "5e68fb3e0f7cfc00245e4954",
-  "pending": "Pendiente",
-  "pendingClass": "aqua",
-  "pendingClassContainer": "pending",
-  "pendingColor": "#2DBDFD",
-  "found": "Encontrados",
-  "foundClass": "green",
-  "foundColor": "#00aa51",
-
-  "missing": "Faltantes",
-  "missingClass": "red",
-  "missingColor": "#f1392c",
-  "missingClassContainer": "missing",
-
-  "leftover": "Encontrados*",
-  "leftoverClass": "yellow",
-  "leftoverColor": "#ff9600",
-  "reported": "Reportados",
-  "reportedClass": "gray-dark",
-  "reportedColor": "#96a4b3",
-  "empty": "Vacío",
-  "emptyClass": "green",
-  "emptyClassContainer": "empty",
-  "emptyColor": "#00AA51",
-  "empty(*)": "Vacío(*)",
-  "empty(*)Class": "green",
-  "empty(*)ClassContainer": "empty(*)",
-  "empty(*)Color": "#00AA51",
-  "check": "Descarga",
-  "checkColor": "#C1BB21",
-  "checkClass": "yellow",
-  "checkClassContainer": "check",
-  "open": "Abierto",
-  "openClass": "orange",
-  "openClassContainer": "open",
-  "openColor": "#E08406",
-  "report": {
-    "atLeastOne": true,
-    "primaryRequired": false,
-    "secondaryRequired": false
-  }
-}
+)(InventoryDetail);
