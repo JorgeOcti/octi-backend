@@ -176,10 +176,10 @@ class JWTController {
                   expiresIn: '30 days'
                 }
               ),
-              iosVersion: null, //TODO: revertir,
-              androidVersion: null,
+              iosVersion: version!.ios,
+              androidVersion: version!.android,
               user: userInfo,
-              docks: null
+              docks: version!.docks
             },
             status: 200
           });
