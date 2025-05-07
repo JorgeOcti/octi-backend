@@ -590,6 +590,8 @@ class InventoryController {
         if (!inventoryMap[inventoryId]) {
           inventoryMap[inventoryId] = {
             nave: item.extra.Nave,
+            trip: item.extra['N° Viaje'],
+            location: item.extra['Ubicación'],
             client: item.extra['Cliente Razón Social'],
             units: { pending: 0, found: 0 , hasDamages: 0 },
             containers: {
