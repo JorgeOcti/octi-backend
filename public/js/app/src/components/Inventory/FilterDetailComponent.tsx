@@ -144,13 +144,13 @@ interface FiltersProps {
           <div className="col-md-3">
             <div className="checkbox">
               <label
-                style={{ paddingLeft: '0', fontWeight: 600 }}
+                style={{ paddingLeft: '0', fontWeight: 600, paddingTop: '14px' }}
                 onClick={() => {}}>
                 <Checkbox
                   active={filterHasDamage}
                   action={() => onFilterChange('filterHasDamage', !filterHasDamage)}
                   classes="icheck-in-checkbox"
-                  style={{ marginTop: '-4px', marginRight: '5px' }}
+                  style={{  marginRight: '5px' }}
                 />
                 Mostrar solo unidades con daño
               </label>

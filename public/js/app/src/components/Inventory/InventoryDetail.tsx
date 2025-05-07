@@ -1,17 +1,14 @@
 import { RouteComponentProps } from "react-router";
 import TrackingBasePage from "../Utils/TrackingBasePage";
 import { connect } from "react-redux";
-import { getParticipant, IDashboardState } from "../../actions/dashboard.actions";
+import { DashboardReduxAction, getParticipant, IDashboardState } from "../../actions/dashboard.actions";
 import { ContainerStatus } from "../../../../../../src/utils/enums/containerStatus.enum";
-import React = require("react");
+
 import moment = require("moment");
 import AppContainer from "../../container/AppContainer";
-import { hasPermission } from "../../utils/common";
-import { Filters } from "./FilterDetailComponent";
 import { InventoryTable } from "./TableDetailComponent";
 import ModalView from "../Modal/ModalView";
 import { IWindow } from "../../interfaces/window";
-import * as XLSX from 'xlsx-color';
 import ShowIf from "../Utils/ShowIf";
 import swal = require("sweetalert");
 import ApiService from "../../utils/axios";
@@ -19,10 +16,14 @@ import { AxiosError, AxiosResponse } from "axios";
 import { IInventoryLabel } from "../../../../../../src/inventory/interfaces/inventoryLabel.interface";
 import { IInventory } from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { FilterSummryDetail } from "./FilterSummaryDetailComponent";
+import { Dispatch } from 'redux';
+import * as React from "react";
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<DashboardReduxAction>;
+  getParticipant(id: string): void;
   dashboard: IDashboardState;
 }
 
@@ -44,24 +45,14 @@ interface IStateType {
   labelSelected: any,
   unitLabelSelected: any,
   originalContainers: any[];
-  blFilter: string;
   containerFilter: string;
   containerUpdated: any;
-  clientFilter: string;
-  clientSelector: any[];
   statusFilterSelected: string[],
   unitFilter: string;
   selectedContainer: number;
-  shipFilter: string[];
-  shipSelector: any[];
-  tripSelector: any[];
-  tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
   filterHasDamage: boolean;
-  endDate: Date;
-  startDate: Date;
-  isFilteringByDate: boolean;
 }
 
 const dataTableStyle = {
@@ -264,21 +255,11 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       cardIDSelected: '',
       labelSelected: null,
       unitLabelSelected: null,
-      blFilter: '',
       containerFilter: '',
       containerUpdated: {},
-      clientFilter: '',
-      clientSelector: [],
       statusFilterSelected: [],
-      shipFilter: [],
-      shipSelector: [],
-      tripSelector: [],
-      tripFilter: [],
       selectedContainer: -1,
       filterHasDamage: false,
-      endDate: moment().toDate(),
-      startDate: moment().subtract(1, 'month').startOf('month').toDate(),
-      isFilteringByDate: true,
       inventorySettings: {
         "leftoverDifferentVenue": true,
         "_id": "5e68fb3e0f7cfc00245e4954",
@@ -573,7 +554,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       return  containerFilter && statusFilter && damageFilter;
     });
 
-
     if (this.state.unitFilter !== '') {
       containers = containers.map((container: any) => {
         return {
@@ -629,13 +609,11 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       statusName = ' Creando inventario...';
     }
 
-
     return (
       <span className={`${spanClass} label-status-badge`} >
         <i className={`${iconClass}`} /> {statusName}
       </span>
     );
-
 
   }
 
@@ -648,13 +626,13 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     api.getSource()
     api.getSummaryInventory(params['id']).then(async (response: any) => {
 
-      const { metadata, summary } = response.data;
-      const { containers, units, nave, client } = summary[`${params['id']}`];
+      const { summary } = response.data;
+      const { containers, units } = summary[`${params['id']}`];
       const { pending, found, hasDamages } = units;
       const { pending: pendingContainers, found: foundContainers, open, check, empty, "empty(*)": emptyStar } = containers;
 
       let totalUnits = pending + found + hasDamages;
-      let totalContainers = pendingContainers + foundContainers + open + check + empty + containers["empty(*)"];
+      let totalContainers = pendingContainers + foundContainers + open + check + empty + emptyStar;
 
       this.setState({
         summary: summary[`${params['id']}`],
@@ -684,7 +662,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       .then(async (response: any) => {
 
         let inventories: IInventory[] = response.data.inventories;
-
         let promises = inventories.map((inventory: IInventory) => {
           return api.getInventory((inventory as any)._id)
         })
@@ -712,8 +689,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
           }
         })
 
-
-
         containers = containers.map((container: any) => {
           container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
           container.filterStatus = container.containerStatus || container.status;
@@ -727,40 +702,30 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         })
 
         containers = containers.map((container: any) => {
-          // if evidenceStatus is not empty, get the last status open and empty
           if (container.evidenceStatus && container.evidenceStatus.length > 0) {
             let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
             let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
             if (openEvidences.length > 0) {
-              //sort by date and get the last one
               container.openDate = openEvidences.sort((a: any, b: any) => {
                 return moment(a.date).isAfter(b.date) ? -1 : 1;
               })[0].date;
             }
 
             if (emptyEvidences.length > 0) {
-              //sort by date and get the last one
               container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
                 return moment(a.date).isAfter(b.date) ? -1 : 1;
               })[0].date;
             }
           }
-          // Verifico si el contendedor tiene alguna unidad con daños
           container.hasDamage = container.content?.some((e: any) => e.participant?.hasDamages === true);
           return container;
         });
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
-
 
         this.setState({
           inventoryName: inventories[0].name,
           inventory: inventories[0],
           containers: containers,
           originalContainers: containers,
-          clientSelector: Array.from(clients),
-          shipSelector: ships,
-          tripSelector: trips,
           loading: false
         })
       })
@@ -769,12 +734,9 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       })
   }
 
-
-  render() {
-
+  render(): React.ReactElement<IPropsType>  {
 
     const { containers, loading, summary, totalContainers, totalUnits } = this.state;
-    const { loadingParticipant } = this.props.dashboard;
 
     let statusCount = containers.reduce((acc: any, container: any) => {
       if (container && container.containerStatus) {
@@ -799,7 +761,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       </span> </>
     });
 
-
     const conditionalRowStyles = [
       {
         when: (row: any) => {
@@ -818,6 +779,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     const ExpandedRowElement = ({ data }: { data: any }) => {
 
       const { unitLabels } = this.state;
+      const containerStatus = data.containerStatus;
 
       return <div className='table-responsive request-list'>
         <div className="row request-header bg-request-title ">
@@ -847,8 +809,10 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
           </div>
         </div>
         {data.content.map((car: any, index: number) => {
+
           let className = `${car.status}Class`;
           let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+
           return (
             <div key={index} className={`row request background-transition ${classNameEfect}`}>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
@@ -867,36 +831,19 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       data-placement="top"
                       title="Daños encontrados en esta revisión."
                       onClick={
-                        () => getParticipant(car.participant._id)
+                        () => this.props.getParticipant(car.participant._id)
                       }
                     />
                   </React.Fragment>
-                </ShowIf>
-                  <ShowIf condition={!car.participant?.hasDamages}>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={
-                        () => getParticipant(car.participant._id)
-                      }>
-                      <ShowIf
-                        condition={
-                          !!(
-                            loadingParticipant &&
-                            loadingParticipant === car.participant._id
-                          )
-                        }
-                        alternative={
-                          <i className="fa fw fa-check-square-o" />
-                        }>
-                        <i className="fa fw fa-spin fa-spinner" />
-                      </ShowIf>
-                    </button>
-                  </ShowIf>
-                </>
-                  : <></>}
+                </ShowIf></>
+                  : <></>
+                }
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-
+              {
+                (car.inventoriedBy?.firstName != undefined && car.inventoriedBy?.lastName != undefined ) ?
+                <strong className="text-black">{car.inventoriedBy?.firstName} {car.inventoriedBy?.lastName}</strong> : ''
+              }
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
@@ -959,48 +906,16 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </span>
                     </div>
                 }
-
-
-
-
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
-                  <React.Fragment>
-                    {' '}
-                    <i
-                      className="fa fa-warning text-red pointer"
-                      data-toggle="tooltip"
-                      data-placement="top"
-                      title="Daños encontrados en esta revisión."
-                      onClick={
-                        () => getParticipant(car.participant._id)
-                      }
-                    />
-                  </React.Fragment>
-                </ShowIf>
-                  <ShowIf condition={!car.participant?.hasDamages}>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={
-                        () => getParticipant(car.participant._id)
-                      }>
-                      <ShowIf
-                        condition={
-                          !!(
-                            loadingParticipant &&
-                            loadingParticipant === car.participant._id
-                          )
-                        }
-                        alternative={
-                          <i className="fa fw fa-check-square-o" />
-                        }>
-                        <i className="fa fw fa-spin fa-spinner" />
-                      </ShowIf>
-                    </button>
-                  </ShowIf>
-                </>
-                  : <></>}
+                { 
+                  (ContainerStatus.EMPTY ===  containerStatus)?
+                  <button className="btn btn-xs btn-default" onClick={() => {
+                    window.open(`/api/inventory/${car.inventory}/container/tarja/${car.car._id}`, '_blank')
+                  }}>
+                    <i className="fa fa-fw fa-print" /> Tarja
+                  </button> : ''
+                }
               </div>
             </div>
           )
@@ -1008,7 +923,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         }
       </div>
     }
-
 
     let percentagePending = '';
     let percentageFound = '';
@@ -1020,11 +934,31 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let percentageContainerEmpty = '';
     let percentageContainerEmptyStar = '';
 
+    let containerPending = 0;
+    let containerOpen = 0;
+    let containerCheck = 0;
+    let containerEmpty = 0;
+    let containerEmptyStar = 0;
+
+    let unitPending = 0;
+    let unitFound = 0; 
+    let unitHasDamages = 0;
+
     if (!loading) {
 
       const { units, containers } = summary;
       const { pending, found, hasDamages } = units;
-      const { pending: pendingContainers, found: foundContainers, open, check, empty, "empty(*)": emptyStar } = containers;
+      const { pending: pendingContainers, open, check, empty, "empty(*)": emptyStar } = containers;
+
+      unitPending = pending;
+      unitFound = found;
+      unitHasDamages = hasDamages;
+
+      containerPending = pendingContainers;
+      containerOpen = open;
+      containerCheck = check;
+      containerEmpty = empty;
+      containerEmptyStar = emptyStar;
 
       percentagePending = totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
       percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%'
@@ -1038,7 +972,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
 
     }
 
-
     return (
       <AppContainer title={
         <div style={{}}>
@@ -1049,7 +982,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       } cMenu="6" cSubMenu="6.3" cAction="Detalle Anuncio">
 
         <section className="content">
-          <div className="box" style={{ padding: '5px', fontSize: '12px' }}>
+          <div className="box summary-detail-metadata-box">
             <div className="box-header  flex flex-space-between">
               <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 text-primary">
                 <i className="fa fa-fw fa-user" />
@@ -1076,103 +1009,95 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-
-          <div className="box" style={{ padding: '5px', paddingBottom: '15px', fontSize: '12px' }}>
+          <div className="box summary-detail-progress-box">
             <div className="box-header flex-space-between">
               <div className="row" style={{ minWidth: '100%' }}>
-                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2" style={{ paddingBottom: '15px' }}>
+                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 summary-box-defaul-padding-b">
                   <i className="fa fa-container-red" />
                   <strong>Contenedores </strong>
                   <small> {this.state.totalContainers}</small>
                 </div>
-
-                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12" style={{ paddingBottom: '15px' }}>
+                <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 summary-box-defaul-padding-b">
                   <div className="progress">
-                    <div className="progress-bar label-aqua" style={{ width: percentageContainerPending, textAlign: 'left', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-aqua summary-progress-text-align" style={{ width: percentageContainerPending}}>
+                      <div className="summary-progress-label">
                         {
                           (percentageContainerPending !== '0%') ?
-                            <span>Pendientes</span>
+                            <span>Pendientes {containerPending} </span>
                             : ''
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-orange" style={{ width: percentageContainerOpen, textAlign: 'left', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-orange summary-progress-text-align" style={{ width: percentageContainerOpen }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageContainerOpen !== '0%') ?
-                            <span>Abierto</span>
+                            <span>Abierto { containerOpen } </span>
                             : ''
                         }
                       </div>
                     </div>
-
-                    <div className="progress-bar label-yellow" style={{ width: percentageContainerCheck, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-yellow summary-progress-text-align" style={{ width: percentageContainerCheck }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageContainerCheck !== '0%') ?
-                            <span>Descarga</span>
+                            <span>Descarga { containerCheck }</span>
                             : ''
                         }
                       </div>
                     </div>
-
-                    <div className="progress-bar label-green" style={{ width: percentageContainerEmpty, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageContainerEmpty }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageContainerEmpty !== '0%') ?
-                            <span>Vacíos</span>
+                            <span>Vacíos { containerEmpty }</span>
                             : ''
                         }
                       </div>
                     </div>
-
-                    <div className="progress-bar label-green" style={{ width: percentageContainerEmptyStar, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageContainerEmptyStar }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageContainerEmptyStar !== '0%') ?
-                            <span>Vacíos*</span>
+                            <span>Vacíos* { containerEmptyStar }</span>
                             : ''
                         }
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
-
               <div className="row" style={{ minWidth: '100%' }}>
-                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2" style={{ paddingBottom: '15px' }}>
+                <div className="col-xs-12 col-sm-12 col-md-2 col-lg-2 summary-box-defaul-padding-b">
                   <i className="fa fa-cube" />
                   <strong>Unidades </strong>
                   <small>  {this.state.totalUnits}</small>
                 </div>
                 <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                   <div className="progress">
-                    <div className="progress-bar label-aqua" style={{ width: percentagePending, textAlign: 'left', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-aqua summary-progress-text-align" style={{ width: percentagePending }}>
+                      <div className="summary-progress-label">
                         {
                           (percentagePending !== '0%') ?
-                            <span>{inventorySettings.pending}</span>
+                            <span>Pendientes { unitPending }</span>
                             : ''
                         }
                       </div>
                     </div>
-                    <div className="progress-bar   label-green" style={{ width: percentageFound, textAlign: 'left', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
+                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageFound }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageFound !== '0%') ?
-                            <span>Encontrados</span>
+                            <span>Encontrados {unitFound}</span>
                             : ''
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-has-damages" style={{ width: percentageHasDamages, textAlign: 'left', paddingLeft: '10px', color: 'black' }}>
-                      <div style={{ position: 'absolute', marginTop: '22px', color: 'gray', fontWeight: '500', fontSize: '14px' }}>
-
+                    <div className="progress-bar label-has-damages summary-progress-text-align" style={{ width: percentageHasDamages }}>
+                      <div className="summary-progress-label">
                         {
                           (percentageHasDamages !== '0%') ?
-                            <span>Con Daños</span>
+                            <span>Con Daños {unitHasDamages}</span>
                             : ''
                         }
                       </div>
@@ -1180,10 +1105,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
-
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
@@ -1191,13 +1114,11 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
               </h3>
             </div>
             {loading ?
-
               <div className="overlay">
                 <i className="fa fa-refresh fa-spin" />
               </div>
               : <>
                 <div className="box-body">
-
                   <FilterSummryDetail
                     containerFilter={this.state.containerFilter}
                     statusFilterSelected={this.state.statusFilterSelected}
@@ -1207,7 +1128,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     onCleanFilters={this.cleanFilters} 
                     unitFilter={this.state.unitFilter}                 
                      />
-
                   <InventoryTable
                     columns={this.columns}
                     containers={this.state.containers}
@@ -1216,7 +1136,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
                   />
-
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">
                       <div className="modal-content">
@@ -1267,7 +1186,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-
                   <div className="modal fade" id="modalForAddLabelUnit" role="dialog" aria-labelledby="modalForAddLabelUnit">
                     <div className="modal-dialog " role="document">
                       <div className="modal-content">
@@ -1327,7 +1245,6 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       </AppContainer>
     );
   }
-
 }
 
 
@@ -1344,8 +1261,7 @@ const mapDispatchToProps = (dispatch: any) => {
   };
 };
 
-
-export default connect<{}, { getParticipant: (id: string) => Promise<any> }, IPropsType>(
+export default connect<{}, {}, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
 )(InventoryDetail);
