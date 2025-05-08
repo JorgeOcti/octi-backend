@@ -593,6 +593,7 @@ class InventoryController {
 
         if (!inventoryMap[inventoryId]) {
 
+
           inventoryMap[inventoryId] = {
             names: '',
             nave: item.extra.Nave,
