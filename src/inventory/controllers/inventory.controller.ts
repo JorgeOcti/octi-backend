@@ -585,7 +585,6 @@ class InventoryController {
       const unitsByContainer = new Map(); //Agrupa unidades por container
       const clientsSet = new Set();
       const shipsSet = new Set();
-      const inventoriesNames = new Set();
 
       // Primero: clasificamos contenedores y unidades
       inventoryResult.forEach(item => {
@@ -593,10 +592,6 @@ class InventoryController {
         const inventoryId: any = item.inventory;
 
         if (!inventoryMap[inventoryId]) {
-
-          if(item.virtualInventory){
-            inventoriesNames.add(item.virtualInventory.name)
-          }
 
           inventoryMap[inventoryId] = {
             names: '',
