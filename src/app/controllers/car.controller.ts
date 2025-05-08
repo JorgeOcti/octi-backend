@@ -473,7 +473,7 @@ class CarController {
             ]
           };
         if (vin) {
-          shouldCreate = isContainerCode(vin);
+          shouldCreate = isContainerCode(vin) && !inventory;
           logger.info(`Should create: ${shouldCreate}`);
           carFilter = {
             $and: [...carFilter['$and'], { vin }]
