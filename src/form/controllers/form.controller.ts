@@ -61,6 +61,7 @@ import Inventory from '../../inventory/models/inventory.model';
 import InventoryController from '../../inventory/controllers/inventory.controller';
 import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
+import DraftModel from '../models/draft.model';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -440,9 +441,14 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
+    const { forContainer, forUnit } = req.query as {
+      forContainer: string;
+      forUnit: string;
+    }
     try {
-      const filter = {
+      const filter: any = {
         team: team,
+        hidden: false,
         $and: [
           {
             _id: {
@@ -450,10 +456,19 @@ class FormController {
             }
           },
           {
-            active: true
+            active: true,
           }
         ]
       };
+
+      if (forContainer === '1') {
+        filter["unitsToUse.container"] = true
+      }
+
+      if (forUnit === '1') {
+        filter["unitsToUse.units"] = true
+      }
+
       logger.info(
         `FormController.list: email: ${req.user.email} query: ${JSON.stringify(
           req.query
@@ -1505,6 +1520,13 @@ class FormController {
                 $lt: tomorrow.toDate()
               }
             }).countDocuments();
+
+            logger.info(`FormController.complete: ${req.user.email} ${JSON.stringify({ id, count, vin })}`);
+            await DraftModel.deleteMany({
+              car: car._id,
+              venue: updatedUser.venue,
+              form: id
+            })
 
             return res.json({
               data: {
