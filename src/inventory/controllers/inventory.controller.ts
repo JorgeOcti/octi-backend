@@ -592,8 +592,6 @@ class InventoryController {
         const inventoryId: any = item.inventory;
 
         if (!inventoryMap[inventoryId]) {
-
-
           inventoryMap[inventoryId] = {
             names: '',
             nave: item.extra.Nave,
@@ -611,10 +609,14 @@ class InventoryController {
             }
           };
 
-          if(inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(item.virtualInventory.name)){
-            inventoryMap[inventoryId].names = `${inventoryMap[inventoryId].names}, ${item.virtualInventory.name}`;
-          }else{
-            inventoryMap[inventoryId].names = `${item.virtualInventory.name}`;
+          if(item.virtualInventory !== undefined){
+            const  virtualInventory:any  = item.virtualInventory
+            const {name} = virtualInventory;
+            if(inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(name)){
+              inventoryMap[inventoryId].names = `${inventoryMap[inventoryId].names}, ${name}`;
+            }else{
+              inventoryMap[inventoryId].names = `${name}`;
+            }
           }
         }
 
