@@ -627,7 +627,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     api.getSummaryInventory(params['id']).then(async (response: any) => {
 
       const { summary } = response.data;
-      const { containers, units } = summary[`${params['id']}`];
+      const { containers, units, names } = summary[`${params['id']}`];
       const { pending, found, hasDamages } = units;
       const { pending: pendingContainers, found: foundContainers, open, check, empty, "empty(*)": emptyStar } = containers;
 
@@ -638,6 +638,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         summary: summary[`${params['id']}`],
         totalContainers: totalContainers,
         totalUnits: totalUnits,
+        inventoryName:  names
       });
 
     });
@@ -722,7 +723,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         });
 
         this.setState({
-          inventoryName: inventories[0].name,
+          inventoryName: `${ this.state.inventoryName } (${inventories[0].name})`,
           inventory: inventories[0],
           containers: containers,
           originalContainers: containers,

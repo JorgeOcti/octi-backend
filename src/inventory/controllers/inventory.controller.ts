@@ -570,6 +570,10 @@ class InventoryController {
           path: 'car'
         },
         {
+          path:'virtualInventory',
+          select: ['name']
+        },
+        {
           path: 'participant',
           select: ['hasDamages'] // TODO: validar para contar
         }
@@ -581,6 +585,7 @@ class InventoryController {
       const unitsByContainer = new Map(); //Agrupa unidades por container
       const clientsSet = new Set();
       const shipsSet = new Set();
+      const inventoriesNames = new Set();
 
       // Primero: clasificamos contenedores y unidades
       inventoryResult.forEach(item => {
@@ -588,7 +593,13 @@ class InventoryController {
         const inventoryId: any = item.inventory;
 
         if (!inventoryMap[inventoryId]) {
+
+          if(item.virtualInventory){
+            inventoriesNames.add(item.virtualInventory.name)
+          }
+
           inventoryMap[inventoryId] = {
+            names: '',
             nave: item.extra.Nave,
             trip: item.extra['N° Viaje'],
             location: item.extra['Ubicación'],
@@ -603,6 +614,12 @@ class InventoryController {
               'empty(*)': 0
             }
           };
+
+          if(inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(item.virtualInventory.name)){
+            inventoryMap[inventoryId].names = `${inventoryMap[inventoryId].names}, ${item.virtualInventory.name}`;
+          }else{
+            inventoryMap[inventoryId].names = `${item.virtualInventory.name}`;
+          }
         }
 
         // Recolectar metadata
