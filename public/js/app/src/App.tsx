@@ -75,6 +75,7 @@ import ContainersInventory from "./components/Inventory/ContainersInventory";
 import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView";
 import DesconsolidatedUnitsView from './components/DeconsolidatedUnits/DesconsolidatedUnitsView';
 import InventoryManagement from './components/Inventory/InventoryManagement';
+import InventoryDetail from './components/Inventory/InventoryDetail';
 
 declare let window: IWindow;
 
@@ -110,6 +111,7 @@ const App = () => (
         <Route exact path='/inventory/' component={InventoryListView} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
         <Route exact path='/inventory/management/' component={InventoryManagement} />
+        <Route exact path='/inventory/management/:id' component={InventoryDetail} />
         <Route exact path='/inventory/container/create/' component={ContainerInventoryCreateView} />
         <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />

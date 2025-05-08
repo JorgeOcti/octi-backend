@@ -163,10 +163,12 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
   }) {
 
 
+
+
     return <div className="container-fluid col-md-12">
       <div className="row">
         <div className="col-md-10">
-          <Link to={`/inventory/${row._id}/`}>
+          <Link to={`/inventory/management/${row._id}/`}>
             <h4 className='text-left text-primary pointer'>{row.name}</h4>
           </Link>
         </div>
@@ -409,7 +411,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
           const inventoryResponse = await api.getSummaryInventory((inventory as any)._id);
           const { metadata, summary } = inventoryResponse.data;
-          const { containers, units , nave, client} = summary[`${inventory._id}`];
+          const { containers, units , nave, client, names } = summary[`${inventory._id}`];
 
           metadata.filters.clients.forEach((cli: any)=>{
             filters.add(cli)
@@ -420,7 +422,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
           return {
             _id: inventory._id,
-            name: inventory.name,
+            name: `${names} (${inventory.name})`,
             createdAt: inventory.createdAt,
             createdBy: inventory.createdBy,
             finalizedAt: inventory.finalizedAt,
