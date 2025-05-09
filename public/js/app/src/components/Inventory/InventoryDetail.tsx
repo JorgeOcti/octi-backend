@@ -940,13 +940,13 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let percentageContainerOpen = '';
     let percentageContainerCheck = '';
     let percentageContainerEmpty = '';
-    let percentageContainerEmptyStar = '';
+    
 
     let containerPending = 0;
     let containerOpen = 0;
     let containerCheck = 0;
     let containerEmpty = 0;
-    let containerEmptyStar = 0;
+
 
     let unitPending = 0;
     let unitFound = 0; 
@@ -965,18 +965,16 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       containerPending = pendingContainers;
       containerOpen = open;
       containerCheck = check;
-      containerEmpty = empty;
-      containerEmptyStar = emptyStar;
+      containerEmpty = empty + emptyStar;
 
       percentagePending = totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
-      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%'
+      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%';
       percentageHasDamages = totalUnits > 0 ? `${Math.round((hasDamages / totalUnits) * 100)}%` : '0%'
 
       percentageContainerPending = totalContainers > 0 ? `${Math.round((pendingContainers / totalContainers) * 100)}%` : '0%';
-      percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%'
-      percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%'
-      percentageContainerEmpty = totalContainers > 0 ? `${Math.round((empty / totalContainers) * 100)}%` : '0%'
-      percentageContainerEmptyStar = totalContainers > 0 ? `${Math.round((emptyStar / totalContainers) * 100)}%` : '0%'
+      percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%';
+      percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%';
+      percentageContainerEmpty = totalContainers > 0 ? `${Math.round((containerEmpty / totalContainers) * 100)}%` : '0%';
 
     }
 
@@ -1063,15 +1061,9 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerEmptyStar }}>
-                      <div className="summary-progress-label">
-                        {
-                          (percentageContainerEmptyStar !== '0%') ?
-                            <span>Vacíos* { containerEmptyStar }</span>
-                            : ''
-                        }
-                      </div>
-                    </div>
+
+
+
                   </div>
                 </div>
               </div>
