@@ -1037,7 +1037,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="progress-bar label-orange summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerOpen }}>
-                      <div className="summary-progress-label">
+                      <div className="summary-progress-label-up">
                         {
                           (percentageContainerOpen !== '0%') ?
                             <span>Abierto { containerOpen } </span>
@@ -1055,7 +1055,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerEmpty }}>
-                      <div className="summary-progress-label">
+                      <div className="summary-progress-label-up">
                         {
                           (percentageContainerEmpty !== '0%') ?
                             <span>Vacíos { containerEmpty }</span>
@@ -1093,7 +1093,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageFound }}>
-                      <div className="summary-progress-label">
+                      <div className="summary-progress-label-up">
                         {
                           (percentageFound !== '0%') ?
                             <span>Encontrados {unitFound}</span>
