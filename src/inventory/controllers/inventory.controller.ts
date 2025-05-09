@@ -575,7 +575,7 @@ class InventoryController {
         },
         {
           path: 'participant',
-          select: ['hasDamages'] // TODO: validar para contar
+          select: ['hasDamages']
         }
       ]);
 
@@ -589,7 +589,7 @@ class InventoryController {
       // Primero: clasificamos contenedores y unidades
       inventoryResult.forEach(item => {
 
-        const inventoryId: any = item.inventory;
+        const inventoryId: string = item.inventory?.toString() || '';
 
         if (!inventoryMap[inventoryId]) {
           inventoryMap[inventoryId] = {
@@ -629,7 +629,7 @@ class InventoryController {
         if (item.car.isContainer) {
           containers.set(item._id, item); // Guardar contenedor
         } else {
-          const containerId = item.container;
+          const containerId: string = item.container?.toString() || '';
           if (containerId) {
             if (!unitsByContainer.has(containerId)) {
               unitsByContainer.set(containerId, []);
@@ -641,9 +641,10 @@ class InventoryController {
 
       // Segundo: procesar contenedores
       containers.forEach((container, containerId) => {
+
         const inventoryId = container.inventory;
         const summary = inventoryMap[inventoryId];
-        const units = unitsByContainer.get(containerId) || [];
+        const units = unitsByContainer.get(containerId.toString()) || [];
         const containerStatus = container.containerStatus;
 
         // Contar containerStatus (solo los estados válidos)
@@ -653,13 +654,17 @@ class InventoryController {
 
         //empty(*) vs empty
         if (containerStatus === "empty") {
+
           const allUnitsFound = units.every((unit: { status: string; }) => unit.status === "found");
-          if (allUnitsFound.lenght === 0) {
-            // summary.containers.empty++; //verificar
+
+          if (allUnitsFound) {
+            //summary.containers.empty++; //verificar
           } else {
             summary.containers['empty(*)']++;
             summary.containers.empty--; // Ajustar el contador original
           }
+
+
         }
       });
 
@@ -682,6 +687,7 @@ class InventoryController {
 
 
       return res.status(200).json({
+        units: unitsByContainer,
         summary: inventoryMap,
         metadata: {
           filters: {
