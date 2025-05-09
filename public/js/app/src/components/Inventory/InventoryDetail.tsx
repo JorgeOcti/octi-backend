@@ -1125,6 +1125,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     statusFilterSelected={this.state.statusFilterSelected}
                     inventorySettings={inventorySettings}
                     statusText={this.statusText}
+                    filterHasDamage={this.state.filterHasDamage}
                     onFilterChange={(filter, value) => this.setState((prevState) => ({ ...prevState, [filter]: value }))}
                     onCleanFilters={this.cleanFilters} 
                     unitFilter={this.state.unitFilter}                 

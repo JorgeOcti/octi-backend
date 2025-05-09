@@ -3,7 +3,6 @@ import TrackingBasePage from "../Utils/TrackingBasePage";
 import { RouteComponentProps } from "react-router";
 import * as React from "react";
 import ApiService from "../../utils/axios";
-import { IInventory } from "../../../../../../src/inventory/interfaces/inventory.interface";
 import { IInventorySetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import DataTable from 'react-data-table-component';
 import * as moment from "moment-timezone";
@@ -11,7 +10,6 @@ import { hasPermission } from "../../utils/common";
 import { IWindow } from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import swal = require('sweetalert');
 import { Link } from 'react-router-dom';
 
 
