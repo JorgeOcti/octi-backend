@@ -1,5 +1,6 @@
 import React = require("react");
 import BootstrapSelect from "../Utils/BootstrapSelect";
+import Checkbox from "../Utils/CheckBox";
 
 interface FiltersProps {
     unitFilter: string;
@@ -7,6 +8,7 @@ interface FiltersProps {
     statusFilterSelected: string[];
     inventorySettings: any;
     statusText: any;
+    filterHasDamage:boolean;
     onFilterChange: (filter: string, value: any) => void;
     onCleanFilters: () => void;
   }
@@ -17,6 +19,7 @@ interface FiltersProps {
     statusFilterSelected,
     inventorySettings,
     statusText,
+    filterHasDamage,
     onFilterChange,
     onCleanFilters
   }) => {
@@ -24,6 +27,7 @@ interface FiltersProps {
     return (
       <div>
         <div className="row" style={{ margin: "10px 0" }}>
+
           <div className="col-md-3">
             <div className="form-group">
               <label className="text-black">¿Qué contenedor buscas?</label>
@@ -35,6 +39,7 @@ interface FiltersProps {
               />
             </div>
           </div>
+
           <div className="col-md-3">
             <div className="form-group">
               <label className="text-black">¿Qué unidad buscas?</label>
@@ -72,7 +77,23 @@ interface FiltersProps {
             </div>
           </div>
 
-          <div className="col-md-3">
+          <div className="col-md-2">
+            <div className="checkbox">
+              <label
+                style={{ paddingLeft: '0', fontWeight: 600, paddingTop: '14px' }}
+                onClick={() => {}}>
+                <Checkbox
+                  active={filterHasDamage}
+                  action={() => onFilterChange('filterHasDamage', !filterHasDamage)}
+                  classes="icheck-in-checkbox"
+                  style={{  marginRight: '5px' }}
+                />
+                Mostrar solo unidades con daño
+              </label>
+            </div>
+          </div>
+
+          <div className="col-md-1">
             <div className='form-group'>
               <div className="row pull-left box-tools clean-filter-wrapper">
                 <button

@@ -784,22 +784,22 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
 
       return <div className='table-responsive request-list'>
         <div className="row request-header bg-request-title ">
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
             Unidad
           </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
             Denominacion
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
             Daños
           </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
             Revisado por
           </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
             Hora Revisión
           </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
             Imagenes
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
@@ -816,12 +816,15 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
 
           return (
             <div key={index} className={`row request background-transition ${classNameEfect}`}>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+
+              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                 <strong style={{ "textDecoration": "underline" }}>{car.car.vin}</strong>
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+
+              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                 <strong className="text-black">{car.extra["Modelo"]}</strong>
               </div>
+
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
                   <React.Fragment>
@@ -840,18 +843,22 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                   : <></>
                 }
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+
+              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {
                 (car.inventoriedBy?.firstName != undefined && car.inventoriedBy?.lastName != undefined ) ?
                 <strong className="text-black">{car.inventoriedBy?.firstName} {car.inventoriedBy?.lastName}</strong> : ''
               }
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+
+              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                 <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
               </div>
-              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              
+              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {imagesFormatter(car)}
               </div>
+
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {
                   (unitLabels.length > 0) ?
@@ -892,7 +899,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       }
                     </div>
                     :
-                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    <div className='row'>
                       <span
                         className={`label-units label-${inventorySettings.hasOwnProperty(className)
                           ? inventorySettings[className]
@@ -933,13 +940,13 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let percentageContainerOpen = '';
     let percentageContainerCheck = '';
     let percentageContainerEmpty = '';
-    let percentageContainerEmptyStar = '';
+    
 
     let containerPending = 0;
     let containerOpen = 0;
     let containerCheck = 0;
     let containerEmpty = 0;
-    let containerEmptyStar = 0;
+
 
     let unitPending = 0;
     let unitFound = 0; 
@@ -958,18 +965,16 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       containerPending = pendingContainers;
       containerOpen = open;
       containerCheck = check;
-      containerEmpty = empty;
-      containerEmptyStar = emptyStar;
+      containerEmpty = empty + emptyStar;
 
       percentagePending = totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
-      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%'
+      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%';
       percentageHasDamages = totalUnits > 0 ? `${Math.round((hasDamages / totalUnits) * 100)}%` : '0%'
 
       percentageContainerPending = totalContainers > 0 ? `${Math.round((pendingContainers / totalContainers) * 100)}%` : '0%';
-      percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%'
-      percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%'
-      percentageContainerEmpty = totalContainers > 0 ? `${Math.round((empty / totalContainers) * 100)}%` : '0%'
-      percentageContainerEmptyStar = totalContainers > 0 ? `${Math.round((emptyStar / totalContainers) * 100)}%` : '0%'
+      percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%';
+      percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%';
+      percentageContainerEmpty = totalContainers > 0 ? `${Math.round((containerEmpty / totalContainers) * 100)}%` : '0%';
 
     }
 
@@ -1020,7 +1025,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 summary-box-defaul-padding-b">
                   <div className="progress">
-                    <div className="progress-bar label-aqua summary-progress-text-align" style={{ width: percentageContainerPending}}>
+                    <div className="progress-bar label-aqua summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerPending}}>
                       <div className="summary-progress-label">
                         {
                           (percentageContainerPending !== '0%') ?
@@ -1029,8 +1034,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-orange summary-progress-text-align" style={{ width: percentageContainerOpen }}>
-                      <div className="summary-progress-label">
+                    <div className="progress-bar label-orange summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerOpen }}>
+                      <div className="summary-progress-label-up">
                         {
                           (percentageContainerOpen !== '0%') ?
                             <span>Abierto { containerOpen } </span>
@@ -1038,7 +1043,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-yellow summary-progress-text-align" style={{ width: percentageContainerCheck }}>
+                    <div className="progress-bar label-yellow summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerCheck }}>
                       <div className="summary-progress-label">
                         {
                           (percentageContainerCheck !== '0%') ?
@@ -1047,8 +1052,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageContainerEmpty }}>
-                      <div className="summary-progress-label">
+                    <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerEmpty }}>
+                      <div className="summary-progress-label-up">
                         {
                           (percentageContainerEmpty !== '0%') ?
                             <span>Vacíos { containerEmpty }</span>
@@ -1056,15 +1061,9 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageContainerEmptyStar }}>
-                      <div className="summary-progress-label">
-                        {
-                          (percentageContainerEmptyStar !== '0%') ?
-                            <span>Vacíos* { containerEmptyStar }</span>
-                            : ''
-                        }
-                      </div>
-                    </div>
+
+
+
                   </div>
                 </div>
               </div>
@@ -1076,7 +1075,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                   <div className="progress">
-                    <div className="progress-bar label-aqua summary-progress-text-align" style={{ width: percentagePending }}>
+                    <div className="progress-bar label-aqua summary-progress-text-align summary-progress-no-radius" style={{ width: percentagePending }}>
                       <div className="summary-progress-label">
                         {
                           (percentagePending !== '0%') ?
@@ -1085,8 +1084,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-green summary-progress-text-align" style={{ width: percentageFound }}>
-                      <div className="summary-progress-label">
+                    <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageFound }}>
+                      <div className="summary-progress-label-up">
                         {
                           (percentageFound !== '0%') ?
                             <span>Encontrados {unitFound}</span>
@@ -1094,7 +1093,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                         }
                       </div>
                     </div>
-                    <div className="progress-bar label-has-damages summary-progress-text-align" style={{ width: percentageHasDamages }}>
+                    <div className="progress-bar label-has-damages summary-progress-text-align summary-progress-no-radius" style={{ width: percentageHasDamages }}>
                       <div className="summary-progress-label">
                         {
                           (percentageHasDamages !== '0%') ?
@@ -1125,6 +1124,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     statusFilterSelected={this.state.statusFilterSelected}
                     inventorySettings={inventorySettings}
                     statusText={this.statusText}
+                    filterHasDamage={this.state.filterHasDamage}
                     onFilterChange={(filter, value) => this.setState((prevState) => ({ ...prevState, [filter]: value }))}
                     onCleanFilters={this.cleanFilters} 
                     unitFilter={this.state.unitFilter}                 
