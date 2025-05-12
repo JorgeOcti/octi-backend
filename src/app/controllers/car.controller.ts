@@ -44,6 +44,7 @@ import logger from '../../services/logger.service';
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
 import axios from "axios";
 import Form from "../../form/models/form.model";
+import DraftController from '../../form/controllers/draft.controller';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -498,7 +499,7 @@ class CarController {
             req.user.email
           } carFilter: ${JSON.stringify(carFilter)}}`
         );
-        const car = await CarModel.find(carFilter, {
+        let car: any[] = await CarModel.find(carFilter, {
           vin: true,
           vin2: true,
           brand: true,
@@ -508,7 +509,24 @@ class CarController {
           isContainer: true
         }).lean();
         if (car && car.length) {
-          res.json({
+          let draftController = DraftController;
+          for (let c of car) {
+            let drafts =
+              await draftController.getDrafts(
+                c._id,
+                req.user.venue._id,
+                req.user.userForms.map((form: any) => form._id)
+              );
+            c.drafts = {};
+            logger.debug(JSON.stringify(c))
+            for (const draft of drafts) {
+              logger.debug(JSON.stringify(draft))
+              c.drafts[draft.form.toString()] = draft.answers;
+            }
+            logger.debug(JSON.stringify(c))
+          }
+          logger.debug(`CarController. retornando checkVIN.generic ${req.user.email} car: ${JSON.stringify(car)}}`);
+          return res.json({
             data: vin ? car[0] : car,
             status: 200
           });

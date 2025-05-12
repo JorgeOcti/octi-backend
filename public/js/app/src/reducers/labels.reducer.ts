@@ -19,7 +19,13 @@ const initialState: ILabelsState = {
     leftoverColor: "",
     reported: "",
     reportedClass: "gray-dark",
-    reportedColor: ""
+    reportedColor: "",
+    open: "",
+    openClass: "",
+    openColor: "",
+    check: "",
+    checkClass: "",
+    checkColor: ""
   },
   loading: true,
   tempLabel: {

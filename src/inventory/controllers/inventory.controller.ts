@@ -570,8 +570,12 @@ class InventoryController {
           path: 'car'
         },
         {
+          path:'virtualInventory',
+          select: ['name']
+        },
+        {
           path: 'participant',
-          select: ['hasDamages'] // TODO: validar para contar
+          select: ['hasDamages']
         }
       ]);
 
@@ -585,11 +589,14 @@ class InventoryController {
       // Primero: clasificamos contenedores y unidades
       inventoryResult.forEach(item => {
 
-        const inventoryId: any = item.inventory;
+        const inventoryId: string = item.inventory?.toString() || '';
 
         if (!inventoryMap[inventoryId]) {
           inventoryMap[inventoryId] = {
+            names: '',
             nave: item.extra.Nave,
+            trip: item.extra['N° Viaje'],
+            location: item.extra['Ubicación'],
             client: item.extra['Cliente Razón Social'],
             units: { pending: 0, found: 0 , hasDamages: 0 },
             containers: {
@@ -601,6 +608,16 @@ class InventoryController {
               'empty(*)': 0
             }
           };
+
+          if(item.virtualInventory !== undefined){
+            const  virtualInventory:any  = item.virtualInventory
+            const {name} = virtualInventory;
+            if(inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(name)){
+              inventoryMap[inventoryId].names = `${inventoryMap[inventoryId].names}, ${name}`;
+            }else{
+              inventoryMap[inventoryId].names = `${name}`;
+            }
+          }
         }
 
         // Recolectar metadata
@@ -612,7 +629,7 @@ class InventoryController {
         if (item.car.isContainer) {
           containers.set(item._id, item); // Guardar contenedor
         } else {
-          const containerId = item.container;
+          const containerId: string = item.container?.toString() || '';
           if (containerId) {
             if (!unitsByContainer.has(containerId)) {
               unitsByContainer.set(containerId, []);
@@ -624,9 +641,10 @@ class InventoryController {
 
       // Segundo: procesar contenedores
       containers.forEach((container, containerId) => {
+
         const inventoryId = container.inventory;
         const summary = inventoryMap[inventoryId];
-        const units = unitsByContainer.get(containerId) || [];
+        const units = unitsByContainer.get(containerId.toString()) || [];
         const containerStatus = container.containerStatus;
 
         // Contar containerStatus (solo los estados válidos)
@@ -636,13 +654,17 @@ class InventoryController {
 
         //empty(*) vs empty
         if (containerStatus === "empty") {
+
           const allUnitsFound = units.every((unit: { status: string; }) => unit.status === "found");
-          if (allUnitsFound.lenght === 0) {
-            // summary.containers.empty++; //verificar
+
+          if (allUnitsFound) {
+            //summary.containers.empty++; //verificar
           } else {
             summary.containers['empty(*)']++;
             summary.containers.empty--; // Ajustar el contador original
           }
+
+
         }
       });
 
@@ -665,6 +687,7 @@ class InventoryController {
 
 
       return res.status(200).json({
+        units: unitsByContainer,
         summary: inventoryMap,
         metadata: {
           filters: {
@@ -1017,8 +1040,8 @@ class InventoryController {
           inventoryMatch["_id"] = new mongoose.Types.ObjectId(id)
         }
 
-        const inventory = await (Inventory as any)
-          .findOne(inventoryMatch)
+        const inventories = await (Inventory as any)
+          .find(inventoryMatch)
           .populate([
             {
               path: 'cars',
@@ -1044,24 +1067,32 @@ class InventoryController {
             }
           ])
           .lean();
-        if (inventory) {
+
+        if (inventories) {
+          logger.info(
+            `apiDetail Inventory: ${inventories.length} inventarios encontrados`
+          );
+          let cars = inventories.flatMap((inventory: any) => {
+            return inventory.cars.map((car: IInventoryCar) => {
+              return {
+                ...car.car,
+                _id: (car as any)._id,
+                car_id: car.car._id,
+                venue: car.venue,
+                status: car.status,
+                container: car.container,
+                containerFound: car.containerFound,
+                extra: car.extra,
+                evidenceStatus: car.evidenceStatus,
+                containerStatus: car.containerStatus,
+                inventoryRef: car.inventory
+              };
+            })
+            })
+
           res.status(200).json({
             data: {
-              cars: inventory.cars.map((car: IInventoryCar) => {
-                return {
-                  ...car.car,
-                  _id: (car as any)._id,
-                  car_id: car.car._id,
-                  venue: car.venue,
-                  status: car.status,
-                  container: car.container,
-                  containerFound: car.containerFound,
-                  extra: car.extra,
-                  evidenceStatus: car.evidenceStatus,
-                  containerStatus: car.containerStatus,
-                  inventoryRef: car.inventory
-                };
-              }),
+              cars: cars,
               reasons: []
             },
             status: 200
@@ -1976,7 +2007,7 @@ class InventoryController {
   public async setLabel(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
-    const { car, label, custom, carID } = req.body;
+    const { car, label, custom, carID, isUnit } = req.body;
     logger.info(`setLabel`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -2020,6 +2051,23 @@ class InventoryController {
           team
         });
         if (newLabel) {
+
+          let updatedParam:any = {
+            containerStatus: newLabel.sendTo,
+            label: newLabel._id,
+            labelBy: req.user._id,
+            labelText: custom
+          }
+
+          if (isUnit) {
+            updatedParam = {
+              status: newLabel.sendTo,
+              label: newLabel._id,
+              labelBy: req.user._id,
+              labelText: custom
+            }
+          }
+
           const inventoryCar = await InventoryCar.findById(car, {
             venue: true
           });
@@ -2029,12 +2077,7 @@ class InventoryController {
                 _id: car,
                 inventory: id
               },
-              {
-                status: newLabel.sendTo,
-                label: newLabel._id,
-                labelBy: req.user._id,
-                labelText: custom
-              },
+              updatedParam,
               {
                 upsert: true
               }
@@ -2505,6 +2548,10 @@ class InventoryController {
                   path: 'files'
                 },
                 {
+                  path: 'participant',
+                  select: ['hasDamages']
+                },
+                {
                   path: 'venueFound',
                   select: ['name']
                 },
@@ -2729,7 +2776,7 @@ class InventoryController {
       ]).lean();
 
       cars = cars.map((tmp: any) => {
-        tmp.damages = []; 
+        tmp.damages = [];
         tmp?.participant?.sections.map((section: any) => {
           section.answers.map((answer: any) => {
             if (answer.kind === 'damage') {
@@ -3220,8 +3267,14 @@ class InventoryController {
 
       } else {
         //for clients
+        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+          return res.status(403).json({
+            message: 'No tienes acceso a este inventario',
+            status: 403
+          });
+        }
         filterCompanies = {
-          company: new Types.ObjectId(company._id),
+          company: new Types.ObjectId(companyId),
           handlerCompany: {$exists: true},
           status: {
             $in: [
@@ -3289,10 +3342,39 @@ class InventoryController {
             }
           },
           {
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant'
+            }
+          },
+          {
+            $unwind: {
+              path: '$participant',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'inventoryCar.participant',
+              foreignField: '_id',
+              as: 'inventoryCar.participant'
+            }
+          },
+          {
+            $unwind: {
+              path: '$inventoryCar.participant',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
             $group: {
               _id: "$car",
               histories: {
                 $push: {
+                  _id: '$_id',
                   status: '$status',
                   from: '$from',
                   to: '$to',

@@ -51,7 +51,7 @@ class InventoryQueue {
   readonly debug: boolean = false;
 
   constructor() {
-    
+
     this.queue = new Queue('inventory', {
       createClient: () => {
         return createRedisClient();
@@ -117,7 +117,7 @@ class InventoryQueue {
           container.extra["Cliente Razón Social"] = clientCompany.name
           clientCompanyId = clientCompany._id
         }else{
-          // Creo el company 
+          // Creo el company
           let existCompanyTeam = await Team.findOne({
             name: rutCompany.trim()
           });
@@ -164,7 +164,7 @@ class InventoryQueue {
             await virtualInventory.save();
           }else if(virtualInventory.status === ChoicesStatusInventory.finalized){
             await VirtualInventory.updateOne({_id: virtualInventory._id}, {status:ChoicesStatusInventory.inProcess})
-          } 
+          }
           virtualInventories[virtualInventoryName] = virtualInventory;
         }
         containersByBIC[BIC] = currentContainer._id;
@@ -264,7 +264,9 @@ class InventoryQueue {
           await clientCompany.save();
 
           let currentCar = await CarModel.findOne({
-            team,
+            team: clientCompany.team,
+            company: clientCompany._id,
+            handlerCompany: company,
             vin: car.vin.trim()
           });
 
@@ -272,6 +274,7 @@ class InventoryQueue {
             currentCar = new CarModel({
               team: clientCompany.team,
               company: clientCompany._id,
+              handlerCompany: company,
               vin: car.vin,
               vin2: car.vin.substr(car.vin.length - 6),
               color: car.color,
@@ -282,7 +285,6 @@ class InventoryQueue {
               patent: car.patent,
               createdBy: user._id,
               status: ChoicesStatusCar.active,
-              handlerCompany: company
             });
             await currentCar.save();
           }
@@ -366,7 +368,7 @@ class InventoryQueue {
               company: history.company
           }
         })
-    
+
         await History.updateMany(
           { $and: updateHistories },
           { $set: {current: false}}

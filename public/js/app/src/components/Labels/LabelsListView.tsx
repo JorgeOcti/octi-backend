@@ -395,6 +395,8 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private addLabel(): void {
 
+    const isContainer: boolean = this.state.tab === LabelTabsEnum.Container ? true: false;
+
     const modalTitle = this.state.tab === LabelTabsEnum.Container ? 'Agregar Etiqueta (contenedores)' : 'Agregar Etiqueta (unidades)';
 
     this.props.changeTempLabelAction({
@@ -412,7 +414,7 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         modalTitle,
-        <LabelFormView changeTempLabelAction={changeTempLabelAction}/>,
+        <LabelFormView changeTempLabelAction={changeTempLabelAction} isForContainer={ isContainer }/>,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddLabel}>Grabar</button>

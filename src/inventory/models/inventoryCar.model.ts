@@ -56,6 +56,11 @@ export const choicesStatusContainer = [
 ];
 
 
+export const allPosibleStatuses = [
+  ...Object.values(choicesStatusCarInventory),
+  ...Object.values(choicesStatusContainer),
+];
+
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Document { }
 
 const inventoryCarSchema = new mongoose.Schema({
