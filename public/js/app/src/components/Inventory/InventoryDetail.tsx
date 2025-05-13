@@ -932,25 +932,36 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       </div>
     }
 
-    let percentagePending = '';
-    let percentageFound = '';
-    let percentageHasDamages = '';
-    
-    let percentageContainerPending = '';
-    let percentageContainerOpen = '';
-    let percentageContainerCheck = '';
-    let percentageContainerEmpty = '';
-    
 
     let containerPending = 0;
     let containerOpen = 0;
     let containerCheck = 0;
     let containerEmpty = 0;
 
-
     let unitPending = 0;
     let unitFound = 0; 
     let unitHasDamages = 0;
+
+
+    let percentagePending = '';
+    let percentageFound = '';
+    let percentageHasDamages = '';
+
+    let classPending = 'summary-progress-label';
+    let classFound = 'summary-progress-label';
+    let classHasDamages = 'summary-progress-label';
+    
+    let percentageContainerPending = '';
+    let percentageContainerOpen = '';
+    let percentageContainerCheck = '';
+    let percentageContainerEmpty = '';
+
+    let classContainerPending = 'summary-progress-label';
+    let classContainerOpen = 'summary-progress-label';
+    let classContainerCheck = 'summary-progress-label';
+    let classContainerEmpty = 'summary-progress-label';
+
+
 
     if (!loading) {
 
@@ -967,14 +978,51 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       containerCheck = check;
       containerEmpty = empty + emptyStar;
 
-      percentagePending = totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
-      percentageFound = totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%';
+      percentagePending =  totalUnits > 0 ? `${Math.round((pending / totalUnits) * 100)}%` : '0%';
+      percentageFound =  totalUnits > 0 ? `${Math.round((found / totalUnits) * 100)}%` : '0%';
       percentageHasDamages = totalUnits > 0 ? `${Math.round((hasDamages / totalUnits) * 100)}%` : '0%'
 
+
+      let countUnitVisible = 0;
+      if(percentagePending != '0%'){
+        classPending = (countUnitVisible % 2 === 0) ? 'summary-progress-label' : 'summary-progress-label-up';
+        countUnitVisible++;
+      }
+
+      if( percentageFound !== '0%'){
+        classFound = (countUnitVisible % 2 === 0) ? 'summary-progress-label' : 'summary-progress-label-up';
+        countUnitVisible++;
+      }
+
+      if(percentageHasDamages !== '0%'){
+        classHasDamages = (countUnitVisible % 2 === 0) ? 'summary-progress-label' : 'summary-progress-label-up';
+         countUnitVisible++;
+      }
+
+      let countContainerVisible = 0;
       percentageContainerPending = totalContainers > 0 ? `${Math.round((pendingContainers / totalContainers) * 100)}%` : '0%';
+      if(percentageContainerPending !== '0%'){
+        classContainerPending = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
+        countContainerVisible++;
+      }
+      
       percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%';
+      if(percentageContainerOpen !== '0%'){
+        classContainerOpen = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
+        countContainerVisible++;
+      }
+
       percentageContainerCheck = totalContainers > 0 ? `${Math.round((check / totalContainers) * 100)}%` : '0%';
+      if(percentageContainerCheck !== '0%'){
+        classContainerCheck = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
+        countContainerVisible++;
+      }
+
       percentageContainerEmpty = totalContainers > 0 ? `${Math.round((containerEmpty / totalContainers) * 100)}%` : '0%';
+      if(percentageContainerEmpty !== '0%'){
+        classContainerEmpty = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
+        countContainerVisible++;
+      }
 
     }
 
@@ -1037,7 +1085,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12 summary-box-defaul-padding-b">
                       <div className="progress">
                         <div className="progress-bar label-aqua summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerPending }}>
-                          <div className="summary-progress-label">
+                          <div className={ classContainerPending }>
                             {
                               (percentageContainerPending !== '0%') ?
                                 <span>Pendientes {containerPending} </span>
@@ -1046,7 +1094,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                         <div className="progress-bar label-orange summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerOpen }}>
-                          <div className="summary-progress-label-up">
+                          <div className={ classContainerOpen }>
                             {
                               (percentageContainerOpen !== '0%') ?
                                 <span>Abierto {containerOpen} </span>
@@ -1055,7 +1103,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                         <div className="progress-bar label-yellow summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerCheck }}>
-                          <div className="summary-progress-label">
+                          <div className={ classContainerCheck }>
                             {
                               (percentageContainerCheck !== '0%') ?
                                 <span>Descarga {containerCheck}</span>
@@ -1064,7 +1112,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                         <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageContainerEmpty }}>
-                          <div className="summary-progress-label-up">
+                          <div className={ classContainerEmpty }>
                             {
                               (percentageContainerEmpty !== '0%') ?
                                 <span>Vacíos {containerEmpty}</span>
@@ -1084,7 +1132,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                       <div className="progress">
                         <div className="progress-bar label-aqua summary-progress-text-align summary-progress-no-radius" style={{ width: percentagePending }}>
-                          <div className="summary-progress-label">
+                          <div className={classPending}>
                             {
                               (percentagePending !== '0%') ?
                                 <span>Pendientes {unitPending}</span>
@@ -1093,7 +1141,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                         <div className="progress-bar label-green summary-progress-text-align summary-progress-no-radius" style={{ width: percentageFound }}>
-                          <div className="summary-progress-label-up">
+                          <div className={ classFound }>
                             {
                               (percentageFound !== '0%') ?
                                 <span>Encontrados {unitFound}</span>
@@ -1102,7 +1150,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div>
                         <div className="progress-bar label-has-damages summary-progress-text-align summary-progress-no-radius" style={{ width: percentageHasDamages }}>
-                          <div className="summary-progress-label">
+                          <div className={ classHasDamages }>
                             {
                               (percentageHasDamages !== '0%') ?
                                 <span>Con Daños {unitHasDamages}</span>
