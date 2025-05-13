@@ -327,6 +327,14 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
  *****************/
 const AdminLoadControl: any[] = [];
 
+if (hasPermission(window.user, 'viewContainerInventory') ) {
+  AdminLoadControl.push({
+    id: '6.3',
+    icon: 'fa-circle-o',
+    text: 'Gestión',
+    url: '/inventory/management/'
+  });
+}
 
 if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
@@ -343,15 +351,6 @@ if (hasPermission(window.user, 'viewClient') ) {
     icon: 'fa-circle-o',
     text: 'Vista Cliente',
     url: '/desconsolidated/unit/'
-  });
-}
-
-if (hasPermission(window.user, 'viewContainerInventory') ) {
-  AdminLoadControl.push({
-    id: '6.3',
-    icon: 'fa-circle-o',
-    text: 'Gestión',
-    url: '/inventory/management/'
   });
 }
 

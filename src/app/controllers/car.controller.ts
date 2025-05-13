@@ -45,6 +45,7 @@ import {IParticipantFile} from "../../form/interfaces/participantFile.interface"
 import axios from "axios";
 import Form from "../../form/models/form.model";
 import DraftController from '../../form/controllers/draft.controller';
+import { isContainerCode } from '../../utils/unit.utils';
 
 moment.tz.setDefault('America/Santiago');
 
@@ -237,6 +238,7 @@ class CarController {
     let { vin, vin2 } = req.body;
     let { inventory, virtual } = req.body;
     virtual = virtual === "true";
+    let shouldCreate = false;
     const team = req.user.team._id;
     logger.info(
       `CarController.checkVIN  ${req.user.email} body: ${JSON.stringify(
@@ -471,6 +473,8 @@ class CarController {
             ]
           };
         if (vin) {
+          shouldCreate = isContainerCode(vin) && !inventory;
+          logger.info(`Should create: ${shouldCreate}`);
           carFilter = {
             $and: [...carFilter['$and'], { vin }]
           };
@@ -508,6 +512,24 @@ class CarController {
           denomination: true,
           isContainer: true
         }).lean();
+        if ((!car || !car.length) && shouldCreate) {
+          logger.info("Creating new car");
+          let newCar = await CarModel.create({
+            vin: vin,
+            vin2: vin.trim().slice(-7),
+            color: '',
+            denomination: '',
+            brand: '',
+            patent: '',
+            isContainer: true,
+            company: req.user.company,
+            team: req.user.team,
+            handlerCompany: req.user.company,
+            createdBy: req.user,
+            status: ChoicesStatusCar.active
+          })
+          car = [newCar];
+        }
         if (car && car.length) {
           let draftController = DraftController;
           for (let c of car) {

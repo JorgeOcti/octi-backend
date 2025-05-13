@@ -197,13 +197,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         this.getUnitsByCompanyId(company.clientCompanies[0]._id)
     } else {
         if (company && company._id) {
-          const companyList = [{ _id: company._id, name: company.name }]
+          const companyList = window.user.companiesAccess.length > 1 ? window.user.companiesAccess : [{ _id: company._id, name: company.name }]
           this.setState({
-            multiCompany: window.user.companiesAccess.length > 1,
-            clientFilter: window.user.companiesAccess[0]._id,
-            clientSelector: window.user.companiesAccess.length > 1 ? window.user.companiesAccess : companyList
+            multiCompany: companyList.length > 1,
+            clientFilter: companyList[0]._id,
+            clientSelector: companyList
+          }, () => {
+            this.getUnitsByCompanyId(companyList[0]._id)
           })
-          this.getUnitsByCompanyId(company._id)
         }
     }
   }

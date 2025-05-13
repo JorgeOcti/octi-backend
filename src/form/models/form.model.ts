@@ -227,6 +227,20 @@ const formSectionsSchema = new mongoose.Schema({
   }
 });
 
+const UnitTypeSchema = new mongoose.Schema({
+  container: {
+    type: Boolean,
+    default: false
+  },
+  units: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  _id: false,
+  timestamps: false
+})
+
 export enum KindForm {
   init = 'init',
   control = 'control',
@@ -346,6 +360,19 @@ const formSchema = new mongoose.Schema(
     action: {
       type: String,
       enum: kindActionForm
+    },
+
+    hidden : {
+      type: Boolean,
+      default: false
+    },
+
+    unitsToUse: {
+      type: UnitTypeSchema,
+      default: {
+        container: false,
+        units: true
+      }
     },
 
     sections: [formSectionsSchema],
