@@ -2007,7 +2007,8 @@ class InventoryController {
   public async setLabel(req: IRequest, res: Response) {
     const team = req.user.team._id;
     const { id } = req.params;
-    const { car, label, custom, carID, isUnit } = req.body;
+    let { car, label, custom, carID, isUnit } = req.body;
+
     logger.info(`setLabel`);
     logger.info(
       `{user: {_id: ${req.user._id}, email: ${
@@ -2053,7 +2054,6 @@ class InventoryController {
         if (newLabel) {
 
           let updatedParam:any = {
-            containerStatus: newLabel.sendTo,
             label: newLabel._id,
             labelBy: req.user._id,
             labelText: custom
@@ -2062,9 +2062,10 @@ class InventoryController {
           if (isUnit) {
             updatedParam = {
               status: newLabel.sendTo,
-              label: newLabel._id,
-              labelBy: req.user._id,
-              labelText: custom
+            }
+          } else {
+            updatedParam = {
+              containerStatus: newLabel.sendTo,
             }
           }
 
