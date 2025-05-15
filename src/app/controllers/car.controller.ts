@@ -46,7 +46,6 @@ import axios from "axios";
 import Form from "../../form/models/form.model";
 import DraftController from '../../form/controllers/draft.controller';
 import { isContainerCode } from '../../utils/unit.utils';
-import path = require('path');
 
 moment.tz.setDefault('America/Santiago');
 
