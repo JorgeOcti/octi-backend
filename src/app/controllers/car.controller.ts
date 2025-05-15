@@ -2046,10 +2046,7 @@ class CarController {
           },
           { 
             path: 'participant', 
-            select: 'hasDamages createdAt updatedAt form shipping reception',
-            populate: [
-              { path: 'form', select: 'name' }
-            ]
+            select: 'name hasDamages createdAt updatedAt form shipping reception'
           },
           { path: 'createdBy', select: 'firstName lastName' },
         ],
