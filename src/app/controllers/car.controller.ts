@@ -2040,7 +2040,7 @@ class CarController {
           { path: 'inventoryCar', select: 'status' },
           { 
             path: 'participant', 
-            select: 'hasDamages createdAt updatedAt form',
+            select: 'hasDamages createdAt updatedAt form shipping reception',
             populate: [
               { path: 'form', select: 'name' }
             ]
