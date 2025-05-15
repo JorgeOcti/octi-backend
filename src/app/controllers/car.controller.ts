@@ -2034,8 +2034,18 @@ class CarController {
       .populate({
         path: 'events',
         populate: [
-          { path: 'inventory', select: 'name' },
-          { path: 'form', select: 'name' },
+          { path: 'inventory', select: 'name containerInventory' },
+          { path: 'from', select: 'name' },
+          { path: 'to', select: 'name' },
+          { path: 'inventoryCar', select: 'status' },
+          { 
+            path: 'participant', 
+            select: 'hasDamages createdAt updatedAt form',
+            populate: [
+              { path: 'form', select: 'name' }
+            ]
+          },
+          { path: 'createdBy', select: 'firstName lastName' },
         ],
       });
 
