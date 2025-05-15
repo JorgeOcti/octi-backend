@@ -472,6 +472,12 @@ export default class ApiService {
     );
   }
 
+  public getCarHistory(id: string): AxiosPromise {
+    return this.instance.get(`/api/cars/${id}/history/`, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getCar(id: string): AxiosPromise {
     return this.instance.get(`/api/cars/${id}/`, {
       cancelToken: this.source.token

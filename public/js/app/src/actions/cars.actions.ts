@@ -148,6 +148,31 @@ export function changeFilterAction(filter: ICarFilter) {
   }
 }
 
+export function getCarHistoryAction(id: string) {
+  return (dispatch: Dispatch<CarReduxAction>) => {
+    const api: ApiService = new ApiService();
+
+    dispatch(isLoadingAction(true));
+    dispatch(cancelRequestAction(api.getSource()));
+
+    api.getCarHistory(id)
+      .then((response: AxiosResponse) => {
+        document.title = ` ${response.data.data.vin} - Historia  | OSA Andes`;
+        dispatch(loadCarAction(response.data.data));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export function getCarAction(id: string) {
   return (dispatch: Dispatch<CarReduxAction>/*, getState: () => {cars: ICarsState}*/) => {
     const api: ApiService = new ApiService();
