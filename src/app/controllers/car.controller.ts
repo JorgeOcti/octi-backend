@@ -46,6 +46,7 @@ import axios from "axios";
 import Form from "../../form/models/form.model";
 import DraftController from '../../form/controllers/draft.controller';
 import { isContainerCode } from '../../utils/unit.utils';
+import path = require('path');
 
 moment.tz.setDefault('America/Santiago');
 
@@ -2037,7 +2038,13 @@ class CarController {
           { path: 'inventory', select: 'name containerInventory' },
           { path: 'from', select: 'name' },
           { path: 'to', select: 'name' },
-          { path: 'inventoryCar', select: 'status' },
+          { 
+            path: 'inventoryCar',
+            select: 'status',
+            populate: [
+              {path: 'inventory', select: 'name virtual containerInventory'},
+            ]
+          },
           { 
             path: 'participant', 
             select: 'hasDamages createdAt updatedAt form shipping reception',
