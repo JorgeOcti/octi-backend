@@ -9,5 +9,7 @@ export interface IDraft {
   form: IForm | string,
   keys: string[],
   user: IUser | string,
-  answers: any
+  answers: any,
+  createdAt: Date,
+  updatedAt: Date
 }

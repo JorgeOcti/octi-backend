@@ -255,6 +255,25 @@ export const kindForm = [
   KindForm.transmittal
 ];
 
+const webQuestionSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['text', 'number', 'email', 'phone'],
+    default: 'text'
+  },
+  answer: {
+    type: String,
+    default: null
+  },
+}, {
+  _id: false
+})
+
 export interface IFormModel extends IForm, mongoose.Document {}
 
 const formSchema = new mongoose.Schema(
@@ -367,6 +386,11 @@ const formSchema = new mongoose.Schema(
       default: false
     },
 
+    webQuestion: {
+      type: webQuestionSchema,
+      default: null
+    },
+
     unitsToUse: {
       type: UnitTypeSchema,
       default: {
@@ -389,6 +413,7 @@ const formSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     }
+
   },
   {
     timestamps: true

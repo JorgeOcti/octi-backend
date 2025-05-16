@@ -2666,6 +2666,8 @@ class CarController {
         name: true,
         deliveryToCustomer: true,
 
+        webQuestion: true,
+
         // 'car._id': true,
         // 'car.vin': true,
         // 'car.brand': true,

@@ -1009,10 +1009,23 @@ class FormController {
             deliveryInfo: {},
             rawAnswers: answers,
             rawBody: req.body,
-            webQuestion: form.webQuestion,
             reliability,
             keyRawAnswers
           };
+
+          if (form.webQuestion) {
+            participantObject.webQuestion = form.webQuestion;
+          }
+
+          let draft = await DraftModel.findOne({
+            car: car._id,
+            venue: updatedUser.venue,
+            form: id
+          });
+
+          if (draft) {
+            participantObject.startDate = draft.createdAt;
+          }
 
           if (req.user.company.handler) {
             participantObject.handlerCompany = company;
