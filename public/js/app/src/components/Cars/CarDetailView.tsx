@@ -258,10 +258,14 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                       icon = HistoryIcons.CHECKLIST_DAMAGES;
                                       color = HistoryColors.RED;
                                       subtitle = `En ${event?.from?.name}`;
-                                    } else if(event.participant.shipping === false) {
+                                    } else if(event.participant.shipping === true) {
                                       icon = HistoryIcons.CHECKLIST_RECEPTION;
                                       color = HistoryColors.AQUAMARINE;
                                       subtitle = `Despacho desde ${event?.from?.name}`;
+                                    } else if(event.participant.reception === true) {
+                                      icon = HistoryIcons.CHECKLIST_SHIPPING;
+                                      color = HistoryColors.GREEN;
+                                      subtitle = `Recepción en ${event?.from?.name}`;
                                     }
                                     break;
                                   case ModuleHistory.inventory:
