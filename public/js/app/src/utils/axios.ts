@@ -523,6 +523,12 @@ export default class ApiService {
     });
   }
 
+  public addAnswerParticipant(id: string, answer: string): AxiosPromise {
+    return this.instance.post(`/api/v1/forms/${id}/web`, {
+      value: answer
+    });
+  }
+
   public createContainerInventory({
     carsByContainer,
     name,

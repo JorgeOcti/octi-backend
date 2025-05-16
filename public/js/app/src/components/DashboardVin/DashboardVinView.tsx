@@ -32,6 +32,8 @@ import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
 import * as daterangepicker from 'daterangepicker';
 import ModalView from '../Modal/ModalView';
+import ApiService from '../../utils/axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 declare let window: IWindow;
 
@@ -52,21 +54,32 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   changeFilterDashboardAction(filter: IDashboardFilter): void;
 }
 
+interface WebQuestion {
+  question: string;
+  type: string; 
+  answer: string;
+}
+
 interface IStateType {
   error: Error | null;
   highlight: string[];
   searchText: string;
+  onChangeAnswerText: string;
+  revisionAnswers: Record<string, string>;
   carLoading: string;
   downloading: boolean;
 }
 
 class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
+
   public title: string;
 
   readonly state: IStateType = {
     error: null,
     highlight: [],
     searchText: '',
+    onChangeAnswerText: '',
+    revisionAnswers: {},
     carLoading: '',
     downloading: false
   };
@@ -91,6 +104,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.filterAllForms = this.filterAllForms.bind(this);
     this.filterBrands = this.filterBrands.bind(this);
     this.filterAllBrands = this.filterAllBrands.bind(this);
+    this.onChangeQuestion = this.onChangeQuestion.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -591,6 +605,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                       placeholder={participant.webQuestion.question}
                                       value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
                                       style={{ marginLeft: '-10px', borderRadius: '3px' }}
+                                      onKeyDown={ (e) => this.onChangeQuestion(e, participant._id) }
                                     />
                                     <span style={{ border: '1px solid #ccc', borderRadius: '3px' }}
                                       className={` input-group-addon  ${participant.webQuestion.answer.length > 0 ? '' : 'label-success'} `}
@@ -787,6 +802,38 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       searchText: value
     });
     this.debounceOnChangeSearch();
+  }
+
+  private getWebQuestionParticipantByID(revisionId: string): any {
+    const  participants  = this.props.dashboard.participants;
+    const participantFiltered = participants.filter(participant => participant._id == revisionId);
+    return participantFiltered.length > 0 ? participantFiltered[0].webQuestion : undefined;
+  }
+
+  private addParticipantAnswer(revisionId: string, answer: string){
+    const api: ApiService = new ApiService();
+    api.addAnswerParticipant(revisionId, answer).then((response: AxiosResponse) => {
+        const data = response.data;
+        console.log('addParticipantAnswer', data) // TODO validate
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  }
+
+  private onChangeQuestion(e: React.KeyboardEvent<HTMLInputElement>, revisionId: string): void {
+    e.preventDefault();
+    if(e.key === 'Enter'){
+      const webQuestion = this.getWebQuestionParticipantByID(revisionId)
+      console.log(webQuestion);
+    // this.setState({
+    //   revisionAnswers: {
+    //     ...this.state.revisionAnswers,
+    //     [revisionId]: value
+    //   }
+    // });
+    //this.debounceOnChangeSearch();
+    }
   }
 
   private debounceOnChangeSearch(): void {
