@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
 import InventoryLabel from '../models/inventoryLabel.model';
-import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
 async function addlabel() {
 

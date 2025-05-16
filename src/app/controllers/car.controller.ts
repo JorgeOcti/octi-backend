@@ -45,7 +45,7 @@ import axios from "axios";
 import Form from "../../form/models/form.model";
 import DraftController from '../../form/controllers/draft.controller';
 import { isContainerCode } from '../../utils/unit.utils';
-import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
 moment.tz.setDefault('America/Santiago');
 

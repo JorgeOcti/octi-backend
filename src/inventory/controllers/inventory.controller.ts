@@ -63,7 +63,7 @@ import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
 import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
-import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
 class InventoryController {
   constructor() {

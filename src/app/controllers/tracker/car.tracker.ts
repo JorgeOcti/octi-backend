@@ -14,7 +14,7 @@ import {
   importToSistemProps,
   InventoryCarProps
 } from './car.tracker.types';
-import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
+import { ChoicesStatusCarInventory } from '../../models/inventoryCar.types';
 
 class CarTracker {
   constructor() {
