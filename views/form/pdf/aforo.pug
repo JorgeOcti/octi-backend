@@ -1,0 +1,516 @@
+doctype html
+head
+  meta(charset='UTF-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Aforo de Contenedor
+  style.
+    /* General Styles */
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+    font-size: 10px; /* Adjusted base font size */
+    }
+    .container {
+    background-color: #fff;
+    }
+    .box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    hr {
+    border: 0;
+    height: 1px;
+    background: #ddd;
+    margin: 20px 0; /* Increased margin for HR */
+    }
+    .grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px; /* Space between grid items */
+    }
+    .grid-item {
+    /* Styling for grid items if needed */
+    }
+    .full-width {
+    grid-column: 1 / -1; /* Span across all columns */
+    }
+    .text-bold {
+    font-weight: bold;
+    }
+    .text-sm {
+    font-size: 0.8em;
+    }
+    .text-gray {
+    color: #666;
+    }
+    /* Header Section */
+    .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    }
+    .header .logo-container img {
+    width: 120px; /* Adjusted logo size */
+    height: auto;
+    }
+    .header .logo-container p {
+    font-size: 0.7em;
+    color: #555;
+    margin: 2px 0 0 0;
+    text-align: center;
+    }
+    .header .company-info {
+    text-align: left;
+    flex-grow: 1; /* Allow it to take available space */
+    padding-left: 20px;
+    }
+    .header .company-info h1 {
+    font-size: 1.2em; /* Adjusted font size */
+    margin: 0 0 5px 0;
+    color: #000;
+    }
+    .header .company-info p {
+    font-size: 0.75em; /* Adjusted font size */
+    margin: 2px 0;
+    color: #333;
+    }
+    .header .aforo-number {
+    text-align: right;
+    font-size: 0.9em; /* Adjusted font size */
+    white-space: nowrap;
+    }
+    /* Simplified Header for continuation pages (as seen in second/third image) */
+    .simplified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically center items */
+    padding: 5px 0; /* Reduced padding */
+    margin-bottom: 15px; /* Space before next content */
+    font-size: 0.8em; /* Smaller font for simplified header */
+    }
+    .simplified-header .logo-small img {
+    height: 25px; /* Smaller logo */
+    width: auto;
+    }
+    .simplified-header .doc-info-item {
+    color: #333;
+    }
+    /* Document Title Section */
+    .document-title {
+    text-align: center;
+    margin: 20px 0;
+    }
+    .document-title h2 {
+    font-size: 1.3em; /* Adjusted font size */
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+    }
+    /* Info Sections General */
+    .info-section {
+    margin-bottom: 15px;
+    }
+    .info-section .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns */
+    gap: 10px 20px; /* Row gap and column gap */
+    }
+    .info-section .info-item {
+    /* No border needed as per image */
+    }
+    .info-section .info-item-full {
+    grid-column: 1 / -1; /* Span across all columns */
+    }
+    .info-section .label {
+    font-size: 0.7em; /* Adjusted font size */
+    color: #555;
+    margin-bottom: 3px;
+    display: block;
+    font-weight: bold; /* Labels are bold in image */
+    }
+    .info-section .value {
+    font-size: 1.1em; /* Adjusted font size */
+    color: #000;
+    padding-bottom: 5px; /* Space for the underline */
+    border-bottom: 1px solid #ccc; /* Underline for values */
+    display: block; /* Ensure it takes full width for border */
+    min-height: 1.2em; /* Ensure space for text and border */
+    }
+    .info-section .value-no-underline {
+    font-size: 1em;
+    color: #000;
+    padding-bottom: 0;
+    border-bottom: none;
+    display: block;
+    }
+    /* Participants Section */
+    .participants-section .value {
+    font-size: 0.9em; /* Adjusted font size */
+    border-bottom: none; /* No underlines for participant names */
+    line-height: 1.4;
+    }
+    /* Evidence Section (Shared Styles) */
+    .evidence-section-base {
+    margin-top: 20px;
+    }
+    .evidence-section-base h3 {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: left;
+    }
+    .evidence-section-base .evidence-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns for side-by-side images */
+    gap: 15px;
+    }
+    .evidence-section-base .image-container {
+    text-align: center;
+    }
+    .evidence-section-base .image-container .image-label {
+    display: block;
+    font-size: 0.75em;
+    color: #555;
+    margin-bottom: 5px;
+    text-align: left;
+    font-weight: bold;
+    }
+    .evidence-section-base .image-container img {
+    max-width: 40%;
+    height: auto;
+    border: 1px solid #ddd;
+    }
+    img {
+      margin: 30px 0;
+    }
+    /* For single image in an evidence section that should span width or be centered */
+    .evidence-section-base .single-image-container {
+    text-align: left; /* Or center, depending on desired alignment */
+    margin-bottom: 10px; /* Space after the image if it's alone */
+    }
+    .evidence-section-base .single-image-container img {
+    max-width: 60%; /* Adjust as needed, image in example is not full width */
+    height: auto;
+    border: 1px solid #ddd;
+    }
+    /* Content Section (for "CONTENIDO DEL CONTENEDOR" and "CONTENIDO SACADO DEL CONTENEDOR") */
+    .content-section {
+    margin-top: 20px;
+    }
+    .content-section h3 {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px; /* Space for image or value */
+    font-weight: bold;
+    text-align: left;
+    }
+    .content-section .content-item .label {
+    font-size: 0.7em;
+    color: #555;
+    margin-bottom: 3px;
+    display: block;
+    font-weight: bold;
+    }
+    .content-section .content-item .value {
+    font-size: 0.9em;
+    color: #000;
+    padding: 8px;
+    border: 1px solid #ccc;
+    display: block;
+    min-height: 1.5em;
+    }
+    .content-section .content-image-container img {
+    max-width: 40%; /* Adjusted from 50% for better look */
+    height: auto;
+    border: 1px solid #ddd;
+    display: block;
+    }
+    /* Footer Section */
+    .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 30px; /* More margin before footer */
+    font-size: 0.75em;
+    color: #555;
+    }
+    .footer .address-info p {
+    margin: 0;
+    line-height: 1.4;
+    }
+    .footer .page-number {
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+    }
+    .footer .powered-by {
+    text-align: right;
+    }
+    .footer .powered-by img {
+    height: 15px;
+    width: auto;
+    vertical-align: middle;
+    }
+    .footer .powered-by span {
+    font-size: 0.9em;
+    }
+.container
+  .header
+    .logo-container
+      img(src='https://via.placeholder.com/150x50?text=MEDLOG' alt='Medlog Logo')
+      p Transport &amp; Logistics
+    .company-info
+      h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SA)
+      p
+        span.text-bold Giro:
+        |  SERVICIOS EXTRAPORTUARIOS
+      p
+        span.text-bold Direcci&oacute;n:
+        |  Camino Las Mercedes 14851 - San Antonio
+      p
+        span.text-bold Emitido por:
+        |  Juan Melia el 28/08/2025 a las 12:25
+    .aforo-number
+      span.text-bold AFORO N&deg; 2025 - 1313
+  .document-title
+    h2 AFORO DE CONTENEDOR
+  .info-section
+    .info-grid
+      .info-item
+        span.label CONTENEDOR
+        span.value.text-bold CIBU 782725-9
+      .info-item
+        span.label FECHA INICIO AFORO
+        span.value 20/08/2005 - 10:41
+      .info-item
+        span.label FECHA T&Eacute;RMINO AFORO
+        span.value 20/08/2005 - 10:41
+  hr
+  .info-section
+    .info-grid
+      .info-item
+        span.label CLIENTE
+        span.value WEILAND CORP
+      .info-item
+        span.label TAMA&Ntilde;O
+        span.value 40 M
+      .info-item
+        span.label HUBO RETENCI&Oacute;N
+        span.value SI
+  - var sections = participant.sections
+  each section in sections
+    .evidence-section-base
+        h2 #{section.name}  
+    - var selectChoice = section.answers.find(answer => answer.kind === 'choice')
+    - var items = selectChoice ? selectChoice.items : []
+    - var parts = selectChoice ? selectChoice.parts : {}
+    - var kinds = selectChoice ? selectChoice.kinds : {}
+    - var positions = selectChoice ? selectChoice.positions : {}
+    each answer in section.answers
+        hr
+        span.label.text-bold #{answer.question}
+        if answer.kind === 'image' && answer.images.length
+            .evidence-images
+                .image-container
+                    each image in answer.images
+                        img(src=image.file.url, width='40%')  
+        if answer.kind === 'text' && answer.comment
+            - var comment = answer.comment.split('\n')
+            .info-section.participants-section
+              .info-item-full
+                span.value.value-no-underline.box
+                each line in comment
+                    | #{line}
+                    br
+.footer
+    .address-info
+    p
+        span.text-bold Direcci&oacute;n:
+        |  Camino Las Mercedes 14851 - San Antonio
+    p
+        span.text-bold Tel&eacute;fono:
+        |  228620300
+    .page-number
+    | P&aacute;gina 4/4
+    .powered-by
+    span Powered by 
+    img(src='https://via.placeholder.com/50x15?text=GSA' alt='GSA Logo')
+    span.text-gray.text-sm www.gsanetwork.com
+//- doctype html
+//- html
+//-     head
+//-         meta(charset='UTF-8')
+//-         title Aforo de Contenedor
+//-         style.
+//-             body {
+//-                 font-family: sans-serif;
+//-                 font-size: 12px;
+//-             }
+//-             .header {
+//-                 display: flex;
+//-                 justify-content: space-between;
+//-                 align-items: center;
+//-             }
+//-             .title {
+//-                 text-align: center;
+//-                 margin: 20px 0;
+//-                 font-size: 16px;
+//-                 font-weight: bold;
+//-             }
+//-             .box {
+//-                 border: 1px solid #ccc;
+//-                 padding: 10px;
+//-                 margin: 10px 0;
+//-             }
+//-             .image-box {
+//-                 display: flex;
+//-                 justify-content: center;
+//-                 align-items: center;
+//-                 margin: 10px 0;
+//-                 width: 40%;
+//-             }
+//-             table {
+//-                 width: 100%;
+//-                 border-collapse: collapse;
+//-                 margin-top: 10px;
+//-             }
+//-             td {
+//-                 padding: 5px;
+//-                 vertical-align: top;
+//-             }
+//-             .label {
+//-                 font-weight: bold;
+//-             }
+//-     body
+//-         .header
+//-             div
+//-                 img(src="" alt='MEDLOG' width='120')
+//-             div
+//-                 h3 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SAJ)
+//-                 p Giro: SERVICIOS EXTRAPORTUARIOS
+//-                 p Dirección: Camino Las Mercedes 14851 - San Antonio
+//-                 p Emitido por: Juanz Mella el 28/08/2025 a las 12:25
+//-             div
+//-                 p AFORO Nº 2025 - 1313
+
+//-         .title Aforo de Contenedor
+
+//-         .box
+//-             table
+//-                 tr
+//-                     td.label CONTENEDOR
+//-                     td CIBU 782725-9
+//-                     td.label FECHA INICIO AFORO
+//-                     td 20/08/2005 - 10:41
+//-                     td.label FECHA TÉRMINO AFORO
+//-                     td 20/08/2005 - 10:41
+
+//-                 tr
+//-                     td.label CLIENTE
+//-                     td WEILAND CORP
+//-                     td.label TAMAÑO
+//-                     td 40 M
+
+//- - var sections = participant.sections
+//- each section in sections
+//-     - var selectChoice = section.answers.find(answer => answer.kind === 'choice')
+//-     - var items = selectChoice ? selectChoice.items : []
+//-     - var parts = selectChoice ? selectChoice.parts : {}
+//-     - var kinds = selectChoice ? selectChoice.kinds : {}
+//-     - var positions = selectChoice ? selectChoice.positions : {}
+
+//-     .box
+//-         - console.log('section ->', section.name)
+//-         h4 #{section.question} 
+//-             small #{Math.round(section.qualification)}%
+
+//-         each answer in section.answers
+//-             - var selectChoice = answer.kind === 'choice'
+//-             - var isDamages = answer.damages && answer.damages.parts
+//-             - var isImage = answer.kind === 'image' || (selectChoice && selectChoice.requireImage)
+//-             - var isText = answer.kind === 'text' || (selectChoice && selectChoice.requireComment)
+//-             - var isScale = answer.kind === 'scale'
+//-             - var isNumeric = answer.kind === 'numeric'
+//-             - var hasAnswer = answer.answer && answer.answer.length
+//-             - console.log('     ->', answer.question)
+
+//-             if selectChoice
+//-                 .row(style="margin-top:10px")
+//-                     .col-md-12
+//-                         p.text-muted
+//-                             strong #{answer.question}
+//-                         each item in items
+//-                             p.text-primary
+//-                                 strong #{item.item}#{item.amount ? ` (${item.amount})` : ''}
+//-             .question
+//-                 if answer.hint
+//-                     h4 - #{answer.hint} #{answer.optional ? '(Opcional)' : '*'}
+
+//-                 if answer.scale
+//-                     .flex(style="padding:5px")
+//-                         each choice in answer.scale.choices
+//-                             - const isSelected = choice._id === answer.answer
+//-                 if answer.damagesSelected && answer.damagesSelected.length
+//-                     .row(style="margin-top:10px")
+//-                         each ds in answer.damagesSelected
+//-                             .col-md-12.damage
+//-                                 .damage-detail
+//-                                 p.damage-description
+//-                                     strong.title #{parts[ds.part] || '-'}
+//-                                     br
+//-                                     strong Daño 
+//-                                     span.text-primary #{kinds[ds.kind] || '-'}
+//-                                     strong Posición 
+//-                                     span.text-primary #{positions[ds.position] || '-'}
+//-                                     if answer.requireSeverity && ds.severity
+//-                                     strong Severidad 
+//-                                     | #{ds.severity}
+//-                                 if ds.images.length
+//-                                     .row.images
+//-                                     each image in ds.images
+//-                                         img.image-box(src=image.file.url)
+//-                                 else
+//-                                     p.text-sm.text-muted(style="padding: 0 5px") No se reportaron imágenes.
+//-                 else if answer.damages && answer.damages.parts
+//-                     p.text-muted(style="padding: 5px") - No se reportaron daños.
+
+//-                 if selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length
+//-                     .row(style="margin-top:10px")
+//-                         .col-md-12
+//-                         .p-2
+//-                             p.text-muted
+//-                             strong #{answer.accessories.question}
+//-                             each item in items
+//-                                 p.text-primary
+//-                                     strong - #{item.item}#{item.amount ? ` (${item.amount})` : ''}
+
+//-                 if ((selectChoice && selectChoice.requireImage) || answer.kind === 'image') && answer.images.length
+//-                     .row.images
+//-                         each image in answer.images
+//-                             .col-md-3.col-sm-4.col-xs-4.text-center
+//-                                 img.image-box(src=image.file.url)
+
+//-                 if (answer.kind === 'text' || (selectChoice && selectChoice.requireComment)) && answer.comment
+//-                     .row(style="margin-top:10px")
+//-                         br
+//-                         strong.text-primary 
+//-                             - var comment = answer.comment.split('\n')
+//-                             each line in comment
+//-                                 | #{line}
+//-                                 br
+
+//-                 if answer.kind === 'numeric-scale' && answer.score != -1
+//-                     .row(style="margin-top:10px")
+//-                         .col-md-12
+//-                         p(style="padding:5px")
+//-                             strong Evaluación:
+//-                             span.text-muted #{answer.score} (Del #{answer.minValue} al #{answer.maxValue})
