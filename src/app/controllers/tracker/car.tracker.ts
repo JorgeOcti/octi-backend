@@ -2,9 +2,7 @@ import * as moment from 'moment-timezone';
 import Participant from '../../../form/models/participant.model';
 import { IStringKeyObject } from '../../../interfaces/global.interface';
 import { IInventory } from '../../../inventory/interfaces/inventory.interface';
-import InventoryCar, {
-  ChoicesStatusCarInventory
-} from '../../../inventory/models/inventoryCar.model';
+import InventoryCar from '../../../inventory/models/inventoryCar.model';
 import logger from '../../../services/logger.service';
 import type { ICar } from '../../interfaces/car.interface';
 import type { IHistory } from '../../interfaces/history.interface';
@@ -16,6 +14,7 @@ import {
   importToSistemProps,
   InventoryCarProps
 } from './car.tracker.types';
+import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
 
 class CarTracker {
   constructor() {

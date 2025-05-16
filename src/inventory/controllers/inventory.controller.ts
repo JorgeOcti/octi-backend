@@ -28,7 +28,7 @@ import {
   default as VenueModel
 } from '../../app/models/venue.model';
 import InventoryCar, {
-  ChoicesStatusCarInventory, choicesStatusContainer, ChoicesStatusContainer, IInventoryCarModel
+  choicesStatusContainer, ChoicesStatusContainer, IInventoryCarModel
 } from '../models/inventoryCar.model';
 import {
   default as InventoryFile,
@@ -63,6 +63,7 @@ import { IUser } from '../../app/interfaces/user.interface';
 import Company from '../../app/models/company.model';
 import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
+import { ChoicesStatusCarInventory } from 'app/models/inventoryCar.types';
 
 class InventoryController {
   constructor() {
