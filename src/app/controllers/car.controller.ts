@@ -2033,23 +2033,26 @@ class CarController {
         }
       )
       .lean()
-      .populate({
-        path: 'events',
-        populate: [
-          { path: 'inventory', select: 'name containerInventory' },
-          { path: 'from', select: 'name' },
-          { path: 'to', select: 'name' },
-          { path: 'inventoryCar', select: 'status' },
-          {
-            path: 'participant',
-            select: 'hasDamages createdAt updatedAt form',
-            populate: [
-              { path: 'form', select: 'name' }
-            ]
-          },
-          { path: 'createdBy', select: 'firstName lastName' },
-        ],
-      });
+        .populate({
+          path: 'events',
+          populate: [
+            { path: 'inventory', select: 'name containerInventory' },
+            { path: 'from', select: 'name' },
+            { path: 'to', select: 'name' },
+            {
+              path: 'inventoryCar',
+              select: 'status',
+              populate: [
+                {path: 'inventory', select: 'name virtual containerInventory'},
+              ]
+            },
+            {
+              path: 'participant',
+              select: 'name hasDamages createdAt updatedAt form shipping reception'
+            },
+            { path: 'createdBy', select: 'firstName lastName' },
+          ],
+        });;
 
       if (!car) {
         return res.status(404).json({
