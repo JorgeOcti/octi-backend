@@ -476,7 +476,9 @@ class CarController {
           shouldCreate = isContainerCode(vin) && !inventory;
           logger.info(`Should create: ${shouldCreate}`);
           carFilter = {
-            $and: [...carFilter['$and'], { vin }]
+            $and: [...carFilter['$and'],
+              { $or: [{vin}, {internalNumber: vin}] }
+            ]
           };
         }
         if (vin2) {
@@ -2038,8 +2040,8 @@ class CarController {
           { path: 'from', select: 'name' },
           { path: 'to', select: 'name' },
           { path: 'inventoryCar', select: 'status' },
-          { 
-            path: 'participant', 
+          {
+            path: 'participant',
             select: 'hasDamages createdAt updatedAt form',
             populate: [
               { path: 'form', select: 'name' }
