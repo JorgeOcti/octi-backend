@@ -582,13 +582,23 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               </div>
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
-                              <div className="input-group" style={{maxWidth: '200px', marginTop:'20px'}} >
-                                
-                                <input type="text" className="form-control" placeholder="Pregunta..." />
-                                <span className="input-group-btn">
-                                  <button className="btn btn-default" type="button">Guardar</button>
-                                </span>
-                              </div>
+
+                              {
+                                (participant.webQuestion !== undefined) ?
+                                  <div className="input-group" style={{ maxWidth: '200px', marginTop: '20px' }} >
+                                    <input type="text"
+                                      className="form-control"
+                                      placeholder={participant.webQuestion.question}
+                                      value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
+                                      style={{ marginLeft: '-10px', borderRadius: '3px' }}
+                                    />
+                                    <span style={{ border: '1px solid #ccc', borderRadius: '3px' }}
+                                      className={` input-group-addon  ${participant.webQuestion.answer.length > 0 ? '' : 'label-success'} `}
+                                      id="basic-addon1">
+                                      <i className="fa fa-fw fa-floppy-o" />
+                                    </span>
+                                  </div> : <></>
+                              }
                             </td>
                             <td className="middle-center hidden-xs hidden-sm">
                               <div
