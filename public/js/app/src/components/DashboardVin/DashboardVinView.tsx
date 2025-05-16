@@ -397,6 +397,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                           Supervisor
                         </th>
                         <th
+                          style={{ width: '20%' }}
+                          className="middle hidden-xs hidden-sm">
+                          Questions
+                        </th>
+                        <th
                           style={{ width: '10%' }}
                           className="middle hidden-xs hidden-sm"></th>
                         <th
@@ -531,6 +536,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 {participant.name}
                               </strong>
                             </td>
+
                             <td
                               className="middle hidden-xs hidden-sm  text-ellipsis"
                               style={{
@@ -573,6 +579,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     ? `${participant.company.name}`
                                     : '-'
                                 }`}
+                              </div>
+                            </td>
+                            <td className="middle-left hidden-xs hidden-sm">
+                              <div className="input-group" style={{maxWidth: '200px', marginTop:'20px'}} >
+                                
+                                <input type="text" className="form-control" placeholder="Pregunta..." />
+                                <span className="input-group-btn">
+                                  <button className="btn btn-default" type="button">Guardar</button>
+                                </span>
                               </div>
                             </td>
                             <td className="middle-center hidden-xs hidden-sm">
