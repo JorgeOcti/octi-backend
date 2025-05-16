@@ -3,6 +3,7 @@ import type {
   IInventoryCar
 } from '../interfaces/inventory.interface';
 import type { IInventoryComment } from '../interfaces/inventoryComment.interface';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
 export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument { }
 
@@ -19,15 +20,6 @@ const invetoryCommentCars = new mongoose.Schema({
     default: new Date()
   }
 });
-
-export enum ChoicesStatusCarInventory {
-  pending = 'pending',
-  found = 'found',
-  missing = 'missing',
-  leftover = 'leftover',
-  reported = 'reported',
-  deleted = 'deleted'
-}
 
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
