@@ -8,6 +8,7 @@ import type { IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSecti
 import type { IScaleModel } from '../models/scale.model';
 import type { IFormTriggerModel } from "../models/trigger.model";
 import {IQuestionTriggerModel} from "../models/questionTrigger.model";
+import { webQuestion } from './participant.interface';
 
 export interface IFormItems {
   _id?: any;
@@ -133,6 +134,8 @@ export interface IForm {
   triggers: mongoose.Types.Array<IFormTriggerModel>;
 
   autosave: boolean;
+
+  webQuestion?: webQuestion;
 
   url?: string;
   deliveryToCustomer: boolean;

@@ -120,6 +120,7 @@ router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list
 router.get('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.detail);
 // answer form
 router.post('/api/v1/forms/:id', Middlewares.isJWTAuthenticated, FormController.complete);
+router.post('/api/v1/forms/:id/web', Middlewares.isJWTAuthenticated, FormController.completeWebQuestion);
 router.post('/api/v1/forms/:id/save', Middlewares.isJWTAuthenticated, DraftController.save);
 
 // admin forms

@@ -26,6 +26,12 @@ import type { ITransmittalModel } from '../../distribution/models/transmittal.mo
 import type { IUserModel } from '../../app/schemas/user.schema';
 import type { IVenueModel } from '../../app/models/venue.model';
 
+export interface webQuestion {
+  question: string;
+  type: string;
+  answer: string;
+}
+
 export interface IParticipantChoices {
   choice: string;
   value: number;
@@ -184,6 +190,8 @@ export interface IParticipant {
   importedFrom: string;
   importedID: string;
   importedAt: Date;
+
+  webQuestion?: webQuestion;
 
   active: boolean;
   reliability: boolean;
