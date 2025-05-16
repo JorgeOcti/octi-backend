@@ -296,7 +296,11 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                         color = HistoryColors.YELLOW;
                                         subtitle = `Unidad designada SOBRANTE en ${event?.from?.name}`;
                                         break;
+                                      default:
+                                        break;
                                     }
+                                    break;
+                                  default:
                                     break;
                                 }
                                 switch (event.status) {
@@ -317,6 +321,8 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                     color = HistoryColors.AQUAMARINE;
                                     title = `Entregada al cliente`;
                                     subtitle = `Entregada por ${event?.createdBy?.firstName} ${event?.createdBy?.lastName} en ${event?.from?.name}`;
+                                    break;
+                                  default:
                                     break;
                                 }
                                 return (
