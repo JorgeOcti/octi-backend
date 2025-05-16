@@ -478,7 +478,7 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
         }
       });
     } else {
-      api.setLabel({inventory, car, carID, label: label._id})
+      api.setLabel({inventory, car, carID, label: label._id, isUnit: true})
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'

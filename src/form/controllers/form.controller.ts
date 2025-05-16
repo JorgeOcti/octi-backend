@@ -94,6 +94,7 @@ class FormController {
     this.allControls = this.allControls.bind(this);
     this.allControlsByVIN = this.allControlsByVIN.bind(this);
     this.getExternalOrder = this.getExternalOrder.bind(this);
+    this.completeWebQuestion = this.completeWebQuestion.bind(this);
     this.copyFormFileToInventoryFile = this.copyFormFileToInventoryFile.bind(this);
   }
 
@@ -828,6 +829,47 @@ class FormController {
     return files;
   }
 
+  public async completeWebQuestion(req: IRequest, res: Response): Promise<any> {
+    const { id } = req.params;
+    const { value } = req.body;
+    try {
+      logger.info(
+        `FormController.completeWebQuestion email: ${req.user.email}, participant: ${id}`
+      );
+      const participant = await Participant.findOne({
+        _id: id,
+        team: req.user.team._id
+      });
+      if (!participant) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el formulario solicitado.',
+          status: 404
+        });
+      }
+
+      if (participant.webQuestion) {
+        participant.webQuestion.answer = value;
+      }
+
+      await participant.save();
+
+      return res.json({
+        data: {
+          id,
+          value
+        },
+        status: 200
+      });
+
+    } catch (e) {
+      logger.error(e);
+      return res.status(500).json({
+        message: 'Error al completar la pregunta',
+        status: 500
+      });
+    }
+  }
+
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
     let { vin, answers, transmittalItem, transmittal, reliability, inventory, containerFound } = req.body;
@@ -967,6 +1009,7 @@ class FormController {
             deliveryInfo: {},
             rawAnswers: answers,
             rawBody: req.body,
+            webQuestion: form.webQuestion,
             reliability,
             keyRawAnswers
           };

@@ -352,6 +352,25 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   }
 });
 
+const webQuestionSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['text', 'number', 'email', 'phone'],
+    default: 'text'
+  },
+  answer: {
+    type: String,
+    default: null
+  },
+}, {
+  _id: false
+})
+
 export interface IParticipantModel extends IParticipant, mongoose.Document {}
 
 const participantSchema = new mongoose.Schema(
@@ -551,6 +570,14 @@ const participantSchema = new mongoose.Schema(
     rawBody: {
       type: Object,
       default: {}
+    },
+    startDate: {
+      type: Date,
+      required: false,
+    },
+    webQuestion: {
+      type: webQuestionSchema,
+      default: null
     },
     rawAnswers: {
       type: Object,
