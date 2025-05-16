@@ -50,7 +50,9 @@ enum HistoryIcons {
   IMPORTED_UNIT = "fa-cloud-upload",
   CHECKLIST_CLIENT = "fa-clipboard",
   CHECKLIST_DECONSOLIDATION = "fa-calendar",
-  CHECKLIST_READY = "fa-area-chart"
+
+  //not font awesome, custom sass on multi-upload.sass
+  CHECKLIST_READY = "icon-ready-client"
 }
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
@@ -251,7 +253,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                 let subtitle = '--';
                                 switch (event.module) {
                                   case ModuleHistory.form:
-                                    title = event.participant?.form.name ?? title;
+                                    title = event.participant?.name ?? title;
                                     if (event.participant.hasDamages === true) {
                                       icon = HistoryIcons.CHECKLIST_DAMAGES;
                                       color = HistoryColors.RED;
@@ -263,7 +265,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                     }
                                     break;
                                   case ModuleHistory.inventory:
-                                    title = event?.inventory?.name ?? title;
+                                    title = event?.inventoryCar?.inventory?.name ?? title;
                                     switch (event?.inventoryCar?.status) {
                                       case ChoicesStatusCarInventory.pending:
                                         icon = HistoryIcons.INVENTORY_PENDING;
