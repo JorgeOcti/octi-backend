@@ -71,6 +71,7 @@ appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDash
 // api cars
 appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
+appRouter.get('/api/cars/:id/history/', Middlewares.isLoggedIn, CarController.apiCarHistory);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/v1/company/cars/', Middlewares.isJWTAuthenticated, CarController.apiCompanyCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);

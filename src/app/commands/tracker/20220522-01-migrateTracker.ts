@@ -2,11 +2,12 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import InventoryCar, { ChoicesStatusCarInventory } from '../../../inventory/models/inventoryCar.model';
+import InventoryCar from '../../../inventory/models/inventoryCar.model';
 import carTracker from '../../controllers/tracker/car.tracker';
 import Inventory, { ChoicesStatusInventory } from '../../../inventory/models/inventory.model';
 import Participant from '../../../form/models/participant.model';
 import Form from '../../../form/models/form.model';
+import { ChoicesStatusCarInventory } from '../../models/inventoryCar.types';
 
 async function migrateTracker() {
   dotenv.config({
