@@ -18,7 +18,7 @@ import ApiService from '../utils/axios';
 import { loadDataAction } from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
-import swal = require('sweetalert');
+import * as swal from 'sweetalert';
 
 export interface IDashboardFilter {
   searchForms: string[];
