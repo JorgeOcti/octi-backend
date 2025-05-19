@@ -960,9 +960,7 @@ export function getParticipant(id: string) {
                                       Comentario
                                     </span>
                                     <br />
-                                    <strong className="text-primary">
-                                      {answer.comment?.toUpperCase()}
-                                    </strong>
+                                    {answer.comment?.toUpperCase().split('\n').map((str: string) => <p className="text-primary" >{str}</p>)}
                                   </p>
                                 </div>
                               </div>
