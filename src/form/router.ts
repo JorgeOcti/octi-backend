@@ -17,7 +17,6 @@ router.get('/api/dashboard/timing/', Middlewares.isLoggedIn, FormController.timi
 router.get('/api/dashboard/timing-derco/', Middlewares.isLoggedIn, FormController.timingDerco);
 router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cleaningDashboard);
 router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.apiRevisionsGapExport);
-
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 
 /*router.get('/api/v1/forms/deliveries/', Middlewares.isJWTAuthenticated, FormController.deliveriesOfTheday);*/
@@ -112,6 +111,7 @@ router.get('/api/v1/forms/controls/:vin', Middlewares.isJWTAuthenticated, Middle
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 
 router.get('/report/forms/pdf/:id.pdf', Middlewares.isJWTAuthenticated, FormController.pdf);
+router.get('/report/aforo/pdf/:id', Middlewares.isJWTAuthenticated, FormController.pdf2);
 
 // detail information of the form
 router.post('/api/v1/external-order/', Middlewares.isJWTAuthenticated, FormController.getExternalOrder);

@@ -401,6 +401,284 @@ class FormController {
     }
   }
 
+  public async pdf2(req: IRequest, res: Response): Promise<any> {
+    const { debug, timezone } = req.query as {
+      debug: string;
+      timezone: string;
+    };
+    const { id } = req.params;
+    const team = req.user.team._id;
+    try {
+      logger.info(
+        `FormController.pdf email: ${req.user.email}, participant: ${id}`
+      );
+      const venuesPermissions = req.user.venuesPermissions();
+      const participant = await Participant.findOne(
+        {
+          $and: [
+            {
+              _id: id,
+              team,
+              venue: {
+                $in: venuesPermissions
+              }
+            }
+          ]
+        },
+        {
+          name: true,
+          number: true,
+          user: true,
+          sections: true,
+          qualification: true,
+          shipping: true,
+          shippingText: true,
+          shippingImages: true,
+          carrier: true,
+          reception: true,
+          receptionText: true,
+          receptionImages: true,
+          conciliation: true,
+          conciliationText: true,
+          conciliationImages: true,
+          createdAt: true,
+          startAt: true,
+        }
+      )
+        .allowDiskUse(true)
+        .populate([
+          {
+            path: 'user',
+            select: ['firstName', 'lastName', 'venue'],
+            populate: [
+              {
+                path: 'venue',
+                populate: [
+                  {
+                    path: 'company'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            path: 'receiveFrom',
+            select: 'name'
+          },
+          {
+            path: 'venue',
+            select: 'name'
+          },
+          {
+            path: 'sendTo',
+            select: 'name'
+          },
+          {
+            path: 'carrierBy',
+            select: 'name'
+          },
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'internalNumber',
+              'engineNumber',
+              'brand',
+              'denomination',
+              'color',
+              'patent'
+            ]
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'shippingImages'
+          },
+          {
+            path: 'receptionImages'
+          },
+          {
+            path: 'conciliationImages'
+          },
+          {
+            path: 'form',
+            select: ['triggers']
+          }
+        ])
+        .lean();
+
+
+        if(!participant) {
+          return res.status(404).json({
+            message: 'No se encontro el participante',
+            status: 404
+          });
+        }
+        console.log(participant);
+      let template: string =
+        path.join(__dirname, '../../../views/') + 'form/pdf/aforo.pug';
+
+      moment.locale('es');
+      moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
+      if (participant) {
+        const participantCompany =
+        (participant.user.venue && participant?.user.venue.company) || {};
+
+        let context: any = {
+          participant,
+          // moment,
+          origin: () => {
+            if (participant.reception && participant.receiveFrom) {
+              return participant.receiveFrom.name;
+            }
+            if (participant.shipping && participant.venue) {
+              return participant.venue.name;
+            }
+            return false;
+          },
+          destination: () => {
+            if (participant.reception && participant.venue) {
+              return participant.venue.name;
+            }
+            if (participant.shipping && participant.sendTo) {
+              return participant.sendTo.name;
+            }
+            return false;
+          },
+          carrier: () => {
+            if (participant.carrier && participant.carrierBy) {
+              return participant.carrierBy.name;
+            }
+            return false;
+          },
+          getAnswer: (scale: any, answer: any) => {
+            if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+              const choice = scale.choices.find(
+                (choice: any) =>
+                  choice._id.toString() === answer.answer.toString()
+              );
+              return choice ? choice.choice : '';
+            }
+            return '';
+          },
+          requireAccesory: (scale: any, answer: any) => {
+            if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+              const choice = scale.choices.find(
+                (choice: any) =>
+                  choice._id.toString() === answer.answer.toString()
+              );
+              return choice ? choice.requireAccesories : false;
+            }
+            return false;
+          },
+          getDamageItem: (items: any, item: string) => {
+            if (item) {
+              const result = items.find(
+                (i: any) => i._id.toString() === item.toString()
+              );
+              if (result && result.hasOwnProperty('name')) {
+                return result.name;
+              }
+            }
+            return '-';
+          },
+          logo:
+            participantCompany.image &&
+            participantCompany.image.hasOwnProperty('url')
+              ? decodeURI(participantCompany.image.url)
+              : false,
+          accesorySelected: (answer: any, item: any) => {
+            return item && answer.accesoriesAnswered
+              ? answer.accesoriesAnswered.find((accesory: any) => {
+                  return accesory.item === item._id.toString();
+                })
+              : false;
+          }
+        };
+
+
+        if (participant.form?.triggers?.length > 0) {
+          let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
+            (trigger: IFormTrigger) =>
+              trigger.kind === KindTrigger.file && trigger.enabled
+          );
+          if (fileTriggers.length) {
+            let trigger: IFormTrigger = fileTriggers[0];
+            template =
+              path.join(__dirname, '../../../views/') + trigger.config.template;
+            let signature = participant?.sections
+              .reduce(
+                (
+                  previousValue: any[],
+                  currenSection: IParticipantSectionModel
+                ) => previousValue.concat(currenSection.answers),
+                []
+              )
+              .find((answer: IParticipantAnswerModel) => {
+                return (
+                  answer._id.toString() === trigger.config.signature.toString()
+                );
+              });
+            if (signature) {
+              context.signature = signature.images.map(
+                (f: any) => f.file.url
+              )[0];
+            }
+          }
+        }
+
+
+        const html = GeneralUtils.generateHtmlFromPugFile(template, context);
+
+        if (true) {
+          return res.send(html);
+        } else {
+          // launch a new chrome instance
+          const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium',
+            args: [
+              '--no-sandbox',
+              '--allow-file-access-from-files',
+              '--enable-local-file-accesses'
+            ], // Required.
+            headless: true
+          });
+          // create a new page
+          const page = await browser.newPage();
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          });
+
+          const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+              top: '0.3in',
+              right: '0.5in',
+              bottom: '0.3in',
+              left: '0.5in'
+            }
+          });
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader(
+            'Content-disposition',
+            `inline; filename=${participant._id.toString()}.pdf`
+          );
+          return res.send(pdfBuffer);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      // Raven.captureException(e, { req });
+      return res.status(500).json(e.message);
+    }
+  }
+
   public async userForms(req: IRequest, res: Response): Promise<any> {
     try {
       const team = req.user.team._id;
@@ -3687,6 +3965,9 @@ class FormController {
       });
     }
   }
+
+
+  
 }
 
 export default new FormController();
