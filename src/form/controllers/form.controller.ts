@@ -629,7 +629,7 @@ class FormController {
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
-        if (debug) {
+        if (true) {
           return res.send(html);
         } else {
           // launch a new chrome instance
