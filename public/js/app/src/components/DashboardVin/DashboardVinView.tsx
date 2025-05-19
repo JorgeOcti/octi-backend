@@ -11,13 +11,14 @@ import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
 import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import {
-  changeFilterDashboardAction,
   DashboardReduxAction,
-  getParticipant,
-  getRevisionsAction,
-  getRevisionsThunkAction,
   IDashboardState,
-  IDashboardFilter
+  IDashboardFilter,
+  getRevisionsThunkAction,
+  changeFilterDashboardAction,
+  getRevisionsAction,
+  getParticipant,
+  changingParticipantAnswer
 } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
@@ -32,8 +33,6 @@ import CopyText from '../Utils/CopyText';
 import { parseReplicableURL } from '../../utils/common';
 import * as daterangepicker from 'daterangepicker';
 import ModalView from '../Modal/ModalView';
-import ApiService from '../../utils/axios';
-import { AxiosError, AxiosResponse } from 'axios';
 
 declare let window: IWindow;
 
@@ -52,6 +51,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
 
   changeFilterDashboardAction(filter: IDashboardFilter): void;
+
+  changingParticipantAnswer(revisionId: string, answer: string): void;
 }
 
 interface WebQuestion {
@@ -64,8 +65,7 @@ interface IStateType {
   error: Error | null;
   highlight: string[];
   searchText: string;
-  onChangeAnswerText: string;
-  revisionAnswers: Record<string, string>;
+  revisionAnswers: Record<string, WebQuestion>;
   carLoading: string;
   downloading: boolean;
 }
@@ -78,7 +78,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     error: null,
     highlight: [],
     searchText: '',
-    onChangeAnswerText: '',
     revisionAnswers: {},
     carLoading: '',
     downloading: false
@@ -97,6 +96,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
     this.debounceOnChangeSearch = debounce(1000, this.debounceOnChangeSearch);
+    this.debounceOnChangeParticipantAnswer = debounce(1000, this.debounceOnChangeParticipantAnswer);
     this.downloadReport = this.downloadReport.bind(this);
     this.downloadEvidence = this.downloadEvidence.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
@@ -285,8 +285,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       brands,
       loadingParticipant
     } = this.props.dashboard;
-    const { highlight, carLoading, downloading, searchText } =
-      this.state;
+    const { highlight, carLoading, downloading, searchText } = this.state;
     const { getParticipant } = this.props;
     return (
       <AppContainer
@@ -596,19 +595,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               </div>
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
-
                               {
                                 (participant.webQuestion !== undefined) ?
-                                  <div className="input-group" style={{ maxWidth: '200px', marginTop: '20px' }} >
+                                  <div className="input-group revision-input-group-answer">
                                     <input type="text"
-                                      className="form-control"
+                                      className="form-control revision-input-field-answer"
                                       placeholder={participant.webQuestion.question}
                                       value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
-                                      style={{ marginLeft: '-10px', borderRadius: '3px' }}
-                                      onKeyDown={ (e) => this.onChangeQuestion(e, participant._id) }
+                                      onChange={(e) => this.onChangeQuestion(e, participant._id)}
                                     />
-                                    <span style={{ border: '1px solid #ccc', borderRadius: '3px' }}
-                                      className={` input-group-addon  ${participant.webQuestion.answer.length > 0 ? '' : 'label-success'} `}
+                                    <span className={` input-group-addon  revision-icon-wrapper-answer ${participant.webQuestion.answer.length > 0 ? '' : 'label-success'} `}
                                       id="basic-addon1">
                                       <i className="fa fa-fw fa-floppy-o" />
                                     </span>
@@ -810,29 +806,25 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     return participantFiltered.length > 0 ? participantFiltered[0].webQuestion : undefined;
   }
 
-  private addParticipantAnswer(revisionId: string, answer: string){
-    const api: ApiService = new ApiService();
-    api.addAnswerParticipant(revisionId, answer).then((response: AxiosResponse) => {
-        const data = response.data;
-        console.log('addParticipantAnswer', data) // TODO validate
-      })
-      .catch((err: AxiosError) => {
-        api.errorHandler(err);
+  private onChangeQuestion(e: React.ChangeEvent<HTMLInputElement>, revisionId: string): void {
+      e.preventDefault();
+      const value = e.target.value;
+      const webQuestion = this.getWebQuestionParticipantByID(revisionId);
+      webQuestion.answer = value;
+      this.setState({
+        revisionAnswers: { [revisionId]: webQuestion }
       });
+      this.debounceOnChangeParticipantAnswer();
   }
 
-  private onChangeQuestion(e: React.KeyboardEvent<HTMLInputElement>, revisionId: string): void {
-    e.preventDefault();
-    if(e.key === 'Enter'){
-      const webQuestion = this.getWebQuestionParticipantByID(revisionId)
-      console.log(webQuestion);
-    // this.setState({
-    //   revisionAnswers: {
-    //     ...this.state.revisionAnswers,
-    //     [revisionId]: value
-    //   }
-    // });
-    //this.debounceOnChangeSearch();
+private debounceOnChangeParticipantAnswer(): void {
+    const { revisionAnswers } = this.state;
+    if (revisionAnswers && Object.keys(revisionAnswers).length) {
+      const revisionId = Object.keys(revisionAnswers)[0];
+      const answer = revisionAnswers[revisionId]?.answer || '';
+      this.props.changingParticipantAnswer(revisionId, answer);
+    } else {
+      this.props.changingParticipantAnswer('', '');
     }
   }
 
@@ -909,12 +901,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getParticipant: (id: string) => dispatch(getParticipant(id)),
-    getRevisionsThunkAction: (
-      page: number,
-      loading: boolean,
-      search?: string
-    ) =>
-      dispatch(
+    getRevisionsThunkAction: ( page: number, loading: boolean, search?: string ) => dispatch(
         getRevisionsThunkAction(
           page,
           loading,
@@ -923,11 +910,10 @@ const mapDispatchToProps = (dispatch: any) => {
           undefined,
           undefined
         )
-      ),
-    changeFilterDashboardAction: (filter:IDashboardFilter) =>
-      dispatch(changeFilterDashboardAction(filter)),
-    getRevisionsAction: (page: number, loading: boolean, search?: string) =>
-      dispatch(getRevisionsAction(page, loading, search))
+    ),
+    changeFilterDashboardAction: (filter:IDashboardFilter) => dispatch(changeFilterDashboardAction(filter)),
+    getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search)),
+    changingParticipantAnswer: (revisionId: string, answer: string) => dispatch(changingParticipantAnswer(revisionId, answer)),
   };
 };
 

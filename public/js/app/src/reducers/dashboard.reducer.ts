@@ -40,7 +40,8 @@ const initialState: IDashboardState = {
     count: 0,
     page: 1,
     pages: 1
-  }
+  },
+  revisionAnswers: {}
 };
 
 export function dashboardReducer(
@@ -48,6 +49,18 @@ export function dashboardReducer(
   action: DashboardReduxAction
 ): IDashboardState {
   switch (action.type) {
+
+    case '/DASHBOARD/UPDATE_PARTICIPANT_ANSWER':
+      return {
+        ...state,
+        revisionAnswers: {
+          ...state.revisionAnswers,
+          [String(action.payload.answers._id)]: action.payload.answers.answer
+        }
+      };
+
+
+
     case '/DASHBOARD/IS_LOADING':
       return {
         ...state,

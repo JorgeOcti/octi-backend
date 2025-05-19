@@ -18,6 +18,7 @@ import ApiService from '../utils/axios';
 import { loadDataAction } from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import swal = require('sweetalert');
 
 export interface IDashboardFilter {
   searchForms: string[];
@@ -27,11 +28,18 @@ export interface IDashboardFilter {
   searchTo: Date;
 }
 
+interface WebQuestion {
+  question: string;
+  type: string; 
+  answer: string;
+}
+
 export interface IDashboardState {
   forms: IForm[];
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  revisionAnswers: Record<string, WebQuestion>;
   filter: IDashboardFilter;
   requests: any[];
   companies: any[];
@@ -228,6 +236,53 @@ export function loadForms(forms: IForm[]): ILoadingForms {
     }
   };
 }
+
+export function changingParticipantAnswer(revisionId: string, answer: string) {
+  return (
+    dispatch: Dispatch<DashboardReduxAction>
+  ) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.addAnswerParticipant(revisionId, answer)
+      .then((response: AxiosResponse) => {
+        const data = response.data;
+        dispatch(addParticipantAnswer(data));
+        dispatch(isLoadingAction(false));
+        if (data.status === 200) {
+          swal!(
+            'Respuesta web guardada',
+            'La respuesta fue guardada correctamente',
+            'success'
+          );
+        }
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  }
+}
+
+
+
+interface IUpdateParticipantAnswer {
+  type: '/DASHBOARD/UPDATE_PARTICIPANT_ANSWER';
+  payload: {
+    answers: Record<string, WebQuestion>;
+  };
+}
+
+export function addParticipantAnswer(
+  answer: Record<string, WebQuestion>
+): IUpdateParticipantAnswer {
+  return {
+    type: '/DASHBOARD/UPDATE_PARTICIPANT_ANSWER',
+    payload: {
+      answers: answer
+    }
+  };
+}
+
 
 export function changeFilterDashboardAction(filter: IDashboardFilter) {
   return (
@@ -1210,4 +1265,5 @@ export type DashboardReduxAction =
   | ILoadingVenuesStats
   | ILoadingRevisionsStats
   | ILoadingForms
-  | IUpdateFilterDashboard;
+  | IUpdateFilterDashboard
+  | IUpdateParticipantAnswer;
