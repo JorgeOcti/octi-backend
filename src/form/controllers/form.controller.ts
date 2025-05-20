@@ -1277,7 +1277,7 @@ class FormController {
         `FormController.completeWebQuestion email: ${req.user.email}, participant: ${id}`
       );
       const participant = await Participant.findOne({
-        _id: id,
+        _id: new mongoose.Types.ObjectId(id),
         team: req.user.team._id
       });
       if (!participant) {

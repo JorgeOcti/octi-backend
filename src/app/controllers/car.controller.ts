@@ -475,11 +475,24 @@ class CarController {
         if (vin) {
           shouldCreate = isContainerCode(vin) && !inventory;
           logger.info(`Should create: ${shouldCreate}`);
-          carFilter = {
-            $and: [...carFilter['$and'],
-              { $or: [{vin}, {internalNumber: vin}] }
-            ]
-          };
+          // check if vin starts with OSA
+          if (vin[0] === 'O' && vin[1] === 'S' && vin[2] === 'A') {
+            carFilter = {
+              $and: [...carFilter['$and'],
+                { $or: [{vin}, {$or: [
+                      {internalNumber: vin},
+                      {internalNumber: vin.substring(0, vin.length - 2)}
+                    ]
+                }]}
+              ]
+            };
+          } else {
+            carFilter = {
+              $and: [...carFilter['$and'],
+                { $or: [{vin}, {internalNumber: vin}] }
+              ]
+            };
+          }
         }
         if (vin2) {
           if (vin2[0] === '0') {
