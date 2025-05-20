@@ -57,7 +57,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface WebQuestion {
   question: string;
-  type: string; 
+  type: string;
   answer: string;
 }
 
@@ -596,11 +596,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
                               {
-                                (participant.webQuestion !== undefined) ?
+                                (participant.webQuestion ) ?
                                   <div className="input-group revision-input-group-answer">
                                     <input type="text"
                                       className="form-control revision-input-field-answer"
-                                      placeholder={participant.webQuestion.question}
+                                      placeholder={"Agregar " + participant.webQuestion.question}
                                       value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
                                       onChange={(e) => this.onChangeQuestion(e, participant._id)}
                                     />
@@ -655,6 +655,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     className="btn btn-sm btn-default hidden-xs hidden-sm"
                                     disabled={carLoading === participant._id}
                                     onClick={() =>
+                                      participant.name === "Aforo" ?
+                                        this.printPdf(
+                                          `/report/aforo/pdf/${participant._id}.pdf`,
+                                          participant._id
+                                        ) :
                                       this.printPdf(
                                         `/report/forms/pdf/${participant._id}.pdf`,
                                         participant._id
