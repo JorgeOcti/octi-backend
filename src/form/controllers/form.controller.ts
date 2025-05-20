@@ -88,6 +88,7 @@ class FormController {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
     this.pdf = this.pdf.bind(this);
+    this.pdfAforo = this.pdfAforo.bind(this);
     this.complete = this.complete.bind(this);
     this.deliveriesOfTheday = this.deliveriesOfTheday.bind(this);
     this.changePreferred = this.changePreferred.bind(this);
@@ -407,7 +408,7 @@ class FormController {
     }
   }
 
-  public async pdf2(req: IRequest, res: Response): Promise<any> {
+  public async pdfAforo(req: IRequest, res: Response): Promise<any> {
     const { debug, timezone } = req.query as {
       debug: string;
       timezone: string;
