@@ -46,7 +46,12 @@ import { socket } from '../../services/socket.service';
 import GeneralUtils from '../../utils/general.utils';
 import type { IFormTrigger } from '../interfaces/form.interface';
 import type { IParticipant } from '../interfaces/participant.interface';
-import Form, { IFormModel, KindForm, KindQuestion, KindQuestionImage } from '../models/form.model';
+import Form, {
+  IFormModel,
+  KindForm,
+  KindQuestion,
+  KindQuestionImage
+} from '../models/form.model';
 import GPSPosition from '../models/gpsPosition.model';
 import Participant, {
   IParticipantAnswerModel,
@@ -95,7 +100,8 @@ class FormController {
     this.allControlsByVIN = this.allControlsByVIN.bind(this);
     this.getExternalOrder = this.getExternalOrder.bind(this);
     this.completeWebQuestion = this.completeWebQuestion.bind(this);
-    this.copyFormFileToInventoryFile = this.copyFormFileToInventoryFile.bind(this);
+    this.copyFormFileToInventoryFile =
+      this.copyFormFileToInventoryFile.bind(this);
   }
 
   public async getExternalOrder(req: IRequest, res: Response): Promise<any> {
@@ -442,7 +448,7 @@ class FormController {
           conciliationText: true,
           conciliationImages: true,
           createdAt: true,
-          startAt: true,
+          startAt: true
         }
       )
         .allowDiskUse(true)
@@ -487,6 +493,11 @@ class FormController {
               'denomination',
               'color',
               'patent'
+            ],
+            populate: [
+              {
+                path: 'company'
+              }
             ]
           },
           {
@@ -508,14 +519,159 @@ class FormController {
         ])
         .lean();
 
+      if (!participant) {
+        return res.status(404).json({
+          message: 'No se encontro el participante',
+          status: 404
+        });
+      }
 
-        if(!participant) {
-          return res.status(404).json({
-            message: 'No se encontro el participante',
-            status: 404
-          });
+      let hasRetention = true;
+      const thirtSection = participant.sections[2];
+      if (thirtSection) {
+        const commentAnswer = thirtSection.answers[6];
+        const imageAnswer = thirtSection.answers[7];
+        if (
+          commentAnswer &&
+          commentAnswer.comment === '' &&
+          imageAnswer &&
+          imageAnswer.images.length === 0
+        ) {
+          hasRetention = false;
         }
-        console.log(participant);
+      }
+
+      participant.sections.forEach((section: any, index: number) => {
+        console.log(section.name , "[" +index + "]");
+        section.answers.forEach((answer: any, jndex: number) => {
+          console.log('    ', answer.question,  "[" +jndex + "]");
+        });
+      });
+
+
+      const tempParticipant: {
+        sections: any[];
+      } = participant;
+      const sectionsToShow: {name: string, answers: any[], hasAnswer?: boolean, useGrid?: boolean}[] = [
+        {
+          name: "PARTICIPANTES",
+          useGrid: true,
+          answers: [
+            {
+              name: '',
+              comment: tempParticipant.sections[0].answers[0].comment,
+              images: tempParticipant.sections[0].answers[0].images,
+            }
+          ]
+        },
+        {
+          name: "EVIDENCIA APERTURA",
+          useGrid: true,
+          answers: [
+            {
+              name: 'FOTOGRAFÍA FRONTAL CONTENEDOR',
+              comment: tempParticipant.sections[0].answers[1].comment,
+              images: tempParticipant.sections[0].answers[1].images,
+            },{
+              name: 'FOTOGRAFÍA SELLO',
+              comment: tempParticipant.sections[0].answers[2].comment,
+              images: tempParticipant.sections[0].answers[2].images,
+            },
+            {
+              name: 'FOTOGRAFÍA CONTENEDOR ABIERTO',
+              comment: tempParticipant.sections[0].answers[3].comment,
+              images: tempParticipant.sections[0].answers[3].images,
+            }
+          ]
+        }, 
+        {
+          name: "EVIDENCIA CARGA RETENIDA",
+          useGrid: true,
+          answers: [
+            {
+              name: "OBSERVACIONES",
+              comment: tempParticipant.sections[2].answers[6].comment,
+              images: tempParticipant.sections[2].answers[6].images,
+            },
+            {
+              name: "FOTOGRAFÍAS CARGA RETENIDA",
+              comment: tempParticipant.sections[2].answers[7].comment,
+              images: tempParticipant.sections[2].answers[7].images,
+            },
+          ]
+        },
+        {
+          name: "EVIDENCIA PROCESO AFORO",
+          useGrid: true,
+          answers: [
+            {
+              name: "OBSERVACIONES",
+              comment: tempParticipant.sections[2].answers[4].comment,
+              images: tempParticipant.sections[2].answers[4].images,
+            },
+            {
+              name: "FOTOGRAFÍAS PROCESO AFORO",
+              comment: tempParticipant.sections[2].answers[5].comment,
+              images: tempParticipant.sections[2].answers[5].images,
+            },
+          ]
+        },
+        {
+          name: "CONTENIDO DEL CONTENEDOR",
+          useGrid: false,
+          answers: [
+            {
+              name: 'CONTENIDO DEL CONTENEDOR',
+              comment: tempParticipant.sections[2].answers[0].comment,
+              images: tempParticipant.sections[2].answers[0].images,
+            },
+            {
+              name: '',
+              comment: tempParticipant.sections[2].answers[1].comment,
+              images: tempParticipant.sections[2].answers[1].images,
+            },
+          ]
+        },
+        {
+          name: "CONTENIDO SACADO DEL CONTENEDOR",
+          useGrid: true,
+          answers: [
+            {
+              name: '',
+              comment: tempParticipant.sections[2].answers[3].comment,
+              images: tempParticipant.sections[2].answers[3].images,
+            },
+          ]
+        },
+        {
+          name: "EVIDENCIA CIERRE",
+          useGrid: true,
+          answers: [
+            {
+              name: "CONTENEDOR PREVIO AL CIERRE",
+              comment: tempParticipant.sections[3].answers[0].comment,
+              images: tempParticipant.sections[3].answers[0].images,
+            },
+            {
+              name: "NUEVO SELLO",
+              comment: tempParticipant.sections[3].answers[1].comment,
+              images: tempParticipant.sections[3].answers[1].images,
+            }
+          ]
+        }
+      ];
+
+      sectionsToShow.forEach((section: any) => {
+        section.hasAnswer = false;
+        section.answers.forEach((answer: any) => {
+          if (answer.images.length > 0 || answer.comment !== '') {
+            section.hasAnswer = true;
+          }
+        });
+      });
+
+      console.log(participant);
+
       let template: string =
         path.join(__dirname, '../../../views/') + 'form/pdf/aforo.pug';
 
@@ -523,11 +679,17 @@ class FormController {
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
       if (participant) {
         const participantCompany =
-        (participant.user.venue && participant?.user.venue.company) || {};
+          (participant.user.venue && participant?.user.venue.company) || {};
 
         let context: any = {
           participant,
-          // moment,
+          hasRetention,
+          companyName: participant.webQuestion?.answer ?? participant.car.company.name,
+          sectionsToShow: sectionsToShow.filter(section => section.hasAnswer),
+          moment,
+          hasAnswer: (answer: any) => {
+            return answer.images.length > 0 || answer.comment !== '';
+          },
           origin: () => {
             if (participant.reception && participant.receiveFrom) {
               return participant.receiveFrom.name;
@@ -597,7 +759,6 @@ class FormController {
           }
         };
 
-
         if (participant.form?.triggers?.length > 0) {
           let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
             (trigger: IFormTrigger) =>
@@ -628,10 +789,9 @@ class FormController {
           }
         }
 
-
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
-        if (true) {
+        if (debug) {
           return res.send(html);
         } else {
           // launch a new chrome instance
@@ -654,12 +814,18 @@ class FormController {
           const pdfBuffer = await page.pdf({
             format: 'Letter',
             printBackground: true,
-            margin: {
-              top: '0.3in',
-              right: '0.5in',
-              bottom: '0.3in',
-              left: '0.5in'
-            }
+            displayHeaderFooter: true,
+            footerTemplate: `
+            <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
+              Página <span class="pageNumber"></span> / <span class="totalPages"></span>
+            </div>`,
+          // this is needed to prevent content from being placed over the footer
+          margin: {
+            top: '0.3in',
+            left: '30px',
+            right: '30px',
+            bottom: '70px'
+          },
           });
           await browser.close();
 
@@ -723,7 +889,7 @@ class FormController {
     const { forContainer, forUnit } = req.query as {
       forContainer: string;
       forUnit: string;
-    }
+    };
     try {
       const filter: any = {
         team: team,
@@ -735,17 +901,17 @@ class FormController {
             }
           },
           {
-            active: true,
+            active: true
           }
         ]
       };
 
       if (forContainer === '1') {
-        filter["unitsToUse.container"] = true
+        filter['unitsToUse.container'] = true;
       }
 
       if (forUnit === '1') {
-        filter["unitsToUse.units"] = true
+        filter['unitsToUse.units'] = true;
       }
 
       logger.info(
@@ -1084,7 +1250,12 @@ class FormController {
     }
   }
 
-  private async copyFormFileToInventoryFile(ids: string[], inventory: string, car: ICarModel, user: IUserModel): Promise<IInventoryFile[]> {
+  private async copyFormFileToInventoryFile(
+    ids: string[],
+    inventory: string,
+    car: ICarModel,
+    user: IUserModel
+  ): Promise<IInventoryFile[]> {
     const participantFiles = await ParticipantFile.find({
       _id: { $in: ids.map((id: string) => new mongoose.Types.ObjectId(id)) }
     });
@@ -1097,7 +1268,7 @@ class FormController {
             company: car.company,
             inventory: inventoryItem._id,
             user: user._id,
-            file: file.file,
+            file: file.file
           });
           await newFile.save();
           files.push(newFile);
@@ -1138,7 +1309,6 @@ class FormController {
         },
         status: 200
       });
-
     } catch (e) {
       logger.error(e);
       return res.status(500).json({
@@ -1150,7 +1320,15 @@ class FormController {
 
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
-    let { vin, answers, transmittalItem, transmittal, reliability, inventory, containerFound } = req.body;
+    let {
+      vin,
+      answers,
+      transmittalItem,
+      transmittal,
+      reliability,
+      inventory,
+      containerFound
+    } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
     logger.info(`FormController.complete email: ${req.user.email}`);
@@ -1187,23 +1365,32 @@ class FormController {
       let car: any = null;
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
-        let carFilter = req.user.company.handler ?
-          {$and: [{$or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }]}, {$or: [{company: company}, {handlerCompany: company}]}]} :
-          {
-            $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-            team
-          }
+        let carFilter = req.user.company.handler
+          ? {
+              $and: [
+                { $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }] },
+                { $or: [{ company: company }, { handlerCompany: company }] }
+              ]
+            }
+          : {
+              $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
+              team
+            };
         car = await Car.findOne(carFilter);
       } else if (carId) {
         car = await Car.findOne({ _id: carId });
       }
 
       let inventoryCar: any = null;
-      let inventoryItem : any = null;
-      let images : string[] = [];
+      let inventoryItem: any = null;
+      let images: string[] = [];
       if (inventory) {
-        let check =  await InventoryController.checkCarToInventory(req.user as IUserModel, vin, inventory);
-        const {ok, message, code } = check;
+        let check = await InventoryController.checkCarToInventory(
+          req.user as IUserModel,
+          vin,
+          inventory
+        );
+        const { ok, message, code } = check;
         if (!ok) {
           logger.error(`InventoryController.checkCarToInventory: ${message}`);
           return res.status(400).json({
@@ -1211,8 +1398,8 @@ class FormController {
             status: code
           });
         }
-        inventoryCar = check.inventoryCar
-        inventoryItem = check.inventory
+        inventoryCar = check.inventoryCar;
+        inventoryItem = check.inventory;
       }
 
       if (car || transmittal) {
@@ -1246,7 +1433,9 @@ class FormController {
           }
 
           if (transmittal) {
-            query['$and'].push({ transmittal: new Types.ObjectId(transmittal) });
+            query['$and'].push({
+              transmittal: new Types.ObjectId(transmittal)
+            });
           }
 
           const existControl = await Participant.findOne(query);
@@ -1403,8 +1592,12 @@ class FormController {
                 null
               );
 
-
-              if  (question.kind === KindQuestion.image && [KindQuestionImage.picture, KindQuestionImage.photo].includes(question.imageType as KindQuestionImage)) {
+              if (
+                question.kind === KindQuestion.image &&
+                [KindQuestionImage.picture, KindQuestionImage.photo].includes(
+                  question.imageType as KindQuestionImage
+                )
+              ) {
                 if (answer && answer.images && answer.images.length) {
                   images = [...images, ...answer.images];
                 }
@@ -1586,17 +1779,31 @@ class FormController {
             }
             // save the participant
             await newParticipant.save();
-            req.user.company.handler ?
-              await carTracker.fromParticipant({ id: newParticipant._id, handlerCompany: req.user.company }) :
-              await carTracker.fromParticipant({ id: newParticipant._id })
+            req.user.company.handler
+              ? await carTracker.fromParticipant({
+                  id: newParticipant._id,
+                  handlerCompany: req.user.company
+                })
+              : await carTracker.fromParticipant({ id: newParticipant._id });
 
             if (inventoryCar) {
-              logger.info("Actualizando inventoryCar")
-              let files: IInventoryFile[] = []
+              logger.info('Actualizando inventoryCar');
+              let files: IInventoryFile[] = [];
               if (images && images.length > 0) {
-                files = await this.copyFormFileToInventoryFile(images, inventory, car, req.user as IUserModel);
+                files = await this.copyFormFileToInventoryFile(
+                  images,
+                  inventory,
+                  car,
+                  req.user as IUserModel
+                );
               }
-              let inventoriedCar = await InventoryController.inventoryCar(req.user as IUserModel, inventoryItem, inventoryCar, files, containerFound);
+              let inventoriedCar = await InventoryController.inventoryCar(
+                req.user as IUserModel,
+                inventoryItem,
+                inventoryCar,
+                files,
+                containerFound
+              );
               inventoriedCar.participant = newParticipant._id;
               await inventoryCar.save();
             }
@@ -1855,12 +2062,18 @@ class FormController {
               }
             }).countDocuments();
 
-            logger.info(`FormController.complete: ${req.user.email} ${JSON.stringify({ id, count, vin })}`);
+            logger.info(
+              `FormController.complete: ${req.user.email} ${JSON.stringify({
+                id,
+                count,
+                vin
+              })}`
+            );
             await DraftModel.deleteMany({
               car: car._id,
               venue: updatedUser.venue,
               form: id
-            })
+            });
 
             return res.json({
               data: {
@@ -3965,9 +4178,6 @@ class FormController {
       });
     }
   }
-
-
-  
 }
 
 export default new FormController();
