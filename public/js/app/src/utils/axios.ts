@@ -472,6 +472,12 @@ export default class ApiService {
     );
   }
 
+  public getCarHistory(id: string): AxiosPromise {
+    return this.instance.get(`/api/cars/${id}/history/`, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getCar(id: string): AxiosPromise {
     return this.instance.get(`/api/cars/${id}/`, {
       cancelToken: this.source.token
@@ -520,6 +526,12 @@ export default class ApiService {
     return this.instance.post(`/api/inventory/${id}/comment/`, {
       _id: carId,
       comment
+    });
+  }
+
+  public addAnswerParticipant(id: string, answer: string): AxiosPromise {
+    return this.instance.post(`/api/v1/forms/${id}/web`, {
+      value: answer
     });
   }
 

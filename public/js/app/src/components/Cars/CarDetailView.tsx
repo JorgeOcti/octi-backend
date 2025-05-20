@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import {
   CarReduxAction,
   ICarsState,
-  getCarAction,
+  getCarHistoryAction,
   isLoadingAction
 } from '../../actions/cars.actions';
 import {
@@ -23,18 +23,44 @@ import { IParticipant } from '../../../../../../src/form/interfaces/participant.
 import ModalView from '../Modal/ModalView';
 import { RouteComponentProps } from 'react-router';
 import Row from '../Utils/Row';
-import TimeLineForm from './TimeLineForm';
-import TimeLineInventory from './TimeLineInventory';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { connect } from 'react-redux';
 import { parseReplicableURL } from '../../utils/common';
+import { ModuleHistory, StatusHistory } from '../../../../../../src/app/models/history.types';
+import { ChoicesStatusCarInventory } from '../../../../../../src/app/models/inventoryCar.types';
+
+enum HistoryColors {
+  GREEN = "bg-green",
+  BLUE = "bg-blue",
+  AQUAMARINE = "bg-aqua",
+  RED = "bg-red",
+  YELLOW = "bg-yellow",
+  GRAY = "bg-gray",
+  PURPLE = "bg-purple",
+}
+enum HistoryIcons {
+  CHECKLIST_SHIPPING = "fa-check-square-o",
+  CHECKLIST_DAMAGES = "fa-exclamation-triangle",
+  CHECKLIST_RECEPTION = "fa-truck",
+  INVENTORY_PENDING = "fa-clock-o",
+  INVENTORY_FOUND = "fa-check",
+  INVENTORY_REPORTED = "fa-exclamation",
+  INVENTORY_MISSING = "fa-arrow-down",
+  INVENTORY_LEFTOVER = "fa-arrow-up",
+  IMPORTED_UNIT = "fa-cloud-upload",
+  CHECKLIST_CLIENT = "fa-clipboard",
+  CHECKLIST_DECONSOLIDATION = "fa-calendar",
+
+  //not font awesome, custom sass on multi-upload.sass
+  CHECKLIST_READY = "icon-ready-client"
+}
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<CarReduxAction>;
   cars: ICarsState;
   dashboard: IDashboardState;
 
-  getCarAction(id: string): void;
+  getCarHistoryAction(id: string): void;
   isLoadingAction(loading: boolean): void;
 
   getParticipant(id: string): void;
@@ -61,7 +87,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   componentWillMount() {
     const { id } = this.props.match.params;
-    this.props.getCarAction(id);
+    this.props.getCarHistoryAction(id);
   }
 
   componentDidMount() {
@@ -92,11 +118,21 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, car, carEvents } = this.props.cars;
-    const { loadingParticipant } = this.props.dashboard;
-    const { getParticipant } = this.props;
+    const { loading, car } = this.props.cars;
     const { params } = this.props.match;
     const isSameCar = !!(car?._id === params.id);
+    const groupedEvents = car?.events.reduce((groups: { [key: string]: any[] }, event: any) => {
+      const date = moment(event.createdAt);
+      const monthKey = date.format('YYYY-MM'); // Format as YYYY-MM for sorting
+      
+      if (!groups[monthKey]) {
+        groups[monthKey] = [];
+      }
+      
+      groups[monthKey].push(event);
+      return groups;
+    }, {});
+
     return (
       <AppContainer
         title={`${isSameCar ? car?.vin : ''}`}
@@ -118,18 +154,6 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
               ) : (
                 <div className="box box-primary">
                   <div className="box-body box-profile">
-                    {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
-                    {/*<img*/}
-                    {/*className="profile-user-img img-responsive img-circle"*/}
-                    {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
-                    {/*alt="User profile picture"*/}
-                    {/*style={{*/}
-                    {/*fontFamily: 'object-fit:cover',*/}
-                    {/*objectFit: 'cover',*/}
-                    {/*width: '100px',*/}
-                    {/*height: '100px'*/}
-                    {/*}}*/}
-                    {/*/>*/}
                     <h3 className="profile-username text-center text-black">
                       {car && car.brand ? car.brand : '-'}
                     </h3>
@@ -169,23 +193,6 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                           {car && car.internalNumber ? car.internalNumber : '-'}
                         </strong>
                       </li>
-
-                      {/*<li className='list-group-item'>*/}
-                      {/*  <strong>Revisiones</strong>*/}
-                      {/*  <span className='pull-right'>*/}
-                      {/*    {*/}
-                      {/*      car && car.participants ? car.participants.length : 0*/}
-                      {/*    }*/}
-                      {/*  </span>*/}
-                      {/*</li>*/}
-                      {/*<li className='list-group-item'>*/}
-                      {/*  <strong>Inventarios</strong>*/}
-                      {/*  <span className='pull-right'>*/}
-                      {/*    {*/}
-                      {/*      car && car.inventories ? car.inventories.length : 0*/}
-                      {/*    }*/}
-                      {/*  </span>*/}
-                      {/*</li>*/}
                     </ul>
                     <button
                       className="btn btn-primary btn-block"
@@ -226,68 +233,105 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     className="tab-content"
                     style={{
                       backgroundColor: '#f9f9f9'
-                      // maxHeight: '80vh',
-                      // overflowX: 'auto'
                     }}>
                     <div className="tab-pane active" id="timeline">
                       <ul className="timeline">
-                        {Object.keys(carEvents).map((event) => {
-                          const events = carEvents[event];
+                        {groupedEvents && Object.keys(groupedEvents).sort((a, b) => moment(b).diff(moment(a))).map((monthKey) => {
+                          const events = groupedEvents[monthKey];
+                          const monthDate = moment(monthKey).format('MMMM YYYY');
                           return (
-                            <React.Fragment key={event}>
+                            <React.Fragment key={monthKey}>
                               <li className="time-label">
                                 <span className="bg-blue">
-                                  {moment(event).format('MMMM YYYY')}
+                                  {monthDate}
                                 </span>
                               </li>
-                              {events.map((data: any) => {
-                                return data.typeEvent === 'created' ? (
-                                  <li
-                                    style={{ marginRight: '0' }}
-                                    key={data._id}>
-                                    <i
-                                      className={`fa fa-cloud-upload bg-green`}
-                                    />
-                                    <div className="timeline-item">
-                                      <span
-                                        className="time"
-                                        style={{
-                                          color: '#888',
-                                          fontSize: '13px'
-                                        }}>
-                                        <div
-                                          className="text-muted text-sm"
-                                          data-toggle="tooltip"
-                                          data-placement="top"
-                                          title={moment(data.createdAt).format(
-                                            'LLL'
-                                          )}>
-                                          <i className="fa fa-fw fa-clock-o" />{' '}
-                                          {moment(data.createdAt).fromNow()}
-                                        </div>
-                                      </span>
-                                      <h3 className="timeline-header">
-                                        <a href="javascript:void(0)">
-                                          VEHÍCULO IMPORTADO
-                                        </a>
-                                      </h3>
-                                      <div className="timeline-body text-sm text-muted">
-                                        El vehículo fue importado al sistema el{' '}
-                                        {data.createdAt.format('LLLL')}.
-                                      </div>
-                                    </div>
-                                  </li>
-                                ) : data.typeEvent === 'revision' ? (
-                                  <TimeLineForm
-                                    form={data}
-                                    getParticipant={getParticipant}
-                                    loadingParticipant={loadingParticipant}
-                                    key={data._id}
-                                  />
-                                ) : (
-                                  <TimeLineInventory
-                                    inventory={data}
-                                    key={data._id}
+                              {events.map((event) => {
+                                let icon = HistoryIcons.INVENTORY_PENDING;
+                                let color = HistoryColors.GRAY;
+                                let title = '--';
+                                let subtitle = '--';
+                                switch (event.module) {
+                                  case ModuleHistory.form:
+                                    title = event.participant?.name ?? title;
+                                    if (event.participant.hasDamages === true) {
+                                      icon = HistoryIcons.CHECKLIST_DAMAGES;
+                                      color = HistoryColors.RED;
+                                      subtitle = `En ${event?.from?.name}`;
+                                    } else if(event.participant.shipping === true) {
+                                      icon = HistoryIcons.CHECKLIST_RECEPTION;
+                                      color = HistoryColors.AQUAMARINE;
+                                      subtitle = `Despacho desde ${event?.from?.name}`;
+                                    } else if(event.participant.reception === true) {
+                                      icon = HistoryIcons.CHECKLIST_SHIPPING;
+                                      color = HistoryColors.GREEN;
+                                      subtitle = `Recepción en ${event?.from?.name}`;
+                                    }
+                                    break;
+                                  case ModuleHistory.inventory:
+                                    title = event?.inventoryCar?.inventory?.name ?? title;
+                                    switch (event?.inventoryCar?.status) {
+                                      case ChoicesStatusCarInventory.pending:
+                                        icon = HistoryIcons.INVENTORY_PENDING;
+                                        color = HistoryColors.AQUAMARINE;
+                                        subtitle = `Unidad designada PENDIENTE en ${event?.from?.name}`;
+                                        break;
+                                      case ChoicesStatusCarInventory.found:
+                                        icon = HistoryIcons.INVENTORY_FOUND;
+                                        color = HistoryColors.GREEN;
+                                        subtitle = `Unidad designada ENCONTRADA en ${event?.from?.name}`;
+                                        break;
+                                      case ChoicesStatusCarInventory.reported:
+                                        icon = HistoryIcons.INVENTORY_REPORTED;
+                                        color = HistoryColors.GRAY;
+                                        subtitle = `Unidad designada REPORTADA en ${event?.from?.name}`;
+                                        break;
+                                      case ChoicesStatusCarInventory.missing:
+                                        icon = HistoryIcons.INVENTORY_MISSING;
+                                        color = HistoryColors.RED;
+                                        subtitle = `Unidad designada FALTANTE en ${event?.from?.name}`;
+                                        break;
+                                      case ChoicesStatusCarInventory.leftover:
+                                        icon = HistoryIcons.INVENTORY_LEFTOVER;
+                                        color = HistoryColors.YELLOW;
+                                        subtitle = `Unidad designada SOBRANTE en ${event?.from?.name}`;
+                                        break;
+                                      default:
+                                        break;
+                                    }
+                                    break;
+                                  default:
+                                    break;
+                                }
+                                switch (event.status) {
+                                  case StatusHistory.created:
+                                    icon = HistoryIcons.IMPORTED_UNIT;
+                                    color = HistoryColors.GREEN;
+                                    title = `Unidad importada`;
+                                    subtitle = `Unidad fue importada al sistema`;
+                                    break;
+                                  case StatusHistory.readyToClient:
+                                    icon = HistoryIcons.CHECKLIST_READY;
+                                    color = HistoryColors.PURPLE;
+                                    title = `Planificado para despacho`;
+                                    subtitle = `Para ser retirado por el cliente`;
+                                    break;
+                                  case StatusHistory.sale:
+                                    icon = HistoryIcons.CHECKLIST_CLIENT;
+                                    color = HistoryColors.AQUAMARINE;
+                                    title = `Entregada al cliente`;
+                                    subtitle = `Entregada por ${event?.createdBy?.firstName} ${event?.createdBy?.lastName} en ${event?.from?.name}`;
+                                    break;
+                                  default:
+                                    break;
+                                }
+                                return (
+                                  <UnitHistoryTile
+                                    color={color}
+                                    title={title}
+                                    subtitle={subtitle}
+                                    icon={icon}
+                                    date={event.createdAt}
                                   />
                                 );
                               })}
@@ -325,7 +369,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     isLoadingAction: (loading: boolean) => dispatch(isLoadingAction(loading)),
-    getCarAction: (id: string) => dispatch(getCarAction(id)),
+    getCarHistoryAction: (id: string) => dispatch(getCarHistoryAction(id)),
     getParticipant: (id: string) => dispatch(getParticipant(id)),
     loadParticipantInCarAction: (participant: IParticipant) =>
       dispatch(loadParticipantInCarAction(participant))
@@ -336,3 +380,42 @@ export default connect<{}, {}, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
 )(CarDetailView);
+
+const UnitHistoryTile: React.FC<{color: string, title: string, subtitle: string, icon: string, date: Date}> = ({color, title, subtitle, icon, date}) => {
+  return (
+      <li
+        style={{ marginRight: '0' }}
+      >
+        <i
+          className={`fa ${icon} ${color}`}
+        />
+        <div className="timeline-item">
+          <span
+            className="time"
+            style={{
+              color: color,
+              fontSize: '13px'
+            }}>
+            <div
+              className="text-muted text-sm"
+              data-toggle="tooltip"
+              data-placement="top"
+              title={moment(date).format(
+                'LLL'
+              )}>
+              <i className="fa fa-fw fa-clock-o" />{' '}
+              {moment(date).fromNow()}
+            </div>
+          </span>
+          <h3 className="timeline-header">
+            <a href="javascript:void(0)">
+              {title}
+            </a>
+          </h3>
+          <div className="timeline-body text-sm text-muted">
+            {subtitle}
+          </div>
+        </div>
+      </li>
+  )
+}
