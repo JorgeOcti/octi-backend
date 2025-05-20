@@ -541,14 +541,6 @@ class FormController {
         }
       }
 
-      participant.sections.forEach((section: any, index: number) => {
-        console.log(section.name , "[" +index + "]");
-        section.answers.forEach((answer: any, jndex: number) => {
-          console.log('    ', answer.question,  "[" +jndex + "]");
-        });
-      });
-
-
       const tempParticipant: {
         sections: any[];
       } = participant;
@@ -669,8 +661,6 @@ class FormController {
           }
         });
       });
-
-      console.log(participant);
 
       let template: string =
         path.join(__dirname, '../../../views/') + 'form/pdf/aforo.pug';
