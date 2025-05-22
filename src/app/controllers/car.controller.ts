@@ -1970,7 +1970,7 @@ class CarController {
         },
         {
           path: 'car',
-          select: ['vin', 'brand', 'denomination', 'color', 'patent']
+          select: ['vin', 'brand', 'denomination', 'color', 'patent', 'isContainer']
         },
         {
           path: 'receiveFrom',

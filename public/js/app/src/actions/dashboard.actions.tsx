@@ -653,7 +653,7 @@ export function getParticipant(id: string) {
                   {data?.car?.vin ? (
                     <tr>
                       <td style={{ width: '40%' }}>
-                        <strong>VIN</strong>
+                        <strong>{data?.car?.isContainer ? "BIC" : "VIC"}</strong>
                       </td>
                       <td><strong>{data?.car?.vin.toUpperCase()}</strong></td>
                     </tr>
