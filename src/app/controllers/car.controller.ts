@@ -2042,7 +2042,8 @@ class CarController {
           createdAt: true,
           patent: true,
           denomination: true,
-          color: true
+          color: true,
+          isContainer: true,
         }
       )
       .lean()
@@ -2054,7 +2055,7 @@ class CarController {
             { path: 'to', select: 'name' },
             {
               path: 'inventoryCar',
-              select: 'status',
+              select: 'status isContainer',
               populate: [
                 {path: 'inventory', select: 'name virtual containerInventory'},
               ]
@@ -2073,6 +2074,7 @@ class CarController {
           status: 404
         });
       } else {
+        console.log('car', car);
         return res.json({
           data: car,
           status: 200

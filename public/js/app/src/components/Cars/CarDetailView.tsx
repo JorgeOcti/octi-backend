@@ -124,7 +124,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const groupedEvents = car?.events.reduce((groups: { [key: string]: any[] }, event: any) => {
       const date = moment(event.createdAt);
       const monthKey = date.format('YYYY-MM'); // Format as YYYY-MM for sorting
-      
+
       if (!groups[monthKey]) {
         groups[monthKey] = [];
       }
@@ -162,7 +162,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     </p>
                     <ul className="list-group list-group-unbordered no-margin text-muted">
                       <li className="list-group-item">
-                        <strong>VIN</strong>
+                        <strong>{car?.isContainer ? "BIC" : "VIN"}</strong>
                         <span className="pull-right text-primary">
                           <CopyText value={car?.vin ?? ''}>
                             <strong>{car && car.vin ? car.vin : '-'}</strong>
