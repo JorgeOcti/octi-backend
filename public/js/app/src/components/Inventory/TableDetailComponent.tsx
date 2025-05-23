@@ -8,7 +8,9 @@ const InventoryTable = ({
     conditionalRowStyles,
     dataTableStyle,
     paginationComponentOptions,
-    ExpandedRowElement
+    ExpandedRowElement,
+    OnChangePage,
+    OnChangeRowsPerPage
   }: {
     columns: Array<any>;
     containers: Array<any>;
@@ -16,6 +18,8 @@ const InventoryTable = ({
     dataTableStyle: any;
     paginationComponentOptions: any;
     ExpandedRowElement: React.FC<{ data: any }>;
+    OnChangePage?: (page: number) => void;
+    OnChangeRowsPerPage?: (newPerPage: number, page: number) => void;
   }) => {
     return (
       <div className="row">
@@ -30,6 +34,8 @@ const InventoryTable = ({
             pagination
             conditionalRowStyles={conditionalRowStyles}
             paginationComponentOptions={paginationComponentOptions}
+            onChangePage={OnChangePage}
+            onChangeRowsPerPage={OnChangeRowsPerPage}
             noDataComponent={
               <div className="text-center">
                 <h4>No hay datos</h4>

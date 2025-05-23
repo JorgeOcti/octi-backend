@@ -505,6 +505,96 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
+
+  private loadInventoryData = (page: number, limit: number) => {
+
+    console.log(`loadInventoryData ${page} ${limit}`);
+
+    const api: ApiService = new ApiService();
+    api.getSource();
+    api.getInventories(page, true, limit).then(async (response: any) => {
+
+        let inventories: IInventory[] = response.data.inventories;
+
+        let promises = inventories.map((inventory: IInventory) => {
+          return api.getInventory((inventory as any)._id)
+        })
+
+        let data = (await Promise.all(promises))
+          .map((response: any) => {
+            return response.data.detail.cars;
+          }).flat();
+
+        let containers = data.filter((car: any) => {
+          if (car.car.isContainer) {
+            car.status = foundStatusContainer(car);
+            return true;
+          }
+          return false;
+        });
+
+        let clients = new Set();
+        let cars = data.filter((car: any) => {
+          return !car.car.isContainer;
+        })
+        cars.forEach((car: any) => {
+          if (car.car.company && car.car.company.name) {
+            clients.add(car.car.company.name);
+          }
+        })
+
+        containers = containers.map((container: any) => {
+          container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
+          container.filterStatus = container.containerStatus || container.status;
+          container.pendingUnits = container.content.filter((car: any) => {
+            return car.status === "pending";
+          }).length > 0;
+          if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
+            container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
+          }
+          return container;
+        })
+
+        containers = containers.map((container: any) => {
+          // if evidenceStatus is not empty, get the last status open and empty
+          if (container.evidenceStatus && container.evidenceStatus.length > 0) {
+            let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+            let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
+            if (openEvidences.length > 0) {
+              //sort by date and get the last one
+              container.openDate = openEvidences.sort((a: any, b: any) => {
+                return moment(a.date).isAfter(b.date) ? -1 : 1;
+              })[0].date;
+            }
+
+            if (emptyEvidences.length > 0) {
+              //sort by date and get the last one
+              container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
+                return moment(a.date).isAfter(b.date) ? -1 : 1;
+              })[0].date;
+            }
+          }
+          // Verifico si el contendedor tiene alguna unidad con daños
+          container.hasDamage = container.content?.some((e: any) => e.participant?.hasDamages === true);
+          return container;
+        });
+        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
+        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
+        this.setState({
+          containers: containers,
+          originalContainers: containers,
+          clientSelector: Array.from(clients),
+          shipSelector: ships,
+          tripSelector: trips,
+          loading: false
+        })
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+  }
+
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
@@ -526,89 +616,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
       );
 
-    api.getInventories(1, true, 50)
-      .then(async (response: any) => {
-
-        let inventories: IInventory[] = response.data.inventories;
-
-        let promises = inventories.map((inventory: IInventory) => {
-          return api.getInventory((inventory as any)._id)
-        })
-
-        let data = (await Promise.all(promises))
-          .map((response: any) => {
-            return response.data.detail.cars;
-          }).flat();
-
-        let containers = data.filter((car: any) => {
-          if(car.car.isContainer) {
-            car.status = foundStatusContainer(car);
-            return true;
-          }
-          return false;
-        });
-
-        let clients = new Set();
-        let cars = data.filter((car: any) => {
-          return !car.car.isContainer;
-        })
-        cars.forEach((car: any) => {
-          if (car.car.company && car.car.company.name){
-            clients.add(car.car.company.name);
-          }
-        })
-
-
-
-        containers = containers.map((container: any) => {
-          container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
-          container.filterStatus = container.containerStatus || container.status;
-          container.pendingUnits = container.content.filter((car: any) => {
-            return car.status === "pending";
-          }).length > 0;
-          if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
-            container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
-          }
-          return container;
-        })
-
-        containers = containers.map((container: any) => {
-          // if evidenceStatus is not empty, get the last status open and empty
-          if(container.evidenceStatus && container.evidenceStatus.length > 0) {
-            let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-            let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
-            if (openEvidences.length > 0) {
-              //sort by date and get the last one
-              container.openDate = openEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
-
-            if (emptyEvidences.length > 0) {
-              //sort by date and get the last one
-              container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
-          }
-          // Verifico si el contendedor tiene alguna unidad con daños
-          container.hasDamage = container.content?.some((e:any) => e.participant?.hasDamages === true);
-          return container;
-        });
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
-        this.setState({
-          containers: containers,
-          originalContainers: containers,
-          clientSelector: Array.from(clients),
-          shipSelector: ships,
-          tripSelector: trips,
-          loading: false
-        })
-      })
-      .catch((error: any) => {
-        console.log(error);
-      })
+    this.loadInventoryData(1, 50);
   }
   startSocket(){
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -1095,7 +1103,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     paginationComponentOptions={paginationComponentOptions}
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
-                  />        
+                    OnChangePage={(page: number) => {
+                      this.loadInventoryData(page, 10);
+                      console.log(` OnChangePage ${page}`);
+                     // this.setState({
+                     //   page: page
+                     // });
+
+                    }}
+                    OnChangeRowsPerPage={(newPerPage: number, page: number) => {
+                      this.loadInventoryData(page, newPerPage);
+                      console.log(` OnChangeRowsPerPage ${newPerPage} ${page}`);
+                     // this.setState({
+                     //   page: page
+                     // });
+                    }} 
+                    />
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">

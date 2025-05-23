@@ -719,6 +719,13 @@ class InventoryController {
     const { page, pageSize, containers } = req.query as { page: string; pageSize: string, containers?: string };
     const venuesPermissions = req.user.venuesPermissions();
     // paginate options
+
+
+    logger.error(`calling list: Async Error. ${ page } ${ pageSize }`);
+
+
+
+
     const options: PaginateOptions = {
       select: {
         _id: true
