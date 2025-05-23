@@ -596,7 +596,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
                               {
-                                (participant.webQuestion ) ?
+                                (participant.webQuestion && participant.webQuestion.question && participant.webQuestion.answer) ?
                                   <div className="input-group revision-input-group-answer">
                                     <input type="text"
                                       className="form-control revision-input-field-answer"
