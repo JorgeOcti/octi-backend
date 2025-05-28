@@ -70,6 +70,9 @@ interface IStateType {
   endDate: Date;
   startDate: Date;
   isFilteringByDate: boolean;
+  paginationPage: number;
+  paginationPageSize: number;
+  totalRows?: number;
 }
 
 const dataTableStyle = {
@@ -249,6 +252,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
+      paginationPage: 1,
+      paginationPageSize: 10,
+      totalRows: 0,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",
@@ -616,7 +622,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
       );
 
-    this.loadInventoryData(1, 50);
+    this.loadInventoryData(1, this.state.paginationPageSize);
   }
   startSocket(){
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -1103,6 +1109,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     paginationComponentOptions={paginationComponentOptions}
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
+                    paginationServer={true}
+                    totalRows={ this.state.originalContainers.length}
                     OnChangePage={(page: number) => {
                       this.loadInventoryData(page, 10);
                       console.log(` OnChangePage ${page}`);
@@ -1114,9 +1122,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     OnChangeRowsPerPage={(newPerPage: number, page: number) => {
                       this.loadInventoryData(page, newPerPage);
                       console.log(` OnChangeRowsPerPage ${newPerPage} ${page}`);
-                     // this.setState({
-                     //   page: page
-                     // });
+                     this.setState({
+                        paginationPageSize: newPerPage
+                     });
                     }} 
                     />
 

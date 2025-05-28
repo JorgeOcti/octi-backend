@@ -9,6 +9,8 @@ const InventoryTable = ({
     dataTableStyle,
     paginationComponentOptions,
     ExpandedRowElement,
+    paginationServer,
+    totalRows,
     OnChangePage,
     OnChangeRowsPerPage
   }: {
@@ -18,6 +20,8 @@ const InventoryTable = ({
     dataTableStyle: any;
     paginationComponentOptions: any;
     ExpandedRowElement: React.FC<{ data: any }>;
+    paginationServer: boolean;
+    totalRows: number;
     OnChangePage?: (page: number) => void;
     OnChangeRowsPerPage?: (newPerPage: number, page: number) => void;
   }) => {
@@ -32,6 +36,8 @@ const InventoryTable = ({
             expandableRowsComponent={ExpandedRowElement}
             expandOnRowClicked={true}
             pagination
+            paginationServer={paginationServer}
+            paginationTotalRows={totalRows}
             conditionalRowStyles={conditionalRowStyles}
             paginationComponentOptions={paginationComponentOptions}
             onChangePage={OnChangePage}

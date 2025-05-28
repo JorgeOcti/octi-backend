@@ -721,8 +721,7 @@ class InventoryController {
     // paginate options
 
 
-    logger.error(`calling list: Async Error. ${ page } ${ pageSize }`);
-
+    logger.error(`calling list: Async Error. ${ page } ${ pageSize } ${ containers } ${ team } ${ venuesPermissions }`);
 
 
 
@@ -2136,6 +2135,7 @@ class InventoryController {
       const team = req.user.team._id;
       logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
+      
       if (updatedUser) {
         const inventories: IInventory[] = await InventoryModel.find(
           {
