@@ -3248,55 +3248,80 @@ class InventoryController {
 
 
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
-    try {
-      logger.info(`InventoryController.currentCompanyStock {email: ${req.user.email}}`);
+  try {
+    const { company } = req.user; // user request company
+    let { companyId } = req.params; //filter param company
+    const { page, pageSize } = req.query as Record<string, string>;
+    let paginateResult = null;
 
-      const { company } = req.user; // user request company
-      let { companyId } = req.params; //filter param company
+    let filterCompanies: any = null;
+    let userCompany = await Company.findById(company._id);
 
-      let filterCompanies: any = null;
-      let historyCarsResult: any[] = [];
-
-      let userCompany = await Company.findById(company._id);
-
-      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
-
-        filterCompanies = {
-          $and: [{
-            company: new Types.ObjectId(companyId),
-            handlerCompany: new Types.ObjectId(company._id),
-            status: {
-              $in: [
-                StatusHistory.inTransit,
-                StatusHistory.readyToClient
-              ]
-            },
-          }]
-        }
-
-      } else {
-        //for clients
-        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
-          return res.status(403).json({
-            message: 'No tienes acceso a este inventario',
-            status: 403
-          });
-        }
-        filterCompanies = {
+    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+      filterCompanies = {
+        $and: [{
           company: new Types.ObjectId(companyId),
-          handlerCompany: {$exists: true},
+          handlerCompany: new Types.ObjectId(company._id),
           status: {
             $in: [
               StatusHistory.inTransit,
               StatusHistory.readyToClient
             ]
-          }
+          },
+        }]
+      }
+    } else {
+      //for clients
+      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+        return res.status(403).json({
+          message: 'No tienes acceso a este inventario',
+          status: 403
+        });
+      }
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: { $exists: true },
+        status: {
+          $in: [
+            StatusHistory.inTransit,
+            StatusHistory.readyToClient
+          ]
         }
       }
+    }
 
-      if(filterCompanies){
-        historyCarsResult = await History.aggregate([
-          {$match: filterCompanies},
+
+    logger.error(` compa;ias ${ JSON.stringify(filterCompanies)}`)
+
+    if (filterCompanies) {
+      const options: PaginateOptions = {
+        select: {
+          name: true,
+          updatedAt: true,
+          createdAt: true
+        },
+        sort: {
+          name: 1
+        },
+        customLabels: {
+          totalDocs: 'total',
+          docs: 'docs',
+          limit: 'perPage',
+          page: 'currentPage',
+          nextPage: 'next',
+          prevPage: 'prev',
+          totalPages: 'pages',
+          pagingCounter: 'si'
+        },
+        // allowDiskUse: true, //TODO: revisar si es necesario para los volumenes de datos
+        lean: true,
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '20', 10)
+      };
+
+      paginateResult = await History.aggregatePaginate(
+        History.aggregate([
+          { $match: filterCompanies },
           // get the inventory cars with the inventory id and the car id
           {
             $lookup: {
@@ -3317,7 +3342,8 @@ class InventoryController {
               as: 'inventoryCar'
             }
           },
-          {$unwind: {
+          {
+            $unwind: {
               path: '$inventoryCar',
               preserveNullAndEmptyArrays: true
             }
@@ -3394,36 +3420,41 @@ class InventoryController {
                 }
               }
             }
+          },
+          {
+            $lookup: {
+              from: 'cars',
+              localField: '_id',
+              foreignField: '_id',
+              as: 'car'
+            }
+          }, {
+            $unwind: {
+              path: "$car",
+              preserveNullAndEmptyArrays: true
+            }
           }
-        ])
-
-        let cars = await CarModel.find({
-          _id: {$in: historyCarsResult.map((h: any) => h._id)}
-        }).lean();
-
-        historyCarsResult = historyCarsResult.map(hc =>{
-          let car = cars.find((c: any) => c._id.toString() === hc._id.toString());
-          return {
-            car,
-            histories: hc.histories
-          }
-        })
-      }
-
-      return res.status(200).json({
-        cars: historyCarsResult
-      });
-
-    } catch (e) {
-      logger.error(`InventoryController.currentCompanyStock: Error.`);
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-      logger.error(e);
-      return res.status(500).json({
-        message: JSON.stringify(e),
-        status: 500
-      });
+        ]), options);
     }
+
+    return res.status(200).json({
+      cars: paginateResult?.docs,
+      count: paginateResult?.total,
+      pages: paginateResult?.pages,
+      hasPrevious: paginateResult?.hasPrevious,
+      hasNextPage: paginateResult?.hasNextPage,
+    });
+
+  } catch (e) {
+    logger.error(`InventoryController.currentCompanyStock: Error.`);
+    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.error(e);
+    return res.status(500).json({
+      message: JSON.stringify(e),
+      status: 500
+    });
   }
+}
 
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {
