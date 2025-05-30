@@ -34,6 +34,9 @@ interface IStateType {
   error: Error | null;
   originalUnits: any[];
   units: any[];
+  paginationPage: number;
+  paginationPageSize: number;
+  totalRows: number;
   blFilter: string;
   containerFilter: string;
   shipFilter: string[];
@@ -99,7 +102,7 @@ const dataTableStyle = {
 const paginationComponentOptions = {
   rowsPerPageText: 'Filas por página',
   rangeSeparatorText: 'de',
-  selectAllRowsItem: true,
+  selectAllRowsItem: false,
   selectAllRowsItemText: 'Todos',
 };
 
@@ -152,6 +155,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       error: null,
       originalUnits: [],
       units: [],
+      paginationPage: 1,
+      paginationPageSize: 10,
+      totalRows: 0,
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
@@ -190,49 +196,59 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
-    const {company} = window.user
-    if(company?.handler){
-        // En caso de ser usuario handler filtro por el primer cliente del listado
-        this.setState({multiCompany: true, clientFilter:company?.clientCompanies[0]._id, clientSelector: company?.clientCompanies})
-        this.getUnitsByCompanyId(company.clientCompanies[0]._id)
+    const { company } = window.user
+    if (company?.handler) {
+      // En caso de ser usuario handler filtro por el primer cliente del listado
+      this.setState({ 
+        multiCompany: true, 
+        clientFilter: company?.clientCompanies[0]._id, 
+        clientSelector: company?.clientCompanies 
+      },() => {
+        this.getUnitsByCompanyId(1);
+      });
     } else {
-        if (company && company._id) {
-          const companyList = window.user.companiesAccess.length > 1 ? window.user.companiesAccess : [{ _id: company._id, name: company.name }]
-          this.setState({
-            multiCompany: companyList.length > 1,
-            clientFilter: companyList[0]._id,
-            clientSelector: companyList
-          }, () => {
-            this.getUnitsByCompanyId(companyList[0]._id)
-          })
-        }
+      if (company && company._id) {
+        const companyList = window.user.companiesAccess.length > 1 ? window.user.companiesAccess : [{ _id: company._id, name: company.name }]
+        this.setState({
+          multiCompany: companyList.length > 1,
+          clientFilter: companyList[0]._id,
+          clientSelector: companyList
+        }, () => {
+          this.getUnitsByCompanyId(1)
+        })
+      }
     }
   }
 
-  getUnitsByCompanyId(companyId:string){
-    this.setState({loading: true})
+  getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
+
+    this.setState({ loading: true })
     const api: ApiService = new ApiService();
     api.getSource()
-    api.getUnitsByCompany(companyId).then((data:any) => {
-      let venueOptions:any[] = []
-      let shipOptions:any[] = []
-      let tripOptions:any[] = []
-      let units = data.data.cars.map((datum:any) => {
-        let inventoryCar = datum.histories.find((history:any) => history.status === "readyToClient")?.inventoryCar;
+
+    const companyId = this.state.clientFilter || window.user.company._id;
+
+    api.getUnitsByCompany(companyId, page, pageSize).then((data: any) => {
+
+      let venueOptions: any[] = []
+      let shipOptions: any[] = []
+      let tripOptions: any[] = []
+      let units = data.data.cars.map((datum: any) => {
+        let inventoryCar = datum.histories.find((history: any) => history.status === "readyToClient")?.inventoryCar;
         // Sorting histories by createdAt in descending order
-        let histories = datum.histories.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        let histories = datum.histories.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         let status = histories[0].status;
         let car = datum.car;
         let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
 
-        if(car.venue && !venueOptions.includes(car.venue)) {
+        if (car.venue && !venueOptions.includes(car.venue)) {
           venueOptions.push(car.venue)
         }
 
-        if(!tripOptions.includes(inventoryCar.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar.extra["N° Viaje"].toString().toLowerCase())
-        if(!shipOptions.includes(inventoryCar.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar.extra["Nave"].toString().toLowerCase())
+        if (!tripOptions.includes(inventoryCar?.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar?.extra["N° Viaje"].toString().toLowerCase())
+        if (!shipOptions.includes(inventoryCar?.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar?.extra["Nave"].toString().toLowerCase())
 
         return {
           inventoryCar,
@@ -240,17 +256,22 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           histories,
           status
         }
-      })
 
-        this.setState({
-            units: units,
-            originalUnits: units,
-            loading: false,
-            venueSelector:venueOptions,
-            shipSelector:shipOptions,
-            tripSelector:tripOptions
-          })
-        this.cleanFilters()
+      });
+
+      this.setState({
+        totalRows: data.data.count,
+        units: units,
+        originalUnits: units,
+        loading: false,
+        venueSelector: venueOptions,
+        shipSelector: shipOptions,
+        tripSelector: tripOptions
+      });
+
+      this.cleanFilters();
+
+
     })
   }
 
@@ -268,7 +289,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.filterUnits();
     }
     if(!prevState.loading && this.state.clientFilter !== prevState.clientFilter){
-        this.getUnitsByCompanyId(this.state.clientFilter)
+       this.getUnitsByCompanyId(1);
     }
   }
 
@@ -432,7 +453,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        minWidth: '140px',
+        'min-width': '140px',
         sortFunction: (a: any, b: any) => {
           const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
           const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
@@ -479,7 +500,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        minWidth: '140px',
+        'min-width': '140px',
         sortFunction: (a: any, b: any) => {
           const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
           const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
@@ -741,20 +762,31 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                   <div className="row">
                     <div className="col-md-12">
-                        <DataTable
-                          columns={columns}
-                          defaultSortFieldId="date"
-                          defaultSortAsc={false}
-                          data={units}
-                          customStyles={dataTableStyle}
-                          pagination
-                          paginationComponentOptions={paginationComponentOptions}
-                          noDataComponent={
-                            <div className="text-center">
-                              <h4>No hay datos</h4>
-                            </div>
-                          }
-                        />
+                      <DataTable
+                        columns={columns}
+                        data={units}
+                        customStyles={dataTableStyle}
+                        pagination
+                        paginationComponentOptions={paginationComponentOptions}
+                        paginationServer={true}
+                        paginationTotalRows={this.state.totalRows}
+                        onChangePage={(page: number) => {
+                          this.getUnitsByCompanyId(page);
+                        }}
+                        onChangeRowsPerPage={(newPerPage: number, page: number) => {
+                          this.setState({
+                            paginationPage: page,
+                            paginationPageSize: newPerPage
+                          }, () => {
+                            this.getUnitsByCompanyId(page, newPerPage)
+                          });
+                        }}
+                        noDataComponent={
+                          <div className="text-center">
+                            <h4>No hay datos</h4>
+                          </div>
+                        }
+                      />
                     </div>
                   </div>
               </div>

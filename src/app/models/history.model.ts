@@ -3,8 +3,9 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 import { modulesHistory, statusHistory } from './history.types';
 
-import { PaginateModel } from 'mongoose';
+import { PaginateModel, AggregatePaginateModel } from 'mongoose';
 import type { IHistory } from '../interfaces/history.interface';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IHistoryModel extends IHistory, mongoose.Document<any> {
 }
@@ -117,8 +118,13 @@ historySchema.index({ team: 1, current: 1, car: 1 });
 historySchema.index({ team: 1, company: 1, current: 1, car: 1 });
 
 historySchema.plugin(mongoosePaginate);
+historySchema.plugin(mongooseAggregatePaginate);
 
-export type HistorySchema = mongoose.Model<IHistoryModel> & PaginateModel<IHistoryModel> & {};
+export type HistorySchema = mongoose.Model<IHistoryModel> & PaginateModel<IHistoryModel> & AggregatePaginateModel<IHistoryModel>;
+
+/*
+export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel> & AggregatePaginateModel<IRequestItemModel>;
+*/
 
 const History = mongoose.model<IHistoryModel, HistorySchema>('History', historySchema);
 export default History;
