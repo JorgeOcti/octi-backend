@@ -604,7 +604,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                       value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
                                       onChange={(e) => this.onChangeQuestion(e, participant._id)}
                                     />
-                                    <span className={` input-group-addon  revision-icon-wrapper-answer ${participant.webQuestion.answer.length > 0 ? '' : 'label-success'} `}
+                                    <span className={` input-group-addon  revision-icon-wrapper-answer ${participant.webQuestion.answer.length > 0 ? 'label-success' : '' } `}
                                       id="basic-addon1">
                                       <i className="fa fa-fw fa-floppy-o" />
                                     </span>
