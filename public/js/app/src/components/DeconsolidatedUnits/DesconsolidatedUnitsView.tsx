@@ -764,8 +764,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="col-md-12">
                       <DataTable
                         columns={columns}
-                       
-                       
                         data={units}
                         customStyles={dataTableStyle}
                         pagination
@@ -773,21 +771,15 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         paginationServer={true}
                         paginationTotalRows={this.state.totalRows}
                         onChangePage={(page: number) => {
-                          //this.loadInventoryData(page, 10);
-                          console.log(` OnChangePage ${page}`);
                           this.getUnitsByCompanyId(page);
                         }}
                         onChangeRowsPerPage={(newPerPage: number, page: number) => {
-                          // this.loadInventoryData(page, newPerPage);
-                          console.log(` OnChangeRowsPerPage ${newPerPage} ${page}`);
                           this.setState({
                             paginationPage: page,
                             paginationPageSize: newPerPage
+                          }, () => {
+                            this.getUnitsByCompanyId(page, newPerPage)
                           });
-
-
-                          this.getUnitsByCompanyId();
-
                         }}
                         noDataComponent={
                           <div className="text-center">
