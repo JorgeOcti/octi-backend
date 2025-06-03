@@ -663,7 +663,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       .then(async (response: any) => {
 
         let inventories: IInventory[] = response.data.inventories;
-        let promises = inventories.map((inventory: IInventory) => {
+        let promises = inventories.filter((inventory)=> (inventory as any)._id == params['id']).map((inventory: IInventory) => {
           return api.getInventory((inventory as any)._id)
         })
 
