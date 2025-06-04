@@ -2135,7 +2135,7 @@ class InventoryController {
       const team = req.user.team._id;
       logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
-      
+
       if (updatedUser) {
         const inventories: IInventory[] = await InventoryModel.find(
           {
@@ -3262,12 +3262,6 @@ class InventoryController {
         $and: [{
           company: new Types.ObjectId(companyId),
           handlerCompany: new Types.ObjectId(company._id),
-          status: {
-            $in: [
-              StatusHistory.inTransit,
-              StatusHistory.readyToClient
-            ]
-          },
         }]
       }
     } else {
@@ -3281,17 +3275,11 @@ class InventoryController {
       filterCompanies = {
         company: new Types.ObjectId(companyId),
         handlerCompany: { $exists: true },
-        status: {
-          $in: [
-            StatusHistory.inTransit,
-            StatusHistory.readyToClient
-          ]
-        }
       }
     }
 
 
-    logger.error(` compa;ias ${ JSON.stringify(filterCompanies)}`)
+    logger.error(`companies ${ JSON.stringify(filterCompanies)}`)
 
     if (filterCompanies) {
       const options: PaginateOptions = {
@@ -3319,123 +3307,246 @@ class InventoryController {
         limit: parseInt(pageSize ? pageSize : '20', 10)
       };
 
-      paginateResult = await History.aggregatePaginate(
-        History.aggregate([
-          { $match: filterCompanies },
-          // get the inventory cars with the inventory id and the car id
+      let histories = await History.aggregate([
+        {$match: {
+            ...filterCompanies,
+            status: {
+              $in: ['inTransit', 'readyToClient']
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$car',
+            lastCreatedAt: {
+              $max: '$createdAt'
+            },
+          }
+        }, {
+          $sort: {
+            lastCreatedAt: -1 // Sort by the latest createdAt date
+          }
+        }
+      ])
+
+      let cars = histories.slice(
+        (options.page! - 1) * options.limit!,
+        (options.page! - 1) * options.limit! + options.limit!
+      ).map((h: any) => h._id);
+
+      paginateResult = await Car.aggregatePaginate(
+        Car.aggregate([
+          {$match: {...filterCompanies, _id: {$in: cars}}},
           {
             $lookup: {
-              from: 'inventorycars',
-              let: { car: '$car', inventory: '$inventory' },
+              from: 'histories',
+              let: { carId: '$_id' },
               pipeline: [
                 {
                   $match: {
                     $expr: {
                       $and: [
-                        { $eq: ['$car', '$$car'] },
-                        { $eq: ['$inventory', '$$inventory'] }
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'inTransit'] }, // Specific status filter
                       ]
                     }
                   }
+                },
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar',
+                    foreignField: '_id',
+                    as: 'inventoryCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.containerFound for inTransit histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar.containerFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.containerFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.containerFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.venue for inTransit histories
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'inventoryCar.venue',
+                    foreignField: '_id',
+                    as: 'inventoryCar.venue'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.venue',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate history.participant for inTransit histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'participant',
+                    foreignField: '_id',
+                    as: 'participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.participant for inTransit histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'inventoryCar.participant',
+                    foreignField: '_id',
+                    as: 'inventoryCar.participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.participant',
+                    preserveNullAndEmptyArrays: true
+                  }
                 }
               ],
-              as: 'inventoryCar'
+              as: 'inTransitHistories' // Store as a separate array for inTransit histories
             }
           },
-          {
-            $unwind: {
-              path: '$inventoryCar',
-              preserveNullAndEmptyArrays: true
-            }
-          },
+
+          { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
+
           {
             $lookup: {
-              from: 'inventorycars',
-              localField: 'inventoryCar.containerFound',
-              foreignField: '_id',
-              as: 'inventoryCar.containerFound'
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.containerFound',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'venues',
-              localField: 'inventoryCar.venue',
-              foreignField: '_id',
-              as: 'inventoryCar.venue' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.venue',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'participants',
-              localField: 'participant',
-              foreignField: '_id',
-              as: 'participant'
-            }
-          },
-          {
-            $unwind: {
-              path: '$participant',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'participants',
-              localField: 'inventoryCar.participant',
-              foreignField: '_id',
-              as: 'inventoryCar.participant'
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.participant',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $group: {
-              _id: "$car",
-              histories: {
-                $push: {
-                  _id: '$_id',
-                  status: '$status',
-                  from: '$from',
-                  to: '$to',
-                  participant: '$participant',
-                  createdAt: '$createdAt',
-                  inventoryCar: '$inventoryCar',
-                  current: "$current"
+              from: 'histories',
+              let: { carId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'readyToClient'] }, // Specific status filter
+                      ]
+                    }
+                  }
+                },
+                // Populate inventoryCar for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar',
+                    foreignField: '_id',
+                    as: 'inventoryCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.containerFound for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar.containerFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.containerFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.containerFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.venue for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'inventoryCar.venue',
+                    foreignField: '_id',
+                    as: 'inventoryCar.venue'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.venue',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate history.participant for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'participant',
+                    foreignField: '_id',
+                    as: 'participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.participant for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'inventoryCar.participant',
+                    foreignField: '_id',
+                    as: 'inventoryCar.participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.participant',
+                    preserveNullAndEmptyArrays: true
+                  }
                 }
-              }
+                // Add any other specific population needed for readyToClient histories here
+              ],
+              as: 'readyToClientHistories' // Store as a separate array for readyToClient histories
             }
           },
           {
-            $lookup: {
-              from: 'cars',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'car'
-            }
-          }, {
-            $unwind: {
-              path: "$car",
-              preserveNullAndEmptyArrays: true
+            $unwind: { 'path': '$readyToClientHistories' }
+          },
+
+          // --- Combine and Project the results ---
+
+          {
+            $addFields: {
+              // Concatenate the two history arrays
+              histories:  ['$inTransitHistories', '$readyToClientHistories']
             }
           }
         ]), options);
+
+      paginateResult.total = histories.length;
+
     }
+
+
 
     return res.status(200).json({
       cars: paginateResult?.docs,

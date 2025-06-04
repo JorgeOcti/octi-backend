@@ -199,10 +199,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const { company } = window.user
     if (company?.handler) {
       // En caso de ser usuario handler filtro por el primer cliente del listado
-      this.setState({ 
-        multiCompany: true, 
-        clientFilter: company?.clientCompanies[0]._id, 
-        clientSelector: company?.clientCompanies 
+      this.setState({
+        multiCompany: true,
+        clientFilter: company?.clientCompanies[0]._id,
+        clientSelector: company?.clientCompanies
       },() => {
         this.getUnitsByCompanyId(1);
       });
@@ -230,18 +230,22 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
     api.getUnitsByCompany(companyId, page, pageSize).then((data: any) => {
 
+
+
       let venueOptions: any[] = []
       let shipOptions: any[] = []
       let tripOptions: any[] = []
       let units = data.data.cars.map((datum: any) => {
-        let inventoryCar = datum.histories.find((history: any) => history.status === "readyToClient")?.inventoryCar;
+        let histories = datum.histories.filter((h?: any) => h).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        let inventoryCar = histories.find((history: any) => history.status === "readyToClient")?.inventoryCar;
         // Sorting histories by createdAt in descending order
-        let histories = datum.histories.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         let status = histories[0].status;
-        let car = datum.car;
+        let car = { ...datum };
         let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
+
+        console.log("car", car)
 
         if (car.venue && !venueOptions.includes(car.venue)) {
           venueOptions.push(car.venue)
@@ -258,6 +262,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         }
 
       });
+
+      console.log("units", units)
 
       this.setState({
         totalRows: data.data.count,
@@ -318,6 +324,17 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       if (this.state.isFilteringByDate) {
         dateFilter = moment(unit.car.lastDate).isBetween(this.state.startDate, this.state.endDate, 'day', '[]');
       }
+      console.log(
+        bl,
+        containerFilter,
+        statusFilter,
+        unitFilter,
+        trip,
+        venueFilter,
+        dateFilter,
+        ship,
+        damageFilter
+      )
       return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
     });
 
@@ -367,7 +384,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
 
   render() {
-    const {units, loading, multiCompany} = this.state;
+    const {units, loading, multiCompany, totalRows} = this.state;
     const { getParticipant } = this.props;
 
     const columns = [
@@ -569,7 +586,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
                 Unidades Desconsolidadas <span className="font-12"
-                                               style={{ color: 'gray', fontWeight: '700' }}>{units?.length}</span>
+                                               style={{ color: 'gray', fontWeight: '700' }}>{totalRows}</span>
               </h3>
               <div className="pull-right box-tools">
                     < button
