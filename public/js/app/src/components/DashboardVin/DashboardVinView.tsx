@@ -411,9 +411,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <th
                           style={{ width: '20%' }}
-                          className="middle hidden-xs hidden-sm">
-                          Questions
-                        </th>
+                          className="middle hidden-xs hidden-sm"></th>
                         <th
                           style={{ width: '10%' }}
                           className="middle hidden-xs hidden-sm"></th>
@@ -596,15 +594,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
                               {
-                                (participant.webQuestion ) ?
+                                (participant.hasOwnProperty("webQuestion") && participant.webQuestion && participant.webQuestion!.hasOwnProperty("answer") && participant.webQuestion!.hasOwnProperty("question")) ?
                                   <div className="input-group revision-input-group-answer">
                                     <input type="text"
                                       className="form-control revision-input-field-answer"
-                                      placeholder={"Agregar " + participant.webQuestion.question}
-                                      value={participant.webQuestion.answer.length > 0 ? participant.webQuestion.answer : ''}
+                                      placeholder={"Agregar " + participant.webQuestion!.question}
+                                      value={participant.webQuestion!.answer.length > 0 ? participant.webQuestion!.answer : ''}
                                       onChange={(e) => this.onChangeQuestion(e, participant._id)}
                                     />
-                                    <span className={` input-group-addon  revision-icon-wrapper-answer ${participant.webQuestion.answer.length > 0 ? 'label-success' : '' } `}
+                                    <span className={` input-group-addon  revision-icon-wrapper-answer ${participant.webQuestion!.answer.length > 0 ? '' : 'label-success'} `}
                                       id="basic-addon1">
                                       <i className="fa fa-fw fa-floppy-o" />
                                     </span>

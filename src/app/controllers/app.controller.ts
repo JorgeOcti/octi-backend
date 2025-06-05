@@ -13,8 +13,12 @@ import emailQueue from '../tasks/email.task';
 import logger from '../../services/logger.service';
 import { passport } from '../../passportConfig';
 import redisClient from '../../services/redis.service';
+import { doubleCsrf } from 'csrf-csrf';
 
 class AppController {
+
+  private csrfTools: any;
+
   constructor() {
     this.index = this.index.bind(this);
     this.healthCheck = this.healthCheck.bind(this);
@@ -33,6 +37,20 @@ class AppController {
 
     this.logout = this.logout.bind(this);
     this.recoverFile = this.recoverFile.bind(this);
+
+    this.csrfTools = doubleCsrf({
+      getSecret: () => process.env.SECRET_KEY || 'secretKey', // A function that optionally takes the request and returns a secret
+      getSessionIdentifier: (req) => req.session.id,
+      getTokenFromRequest: (req) => {
+        if (req.body && req.body._csrf) {
+          return req.body._csrf;
+        } else if (req.cookies) {
+          return req.cookies["__Host-psifi.x-csrf-token"];
+        } else {
+          return req.headers["x-csrf-token"];
+        }
+      },
+    });
   }
 
   /* istanbul ignore next */
@@ -211,7 +229,7 @@ class AppController {
     if (req.user) {
       return res.redirect('/');
     } else {
-      let token : string = (req as any).csrfToken();
+      let token : string = this.csrfTools.generateToken(req, res, true, true);
       return res.render('app/forgotPassword', { csrfToken: token });
     }
   }
@@ -269,7 +287,7 @@ class AppController {
       /* istanbul ignore next */
       console.log(e);
     }
-    let token : string = (req as any).csrfToken();
+    let token : string = this.csrfTools.generateToken(req, res, true, true);
     return res.render('app/forgotPassword', {
       csrfToken: token,
       post: username && username.length
