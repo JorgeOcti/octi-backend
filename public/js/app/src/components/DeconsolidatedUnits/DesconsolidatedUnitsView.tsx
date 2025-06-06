@@ -227,10 +227,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     let keyName = '';
     switch (column.name) {
       case 'F. Descarga':
-         keyName = 'createdAt';
+         keyName = 'executedAt';
         break;
       case 'F. Despacho':
-         keyName = 'executedAt'; //TODO: a que campo corresponde
+         keyName = 'createdAt'; //TODO: a que campo corresponde
         break;
       case 'Estado':
         keyName = 'status';
@@ -514,13 +514,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        'min-width': '140px',
-        sortFunction: (a: any, b: any) => {
-          const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-          const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-          return moment(dateA).isAfter(dateB) ? 1 : -1;
-        },
-
+        'min-width': '140px'
       },{
         name: 'F. Despacho',
         selector: (row: any) => {
@@ -561,12 +555,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        'min-width': '140px',
-        sortFunction: (a: any, b: any) => {
-          const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
-          const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
-          return moment(dateA).isAfter(dateB) ? 1 : -1;
-        }
+        'min-width': '140px'
       }, {
         name: 'Estado',
         selector: (row: any) => {
