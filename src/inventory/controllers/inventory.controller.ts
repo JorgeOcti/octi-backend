@@ -65,6 +65,13 @@ import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
+
+
+interface MongooseSortOption {
+  [key: string]: mongoose.SortOrder; // SortOrder puede ser 1, -1, 'asc', 'desc', etc.
+}
+
+
 class InventoryController {
   constructor() {
     this.index = this.index.bind(this);
@@ -3247,11 +3254,30 @@ class InventoryController {
   }
 
 
+
+  private async parseSortParams(sortParams: string | string[]): Promise<MongooseSortOption> {
+    const sortOption: MongooseSortOption = {};
+
+    // Asegurarse de que sortParams sea un array
+    const paramsArray = Array.isArray(sortParams) ? sortParams : [sortParams];
+
+    for (const param of paramsArray) {
+      const direction = param.startsWith('-') ? -1 : 1;
+      const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
+      sortOption[field] = direction;
+    }
+
+    return sortOption;
+  };
+
+
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
-    const { page, pageSize } = req.query as Record<string, string>;
+    const { page, pageSize, sort } = req.query as Record<string, string>;
+
+
     let paginateResult = null;
 
     let filterCompanies: any = null;
@@ -3278,8 +3304,19 @@ class InventoryController {
       }
     }
 
+    // --- Ordenamiento ---
+    let sortOption: MongooseSortOption = { createdAt: -1 }; // Ordenamiento por defecto
+    if (sort) {
+      const paramsArray = Array.isArray(sort) ? sort : [sort];
+      for (const param of paramsArray) {
+        const direction = param.startsWith('-') ? -1 : 1;
+        const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
+        sortOption[field] = direction;
+      }
+    }
 
-    logger.error(`companies ${ JSON.stringify(filterCompanies)}`)
+   
+    logger.error(`sortOption ${ JSON.stringify(sortOption)}`)
 
     if (filterCompanies) {
       const options: PaginateOptions = {
@@ -3304,7 +3341,7 @@ class InventoryController {
         // allowDiskUse: true, //TODO: revisar si es necesario para los volumenes de datos
         lean: true,
         page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '20', 10)
+        limit: parseInt(pageSize ? pageSize : '10', 10)
       };
 
       let histories = await History.aggregate([
@@ -3327,7 +3364,7 @@ class InventoryController {
             lastCreatedAt: -1 // Sort by the latest createdAt date
           }
         }
-      ])
+      ]).sort(sortOption)
 
       let cars = histories.slice(
         (options.page! - 1) * options.limit!,
@@ -3430,9 +3467,7 @@ class InventoryController {
               as: 'inTransitHistories' // Store as a separate array for inTransit histories
             }
           },
-
           { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
-
           {
             $lookup: {
               from: 'histories',
@@ -3542,11 +3577,9 @@ class InventoryController {
           }
         ]), options);
 
-      paginateResult.total = histories.length;
+     // paginateResult.total = histories.length;
 
     }
-
-
 
     return res.status(200).json({
       cars: paginateResult?.docs,

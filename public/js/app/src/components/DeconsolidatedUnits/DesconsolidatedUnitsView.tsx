@@ -37,6 +37,7 @@ interface IStateType {
   paginationPage: number;
   paginationPageSize: number;
   totalRows: number;
+  sort:Record<string, string>;
   blFilter: string;
   containerFilter: string;
   shipFilter: string[];
@@ -158,6 +159,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       paginationPage: 1,
       paginationPageSize: 10,
       totalRows: 0,
+      sort:{},
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
@@ -220,6 +222,53 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
+  handleSort = (column: any, sortDirection: any) => {
+
+    let keyName = '';
+    switch (column.name) {
+      case 'F. Descarga':
+         keyName = 'createdAt';
+        break;
+      case 'F. Despacho':
+         keyName = 'executedAt'; //TODO: a que campo corresponde
+        break;
+      case 'Estado':
+        keyName = 'status';
+        break;
+    }
+
+    this.setState(prevState => {
+      const newSort = { ...prevState.sort };
+      if (newSort[keyName]) {
+        if (newSort[keyName] === 'asc') {
+          newSort[keyName] = 'desc';
+        } else {
+          delete newSort[keyName];
+        }
+      } else {
+        newSort[keyName] = 'asc';
+      }
+      return { sort: newSort };
+    });
+
+    const {paginationPage, paginationPageSize} = this.state;
+    this.getUnitsByCompanyId(paginationPage, paginationPageSize);
+	};
+
+
+  formatSortQuery(sortObject: Record<string, string>): string {
+    const sortParts: string[] = [];
+    for (const field in sortObject) {
+      if (Object.prototype.hasOwnProperty.call(sortObject, field)) {
+        const direction = sortObject[field];
+        const prefix = direction === 'asc' ? '+' : '-'; // '+' asc, '-' desc
+        sortParts.push(`${prefix}${field}`);
+      }
+    }
+    return sortParts.length > 0 ? `sort=${sortParts.join('&sort=')}` : '';
+  }
+
+
   getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
 
     this.setState({ loading: true })
@@ -227,11 +276,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     api.getSource()
 
     const companyId = this.state.clientFilter || window.user.company._id;
+    const sortQuery = this.formatSortQuery(this.state.sort)
 
-    api.getUnitsByCompany(companyId, page, pageSize).then((data: any) => {
-
-
-
+    api.getUnitsByCompany(companyId, page, pageSize, sortQuery).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
       let tripOptions: any[] = []
@@ -260,7 +307,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           histories,
           status
         }
-
       });
 
       console.log("units", units)
@@ -276,9 +322,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       });
 
       this.cleanFilters();
-
-
-    })
+    });
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
@@ -787,6 +831,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         paginationComponentOptions={paginationComponentOptions}
                         paginationServer={true}
                         paginationTotalRows={this.state.totalRows}
+                        sortServer={true}
+                        onSort={this.handleSort}
                         onChangePage={(page: number) => {
                           this.getUnitsByCompanyId(page);
                         }}
