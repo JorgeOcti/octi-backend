@@ -3311,10 +3311,11 @@ class InventoryController {
       for (const param of paramsArray) {
         const direction = param.startsWith('-') ? -1 : 1;
         const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
-        // Solo aplica el ordenamiento al campo si es readyToClientHistories.executedAt
-        // o si es otro campo que ya esté disponible al inicio del pipeline principal.
-        if (field === 'executedAt') {
+
+        if (field === 'readyToClientHistories.executedAt') {
           sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
+        } else if (field === 'inTransitHistories.executedAt') {
+          sortOptionAggregation['inTransitHistories.executedAt'] = direction;
         } else {
           sortOptionAggregation[field] = direction;
         }

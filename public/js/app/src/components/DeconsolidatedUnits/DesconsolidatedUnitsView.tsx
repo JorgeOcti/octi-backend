@@ -225,12 +225,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   handleSort = (column: any, sortDirection: any) => {
 
     let keyName = '';
+    
     switch (column.name) {
       case 'F. Descarga':
-         keyName = 'executedAt';
+         keyName = 'readyToClientHistories.executedAt';
         break;
       case 'F. Despacho':
-         keyName = 'createdAt'; //TODO: a que campo corresponde
+         keyName = 'inTransitHistories.executedAt';
         break;
       case 'Estado':
         keyName = 'status';
