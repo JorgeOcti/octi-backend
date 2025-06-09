@@ -3311,7 +3311,6 @@ class InventoryController {
       for (const param of paramsArray) {
         const direction = param.startsWith('-') ? -1 : 1;
         const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
-
         if (field === 'readyToClientHistories.executedAt') {
           sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
         } else if (field === 'inTransitHistories.executedAt') {
