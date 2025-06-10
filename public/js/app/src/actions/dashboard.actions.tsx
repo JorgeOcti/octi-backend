@@ -30,7 +30,7 @@ export interface IDashboardFilter {
 
 interface WebQuestion {
   question: string;
-  type: string; 
+  type: string;
   answer: string;
 }
 
@@ -167,7 +167,7 @@ export function loadBrandsAction(brands: IBrand[]): ILoadBrands {
     payload: {
       brands: brands
     }
-  }
+  };
 }
 
 interface ILoadCar {
@@ -220,7 +220,6 @@ export function updateFilterDashboardAction(
   };
 }
 
-
 interface ILoadingForms {
   type: '/DASHBOARD/LOAD_FORMS';
   payload: {
@@ -238,13 +237,12 @@ export function loadForms(forms: IForm[]): ILoadingForms {
 }
 
 export function changingParticipantAnswer(revisionId: string, answer: string) {
-  return (
-    dispatch: Dispatch<DashboardReduxAction>
-  ) => {
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.addAnswerParticipant(revisionId, answer)
+    api
+      .addAnswerParticipant(revisionId, answer)
       .then((response: AxiosResponse) => {
         const data = response.data;
         dispatch(addParticipantAnswer(data));
@@ -260,10 +258,8 @@ export function changingParticipantAnswer(revisionId: string, answer: string) {
       .catch((err: AxiosError) => {
         api.errorHandler(err);
       });
-  }
+  };
 }
-
-
 
 interface IUpdateParticipantAnswer {
   type: '/DASHBOARD/UPDATE_PARTICIPANT_ANSWER';
@@ -283,7 +279,6 @@ export function addParticipantAnswer(
   };
 }
 
-
 export function changeFilterDashboardAction(filter: IDashboardFilter) {
   return (
     dispatch: Dispatch<DashboardReduxAction>,
@@ -292,7 +287,7 @@ export function changeFilterDashboardAction(filter: IDashboardFilter) {
     dispatch(updateFilterDashboardAction(filter));
     const getRevisions = getRevisionsAction(1, false);
     getRevisions(dispatch, getState);
-  }
+  };
 }
 
 export function getRevisionsThunkAction(
@@ -319,7 +314,8 @@ export function getRevisionsThunkAction(
     }
 
     if (state.dashboard.brands.length === 0) {
-      api.getBrands({page: 1, pageSize: 500})
+      api
+        .getBrands({ page: 1, pageSize: 500 })
         .then((response: AxiosResponse) => {
           dispatch(loadBrandsAction(response.data.results));
         })
@@ -447,7 +443,6 @@ export function loadingParticipantAction(
 }
 
 export function getParticipant(id: string) {
-
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
@@ -458,7 +453,7 @@ export function getParticipant(id: string) {
         const data = response.data.data;
         dispatch(
           loadDataAction(
-           <strong className='text-muted'>{data.name}</strong>,
+            <strong className="text-muted">{data.name}</strong>,
             <div id="form-detail">
               <table style={{ width: '100%' }}>
                 <tbody>
@@ -466,7 +461,7 @@ export function getParticipant(id: string) {
                     <td style={{ width: '40%' }}>
                       <strong>Fecha</strong>
                     </td>
-                    <td className='text-muted'>
+                    <td className="text-muted">
                       {moment(data.createdAt).format('LLL')?.toUpperCase()}
                     </td>
                   </tr>
@@ -653,9 +648,13 @@ export function getParticipant(id: string) {
                   {data?.car?.vin ? (
                     <tr>
                       <td style={{ width: '40%' }}>
-                        <strong>{data?.car?.isContainer ? "BIC" : "VIC"}</strong>
+                        <strong>
+                          {data?.car?.isContainer ? 'BIC' : 'VIC'}
+                        </strong>
                       </td>
-                      <td><strong>{data?.car?.vin.toUpperCase()}</strong></td>
+                      <td>
+                        <strong>{data?.car?.vin.toUpperCase()}</strong>
+                      </td>
                     </tr>
                   ) : null}
                   {data?.car?.brand ? (
@@ -663,7 +662,9 @@ export function getParticipant(id: string) {
                       <td style={{ width: '40%' }}>
                         <strong>Marca</strong>
                       </td>
-                      <td className='text-primary'><strong>{data?.car?.brand.toUpperCase()}</strong></td>
+                      <td className="text-primary">
+                        <strong>{data?.car?.brand.toUpperCase()}</strong>
+                      </td>
                     </tr>
                   ) : null}
                   {data?.car?.denomination ? (
@@ -671,7 +672,11 @@ export function getParticipant(id: string) {
                       <td style={{ width: '40%' }}>
                         <strong>Denominación</strong>
                       </td>
-                      <td><strong className='text-muted'>{data?.car?.denomination.toUpperCase()}</strong></td>
+                      <td>
+                        <strong className="text-muted">
+                          {data?.car?.denomination.toUpperCase()}
+                        </strong>
+                      </td>
                     </tr>
                   ) : null}
                   {data?.car?.color ? (
@@ -679,7 +684,9 @@ export function getParticipant(id: string) {
                       <td style={{ width: '40%' }}>
                         <strong>Color</strong>
                       </td>
-                      <td className='text-muted'>{data?.car?.color.toUpperCase()}</td>
+                      <td className="text-muted">
+                        {data?.car?.color.toUpperCase()}
+                      </td>
                     </tr>
                   ) : null}
                   {data?.car?.patent ? (
@@ -687,7 +694,9 @@ export function getParticipant(id: string) {
                       <td style={{ width: '40%' }}>
                         <strong>Identificación</strong>
                       </td>
-                      <td className='text-muted'>{data?.car?.patent.toUpperCase()}</td>
+                      <td className="text-muted">
+                        {data?.car?.patent.toUpperCase()}
+                      </td>
                     </tr>
                   ) : null}
                 </tbody>
@@ -895,14 +904,6 @@ export function getParticipant(id: string) {
                                                         height={'100px'}
                                                       />
                                                     </a>
-                                                    {/*<p*/}
-                                                    {/*  className={'text-ellipsis'}*/}
-                                                    {/*  data-toggle='tooltip'*/}
-                                                    {/*  data-placement='top'*/}
-                                                    {/*  title={image.file.name}*/}
-                                                    {/*>*/}
-                                                    {/*  {image.file.name}*/}
-                                                    {/*</p>*/}
                                                   </div>
                                                 );
                                               })}
@@ -941,15 +942,8 @@ export function getParticipant(id: string) {
                                           return (
                                             <p
                                               key={item._id}
-                                              className="text-primary"
-                                              // className={answer.accesoriesAnswered.includes(item._id) ? 'text-green' : 'text-red'}
-                                            >
+                                              className="text-primary">
                                               <strong>
-                                                {/*
-                                                answer.accesoriesSelected.includes(item._id) ?
-                                                  <i className="fa fa-check" style={{marginRight: '5px'}}/> :
-                                                  <i className="fa fa-times" style={{marginRight: '5px', width: '14px'}}/>
-                                                 */}{' '}
                                                 - {item.item}{' '}
                                                 {item.amount
                                                   ? `(${
@@ -989,14 +983,6 @@ export function getParticipant(id: string) {
                                           height={'100px'}
                                         />
                                       </a>
-                                      {/* <p
-                                              className={'text-ellipsis'}
-                                              data-toggle="tooltip"
-                                              data-placement="top"
-                                              title={image.file.name}
-                                            >
-                                              <span className='text-sm text-muted'>{image.file.name}</span>
-                                            </p> */}
                                     </div>
                                   );
                                 })}
@@ -1015,7 +1001,14 @@ export function getParticipant(id: string) {
                                       Comentario
                                     </span>
                                     <br />
-                                    {answer.comment?.toUpperCase().split('\n').map((str: string) => <p className="text-primary" >{str}</p>)}
+                                    {answer.comment
+                                      ?.toUpperCase()
+                                      .split('\n')
+                                      .map((str: string, idx: number) => (
+                                        <p className="text-primary" key={idx}>
+                                          {str}
+                                        </p>
+                                      ))}
                                   </p>
                                 </div>
                               </div>
@@ -1034,6 +1027,110 @@ export function getParticipant(id: string) {
                                       {answer.maxValue})
                                     </span>
                                   </p>
+                                </div>
+                              </div>
+                            ) : null}
+                            {answer.kind === 'matrix' &&
+                            answer.matrix &&
+                            answer.matrixValues &&
+                            answer.matrixValues.length ? (
+                              <div
+                                className="row"
+                                style={{ marginTop: '10px' }}>
+                                <div className="col-md-12">
+                                  <div style={{ padding: '5px' }}>
+                                    <p className="text-muted">
+                                      <strong>{answer.matrix.name}</strong>
+                                    </p>
+                                    <div className="row">
+                                      {answer.matrixValues.map(
+                                        (question: any, idx: number) => (
+                                          <div
+                                            className="col-md-12"
+                                            key={idx}
+                                            style={{ marginBottom: '10px' }}>
+                                            <div className="panel panel-default">
+                                              <div className="panel-body">
+                                                {question.map(
+                                                  (ans: any, i: number) => (
+                                                    <div
+                                                      key={i}
+                                                      style={{
+                                                        marginBottom: '5px'
+                                                      }}>
+                                                      <span className="text-muted">
+                                                        <strong>
+                                                          {ans.question}
+                                                        </strong>
+                                                      </span>
+                                                      <br />
+                                                      {ans.type === 'text' ? (
+                                                        <span className="text-muted">
+                                                          {ans.name} :{' '}
+                                                          {ans.value}
+                                                        </span>
+                                                      ) : null}
+                                                      {ans.type === 'photo' ? (
+                                                        <ShowIf
+                                                          condition={
+                                                            !!ans.images.length
+                                                          }
+                                                          alternative={
+                                                            <p
+                                                              style={{
+                                                                padding: '0 5px'
+                                                              }}
+                                                              className="text-sm text-muted">
+                                                              No se reportaron
+                                                              imágenes.
+                                                            </p>
+                                                          }>
+                                                          <div className="row images">
+                                                            <span className="text-muted">
+                                                              {ans.name}
+                                                            </span>
+                                                            <br />
+                                                            {ans.images.map(
+                                                              (image: any) => {
+                                                                return (
+                                                                  <div
+                                                                    className="col-md-3 col-sm-4 col-xs-4 text-center"
+                                                                    key={
+                                                                      image._id
+                                                                    }
+                                                                    data-toggle="tooltip"
+                                                                    data-placement="bottom"
+                                                                    title={
+                                                                      image.file
+                                                                        .name
+                                                                    }>
+                                                                    <ImageLazyLoad
+                                                                      url={
+                                                                        image
+                                                                          .file
+                                                                          .url
+                                                                      }
+                                                                      height={
+                                                                        '100px'
+                                                                      }
+                                                                    />
+                                                                  </div>
+                                                                );
+                                                              }
+                                                            )}
+                                                          </div>
+                                                        </ShowIf>
+                                                      ) : null}
+                                                    </div>
+                                                  )
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             ) : null}
