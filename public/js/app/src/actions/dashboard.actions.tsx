@@ -1085,11 +1085,10 @@ export function getParticipant(id: string) {
                                                               imágenes.
                                                             </p>
                                                           }>
-                                                          <div className="row images">
                                                             <span className="text-muted">
                                                               {ans.name}
                                                             </span>
-                                                            <br />
+                                                          <div className="row images">
                                                             {ans.images.map(
                                                               (image: any) => {
                                                                 return (
