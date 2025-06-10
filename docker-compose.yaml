@@ -43,6 +43,7 @@ services:
       SITE_URL: "http://localhost:3030/"
       SES_REGION: us-west-2
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
+      MONGODB_URI: mongodb+srv://osacontrol:ENu5FyOjyTzScmmr@clusterandes.uln1t.mongodb.net/osaAndesProduction?authSource=admin&readPreference=secondary
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
       - 3030:3030

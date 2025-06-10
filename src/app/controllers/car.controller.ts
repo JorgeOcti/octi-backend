@@ -1991,6 +1991,9 @@ class CarController {
           path: 'sections.answers.damagesSelected.images'
         },
         {
+          path: 'sections.answers.matrixValues.images'
+        },
+        {
           path: 'shippingImages'
         },
         {
