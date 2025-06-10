@@ -42,6 +42,54 @@ const accessorySchema = new mongoose.Schema({
   items: [itemSchema]
 });
 
+export enum MatrixItemType {
+  text = 'text',
+  photo = 'photo',
+}
+
+export const matrixItemType = [
+  MatrixItemType.text,
+  MatrixItemType.photo
+];
+
+
+export const MatrixItemSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: matrixItemType,
+    default: MatrixItemType.text
+  },
+  value: {
+    type: String,
+    trim: true,
+  },
+  images:  [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ParticipantFile'
+    }]
+})
+
+export const MatrixSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  questions: [MatrixItemSchema],
+}, {
+  timestamps: false
+})
+
 export enum KindQuestion {
   scale = 'scale',
   numericScale = 'numeric-scale',
@@ -50,7 +98,8 @@ export enum KindQuestion {
   venue = 'venue',
   damage = 'damage',
   carrier = 'carrier',
-  image = 'image'
+  image = 'image',
+  matrix = 'matrix'
 }
 
 export const kindQuestion = [
@@ -61,7 +110,8 @@ export const kindQuestion = [
   KindQuestion.damage,
   KindQuestion.venue,
   KindQuestion.carrier,
-  KindQuestion.image
+  KindQuestion.image,
+  KindQuestion.matrix
 ];
 
 export enum KindQuestionKeyboard {
@@ -182,6 +232,11 @@ const formQuestionsSchema = new mongoose.Schema({
     type: String,
     enum: kindQuestionImage,
     default: KindQuestionImage.picture
+  },
+
+  matrix: {
+    type: MatrixSchema,
+    default: null
   },
 
   minValue: Number,

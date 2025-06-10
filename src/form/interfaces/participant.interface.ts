@@ -64,6 +64,20 @@ export interface IParticipantAccesory {
   items: IParticipantItemModel[];
 }
 
+export interface IMatrixItem {
+  _id?: any;
+  question: string;
+  name: string;
+  type: string;
+  value?: string;
+  image?: string;
+}
+
+export interface IMatrix {
+  _id?: any;
+  questions: IMatrixItem[];
+}
+
 export interface IParticipantAnswer {
   question: string;
   kindUpdate: string;
@@ -87,6 +101,9 @@ export interface IParticipantAnswer {
 
   risk: string;
   observe: string;
+
+  matrix: IMatrix;
+  matrixValues: IMatrixItem[][];
 
   weight: number;
   kind: string;
