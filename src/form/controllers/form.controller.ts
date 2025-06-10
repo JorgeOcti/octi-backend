@@ -449,7 +449,8 @@ class FormController {
           conciliationText: true,
           conciliationImages: true,
           createdAt: true,
-          startAt: true
+          startAt: true,
+          webQuestion: true,
         }
       )
         .allowDiskUse(true)
@@ -576,7 +577,7 @@ class FormController {
               images: tempParticipant.sections[0].answers[3].images,
             }
           ]
-        }, 
+        },
         {
           name: "EVIDENCIA CARGA RETENIDA",
           useGrid: true,
@@ -1643,6 +1644,10 @@ class FormController {
                 });
               }
 
+              const matrixValues: any[] =
+                (question.kind === KindQuestion.matrix) &&
+                answer && answer.matrix ? answer.matrix : [];
+
               // generate answer
               const comment =
                 (question.kind === KindQuestion.text ||
@@ -1716,6 +1721,8 @@ class FormController {
                   : [],
                 qualification,
                 na,
+                matrix: question.matrix,
+                matrixValues: matrixValues,
                 weight: question.weight,
                 kind: question.kind,
                 order: question.order,

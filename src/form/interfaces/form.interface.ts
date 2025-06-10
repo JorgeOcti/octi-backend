@@ -8,7 +8,7 @@ import type { IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSecti
 import type { IScaleModel } from '../models/scale.model';
 import type { IFormTriggerModel } from "../models/trigger.model";
 import {IQuestionTriggerModel} from "../models/questionTrigger.model";
-import { webQuestion } from './participant.interface';
+import { IMatrix, webQuestion } from './participant.interface';
 
 export interface IFormItems {
   _id?: any;
@@ -33,6 +33,7 @@ export interface IFormQuestion {
   scale: IScaleModel;
   accessories: IFormAccesoryModel | IFormAccesory;
   damages: IDamagesModel;
+  matrix: IMatrix;
 
   conciliation: boolean;
 
