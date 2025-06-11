@@ -3253,24 +3253,6 @@ class InventoryController {
     }
   }
 
-
-
-  private async parseSortParams(sortParams: string | string[]): Promise<MongooseSortOption> {
-    const sortOption: MongooseSortOption = {};
-
-    // Asegurarse de que sortParams sea un array
-    const paramsArray = Array.isArray(sortParams) ? sortParams : [sortParams];
-
-    for (const param of paramsArray) {
-      const direction = param.startsWith('-') ? -1 : 1;
-      const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
-      sortOption[field] = direction;
-    }
-
-    return sortOption;
-  };
-
-
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company

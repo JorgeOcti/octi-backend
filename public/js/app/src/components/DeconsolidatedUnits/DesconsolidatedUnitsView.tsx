@@ -37,6 +37,10 @@ interface IStateType {
   paginationPage: number;
   paginationPageSize: number;
   totalRows: number;
+
+  sortColumn: string;
+  sortDirection: 'asc' | 'desc';
+
   sort:Record<string, string>;
   blFilter: string;
   containerFilter: string;
@@ -159,6 +163,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       paginationPage: 1,
       paginationPageSize: 10,
       totalRows: 0,
+      sortColumn: 'Descarga',
+      sortDirection: 'asc',
       sort:{},
       blFilter: '',
       unitFilter:'',
@@ -225,9 +231,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   handleSort = (column: any, sortDirection: any) => {
 
     let keyName = '';
-    
+
     switch (column.name) {
-      case 'F. Descarga':
+      case 'Descarga':
          keyName = 'readyToClientHistories.executedAt';
         break;
       case 'F. Despacho':
@@ -476,7 +482,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         selector: (row: any) => row.inventoryCar.venue.name,
       },{
         id: "date",
-        name: 'F. Descarga',
+        name: 'Descarga',
         selector: (row: any) => {
           return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
         },
@@ -515,6 +521,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
+        sortField: 'descarga',
         'min-width': '140px'
       },{
         name: 'F. Despacho',
@@ -556,9 +563,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
+        sortField: 'f. despacho',
         'min-width': '140px'
       }, {
         name: 'Estado',
+        sortField: 'estado',
         selector: (row: any) => {
           return row.status;
         },
@@ -818,11 +827,21 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         data={units}
                         customStyles={dataTableStyle}
                         pagination
-                        paginationComponentOptions={paginationComponentOptions}
+                        
                         paginationServer={true}
                         paginationTotalRows={this.state.totalRows}
                         sortServer={true}
                         onSort={this.handleSort}
+
+                        // paginationComponentOptions={paginationComponentOptions}
+                        //sortColumn={this.state.sortColumn} // Pasa la columna actualmente ordenada
+                        //sortDirection={this.state.sortDirection} // Pasa la dirección del ordenamiento
+                        //sortActive={this.state.sortColumn} // Para asegurar que el icono se muestre en la columna correcta
+                        // defaultSortAsc={true}
+                        //persistTableHead={true}
+                        //noHeader={false}
+                        //noContextMenu={true}
+
                         onChangePage={(page: number) => {
                           this.getUnitsByCompanyId(page);
                         }}
