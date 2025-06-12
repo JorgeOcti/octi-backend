@@ -64,6 +64,7 @@ import Company from '../../app/models/company.model';
 import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
+import Participant from '../../form/models/participant.model';
 
 class InventoryController {
   constructor() {
@@ -99,6 +100,7 @@ class InventoryController {
     this.closeVirtualInventory = this.closeVirtualInventory.bind(this)
     this.checkCarToInventory = this.checkCarToInventory.bind(this)
     this.inventoryCar = this.inventoryCar.bind(this)
+    this.containerInventoryDetail = this.containerInventoryDetail.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1074,7 +1076,7 @@ class InventoryController {
             `apiDetail Inventory: ${inventories.length} inventarios encontrados`
           );
           let cars = inventories.flatMap((inventory: any) => {
-            return inventory.cars.map((car: IInventoryCar) => {
+            return inventory.cars.filter((car: IInventoryCar) => car.car).map((car: IInventoryCar) => {
               return {
                 ...car.car,
                 _id: (car as any)._id,
@@ -1118,6 +1120,8 @@ class InventoryController {
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
       /* istanbul ignore next */
       logger.error(e);
+      // print stack trace
+      logger.error(e.stack);
       /* istanbul ignore next */
       res.status(500).json(e);
     }
@@ -2191,6 +2195,248 @@ class InventoryController {
       return res.status(400).json({
         message: e,
         status: 400
+      });
+    }
+  }
+
+  public async containerInventoryDetail(req: IRequest, res: Response) {
+    try {
+      const { ship, trip, container, bl, client, status, hasDamage } = req.body;
+      const { page, pageSize, sort, sortOption } = req.query;
+
+      // const team = req.user.team._id;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      let containerFilter: any = {
+        $or: [
+          {
+            'venue': {
+              $in: venuesPermissions
+            }
+          },
+          {
+            'venueFound': {
+              $in: venuesPermissions
+            }
+          }
+        ],
+      }
+
+      let inventories = await Inventory.find({
+        team: req.user.team._id,
+        containerInventory: true,
+        venues: { $in: venuesPermissions }
+      }, {
+        _id: true,
+        unitForm: true,
+      })
+
+
+      let carFilter : any = {}
+
+      if (status) {
+        containerFilter['status'] = {
+          $in: status.split(',')
+        }
+      } else {
+        containerFilter['containerStatus'] = {
+          $in: [
+            ChoicesStatusContainer.pending,
+            ChoicesStatusContainer.open,
+            ChoicesStatusContainer.check,
+            ChoicesStatusContainer.empty,
+          ]
+        }
+      }
+
+      if (hasDamage == 1) {
+        let damagedParticpants = await Participant.find({
+          form: {$in: inventories.map((i: any) => i.unitForm)},
+        }, { car: 1});
+        let damagedCars = await InventoryCar.find({
+          car: {$in: damagedParticpants.map((p: any) => p.car)},
+        }, {containerFound: 1});
+
+        containerFilter['_id'] = {
+          $in: damagedCars.map((c: any) => c.containerFound)
+        }
+        carFilter['participant.hasDamage'] = true;
+      }
+
+      if (trip) {
+        containerFilter['extra.N° Viaje'] = trip;
+      }
+
+      if (ship) {
+        containerFilter['extra.Nave'] = ship;
+      }
+
+      if (container) {
+        containerFilter['extra.BIC'] = container;
+      }
+
+      if (bl) {
+        containerFilter['extra.N° BL'] = bl;
+      }
+
+      if (client) {
+        containerFilter['car.company'] = new mongoose.Types.ObjectId(client);
+      }
+
+
+      let sortField: string = sort ? sort.toString() : 'createdAt';
+      let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
+      let sortObject : Record<string, 1 | -1> = {};
+      sortObject[sortField] = sortDirection;
+
+      logger.info(
+        `InventoryController.containerInventoryDetail {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
+      );
+
+      let options = {
+        page: page ? parseInt(page as string, 10) : 1,
+        limit: pageSize ? parseInt(pageSize as string, 10) : 50,
+        lean: true
+      }
+
+      let containers = await InventoryCar.aggregatePaginate(
+          InventoryCar.aggregate([
+            {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+            {
+              $lookup: {
+                from: 'cars', // The collection name for the 'cars' field
+                localField: 'car', // Field in InventoryCar
+                foreignField: '_id', // Field in carinventories
+                as: 'car',
+              }
+            },
+            { $unwind: {path: '$car'} },
+            { $match: { 'car.isContainer': true } }, // Filter for container cars
+            { $match: containerFilter },
+            { $sort: sortObject },
+            {
+              $lookup: {
+                from: 'inventoryfiles',
+                localField: 'images',
+                foreignField: '_id',
+                as: 'images'
+              }
+            },
+            {
+              $lookup: {
+                from: "venues",
+                localField: "venue",
+                foreignField: "_id",
+                as: "venue",
+                pipeline: [
+                  { $project: { name: 1 } },
+                ]
+              }
+            },
+            { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: "venues",
+                localField: "venueFound",
+                foreignField: "_id",
+                as: "venueFound",
+                pipeline: [
+                  { $project: { name: 1 } },
+                ]
+              }
+            },
+            { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
+            {
+              $project: {
+                _id: 1,
+                car: 1,
+                images: 1,
+                evidenceStatus: 1,
+                status: 1,
+                containerStatus: 1,
+                venueFound: 1,
+                venue: 1,
+                extra: 1
+              }
+            }
+          ]),
+          options
+      )
+
+      for (const container of containers.docs) {
+        if (container.evidenceStatus && container.evidenceStatus.length > 0) {
+          for (let evidence of container.evidenceStatus) {
+            if (evidence.images && evidence.images.length > 0) {
+              evidence.images = await InventoryFile.find({ _id: { $in: evidence.images.map((i: string) => new mongoose.Types.ObjectId(i)) } });
+            }
+          }
+        }
+      }
+
+      let cars = await InventoryCar.aggregate([
+        { $match: {
+          inventory: { $in: inventories.map((i: any) => i._id) },
+          $or: [
+            {container: {$in: containers.docs.map((c: any) => c._id)}},
+            {containerFound: {$in: containers.docs.map((c: any) => c._id)}}
+          ],
+          }
+        },
+        { $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        },
+        { $unwind: {path: '$car'} },
+        { $lookup: {
+            from: 'inventoryfiles',
+            localField: 'images',
+            foreignField: '_id',
+            as: 'images'
+          }
+        },
+        { $lookup: {
+            from: 'participants',
+            localField: 'participant',
+            foreignField: '_id',
+            as: 'participant',
+            pipeline: [
+              {$project: {name: 1, hasDamage: 1}}
+            ]
+          }
+        }
+      ])
+
+      containers.docs = containers.docs.map(c => {
+        let tmp = {...c}
+        tmp.cars = cars.filter(car => {
+          return (
+            (car.containerFound && car.containerFound.toString() === c._id.toString()) ||
+            (car.container && car.container.toString() === c._id.toString())
+          )
+        });
+        return tmp;
+      });
+
+      return res.json({
+        data: containers.docs,
+        total: containers.totalDocs,
+        page: containers.page,
+        pageSize: containers.limit,
+        totalPages: containers.totalPages,
+        hasNextPage: containers.hasNextPage,
+      })
+
+    } catch (e) {
+      logger.error(`containerInventoryDetail: Async Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      logger.error(e.stack);
+      return res.status(500).json({
+        message: 'Ha ocurrido un error',
+        status: 500
       });
     }
   }

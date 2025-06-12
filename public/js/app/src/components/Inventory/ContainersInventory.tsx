@@ -70,6 +70,11 @@ interface IStateType {
   endDate: Date;
   startDate: Date;
   isFilteringByDate: boolean;
+  pagination: {
+    page: number;
+    pageSize: number;
+    hasNext: boolean;
+  }
 }
 
 const dataTableStyle = {
@@ -272,6 +277,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             "primaryRequired": false,
             "secondaryRequired": false
           }
+      },
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        hasNext: false
       }
     };
 
@@ -526,44 +536,19 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
       );
 
-    api.getInventories(1, true, 50)
+    api.getContainersInventory(
+      this.state.pagination.page,
+      this.state.pagination.pageSize)
       .then(async (response: any) => {
 
-        let inventories: IInventory[] = response.data.inventories;
+        let containers = response.data.data;
 
-        let promises = inventories.map((inventory: IInventory) => {
-          return api.getInventory((inventory as any)._id)
-        })
+        containers = containers.map((c: any) => {
+          let container = {...c};
+          container.status = foundStatusContainer(container);
 
-        let data = (await Promise.all(promises))
-          .map((response: any) => {
-            return response.data.detail.cars;
-          }).flat();
-
-        let containers = data.filter((car: any) => {
-          if(car.car.isContainer) {
-            car.status = foundStatusContainer(car);
-            return true;
-          }
-          return false;
-        });
-
-        let clients = new Set();
-        let cars = data.filter((car: any) => {
-          return !car.car.isContainer;
-        })
-        cars.forEach((car: any) => {
-          if (car.car.company && car.car.company.name){
-            clients.add(car.car.company.name);
-          }
-        })
-
-
-
-        containers = containers.map((container: any) => {
-          container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
           container.filterStatus = container.containerStatus || container.status;
-          container.pendingUnits = container.content.filter((car: any) => {
+          container.pendingUnits = container.cars.filter((car: any) => {
             return car.status === "pending";
           }).length > 0;
           if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
@@ -572,11 +557,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return container;
         })
 
-        containers = containers.map((container: any) => {
+        containers = containers.map((c: any) => {
           // if evidenceStatus is not empty, get the last status open and empty
-          if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+          let container = {...c};
+          console.log(container.evidenceStatus.length)
+          if (container.evidenceStatus && container.evidenceStatus.length > 0) {
             let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
             let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
+            console.log(openEvidences.length, emptyEvidences.length)
             if (openEvidences.length > 0) {
               //sort by date and get the last one
               container.openDate = openEvidences.sort((a: any, b: any) => {
@@ -592,15 +580,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             }
           }
           // Verifico si el contendedor tiene alguna unidad con daños
-          container.hasDamage = container.content?.some((e:any) => e.participant?.hasDamages === true);
+          container.hasDamage = container.cars?.some((e:any) => e.participant?.hasDamages === true);
           return container;
         });
         let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
         let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
+
+        console.log(containers);
+
         this.setState({
           containers: containers,
           originalContainers: containers,
-          clientSelector: Array.from(clients),
+          clientSelector: Array.from(window.user.company.clientCompanies),
           shipSelector: ships,
           tripSelector: trips,
           loading: false
@@ -897,7 +888,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             Revisión
           </div>
         </div>
-        {data.content.map((car: any, index: number) => {
+        {data.cars.map((car: any, index: number) => {
           let className = `${car.status}Class`;
           let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
           return (
@@ -1070,12 +1061,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               </div>
               : <>
                 <div className="box-body">
-                  
+
                   <Filters
                     blFilter={this.state.blFilter}
                     containerFilter={this.state.containerFilter}
                     clientFilter={this.state.clientFilter}
-                    clientSelector={this.state.clientSelector}
+                    clientSelector={window.user.company.clientCompanies || []}
                     statusFilterSelected={this.state.statusFilterSelected}
                     shipFilter={this.state.shipFilter}
                     shipSelector={this.state.shipSelector}
@@ -1095,7 +1086,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     paginationComponentOptions={paginationComponentOptions}
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
-                  />        
+                  />
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">

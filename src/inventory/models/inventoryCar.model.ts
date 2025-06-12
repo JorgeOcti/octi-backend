@@ -4,6 +4,9 @@ import type {
 } from '../interfaces/inventory.interface';
 import type { IInventoryComment } from '../interfaces/inventoryComment.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import * as mongoosePaginate from 'mongoose-paginate-v2';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 
 export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument { }
 
@@ -149,6 +152,12 @@ inventoryCarSchema.index({ inventory: 1, car: 1 });
 inventoryCarSchema.index({ inventory: 1, status: 1, venue: 1, venueFound: 1 });
 inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });
 
-const InventoryCar = mongoose.model<IInventoryCarModel>('InventoryCar', inventoryCarSchema);
+inventoryCarSchema.plugin(mongoosePaginate);
+inventoryCarSchema.plugin(mongooseAggregatePaginate)
+
+
+
+export type InventoryCarSchema = mongoose.Model<IInventoryCarModel> & PaginateModel<IInventoryCarModel> & AggregatePaginateModel<IInventoryCarModel>;
+const InventoryCar = mongoose.model<IInventoryCarModel, InventoryCarSchema>('InventoryCar', inventoryCarSchema);
 
 export default InventoryCar;
