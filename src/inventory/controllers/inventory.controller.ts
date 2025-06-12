@@ -66,6 +66,15 @@ import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
 
+    const statusMap: Record<string, string> = {
+      found: 'Encontrado',
+      pending: 'Pendiente',
+      open: 'Abierto',
+      check: 'En descarga',
+      empty: 'Vacío',
+      missing: 'Faltante'
+    };
+
 class InventoryController {
   constructor() {
     this.index = this.index.bind(this);
@@ -101,6 +110,8 @@ class InventoryController {
     this.checkCarToInventory = this.checkCarToInventory.bind(this)
     this.inventoryCar = this.inventoryCar.bind(this)
     this.containerInventoryDetail = this.containerInventoryDetail.bind(this);
+    this.containerInventoryDetailExport = this.containerInventoryDetailExport.bind(this);
+    this.processContainerBatch = this.processContainerBatch.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1545,14 +1556,7 @@ class InventoryController {
 
   private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
 
-    const statusMap: Record<string, string> = {
-      found: 'Encontrado',
-      pending: 'Pendiente',
-      open: 'Abierto',
-      check: 'En descarga',
-      empty: 'Vacío',
-      missing: 'Faltante'
-    };
+
 
     const messageStatus = statusMap[`${status}`];
 
@@ -2438,6 +2442,277 @@ class InventoryController {
         message: 'Ha ocurrido un error',
         status: 500
       });
+    }
+  }
+  public async containerInventoryDetailExport(req: IRequest, res: Response) {
+    try {
+    const { ship, trip, container, bl, client, status, hasDamage } = req.body;
+    const { sort, sortOption } = req.query;
+
+    const venuesPermissions = req.user.venuesPermissions();
+
+    let containerFilter: any = {
+      $or: [
+      { 'venue': { $in: venuesPermissions } },
+      { 'venueFound': { $in: venuesPermissions } }
+      ],
+    };
+
+    let inventories = await Inventory.find({
+      team: req.user.team._id,
+      containerInventory: true,
+      venues: { $in: venuesPermissions }
+    }, {
+      _id: true,
+      unitForm: true,
+    });
+
+    let carFilter: any = {};
+
+    if (status) {
+      containerFilter['status'] = { $in: status.split(',') };
+    } else {
+      containerFilter['containerStatus'] = {
+      $in: [
+        ChoicesStatusContainer.pending,
+        ChoicesStatusContainer.open,
+        ChoicesStatusContainer.check,
+        ChoicesStatusContainer.empty,
+      ]
+      };
+    }
+
+    if (hasDamage == 1) {
+      let damagedParticpants = await Participant.find({
+      form: { $in: inventories.map((i: any) => i.unitForm) },
+      }, { car: 1 });
+      let damagedCars = await InventoryCar.find({
+      car: { $in: damagedParticpants.map((p: any) => p.car) },
+      }, { containerFound: 1 });
+
+      containerFilter['_id'] = {
+      $in: damagedCars.map((c: any) => c.containerFound)
+      };
+      carFilter['participant.hasDamage'] = true;
+    }
+
+    if (trip) containerFilter['extra.N° Viaje'] = trip;
+    if (ship) containerFilter['extra.Nave'] = ship;
+    if (container) containerFilter['extra.BIC'] = container;
+    if (bl) containerFilter['extra.N° BL'] = bl;
+    if (client) containerFilter['car.company'] = new mongoose.Types.ObjectId(client);
+
+    let sortField: string = sort ? sort.toString() : 'createdAt';
+    let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
+    let sortObject: Record<string, 1 | -1> = {};
+    sortObject[sortField] = sortDirection;
+
+    logger.info(
+      `InventoryController.containerInventoryDetailExport {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
+    );
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=detalle-unidades-contenedor.xlsx');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    const workbook = new excel.stream.xlsx.WorkbookWriter({
+      stream: res,
+      useStyles: false,
+      useSharedStrings: false
+    });
+
+    const worksheet = workbook.addWorksheet('Unidades');
+
+    // Header
+    worksheet.columns = [
+      { header: 'F. Apertura', key: 'openDate', width: 20 },
+      { header: 'F. Finalización', key: 'finishDate', width: 20 },
+      { header: 'Contenedor', key: 'container', width: 25 },
+      { header: 'Carga', key: 'vin', width: 15 },
+      { header: 'Descripción carga', key: 'description', width: 30 },
+      { header: 'BL', key: 'bl', width: 20 },
+      { header: 'Puerto', key: 'port', width: 20 },
+      { header: 'Nave', key: 'ship', width: 20 },
+      { header: 'Cliente', key: 'client', width: 25 },
+      { header: 'Viaje', key: 'voyage', width: 15 },
+      { header: 'Estado', key: 'status', width: 15 },
+    ];
+
+    const BATCH_SIZE = 100;
+    const containerPipeline = [
+      { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
+      {
+      $lookup: {
+        from: 'cars',
+        localField: 'car',
+        foreignField: '_id',
+        as: 'car',
+      }
+      },
+      { $unwind: { path: '$car' } },
+      { $match: { 'car.isContainer': true } },
+      { $match: containerFilter },
+      { $sort: sortObject },
+      {
+      $lookup: {
+        from: 'inventoryfiles',
+        localField: 'images',
+        foreignField: '_id',
+        as: 'images'
+      }
+      },
+      {
+      $lookup: {
+        from: "venues",
+        localField: "venue",
+        foreignField: "_id",
+        as: "venue",
+        pipeline: [{ $project: { name: 1 } }]
+      }
+      },
+      { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
+      {
+      $lookup: {
+        from: "venues",
+        localField: "venueFound",
+        foreignField: "_id",
+        as: "venueFound",
+        pipeline: [{ $project: { name: 1 } }]
+      }
+      },
+      { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
+      {
+      $project: {
+        _id: 1,
+        car: 1,
+        images: 1,
+        evidenceStatus: 1,
+        status: 1,
+        containerStatus: 1,
+        venueFound: 1,
+        venue: 1,
+        extra: 1
+      }
+      }
+    ];
+
+    const containerCursor = InventoryCar.aggregate(containerPipeline).cursor();
+    const containerMap = new Map<string, any>();
+    let containerBatch: any[] = [];
+
+    for (let container = await containerCursor.next(); container != null; container = await containerCursor.next()) {
+      containerMap.set(container._id.toString(), container);
+      containerBatch.push(container);
+
+      if (containerBatch.length >= BATCH_SIZE) {
+        await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap);
+        containerBatch = [];
+      }
+    }
+
+    if (containerBatch.length > 0) {
+      await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap);
+    }
+
+    worksheet.commit();
+    await workbook.commit();
+    
+    return;
+
+    } catch (e) {
+    logger.error(`containerInventoryDetailExport: Async Error.`);
+    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.error(e);
+    logger.error(e.stack);
+    // Solo enviar respuesta de error si aún no se han enviado headers
+    if (!res.headersSent) {
+      return res.status(500).json({
+        message: 'Ha ocurrido un error',
+        status: 500
+      });
+    }
+    return res.end();
+    }
+  }
+
+  private async processContainerBatch(
+    containers: any[], 
+    inventories: any[], 
+    worksheet: any, 
+    containerMap: Map<string, any>
+  ) {
+    const containerIds = containers.map(c => c._id);
+    let cars = await InventoryCar.aggregate([
+      {
+      $match: {
+        inventory: { $in: inventories.map((i: any) => i._id) },
+        $or: [
+        { container: { $in: containerIds } },
+        { containerFound: { $in: containerIds } }
+        ],
+      }
+      },
+      {
+      $lookup: {
+        from: 'cars',
+        localField: 'car',
+        foreignField: '_id',
+        as: 'car'
+      }
+      },
+      { $unwind: { path: '$car' } },
+      {
+      $lookup: {
+        from: 'inventoryfiles',
+        localField: 'images',
+        foreignField: '_id',
+        as: 'images'
+      }
+      },
+      {
+      $lookup: {
+        from: 'participants',
+        localField: 'participant',
+        foreignField: '_id',
+        as: 'participant',
+        pipeline: [{ $project: { name: 1, hasDamage: 1 } }]
+      }
+      }
+    ]);
+
+    for (const car of cars) {
+      let containerId = car.containerFound ? car.containerFound.toString() : (car.container ? car.container.toString() : null);
+      let container = containerId ? containerMap.get(containerId) : null;
+
+      let openDate = '';
+      if (container && container.evidenceStatus && container.evidenceStatus.length > 0) {
+        const openEvidence = container.evidenceStatus.find((e: any) => e.status === 'open');
+        if (openEvidence && openEvidence.date) {
+          openDate = new Date(openEvidence.date).toLocaleDateString('es-ES');
+        }
+      }
+
+      let finishDate = '';
+      if (container && container.containerStatus === 'empty') {
+        const emptyEvidence = container.evidenceStatus?.find((e: any) => e.status === 'empty');
+        if (emptyEvidence && emptyEvidence.date) {
+          finishDate = new Date(emptyEvidence.date).toLocaleDateString('es-ES');
+        }
+      }
+
+      worksheet.addRow({
+        openDate: openDate,
+        finishDate: finishDate,
+        container: container ? container.car.vin : '',
+        vin: car.car.vin,
+        description: `${car.car.brand} ${car.car.model || ''}`, 
+        bl: container && container.extra ? container.extra['N° BL'] || '' : '',
+        port: container && container.venue ? container.extra['Emplazamiento'] : '',
+        ship: container && container.extra ? container.extra.Nave || '' : '',
+        client: container && container.extra ? container.extra['Cliente Razón Social'] || '' : '',
+        voyage: container && container.extra ? container.extra['N° Viaje'] || '' : '',
+        status: container ? statusMap[container.containerStatus] : '',
+      }).commit();
     }
   }
 
