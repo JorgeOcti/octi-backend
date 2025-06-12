@@ -808,21 +808,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         data={units}
                         customStyles={dataTableStyle}
                         pagination
-                        
                         paginationServer={true}
                         paginationTotalRows={this.state.totalRows}
                         sortServer={true}
                         onSort={this.handleSort}
-
-                        // paginationComponentOptions={paginationComponentOptions}
-                        //sortColumn={this.state.sortColumn} // Pasa la columna actualmente ordenada
-                        //sortDirection={this.state.sortDirection} // Pasa la dirección del ordenamiento
-                       // sortActive={this.state.sortColumn} // Para asegurar que el icono se muestre en la columna correcta
-                        // defaultSortAsc={true}
-                        //persistTableHead={true}
-                        //noHeader={false}
-                        //noContextMenu={true}
-
                         onChangePage={(page: number) => {
                           this.getUnitsByCompanyId(page);
                         }}
