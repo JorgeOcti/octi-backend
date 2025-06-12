@@ -156,7 +156,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.state = {
-      loading: true,
+      loading: false,
       error: null,
       originalUnits: [],
       units: [],
@@ -230,33 +230,12 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   handleSort = (column: any, sortDirection: any) => {
 
-    let keyName = '';
-
-    switch (column.name) {
-      case 'Descarga':
-         keyName = 'readyToClientHistories.executedAt';
-        break;
-      case 'F. Despacho':
-         keyName = 'inTransitHistories.executedAt';
-        break;
-      case 'Estado':
-        keyName = 'status';
-        break;
-    }
-
-    this.setState(prevState => {
-      const newSort = { ...prevState.sort };
-      if (newSort[keyName]) {
-        if (newSort[keyName] === 'asc') {
-          newSort[keyName] = 'desc';
-        } else {
-          delete newSort[keyName];
-        }
-      } else {
-        newSort[keyName] = 'asc';
+    this.setState((prevState) => ({
+      sort: {
+        ...prevState.sort,
+        [column.name]: sortDirection
       }
-      return { sort: newSort };
-    });
+    }));
 
     const {paginationPage, paginationPageSize} = this.state;
     this.getUnitsByCompanyId(paginationPage, paginationPageSize);
@@ -268,7 +247,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     for (const field in sortObject) {
       if (Object.prototype.hasOwnProperty.call(sortObject, field)) {
         const direction = sortObject[field];
-        const prefix = direction === 'asc' ? '+' : '-'; // '+' asc, '-' desc
+        const prefix = (direction === 'asc') ? '-' : '+';
         sortParts.push(`${prefix}${field}`);
       }
     }
@@ -278,12 +257,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
 
-    this.setState({ loading: true })
+    //this.setState({ loading: true })
     const api: ApiService = new ApiService();
     api.getSource()
 
     const companyId = this.state.clientFilter || window.user.company._id;
     const sortQuery = this.formatSortQuery(this.state.sort)
+
+    console.log("this.state.sort ", this.state.sort, "sortQuery", sortQuery);
 
     api.getUnitsByCompany(companyId, page, pageSize, sortQuery).then((data: any) => {
       let venueOptions: any[] = []
@@ -299,7 +280,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
 
-        console.log("car", car)
+        //console.log("car", car)
 
         if (car.venue && !venueOptions.includes(car.venue)) {
           venueOptions.push(car.venue)
@@ -316,13 +297,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         }
       });
 
-      console.log("units", units)
+     // console.log("units", units)
 
       this.setState({
         totalRows: data.data.count,
         units: units,
         originalUnits: units,
-        loading: false,
+        //loading: false,
         venueSelector: venueOptions,
         shipSelector: shipOptions,
         tripSelector: tripOptions
@@ -482,7 +463,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         selector: (row: any) => row.inventoryCar.venue.name,
       },{
         id: "date",
-        name: 'Descarga',
+        name: 'F. Descarga',
         selector: (row: any) => {
           return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
         },
@@ -521,7 +502,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        sortField: 'descarga',
+        sortField: 'f. descarga',
         'min-width': '140px'
       },{
         name: 'F. Despacho',
@@ -836,7 +817,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         // paginationComponentOptions={paginationComponentOptions}
                         //sortColumn={this.state.sortColumn} // Pasa la columna actualmente ordenada
                         //sortDirection={this.state.sortDirection} // Pasa la dirección del ordenamiento
-                        //sortActive={this.state.sortColumn} // Para asegurar que el icono se muestre en la columna correcta
+                       // sortActive={this.state.sortColumn} // Para asegurar que el icono se muestre en la columna correcta
                         // defaultSortAsc={true}
                         //persistTableHead={true}
                         //noHeader={false}

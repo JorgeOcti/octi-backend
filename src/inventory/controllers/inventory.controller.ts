@@ -3293,13 +3293,19 @@ class InventoryController {
       for (const param of paramsArray) {
         const direction = param.startsWith('-') ? -1 : 1;
         const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
-        if (field === 'readyToClientHistories.executedAt') {
+
+        logger.error(`Sorting by field: |${field.trim()}| with direction: ${direction}`);
+
+        if (field.trim() === 'F. Descarga') {
           sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
-        } else if (field === 'inTransitHistories.executedAt') {
+        } else if (field.trim() === 'F. Despacho') {
           sortOptionAggregation['inTransitHistories.executedAt'] = direction;
         } else {
           sortOptionAggregation[field] = direction;
         }
+
+
+        logger.error(`Sorting by sortOptionAggregation: ${ JSON.stringify(sortOptionAggregation) }`);
       }
     }
    
