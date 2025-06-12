@@ -503,6 +503,16 @@ export default class ApiService {
     });
   }
 
+  public getContainersInventory(page: number, pageSize?: number): AxiosPromise {
+    let url = `/api/inventory/container/?page=${page}`
+    if (pageSize) {
+      url += `&pageSize=${pageSize}`
+    }
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getUnitsByCompany(companyId: string): AxiosPromise {
     let url = `/api/company/stock/${companyId}`
     return this.instance.get(url, {
