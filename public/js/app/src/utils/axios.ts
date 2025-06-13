@@ -544,7 +544,7 @@ export default class ApiService {
     });
   }
 
-  public getUnitsByCompany(companyId: string, page: number, pageSize: number): AxiosPromise {
+  public getUnitsByCompany(companyId: string, page: number, pageSize: number, sortOpt?: string): AxiosPromise {
     let url = `/api/company/stock/${companyId}?page=${page}&pageSize=${pageSize}`;
 
     if(sortOpt){
