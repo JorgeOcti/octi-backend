@@ -656,83 +656,77 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       })
       .catch((error: any) => {
         console.log(error);
-      }
-      );
+      });
 
-    api.getInventories(1, true, 50)
-      .then(async (response: any) => {
 
-        let inventories: IInventory[] = response.data.inventories;
-        let promises = inventories.map((inventory: IInventory) => {
-          return api.getInventory((inventory as any)._id)
-        })
 
-        let data = (await Promise.all(promises))
-          .map((response: any) => {
-            return response.data.detail.cars;
-          }).flat();
+    api.getInventory(params['id']).then(async (response: any) => {
 
-        let containers = data.filter((car: any) => {
-          if (car.car.isContainer) {
-            car.status = foundStatusContainer(car);
-            return true;
+      const { summary } = response.data;
+      const data = response.data.detail.cars;
+
+      let containers = data.filter((car: any) => {
+        if (car.car.isContainer) {
+          car.status = foundStatusContainer(car);
+          return true;
+        }
+        return false;
+      });
+
+      let clients = new Set();
+      let cars = data.filter((car: any) => {
+        return !car.car.isContainer;
+      });
+      cars.forEach((car: any) => {
+        if (car.car.company && car.car.company.name) {
+          clients.add(car.car.company.name);
+        }
+      });
+
+      containers = containers.map((container: any) => {
+        container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
+        container.filterStatus = container.containerStatus || container.status;
+        container.pendingUnits = container.content.filter((car: any) => {
+          return car.status === "pending";
+        }).length > 0;
+        if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
+          container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
+        }
+        return container;
+      });
+
+      containers = containers.map((container: any) => {
+        if (container.evidenceStatus && container.evidenceStatus.length > 0) {
+          let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+          let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
+          if (openEvidences.length > 0) {
+            container.openDate = openEvidences.sort((a: any, b: any) => {
+              return moment(a.date).isAfter(b.date) ? -1 : 1;
+            })[0].date;
           }
-          return false;
-        });
 
-        let clients = new Set();
-        let cars = data.filter((car: any) => {
-          return !car.car.isContainer;
-        })
-        cars.forEach((car: any) => {
-          if (car.car.company && car.car.company.name) {
-            clients.add(car.car.company.name);
+          if (emptyEvidences.length > 0) {
+            container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
+              return moment(a.date).isAfter(b.date) ? -1 : 1;
+            })[0].date;
           }
-        })
+        }
+        container.hasDamage = container.content?.some((e: any) => e.participant?.hasDamages === true);
+        return container;
+      });
 
-        containers = containers.map((container: any) => {
-          container.content = cars.filter((car: any) => (car.containerFound || car.container) === container._id);
-          container.filterStatus = container.containerStatus || container.status;
-          container.pendingUnits = container.content.filter((car: any) => {
-            return car.status === "pending";
-          }).length > 0;
-          if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
-            container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
-          }
-          return container;
-        })
+      this.setState({
+        inventoryName: `${this.state.inventoryName} (${summary.name})`,
+        inventory: summary,
+        containers: containers,
+        originalContainers: containers,
+        loading: false
+      });
 
-        containers = containers.map((container: any) => {
-          if (container.evidenceStatus && container.evidenceStatus.length > 0) {
-            let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-            let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
-            if (openEvidences.length > 0) {
-              container.openDate = openEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
+    }).catch((error: any) => {
+      console.log(error);
+    })
 
-            if (emptyEvidences.length > 0) {
-              container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
-          }
-          container.hasDamage = container.content?.some((e: any) => e.participant?.hasDamages === true);
-          return container;
-        });
-
-        this.setState({
-          inventoryName: `${ this.state.inventoryName } (${inventories[0].name})`,
-          inventory: inventories[0],
-          containers: containers,
-          originalContainers: containers,
-          loading: false
-        })
-      })
-      .catch((error: any) => {
-        console.log(error);
-      })
   }
 
   render(): React.ReactElement<IPropsType>  {

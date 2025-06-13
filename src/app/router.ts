@@ -43,7 +43,6 @@ const {
       return req.headers["x-csrf-token"];
     }
   },
-
   cookieName: "__Host-psifi.x-csrf-token",
   ignoredMethods: ["GET", "HEAD", "OPTIONS"],
 });
@@ -306,8 +305,8 @@ appRouter.get('/account/login/soo/:id', passport.authenticate('multy-saml'));
 appRouter.post('/account/login/soo/callback/', appController.processLoginSoo);
 
 
-appRouter.get('/account/forgot-password/', doubleCsrfProtection, appController.forgotPassword);
-appRouter.post('/account/forgot-password/', doubleCsrfProtection, appController.processForgotPassword);
+appRouter.get('/account/forgot-password/', appController.forgotPassword);
+appRouter.post('/account/forgot-password/', appController.processForgotPassword);
 
 appRouter.get('/account/recovery/:token', doubleCsrfProtection, appController.recovery);
 appRouter.post('/account/recovery/:token', doubleCsrfProtection, appController.processRecovery);
