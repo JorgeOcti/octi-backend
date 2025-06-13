@@ -37,7 +37,7 @@ interface IStateType {
   paginationPage: number;
   paginationPageSize: number;
   totalRows: number;
-
+  dataLoading: boolean;
   sortColumn: string;
   sortDirection: 'asc' | 'desc';
 
@@ -150,13 +150,11 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 
 class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   title = "Unidades Desconsolidadas";
-
-
-
   constructor(props: IPropsType) {
     super(props);
     this.state = {
-      loading: false,
+      loading: true,
+      dataLoading: true,
       error: null,
       originalUnits: [],
       units: [],
@@ -204,6 +202,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
+    this.setState({ loading: true })
     const { company } = window.user
     if (company?.handler) {
       // En caso de ser usuario handler filtro por el primer cliente del listado
@@ -226,17 +225,16 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         })
       }
     }
+    this.setState({ loading: false })
   }
 
   handleSort = (column: any, sortDirection: any) => {
-
     this.setState((prevState) => ({
       sort: {
         ...prevState.sort,
         [column.name]: sortDirection
       }
     }));
-
     const {paginationPage, paginationPageSize} = this.state;
     this.getUnitsByCompanyId(paginationPage, paginationPageSize);
 	};
@@ -257,14 +255,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
 
-    //this.setState({ loading: true })
     const api: ApiService = new ApiService();
     api.getSource()
 
     const companyId = this.state.clientFilter || window.user.company._id;
     const sortQuery = this.formatSortQuery(this.state.sort)
-
-    console.log("this.state.sort ", this.state.sort, "sortQuery", sortQuery);
 
     api.getUnitsByCompany(companyId, page, pageSize, sortQuery).then((data: any) => {
       let venueOptions: any[] = []
@@ -297,13 +292,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         }
       });
 
-     // console.log("units", units)
-
       this.setState({
         totalRows: data.data.count,
         units: units,
         originalUnits: units,
-        //loading: false,
+        dataLoading: false,
         venueSelector: venueOptions,
         shipSelector: shipOptions,
         tripSelector: tripOptions
@@ -326,7 +319,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate) {
       this.filterUnits();
     }
-    if(!prevState.loading && this.state.clientFilter !== prevState.clientFilter){
+    if(!prevState.dataLoading && this.state.clientFilter !== prevState.clientFilter){
        this.getUnitsByCompanyId(1);
     }
   }
@@ -621,7 +614,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     </button>
               </div>
             </div>
-            {loading ?
+            { loading ?
               <div className="overlay">
                 <i className="fa fa-refresh fa-spin" />
               </div>
