@@ -11,7 +11,7 @@ import type {
   IParticipantScale,
   IParticipantSection
 } from '../interfaces/participant.interface';
-import { KindForm, KindQuestion, kindForm, kindQuestion } from './form.model';
+import { KindForm, KindQuestion, kindForm, kindQuestion, MatrixSchema, MatrixItemSchema } from './form.model';
 
 import { PaginateModel } from 'mongoose';
 import { choiceBackgroundColors } from './scale.model';
@@ -237,6 +237,19 @@ const participantAnswersSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+
+  matrix: {
+    type: MatrixSchema,
+    required: false
+  },
+
+  matrixValues : [{
+    type: [{
+      type: MatrixItemSchema
+    }],
+    required: false
+  }],
+
   qualification: {
     type: Number,
     default: 0

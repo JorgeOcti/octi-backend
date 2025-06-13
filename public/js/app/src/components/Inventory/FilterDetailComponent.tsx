@@ -5,8 +5,8 @@ import Checkbox from "../Utils/CheckBox";
 interface FiltersProps {
     blFilter: string;
     containerFilter: string;
-    clientFilter: string;
-    clientSelector: string[];
+    clientFilter: any;
+    clientSelector: any[];
     statusFilterSelected: string[];
     shipFilter: string[];
     shipSelector: string[];
@@ -18,7 +18,7 @@ interface FiltersProps {
     onFilterChange: (filter: string, value: any) => void;
     onCleanFilters: () => void;
   }
-  
+
   const Filters: React.FC<FiltersProps> = ({
     blFilter,
     containerFilter,
@@ -35,7 +35,7 @@ interface FiltersProps {
     onFilterChange,
     onCleanFilters
   }) => {
-  
+
     return (
       <div>
         <div className="row" style={{ margin: "10px 0" }}>
@@ -66,14 +66,14 @@ interface FiltersProps {
               <label className="text-black">Cliente</label>
               <select
                 className="form-control"
-                value={clientFilter}
+                value={clientFilter ? clientFilter._id : ""}
                 onChange={(e) => onFilterChange('clientFilter', e.target.value)}
               >
                 <option value="">Todos</option>
                 {clientSelector
-                  .sort((a, b) => a.localeCompare(b))
+                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((client, index) => (
-                    <option key={index} value={client}>{client}</option>
+                    <option key={index} value={client._id}>{client.name}</option>
                   ))}
               </select>
             </div>
@@ -172,5 +172,5 @@ interface FiltersProps {
       </div>
     );
   };
-  
+
   export { Filters };

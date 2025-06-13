@@ -50,6 +50,9 @@ enum HistoryIcons {
   IMPORTED_UNIT = "fa-cloud-upload",
   CHECKLIST_CLIENT = "fa-clipboard",
   CHECKLIST_DECONSOLIDATION = "fa-calendar",
+  CHECKLIST_SHIP_LOAD = "icon-ship-load",
+  CHECKLIST_SHIP_UNLOAD = "icon-ship-unload",
+  CHECKLIST_SHIP_TRANSFER = "icon-ship-transfer",
 
   //not font awesome, custom sass on multi-upload.sass
   CHECKLIST_READY = "icon-ready-client"
@@ -124,11 +127,11 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const groupedEvents = car?.events.reduce((groups: { [key: string]: any[] }, event: any) => {
       const date = moment(event.createdAt);
       const monthKey = date.format('YYYY-MM'); // Format as YYYY-MM for sorting
-      
+
       if (!groups[monthKey]) {
         groups[monthKey] = [];
       }
-      
+
       groups[monthKey].push(event);
       return groups;
     }, {});
@@ -246,7 +249,9 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   {monthDate}
                                 </span>
                               </li>
-                              {events.map((event) => {
+                              {events
+                                .sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime())
+                                .map((event) => {
                                 let icon = HistoryIcons.INVENTORY_PENDING;
                                 let color = HistoryColors.GRAY;
                                 let title = '--';
@@ -325,8 +330,23 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                   default:
                                     break;
                                 }
+
+
+                                if ( event.participant && ["6837648895d70ea01b60c617", "68376ca995d70ea01b60c646"].includes(event.participant.form)) {
+                                  icon = HistoryIcons.CHECKLIST_SHIP_UNLOAD;
+                                }
+
+                                if ( event.participant && ["682bce550000000000fba596", ].includes(event.participant.form)) {
+                                  icon = HistoryIcons.CHECKLIST_SHIP_LOAD;
+                                }
+
+                                if ( event.participant && ["683c809ea0d80d61a8defcfd", ].includes(event.participant.form)) {
+                                  icon = HistoryIcons.CHECKLIST_SHIP_TRANSFER;
+                                }
+
                                 return (
                                   <UnitHistoryTile
+                                    key={event._id}
                                     color={color}
                                     title={title}
                                     subtitle={subtitle}

@@ -1644,6 +1644,10 @@ class FormController {
                 });
               }
 
+              const matrixValues: any[] =
+                (question.kind === KindQuestion.matrix) &&
+                answer && answer.matrix ? answer.matrix : [];
+
               // generate answer
               const comment =
                 (question.kind === KindQuestion.text ||
@@ -1717,6 +1721,8 @@ class FormController {
                   : [],
                 qualification,
                 na,
+                matrix: question.matrix,
+                matrixValues: matrixValues,
                 weight: question.weight,
                 kind: question.kind,
                 order: question.order,

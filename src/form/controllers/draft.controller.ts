@@ -94,6 +94,20 @@ class DraftController {
               damage.images = images;
             }
           }
+          if (answer && answer.matrix) {
+            for (let row of answer.matrix) {
+              for (let question of row){
+                if (question && question.images) {
+                  let images = await ParticipantFile.find({
+                    _id: {
+                      $in: question.images.map((image: any) => new mongoose.Types.ObjectId(image))
+                    }
+                  });
+                  question.images = images;
+                }
+              }
+            }
+          }
         }
       }
 
