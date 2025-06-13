@@ -33,6 +33,7 @@ inventoryRouter.post('/api/inventory/:id/download-images/', Middlewares.isJWTAut
 inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, InventoryController.finishInventory);
 inventoryRouter.post('/api/inventory/:id/set-label/', Middlewares.isLoggedIn, InventoryController.setLabel);
 inventoryRouter.post('/api/inventory/:id/evidence/', Middlewares.isJWTAuthenticated, InventoryController.addStatusEvidence);
+inventoryRouter.get('/api/summary/inventory/container/', Middlewares.isLoggedIn, InventoryController.containerInventorySummary);
 inventoryRouter.get('/api/inventory/container/', Middlewares.isLoggedIn, InventoryController.containerInventoryDetail);
 inventoryRouter.get('/api/inventory/container/export', Middlewares.isJWTAuthenticated, InventoryController.containerInventoryDetailExport);
 inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detaill);

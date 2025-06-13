@@ -29,6 +29,7 @@ import ShowIf from '../Utils/ShowIf';
 import ModalView from '../Modal/ModalView';
 import { InventoryTable } from './TableDetailComponent';
 import { Filters } from './FilterDetailComponent';
+import DataTable from 'react-data-table-component';
 
 declare let window: IWindow;
 
@@ -66,6 +67,7 @@ interface IStateType {
   tripFilter: string[];
   inventorySettings: any;
   loading: boolean;
+  loadingTable: boolean;
   filterHasDamage:boolean;
   endDate: Date;
   startDate: Date;
@@ -74,7 +76,11 @@ interface IStateType {
     page: number;
     pageSize: number;
     hasNext: boolean;
-  }
+    filters?: any;
+    sort?: string;
+    sortDirection?: 'asc' | 'desc';
+  },
+  summary: any;
 }
 
 const dataTableStyle = {
@@ -114,7 +120,7 @@ const dataTableStyle = {
       // this is to put expander button at the end of the row
       order: 1,
     }
-  }
+  },
 };
 
 const paginationComponentOptions = {
@@ -211,6 +217,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   private socket: Socket;
 
+  private timer: any | null = null;
+
   private statusText: any = {
     'pending': 'Pendientes',
     'found': 'Encontrado',
@@ -227,6 +235,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     super(props);
     this.state = {
       loading: true,
+      loadingTable: true,
       error: null,
       originalContainers: [],
       containers: [],
@@ -278,10 +287,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             "secondaryRequired": false
           }
       },
+      summary: {total: 0, status: []},
       pagination: {
         page: 1,
-        pageSize: 10,
-        hasNext: false
+        pageSize: 50,
+        hasNext: false,
+        filters: {},
+        sort: 'createdAt',
+        sortDirection: 'desc'
       }
     };
 
@@ -289,6 +302,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.columns = [
       {
         name: 'F. Apertura',
+        id: 'openDate',
         selector: (row: any) => {
           return row.openDate ? formaDate(row.openDate) : 'Sin apertura';
         },
@@ -305,12 +319,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         sortable: true,
         sortFunction: (a: any, b: any) => {
           return moment(a.emptyDate).isAfter(b.emptyDate) ? 1 : -1;
-        }
+        },
+        id: 'emptyDate',
       },
       {
         name: 'Contenedor',
         selector: (row: any) => row.car.vin,
-        sortable: true
       },
       {
         name: 'BL',
@@ -360,7 +374,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         cell: (row: any) => {
           return this.getDropDownLabels(row);
         },
-        sortable: true
+        sortable: true,
+        id: 'containerStatus'
       },
       {
         name: 'Tarja',
@@ -376,6 +391,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         }
       },
     ];
+
+    this.fetchData = this.fetchData.bind(this);
+    this.changePage = this.changePage.bind(this);
+    this.changePageSize = this.changePageSize.bind(this);
+    this.sortTable = this.sortTable.bind(this);
   }
 
   handleClick = (index: any) => {
@@ -515,11 +535,140 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
+  private changePage = (page: number) => {
+    this.setState((prevState) => ({
+      loadingTable: true,
+      pagination: {
+        ...prevState.pagination,
+        page: page
+      }
+    }), () => {
+      this.fetchData();
+    });
+  }
+
+  private changePageSize = (pageSize: number) => {
+    this.setState((prevState) => ({
+      loadingTable: true,
+      pagination: {
+        ...prevState.pagination,
+        pageSize: pageSize
+      }
+    }), () => {
+      this.fetchData();
+    });
+  }
+
+  private sortTable = (column: any, sortDirection: 'asc' | 'desc') => {
+    this.setState((prevState) => ({
+      loadingTable: true,
+      pagination: {
+        ...prevState.pagination,
+        sort: column.id,
+        sortDirection: sortDirection
+      }
+    }), () => {
+      this.fetchData();
+    });
+  }
+
+  private async fetchSummary() {
+    const api: ApiService = new ApiService();
+    api.getSource();
+    try {
+      let response = await api.getContainersInventorySummary(this.state.pagination.filters);
+
+      if (response.data.data) {
+        let status = response.data.data.resume;
+        let ships = response.data.data.ships;
+        let trips = response.data.data.trips;
+        let total: number = status.reduce((acc: number, curr: any) => {
+          acc += curr.count;
+          return acc;
+        }, 0);
+        this.setState({
+          shipSelector: this.state.shipSelector.length > 0 ? this.state.shipSelector : ships.map((ship: any) => ship._id.toString()),
+          tripSelector: this.state.tripSelector.length > 0 ? this.state.tripSelector : trips.map((trip: any) => trip._id.toString()),
+          summary: {
+            total,
+            status
+          }
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  private async fetchData() {
+    const api: ApiService = new ApiService();
+    api.getSource();
+    try {
+      let response = await api.getContainersInventory(
+        this.state.pagination.page,
+        this.state.pagination.pageSize,
+        this.state.pagination.filters,
+        this.state.pagination.sort,
+        this.state.pagination.sortDirection);
+
+      let containers = response.data.data;
+
+      containers = containers.map((c: any) => {
+        // if evidenceStatus is not empty, get the last status open and empty
+        let container = { ...c };
+
+        container.status = foundStatusContainer(container);
+
+        container.filterStatus = container.containerStatus || container.status;
+        container.pendingUnits = container.cars.filter((car: any) => {
+          return car.status === "pending";
+        }).length > 0;
+        if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
+          container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
+        }
+
+        if (container.evidenceStatus && container.evidenceStatus.length > 0) {
+          let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
+          let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
+          if (openEvidences.length > 0) {
+            //sort by date and get the last one
+            container.openDate = openEvidences.sort((a: any, b: any) => {
+              return moment(a.date).isAfter(b.date) ? -1 : 1;
+            })[0].date;
+          }
+
+          if (emptyEvidences.length > 0) {
+            //sort by date and get the last one
+            container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
+              return moment(a.date).isAfter(b.date) ? -1 : 1;
+            })[0].date;
+          }
+        }
+        // Verifico si el contendedor tiene alguna unidad con daños
+        container.hasDamage = container.cars?.some((e: any) => e.participant?.hasDamages === true);
+        return container;
+      });
+
+      this.setState({
+        containers: containers,
+        originalContainers: containers,
+        clientSelector: Array.from(window.user.company.clientCompanies),
+        loadingTable: false,
+        loading: false,
+      })
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+
   componentDidMount() {
     super.componentDidMount();
     const api: ApiService = new ApiService();
     this.startSocket();
-    api.getSource()
+    api.getSource();
     api.getLabels(1)
       .then(async (response: any) => {
         const containerLabels = response.data.results.filter((label: { isForContainer: boolean; })=>label.isForContainer);
@@ -535,72 +684,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         console.log(error);
       }
       );
-
-    api.getContainersInventory(
-      this.state.pagination.page,
-      this.state.pagination.pageSize)
-      .then(async (response: any) => {
-
-        let containers = response.data.data;
-
-        containers = containers.map((c: any) => {
-          let container = {...c};
-          container.status = foundStatusContainer(container);
-
-          container.filterStatus = container.containerStatus || container.status;
-          container.pendingUnits = container.cars.filter((car: any) => {
-            return car.status === "pending";
-          }).length > 0;
-          if (container.status === ContainerStatus.EMPTY && container.pendingUnits) {
-            container.filterStatus = `${ContainerStatus.EMPTY}(*)`;
-          }
-          return container;
-        })
-
-        containers = containers.map((c: any) => {
-          // if evidenceStatus is not empty, get the last status open and empty
-          let container = {...c};
-          console.log(container.evidenceStatus.length)
-          if (container.evidenceStatus && container.evidenceStatus.length > 0) {
-            let openEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.OPEN);
-            let emptyEvidences = container.evidenceStatus.filter((evidence: any) => evidence.status === ContainerStatus.EMPTY);
-            console.log(openEvidences.length, emptyEvidences.length)
-            if (openEvidences.length > 0) {
-              //sort by date and get the last one
-              container.openDate = openEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
-
-            if (emptyEvidences.length > 0) {
-              //sort by date and get the last one
-              container.emptyDate = emptyEvidences.sort((a: any, b: any) => {
-                return moment(a.date).isAfter(b.date) ? -1 : 1;
-              })[0].date;
-            }
-          }
-          // Verifico si el contendedor tiene alguna unidad con daños
-          container.hasDamage = container.cars?.some((e:any) => e.participant?.hasDamages === true);
-          return container;
-        });
-        let ships = Array.from(new Set(containers.map((container: any) => container.extra["Nave"]).filter((nave: any) => nave !== undefined).map((nave: any) => nave.toString())));
-        let trips = Array.from(new Set(containers.map((container: any) => container.extra["N° Viaje"]).filter((viaje: any) => viaje !== undefined).map((viaje: any) => viaje.toString())));
-
-        console.log(containers);
-
-        this.setState({
-          containers: containers,
-          originalContainers: containers,
-          clientSelector: Array.from(window.user.company.clientCompanies),
-          shipSelector: ships,
-          tripSelector: trips,
-          loading: false
-        })
-      })
-      .catch((error: any) => {
-        console.log(error);
-      })
+    this.fetchData();
+    this.fetchSummary();
   }
+
   startSocket(){
     this.socket = io(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
@@ -628,11 +715,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return this.updateDataContainer(container, containerUpdated, data)
         }else{
           if (container._id !== containerUpdated.container) return container
-            let contents = container.content.map((e:any) => {
+            let contents = container.cars.map((e:any) => {
               // Metodo para modificar el array de contents del contenedor
               return this.updateContentContainer(e, containerUpdated, data)
             })
-            container.content = contents;
+            container.cars = contents;
             return container
         }
       });
@@ -715,42 +802,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       tripFilter: [],
       statusFilterSelected: [],
       filterHasDamage: false,
+      loadingTable: true,
+      pagination: {
+        ...this.state.pagination,
+        filters: {},
+      }
+    }, () => {
+      this.fetchData();
+      this.fetchSummary();
     });
   }
-
-    getActiveFiltersAsQueryParams = () => {
-      const {
-      blFilter,
-      containerFilter,
-      clientFilter,
-      statusFilterSelected,
-      shipFilter,
-      tripFilter,
-      filterHasDamage,
-      isFilteringByDate,
-      startDate,
-      endDate
-      } = this.state;
-
-      const params: any = {};
-
-      if (blFilter) params.bl = blFilter;
-      if (containerFilter) params.container = containerFilter;
-      if (clientFilter) params.client = clientFilter;
-      if (statusFilterSelected && statusFilterSelected.length > 0) params.status = statusFilterSelected.join(',');
-      if (shipFilter && shipFilter.length > 0) params.ship = shipFilter.join(',');
-      if (tripFilter && tripFilter.length > 0) params.trip = tripFilter.join(',');
-      if (filterHasDamage) params.hasDamage = 'true';
-      if (isFilteringByDate && startDate && endDate) {
-      params.startDate = moment(startDate).format('YYYY-MM-DD');
-      params.endDate = moment(endDate).format('YYYY-MM-DD');
-      }
-
-      return Object.keys(params).map((key) => {
-        return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`;
-      }).join('&');
-    };
-
 
   filterContainers() {
 
@@ -764,7 +825,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       let clientFilter = true;
       if (this.state.clientFilter !== '') {
-        clientFilter = container.content.filter((car: any) => {
+        clientFilter = container.cars.filter((car: any) => {
           if (car.car.company && car.car.company.name) {
             return car.car.company.name.toLowerCase() === this.state.clientFilter.toLowerCase();
           }
@@ -806,6 +867,29 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   }
 
+  addfilter = (filter: string, value: string) => {
+    // Agrega un filtro al estado con debounce de 500ms
+    clearTimeout(this.timer);
+
+      this.setState({
+        loadingTable: true,
+        pagination: {
+          ...this.state.pagination,
+          filters: {
+            ...this.state.pagination.filters,
+            [filter]: value
+          }
+        }
+      }, () => {
+        this.timer = setTimeout(() => {
+        this.fetchData();
+        this.fetchSummary();
+        }, 500);
+      });
+
+
+  }
+
   create = () => {
     this.props.history.push('/inventory/container/create/');
   }
@@ -816,31 +900,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   render() : React.ReactElement<IPropsType> {
-    const {containers, loading} = this.state;
+    const {containers, loading, summary, pagination} = this.state;
     const { getParticipant } = this.props;
     const {
       loadingParticipant
     } = this.props.dashboard;
-    let statusCount = containers.reduce((acc: any, container: any) => {
-      if (container  && container.containerStatus) {
-        let key = container.containerStatus;
-        if (acc[key]) {
-          acc[key] += 1;
-        } else {
-          acc[key] = 1;
-        }
-      }
-      return acc;
-    }, {});
 
-    let details = Object.keys(statusCount).map((status: any) => {
-      let className = `${status}Color`;
+    let details = summary.status.map((status: any) => {
+      let className = `${status._id}Color`;
       let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
-      let label = inventorySettings.hasOwnProperty(status) ? inventorySettings[status] : ''
+      let label = inventorySettings.hasOwnProperty(status._id) ? inventorySettings[status._id] : ''
       return <> - <span
-          key={status}
+          key={status.name}
           style={{color: `${color}`, fontWeight: "600"}}>
-         {label}: {statusCount[status]}
+         {label}: {status.count}
        </span> </>
     });
 
@@ -1037,7 +1110,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
-                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{containers.length}</span> {details.length>0 ? details : ''}</span>
+                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{summary.total}</span> {summary.total>0 ? details : ''}</span>
               </h3>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
@@ -1065,36 +1138,60 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 <div className="box-body">
 
                   <Filters
-                    blFilter={this.state.blFilter}
-                    containerFilter={this.state.containerFilter}
-                    clientFilter={this.state.clientFilter}
+                    blFilter={pagination.filters.blFilter || ''}
+                    containerFilter={pagination.filters.containerFilter || ''}
+                    clientFilter={pagination.filters.clientFilter || ''}
                     clientSelector={window.user.company.clientCompanies || []}
-                    statusFilterSelected={this.state.statusFilterSelected}
-                    shipFilter={this.state.shipFilter}
+                    statusFilterSelected={pagination.filters.statusFilterSelected || []}
+                    shipFilter={pagination.filters.shipFilter || []}
                     shipSelector={this.state.shipSelector}
-                    tripFilter={this.state.tripFilter}
+                    tripFilter={pagination.filters.tripFilter || []}
                     tripSelector={this.state.tripSelector}
-                    filterHasDamage={this.state.filterHasDamage}
+                    filterHasDamage={pagination.filters.filterHasDamage}
                     inventorySettings={inventorySettings}
                     statusText={this.statusText}
-                    onFilterChange={(filter, value) => this.setState((prevState) => ({ ...prevState, [filter]: value }))}
+                    onFilterChange={(filter, value) => {
+                      this.addfilter(filter, value);
+                    }}
                     onCleanFilters={this.cleanFilters}
                   />
 
-                  <InventoryTable
-                    columns={this.columns}
-                    containers={this.state.containers}
-                    conditionalRowStyles={conditionalRowStyles}
-                    paginationComponentOptions={paginationComponentOptions}
-                    dataTableStyle={dataTableStyle}
-                    ExpandedRowElement={ExpandedRowElement}
-                  />
+                  <div className="row">
+                    <div className="col-md-12">
+                      <DataTable
+                        columns={this.columns}
+                        data={containers}
+                        customStyles={dataTableStyle}
+                        expandableRows
+                        expandableRowsComponent={ExpandedRowElement}
+                        expandOnRowClicked={true}
+                        pagination
+                        conditionalRowStyles={conditionalRowStyles}
+                        paginationComponentOptions={paginationComponentOptions}
+                        progressPending={this.state.loadingTable}
+                        sortServer
+                        onSort={this.sortTable}
+                        paginationServer
+                        paginationRowsPerPageOptions={ [pagination.pageSize, 100, 200]}
+                        paginationTotalRows={summary.total}
+                        progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x"/></div>}
+                        onChangeRowsPerPage={ this.changePageSize}
+                        onChangePage={this.changePage}
+                        noDataComponent={
+                          <div className="text-center">
+                            <h4>No hay datos</h4>
+                          </div>
+                        }
+                      />
+                    </div>
+                  </div>
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">
                       <div className="modal-content">
                         <div className="modal-header">
-                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
                           <h4 className="modal-title" id="modalForAddLabel">Cambiar estado asignando etiqueta</h4>
                         </div>
                         <div className="modal-body">
@@ -1103,15 +1200,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                               this.state.labels.map((option, index) => {
                                 return (
                                   <li key={index} onClick={() => this.handleClick(index)}
-                                    className={index === this.state.activeIndex ? 'list-group-item active' : 'list-group-item'}>
-                                    <div className='row' >
-                                      <div className='col-md-7 col-xs-7'>
+                                      className={index === this.state.activeIndex ? 'list-group-item active' : 'list-group-item'}>
+                                    <div className="row">
+                                      <div className="col-md-7 col-xs-7">
                                         {option.name}
                                       </div>
-                                      <div className='col-md-2 col-xs-2'>
+                                      <div className="col-md-2 col-xs-2">
                                         <i className="fa fa-arrow-right" />
                                       </div>
-                                      <div className='col-md-3 col-xs-3'>
+                                      <div className="col-md-3 col-xs-3">
                                         <span
                                           className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
@@ -1126,26 +1223,29 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                         <div className="modal-footer">
                           <button type="button" className="btn btn-primary"
-                            onClick={() => {
-                              this.actionSetLabel(
-                                this.state.inventorySelected,
-                                this.state.carSelected,
-                                this.state.cardIDSelected,
-                                this.state.labelSelected,
-                                false
-                              );
-                            }}
-                          >Aplicar</button>
+                                  onClick={() => {
+                                    this.actionSetLabel(
+                                      this.state.inventorySelected,
+                                      this.state.carSelected,
+                                      this.state.cardIDSelected,
+                                      this.state.labelSelected,
+                                      false
+                                    );
+                                  }}
+                          >Aplicar
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="modal fade" id="modalForAddLabelUnit" role="dialog" aria-labelledby="modalForAddLabelUnit">
+                  <div className="modal fade" id="modalForAddLabelUnit" role="dialog"
+                       aria-labelledby="modalForAddLabelUnit">
                     <div className="modal-dialog " role="document">
                       <div className="modal-content">
                         <div className="modal-header">
-                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
                           <h4 className="modal-title" id="modalForAddLabelUnit">Cambiar estado asignando etiqueta</h4>
                         </div>
                         <div className="modal-body">
@@ -1154,15 +1254,15 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                               this.state.unitLabels.map((option, index) => {
                                 return (
                                   <li key={index} onClick={() => this.handleUnitClick(index)}
-                                    className={index === this.state.activeUnitIndex ? 'list-group-item active' : 'list-group-item'}>
-                                    <div className='row' >
-                                      <div className='col-md-7 col-xs-7'>
+                                      className={index === this.state.activeUnitIndex ? 'list-group-item active' : 'list-group-item'}>
+                                    <div className="row">
+                                      <div className="col-md-7 col-xs-7">
                                         {option.name}
                                       </div>
-                                      <div className='col-md-2 col-xs-2'>
+                                      <div className="col-md-2 col-xs-2">
                                         <i className="fa fa-arrow-right" />
                                       </div>
-                                      <div className='col-md-3 col-xs-3'>
+                                      <div className="col-md-3 col-xs-3">
                                         <span
                                           className={`label label-${inventorySettings[option.sendTo + `Class`]} modal-unit-labels`}
                                         >
@@ -1177,21 +1277,22 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                         <div className="modal-footer">
                           <button type="button" className="btn btn-primary"
-                            onClick={() => {
-                              this.actionSetLabel(
-                                this.state.inventorySelected,
-                                this.state.carSelected,
-                                this.state.cardIDSelected,
-                                this.state.unitLabelSelected,
-                                true
-                              );
-                            }}
-                          >Aplicar</button>
+                                  onClick={() => {
+                                    this.actionSetLabel(
+                                      this.state.inventorySelected,
+                                      this.state.carSelected,
+                                      this.state.cardIDSelected,
+                                      this.state.unitLabelSelected,
+                                      true
+                                    );
+                                  }}
+                          >Aplicar
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
-              </div>
+                </div>
               </>
             }
           </div>
@@ -1221,10 +1322,10 @@ export default connect<{}, {}, IPropsType>(
 )(ContainersInventory);
 
 const inventorySettings: { [key: string]: any } = {
-  "leftoverDifferentVenue": true,
-  "_id": "5e68fb3e0f7cfc00245e4954",
-  "pending": "Pendiente",
-  "pendingClass": "aqua",
+  'leftoverDifferentVenue': true,
+  '_id': '5e68fb3e0f7cfc00245e4954',
+  'pending': 'Pendiente',
+  'pendingClass': 'aqua',
   "pendingClassContainer": "pending",
   "pendingColor": "#2DBDFD",
   "found": "Encontrados",

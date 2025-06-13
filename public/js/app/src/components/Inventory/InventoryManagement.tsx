@@ -11,6 +11,16 @@ import { IWindow } from "../../interfaces/window";
 import DateRangeInput from '../Utils/DateRangeInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import { Link } from 'react-router-dom';
+import {
+  deleteInventoryAction,
+  finishInventoryAction,
+  getInventoriesAction,
+  IInventoryState,
+  InventoryReduxAction
+} from '../../actions/inventory.actions';
+import { Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import * as swal from 'sweetalert';
 
 
 declare let window: IWindow;
@@ -18,6 +28,12 @@ declare let window: IWindow;
 export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  inventories: IInventoryState;
+  dispatch: Dispatch<InventoryReduxAction>;
+
+  finishInventoryAction(id: string): void;
+
+  deleteInventoryAction(id: string): void;
 }
 
 interface IStateType {
@@ -140,6 +156,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         name: 'data',
         cell: (row: any) => {
           style: { }
+          console.log('row', row);
           return this.formatData(row);
         }
       }
@@ -152,7 +169,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
     unit: any;
     container: any;
     results: any;
-    file: boolean;
+    file: any;
     createdBy: any;
     createdAt: moment.MomentInput;
     finalizedAt: moment.MomentInput;
@@ -165,15 +182,108 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
     return <div className="container-fluid col-md-12">
       <div className="row">
-        <div className="col-md-10">
+        <div className="col-md-8">
           <Link to={`/inventory/management/${row._id}/`}>
             <h4 className='text-left text-primary pointer'>{row.name}</h4>
           </Link>
         </div>
-        <div className="col-md-2">
-          <div className='text-right summary-label-status-p-top'>
+        <div className="col-md-4">
+          <div className="text-right summary-label-status-p-top p-10-0 d-flex justify-content-end align-items-center">
             {this.labelStatus(row.status)}
+            <div className="col-lg-3 col-md-12 text-right" style={{minWidth: "165px"}}>
+              <div className="btn-group btn-group-sm">
+                {row.status === 'inProcess' ? (
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() =>
+                      this.goToDetail(row._id)
+                    }>
+                    <i className="fa fa-fw fa-area-chart" /> Ver
+                    Progreso
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() =>
+                      this.goToDetail(row._id)
+                    }>
+                    <i className="fa fa-fw fa-area-chart" /> Ver
+                    Reporte
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-default dropdown-toggle"
+                  data-toggle="dropdown">
+                  <span className="caret" />
+                  <span className="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul
+                  className="dropdown-menu pull-right"
+                  role="menu">
+                  <li>
+                    <Link
+                      to={`/inventory/management/${row._id}`}>
+                      {/* <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}> */}
+                      <i className="fa fa-fw fa-table" />
+                      Ver Detalle
+                      {/* </a> */}
+                    </Link>
+                  </li>
+                  {hasPermission(
+                    window.user,
+                    'viewFilesInventory'
+                  ) &&
+                  row.file &&
+                  row.file.hasOwnProperty('url') ? (
+                    <li>
+                      <a
+                        href={decodeURI(row.file.url)}
+                        download={row.file.name}>
+                        <i className="fa fa-fw fa-download" />
+                        Descargar archivo cargado
+                      </a>
+                    </li>
+                  ) : null}
+                  {row.status === 'inProcess' &&
+                  hasPermission(
+                    window.user,
+                    'finishInventory'
+                  ) ? (
+                    <li>
+                      <a
+                        href="javascript:void(0);"
+                        onClick={() =>
+                          this.finishInventoryAction(row)
+                        }>
+                        <i className="fa fa-fw fa-stop" />
+                        Finalizar
+                      </a>
+                    </li>
+                  ) : null}
+                  {row.status === 'inProcess' &&
+                  hasPermission(
+                    window.user,
+                    'deleteInventory'
+                  ) ? (
+                    <li>
+                      <a
+                        href="javascript:void(0);"
+                        onClick={() =>
+                          this.deleteInventoryAction(row)
+                        }>
+                        <i className="fa fa-fw fa-close" />
+                        Eliminar
+                      </a>
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -214,82 +324,82 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
       <div className="row container-row-wrapper">
         <div className="col-md-7">
-          <div className='row container-row-b-padding'>
-            <div className='col-md-12'>
+          <div className="row container-row-b-padding">
+            <div className="col-md-12">
               <i className="fa fa-container-red" />
               <strong>
                 Contenedores
               </strong>
             </div>
           </div>
-          <div className='row'>
-            <div className='col-md-12 text-center'>
-              <div className='row'>
-                <div className='col-md-3'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-primary h4'>
+          <div className="row">
+            <div className="col-md-12 text-center">
+              <div className="row">
+                <div className="col-md-3">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-primary h4">
                         Pendientes
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-primary h2'>
+                    <div className="col-md-12">
+                      <strong className="text-primary h2">
                         {row.container.pending}
                       </strong>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-2'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-orange h4'>
+                <div className="col-md-2">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-orange h4">
                         Abierto
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-orange h2'>
+                    <div className="col-md-12">
+                      <strong className="text-orange h2">
                         {row.container.open}
                       </strong>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-3'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-yellow h4'>
+                <div className="col-md-3">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-yellow h4">
                         Descarga
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-yellow h2'>
+                    <div className="col-md-12">
+                      <strong className="text-yellow h2">
                         {row.container.check}
                       </strong>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-2'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-green h4'>
+                <div className="col-md-2">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-green h4">
                         Vacíos
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-green h2'>
+                    <div className="col-md-12">
+                      <strong className="text-green h2">
                         {row.container.empty}
                       </strong>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-2'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-green h4'>
+                <div className="col-md-2">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-green h4">
                         Vacíos*
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-green h2'>
+                    <div className="col-md-12">
+                      <strong className="text-green h2">
                         {row.container['empty(*)']}
                       </strong>
                     </div>
@@ -301,35 +411,35 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         </div>
 
         <div className="col-md-5 div-border-left">
-          <div className='row div-row-padding'>
-            <div className='col-md-12'>
+          <div className="row div-row-padding">
+            <div className="col-md-12">
               <i className="fa fa-cube unit-icon-margin" />
               <strong>
                 Unidades
               </strong>
             </div>
           </div>
-          <div className='row'>
-            <div className='col-md-12'>
-              <div className='row text-center'>
-                <div className='col-md-4'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-primary h4'>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="row text-center">
+                <div className="col-md-4">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-primary h4">
                         Pendientes
                       </strong>
                     </div>
-                    <div className='col-md-12'>
-                      <strong className='text-primary h2'>
+                    <div className="col-md-12">
+                      <strong className="text-primary h2">
                         {row.unit.pending}
                       </strong>
                     </div>
                   </div>
                 </div>
-                <div className='col-md-4'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='text-green h4'>
+                <div className="col-md-4">
+                  <div className="row">
+                    <div className="col-md-12">
+                      <strong className="text-green h4">
                         Encontrados
                       </strong>
                     </div>
@@ -425,6 +535,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
             createdBy: inventory.createdBy,
             finalizedAt: inventory.finalizedAt,
             container: containers,
+            file: inventory.file,
             unit: units,
             nave: nave,
             client: client,
@@ -449,7 +560,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       })
 
   }
-  
+
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
     if (this.state.statusFilterSelected !== prevState.statusFilterSelected ||
       this.state.isFilteringByDate !== prevState.isFilteringByDate ||
@@ -504,7 +615,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       }
 
       return shipFilter && statusFilter &&  dateFilter;
-      
+
     });
 
     this.setState({
@@ -515,6 +626,53 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
   create = () => {
     this.props.history.push('/inventory/container/create/');
+  }
+
+  private goToDetail(id: string): void {
+    const { history } = this.props;
+    history.push(`/inventory/management/${id}/`);
+  }
+
+  private finishInventoryAction(inventory: any): void {
+    const { finishInventoryAction } = this.props;
+    // ask if you are sure that you are going to finish the inventory?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a finalizar "${inventory.name}".`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete: any) => {
+      if (willDelete) {
+        finishInventoryAction(inventory._id);
+      }
+    });
+  }
+
+  private deleteInventoryAction(inventory: any): void {
+    const { deleteInventoryAction } = this.props;
+    // ask if you are sure that you are going to delete the inventory?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar "${inventory.name}".`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete: any) => {
+      if (willDelete) {
+        deleteInventoryAction(inventory._id);
+      }
+    });
   }
 
   render(): React.ReactElement<IPropsType> {
@@ -542,7 +700,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
               <h4 className="box-title">
-                Gesti&oacute;n de Anuncios 
+                Gesti&oacute;n de Anuncios
               </h4>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
@@ -680,9 +838,26 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
   }
 }
 
+const mapStateToProps = (state: { inventories: IInventoryState }) => {
+  return {
+    inventories: state.inventories
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    dispatch,
+    finishInventoryAction: (id: string) => dispatch(finishInventoryAction(id)),
+    deleteInventoryAction: (id: string) => dispatch(deleteInventoryAction(id))
+  };
+};
+
+export default connect<{}, {}, IPropsType>(
+  mapStateToProps,
+  mapDispatchToProps
+)(InventoryManagement);
 
 
-export default InventoryManagement;
 
 const inventorySettings: { [key: string]: any } = {
   "leftoverDifferentVenue": true,

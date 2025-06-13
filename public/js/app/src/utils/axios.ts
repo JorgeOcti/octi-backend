@@ -503,10 +503,41 @@ export default class ApiService {
     });
   }
 
-  public getContainersInventory(page: number, pageSize?: number): AxiosPromise {
+  public getContainersInventory(page: number, pageSize?: number, filters?: any, sortField?: string, sortOption?: 'asc' | 'desc'): AxiosPromise {
     let url = `/api/inventory/container/?page=${page}`
     if (pageSize) {
       url += `&pageSize=${pageSize}`
+    }
+    if (filters) {
+      for (const key in filters) {
+        if (filters[key]) {
+          url += `&${key}=${filters[key]}`
+        }
+      }
+    }
+    if (sortField) {
+      url += `&sort=${sortField}`
+      url += `&sortOption=${sortOption || 'desc'}`
+    }
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
+  public getContainersInventorySummary(filters?: any): AxiosPromise {
+    let url = `/api/summary/inventory/container/`
+    if (filters) {
+      url += '?'
+      for (const key in filters) {
+        let value = filters[key];
+        if (filters[key]) {
+          // if is array join with comma first
+          if (Array.isArray(value)) {
+            value = value.join(',');
+          }
+          url += `&${key}=${filters[key]}`
+        }
+      }
     }
     return this.instance.get(url, {
       cancelToken: this.source.token
