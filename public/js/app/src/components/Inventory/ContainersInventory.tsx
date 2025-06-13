@@ -1186,35 +1186,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     onCleanFilters={this.cleanFilters}
                   />
 
-                  <div className="row">
-                    <div className="col-md-12">
-                      <DataTable
-                        columns={this.columns}
-                        data={containers}
-                        customStyles={dataTableStyle}
-                        expandableRows
-                        expandableRowsComponent={ExpandedRowElement}
-                        expandOnRowClicked={true}
-                        pagination
-                        conditionalRowStyles={conditionalRowStyles}
-                        paginationComponentOptions={paginationComponentOptions}
-                        progressPending={this.state.loadingTable}
-                        sortServer
-                        onSort={this.sortTable}
-                        paginationServer
-                        paginationRowsPerPageOptions={ [pagination.pageSize, 100, 200]}
-                        paginationTotalRows={summary.total}
-                        progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x"/></div>}
-                        onChangeRowsPerPage={ this.changePageSize}
-                        onChangePage={this.changePage}
-                        noDataComponent={
-                          <div className="text-center">
-                            <h4>No hay datos</h4>
-                          </div>
-                        }
-                      />
-                    </div>
-                  </div>
+                  <InventoryTable
+                    columns={this.columns}
+                    containers={this.state.containers}
+                    conditionalRowStyles={conditionalRowStyles}
+                    paginationComponentOptions={paginationComponentOptions}
+                    dataTableStyle={dataTableStyle}
+                    ExpandedRowElement={ExpandedRowElement}
+                    />
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
                     <div className="modal-dialog " role="document">

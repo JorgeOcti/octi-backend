@@ -37,6 +37,11 @@ interface IStateType {
   paginationPage: number;
   paginationPageSize: number;
   totalRows: number;
+  dataLoading: boolean;
+  sortColumn: string;
+  sortDirection: 'asc' | 'desc';
+
+  sort:Record<string, string>;
   blFilter: string;
   containerFilter: string;
   shipFilter: string[];
@@ -145,19 +150,20 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 
 class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   title = "Unidades Desconsolidadas";
-
-
-
   constructor(props: IPropsType) {
     super(props);
     this.state = {
       loading: true,
+      dataLoading: true,
       error: null,
       originalUnits: [],
       units: [],
       paginationPage: 1,
       paginationPageSize: 10,
       totalRows: 0,
+      sortColumn: 'Descarga',
+      sortDirection: 'asc',
+      sort:{},
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
@@ -196,13 +202,14 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
+    this.setState({ loading: true })
     const { company } = window.user
     if (company?.handler) {
       // En caso de ser usuario handler filtro por el primer cliente del listado
-      this.setState({ 
-        multiCompany: true, 
-        clientFilter: company?.clientCompanies[0]._id, 
-        clientSelector: company?.clientCompanies 
+      this.setState({
+        multiCompany: true,
+        clientFilter: company?.clientCompanies[0]._id,
+        clientSelector: company?.clientCompanies
       },() => {
         this.getUnitsByCompanyId(1);
       });
@@ -218,27 +225,52 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         })
       }
     }
+    this.setState({ loading: false })
   }
+
+  handleSort = (column: any, sortDirection: any) => {
+    this.setState((prevState) => ({
+      sort: {
+        ...prevState.sort,
+        [column.name]: sortDirection
+      }
+    }));
+    const {paginationPage, paginationPageSize} = this.state;
+    this.getUnitsByCompanyId(paginationPage, paginationPageSize);
+	};
+
+
+  formatSortQuery(sortObject: Record<string, string>): string {
+    const sortParts: string[] = [];
+    for (const field in sortObject) {
+      if (Object.prototype.hasOwnProperty.call(sortObject, field)) {
+        const direction = sortObject[field];
+        const prefix = (direction === 'asc') ? '-' : '+';
+        sortParts.push(`${prefix}${field}`);
+      }
+    }
+    return sortParts.length > 0 ? `sort=${sortParts.join('&sort=')}` : '';
+  }
+
 
   getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
 
-    this.setState({ loading: true })
     const api: ApiService = new ApiService();
     api.getSource()
 
     const companyId = this.state.clientFilter || window.user.company._id;
+    const sortQuery = this.formatSortQuery(this.state.sort)
 
-    api.getUnitsByCompany(companyId, page, pageSize).then((data: any) => {
-
+    api.getUnitsByCompany(companyId, page, pageSize, sortQuery).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
       let tripOptions: any[] = []
       let units = data.data.cars.map((datum: any) => {
-        let inventoryCar = datum.histories.find((history: any) => history.status === "readyToClient")?.inventoryCar;
+        let histories = datum.histories.filter((h?: any) => h).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        let inventoryCar = histories.find((history: any) => history.status === "readyToClient")?.inventoryCar;
         // Sorting histories by createdAt in descending order
-        let histories = datum.histories.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         let status = histories[0].status;
-        let car = datum.car;
+        let car = { ...datum };
         let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
@@ -256,23 +288,20 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           histories,
           status
         }
-
       });
 
       this.setState({
         totalRows: data.data.count,
         units: units,
         originalUnits: units,
-        loading: false,
+        dataLoading: false,
         venueSelector: venueOptions,
         shipSelector: shipOptions,
         tripSelector: tripOptions
       });
 
       this.cleanFilters();
-
-
-    })
+    });
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
@@ -288,7 +317,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.state.endDate !== prevState.endDate) {
       this.filterUnits();
     }
-    if(!prevState.loading && this.state.clientFilter !== prevState.clientFilter){
+    if(!prevState.dataLoading && this.state.clientFilter !== prevState.clientFilter){
        this.getUnitsByCompanyId(1);
     }
   }
@@ -367,7 +396,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
 
   render() {
-    const {units, loading, multiCompany} = this.state;
+    const {units, loading, multiCompany, totalRows} = this.state;
     const { getParticipant } = this.props;
 
     const columns = [
@@ -453,13 +482,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        'min-width': '140px',
-        sortFunction: (a: any, b: any) => {
-          const dateA = a.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-          const dateB = b.histories.find((history:any) => history.status === "readyToClient")?.createdAt
-          return moment(dateA).isAfter(dateB) ? 1 : -1;
-        },
-
+        sortField: 'f. descarga',
+        'min-width': '140px'
       },{
         name: 'F. Despacho',
         selector: (row: any) => {
@@ -500,14 +524,11 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
         },
         sortable: true,
-        'min-width': '140px',
-        sortFunction: (a: any, b: any) => {
-          const dateA = a.histories.find((history:any) => history.status === "inTransit")?.createdAt
-          const dateB = b.histories.find((history:any) => history.status === "inTransit")?.createdAt
-          return moment(dateA).isAfter(dateB) ? 1 : -1;
-        }
+        sortField: 'f. despacho',
+        'min-width': '140px'
       }, {
         name: 'Estado',
+        sortField: 'estado',
         selector: (row: any) => {
           return row.status;
         },
@@ -569,7 +590,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border flex flex-space-between">
               <h3 className="box-title">
                 Unidades Desconsolidadas <span className="font-12"
-                                               style={{ color: 'gray', fontWeight: '700' }}>{units?.length}</span>
+                                               style={{ color: 'gray', fontWeight: '700' }}>{totalRows}</span>
               </h3>
               <div className="pull-right box-tools">
                     < button
@@ -580,7 +601,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     </button>
               </div>
             </div>
-            {loading ?
+            { loading ?
               <div className="overlay">
                 <i className="fa fa-refresh fa-spin" />
               </div>
@@ -767,9 +788,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         data={units}
                         customStyles={dataTableStyle}
                         pagination
-                        paginationComponentOptions={paginationComponentOptions}
                         paginationServer={true}
                         paginationTotalRows={this.state.totalRows}
+                        sortServer={true}
+                        onSort={this.handleSort}
                         onChangePage={(page: number) => {
                           this.getUnitsByCompanyId(page);
                         }}

@@ -67,6 +67,13 @@ import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
 import * as console from 'node:console';
 
+
+
+interface MongooseSortOption {
+  [key: string]: mongoose.SortOrder; // SortOrder puede ser 1, -1, 'asc', 'desc', etc.
+}
+
+
 class InventoryController {
   constructor() {
     this.index = this.index.bind(this);
@@ -723,11 +730,6 @@ class InventoryController {
     const { page, pageSize, containers } = req.query as { page: string; pageSize: string, containers?: string };
     const venuesPermissions = req.user.venuesPermissions();
     // paginate options
-
-
-    logger.error(`calling list: Async Error. ${ page } ${ pageSize } ${ containers } ${ team } ${ venuesPermissions }`);
-
-
 
     const options: PaginateOptions = {
       select: {
@@ -2141,7 +2143,7 @@ class InventoryController {
       const team = req.user.team._id;
       logger.info(`InventoryController.apiList {email: ${req.user.email} }`);
       const updatedUser = await User.findById(req.user._id);
-      
+
       if (updatedUser) {
         const inventories: IInventory[] = await InventoryModel.find(
           {
@@ -2212,9 +2214,6 @@ class InventoryController {
     try {
       const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
 
-      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
-
-      // const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
       let containerMatch: any = {
@@ -2381,9 +2380,7 @@ class InventoryController {
       const { page, pageSize, sort, sortOption } = req.query;
       const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
 
-      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
 
-      // const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
       let containerMatch: any = {
@@ -3721,12 +3718,13 @@ class InventoryController {
     }
   }
 
-
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
-    const { page, pageSize } = req.query as Record<string, string>;
+    const { page, pageSize, sort } = req.query as Record<string, string>;
+
+
     let paginateResult = null;
 
     let filterCompanies: any = null;
@@ -3737,12 +3735,6 @@ class InventoryController {
         $and: [{
           company: new Types.ObjectId(companyId),
           handlerCompany: new Types.ObjectId(company._id),
-          status: {
-            $in: [
-              StatusHistory.inTransit,
-              StatusHistory.readyToClient
-            ]
-          },
         }]
       }
     } else {
@@ -3756,27 +3748,33 @@ class InventoryController {
       filterCompanies = {
         company: new Types.ObjectId(companyId),
         handlerCompany: { $exists: true },
-        status: {
-          $in: [
-            StatusHistory.inTransit,
-            StatusHistory.readyToClient
-          ]
-        }
       }
     }
 
+    // --- Ordenamiento ---
+   let sortOptionAggregation: MongooseSortOption = { createdAt: -1 }; // Ordenamiento por defecto
+    if (sort) {
+      const paramsArray = Array.isArray(sort) ? sort : [sort];
+      for (const param of paramsArray) {
+        const direction = param.startsWith('-') ? -1 : 1;
+        const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
 
-    logger.error(` compa;ias ${ JSON.stringify(filterCompanies)}`)
-
+        if (field.trim() === 'F. Descarga') {
+          sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
+        } else if (field.trim() === 'F. Despacho') {
+          sortOptionAggregation['inTransitHistories.executedAt'] = direction;
+        } else {
+          sortOptionAggregation[field] = direction;
+        }
+      }
+    }
+   
     if (filterCompanies) {
       const options: PaginateOptions = {
         select: {
           name: true,
           updatedAt: true,
           createdAt: true
-        },
-        sort: {
-          name: 1
         },
         customLabels: {
           totalDocs: 'total',
@@ -3791,125 +3789,247 @@ class InventoryController {
         // allowDiskUse: true, //TODO: revisar si es necesario para los volumenes de datos
         lean: true,
         page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '20', 10)
+        limit: parseInt(pageSize ? pageSize : '10', 10)
       };
 
-      paginateResult = await History.aggregatePaginate(
-        History.aggregate([
-          { $match: filterCompanies },
-          // get the inventory cars with the inventory id and the car id
-          {
-            $lookup: {
-              from: 'inventorycars',
-              let: { car: '$car', inventory: '$inventory' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$car', '$$car'] },
-                        { $eq: ['$inventory', '$$inventory'] }
-                      ]
-                    }
-                  }
-                }
-              ],
-              as: 'inventoryCar'
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'inventorycars',
-              localField: 'inventoryCar.containerFound',
-              foreignField: '_id',
-              as: 'inventoryCar.containerFound'
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.containerFound',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'venues',
-              localField: 'inventoryCar.venue',
-              foreignField: '_id',
-              as: 'inventoryCar.venue' // Sobreescribimos el campo inventoryCar.venue con la info de la tabla venues
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.venue',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'participants',
-              localField: 'participant',
-              foreignField: '_id',
-              as: 'participant'
-            }
-          },
-          {
-            $unwind: {
-              path: '$participant',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'participants',
-              localField: 'inventoryCar.participant',
-              foreignField: '_id',
-              as: 'inventoryCar.participant'
-            }
-          },
-          {
-            $unwind: {
-              path: '$inventoryCar.participant',
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $group: {
-              _id: "$car",
-              histories: {
-                $push: {
-                  _id: '$_id',
-                  status: '$status',
-                  from: '$from',
-                  to: '$to',
-                  participant: '$participant',
-                  createdAt: '$createdAt',
-                  inventoryCar: '$inventoryCar',
-                  current: "$current"
-                }
-              }
-            }
-          },
-          {
-            $lookup: {
-              from: 'cars',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'car'
-            }
-          }, {
-            $unwind: {
-              path: "$car",
-              preserveNullAndEmptyArrays: true
+      let histories = await History.aggregate([
+        {
+          $match: {
+            ...filterCompanies,
+            status: {
+              $in: ['inTransit', 'readyToClient']
             }
           }
-        ]), options);
+        },
+        {
+          $group: {
+            _id: '$car',
+            lastCreatedAt: {
+              $max: '$createdAt'
+            },
+          }
+        }, {
+          $sort: {
+            lastCreatedAt: -1 // Sort by the latest createdAt date
+          }
+        }
+      ]);
+
+      let cars = histories.slice(
+        (options.page! - 1) * options.limit!,
+        (options.page! - 1) * options.limit! + options.limit!
+      ).map((h: any) => h._id);
+
+      // Inicia el pipeline de agregación de Car
+      const carAggregationPipeline: any[] = [
+        { $match: { ...filterCompanies, _id: { $in: cars } } },
+        {
+          $lookup: {
+            from: 'histories',
+            let: { carId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$car', '$$carId'] },
+                      { $eq: ['$status', 'inTransit'] }, // Specific status filter
+                    ]
+                  }
+                }
+              },
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar',
+                  foreignField: '_id',
+                  as: 'inventoryCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.containerFound for inTransit histories
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar.containerFound',
+                  foreignField: '_id',
+                  as: 'inventoryCar.containerFound'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.containerFound',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.venue for inTransit histories
+              {
+                $lookup: {
+                  from: 'venues',
+                  localField: 'inventoryCar.venue',
+                  foreignField: '_id',
+                  as: 'inventoryCar.venue'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.venue',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate history.participant for inTransit histories
+              {
+                $lookup: {
+                  from: 'participants',
+                  localField: 'participant',
+                  foreignField: '_id',
+                  as: 'participant'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$participant',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.participant for inTransit histories
+              {
+                $lookup: {
+                  from: 'participants',
+                  localField: 'inventoryCar.participant',
+                  foreignField: '_id',
+                  as: 'inventoryCar.participant'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.participant',
+                  preserveNullAndEmptyArrays: true
+                }
+              }
+            ],
+            as: 'inTransitHistories' // Store as a separate array for inTransit histories
+          }
+        },
+        { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
+        {
+          $lookup: {
+            from: 'histories',
+            let: { carId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$car', '$$carId'] },
+                      { $eq: ['$status', 'readyToClient'] }, // Specific status filter
+                    ]
+                  }
+                }
+              },
+              // Populate inventoryCar for readyToClient histories
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar',
+                  foreignField: '_id',
+                  as: 'inventoryCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.containerFound for readyToClient histories
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar.containerFound',
+                  foreignField: '_id',
+                  as: 'inventoryCar.containerFound'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.containerFound',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.venue for readyToClient histories
+              {
+                $lookup: {
+                  from: 'venues',
+                  localField: 'inventoryCar.venue',
+                  foreignField: '_id',
+                  as: 'inventoryCar.venue'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.venue',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate history.participant for readyToClient histories
+              {
+                $lookup: {
+                  from: 'participants',
+                  localField: 'participant',
+                  foreignField: '_id',
+                  as: 'participant'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$participant',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              // Populate inventoryCar.participant for readyToClient histories
+              {
+                $lookup: {
+                  from: 'participants',
+                  localField: 'inventoryCar.participant',
+                  foreignField: '_id',
+                  as: 'inventoryCar.participant'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.participant',
+                  preserveNullAndEmptyArrays: true
+                }
+              }
+            ],
+            as: 'readyToClientHistories' // Store as a separate array for readyToClient histories
+          }
+        },
+        {
+          $unwind: { 'path': '$readyToClientHistories' }
+        },
+        ... (sortOptionAggregation['readyToClientHistories.executedAt'] ? [{
+          $sort: {
+            'readyToClientHistories.executedAt': sortOptionAggregation['readyToClientHistories.executedAt']
+          }
+        }] : []),
+        {
+          $addFields: {
+            // Concatenate the two history arrays
+            histories: ['$inTransitHistories', '$readyToClientHistories']
+          }
+        }
+      ];
+
+      paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
+      //paginateResult.total = histories.length; // TODO : verificar con paginado
+
     }
 
     return res.status(200).json({
