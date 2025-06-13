@@ -263,9 +263,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
-      paginationPage: 1,
-      paginationPageSize: 10,
-      totalRows: 0,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",

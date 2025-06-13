@@ -544,8 +544,8 @@ export default class ApiService {
     });
   }
 
-  public getUnitsByCompany(companyId: string): AxiosPromise {
-    let url = `/api/company/stock/${companyId}`
+  public getUnitsByCompany(companyId: string, page: number, pageSize: number): AxiosPromise {
+    let url = `/api/company/stock/${companyId}?page=${page}&pageSize=${pageSize}`;
     return this.instance.get(url, {
       cancelToken: this.source.token
     });
