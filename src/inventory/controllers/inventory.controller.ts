@@ -2674,7 +2674,17 @@ class InventoryController {
   }
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-    const { ship, trip, container, bl, client, status, hasDamage, sort, sortOption } = req.query;
+          const { 
+            shipFilter: ship, 
+            tripFilter: trip, 
+            containerFilter: container, 
+            blFilter: bl, 
+            clientFilter: client, 
+            statusFilterSelected: status, 
+            filterHasDamage: hasDamage,
+            sort,
+            sortOption
+          } = req.query;
 
     const venuesPermissions = req.user.venuesPermissions();
 
@@ -2697,7 +2707,7 @@ class InventoryController {
     let carFilter: any = {};
 
     if (status) {
-      containerFilter['status'] = { $in: status.split(',') };
+      containerFilter['containerStatus'] = { $in: status.toString().split(',') };
     } else {
       containerFilter['containerStatus'] = {
       $in: [
@@ -2709,7 +2719,7 @@ class InventoryController {
       };
     }
 
-    if (hasDamage == 1) {
+    if (hasDamage) {
       let damagedParticpants = await Participant.find({
       form: { $in: inventories.map((i: any) => i.unitForm) },
       }, { car: 1 });
@@ -2720,14 +2730,14 @@ class InventoryController {
       containerFilter['_id'] = {
       $in: damagedCars.map((c: any) => c.containerFound)
       };
-      carFilter['participant.hasDamage'] = true;
+      carFilter['participant.hasDamages'] = true;
     }
 
     if (trip) containerFilter['extra.N° Viaje'] = trip;
     if (ship) containerFilter['extra.Nave'] = ship;
     if (container) containerFilter['extra.BIC'] = container;
     if (bl) containerFilter['extra.N° BL'] = bl;
-    if (client) containerFilter['car.company'] = new mongoose.Types.ObjectId(client);
+    if (client) containerFilter['car.company'] = new mongoose.Types.ObjectId(client.toString());
 
     let sortField: string = sort ? sort.toString() : 'createdAt';
     let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
@@ -2757,6 +2767,8 @@ class InventoryController {
       { header: 'Contenedor', key: 'container', width: 25 },
       { header: 'Carga', key: 'vin', width: 15 },
       { header: 'Descripción carga', key: 'description', width: 30 },
+      { header: 'Daños', key: 'hasDamages', width: 30 },
+      { header: 'Asistencia mecánica', key: 'accessories', width: 30 },
       { header: 'BL', key: 'bl', width: 20 },
       { header: 'Puerto', key: 'port', width: 20 },
       { header: 'Nave', key: 'ship', width: 20 },
@@ -2832,13 +2844,13 @@ class InventoryController {
       containerBatch.push(container);
 
       if (containerBatch.length >= BATCH_SIZE) {
-        await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap);
+        await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap, carFilter);
         containerBatch = [];
       }
     }
 
     if (containerBatch.length > 0) {
-      await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap);
+      await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap, carFilter);
     }
 
     worksheet.commit();
@@ -2866,7 +2878,8 @@ class InventoryController {
     containers: any[], 
     inventories: any[], 
     worksheet: any, 
-    containerMap: Map<string, any>
+    containerMap: Map<string, any>,
+    carFilter: any
   ) {
     const containerIds = containers.map(c => c._id);
     let cars = await InventoryCar.aggregate([
@@ -2902,8 +2915,14 @@ class InventoryController {
         localField: 'participant',
         foreignField: '_id',
         as: 'participant',
-        pipeline: [{ $project: { name: 1, hasDamage: 1 } }]
+        pipeline: [{ $project: { name: 1, hasDamages: 1 } }]
       }
+      },
+      {
+        $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $match: carFilter
       }
     ]);
 
@@ -2933,6 +2952,8 @@ class InventoryController {
         container: container ? container.car.vin : '',
         vin: car.car.vin,
         description: `${car.car.brand} ${car.car.model || ''}`, 
+        hasDamages: car.participant.hasDamages ? 'Sí' : 'No',
+        accessories: 'nose',
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',

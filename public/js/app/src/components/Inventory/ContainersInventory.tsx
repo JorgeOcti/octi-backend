@@ -895,7 +895,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private downloadData(): void {
-    window.open(`/api/inventory/container/export?${this.getActiveFiltersAsQueryParams()}`, '_blank');
+    const params = new URLSearchParams(this.state.pagination.filters).toString();
+    console.log(`/api/inventory/container/export?${params}`);
+    window.open(`/api/inventory/container/export?${params}`, '_blank');
 
   }
 
