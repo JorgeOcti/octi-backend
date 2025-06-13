@@ -1109,23 +1109,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     paginationComponentOptions={paginationComponentOptions}
                     dataTableStyle={dataTableStyle}
                     ExpandedRowElement={ExpandedRowElement}
-                    paginationServer={true}
-                    totalRows={ this.state.originalContainers.length}
-                    OnChangePage={(page: number) => {
-                      this.loadInventoryData(page, 10);
-                      console.log(` OnChangePage ${page}`);
-                     // this.setState({
-                     //   page: page
-                     // });
-
-                    }}
-                    OnChangeRowsPerPage={(newPerPage: number, page: number) => {
-                      this.loadInventoryData(page, newPerPage);
-                      console.log(` OnChangeRowsPerPage ${newPerPage} ${page}`);
-                     this.setState({
-                        paginationPageSize: newPerPage
-                     });
-                    }} 
                     />
 
                   <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
