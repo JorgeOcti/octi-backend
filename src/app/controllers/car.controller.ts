@@ -2077,7 +2077,6 @@ class CarController {
           status: 404
         });
       } else {
-        console.log('car', car);
         return res.json({
           data: car,
           status: 200
