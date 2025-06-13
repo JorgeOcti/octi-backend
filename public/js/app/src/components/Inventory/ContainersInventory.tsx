@@ -718,6 +718,38 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
+    getActiveFiltersAsQueryParams = () => {
+      const {
+      blFilter,
+      containerFilter,
+      clientFilter,
+      statusFilterSelected,
+      shipFilter,
+      tripFilter,
+      filterHasDamage,
+      isFilteringByDate,
+      startDate,
+      endDate
+      } = this.state;
+
+      const params: any = {};
+
+      if (blFilter) params.bl = blFilter;
+      if (containerFilter) params.container = containerFilter;
+      if (clientFilter) params.client = clientFilter;
+      if (statusFilterSelected && statusFilterSelected.length > 0) params.status = statusFilterSelected.join(',');
+      if (shipFilter && shipFilter.length > 0) params.ship = shipFilter.join(',');
+      if (tripFilter && tripFilter.length > 0) params.trip = tripFilter.join(',');
+      if (filterHasDamage) params.hasDamage = 'true';
+      if (isFilteringByDate && startDate && endDate) {
+      params.startDate = moment(startDate).format('YYYY-MM-DD');
+      params.endDate = moment(endDate).format('YYYY-MM-DD');
+      }
+
+      return Object.keys(params).map((key) => {
+        return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`;
+      }).join('&');
+    };
 
 
   filterContainers() {
@@ -779,38 +811,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private downloadData(): void {
-    const { containers } = this.state
-    let rows = [
-      [...excelHeaders]
-    ];
+    window.open(`/api/inventory/container/export?${this.getActiveFiltersAsQueryParams()}`, '_blank');
 
-    containers.map((container: any) => {
-      container.content.map((car: any) => {
-        let carRow = [
-          container.openDate ? moment(container.openDate).format('DD/MM/YYYY HH:mm') : "",
-          container.emptyDate ? moment(container.emptyDate).format('DD/MM/YYYY HH:mm') : "",
-          container.car.vin,
-          car.car.vin,
-          `${car.car.brand ?? ""} ${car.car.model ?? ""}`,
-          car.extra ? car.extra["N° BL"] ?? "" : "",
-          car.extra ? car.extra["Emplazamiento"] ?? "" : "",
-          car.extra ? car.extra["Nave"] ?? "" : "",
-          car.extra ? car.extra["Cliente Razón Social"] ?? "" : "",
-          car.extra ? car.extra["N° Viaje"] ?? "" : "",
-          inventorySettings[car.containerStatus || car.status] ?? "",
-        ]
-        rows.push(carRow);
-      })
-    });
-
-    /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    /* add to workbook */
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
-    /* generate an XLSX file */
-    XLSX.writeFile(wb, 'container_inventory.xlsx');
   }
 
   render() : React.ReactElement<IPropsType> {

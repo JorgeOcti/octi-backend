@@ -2446,8 +2446,7 @@ class InventoryController {
   }
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-    const { ship, trip, container, bl, client, status, hasDamage } = req.body;
-    const { sort, sortOption } = req.query;
+    const { ship, trip, container, bl, client, status, hasDamage, sort, sortOption } = req.query;
 
     const venuesPermissions = req.user.venuesPermissions();
 
