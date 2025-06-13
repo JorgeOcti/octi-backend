@@ -65,6 +65,7 @@ import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
+import * as console from 'node:console';
 
 class InventoryController {
   constructor() {
@@ -101,6 +102,7 @@ class InventoryController {
     this.checkCarToInventory = this.checkCarToInventory.bind(this)
     this.inventoryCar = this.inventoryCar.bind(this)
     this.containerInventoryDetail = this.containerInventoryDetail.bind(this);
+    this.containerInventorySummary = this.containerInventorySummary.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -2199,15 +2201,16 @@ class InventoryController {
     }
   }
 
-  public async containerInventoryDetail(req: IRequest, res: Response) {
+  public async containerInventorySummary(req: IRequest, res: Response) {
     try {
-      const { ship, trip, container, bl, client, status, hasDamage } = req.body;
-      const { page, pageSize, sort, sortOption } = req.query;
+      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
+
+      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
 
       // const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
-      let containerFilter: any = {
+      let containerMatch: any = {
         $or: [
           {
             'venue': {
@@ -2234,12 +2237,12 @@ class InventoryController {
 
       let carFilter : any = {}
 
-      if (status) {
-        containerFilter['status'] = {
-          $in: status.split(',')
+      if (statusFilterSelected) {
+        containerMatch['containerStatus'] = {
+          $in: statusFilterSelected.toString().split(',')
         }
       } else {
-        containerFilter['containerStatus'] = {
+        containerMatch['containerStatus'] = {
           $in: [
             ChoicesStatusContainer.pending,
             ChoicesStatusContainer.open,
@@ -2249,7 +2252,7 @@ class InventoryController {
         }
       }
 
-      if (hasDamage == 1) {
+      if (filterHasDamage?.toString() === "true") {
         let damagedParticpants = await Participant.find({
           form: {$in: inventories.map((i: any) => i.unitForm)},
         }, { car: 1});
@@ -2257,32 +2260,217 @@ class InventoryController {
           car: {$in: damagedParticpants.map((p: any) => p.car)},
         }, {containerFound: 1});
 
-        containerFilter['_id'] = {
+        containerMatch['_id'] = {
           $in: damagedCars.map((c: any) => c.containerFound)
         }
         carFilter['participant.hasDamage'] = true;
       }
 
-      if (trip) {
-        containerFilter['extra.N° Viaje'] = trip;
+      if (tripFilter) {
+        containerMatch['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
       }
 
-      if (ship) {
-        containerFilter['extra.Nave'] = ship;
+      if (shipFilter) {
+        containerMatch['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
       }
 
-      if (container) {
-        containerFilter['extra.BIC'] = container;
+      if (containerFilter) {
+        containerMatch['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
       }
 
-      if (bl) {
-        containerFilter['extra.N° BL'] = bl;
+      if (blFilter) {
+        containerMatch['extra.N° BL'] = blFilter;
       }
 
-      if (client) {
-        containerFilter['car.company'] = new mongoose.Types.ObjectId(client);
+      if (clientFilter) {
+        containerMatch['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
       }
 
+      logger.info(
+        `InventoryController.containerInventorySummary {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
+      );
+
+      let resume = await InventoryCar.aggregate([
+        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        {
+          $lookup: {
+            from: 'cars', // The collection name for the 'cars' field
+            localField: 'car', // Field in InventoryCar
+            foreignField: '_id', // Field in carinventories
+            as: 'car',
+          }
+        },
+        { $unwind: {path: '$car'} },
+        { $match: { 'car.isContainer': true } }, // Filter for container cars
+        { $match: containerMatch },
+        { $group: {
+            _id: '$containerStatus',
+            count: { $sum: 1 },
+          }
+        }
+      ])
+
+      let ships = await InventoryCar.aggregate([
+        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        {
+          $lookup: {
+            from: 'cars', // The collection name for the 'cars' field
+            localField: 'car', // Field in InventoryCar
+            foreignField: '_id', // Field in carinventories
+            as: 'car',
+          }
+        },
+        { $unwind: {path: '$car'} },
+        { $match: { 'car.isContainer': true } }, // Filter for container cars
+        { $match: containerMatch },
+        { $group: {
+            _id: '$extra.Nave',
+          }
+        }
+      ])
+
+      let trips = await InventoryCar.aggregate([
+        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        {
+          $lookup: {
+            from: 'cars', // The collection name for the 'cars' field
+            localField: 'car', // Field in InventoryCar
+            foreignField: '_id', // Field in carinventories
+            as: 'car',
+          }
+        },
+        { $unwind: {path: '$car'} },
+        { $match: { 'car.isContainer': true } }, // Filter for container cars
+        { $match: containerMatch },
+        { $group: {
+            _id: '$extra.N° Viaje',
+          }
+        }
+      ])
+
+
+      return res.status(200).json({
+        data: {
+          resume,
+          trips,
+          ships
+        }
+      });
+
+    } catch (error) {
+      logger.error(`containerInventorySummary: Async Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(error);
+      logger.error(error.stack);
+      return res.status(500).json({
+        message: 'Ha ocurrido un error al obtener el resumen del inventario de contenedores.',
+        status: 500
+      });
+    }
+  }
+
+  public async containerInventoryDetail(req: IRequest, res: Response) {
+    try {
+      const { page, pageSize, sort, sortOption } = req.query;
+      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
+
+      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
+
+      // const team = req.user.team._id;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      let containerMatch: any = {
+        $or: [
+          {
+            'venue': {
+              $in: venuesPermissions
+            }
+          },
+          {
+            'venueFound': {
+              $in: venuesPermissions
+            }
+          }
+        ],
+      }
+
+      let inventories = await Inventory.find({
+        team: req.user.team._id,
+        containerInventory: true,
+        venues: { $in: venuesPermissions }
+      }, {
+        _id: true,
+        unitForm: true,
+      })
+
+
+      let carFilter : any = {}
+
+      if (statusFilterSelected) {
+        containerMatch['containerStatus'] = {
+          $in: statusFilterSelected.toString().split(',')
+        }
+      } else {
+        containerMatch['containerStatus'] = {
+          $in: [
+            ChoicesStatusContainer.pending,
+            ChoicesStatusContainer.open,
+            ChoicesStatusContainer.check,
+            ChoicesStatusContainer.empty,
+          ]
+        }
+      }
+
+      if (filterHasDamage?.toString() === "true") {
+        logger.info("FIltrando con daños")
+        let damagedParticpants = await Participant.find({
+          form: {$in: inventories.map((i: any) => i.unitForm)},
+          hasDamages: true,
+        }, { car: 1});
+
+        logger.info(`damagedParticpants: ${JSON.stringify(damagedParticpants.length)}`);
+        let damagedCars = await InventoryCar.find({
+          car: {$in: damagedParticpants.map((p: any) => p.car)},
+        }, {containerFound: 1});
+
+        logger.info(`damagedParticpants: ${JSON.stringify(damagedCars.length)}`);
+
+        containerMatch['_id'] = {
+          $in: damagedCars.map((c: any) => c.containerFound)
+        }
+        carFilter['participant.hasDamages'] = true;
+      }
+
+      if (tripFilter) {
+        containerMatch['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
+      }
+
+      if (shipFilter) {
+        containerMatch['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
+      }
+
+      if (containerFilter) {
+        containerMatch['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
+      }
+
+      if (blFilter) {
+        containerMatch['extra.N° BL'] = blFilter;
+      }
+
+      if (clientFilter) {
+        let clientCars = await Car.find({
+          company: new mongoose.Types.ObjectId(clientFilter.toString()),
+        }, { _id: 1});
+        let damagedCars = await InventoryCar.find({
+          car: {$in: clientCars.map((p: any) => p._id)},
+        }, {containerFound: 1, container: 1});
+
+        containerMatch['_id'] = {
+          $in: damagedCars.map((c: any) => c.container || c.containerFound)
+        }
+
+        carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+      }
 
       let sortField: string = sort ? sort.toString() : 'createdAt';
       let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
@@ -2299,6 +2487,8 @@ class InventoryController {
         lean: true
       }
 
+
+
       let containers = await InventoryCar.aggregatePaginate(
           InventoryCar.aggregate([
             {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
@@ -2312,8 +2502,7 @@ class InventoryController {
             },
             { $unwind: {path: '$car'} },
             { $match: { 'car.isContainer': true } }, // Filter for container cars
-            { $match: containerFilter },
-            { $sort: sortObject },
+            { $match: containerMatch },
             {
               $lookup: {
                 from: 'inventoryfiles',
@@ -2345,6 +2534,40 @@ class InventoryController {
                 ]
               }
             },
+            // From the evidenceStatus arrey find the object with the status 'open' and save the date in a new field named openDate
+            {
+              $addFields: {
+                openEvidence: {
+                  $filter: {
+                    input: '$evidenceStatus',
+                    as: 'evidence',
+                    cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
+                  }
+                }
+              }
+            },
+            {
+              $addFields: {
+                openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
+              }
+            },
+            {
+              $addFields: {
+                emptyEvidence: {
+                  $filter: {
+                    input: '$evidenceStatus',
+                    as: 'evidence',
+                    cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+                  }
+                }
+              }
+            },
+            {
+              $addFields: {
+                emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+              }
+            },
+            { $sort: sortObject },
             { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
             {
               $project: {
@@ -2356,7 +2579,10 @@ class InventoryController {
                 containerStatus: 1,
                 venueFound: 1,
                 venue: 1,
-                extra: 1
+                extra: 1,
+                openDate: 1,
+                emptyDate: 1,
+                inventory: 1,
               }
             }
           ]),
@@ -2403,10 +2629,13 @@ class InventoryController {
             foreignField: '_id',
             as: 'participant',
             pipeline: [
-              {$project: {name: 1, hasDamage: 1}}
+              {$project: {name: 1, hasDamages: 1}}
             ]
           }
-        }
+        },{
+          $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
+        },
+        {$match: carFilter},
       ])
 
       containers.docs = containers.docs.map(c => {
