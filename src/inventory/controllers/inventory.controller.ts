@@ -731,11 +731,6 @@ class InventoryController {
     const venuesPermissions = req.user.venuesPermissions();
     // paginate options
 
-
-    logger.error(`calling list: Async Error. ${ page } ${ pageSize } ${ containers } ${ team } ${ venuesPermissions }`);
-
-
-
     const options: PaginateOptions = {
       select: {
         _id: true
@@ -2219,9 +2214,6 @@ class InventoryController {
     try {
       const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
 
-      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
-
-      // const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
       let containerMatch: any = {
@@ -2388,9 +2380,7 @@ class InventoryController {
       const { page, pageSize, sort, sortOption } = req.query;
       const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
 
-      console.log(`containerInventorySummary: {ship: ${shipFilter}, trip: ${tripFilter}, container: ${containerFilter}, bl: ${blFilter}, client: ${clientFilter}, statusText: ${statusFilterSelected}, filterHasDamage: ${filterHasDamage}}`);
 
-      // const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
       let containerMatch: any = {
@@ -3769,8 +3759,6 @@ class InventoryController {
         const direction = param.startsWith('-') ? -1 : 1;
         const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
 
-        logger.error(`Sorting by field: |${field.trim()}| with direction: ${direction}`);
-
         if (field.trim() === 'F. Descarga') {
           sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
         } else if (field.trim() === 'F. Despacho') {
@@ -3778,9 +3766,6 @@ class InventoryController {
         } else {
           sortOptionAggregation[field] = direction;
         }
-
-
-        logger.error(`Sorting by sortOptionAggregation: ${ JSON.stringify(sortOptionAggregation) }`);
       }
     }
    
@@ -4043,7 +4028,7 @@ class InventoryController {
       ];
 
       paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
-      //paginateResult.total = histories.length; // Esto probablemente esté incorrecto si histories se usa para la paginación global
+      //paginateResult.total = histories.length; // TODO : verificar con paginado
 
     }
 

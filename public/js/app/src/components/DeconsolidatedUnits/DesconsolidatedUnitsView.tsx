@@ -275,8 +275,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
 
-        //console.log("car", car)
-
         if (car.venue && !venueOptions.includes(car.venue)) {
           venueOptions.push(car.venue)
         }
@@ -349,17 +347,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       if (this.state.isFilteringByDate) {
         dateFilter = moment(unit.car.lastDate).isBetween(this.state.startDate, this.state.endDate, 'day', '[]');
       }
-      console.log(
-        bl,
-        containerFilter,
-        statusFilter,
-        unitFilter,
-        trip,
-        venueFilter,
-        dateFilter,
-        ship,
-        damageFilter
-      )
       return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
     });
 
