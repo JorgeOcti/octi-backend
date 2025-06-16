@@ -2210,7 +2210,7 @@ class InventoryController {
 
   public async containerInventorySummary(req: IRequest, res: Response) {
     try {
-      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
+      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage, startDate, endDate } = req.query;
 
       const venuesPermissions = req.user.venuesPermissions();
 
@@ -2267,7 +2267,7 @@ class InventoryController {
         containerMatch['_id'] = {
           $in: damagedCars.map((c: any) => c.containerFound)
         }
-        carFilter['participant.hasDamage'] = true;
+        carFilter['participant.hasDamages'] = true;
       }
 
       if (tripFilter) {
@@ -2294,25 +2294,76 @@ class InventoryController {
         `InventoryController.containerInventorySummary {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
       );
 
+      let containerDateFilter = {};
+      if (startDate && endDate) {
+        containerDateFilter = {
+          $or: [
+            { openDate: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } },
+            { emptyDate: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } },
+            { createdAt: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } }
+          ]
+        };
+      }
+
       let resume = await InventoryCar.aggregate([
-        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
         {
           $lookup: {
-            from: 'cars', // The collection name for the 'cars' field
-            localField: 'car', // Field in InventoryCar
-            foreignField: '_id', // Field in carinventories
-            as: 'car',
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
           }
         },
-        { $unwind: {path: '$car'} },
-        { $match: { 'car.isContainer': true } }, // Filter for container cars
+        { $unwind: { path: '$car' } },
+        { $match: { 'car.isContainer': true } },
         { $match: containerMatch },
-        { $group: {
+        {
+          $addFields: {
+            openEvidence: {
+              $filter: {
+                input: '$evidenceStatus',
+                as: 'evidence',
+                cond: {
+                  $eq: ['$$evidence.status', ChoicesStatusContainer.open]
+                }
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
+          }
+        },
+        {
+          $addFields: {
+            emptyEvidence: {
+              $filter: {
+                input: '$evidenceStatus',
+                as: 'evidence',
+                cond: {
+                  $eq: ['$$evidence.status', ChoicesStatusContainer.empty]
+                }
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+          }
+        },
+        {
+          $match: containerDateFilter
+        },
+        {
+          $group: {
             _id: '$containerStatus',
-            count: { $sum: 1 },
+            count: { $sum: 1 }
           }
         }
-      ])
+      ]);
 
       let ships = await InventoryCar.aggregate([
         {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
@@ -2376,8 +2427,7 @@ class InventoryController {
   public async containerInventoryDetail(req: IRequest, res: Response) {
     try {
       const { page, pageSize, sort, sortOption } = req.query;
-      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage } = req.query;
-
+      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage, startDate, endDate } = req.query;
 
       const venuesPermissions = req.user.venuesPermissions();
 
@@ -2489,7 +2539,16 @@ class InventoryController {
         lean: true
       }
 
-
+      let containerDateFilter: any = {};
+      if( startDate && endDate) {
+        containerDateFilter = {
+            $or: [
+              { 'openDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
+              { 'emptyDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
+              { 'createdAt': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } }
+            ] 
+        }
+      }
 
       let containers = await InventoryCar.aggregatePaginate(
           InventoryCar.aggregate([
@@ -2536,7 +2595,6 @@ class InventoryController {
                 ]
               }
             },
-            // From the evidenceStatus arrey find the object with the status 'open' and save the date in a new field named openDate
             {
               $addFields: {
                 openEvidence: {
@@ -2568,6 +2626,9 @@ class InventoryController {
               $addFields: {
                 emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
               }
+            },
+            {
+              $match: containerDateFilter
             },
             { $sort: sortObject },
             { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
@@ -2671,16 +2732,17 @@ class InventoryController {
       });
     }
   }
+
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-          const {
-            shipFilter: ship,
-            tripFilter: trip,
-            containerFilter: container,
-            blFilter: bl,
-            clientFilter: client,
-            statusFilterSelected: status,
-            filterHasDamage: hasDamage,
+          const { 
+            shipFilter, 
+            tripFilter, 
+            containerFilter: container, 
+            blFilter, 
+            clientFilter, 
+            statusFilterSelected, 
+            filterHasDamage,
             sort,
             sortOption
           } = req.query;
@@ -2705,8 +2767,8 @@ class InventoryController {
 
     let carFilter: any = {};
 
-    if (status) {
-      containerFilter['containerStatus'] = { $in: status.toString().split(',') };
+    if (statusFilterSelected) {
+      containerFilter['containerStatus'] = { $in: statusFilterSelected.toString().split(',') };
     } else {
       containerFilter['containerStatus'] = {
       $in: [
@@ -2718,7 +2780,7 @@ class InventoryController {
       };
     }
 
-    if (hasDamage) {
+    if (filterHasDamage) {
       let damagedParticpants = await Participant.find({
       form: { $in: inventories.map((i: any) => i.unitForm) },
       }, { car: 1 });
@@ -2732,11 +2794,11 @@ class InventoryController {
       carFilter['participant.hasDamages'] = true;
     }
 
-    if (trip) containerFilter['extra.N° Viaje'] = trip;
-    if (ship) containerFilter['extra.Nave'] = ship;
+    if (tripFilter) containerFilter['extra.N° Viaje'] = tripFilter;
+    if (shipFilter) containerFilter['extra.Nave'] = shipFilter;
     if (container) containerFilter['extra.BIC'] = container;
-    if (bl) containerFilter['extra.N° BL'] = bl;
-    if (client) containerFilter['car.company'] = new mongoose.Types.ObjectId(client.toString());
+    if (blFilter) containerFilter['extra.N° BL'] = blFilter;
+    if (clientFilter) containerFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
 
     let sortField: string = sort ? sort.toString() : 'createdAt';
     let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
@@ -2775,6 +2837,16 @@ class InventoryController {
       { header: 'Viaje', key: 'voyage', width: 15 },
       { header: 'Estado', key: 'status', width: 15 },
     ];
+    let containerDateFilter: any = {};
+    if (req.query.startDate && req.query.endDate) {
+      containerDateFilter = {
+        $or: [
+          { openDate: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
+          { emptyDate: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
+          { createdAt: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } }
+        ]
+      }
+    }
 
     const BATCH_SIZE = 100;
     const containerPipeline = [
@@ -2817,6 +2889,41 @@ class InventoryController {
         as: "venueFound",
         pipeline: [{ $project: { name: 1 } }]
       }
+      },
+      {
+        $addFields: {
+          openEvidence: {
+            $filter: {
+              input: '$evidenceStatus',
+              as: 'evidence',
+              cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
+        }
+      },
+      {
+        $addFields: {
+          emptyEvidence: {
+            $filter: {
+              input: '$evidenceStatus',
+              as: 'evidence',
+              cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+        }
+      },
+      {
+        $match: containerDateFilter
       },
       { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
       {
