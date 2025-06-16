@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
 
-import { PaginateModel } from 'mongoose';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import type { ICar } from '../interfaces/car.interface';
 import { baseVenueSchema } from './venue.model';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export enum ChoicesStatusCar {
   active = 'active',
@@ -314,8 +315,10 @@ carSchema.statics.findOneOrCreate = function (
 };
 
 carSchema.plugin(mongoosePaginate);
+carSchema.plugin(mongooseAggregatePaginate);
 
 export type CarSchema = mongoose.Model<ICarModel> &
+  AggregatePaginateModel<ICarModel> &
   PaginateModel<ICarModel> & {
     findOneOrCreate(condition: any, create: any): Promise<ICarModel>;
   };
