@@ -77,12 +77,6 @@ import { IParticipant } from '../../form/interfaces/participant.interface';
     };
 
 
-
-interface MongooseSortOption {
-  [key: string]: mongoose.SortOrder; // SortOrder puede ser 1, -1, 'asc', 'desc', etc.
-}
-
-
 class InventoryController {
   constructor() {
     this.index = this.index.bind(this);
@@ -4040,19 +4034,29 @@ class InventoryController {
     }
   }
 
+  /*public async currentCompanyStockSummary(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { company } = req.user; // user request company
+      let { companyId } = req.params; //filter param company
+      const { page, pageSize, sort } = req.query as Record<string, string>;
+    }
+
+  }*/
+
+
+
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
-    const { page, pageSize, sort } = req.query as Record<string, string>;
-
-
-    let paginateResult = null;
+    const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage } = req.query;
 
     let filterCompanies: any = null;
     let userCompany = await Company.findById(company._id);
 
     if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+      // for handler Companies
       filterCompanies = {
         $and: [{
           company: new Types.ObjectId(companyId),
@@ -4073,21 +4077,95 @@ class InventoryController {
       }
     }
 
-    // --- Ordenamiento ---
-   let sortOptionAggregation: MongooseSortOption = { createdAt: -1 }; // Ordenamiento por defecto
-    if (sort) {
-      const paramsArray = Array.isArray(sort) ? sort : [sort];
-      for (const param of paramsArray) {
-        const direction = param.startsWith('-') ? -1 : 1;
-        const field = param.startsWith('+') || param.startsWith('-') ? param.substring(1) : param;
+    let cars = await Car.aggregate([
+      {$match: filterCompanies},
+      {$project: {_id: 1}}
+    ]);
+    let inventoryCars : any[] | null = null
 
-        if (field.trim() === 'F. Descarga') {
-          sortOptionAggregation['readyToClientHistories.executedAt'] = direction;
-        } else if (field.trim() === 'F. Despacho') {
-          sortOptionAggregation['inTransitHistories.executedAt'] = direction;
-        } else {
-          sortOptionAggregation[field] = direction;
+    let statusFiletr : any = {}
+    let damageFilter: any = {}
+
+    let inventoryCarFilter: any = {}
+    let inventoryCarDamageFilter: any = {}
+
+    if (statusFilter) {
+      statusFiletr['status'] = statusFilter.toString()
+    } else {
+      statusFiletr['status'] = {
+        $in: ['inTransit', 'readyToClient']
+      }
+    }
+
+    if (filterHasDamage?.toString() === "true") {
+      inventoryCarDamageFilter['participant.hasDamage'] = true;
+      damageFilter['participant.hasDamage'] = true;
+    }
+
+    if (tripFilter) {
+      inventoryCarFilter['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
+    }
+
+    if (shipFilter) {
+      inventoryCarFilter['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
+    }
+
+    if (containerFilter) {
+      inventoryCarFilter['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
+    }
+
+    if (blFilter) {
+      inventoryCarFilter['extra.N° BL'] = blFilter;
+    }
+
+    if (Object.keys(inventoryCarFilter).length > 0) {
+      let pipeline: any[] = [
+        {$match:  {
+            ...inventoryCarFilter,
+            car: {$in: cars.map((c: any) => c._id)},
+        }},
+      ]
+      if (Object.keys(inventoryCarDamageFilter).length > 0) {
+        pipeline.concat([{
+          $lookup: {
+            from: 'participants',
+            localField: 'participant',
+            foreignField: '_id',
+            as: 'participant'
+          }
+        },{
+          $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }
+        },{
+          $match: inventoryCarDamageFilter
         }
+        ])
+      }
+      pipeline.push({
+        $project: {
+          car: 1
+        }
+      });
+      inventoryCars = await InventoryCar.aggregate(pipeline);
+    }
+
+
+    let paginateResult = null;
+
+
+
+    // --- Ordenamiento ---
+   let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
+    if (sortColumn) {
+      let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
+
+      if (sortColumn.trim() === 'F. Descarga') {
+        sortOptionAggregation = {'readyToClientHistories.executedAt': direction};
+      } else if (sortColumn.trim() === 'F. Despacho') {
+        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
+      } else if (sortColumn.trim() === 'Estado') {
+        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
+      } else {
+        sortOptionAggregation = {sortColumn: direction};
       }
     }
 
@@ -4114,15 +4192,51 @@ class InventoryController {
         limit: parseInt(pageSize ? pageSize : '10', 10)
       };
 
-      let histories = await History.aggregate([
-        {
-          $match: {
-            ...filterCompanies,
-            status: {
-              $in: ['inTransit', 'readyToClient']
+      let pipeline : any[] = [];
+      if (Object.keys(damageFilter).length > 0){
+        pipeline = [
+          {$match:{
+              ...filterCompanies,
+              ...statusFiletr,
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant',
+              pipeline: [
+                {$project: {hasDamages: 1}}
+              ]
+            }
+          },
+          { $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }},
+          {$match: {
+              $or: [
+                {"participant.hasDamages": true},
+                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}}
+              ]
             }
           }
-        },
+        ]
+      } else {
+        pipeline = [
+          {$match: inventoryCars ?
+              {$or: [
+                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}},
+                  filterCompanies
+              ],
+                ...statusFiletr,
+              } :
+              {
+                ...filterCompanies,
+                ...statusFiletr
+              }
+          }
+        ]
+      }
+      pipeline = pipeline.concat([
         {
           $group: {
             _id: '$car',
@@ -4135,7 +4249,10 @@ class InventoryController {
             lastCreatedAt: -1 // Sort by the latest createdAt date
           }
         }
-      ]);
+      ])
+
+      let histories = await History.aggregate(pipeline);
+
 
       let cars = histories.slice(
         (options.page! - 1) * options.limit!,
@@ -4336,22 +4453,21 @@ class InventoryController {
         {
           $unwind: { 'path': '$readyToClientHistories' }
         },
-        ... (sortOptionAggregation['readyToClientHistories.executedAt'] ? [{
-          $sort: {
-            'readyToClientHistories.executedAt': sortOptionAggregation['readyToClientHistories.executedAt']
-          }
-        }] : []),
         {
           $addFields: {
             // Concatenate the two history arrays
             histories: ['$inTransitHistories', '$readyToClientHistories']
           }
-        }
+        },
+        {$sort: sortOptionAggregation},
       ];
 
       paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
-      //paginateResult.total = histories.length; // TODO : verificar con paginado
 
+      paginateResult.total = histories.length;
+      paginateResult.pages = Math.ceil(paginateResult.total / options.limit!);
+      paginateResult.hasPrevious = paginateResult.currentPage! > 1;
+      paginateResult.hasNextPage = paginateResult.currentPage! < paginateResult.pages;
     }
 
     return res.status(200).json({

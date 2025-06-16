@@ -544,11 +544,25 @@ export default class ApiService {
     });
   }
 
-  public getUnitsByCompany(companyId: string, page: number, pageSize: number, sortOpt?: string): AxiosPromise {
+  public getUnitsByCompany(companyId: string, page: number, pageSize: number, filters: any, sortField?: string, sortOption?: 'asc' | 'desc'): AxiosPromise {
     let url = `/api/company/stock/${companyId}?page=${page}&pageSize=${pageSize}`;
 
-    if(sortOpt){
-      url += `&${sortOpt}`
+    if (filters) {
+      for (const key in filters) {
+        let value = filters[key];
+        if (filters[key]) {
+          // if is array join with comma first
+          if (Array.isArray(value)) {
+            value = value.join(',');
+          }
+          url += `&${key}=${filters[key]}`
+        }
+      }
+    }
+
+    if (sortField) {
+      url += `&sortColumn=${sortField}`;
+      url += `&sortDirection=${sortOption || 'desc'}`;
     }
 
 

@@ -38,10 +38,10 @@ interface IStateType {
   paginationPageSize: number;
   totalRows: number;
   dataLoading: boolean;
-  sortColumn: string;
-  sortDirection: 'asc' | 'desc';
-
-  sort:Record<string, string>;
+  sort: {
+    sortColumn: string;
+    sortDirection: 'asc' | 'desc';
+  };
   blFilter: string;
   containerFilter: string;
   shipFilter: string[];
@@ -62,6 +62,7 @@ interface IStateType {
   isFilteringByDate: boolean;
   loading: boolean;
   multiCompany:boolean;
+  filters: any;
 }
 
 const dataTableStyle = {
@@ -150,20 +151,23 @@ const getDateRangeOptions = ():daterangepicker.Options => {
 
 class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   title = "Unidades Desconsolidadas";
+  timer: any = null;
   constructor(props: IPropsType) {
     super(props);
     this.state = {
       loading: true,
+      filters: {},
       dataLoading: true,
       error: null,
       originalUnits: [],
       units: [],
       paginationPage: 1,
-      paginationPageSize: 10,
+      paginationPageSize: 50,
       totalRows: 0,
-      sortColumn: 'Descarga',
-      sortDirection: 'asc',
-      sort:{},
+      sort:{
+        sortColumn: 'createdAt',
+        sortDirection: 'desc'
+      },
       blFilter: '',
       unitFilter:'',
       containerFilter: '',
@@ -185,18 +189,17 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       selectedContainer: -1,
     };
     this.downloadData = this.downloadData.bind(this);
+    this.changeFilter = this.changeFilter.bind(this);
   }
 
-    cleanFilters = () => {
+    cleanFilters = (update = false) => {
     this.setState({
-      blFilter: '',
-      containerFilter: '',
-      statusFilter: '',
-      unitFilter: '',
-      shipFilter: [],
-      tripFilter: [],
-      venueFilter: '',
-      filterHasDamage: false,
+      filters: {},
+      dataLoading: update,
+    }, () => {
+      if (update) {
+        this.getUnitsByCompanyId();
+      }
     });
   }
 
@@ -209,9 +212,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.setState({
         multiCompany: true,
         clientFilter: company?.clientCompanies[0]._id,
-        clientSelector: company?.clientCompanies
+        clientSelector: company?.clientCompanies,
       },() => {
-        this.getUnitsByCompanyId(1);
+        this.getUnitsByCompanyId();
       });
     } else {
       if (company && company._id) {
@@ -219,9 +222,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         this.setState({
           multiCompany: companyList.length > 1,
           clientFilter: companyList[0]._id,
-          clientSelector: companyList
+          clientSelector: companyList,
+          dataLoading: true,
         }, () => {
-          this.getUnitsByCompanyId(1)
+          this.getUnitsByCompanyId();
         })
       }
     }
@@ -229,39 +233,31 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   handleSort = (column: any, sortDirection: any) => {
-    this.setState((prevState) => ({
+    this.setState({
+      dataLoading: true,
       sort: {
-        ...prevState.sort,
-        [column.name]: sortDirection
+        ...this.state.sort,
+        sortColumn: column.name,
+        sortDirection: sortDirection
       }
-    }));
-    const {paginationPage, paginationPageSize} = this.state;
-    this.getUnitsByCompanyId(paginationPage, paginationPageSize);
-	};
+    }, () => {
+      this.getUnitsByCompanyId();
+    });
+	}
 
 
-  formatSortQuery(sortObject: Record<string, string>): string {
-    const sortParts: string[] = [];
-    for (const field in sortObject) {
-      if (Object.prototype.hasOwnProperty.call(sortObject, field)) {
-        const direction = sortObject[field];
-        const prefix = (direction === 'asc') ? '-' : '+';
-        sortParts.push(`${prefix}${field}`);
-      }
-    }
-    return sortParts.length > 0 ? `sort=${sortParts.join('&sort=')}` : '';
-  }
-
-
-  getUnitsByCompanyId(page: number = 1, pageSize: number = 10) {
+  getUnitsByCompanyId() {
 
     const api: ApiService = new ApiService();
     api.getSource()
 
     const companyId = this.state.clientFilter || window.user.company._id;
-    const sortQuery = this.formatSortQuery(this.state.sort)
+    const page = this.state.paginationPage || 1;
+    const pageSize = this.state.paginationPageSize || 50;
+    const sortField = this.state.sort.sortColumn || '';
+    const sortDirection : 'asc' | 'desc' = this.state.sort.sortDirection || 'desc';
 
-    api.getUnitsByCompany(companyId, page, pageSize, sortQuery).then((data: any) => {
+    api.getUnitsByCompany(companyId, page, pageSize, this.state.filters, sortField, sortDirection ).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
       let tripOptions: any[] = []
@@ -299,59 +295,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         shipSelector: shipOptions,
         tripSelector: tripOptions
       });
-
-      this.cleanFilters();
-    });
-  }
-
-  componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
-    if (this.state.blFilter !== prevState.blFilter ||
-      this.state.containerFilter !== prevState.containerFilter ||
-      this.state.statusFilter !== prevState.statusFilter ||
-      this.state.unitFilter !== prevState.unitFilter ||
-      this.state.tripFilter !== prevState.tripFilter ||
-      this.state.shipFilter !== prevState.shipFilter ||
-      this.state.startDate !== prevState.startDate ||
-      this.state.venueFilter !== prevState.venueFilter ||
-      this.state.filterHasDamage !== prevState.filterHasDamage ||
-      this.state.endDate !== prevState.endDate) {
-      this.filterUnits();
-    }
-    if(!prevState.dataLoading && this.state.clientFilter !== prevState.clientFilter){
-       this.getUnitsByCompanyId(1);
-    }
-  }
-
-  filterUnits() {
-    let units = this.state.originalUnits.filter((unit: any) => {
-      let bl = unit.inventoryCar.extra["N° BL"] ? unit.inventoryCar.extra["N° BL"].toLowerCase().includes(this.state.blFilter.toLowerCase()) : true;
-      let ship = this.state.shipFilter.length == 0 ? true : (unit.inventoryCar.extra["Nave"] ? unit.inventoryCar.extra["Nave"].toLowerCase().includes(this.state.shipFilter[0].toLowerCase()) : false);
-      let trip = this.state.tripFilter.length === 0 ? true  : (unit.inventoryCar.extra["N° Viaje"] ? unit.inventoryCar.extra["N° Viaje"].toLowerCase().includes(this.state.tripFilter[0].toLowerCase()) : false);
-      let containerFilter = unit.inventoryCar.extra["BIC"].toLowerCase().includes(this.state.containerFilter.toLowerCase());
-      let statusFilter = this.state.statusFilter === '' ? true : unit.status === this.state.statusFilter;
-      let unitFilter = this.state.unitFilter === '' ? true : unit.car.vin.toLowerCase().includes(this.state.unitFilter.toLowerCase());
-      let venueFilter = this.state.venueFilter === '' ? true : unit.car.venue.toLowerCase().includes(this.state.venueFilter.toLowerCase());
-
-      const historyReadyToClient = unit.histories.find((history:any) => history.status === "readyToClient")
-      const historyInTransit = unit.histories.find((history:any) => history.status === "inTransit")
-
-      let damageFilter = true
-      if(this.state.filterHasDamage){
-        //const damageReadyToClient = unit.content?.filter((e:any) => e.participant?.hasDamages).length === 0 ? false : true
-        const damageReadyToClient = historyReadyToClient?.inventoryCar.participant?.hasDamages? true : false;
-        const damageinTransit = historyInTransit?.participant?.hasDamages? true : false;
-        if(!damageReadyToClient && !damageinTransit) damageFilter = false
-      }
-
-      let dateFilter = true;
-      if (this.state.isFilteringByDate) {
-        dateFilter = moment(unit.car.lastDate).isBetween(this.state.startDate, this.state.endDate, 'day', '[]');
-      }
-      return bl && containerFilter && statusFilter && unitFilter && trip && venueFilter && dateFilter && ship && damageFilter;
-    });
-
-    this.setState({
-        units: units
     });
   }
 
@@ -394,9 +337,26 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   }
 
 
+  private changeFilter(name: string, value: any) {
+    this.setState((prevState) => ({
+      dataLoading: true,
+      filters: {
+        ...prevState.filters,
+        [name]: value
+      }
+    }), () => {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.getUnitsByCompanyId();
+      }, 500);
+    });
+  }
+
+
 
   render() {
-    const {units, loading, multiCompany, totalRows} = this.state;
+    const {units, loading, multiCompany, totalRows, filters} = this.state;
+
     const { getParticipant } = this.props;
 
     const columns = [
@@ -576,7 +536,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
               this.setState({
                 startDate: start,
                 endDate: end,
-                isFilteringByDate: true
+              }, () => {
+                this.getUnitsByCompanyId();
               });
             }}
             startDate={this.state.startDate}
@@ -614,9 +575,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         <input
                           type="text"
                           className="form-control"
-                          value={this.state.blFilter}
+                          name={'blFilter'}
+                          value={filters.blFilter || ''}
                           onChange={(e) => {
-                            this.setState({ blFilter: e.target.value });
+                            this.changeFilter(e.target.name, e.target.value);
                           }}
                         />
                       </div>
@@ -627,9 +589,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         <input
                           type="text"
                           className="form-control"
-                          value={this.state.containerFilter}
+                          name={'containerFilter'}
+                          value={filters.containerFilter || ''}
                           onChange={(e) => {
-                            this.setState({ containerFilter: e.target.value });
+                            this.changeFilter(e.target.name, e.target.value);
                           }}
                         />
                       </div>
@@ -640,9 +603,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         <input
                           type="text"
                           className="form-control"
-                          value={this.state.unitFilter}
+                          name={'unitFilter'}
+                          value={filters.unitFilter || ''}
                           onChange={(e) => {
-                            this.setState({ unitFilter: e.target.value });
+                            this.changeFilter(e.target.name, e.target.value);
                           }}
                         />
                       </div>
@@ -652,9 +616,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       <label className="text-black" >Filtrar por Estado</label>
                       <select
                           className="form-control"
-                          value={this.state.statusFilter}
+                          value={filters.statusFilter || ''}
+                          name={'statusFilter'}
                           onChange={(e) => {
-                          this.setState({ statusFilter: e.target.value });
+                            this.changeFilter('statusFilter', e.target.value);
                           }}
                       >
                           <option value="">Todos</option>
@@ -670,7 +635,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           noneSelectedText="Todas las naves"
                           displayItems={2}
                           selectedText="Naves Seleccionadas."
-                          selected={this.state.shipFilter}
+                          selected={filters.shipFilter || []}
                           autoClouse={true}
                           search={true}
                           allOption={false}
@@ -684,7 +649,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                            text: `${ship.toUpperCase()}`
                          }))}
                           onClick={(selected: any) => {
-                            this.setState({ shipFilter: new Array(selected)});
+                            this.changeFilter('shipFilter', [selected]);
                           }}
                          />
                       </div>
@@ -696,7 +661,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           noneSelectedText="Todos los viajes"
                           displayItems={2}
                           selectedText="Naves Seleccionadas."
-                          selected={this.state.tripFilter}
+                          selected={filters.tripFilter || []}
                           autoClouse={true}
                           search={true}
                           options={this.state.tripSelector.map((trip: any) => ({
@@ -709,7 +674,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                            text: `${trip.toUpperCase()}`
                          }))}
                           onClick={(selected: any) => {
-                            this.setState({ tripFilter: new Array(selected)});
+                            this.changeFilter('tripFilter', [selected]);
                           }}
                          />
                       </div>
@@ -719,7 +684,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         <label className="text-black">Filtrar por Sucursal</label>
                         <select
                           className="form-control"
-                          value={this.state.venueFilter}
+                          name={'venueFilter'}
+                          value={filters.venueFilter || ''}
                           onChange={(e) => {
                             this.setState({ venueFilter: e.target.value });
                           }}
@@ -741,7 +707,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                             className="form-control"
                             value={this.state.clientFilter}
                             onChange={(e) => {
-                              this.setState({ clientFilter: e.target.value });
+                              this.setState({ clientFilter: e.target.value, dataLoading: true }, () => {
+                                this.cleanFilters(true);
+                              })
                             }}
                           >
                             {this.state.clientSelector.map((client: any, index: number) => {
@@ -759,8 +727,10 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           style={{ paddingLeft: '0', fontWeight: 600 }}
                           onClick={() => {}}>
                           <Checkbox
-                            active={this.state.filterHasDamage}
-                            action={() => {this.setState({filterHasDamage: !this.state.filterHasDamage})}}
+                            active={filters.filterHasDamage }
+                            action={() => {
+                              this.changeFilter('filterHasDamage', !this.state.filterHasDamage);
+                            }}
                             classes="icheck-in-checkbox"
                             style={{ marginTop: '-4px', marginRight: '5px' }}
                           />
@@ -773,7 +743,9 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         <div className="row pull-right box-tools" style={{ paddingTop: "20px", paddingRight: "16px" }}>
                           <button
                             className="btn btn-sm btn-primary btn-block"
-                            onClick={this.cleanFilters}
+                            onClick={() => {
+                              this.cleanFilters(true);
+                            }}
                           >
                             Limpiar filtros
                           </button>
@@ -784,23 +756,31 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                   <div className="row">
                     <div className="col-md-12">
                       <DataTable
+                        progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x"/></div>}
+                        progressPending={this.state.dataLoading}
                         columns={columns}
                         data={units}
                         customStyles={dataTableStyle}
                         pagination
                         paginationServer={true}
+                        paginationRowsPerPageOptions={ [this.state.paginationPageSize, 100, 200]}
                         paginationTotalRows={this.state.totalRows}
                         sortServer={true}
                         onSort={this.handleSort}
                         onChangePage={(page: number) => {
-                          this.getUnitsByCompanyId(page);
+
+                          this.setState({
+                            paginationPage: page
+                          }, () => {
+                            this.getUnitsByCompanyId();
+                          });
                         }}
                         onChangeRowsPerPage={(newPerPage: number, page: number) => {
                           this.setState({
-                            paginationPage: page,
+                            paginationPage: 1,
                             paginationPageSize: newPerPage
                           }, () => {
-                            this.getUnitsByCompanyId(page, newPerPage)
+                            this.getUnitsByCompanyId()
                           });
                         }}
                         noDataComponent={
