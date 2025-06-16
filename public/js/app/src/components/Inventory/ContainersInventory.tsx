@@ -928,11 +928,11 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let className = `${status._id}Color`;
       let color = inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''
       let label = inventorySettings.hasOwnProperty(status._id) ? inventorySettings[status._id] : ''
-      return <> - <span
-          key={status.name}
+      return <React.Fragment key={status._id}> - <span
+          key={status._id}
           style={{color: `${color}`, fontWeight: "600"}}>
          {label}: {status.count}
-       </span> </>
+       </span> </React.Fragment>
     });
 
     const conditionalRowStyles = [
