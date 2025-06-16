@@ -68,6 +68,7 @@ interface IStateType {
   inventorySettings: any;
   loading: boolean;
   loadingTable: boolean;
+  loadingSummary: boolean;
   filterHasDamage:boolean;
   endDate: Date;
   startDate: Date;
@@ -236,6 +237,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.state = {
       loading: true,
       loadingTable: true,
+      loadingSummary: true,
       error: null,
       originalContainers: [],
       containers: [],
@@ -299,6 +301,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     };
 
     this.downloadData = this.downloadData.bind(this);
+    this.getFilterDate = this.getFilterDate.bind(this);
+
     this.columns = [
       {
         name: 'F. Apertura',
@@ -576,7 +580,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     const api: ApiService = new ApiService();
     api.getSource();
     try {
-      let response = await api.getContainersInventorySummary(this.state.pagination.filters);
+      let response = await api.getContainersInventorySummary({...this.state.pagination.filters,...this.getFilterDate()});
 
       if (response.data.data) {
         let status = response.data.data.resume;
@@ -592,7 +596,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           summary: {
             total,
             status
-          }
+          },
+          loadingSummary: false,
         });
       }
     } catch (error) {
@@ -607,7 +612,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let response = await api.getContainersInventory(
         this.state.pagination.page,
         this.state.pagination.pageSize,
-        this.state.pagination.filters,
+        {...this.state.pagination.filters, ...this.getFilterDate()},
         this.state.pagination.sort,
         this.state.pagination.sortDirection);
 
@@ -779,18 +784,18 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
-    if (this.state.blFilter !== prevState.blFilter ||
-      this.state.containerFilter !== prevState.containerFilter ||
-      this.state.clientFilter !== prevState.clientFilter ||
-      this.state.statusFilterSelected !== prevState.statusFilterSelected ||
-      this.state.isFilteringByDate !== prevState.isFilteringByDate ||
-      this.state.startDate !== prevState.startDate ||
-      this.state.endDate !== prevState.endDate ||
-      this.state.filterHasDamage !== prevState.filterHasDamage ||
-      this.state.shipFilter !== prevState.shipFilter ||
-      this.state.tripFilter !== prevState.tripFilter) {
-      this.filterContainers();
-    }
+    if (this.state.startDate !== prevState.startDate ||
+      this.state.endDate !== prevState.endDate) {
+        this.setState({
+          loadingTable: true,
+          loadingSummary: true,
+          pagination: {
+            ...this.state.pagination,
+          }
+        });
+        this.fetchData();
+        this.fetchSummary();
+      }
   }
 
   cleanFilters = () => {
@@ -803,6 +808,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       statusFilterSelected: [],
       filterHasDamage: false,
       loadingTable: true,
+      loadingSummary: true,
       pagination: {
         ...this.state.pagination,
         filters: {},
@@ -873,6 +879,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       this.setState({
         loadingTable: true,
+        loadingSummary: true,
         pagination: {
           ...this.state.pagination,
           filters: {
@@ -894,14 +901,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/inventory/container/create/');
   }
 
+  private getFilterDate(): any {
+    return {
+      startDate: this.state.startDate ? moment(this.state.startDate).format('YYYY-MM-DD') : '',
+      endDate: this.state.endDate ? moment(this.state.endDate).format('YYYY-MM-DD') : ''
+    };
+  }
+
   private downloadData(): void {
-    const params = new URLSearchParams(this.state.pagination.filters).toString();
+    const params = new URLSearchParams({
+      ...this.state.pagination.filters, 
+      ...this.getFilterDate(),
+    }).toString();
     window.open(`/api/inventory/container/export?${params}`, '_blank');
 
   }
 
   render() : React.ReactElement<IPropsType> {
-    const {containers, loading, summary, pagination} = this.state;
+    const {containers, loading, summary, pagination, loadingTable, loadingSummary} = this.state;
     const { getParticipant } = this.props;
     const {
       loadingParticipant
@@ -1110,9 +1127,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border flex flex-space-between">
-              <h3 className="box-title">
+              { loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
                 Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{summary.total}</span> {summary.total>0 ? details : ''}</span>
-              </h3>
+              </h3>}
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
                     < button
