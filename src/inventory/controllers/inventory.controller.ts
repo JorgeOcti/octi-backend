@@ -53,7 +53,7 @@ import historyQueue from '../../app/tasks/history.task';
 import inventoryQueue from '../taks/inventory.task';
 import logger from '../../services/logger.service';
 import { socket } from '../../services/socket.service';
-import Form, {KindForm} from "../../form/models/form.model";
+import Form, { KindForm, KindQuestion } from '../../form/models/form.model';
 
 import VirtualInventoryModel, {
   IInventoryVirtualModel,
@@ -65,6 +65,7 @@ import { ContainerStatus } from '../../utils/enums/containerStatus.enum';
 import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
+import { IParticipant } from '../../form/interfaces/participant.interface';
 
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
@@ -2678,13 +2679,13 @@ class InventoryController {
   }
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-          const { 
-            shipFilter: ship, 
-            tripFilter: trip, 
-            containerFilter: container, 
-            blFilter: bl, 
-            clientFilter: client, 
-            statusFilterSelected: status, 
+          const {
+            shipFilter: ship,
+            tripFilter: trip,
+            containerFilter: container,
+            blFilter: bl,
+            clientFilter: client,
+            statusFilterSelected: status,
             filterHasDamage: hasDamage,
             sort,
             sortOption
@@ -2859,7 +2860,7 @@ class InventoryController {
 
     worksheet.commit();
     await workbook.commit();
-    
+
     return;
 
     } catch (e) {
@@ -2879,9 +2880,9 @@ class InventoryController {
   }
 
   private async processContainerBatch(
-    containers: any[], 
-    inventories: any[], 
-    worksheet: any, 
+    containers: any[],
+    inventories: any[],
+    worksheet: any,
     containerMap: Map<string, any>,
     carFilter: any
   ) {
@@ -2919,7 +2920,7 @@ class InventoryController {
         localField: 'participant',
         foreignField: '_id',
         as: 'participant',
-        pipeline: [{ $project: { name: 1, hasDamages: 1 } }]
+        pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1 } }]
       }
       },
       {
@@ -2955,9 +2956,9 @@ class InventoryController {
         finishDate: finishDate,
         container: container ? container.car.vin : '',
         vin: car.car.vin,
-        description: `${car.car.brand} ${car.car.model || ''}`, 
-        hasDamages: car.participant.hasDamages ? 'Sí' : 'No',
-        accessories: 'nose',
+        description: `${car.car.brand} ${car.car.model || ''}`,
+        hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
+        accessories: car.participant ? this.getAccessories(car.participant) : "",
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
@@ -2966,6 +2967,33 @@ class InventoryController {
         status: container ? statusMap[container.containerStatus] : '',
       }).commit();
     }
+  }
+
+  private getAccessories(participant: IParticipant) {
+    let text = '';
+    if (!participant || !participant.sections) {
+      return text;
+    }
+
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        if (answer.kind === KindQuestion.accessory){
+          let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
+          text = answer.accesoriesAnswered
+            .map((item) => itemsDict[item.item] ?? '-')
+            .join(';')
+        }
+      }
+    }
+    return text;
+  }
+
+  private createObjectFromItems(items: any[]) {
+    let dict: any = {};
+    items.map((item) => {
+      return (dict[item._id.toString()] = item.item);
+    });
+    return dict;
   }
 
   public async detaill(req: IRequest, res: Response) {
@@ -4062,7 +4090,7 @@ class InventoryController {
         }
       }
     }
-   
+
     if (filterCompanies) {
       const options: PaginateOptions = {
         select: {
