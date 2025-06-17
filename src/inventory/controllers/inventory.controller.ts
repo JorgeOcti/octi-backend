@@ -115,6 +115,7 @@ class InventoryController {
     this.containerInventoryDetailExport = this.containerInventoryDetailExport.bind(this);
     this.processContainerBatch = this.processContainerBatch.bind(this);
     this.containerInventorySummary = this.containerInventorySummary.bind(this);
+    this.currentCompanyStockExport = this.currentCompanyStockExport.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -4830,9 +4831,11 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         { header: 'Código de unidad', key: 'vin', width: 20 },
         { header: 'Marca', key: 'brand', width: 15 },
         { header: 'Modelo', key: 'model', width: 20 },
+        { header: 'Daños', key: 'hasDamage', width: 10 },
+        { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
         { header: 'Contenedor', key: 'container', width: 25 },
         { header: 'BL', key: 'bl', width: 20 },
-        { header: 'Sucursal', key: 'venur', width: 20 },
+        { header: 'Sucursal', key: 'venue', width: 20 },
         { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
         { header: 'F. Despacho', key: 'inTransitDate', width: 20 },
         { header: 'Estado', key: 'status', width: 15 },
@@ -4858,43 +4861,29 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
               },
               {
                 $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar',
+                  from: 'participants',
+                  localField: 'participant',
                   foreignField: '_id',
-                  as: 'inventoryCar'
+                  as: 'participant'
                 }
               },
               {
                 $unwind: {
-                  path: '$inventoryCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar.containerFound',
-                  foreignField: '_id',
-                  as: 'inventoryCar.containerFound'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.containerFound',
+                  path: '$participant',
                   preserveNullAndEmptyArrays: true
                 }
               },
               {
                 $lookup: {
                   from: 'venues',
-                  localField: 'inventoryCar.venue',
+                  localField: 'participant.venue',
                   foreignField: '_id',
-                  as: 'inventoryCar.venue'
+                  as: 'participant.venue'
                 }
               },
               {
                 $unwind: {
-                  path: '$inventoryCar.venue',
+                  path: '$participant.venue',
                   preserveNullAndEmptyArrays: true
                 }
               },
@@ -4946,6 +4935,15 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
                   preserveNullAndEmptyArrays: true
                 }
               },
+              {
+                $lookup: {
+                  from: 'participants',
+                  localField: 'inventoryCar.participant',
+                  foreignField: '_id',
+                  as: 'inventoryCar.participant'
+                }
+              },
+              { $unwind: { path: '$inventoryCar.participant', preserveNullAndEmptyArrays: true } },
               {
                 $lookup: {
                   from: 'inventorycars',
@@ -5047,8 +5045,9 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
           };
 
           const containerInfo = getContainerInfo(car.inTransitHistory || car.readyToClientHistory);
-          const venue = car.inTransitHistory?.participant?.venue.name || 
-                          car.readyToClientHistory?.inventoryCar?.venueFound.name || '';
+          const venue = car.inTransitHistory?.participant?.venue.name ||
+            car.readyToClientHistory?.inventoryCar?.venueFound.name ||
+            '';
 
           // Crear fila del Excel
           const row = {
@@ -5058,6 +5057,10 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
             container: containerInfo.container,
             bl: containerInfo.bl,
             venue: venue,
+            hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
+            accesories: car.readyToClientHistory?.inventoryCar?.participant ?
+              this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
+              '',
             readyToClientDate: formatDate(car.readyToClientHistory?.executedAt),
             inTransitDate: formatDate(car.inTransitHistory?.executedAt),
             status: getStatus(car.inTransitHistory, car.readyToClientHistory)
@@ -5096,7 +5099,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
     logger.error(`InventoryController.currentCompanyStockExport: Error.`);
     logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     logger.error(e);
-    
+
     // Solo enviar respuesta de error si aún no se han enviado headers
     if (!res.headersSent) {
       return res.status(500).json({
