@@ -4210,11 +4210,11 @@ class InventoryController {
     }
 
     if (tripFilter) {
-      inventoryCarFilter['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
+      inventoryCarFilter['extra.N° Viaje'] = {$regex: tripFilter.toString(), $options: 'i'};
     }
 
     if (shipFilter) {
-      inventoryCarFilter['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
+      inventoryCarFilter['extra.Nave'] = {$regex: shipFilter.toString(), $options: 'i'};
     }
 
     if (containerFilter) {
