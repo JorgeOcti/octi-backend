@@ -2546,7 +2546,7 @@ class InventoryController {
               { 'openDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
               { 'emptyDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
               { 'createdAt': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } }
-            ] 
+            ]
         }
       }
 
@@ -2735,13 +2735,13 @@ class InventoryController {
 
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-          const { 
-            shipFilter, 
-            tripFilter, 
-            containerFilter: container, 
-            blFilter, 
-            clientFilter, 
-            statusFilterSelected, 
+          const {
+            shipFilter,
+            tripFilter,
+            containerFilter: container,
+            blFilter,
+            clientFilter,
+            statusFilterSelected,
             filterHasDamage,
             sort,
             sortOption
@@ -4255,10 +4255,7 @@ class InventoryController {
       inventoryCars = await InventoryCar.aggregate(pipeline);
     }
 
-
     let paginateResult = null;
-
-
 
     // --- Ordenamiento ---
    let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
@@ -4271,8 +4268,6 @@ class InventoryController {
         sortOptionAggregation = {'inTransitHistories.executedAt': direction};
       } else if (sortColumn.trim() === 'Estado') {
         sortOptionAggregation = {'inTransitHistories.executedAt': direction};
-      } else {
-        sortOptionAggregation = {sortColumn: direction};
       }
     }
 
@@ -4298,6 +4293,8 @@ class InventoryController {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10)
       };
+
+      logger.info(`Paginating with options: ${JSON.stringify(options)}`);
 
       let pipeline : any[] = [];
       if (Object.keys(damageFilter).length > 0){
@@ -4330,10 +4327,8 @@ class InventoryController {
       } else {
         pipeline = [
           {$match: inventoryCars ?
-              {$or: [
-                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}},
-                  filterCompanies
-              ],
+              {
+                car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []},
                 ...statusFiletr,
               } :
               {
@@ -4360,11 +4355,10 @@ class InventoryController {
 
       let histories = await History.aggregate(pipeline);
 
+      logger.info(`Found ${histories.length} histories for the given filters.`);
+      logger.info(`Paginating results with options: ${JSON.stringify(options)}`);
 
-      let cars = histories.slice(
-        (options.page! - 1) * options.limit!,
-        (options.page! - 1) * options.limit! + options.limit!
-      ).map((h: any) => h._id);
+      let cars = histories.map((h: any) => h._id);
 
       // Inicia el pipeline de agregación de Car
       const carAggregationPipeline: any[] = [
@@ -4571,10 +4565,11 @@ class InventoryController {
 
       paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
 
-      paginateResult.total = histories.length;
+      /*paginateResult.total = histories.length;
       paginateResult.pages = Math.ceil(paginateResult.total / options.limit!);
       paginateResult.hasPrevious = paginateResult.currentPage! > 1;
       paginateResult.hasNextPage = paginateResult.currentPage! < paginateResult.pages;
+      */
     }
 
     return res.status(200).json({
