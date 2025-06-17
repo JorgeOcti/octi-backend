@@ -773,6 +773,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                       <DataTable
                         progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x"/></div>}
                         progressPending={this.state.dataLoading}
+                        paginationComponentOptions={paginationComponentOptions}
                         columns={columns}
                         data={units}
                         customStyles={dataTableStyle}
@@ -780,12 +781,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                         paginationServer={true}
                         paginationRowsPerPageOptions={ [this.state.paginationPageSize, 100, 200]}
                         paginationTotalRows={this.state.totalRows}
+                        paginationPerPage={ this.state.paginationPageSize}
                         sortServer={true}
                         onSort={this.handleSort}
                         onChangePage={(page: number) => {
-
                           this.setState({
-                            paginationPage: page
+                            paginationPage: page,
+                            dataLoading: true
                           }, () => {
                             this.getUnitsByCompanyId();
                           });
