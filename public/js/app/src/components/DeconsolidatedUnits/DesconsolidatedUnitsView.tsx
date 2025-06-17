@@ -738,7 +738,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           <Checkbox
                             active={filters.filterHasDamage }
                             action={() => {
-                              this.changeFilter('filterHasDamage', !this.state.filterHasDamage);
+                              this.changeFilter('filterHasDamage', !filters.filterHasDamage);
                             }}
                             classes="icheck-in-checkbox"
                             style={{ marginTop: '-4px', marginRight: '5px' }}
