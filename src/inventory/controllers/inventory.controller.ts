@@ -4152,12 +4152,12 @@ class InventoryController {
 
 
 
-  public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
+public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
     const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage } = req.query;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
 
     let filterCompanies: any = null;
     let userCompany = await Company.findById(company._id);
@@ -4360,11 +4360,31 @@ class InventoryController {
 
       let histories = await History.aggregate(pipeline);
 
+            let dateFilter: any = {};
+      if (startDate && endDate) {
+        dateFilter = {
+          $or: [
+        {
+          'inTransitHistories.executedAt': {
+            $gte: new Date(startDate as string),
+            $lte: new Date(endDate as string)
+          }
+        },
+        {
+          'readyToClientHistories.executedAt': {
+            $gte: new Date(startDate as string),
+            $lte: new Date(endDate as string)
+          }
+        }
+          ]
+        };
+      }
 
       let cars = histories.slice(
         (options.page! - 1) * options.limit!,
         (options.page! - 1) * options.limit! + options.limit!
       ).map((h: any) => h._id);
+
 
       // Inicia el pipeline de agregación de Car
       const carAggregationPipeline: any[] = [
@@ -4561,6 +4581,9 @@ class InventoryController {
           $unwind: { 'path': '$readyToClientHistories' }
         },
         {
+          $match: dateFilter
+        },
+        {
           $addFields: {
             // Concatenate the two history arrays
             histories: ['$inTransitHistories', '$readyToClientHistories']
@@ -4595,6 +4618,8 @@ class InventoryController {
     });
   }
 }
+
+
 
 
   public async currentStock(req: IRequest, res: Response): Promise<any> {

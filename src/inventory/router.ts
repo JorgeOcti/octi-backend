@@ -62,6 +62,7 @@ inventoryRouter.get('/api/current-stock/', Middlewares.isLoggedIn, InventoryCont
 inventoryRouter.get('/api/osa-cars/', Middlewares.isLoggedIn, InventoryController.CarStatusList);
 inventoryRouter.post('/api/load-stock/', Middlewares.isLoggedIn, InventoryController.loadStock);
 inventoryRouter.get('/api/company/stock/:companyId', Middlewares.isJWTAuthenticated, InventoryController.currentCompanyStock);
+inventoryRouter.get('/api/company/stock/:companyId/export', Middlewares.isJWTAuthenticated, InventoryController.currentCompanyStock);
 
 export {
   inventoryRouter

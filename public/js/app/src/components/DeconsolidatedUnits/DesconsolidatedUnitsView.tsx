@@ -190,6 +190,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     };
     this.downloadData = this.downloadData.bind(this);
     this.changeFilter = this.changeFilter.bind(this);
+    this.getFilterDate = this.getFilterDate.bind(this);
   }
 
     cleanFilters = (update = false) => {
@@ -201,6 +202,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         this.getUnitsByCompanyId();
       }
     });
+  }
+
+    componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    if (this.state.startDate !== prevState.startDate ||
+      this.state.endDate !== prevState.endDate) {
+        this.getUnitsByCompanyId();
+      }
   }
 
   componentDidMount() {
@@ -257,7 +265,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const sortField = this.state.sort.sortColumn || '';
     const sortDirection : 'asc' | 'desc' = this.state.sort.sortDirection || 'desc';
 
-    api.getUnitsByCompany(companyId, page, pageSize, this.state.filters, sortField, sortDirection ).then((data: any) => {
+    api.getUnitsByCompany(companyId, page, pageSize, {...this.state.filters,...this.getFilterDate()}, sortField, sortDirection ).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
       let tripOptions: any[] = []
@@ -296,6 +304,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         tripSelector: tripOptions
       });
     });
+  }
+
+  private getFilterDate(): any {
+    return {
+      startDate: this.state.startDate ? moment(this.state.startDate).format('YYYY-MM-DD') : '',
+      endDate: this.state.endDate ? moment(this.state.endDate).format('YYYY-MM-DD') : ''
+    };
   }
 
   private downloadData(): void {
