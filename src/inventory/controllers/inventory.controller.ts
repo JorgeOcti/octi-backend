@@ -4613,6 +4613,501 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   }
 }
 
+public async currentCompanyStockExport(req: IRequest, res: Response): Promise<any> {
+  try {
+    const { company } = req.user; // user request company
+    let { companyId } = req.params; //filter param company
+    const { sortColumn, sortDirection } = req.query as Record<string, string>;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
+
+    let filterCompanies: any = null;
+    let userCompany = await Company.findById(company._id);
+
+    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+      // for handler Companies
+      filterCompanies = {
+        $and: [{
+          company: new Types.ObjectId(companyId),
+          handlerCompany: new Types.ObjectId(company._id),
+        }]
+      }
+    } else {
+      //for clients
+      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+        return res.status(403).json({
+          message: 'No tienes acceso a este inventario',
+          status: 403
+        });
+      }
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: { $exists: true },
+      }
+    }
+
+    let cars = await Car.aggregate([
+      {$match: filterCompanies},
+      {$project: {_id: 1}}
+    ]);
+    let inventoryCars : any[] | null = null
+
+    let statusFiletr : any = {}
+    let damageFilter: any = {}
+
+    let inventoryCarFilter: any = {}
+    let inventoryCarDamageFilter: any = {}
+
+    if (statusFilter) {
+      statusFiletr['status'] = statusFilter.toString()
+    } else {
+      statusFiletr['status'] = {
+        $in: ['inTransit', 'readyToClient']
+      }
+    }
+
+    if (filterHasDamage?.toString() === "true") {
+      inventoryCarDamageFilter['participant.hasDamage'] = true;
+      damageFilter['participant.hasDamage'] = true;
+    }
+
+    if (tripFilter) {
+      inventoryCarFilter['extra.N° Viaje'] = {$regex: tripFilter.toString(), $options: 'i'};
+    }
+
+    if (shipFilter) {
+      inventoryCarFilter['extra.Nave'] = {$regex: shipFilter.toString(), $options: 'i'};
+    }
+
+    if (containerFilter) {
+      inventoryCarFilter['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
+    }
+
+    if (blFilter) {
+      inventoryCarFilter['extra.N° BL'] = blFilter;
+    }
+
+    if (Object.keys(inventoryCarFilter).length > 0) {
+      let pipeline: any[] = [
+        {$match:  {
+            ...inventoryCarFilter,
+            car: {$in: cars.map((c: any) => c._id)},
+        }},
+      ]
+      if (Object.keys(inventoryCarDamageFilter).length > 0) {
+        pipeline = pipeline.concat([{
+          $lookup: {
+            from: 'participants',
+            localField: 'participant',
+            foreignField: '_id',
+            as: 'participant'
+          }
+        },{
+          $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }
+        },{
+          $match: inventoryCarDamageFilter
+        }
+        ])
+      }
+      pipeline.push({
+        $project: {
+          car: 1
+        }
+      });
+      inventoryCars = await InventoryCar.aggregate(pipeline);
+    }
+
+    // --- Ordenamiento ---
+    let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
+    if (sortColumn) {
+      let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
+
+      if (sortColumn.trim() === 'F. Descarga') {
+        sortOptionAggregation = {'readyToClientHistories.executedAt': direction};
+      } else if (sortColumn.trim() === 'F. Despacho') {
+        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
+      } else if (sortColumn.trim() === 'Estado') {
+        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
+      }
+    }
+
+    if (filterCompanies) {
+      let pipeline : any[] = [];
+      if (Object.keys(damageFilter).length > 0){
+        pipeline = [
+          {$match:{
+              ...filterCompanies,
+              ...statusFiletr,
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant',
+              pipeline: [
+                {$project: {hasDamages: 1}}
+              ]
+            }
+          },
+          { $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }},
+          {$match: {
+              $or: [
+                {"participant.hasDamages": true},
+                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}}
+              ]
+            }
+          }
+        ]
+      } else {
+        pipeline = [
+          {$match: inventoryCars ?
+              {
+                car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []},
+                ...statusFiletr,
+              } :
+              {
+                ...filterCompanies,
+                ...statusFiletr
+              }
+          }
+        ]
+      }
+      pipeline = pipeline.concat([
+        {
+          $group: {
+            _id: '$car',
+            lastCreatedAt: {
+              $max: '$createdAt'
+            },
+          }
+        }, {
+          $sort: {
+            lastCreatedAt: -1 // Sort by the latest createdAt date
+          }
+        }
+      ])
+
+      let histories = await History.aggregate(pipeline);
+
+      let dateFilter: any = {};
+      if (startDate && endDate) {
+        dateFilter = {
+          $or: [
+        {
+          'inTransitHistories.executedAt': {
+            $gte: new Date(startDate as string),
+            $lte: new Date(endDate as string)
+          }
+        },
+        {
+          'readyToClientHistories.executedAt': {
+            $gte: new Date(startDate as string),
+            $lte: new Date(endDate as string)
+          }
+        }
+          ]
+        };
+      }
+
+      let cars = histories.map((h: any) => h._id);
+
+      // Configurar headers para el Excel stream
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=inventario-unidades.xlsx');
+      res.setHeader('Transfer-Encoding', 'chunked');
+
+      const workbook = new excel.stream.xlsx.WorkbookWriter({
+        stream: res,
+        useStyles: false,
+        useSharedStrings: false
+      });
+
+      const worksheet = workbook.addWorksheet('Inventario');
+
+      // Definir headers del Excel
+      worksheet.columns = [
+        { header: 'Código de unidad', key: 'vin', width: 20 },
+        { header: 'Marca', key: 'brand', width: 15 },
+        { header: 'Modelo', key: 'model', width: 20 },
+        { header: 'Contenedor', key: 'container', width: 25 },
+        { header: 'BL', key: 'bl', width: 20 },
+        { header: 'Sucursal', key: 'venur', width: 20 },
+        { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
+        { header: 'F. Despacho', key: 'inTransitDate', width: 20 },
+        { header: 'Estado', key: 'status', width: 15 },
+      ];
+
+      // Pipeline de agregación para obtener los datos con cursor
+      const carAggregationPipeline: any[] = [
+        { $match: { ...filterCompanies, _id: { $in: cars } } },
+        {
+          $lookup: {
+            from: 'histories',
+            let: { carId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$car', '$$carId'] },
+                      { $eq: ['$status', 'inTransit'] },
+                    ]
+                  }
+                }
+              },
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar',
+                  foreignField: '_id',
+                  as: 'inventoryCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar.containerFound',
+                  foreignField: '_id',
+                  as: 'inventoryCar.containerFound'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.containerFound',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'venues',
+                  localField: 'inventoryCar.venue',
+                  foreignField: '_id',
+                  as: 'inventoryCar.venue'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.venue',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'cars',
+                  localField: 'inventoryCar.containerFound.car',
+                  foreignField: '_id',
+                  as: 'containerCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$containerCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              }
+            ],
+            as: 'inTransitHistories'
+          }
+        },
+        { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
+        {
+          $lookup: {
+            from: 'histories',
+            let: { carId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$car', '$$carId'] },
+                      { $eq: ['$status', 'readyToClient'] },
+                    ]
+                  }
+                }
+              },
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar',
+                  foreignField: '_id',
+                  as: 'inventoryCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'inventorycars',
+                  localField: 'inventoryCar.containerFound',
+                  foreignField: '_id',
+                  as: 'inventoryCar.containerFound'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.containerFound',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'venues',
+                  localField: 'inventoryCar.venueFound',
+                  foreignField: '_id',
+                  as: 'inventoryCar.venueFound'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$inventoryCar.venueFound',
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $lookup: {
+                  from: 'cars',
+                  localField: 'inventoryCar.containerFound.car',
+                  foreignField: '_id',
+                  as: 'containerCar'
+                }
+              },
+              {
+                $unwind: {
+                  path: '$containerCar',
+                  preserveNullAndEmptyArrays: true
+                }
+              }
+            ],
+            as: 'readyToClientHistories'
+          }
+        },
+        {
+          $unwind: { 'path': '$readyToClientHistories', 'preserveNullAndEmptyArrays': true }
+        },
+        {
+          $match: dateFilter
+        },
+        {$sort: sortOptionAggregation},
+        {
+          $project: {
+            _id: 1,
+            vin: 1,
+            brand: 1,
+            denomination: 1,
+            model: 1,
+            inTransitHistory: '$inTransitHistories',
+            readyToClientHistory: '$readyToClientHistories'
+          }
+        }
+      ];
+
+      // Usar cursor para procesar los datos de forma streaming
+      const carCursor = Car.aggregate(carAggregationPipeline).cursor();
+
+      logger.info(`Starting Excel export for company ${companyId}`);
+
+      let processedCount = 0;
+      for (let car = await carCursor.next(); car != null; car = await carCursor.next()) {
+        try {
+          const getStatus = (inTransitHistory: any, readyToClientHistory: any) => {
+            if (readyToClientHistory && readyToClientHistory.executedAt) {
+              return 'Listo para cliente';
+            } else if (inTransitHistory && inTransitHistory.executedAt) {
+              return 'En tránsito';
+            }
+            return 'Desconocido';
+          };
+
+          // Formatear fechas
+          const formatDate = (date: any) => {
+            if (!date) return '';
+            return new Date(date).toLocaleDateString('es-ES');
+          };
+
+          // Obtener datos del contenedor y BL
+          const getContainerInfo = (history: any) => {
+            if (history && history.inventoryCar && history.inventoryCar.containerFound) {
+              return {
+                container: history.containerCar ? history.containerCar.vin : '',
+                bl: history.inventoryCar.extra ? history.inventoryCar.extra['N° BL'] || '' : ''
+              };
+            }
+            return { container: '', bl: '' };
+          };
+
+          const containerInfo = getContainerInfo(car.inTransitHistory || car.readyToClientHistory);
+          const venue = car.inTransitHistory?.participant?.venue.name || 
+                          car.readyToClientHistory?.inventoryCar?.venueFound.name || '';
+
+          // Crear fila del Excel
+          const row = {
+            vin: car.vin || '',
+            brand: car.brand || '',
+            model: car.denomination || car.model || '',
+            container: containerInfo.container,
+            bl: containerInfo.bl,
+            venue: venue,
+            readyToClientDate: formatDate(car.readyToClientHistory?.executedAt),
+            inTransitDate: formatDate(car.inTransitHistory?.executedAt),
+            status: getStatus(car.inTransitHistory, car.readyToClientHistory)
+          };
+
+          worksheet.addRow(row).commit();
+          processedCount++;
+
+          // Log de progreso cada 1000 registros
+          if (processedCount % 1000 === 0) {
+            logger.info(`Processed ${processedCount} cars for export`);
+          }
+
+        } catch (error) {
+          logger.error(`Error processing car ${car._id}: ${error}`);
+          // Continuar con el siguiente registro en caso de error
+          continue;
+        }
+      }
+
+      // Finalizar el archivo Excel
+      worksheet.commit();
+      await workbook.commit();
+
+      logger.info(`Excel export completed. Total cars processed: ${processedCount}`);
+      return;
+    }
+
+    // Si no hay filterCompanies, devolver error
+    return res.status(400).json({
+      message: 'No se pudieron aplicar los filtros de empresas',
+      status: 400
+    });
+
+  } catch (e) {
+    logger.error(`InventoryController.currentCompanyStockExport: Error.`);
+    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.error(e);
+    
+    // Solo enviar respuesta de error si aún no se han enviado headers
+    if (!res.headersSent) {
+      return res.status(500).json({
+        message: 'Error al generar el archivo Excel',
+        status: 500
+      });
+    }
+    return res.end();
+  }
+}
+
 
 
 

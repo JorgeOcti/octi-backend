@@ -307,41 +307,47 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private downloadData(): void {
-    const { units, clientFilter, clientSelector } = this.state
-    let rows = [
-      [...excelHeaders]
-    ];
+        const params = new URLSearchParams({
+      ...this.state.filters, 
+      ...this.getFilterDate(),
+    }).toString();
+    const company = this.state.clientFilter || window.user.company._id;
+    window.open(`/api/company/stock/${company}/export?${params}` , '_blank');
+    // const { units, clientFilter, clientSelector } = this.state
+    // let rows = [
+    //   [...excelHeaders]
+    // ];
 
 
-    let client = window.user.company.handler ?
-      clientSelector.find((client:any) => client._id === clientFilter) :
-      clientSelector[0]
+    // let client = window.user.company.handler ?
+    //   clientSelector.find((client:any) => client._id === clientFilter) :
+    //   clientSelector[0]
 
-    units.map((container: any) => {
-      let row = [
-        container.car.vin,
-        container.car.brand,
-        container.car.denomination,
-        container.inventoryCar.extra["BIC"],
-        container.inventoryCar.extra["N° BL"],
-        container.inventoryCar.venue.name,
-        container.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-",
-        container.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-",
-        inventorySettings.hasOwnProperty(container.status)
-          ? inventorySettings[container.status]
-          : container.status
-      ];
-      rows.push(row);
-    });
+    // units.map((container: any) => {
+    //   let row = [
+    //     container.car.vin,
+    //     container.car.brand,
+    //     container.car.denomination,
+    //     container.inventoryCar.extra["BIC"],
+    //     container.inventoryCar.extra["N° BL"],
+    //     container.inventoryCar.venue.name,
+    //     container.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-",
+    //     container.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(container.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-",
+    //     inventorySettings.hasOwnProperty(container.status)
+    //       ? inventorySettings[container.status]
+    //       : container.status
+    //   ];
+    //   rows.push(row);
+    // });
 
-    /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet(rows);
+    // /* make the worksheet */
+    // const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    /* add to workbook */
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
-    /* generate an XLSX file */
-    XLSX.writeFile(wb, `${client.name}_units.xlsx`);
+    // /* add to workbook */
+    // const wb = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(wb, ws, 'Resumen Contenedores');
+    // /* generate an XLSX file */
+    // XLSX.writeFile(wb, `${client.name}_units.xlsx`);
   }
 
 
