@@ -204,13 +204,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-    componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
-    if (this.state.startDate !== prevState.startDate ||
-      this.state.endDate !== prevState.endDate) {
-        this.getUnitsByCompanyId();
-      }
-  }
-
   componentDidMount() {
     super.componentDidMount();
     this.setState({ loading: true })
@@ -549,6 +542,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
             options={getDateRangeOptions()}
             onChange={(start: Date, end: Date) => {
               this.setState({
+                dataLoading: true,
                 startDate: start,
                 endDate: end,
               }, () => {
