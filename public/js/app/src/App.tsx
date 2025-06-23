@@ -76,6 +76,7 @@ import ContainerInventoryCreateView from "./components/Containers/ContainerInven
 import DesconsolidatedUnitsView from './components/DeconsolidatedUnits/DesconsolidatedUnitsView';
 import InventoryManagement from './components/Inventory/InventoryManagement';
 import InventoryDetail from './components/Inventory/InventoryDetail';
+import AforoContainerDashboard from './components/Containers/ContainerChecklistsView';
 
 declare let window: IWindow;
 
@@ -109,6 +110,7 @@ const App = () => (
         <Route exact path='/deliveries/cars/:id/' component={DashboardVinDetail} />
         <Route exact path='/desconsolidated/unit/' component={DesconsolidatedUnitsView} />
         <Route exact path='/inventory/' component={InventoryListView} />
+        <Route exact path='/containers/aforo/' component={AforoContainerDashboard} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
         <Route exact path='/inventory/management/' component={InventoryManagement} />
         <Route exact path='/inventory/management/:id' component={InventoryDetail} />
