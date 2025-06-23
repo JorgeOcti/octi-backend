@@ -323,7 +323,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         </div>
       </div>
 
-      <div className="row container-row-wrapper" style={{display: 'flex', flexWrap: 'wrap'}}>
+      <div className="row d-flex container-row-wrapper">
         <div className="col-auto"> {/* Cambio de col-md-5 a col-auto */}
           <div className="row container-row-b-padding">
             <div className="col-md-12" style={{marginLeft: '10px'}}>
