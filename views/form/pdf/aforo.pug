@@ -303,7 +303,6 @@ head
       .info-item
         span.label FECHA T&Eacute;RMINO AFORO
         span.value #{moment(participant.startAt).format('DD/MM/YYYY - HH:mm')}
-  hr
   .info-section
     .info-grid
       .info-item
@@ -315,7 +314,12 @@ head
       .info-item
         span.label HUBO RETENCI&Oacute;N
         span.value #{hasRetention ? 'SI' : 'NO'}
-
+  .info-section 
+    .info-grid
+      .info-item
+        span.label TIPO DE AFORO
+        span.value #{aforoType}
+  hr
   each section in sectionsToShow
       h2 #{section.name}
       div(class=`${section.useGrid ? 'evidence-section-base' : ''}`)

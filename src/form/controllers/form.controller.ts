@@ -408,6 +408,33 @@ class FormController {
     }
   }
 
+   private getAccessories(participant: IParticipant, question: string): string {
+    let text = '';
+    if (!participant || !participant.sections) {
+      return text;
+    }
+
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        if (answer.kind === KindQuestion.accessory && answer.question === question) {
+          let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
+          text = answer.accesoriesAnswered
+            .map((item) => itemsDict[item.item] ?? '-')
+            .join('\n')
+        }
+      }
+    }
+    return text;
+  }
+
+  private createObjectFromItems(items: any[]) {
+    let dict: any = {};
+    items.map((item) => {
+      return (dict[item._id.toString()] = item.item);
+    });
+    return dict;
+  }
+
   public async pdfAforo(req: IRequest, res: Response): Promise<any> {
     const { debug, timezone } = req.query as {
       debug: string;
@@ -543,6 +570,9 @@ class FormController {
         }
       }
 
+      const accesories = this.getAccessories(participant as IParticipant, participant.sections[1].answers[1].question);
+      const aforoType = this.getAccessories(participant as IParticipant, participant.sections[0].answers[0].question);
+
       const tempParticipant: {
         sections: any[];
       } = participant;
@@ -553,8 +583,19 @@ class FormController {
           answers: [
             {
               name: '',
-              comment: tempParticipant.sections[0].answers[0].comment,
-              images: tempParticipant.sections[0].answers[0].images,
+              comment: tempParticipant.sections[0].answers[1].comment,
+              images: tempParticipant.sections[0].answers[1].images,
+            }
+          ]
+        },
+        {
+          name: "RECURSOS UTILIZADOS",
+          useGrid: true,
+          answers:[
+            {
+              name: '',
+              comment: accesories,
+              images: []
             }
           ]
         },
@@ -564,17 +605,17 @@ class FormController {
           answers: [
             {
               name: 'FOTOGRAFÍA FRONTAL CONTENEDOR',
-              comment: tempParticipant.sections[0].answers[1].comment,
-              images: tempParticipant.sections[0].answers[1].images,
-            },{
-              name: 'FOTOGRAFÍA SELLO',
               comment: tempParticipant.sections[0].answers[2].comment,
               images: tempParticipant.sections[0].answers[2].images,
+            },{
+              name: 'FOTOGRAFÍA SELLO',
+              comment: tempParticipant.sections[0].answers[3].comment,
+              images: tempParticipant.sections[0].answers[3].images,
             },
             {
               name: 'FOTOGRAFÍA CONTENEDOR ABIERTO',
-              comment: tempParticipant.sections[0].answers[3].comment,
-              images: tempParticipant.sections[0].answers[3].images,
+              comment: tempParticipant.sections[0].answers[4].comment,
+              images: tempParticipant.sections[0].answers[4].images,
             }
           ]
         },
@@ -584,13 +625,13 @@ class FormController {
           answers: [
             {
               name: "OBSERVACIONES",
-              comment: tempParticipant.sections[2].answers[6].comment,
-              images: tempParticipant.sections[2].answers[6].images,
+              comment: tempParticipant.sections[2].answers[0].comment,
+              images: tempParticipant.sections[2].answers[0].images,
             },
             {
               name: "FOTOGRAFÍAS CARGA RETENIDA",
-              comment: tempParticipant.sections[2].answers[7].comment,
-              images: tempParticipant.sections[2].answers[7].images,
+              comment: tempParticipant.sections[2].answers[1].comment,
+              images: tempParticipant.sections[2].answers[1].images,
             },
           ]
         },
@@ -600,40 +641,13 @@ class FormController {
           answers: [
             {
               name: "OBSERVACIONES",
-              comment: tempParticipant.sections[2].answers[4].comment,
-              images: tempParticipant.sections[2].answers[4].images,
+              comment: tempParticipant.sections[1].answers[3].comment,
+              images: tempParticipant.sections[1].answers[3].images,
             },
             {
               name: "FOTOGRAFÍAS PROCESO AFORO",
-              comment: tempParticipant.sections[2].answers[5].comment,
-              images: tempParticipant.sections[2].answers[5].images,
-            },
-          ]
-        },
-        {
-          name: "CONTENIDO DEL CONTENEDOR",
-          useGrid: false,
-          answers: [
-            {
-              name: 'CONTENIDO DEL CONTENEDOR',
-              comment: tempParticipant.sections[2].answers[0].comment,
-              images: tempParticipant.sections[2].answers[0].images,
-            },
-            {
-              name: '',
-              comment: tempParticipant.sections[2].answers[1].comment,
-              images: tempParticipant.sections[2].answers[1].images,
-            },
-          ]
-        },
-        {
-          name: "CONTENIDO SACADO DEL CONTENEDOR",
-          useGrid: true,
-          answers: [
-            {
-              name: '',
-              comment: tempParticipant.sections[2].answers[3].comment,
-              images: tempParticipant.sections[2].answers[3].images,
+              comment: tempParticipant.sections[1].answers[4].comment,
+              images: tempParticipant.sections[1].answers[4].images,
             },
           ]
         },
@@ -676,6 +690,7 @@ class FormController {
         let context: any = {
           participant,
           hasRetention,
+          aforoType,
           companyName: participant.webQuestion?.answer ?? participant.car.company.name,
           sectionsToShow: sectionsToShow.filter(section => section.hasAnswer),
           moment,
