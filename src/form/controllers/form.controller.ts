@@ -599,6 +599,17 @@ class FormController {
             }
           ]
         },
+                {
+          name: "OBSERVACIONES",
+          useGrid: true,
+          answers:[
+            {
+              name: '',
+              comment: tempParticipant.sections[1].answers[2].comment || 'N/A',
+              images: [],
+            }
+          ]
+        },
         {
           name: "EVIDENCIA APERTURA",
           useGrid: true,
