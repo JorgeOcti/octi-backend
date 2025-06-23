@@ -279,13 +279,13 @@ export function addParticipantAnswer(
   };
 }
 
-export function changeFilterDashboardAction(filter: IDashboardFilter) {
+export function changeFilterDashboardAction(filter: IDashboardFilter, forms?: string[]) {
   return (
     dispatch: Dispatch<DashboardReduxAction>,
     getState: () => { dashboard: IDashboardState }
   ) => {
     dispatch(updateFilterDashboardAction(filter));
-    const getRevisions = getRevisionsAction(1, false);
+    const getRevisions = getRevisionsAction(1, false, undefined, undefined, undefined, forms);
     getRevisions(dispatch, getState);
   };
 }
@@ -296,7 +296,8 @@ export function getRevisionsThunkAction(
   search?: string,
   from?: string,
   to?: string,
-  onlyControls: boolean = true
+  onlyControls: boolean = true,
+  forms?: string[] | null
 ) {
   return (
     dispatch: Dispatch<DashboardReduxAction>,
@@ -332,7 +333,7 @@ export function getRevisionsThunkAction(
         search: filter.searchText,
         from: filter.searchFrom,
         to: filter.searchTo,
-        forms: filter.searchForms,
+        forms: forms || filter.searchForms,
         brands: filter.searchBrands
       }),
       api.getUserForms({ deliveries: false })
@@ -374,6 +375,7 @@ export function getRevisionsAction(
   search?: string,
   from?: string,
   to?: string,
+  forms?: string[] | null,
   onlyControls: boolean = true
 ) {
   return (
@@ -399,7 +401,7 @@ export function getRevisionsAction(
         search: filter.searchText,
         from: filter.searchFrom,
         to: filter.searchTo,
-        forms: filter.searchForms,
+        forms: forms || filter.searchForms,
         brands: filter.searchBrands
       })
       .then((response: AxiosResponse) => {
