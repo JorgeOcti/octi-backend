@@ -146,9 +146,10 @@ head
     }
     /* Evidence Section (Shared Styles) */
     .evidence-section-base {
-    margin-top: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    padding-top: 10px;
+    padding-left: 10px;
     }
     .evidence-section-base h3 {
     font-size: 1em;
@@ -209,6 +210,9 @@ head
     font-weight: bold;
     text-align: left;
     }
+    h2 {
+      margin-bottom: 0;
+    }
     .content-section .content-item .label {
     font-size: 0.7em;
     margin-bottom: 3px;
@@ -217,7 +221,7 @@ head
     }
     .content-section .content-item .value {
     font-size: 0.9em;
-    padding: 8px;
+    //- padding: 8px;
     border: 1px solid #ccc;
     display: block;
     min-height: 1.5em;
@@ -330,7 +334,6 @@ head
                         - var comment = answer.comment.split('\n')
                         .info-section.participants-section
                           .info-item-full
-                            span.value.value-no-underline
                             each line in comment
                                 | #{line}
                                 br
