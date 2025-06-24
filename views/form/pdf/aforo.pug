@@ -288,10 +288,10 @@ head
         |  SERVICIOS EXTRAPORTUARIOS
       p
         span.text-bold Direcci&oacute;n:
-        |  Camino Las Mercedes 14851 - San Antonio
+        |  !{participant.venue.code}
       p
         span.text-bold Emitido por:
-        |  Juan Melia el 28/08/2025 a las 12:25
+        |  !{participant.user.firstName} !{participant.user.lastName} el 28/08/2025 a las 12:25
     .aforo-number
       span.text-bold AFORO N&deg; #{participant.number}
   .document-title
@@ -318,7 +318,7 @@ head
       .info-item
         span.label HUBO RETENCI&Oacute;N
         span.value #{hasRetention ? 'SI' : 'NO'}
-  .info-section 
+  .info-section
     .info-grid
       .info-item
         span.label TIPO DE AFORO
@@ -342,7 +342,7 @@ head
                           .evidence-images
                               .image-container
                                   each image in answer.images
-                                      img(src=image.file.url)  
+                                      img(src=image.file.url)
                       else
                           .single-image-container
                               img(src=answer.images[0].file.url)

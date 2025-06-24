@@ -40,17 +40,22 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
 
+  formsId?: string[];
+  menu?: string;
+  subMenu?: string;
+
   getRevisionsThunkAction(
     page: number,
     loading: boolean,
-    search?: string
+    search?: string,
+    forms?: string[]
   ): void;
 
   getParticipant(id: string): void;
 
-  getRevisionsAction(page: number, loading: boolean, search?: string): void;
+  getRevisionsAction(page: number, loading: boolean, search?: string, forms?: string[]): void;
 
-  changeFilterDashboardAction(filter: IDashboardFilter): void;
+  changeFilterDashboardAction(filter: IDashboardFilter, forms?: string[]): void;
 
   changingParticipantAnswer(revisionId: string, answer: string): void;
 }
@@ -130,7 +135,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     // set the title of the page
     const { page } = this.props.dashboard.pagination;
-    this.props.getRevisionsThunkAction(page, true);
+    this.props.getRevisionsThunkAction(page, true, undefined, this.props.formsId);
 
     // socket
     this.socket = io(`${location.protocol}//${location.host}`, {
@@ -156,7 +161,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         window.user.venuesAccess.includes(data.venueId) &&
         forms.map((form: IForm) => form._id).includes(data.formId)
       ) {
-        this.props.getRevisionsAction(page, false);
+        this.props.getRevisionsAction(page, false, undefined, this.props.formsId);
         ($ as any).toast({
           heading: data.notification.title,
           text: data.notification.text,
@@ -224,6 +229,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public downloadReport() {
     const { searchFrom, searchTo, searchForms, searchText } = this.props.dashboard.filter;
+    const {formsId} = this.props;
     const monthsDiff = moment(searchTo).diff(moment(searchFrom), 'months');
     this.trackClick('Descargar reporte', {
       searchFrom,
@@ -243,7 +249,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
       if (searchText) query += `&search=${searchText}`;
 
-      if (searchForms) query += `&forms=${searchForms.join(',')}`;
+      if (searchForms && searchForms.length > 0) {
+        query += `&forms=${searchForms.join(',')}`;
+      } else if (formsId && formsId.length > 0) {
+        query += `&forms=${formsId.join(',')}`;
+      }
 
       window.open(`/api/participant/export/${query}`, '_blank');
     }
@@ -276,6 +286,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
+    const { menu, subMenu, formsId } = this.props;
     const {
       loading,
       participants,
@@ -299,8 +310,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             />
           </div>
         }
-        cMenu="1"
-        cSubMenu="1.2">
+        cMenu={menu || "1"}
+        cSubMenu={subMenu || "1.2"}>
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -340,7 +351,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 {/* <div className="col-md-4 col-md-offset-8 no-padding"> */}
-                <div className="col-md-6 no-padding">
+                {formsId && formsId.length > 0  ?
+                  null :
+                  <>
+                  <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <BootstrapSelect
                       noneSelectedText="Todos los controles"
@@ -360,24 +374,27 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     />
                   </div>
                 </div>
-                <div className="col-md-6 no-padding">
+                  <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
-                    <BootstrapSelect
-                      noneSelectedText="Todas las marcas"
-                      displayItems={4}
-                      autoClouse={false}
-                      search={true}
-                      selectedText="marcas seleccionadas."
-                      allOption={true}
-                      separator=" - "
-                      options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
-                      notHideOnClickOutside={false}
-                      selected={filter.searchBrands}
-                      onClick={this.filterBrands}
-                      selectAll={this.filterAllBrands}
-                    />
-                  </div>
-                </div>
+                <BootstrapSelect
+                  noneSelectedText="Todas las marcas"
+                  displayItems={4}
+                  autoClouse={false}
+                  search={true}
+                  selectedText="marcas seleccionadas."
+                  allOption={true}
+                  separator=" - "
+                  options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
+                  notHideOnClickOutside={false}
+                  selected={filter.searchBrands}
+                  onClick={this.filterBrands}
+                  selectAll={this.filterAllBrands}
+                />
+              </div>
+            </div>
+                  </>
+                }
+
                 {/* <div className="col-md-6 no-padding">
                   <div style={{ padding: '10px' }}>
                     <DateRangeInput
@@ -653,7 +670,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                     className="btn btn-sm btn-default hidden-xs hidden-sm"
                                     disabled={carLoading === participant._id}
                                     onClick={() =>
-                                      participant.name === "Aforo" ?
+                                      participant.name.includes("Aforo") ?
                                         this.printPdf(
                                           `/report/aforo/pdf/${participant._id}.pdf`,
                                           participant._id
@@ -763,8 +780,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
     this.props.changeFilterDashboardAction({
       ...this.props.dashboard.filter,
-      searchForms: searchForms.includes(value) ? searchForms.filter((form) => form !== value) : [value, ...searchForms]
-    });
+      searchForms: searchForms.includes(value) ? searchForms.filter((form) => form !== value) : [value, ...searchForms],
+    }, this.props.formsId);
   }
 
   private filterAllForms(value: boolean) {
@@ -773,7 +790,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeFilterDashboardAction({
       ...filter,
       searchForms: value ? forms.map((form: IForm) => form._id) : []
-    });
+    }, this.props.formsId);
   }
 
   private filterBrands(value: any) {
@@ -791,7 +808,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeFilterDashboardAction({
       ...filter,
       searchBrands: value ? brands.map((brand: IBrand) => brand._id) : []
-    });
+    }, this.props.formsId);
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -838,18 +855,18 @@ private debounceOnChangeParticipantAnswer(): void {
       this.props.changeFilterDashboardAction({
         ...filter,
         searchText: searchText
-      });
+      }, this.props.formsId);
     } else {
       this.props.changeFilterDashboardAction({
         ...filter,
         searchText: ""
-      });
+      }, this.props.formsId);
     }
   }
 
   private changePage(page: number): void {
     // change the page
-    this.props.getRevisionsAction(page, false);
+    this.props.getRevisionsAction(page, false, undefined, this.props.formsId);
     window.scrollTo(0, 0);
   }
 
@@ -890,7 +907,7 @@ private debounceOnChangeParticipantAnswer(): void {
       ...filter,
       searchFrom: moment(from).toDate(),
       searchTo: moment(to).toDate()
-    });
+    }, this.props.formsId);
   }
 }
 
@@ -904,18 +921,19 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getParticipant: (id: string) => dispatch(getParticipant(id)),
-    getRevisionsThunkAction: ( page: number, loading: boolean, search?: string ) => dispatch(
+    getRevisionsThunkAction: ( page: number, loading: boolean, search?: string, forms?: string[] ) => dispatch(
         getRevisionsThunkAction(
           page,
           loading,
           search,
           undefined,
           undefined,
-          undefined
+          undefined,
+          forms,
         )
     ),
-    changeFilterDashboardAction: (filter:IDashboardFilter) => dispatch(changeFilterDashboardAction(filter)),
-    getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search)),
+    changeFilterDashboardAction: (filter:IDashboardFilter, forms?: string[]) => dispatch(changeFilterDashboardAction(filter, forms)),
+    getRevisionsAction: (page: number, loading: boolean, search?: string, forms?: string[]) => dispatch(getRevisionsAction(page, loading, search, undefined, undefined, forms)),
     changingParticipantAnswer: (revisionId: string, answer: string) => dispatch(changingParticipantAnswer(revisionId, answer)),
   };
 };
