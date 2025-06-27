@@ -21,6 +21,8 @@ export interface IInvoice {
   checklistCars: number;
   deliveryCars: number;
   requestCars: number;
+  containers: number;
+  containersPrice: number;
   totalUF: number;
   totalDolar: number;
   totalPeso: number;

@@ -1199,7 +1199,8 @@ class FormController {
         team
       });
 
-      scales = [...scales, ...extraScales];
+      let hasExtraSection = extraSection.questions.length > 0;
+      scales =  hasExtraSection ? [...scales, ...extraScales] : scales;
       if (extraSection.questions.length) {
         (form as any).sections = [...form.sections, extraSection];
       }

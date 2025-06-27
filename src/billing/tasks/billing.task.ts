@@ -18,6 +18,7 @@ import * as console from "console";
 // import History from "../../app/models/history.model";
 import Inventory from "../../inventory/models/inventory.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
+import Car from '../../app/models/car.model';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -88,6 +89,33 @@ class BillingQueue {
         }
       );
     });
+  }
+
+  private async calculateContainers(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
+    const inventories = await Inventory.find({
+      company: company._id,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
+      }
+    }, { _id: 1})
+    const iCars = await InventoryCar.find({
+      inventory: {$in: inventories.map((i: {_id: any}) => i._id)}
+    });
+
+    const countCars = await Car.count({
+      _id: {$in: iCars.map((ic: {car: any}) => ic.car)},
+      company: company._id,
+      createdAt: {
+        $gte: start_date
+          .toDate(),
+        $lte: end_date
+          .toDate()
+      }
+    })
+    return countCars;
   }
 
   private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -417,6 +445,34 @@ class BillingQueue {
     }
   }
 
+  private calculateContainerTotal(containers: number){
+    // Calculate the total price for a scale based price
+    // 0 - 699 -> 1 Dollar
+    // 700 - 1399 -> 0.95
+    // 1400 - 1799 -> 0.93
+    // 1800 - 5000 -> 0.92
+    let sum = 0;
+    let rest = containers;
+    let prices = [
+      {from: 0, to: 699, unitPrice: 1},
+      {from: 700, to: 1399, unitPrice: 0.95},
+      {from: 1400, to: 1999, unitPrice: 0.9},
+    ]
+    for (let price of prices) {
+      let range = price.to - price.from;
+      if (rest >= range ) {
+        sum += (rest - price.from) * price.unitPrice;
+      } else if ( rest > 0 && rest < range) {
+        sum += rest * price.unitPrice;
+        break;
+      } else {
+        break;
+      }
+    }
+    console.log(sum)
+    return sum;
+  }
+
   public async processBilling(team?: any): Promise<void> {
     try {
       console.log('start billing');
@@ -433,42 +489,71 @@ class BillingQueue {
       let end_date = moment().subtract(15, 'days').endOf('month');
       const companies = await Company.find(filter);
       for (const company of companies) {
-        console.log(`calculating billing ${company.name}`);
-        const inventoryCars = await this.calculateCarsInInventory(company, start_date, end_date);
-        const checklistCars = await this.calculateCarsInChecklist(company, start_date, end_date);
-        const requestCars = await this.calculateCarsInRequest(company, start_date, end_date);
-        const deliveryCars = await this.calculateCarsInDelivery(company, start_date, end_date);
-        const totalInventory = inventoryCars * company.billing.inventoryPrice;
-        const totalChecklist = checklistCars * company.billing.checklistPrice;
-        const totalDelivery = deliveryCars * company.billing.deliveryPrice;
-        const totalRequest = requestCars * company.billing.requestPrice;
-        const totalUF =
-          totalInventory + totalChecklist + totalRequest + totalDelivery;
         const period = start_date.format('YYYYMM');
-        const invoice = new Invoice({
-          team: company.team,
-          company,
-          period,
-          inventoryCars,
-          checklistCars,
-          deliveryCars,
-          requestCars,
-          inventoryPrice: company.billing.inventoryPrice,
-          checklistPrice: company.billing.checklistPrice,
-          requestPrice: company.billing.requestPrice,
-          deliveryPrice: company.billing.deliveryPrice,
-          totalUF,
-          valueUF,
-          // valueDolar,
-          // totalDolar: (totalUF * valueUF) / valueDolar,
-          totalPeso: totalUF * valueUF
-        });
-        if (!(await Invoice.find({ company, period }).countDocuments())) {
-          await invoice.save();
-          // this.createPDF(invoice, company);
-          console.log("Creado")
+        console.log(`calculating billing ${company.name}`);
+        if (company.handler) {
+          console.log(`Calcuating billing for handler company`);
+          let minPrice = 665;
+          const containers = await this.calculateContainers(company, start_date, end_date);
+          const valueDolar = await this.getDolarPrice();
+          let containerPrice = containers < 700 ?
+            minPrice :
+            this.calculateContainerTotal(containers);
+          const invoice = new Invoice({
+            team: company.team,
+            company,
+            period,
+            containers,
+            containerPrice,
+            valueDolar,
+            totalDolar: containerPrice,
+            totalPeso: containerPrice * valueDolar,
+          });
+          if (!(await Invoice.find({ company, period }).countDocuments())) {
+            await invoice.save();
+            // this.createPDF(invoice, company);
+            console.log("Creado")
+          } else {
+            console.log(`${period} ${company.name} ya existe!!!.`);
+          }
         } else {
-          console.log(`${period} ${company.name} ya existe!!!.`);
+          console.log(`Calcuating billing for company ${company.name}`);
+          const inventoryCars = await this.calculateCarsInInventory(company, start_date, end_date);
+          const checklistCars = await this.calculateCarsInChecklist(company, start_date, end_date);
+          const requestCars = await this.calculateCarsInRequest(company, start_date, end_date);
+          const deliveryCars = await this.calculateCarsInDelivery(company, start_date, end_date);
+          const totalInventory = inventoryCars * company.billing.inventoryPrice;
+          const totalChecklist = checklistCars * company.billing.checklistPrice;
+          const totalDelivery = deliveryCars * company.billing.deliveryPrice;
+          const totalRequest = requestCars * company.billing.requestPrice;
+          const totalUF =
+            totalInventory + totalChecklist + totalRequest + totalDelivery;
+
+          const invoice = new Invoice({
+            team: company.team,
+            company,
+            period,
+            inventoryCars,
+            checklistCars,
+            deliveryCars,
+            requestCars,
+            inventoryPrice: company.billing.inventoryPrice,
+            checklistPrice: company.billing.checklistPrice,
+            requestPrice: company.billing.requestPrice,
+            deliveryPrice: company.billing.deliveryPrice,
+            totalUF,
+            valueUF,
+            // valueDolar,
+            // totalDolar: (totalUF * valueUF) / valueDolar,
+            totalPeso: totalUF * valueUF
+          });
+          if (!(await Invoice.find({ company, period }).countDocuments())) {
+            await invoice.save();
+            // this.createPDF(invoice, company);
+            console.log("Creado")
+          } else {
+            console.log(`${period} ${company.name} ya existe!!!.`);
+          }
         }
       }
     } catch (e) {

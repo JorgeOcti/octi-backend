@@ -14,6 +14,7 @@ import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import { IWindow } from '../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<BillingReduxAction>;
@@ -25,6 +26,8 @@ interface IPropsType extends RouteComponentProps<{ }> {
 interface IStateType {
   error: Error | null;
 }
+
+declare let window: IWindow;
 
 class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
@@ -95,46 +98,83 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                       <tr>
                         <th className="middle">Período</th>
                         <th className="middle">Empresa</th>
-                        <th className="middle hidden-xs">Inventario</th>
-                        <th className="middle hidden-xs">Entregas</th>
-                        <th className="middle hidden-xs">Checklist</th>
-                        <th className="middle hidden-xs">Solicitudes</th>
-                        <th className="middle">Total</th>
-                        <th style={{width: '80px'}} />
+                        {window.user.company.handler ? <>
+                          <th className="middle hidden-xs">Contenedores</th>
+                          <th className="middle" />
+                        </> :
+                          <>
+                          <th className="middle hidden-xs">Inventario</th>
+                          <th className="middle hidden-xs">Entregas</th>
+                          <th className="middle hidden-xs">Checklist</th>
+                          <th className="middle hidden-xs">Solicitudes</th>
+                          <th className="middle">Total</th>
+                          <th style={{width: '80px'}} />
+                        </>}
                       </tr>
                     </thead>
                     <tbody>
                       {
-                        invoices.map((invoice)=>(
-                          <tr key={invoice._id}>
-                            <td className="middle">
-                              <strong className='text-info'>
-                                {
-                                  moment(invoice.period, "YYYYMM").format('MMMM YYYY').toUpperCase()
-                                }
-                              </strong>
-                            </td>
-                            <td className="middle">
-                              <strong className='text-primary'>{invoice.company.name}</strong> <br />
-                              <span className='text-sm text-muted'>
+                        invoices.map((invoice)=> {
+                          if (window.user.company.handler) {
+                            return (
+                              <tr key={invoice._id}>
+                                <td className="middle">
+                                  <strong className="text-info">
+                                    {
+                                      moment(invoice.period, 'YYYYMM').format('MMMM YYYY').toUpperCase()
+                                    }
+                                  </strong>
+                                </td>
+                                <td className="middle">
+                                  <strong className="text-primary">{invoice.company.name}</strong> <br />
+                                  <span className="text-sm text-muted">
+                                    {invoice.company?.businessName ?? ''} - {invoice.company?.rut ?? ''}
+                                  </span>
+                                </td>
+                                <td className="middle text-muted hidden-xs">{invoice.containers}</td>
+                                <td className="middle">{invoice.totalDolar.toFixed(2)} USD</td>
+                                <td className="middle">
+                                  <button
+                                    className="btn btn-sm btn-primary"
+                                    onClick={() => window.open(`/settings/billing/pdf/${invoice._id}`, '_blank')}
+                                  >
+                                    <i className="fa fa-fw fa-download" /> Ver detalle
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          }
+                          return (
+                            <tr key={invoice._id}>
+                              <td className="middle">
+                                <strong className="text-info">
+                                  {
+                                    moment(invoice.period, 'YYYYMM').format('MMMM YYYY').toUpperCase()
+                                  }
+                                </strong>
+                              </td>
+                              <td className="middle">
+                                <strong className="text-primary">{invoice.company.name}</strong> <br />
+                                <span className="text-sm text-muted">
                               {invoice.company?.businessName ?? ''} - {invoice.company?.rut ?? ''}
                             </span>
-                            </td>
-                            <td className="middle text-muted hidden-xs">{invoice.inventoryCars}</td>
-                            <td className="middle text-muted hidden-xs">{invoice.deliveryCars}</td>
-                            <td className="middle text-muted hidden-xs">{invoice.checklistCars}</td>
-                            <td className="middle text-muted hidden-xs">{invoice.requestCars}</td>
-                            <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>
-                            <td className="middle">
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={()=>window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
-                              >
-                                <i className="fa fa-fw fa-download" /> Ver detalle
-                              </button>
-                            </td>
-                          </tr>
-                        ))
+                              </td>
+                              <td className="middle text-muted hidden-xs">{invoice.inventoryCars}</td>
+                              <td className="middle text-muted hidden-xs">{invoice.deliveryCars}</td>
+                              <td className="middle text-muted hidden-xs">{invoice.checklistCars}</td>
+                              <td className="middle text-muted hidden-xs">{invoice.requestCars}</td>
+                              <td className="middle">{invoice.totalUF.toFixed(2)} UF</td>
+                              <td className="middle">
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => window.open(`/settings/billing/pdf/${invoice._id}`, '_blank')}
+                                >
+                                  <i className="fa fa-fw fa-download" /> Ver detalle
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
                       }
                     </tbody>
                   </table>
