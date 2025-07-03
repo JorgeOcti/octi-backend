@@ -18,7 +18,6 @@ import * as favicon from 'serve-favicon';
 import * as Staticify from 'staticify';
 import * as swaggerJSDoc from 'swagger-jsdoc';
 import * as swaggerUi from 'swagger-ui-express';
-const cors = require ('cors')
 import AppController from './app/controllers/app.controller';
 import { appRouter, jwtRouter } from './app/router';
 import emailQueue from './app/tasks/email.task';
@@ -130,23 +129,7 @@ let cookieSetting: CookieOptions = {
 if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
-const whiteList = [
-  "http://localhost:5173",
-  "https://code.osacontrol.com",
-  "http://code.osacontrol.com",
-]
 
-app.use(cors({
-  origin: (origin:string, callback:Function) => {
-    console.log(origin)
-      if (!origin || whiteList.indexOf(origin) !== -1) {
-          callback(null, true);
-      } else {
-          callback(new Error(`Site: ${origin} not allowed by CORS`));
-      }
-  },
-  credentials: true
-}));
 
 app.use(
   session({

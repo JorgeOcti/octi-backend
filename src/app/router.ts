@@ -1,5 +1,6 @@
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
+import { customCors } from '../middlewares/cors';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
@@ -71,7 +72,7 @@ appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDash
 appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/:id/history/', Middlewares.isLoggedIn, CarController.apiCarHistory);
-appRouter.get('/api/cars/:code/history-unit/', CarController.apiUnitHistoryByCode);
+appRouter.get('/api/cars/:code/history-unit/', customCors, CarController.apiUnitHistoryByCode);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/v1/company/cars/', Middlewares.isJWTAuthenticated, CarController.apiCompanyCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
