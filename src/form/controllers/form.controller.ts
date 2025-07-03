@@ -67,6 +67,7 @@ import InventoryController from '../../inventory/controllers/inventory.controlle
 import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
+import { IPDFContext, IParticipantSection, IParticipantAnswerTypes } from '../interfaces/pdfContext.interface';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -128,6 +129,466 @@ class FormController {
       return res.status(500).json(e.message);
     }
   }
+
+  /**
+   * Maps a Participant model object to an IPDFContext interface
+   * @param participant - The participant object from the database
+   * @param css - CSS string for styling
+   * @param timezone - Timezone for date formatting
+   * @returns IPDFContext - Mapped context object for PDF generation
+   * 
+   * Example usage:
+   * const context = await this.mapPdfContext(participant, css, timezone);
+   */
+  private async mapPdfContext(participant: any, css?: string): Promise<IPDFContext> {
+    
+    const qr = await QRCode.toDataURL(participant.car.vin, {
+      errorCorrectionLevel: 'H',
+      margin: 0,
+      rendererOpts: {
+        quality: 1
+      }
+    });
+
+    const participantCompany = (participant.user?.venue?.company) || {};
+
+    let origin: string = '';
+    let destination: string = '';
+    if (participant.reception && participant.receiveFrom) {
+      origin = participant.receiveFrom.name;
+    }
+    if (participant.shipping && participant.venue) {
+      origin = participant.venue.name;
+    }
+    if (participant.reception && participant.venue) {
+      destination = participant.venue.name;
+    } else if (participant.shipping && participant.sendTo) {
+      destination = participant.sendTo.name;
+    }
+
+    return {
+      qr: qr,
+      css: css?.replace(/(\r\n|\n|\r)/gm, ''),
+      moment: moment,
+      name: participant.name || '',
+      description: participant.description || '',
+      number: participant.number || 0,
+      user: {
+        firstName: participant.user?.firstName || '',
+        lastName: participant.user?.lastName || ''
+      },
+      carrier: {
+        is: participant.carrier || false,
+        text: participant.carrierBy?.name || undefined,
+      },
+      sections: this.mapParticipantSections(participant.sections || []),
+      shipping: {
+        is: participant.shipping || false,
+        text: participant.shippingText || undefined,
+        images: participant.shippingImages?.map((img: any) => img.url || img) || undefined
+      },
+      reception: {
+        is: participant.reception || false,
+        text: participant.receptionText || undefined,
+        images: participant.receptionImages?.map((img: any) => img.url || img) || undefined
+      },
+      conciliation: {
+        is: participant.conciliation || false,
+        text: participant.conciliationText || undefined,
+        images: participant.conciliationImages?.map((img: any) => img.url || img) || undefined
+      },
+      car: {
+        vin: participant.car?.vin || '',
+        internalNumber: participant.car?.internalNumber || '',
+        engineNumber: participant.car?.engineNumber || '',
+        brand: participant.car?.brand || '',
+        denomination: participant.car?.denomination || '',
+        color: participant.car?.color || '',
+        patent: participant.car?.patent || ''
+      },
+      createdAt: participant.createdAt,
+      logo: participantCompany.image && participantCompany.image.hasOwnProperty('url')
+        ? decodeURI(participantCompany.image.url)
+        : false,
+      // Helper functions
+      origin: origin || '',
+      destination: destination || '',
+
+      
+      // estos items se pueden eliminar, por que son de poblado de datos,
+      getAnswer: (scale: any, answer: any) => {
+        if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+          const choice = scale.choices.find(
+            (choice: any) =>
+              choice._id.toString() === answer.answer.toString()
+          );
+          return choice ? choice.choice : '';
+        }
+        return '';
+      },
+      requireAccesory: (scale: any, answer: any) => {
+        if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+          const choice = scale.choices.find(
+            (choice: any) =>
+              choice._id.toString() === answer.answer.toString()
+          );
+          return choice ? choice.requireAccesories : false;
+        }
+        return false;
+      },
+      getDamageItem: (items: any, item: string) => {
+        if (item) {
+          const result = items.find(
+            (i: any) => i._id.toString() === item.toString()
+          );
+          if (result && result.hasOwnProperty('name')) {
+            return result.name;
+          }
+        }
+        return '-';
+      },
+      accesorySelected: (answer: any, item: any) => {
+        return item && answer.accesoriesAnswered
+          ? answer.accesoriesAnswered.find((accesory: any) => {
+              return accesory.item === item._id.toString();
+            })
+          : false;
+      }
+    };
+  }
+
+  private mapParticipantSections(sections: any[]): IParticipantSection[] {
+    return sections.map(section => ({
+      name: section.name || '',
+      answers: this.mapParticipantAnswers(section.answers || [])
+    }));
+  }
+
+  /**
+   * Maps participant answers to strongly typed IParticipantAnswerTypes
+   * @param answers - Array of raw answer objects from the database
+   * @returns Array of typed participant answers based on question kind
+   */
+  private mapParticipantAnswers(answers: any[]): IParticipantAnswerTypes[] {
+    return answers.map(answer => {
+      // Base properties shared by all answer types
+      const baseAnswer = {
+        question: answer.question || '',
+        kind: answer.kind || '',
+        comment: answer.comment || '',
+        qualification: answer.qualification || 0,
+        order: answer.order || 0,
+        hint: answer.hint || undefined,
+        optional: answer.optional || false
+      };
+
+      // Map images if they exist
+      const mappedImages = answer.images?.map((img: any) => ({
+        filename: img.filename || img.file?.filename || '',
+        url: img.url || img.file?.url || '',
+        mimetype: img.mimetype || img.file?.mimetype || ''
+      }));
+
+      // Return typed answer based on kind
+      switch (answer.kind) {
+        case 'scale':
+          return {
+            ...baseAnswer,
+            answer: answer.answer?.toString() || '',
+            images: mappedImages,
+            scale: answer.scale ? {
+              name: answer.scale.name || '',
+              choices: answer.scale.choices?.map((choice: any) => ({
+                id: choice._id?.toString() || choice.id || '',
+                choice: choice.choice || '',
+                backgroundColor: choice.backgroundColor || '',
+                order: choice.order || 0
+              })) || []
+            } : {
+              name: '',
+              choices: []
+            }
+          } as const;
+
+        case 'numeric-scale':
+          return {
+            ...baseAnswer,
+            images: mappedImages,
+            score: answer.score || 0,
+            minValue: answer.minValue || 0,
+            maxValue: answer.maxValue || 100,
+            scale: answer.scale ? {
+              name: answer.scale.name || '',
+              choices: answer.scale.choices?.map((choice: any) => ({
+                id: choice._id?.toString() || choice.id || '',
+                choice: choice.choice || '',
+                backgroundColor: choice.backgroundColor || '',
+                order: choice.order || 0
+              })) || []
+            } : {
+              name: '',
+              choices: []
+            }
+          } as const;
+
+        case 'accessory':
+          return {
+            ...baseAnswer,
+            images: mappedImages,
+            answer: answer.answer?.toString(),
+            accessories: answer.accessories ? {
+              question: answer.accessories.question || '',
+              items: answer.accessories.items?.map((item: any) => ({
+                item: item.item || '',
+                amount: item.amount || false
+              })) || []
+            } : {
+              question: '',
+              items: []
+            },
+            accesoriesAnswered: answer.accesoriesAnswered?.map((acc: any) => ({
+              item: acc.item || ''
+            })) || [],
+            scale: answer.scale ? {
+              name: answer.scale.name || '',
+              choices: answer.scale.choices?.map((choice: any) => ({
+                id: choice._id?.toString() || choice.id || '',
+                choice: choice.choice || '',
+                backgroundColor: choice.backgroundColor || '',
+                order: choice.order || 0
+              })) || []
+            } : undefined
+          } as const;
+
+        case 'damage':
+          return {
+            ...baseAnswer,
+            images: mappedImages,
+            damagesSelected: answer.damagesSelected?.map((damage: any) => ({
+              part: damage.part || '',
+              position: damage.position || '',
+              kind: damage.kind || '',
+              severity: damage.severity
+            })) || []
+          } as const;
+
+        case 'image':
+          return {
+            ...baseAnswer,
+            images: mappedImages || []
+          } as const;
+
+        case 'matrix':
+          return {
+            ...baseAnswer,
+            images: mappedImages,
+            matrix: answer.matrix ? {
+              name: answer.matrix.name || '',
+              questions: answer.matrix.questions?.map((q: any) => ({
+                question: q.question || '',
+                name: q.name || '',
+                type: q.type || 'text',
+                value: q.value,
+                images: q.images?.map((img: any) => ({
+                  filename: img.filename || img.file?.filename || '',
+                  url: img.url || img.file?.url || '',
+                  mimetype: img.mimetype || img.file?.mimetype || ''
+                }))
+              })) || []
+            } : {
+              name: '',
+              questions: []
+            },
+            matrixValues: answer.matrixValues?.map((row: any[]) =>
+              row.map((item: any) => ({
+                question: item.question || '',
+                name: item.name || '',
+                type: item.type || 'text',
+                value: item.value,
+                images: item.images?.map((img: any) => ({
+                  filename: img.filename || img.file?.filename || '',
+                  url: img.url || img.file?.url || '',
+                  mimetype: img.mimetype || img.file?.mimetype || ''
+                }))
+              }))
+            ) || []
+          } as const;
+
+        case 'venue':
+        case 'carrier':
+        case 'text':
+        default:
+          // For text, venue, carrier and other simple types
+          return {
+            ...baseAnswer,
+            images: mappedImages
+          } as const;
+      }
+    });
+  }
+
+  public async pdfForm(req: IRequest, res: Response): Promise<any> {
+    const { debug, timezone } = req.query as {
+      debug: string;
+      timezone: string;
+    };
+    const { id } = req.params;
+    const team = req.user.team._id;
+
+    moment.locale('es');
+    moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
+
+    try {
+      logger.info(
+        `FormController.pdf email: ${req.user.email}, participant: ${id}`
+      );
+      const venuesPermissions = req.user.venuesPermissions();
+      const participant = await Participant.findOne(
+        {
+          $and: [
+            {
+              _id: id,
+              team,
+              venue: {
+                $in: venuesPermissions
+              }
+            }
+          ]
+        },
+        {
+          name: true,
+          number: true,
+          user: true,
+          sections: true,
+          shipping: true,
+          shippingText: true,
+          shippingImages: true,
+          carrier: true,
+          carrierText: true,
+          carrierImages: true,
+          reception: true,
+          receptionText: true,
+          receptionImages: true,
+          conciliation: true,
+          conciliationText: true,
+          conciliationImages: true,
+          createdAt: true
+        }
+      )
+        .allowDiskUse(true)
+        .populate([
+          {
+            path: 'user',
+            select: ['firstName', 'lastName'],
+          },
+          {
+            path: 'receiveFrom',
+            select: 'name'
+          },
+          {
+            path: 'venue',
+            select: 'name'
+          },
+          {
+            path: 'sendTo',
+            select: 'name'
+          },
+          {
+            path: 'carrierBy',
+            select: 'name'
+          },
+          {
+            path: 'car',
+            select: [
+              'vin',
+              'internalNumber',
+              'engineNumber',
+              'brand',
+              'denomination',
+              'color',
+              'patent'
+            ]
+          },
+          {
+            path: 'sections.answers.images'
+          },
+          {
+            path: 'shippingImages'
+          },
+          {
+            path: 'receptionImages'
+          },
+          {
+            path: 'conciliationImages'
+          },
+          {
+            path: 'form',
+            select: ['triggers']
+          }
+        ])
+        .lean();
+      let template: string =
+        path.join(__dirname, '../../../views/') + 'form/carDetail/new.pug';
+
+      if (participant) {
+        const css = fs.readFileSync(
+          path.join(__dirname, '../../../views/') + 'form/carDetail/style.css',
+          'utf8'
+        );
+
+        const context = await this.mapPdfContext(participant, css);
+
+        const html = GeneralUtils.generateHtmlFromPugFile(template, context);
+
+        if (debug) {
+          return res.send(html);
+        } else {
+          // launch a new chrome instance
+          const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium',
+            args: [
+              '--no-sandbox',
+              '--allow-file-access-from-files',
+              '--enable-local-file-accesses'
+            ], // Required.
+            headless: true
+          });
+          // create a new page
+          const page = await browser.newPage();
+
+          await page.setContent(html, {
+            waitUntil: 'networkidle0'
+          });
+
+          const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+              top: '0.3in',
+              right: '0.5in',
+              bottom: '0.3in',
+              left: '0.5in'
+            }
+          });
+          await browser.close();
+
+          // Return Buffer
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader(
+            'Content-disposition',
+            `inline; filename=${participant._id.toString()}.pdf`
+          );
+          return res.send(pdfBuffer);
+        }
+      }
+      
+    } catch (e) {
+      console.log(e);
+      // Raven.captureException(e, { req });
+      return res.status(500).json(e.message);
+    }
+  }
+
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
     const { debug, timezone } = req.query as {
@@ -236,7 +697,7 @@ class FormController {
         .lean();
 
       let template: string =
-        path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+        path.join(__dirname, '../../../views/') + 'form/carDetail/new.pug';
 
       moment.locale('es');
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
