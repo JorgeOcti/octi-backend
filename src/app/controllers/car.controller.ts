@@ -2098,11 +2098,41 @@ class CarController {
     }
   }
 
+  private validateCode(code: string): string | false {
+    const prefixMatch = code.match(/^OSA[A-Z]{2}/);
+    if (!prefixMatch) return false;
+  
+    const prefix = prefixMatch[0];
+    const rest = code.slice(prefix.length);
+  
+    const parts = rest.split("-");
+    if (parts.length !== 2) return false;
+  
+    const numberPart = parts[0];
+    const verifierPart = parts[1];
+  
+    // Validar que el número y verificador tengan formato correcto
+    if (!/^\d+$/.test(numberPart) || !/^\d{2}$/.test(verifierPart)) return false;
+  
+    const expectedVerifier = this.calculateVerifier(Number(numberPart));
+    if (expectedVerifier !== verifierPart) return false
+    return `${prefix}${numberPart}${verifierPart}`;
+  }
+  calculateVerifier(numero: number): string {
+    const factors = [2, 3, 5, 7];
+    const digits = numero.toString().split("").map(Number);
+    const suma = digits.reduce((acc, digit, i) => {
+      return acc + digit * factors[i % factors.length];
+    }, 0);
+    const verificador = suma % 97;
+    return verificador.toString().padStart(2, "0");
+  }
   public apiUnitHistoryByCode = async (req: Request, res: Response) => {
     
     const { code } = req.params;
-
-    logger.info(`Entering apiUnitHistoryByCode Code:`);
+    const finalCode = this.validateCode(code)
+    logger.info(`Entering apiUnitHistoryByCode Code: ${finalCode}`);
+    if(!finalCode) return res.status(404).json({mesagge: "Este código no es válido", error: true, status: 404});
     try {
       let car = await CarModel.findOne(
         {
@@ -2157,7 +2187,7 @@ class CarController {
         const texts:Record<string, Record<string, string>> = { 
           'created-undefined':{
             title: `Unidad importada`,
-            text: `Esta unidad ha sido ingresada al sistema por <strong> ${event.participant?.company?.name} </strong>`,
+            text: `Esta unidad ha sido ingresada al sistema por <strong> ${event.createdBy?.firstName?event.createdBy?.firstName:""} ${event.createdBy?.lastName? event.createdBy?.lastName : ""}</strong>`,
             icon: "cloud",
             color: "bg-green",
             step: "first"
@@ -2288,7 +2318,7 @@ class CarController {
       })
       .map(([label, events]) => ({
         label, 
-        events,
+        events:events.sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime()),
       }));
   
     return sortedGroups;
