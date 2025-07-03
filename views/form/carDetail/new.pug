@@ -1,0 +1,184 @@
+mixin headerDetail(first, second, third, quarter)
+  tr
+    td(width="18%", class="strong")=first
+    if second
+      td(width="32%")=second
+    else
+      td(width="32%")
+        .border-bottom-dashed
+    if third
+      td(width="12%", class="strong")=third
+      if quarter
+        td(width="38%")=quarter
+      else
+        td(width="38%")
+          .border-bottom-dashed
+
+mixin headerDetailRight(first, second, third, quarter)
+  tr
+    td(width="18%", class="strong")=first
+    if second
+      td(width="32%")=second
+    else
+      td(width="32%")
+        .border-bottom-dashed
+    if third
+      td(width="12%", class="strong")=third
+      if quarter
+        td(width="38%").text-right=quarter
+      else
+        td(width="38%").text-right
+          .border-bottom-dashed
+
+mixin carDetail(first, second, third, quarter, fifth, sixth)
+  tr
+    td(width="8%", class="strong")=first
+    if second
+      td(width="25.3%")=second
+    else
+      td(width="25.3%")
+        .border-bottom-dashed
+    if third
+      td(width="8%", class="strong")=third
+      if quarter
+        td(width="25.3%")=quarter
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+    if fifth
+      td(width="8%", class="strong")=fifth
+      if sixth
+        td(width="25.3%")=sixth
+      else
+        td(width="25.3%")
+          .border-bottom-dashed
+
+doctype html
+head
+  title OSA Andes
+  meta(charset='utf8')
+  meta(content='text/html; charset=utf-8', http-equiv='Content-Type')
+  link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous')
+  style(type='text/css')=css
+body
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0")
+    tr
+      td(width="80%")
+        if logo
+          img(src=logo, height="60px")
+      td(width="20%")
+        .text-right
+          img(src=qr, height="60px")
+
+  table(cellpadding='0', cellspacing='0')
+    tr
+      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=name
+    +headerDetailRight('Nº TRASLADO', number, 'FECHA', moment(createdAt).format('LLL'))
+    +headerDetail('ENCARGADO', `${user.firstName} ${user.lastName}`)
+    +headerDetail('ORIGEN', origin, 'DESTINO', destination)
+    +headerDetail('E. TRANSPORTADORA', carrier.text, false, false)
+
+  table(cellpadding='0', cellspacing='0', class="border")
+    tr
+      td(colspan=6, class="strong")="DETALLES DE LA UNIDAD"
+    +carDetail('CHASIS', car.vin, 'MARCA', car.brand, 'MODELO', car.denomination)
+    +carDetail('COLOR', car.color, car.patent ? 'PATENTE': false, car.patent ? car.patent: false, car.engineNumber ? 'MOTOR': false, car.engineNumber ? car.engineNumber: false)
+
+  table(cellpadding='0', cellspacing='0', class="border")
+    each section in sections
+      tr.heading
+        td=section.name
+        td(width="20%", class="text-center")
+          | Respuesta
+        td(width="10%", class="text-center")
+          | Evidencia
+      each answer in section.answers
+        tr.item
+          td
+            p.no-margin.strong=answer.question
+          if ['scale', 'accessory'].includes(answer.kind) && answer.scale
+            td.text-center=getAnswer(answer.scale, answer)
+          else
+            td
+          td.text-center
+            if answer.kind === 'scale' && answer.scale
+              if answer.images && answer.images.length
+                | Si
+              else
+                | No
+        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+          tr
+            td(colspan=3, style="padding-bottom:0px").text-center
+              if answer.accessories && answer.accessories.question
+                strong=answer.accessories.question
+          tr.item
+            td(colspan=3, style="padding-top:0px")
+              if answer.accesoriesAnswered && answer.accessories && answer.accessories.items
+                - const accesorySeletedIds = answer.accesoriesAnswered.map(accesory=>accesory.item);
+                - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id ? item._id.toString() : item.id));
+                if items.length
+                  table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                    while items.length
+                      tr
+                        each item in items.splice(0,4)
+                          td(style="padding:4px 0", width="25%").no-border-bottom
+                            - const accesory = accesorySelected(answer, item);
+                            | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
+                else
+                  tr.item-damage
+                    td(colspan=2)
+                      | No se seleccionaron items.
+              else
+                tr.item-damage
+                  td(colspan=2)
+                    | No hay información de accesorios disponible.
+        if answer.kind === 'damage'
+          if !answer.damagesSelected || !answer.damagesSelected.length
+            tr.item-damage
+              td(colspan=3)
+                | No se encontraron daños
+          else
+            each ds in answer.damagesSelected
+              tr.item-damage
+                td(colspan=2)
+                  table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                    tr
+                      td
+                        if answer.damages && answer.damages.parts
+                          strong=getDamageItem(answer.damages.parts, ds.part)
+                        else
+                          strong=ds.part || 'Parte no especificada'
+                    tr
+                      td
+                        strong Daño:
+                        if answer.damages && answer.damages.kinds
+                          | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        else
+                          | #{' ' + (ds.kind || 'No especificado') + ' '}
+                        strong Posición:
+                        if answer.damages && answer.damages.positions
+                          | #{' ' + getDamageItem(answer.damages.positions, ds.position)}
+                        else
+                          | #{' ' + (ds.position || 'No especificada')}
+                td(class="text-center")
+                  if ds.images && ds.images.length
+                    | Si
+                  else
+                    | No
+        if answer.comment
+          tr.item
+            td(colspan=3, style="padding: 0 5px")
+              table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                tr
+                  td.no-border-bottom
+                    strong(style="color:#6B6B6B") Comentario:
+                    | #{' ' + answer.comment}
+
+
+  table(cellpadding='0', cellspacing='0' style="margin-top:40px")
+    tr
+      td(width="40%", class="border-top-solid text-center strong")
+        | Firma encargado
+      td(width="20%")
+      td(width="40%", class="border-top-solid text-center strong")
+        | Firma transportador
