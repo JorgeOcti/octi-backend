@@ -36,11 +36,12 @@ import Part from '../../form/models/part.model';
 import Participant from '../../form/models/participant.model';
 import Planning from '../../planning/models/planning.model';
 import Position from '../../form/models/position.model';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
 import logger from '../../services/logger.service';
 import {IParticipantFile} from "../../form/interfaces/participantFile.interface";
+import { EventItem, GroupedEvents } from '../interfaces/history.interface';
 import axios from "axios";
 import Form from "../../form/models/form.model";
 import DraftController from '../../form/controllers/draft.controller';
@@ -2087,6 +2088,204 @@ class CarController {
       return res.status(500).json(error);
     }
   }
+
+  public apiUnitHistoryByCode = async (req: Request, res: Response) => {
+    
+    const { code } = req.params;
+
+    logger.info(`Entering apiUnitHistoryByCode Code:`);
+    try {
+      let car = await CarModel.findOne(
+        {
+          internalNumber: code.toUpperCase()
+        },
+        {
+          vin: true,
+          brand: true,
+          material: true,
+          internalNumber: true,
+          createdAt: true,
+          patent: true,
+          denomination: true,
+          color: true,
+          isContainer: true,
+        }
+      )
+      .lean()
+        .populate({
+          path: 'events',
+          populate: [
+            { path: 'inventory', select: 'name containerInventory' },
+            { path: 'from', select: 'name' },
+            { path: 'to', select: 'name' },
+            {path:"company", select: 'name'},
+            {
+              path: 'inventoryCar',
+              select: 'status isContainer',
+              populate: [
+                {path: 'inventory', select: 'name virtual containerInventory'},
+              ]
+            },
+            {
+              path: 'participant',
+              select: 'name hasDamages createdAt updatedAt form shipping reception venue',
+              populate: [
+                {path: 'form', populate:[{path:"company",  select: 'name'}]},
+                {path: "venue", select:"name"},
+              ]
+            },
+            { path: 'createdBy', select: 'firstName lastName' },
+          ],
+        }).lean();;
+      if (!car) {
+        return res.status(404).json({
+          messsage: 'Auto no encontrado.',
+          status: 404
+        });
+      }
+      let eventsArray = (car.events || []).filter(e => e.participant || e.status == "created" )
+      const cleanEvents = eventsArray?.map((event: any) => {
+        const texts:Record<string, Record<string, string>> = { 
+          'created-undefined':{
+            title: `Unidad importada`,
+            text: `Esta unidad ha sido ingresada al sistema por <strong> ${event.participant?.company?.name} </strong>`,
+            icon: "cloud",
+            color: "bg-green",
+            step: "first"
+          },
+          'available-reception':{ 
+            title: `Recepción`,
+            text: `Unidad disponible en <strong>${event.to?.name}</strong>`,
+            icon: "reception",
+            color: "bg-green",
+            step: "six"
+          },
+          'intransit-shipping': { 
+            title:`En transporte`,
+            text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
+            icon: "truck",
+            color: "bg-sky-blue-ligth",
+            step: "five"
+          },
+          'intransit-delivery': { 
+            title:`En transporte`,
+            text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
+            icon: "truck",
+            color: "bg-sky-blue-ligth",
+            step: "five"
+          },
+          'intransit-pol': { 
+            title:`En transporte internacional`,
+            text:`Esta unidad está en tránsito internacional rumbo a <strong>${event.to?.name}</strong>`,
+            icon: "ship-load",
+            color: "bg-sky-blue",
+            step: "third"
+          },
+          'available-pod': { 
+            title:`Checklist POD`,
+            text:`Unidad disponible en <strong>${event.to?.name}</strong>`,
+            icon: "ship-download",
+            color: "bg-sky-blue",
+            step: "four"
+          },
+          'readytoclient-delivery': { 
+            title:`Unidad disponible`,
+            text:`Esta unidad ha llegado a su destino en <strong>${event.to?.name}</strong>`,
+            icon: "check",
+            color: "bg-sky-blue",
+            step: "four"
+          },
+          'sale-shipping': { 
+            title:`Entrega a cliente`,
+            text:`Esta unidad se ha entregado a su usuario final`,
+            icon: "check",
+            color: "bg-green",
+            step: "seven"
+          },
+        }
+        const finalText:string = `${event.status.toLowerCase()}-${event.participant?.form?.action.toLowerCase()}`
+        const finalEvent:EventItem = {
+          _id: event._id,
+          executedAt: event.executedAt ? event.executedAt : 'Fecha inválida',
+          status: event.status,
+          className: finalText,
+          title: texts[finalText].title,
+          text: texts[finalText].text,
+          icon: texts[finalText].icon,
+          color: texts[finalText].color,
+          step: texts[finalText].step,
+          from: {
+            name: event.from?.name || ''
+          },
+          to: {
+            name: event.to?.name || ''
+          },
+          participant: {
+            name: event.participant?.name || '',
+            status: event.participant?.status || '',
+            hasDamages: event.participant?.hasDamages ?? false,
+            company: event.participant?.form?.company?.name || '',
+            form: {
+              name: event.participant?.form?.name || '',
+              action: event.participant?.form?.action || ''
+            },
+            venue: {
+              name: event.participant?.venue?.name || '',
+            },
+            createdAt:event.participant?.createdAt
+          },
+          createdBy: {
+            firstName: event.createdBy?.firstName || '',
+            lastName: event.createdBy?.lastName || ''
+          }
+        }
+        return finalEvent
+    }) || [];
+      let events:any = []
+      if(cleanEvents.length>0) events = this.groupEventsByMonth(cleanEvents)
+
+      return res.json({
+        data: car,
+        events: events,
+        status: 200
+      });
+      
+    } catch (error) {
+      logger.error(error);
+      return res.status(500).json(error);
+    }
+  }
+  
+  public groupEventsByMonth = (events: EventItem[]) => { 
+    const formatter = new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' });
+  
+    const grouped: GroupedEvents = {};
+  
+    events.forEach(event => {
+      const date = new Date(event.executedAt);
+      const key = formatter.format(date).charAt(0).toUpperCase() + formatter.format(date).slice(1); 
+      
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(event);
+    });
+  
+    const sortedGroups = Object.entries(grouped)
+      .sort((a, b) => {
+        const dateA = new Date(a[1][0].executedAt);
+        const dateB = new Date(b[1][0].executedAt);
+        return dateB.getTime() - dateA.getTime();
+      })
+      .map(([label, events]) => ({
+        label, 
+        events,
+      }));
+  
+    return sortedGroups;
+  }
+
+
 
   public async apiCarDetail(req: IRequest, res: Response) {
     const team = req.user.team._id;
