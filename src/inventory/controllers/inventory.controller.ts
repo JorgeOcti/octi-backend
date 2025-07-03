@@ -2295,13 +2295,17 @@ class InventoryController {
         `InventoryController.containerInventorySummary {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
       );
 
+      // Moment read date 2012-06-20
+      let sDate = moment(startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+      let eDate = moment(endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
+
       let containerDateFilter = {};
       if (startDate && endDate) {
         containerDateFilter = {
           $or: [
-            { openDate: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } },
-            { emptyDate: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } },
-            { createdAt: { $gte: new Date(startDate as string), $lte: new Date(endDate as string) } }
+            { openDate: { $gte: sDate, $lte: eDate } },
+            { emptyDate: { $gte: sDate, $lte: eDate } },
+            { createdAt: { $gte: sDate, $lte: eDate } }
           ]
         };
       }
@@ -2542,11 +2546,13 @@ class InventoryController {
 
       let containerDateFilter: any = {};
       if( startDate && endDate) {
+        let sDate = moment(startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+        let eDate = moment(endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
         containerDateFilter = {
             $or: [
-              { 'openDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
-              { 'emptyDate': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
-              { 'createdAt': { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } }
+              { 'openDate': { $gte: sDate, $lte: eDate } },
+              { 'emptyDate': { $gte: sDate, $lte: eDate } },
+              { 'createdAt': { $gte: sDate, $lte: eDate } }
             ]
         }
       }
@@ -2840,11 +2846,13 @@ class InventoryController {
     ];
     let containerDateFilter: any = {};
     if (req.query.startDate && req.query.endDate) {
+      let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+      let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
       containerDateFilter = {
         $or: [
-          { openDate: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
-          { emptyDate: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } },
-          { createdAt: { $gte: new Date(req.query.startDate as string), $lte: new Date(req.query.endDate as string) } }
+          { 'openDate': { $gte: sDate, $lte: eDate } },
+          { 'emptyDate': { $gte: sDate, $lte: eDate } },
+          { 'createdAt': { $gte: sDate, $lte: eDate } }
         ]
       }
     }
@@ -4356,20 +4364,22 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
 
       let histories = await History.aggregate(pipeline);
 
-            let dateFilter: any = {};
+      let dateFilter: any = {};
       if (startDate && endDate) {
+        let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+        let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
         dateFilter = {
           $or: [
         {
           'inTransitHistories.executedAt': {
-            $gte: new Date(startDate as string),
-            $lte: new Date(endDate as string)
+            $gte: sDate,
+            $lte: eDate
           }
         },
         {
           'readyToClientHistories.executedAt': {
-            $gte: new Date(startDate as string),
-            $lte: new Date(endDate as string)
+            $gte: sDate,
+            $lte: eDate
           }
         }
           ]
@@ -4793,18 +4803,20 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
 
       let dateFilter: any = {};
       if (startDate && endDate) {
+        let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+        let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
         dateFilter = {
           $or: [
         {
           'inTransitHistories.executedAt': {
-            $gte: new Date(startDate as string),
-            $lte: new Date(endDate as string)
+            $gte: sDate,
+            $lte: eDate
           }
         },
         {
           'readyToClientHistories.executedAt': {
-            $gte: new Date(startDate as string),
-            $lte: new Date(endDate as string)
+            $gte: sDate,
+            $lte: eDate
           }
         }
           ]

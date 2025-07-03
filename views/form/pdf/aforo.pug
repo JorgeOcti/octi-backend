@@ -146,9 +146,10 @@ head
     }
     /* Evidence Section (Shared Styles) */
     .evidence-section-base {
-    margin-top: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    padding-top: 10px;
+    padding-left: 10px;
     }
     .evidence-section-base h3 {
     font-size: 1em;
@@ -209,6 +210,9 @@ head
     font-weight: bold;
     text-align: left;
     }
+    h2 {
+      margin-bottom: 0;
+    }
     .content-section .content-item .label {
     font-size: 0.7em;
     margin-bottom: 3px;
@@ -217,7 +221,7 @@ head
     }
     .content-section .content-item .value {
     font-size: 0.9em;
-    padding: 8px;
+    //- padding: 8px;
     border: 1px solid #ccc;
     display: block;
     min-height: 1.5em;
@@ -284,10 +288,10 @@ head
         |  SERVICIOS EXTRAPORTUARIOS
       p
         span.text-bold Direcci&oacute;n:
-        |  Camino Las Mercedes 14851 - San Antonio
+        |  !{participant.venue.code}
       p
         span.text-bold Emitido por:
-        |  Juan Melia el 28/08/2025 a las 12:25
+        |  !{participant.user.firstName} !{participant.user.lastName} el 28/08/2025 a las 12:25
     .aforo-number
       span.text-bold AFORO N&deg; #{participant.number}
   .document-title
@@ -303,7 +307,6 @@ head
       .info-item
         span.label FECHA T&Eacute;RMINO AFORO
         span.value #{moment(participant.startAt).format('DD/MM/YYYY - HH:mm')}
-  hr
   .info-section
     .info-grid
       .info-item
@@ -315,7 +318,12 @@ head
       .info-item
         span.label HUBO RETENCI&Oacute;N
         span.value #{hasRetention ? 'SI' : 'NO'}
-
+  .info-section
+    .info-grid
+      .info-item
+        span.label TIPO DE AFORO
+        span.value #{aforoType}
+  hr
   each section in sectionsToShow
       h2 #{section.name}
       div(class=`${section.useGrid ? 'evidence-section-base' : ''}`)
@@ -326,7 +334,6 @@ head
                         - var comment = answer.comment.split('\n')
                         .info-section.participants-section
                           .info-item-full
-                            span.value.value-no-underline
                             each line in comment
                                 | #{line}
                                 br
@@ -335,7 +342,7 @@ head
                           .evidence-images
                               .image-container
                                   each image in answer.images
-                                      img(src=image.file.url)  
+                                      img(src=image.file.url)
                       else
                           .single-image-container
                               img(src=answer.images[0].file.url)

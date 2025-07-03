@@ -327,11 +327,18 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
  *****************/
 const AdminLoadControl: any[] = [];
 
+AdminLoadControl.push({
+  id: '6.4',
+  icon: 'fa-circle-o',
+  text: 'Aforo',
+  url: '/containers/aforo/'
+});
+
 if (hasPermission(window.user, 'viewContainerInventory') ) {
   AdminLoadControl.push({
     id: '6.3',
     icon: 'fa-circle-o',
-    text: 'Gestión',
+    text: 'Gestión Anuncios',
     url: '/inventory/management/'
   });
 }

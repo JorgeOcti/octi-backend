@@ -31,10 +31,14 @@ body
           | #{invoice.company.rut}
       tr
         td
-          strong
-            | Valor UF
+          if invoice.company.handler
+            strong
+              | Valor USD
+          else
+            strong
+              | Valor UF
         td
-          | #{new Intl.NumberFormat("de-DE").format(invoice.valueUF)} CLP
+          | #{new Intl.NumberFormat("de-DE").format(invoice.valueDolar)} CLP
 
   h2
     | Detalle
@@ -48,65 +52,82 @@ body
           strong
             | Cantidad de vehículos
         th.text-right
-          strong
-            | Valor por Unidad (UF)
+          if invoice.company.handler
+            strong
+              | Valor minimo (USD)
+          else
+            strong
+              | Valor por Vehículo (UF)
         th.text-right
           strong
-            | Total por Producto (UF)
+            | Total por Producto (USD)
         th.text-right
           strong
             | Total por Producto (CLP)
-    tbody
-      tr.item
-        td(width="20%")
-          | 1 Control de Inventarios
-        td(width="20%").text-right=invoice.inventoryCars
-        td(width="20%").text-right
-          | #{invoice.inventoryPrice} UF
-        td(width="20%").text-right
-          | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
-        td(width="20%").text-right
-          | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
-      tr.item
-        td(width="20%")
-          | 2 Gestión de Entregas
-        td(width="20%").text-right=invoice.deliveryCars
-        td(width="20%").text-right
-          | #{invoice.deliveryPrice} UF
-        td(width="20%").text-right
-          | #{(invoice.deliveryPrice * invoice.deliveryCars).toFixed(2)} UF
-        td(width="20%").text-right
-          | #{new Intl.NumberFormat("de-DE").format(((invoice.deliveryPrice * invoice.deliveryCars) * invoice.valueUF).toFixed(2))} CLP
-      tr.item
-        td(width="20%")
-          | 3 Gestión de Checklist
-        td(width="20%").text-right=invoice.checklistCars
-        td(width="20%").text-right
-          | #{invoice.checklistPrice} UF
-        td(width="20%").text-right
-          | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
-        td(width="20%").text-right
-          | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
-      tr.item
-        td(width="20%")
-          | 4 Control de Solicitudes
-        td(width="20%").text-right=invoice.requestCars
-        td(width="20%").text-right
-          | #{invoice.requestPrice} UF
-        td(width="20%").text-right
-          | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
-        td(width="20%").text-right
-          | #{new Intl.NumberFormat("de-DE").format(((invoice.requestPrice * invoice.requestCars) * invoice.valueUF).toFixed(2))} CLP
-      tr
-        td(colspan=3).text-right
-          strong
-            |
-        td.text-right
-          strong
-            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
-        td.text-right
-          strong
-            | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
+    if invoice.company.handler
+      tbody
+        tr.item
+          td(width="20%")
+            | 1 Desconsolidados
+          td(width="20%").text-right=invoice.containers
+          td(width="20%").text-right
+            | 665 USD
+          td(width="20%").text-right
+            | #{(invoice.totalDolar).toFixed(2)} USD
+          td(width="20%").text-right
+            | #{new Intl.NumberFormat("de-DE").format(invoice.totalPeso.toFixed(2))} CLP
+    else
+      tbody
+        tr.item
+          td(width="20%")
+            | 1 Control de Inventarios
+          td(width="20%").text-right=invoice.inventoryCars
+          td(width="20%").text-right
+            | #{invoice.inventoryPrice} UF
+          td(width="20%").text-right
+            | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
+          td(width="20%").text-right
+            | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
+        tr.item
+          td(width="20%")
+            | 2 Gestión de Entregas
+          td(width="20%").text-right=invoice.deliveryCars
+          td(width="20%").text-right
+            | #{invoice.deliveryPrice} UF
+          td(width="20%").text-right
+            | #{(invoice.deliveryPrice * invoice.deliveryCars).toFixed(2)} UF
+          td(width="20%").text-right
+            | #{new Intl.NumberFormat("de-DE").format(((invoice.deliveryPrice * invoice.deliveryCars) * invoice.valueUF).toFixed(2))} CLP
+        tr.item
+          td(width="20%")
+            | 3 Gestión de Checklist
+          td(width="20%").text-right=invoice.checklistCars
+          td(width="20%").text-right
+            | #{invoice.checklistPrice} UF
+          td(width="20%").text-right
+            | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
+          td(width="20%").text-right
+            | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
+        tr.item
+          td(width="20%")
+            | 4 Control de Solicitudes
+          td(width="20%").text-right=invoice.requestCars
+          td(width="20%").text-right
+            | #{invoice.requestPrice} UF
+          td(width="20%").text-right
+            | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
+          td(width="20%").text-right
+            | #{new Intl.NumberFormat("de-DE").format(((invoice.requestPrice * invoice.requestCars) * invoice.valueUF).toFixed(2))} CLP
+        tr
+          td(colspan=3).text-right
+            strong
+              |
+          td.text-right
+            strong
+              | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
+          td.text-right
+            strong
+              | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
 
 
 

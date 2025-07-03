@@ -47,6 +47,14 @@ const invoiceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  containers: {
+    type: Number,
+    default: 0
+  },
+  containersPrice: {
+    type: Number,
+    default: 0
+  },
   deliveryCars: {
     type: Number,
     default: 0

@@ -64,8 +64,9 @@ const dataTableStyle = {
       border: "1px solid #DADADA",
       marginTop: "10px",
       borderRadius: '5px',
-      padding: '0px',
-      marginBottom: "10px"
+      padding: '0px 0px 12px 0px',
+      marginBottom: "10px",
+      boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
     }
   },
   cells: {
@@ -181,7 +182,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
     return <div className="container-fluid col-md-12">
-      <div className="row">
+      <div className="row d-flex align-items-center">
         <div className="col-md-8">
           <Link to={`/inventory/management/${row._id}/`}>
             <h4 className='text-left text-primary pointer'>{row.name}</h4>
@@ -295,7 +296,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
             {moment(row.createdAt).format('LLL')}
           </div>
         </div>
-        <div className="col-md-4 text-left">
+        <div className="col-md-2 text-left">
           <div className={'detail-info  text-muted'}>
             {row.createdBy ? (
               <React.Fragment>
@@ -307,7 +308,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
         </div>
 
-        <div className="col-md-3 text-left summary-label-finalized">
+        <div className="col-md-3 text-left summary-label-finalized m-0">
           <div className={'detail-info  text-muted'}>
             <i className="fa fa-fw fa-clock-o text-success" />
             {row.finalizedAt ? (
@@ -322,10 +323,10 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
         </div>
       </div>
 
-      <div className="row container-row-wrapper">
-        <div className="col-md-7">
+      <div className="row d-flex container-row-wrapper">
+        <div className="col-auto"> {/* Cambio de col-md-5 a col-auto */}
           <div className="row container-row-b-padding">
-            <div className="col-md-12">
+            <div className="col-md-12" style={{marginLeft: '10px'}}>
               <i className="fa fa-container-red" />
               <strong>
                 Contenedores
@@ -334,75 +335,65 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
           <div className="row">
             <div className="col-md-12 text-center">
-              <div className="row">
-                <div className="col-md-3">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-primary h4">
-                        Pendientes
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-primary h2">
-                        {row.container.pending}
-                      </strong>
-                    </div>
+              <div className="d-flex justify-content-between" style={{gap: '40px', paddingLeft: '40px', paddingRight: '40px'}}>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-primary">
+                      Pendientes
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-primary h2">
+                      {row.container.pending}
+                    </strong>
                   </div>
                 </div>
-                <div className="col-md-2">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-orange h4">
-                        Abierto
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-orange h2">
-                        {row.container.open}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-orange">
+                      Abierto
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-orange h2">
+                      {row.container.open}
+                    </strong>
                   </div>
                 </div>
-                <div className="col-md-3">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-yellow h4">
-                        Descarga
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-yellow h2">
-                        {row.container.check}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-yellow">
+                      Descarga
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-yellow h2">
+                      {row.container.check}
+                    </strong>
                   </div>
                 </div>
-                <div className="col-md-2">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-green h4">
-                        Vacíos
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-green h2">
-                        {row.container.empty}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-green">
+                      Vacíos
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-green h2">
+                      {row.container.empty}
+                    </strong>
                   </div>
                 </div>
-                <div className="col-md-2">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-green h4">
-                        Vacíos*
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-green h2">
-                        {row.container['empty(*)']}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-green">
+                      Vacíos*
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-green h2">
+                      {row.container['empty(*)']}
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -410,9 +401,9 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
         </div>
 
-        <div className="col-md-5 div-border-left">
+        <div className="col-auto div-border-left"> {/* Cambio de col-md-4 a col-auto */}
           <div className="row div-row-padding">
-            <div className="col-md-12">
+            <div className="col-md-12" style={{marginLeft: '10px'}}>
               <i className="fa fa-cube unit-icon-margin" />
               <strong>
                 Unidades
@@ -421,47 +412,41 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
           </div>
           <div className="row">
             <div className="col-md-12">
-              <div className="row text-center">
-                <div className="col-md-4">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-primary h4">
-                        Pendientes
-                      </strong>
-                    </div>
-                    <div className="col-md-12">
-                      <strong className="text-primary h2">
-                        {row.unit.pending}
-                      </strong>
-                    </div>
+              <div className="d-flex justify-content-between" style={{gap: '40px', paddingLeft: '40px', paddingRight: '40px'}}>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-primary">
+                      Pendientes
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-primary h2">
+                      {row.unit.pending}
+                    </strong>
                   </div>
                 </div>
-                <div className="col-md-4">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <strong className="text-green h4">
-                        Encontrados
-                      </strong>
-                    </div>
-                    <div className='col-md-12'>
-                      <strong className='text-green h2'>
-                        {row.unit.found}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="text-green">
+                      Encontrados
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="text-green h2">
+                      {row.unit.found}
+                    </strong>
                   </div>
                 </div>
-                <div className='col-md-4'>
-                  <div className='row'>
-                    <div className='col-md-12'>
-                      <strong className='has-damages h4'>
-                        Con Daños
-                      </strong>
-                    </div>
-                    <div className='col-md-12'>
-                      <strong className='has-damages h2'>
-                        {row.unit.hasDamages}
-                      </strong>
-                    </div>
+                <div className="flex-shrink-0 text-center">
+                  <div>
+                    <strong className="has-damages">
+                      Con Daños
+                    </strong>
+                  </div>
+                  <div>
+                    <strong className="has-damages h2">
+                      {row.unit.hasDamages}
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -496,8 +481,13 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
 
     return (
-      <span className={`${spanClass} label-status-badge`} >
-        <i className={`${iconClass}`} /> {statusName}
+      <span className={`d-flex align-items-center font-12 ${spanClass} label-status-badge p-x-6`} >
+        <i className={`${iconClass}`} />
+        <div
+          className='p-x-6'
+        >
+          {statusName}
+        </div>
       </span>
     );
 
@@ -728,6 +718,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                         <BootstrapSelect
                           noneSelectedText="Todas las naves"
                           displayItems={2}
+                          sm={true}
                           selectedText="Naves Seleccionadas."
                           selected={this.state.shipFilter}
                           autoClouse={true}

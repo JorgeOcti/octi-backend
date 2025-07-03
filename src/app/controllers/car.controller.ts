@@ -544,7 +544,16 @@ class CarController {
             createdBy: req.user,
             status: ChoicesStatusCar.active
           })
-          car = [newCar];
+          car = [{
+            _id: newCar._id,
+            vin: newCar.vin,
+            vin2: newCar.vin2,
+            brand: newCar.brand,
+            color: newCar.color,
+            patent: newCar.patent,
+            denomination: newCar.denomination,
+            isContainer: newCar.isContainer
+          }];
         }
         if (car && car.length) {
           let draftController = DraftController;
