@@ -38,6 +38,7 @@ import redisClient, { createRedisClient } from './services/redis.service';
 import { statsRouter } from './stats/router';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
 
+
 const metricsMiddleware = promBundle({
   includeMethod: true,
   includePath: true,
@@ -128,6 +129,7 @@ let cookieSetting: CookieOptions = {
 if (process.env.ENV === 'production') {
   cookieSetting.sameSite = 'none';
 }
+
 
 app.use(
   session({

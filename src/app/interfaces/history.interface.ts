@@ -35,3 +35,43 @@ export interface IHistory {
   updatedAt: Date;
   createdAt: Date;
 }
+
+export interface EventItem {
+  _id: string;
+  executedAt: string; // o Date si ya parseas la fecha
+  status: string;
+  className: string;
+  title: string;
+  text: string;
+  color: string;
+  icon: string;
+  step: string;
+  from: {
+    name: string;
+  };
+  to: {
+    name: string;
+  };
+  participant: {
+    name: string;
+    status: string;
+    hasDamages: boolean;
+    company: string;
+    form: {
+      name: string;
+      action: string;
+    };
+    venue: {
+      name: string;
+    };
+    createdAt: string; // o Date
+  };
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface GroupedEvents {
+  [label: string]: EventItem[];
+}
