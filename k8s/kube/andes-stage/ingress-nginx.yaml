@@ -34,4 +34,40 @@ spec:
         - andes-stage.osacontrol.com
         - andes-stage.osacontrol.cl
       secretName: andes-stage-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress-andes-code
+  namespace: andes-stage
+  annotations:
+    cert-manager.io/issuer: gcp-issuer
+    ingress.kubernetes.io/proxy-connect-timeout: '600'
+    ingress.kubernetes.io/proxy-read-timeout: '600'
+    ingress.kubernetes.io/proxy-send-timeout: '600'
+    ingress.kubernetes.io/send-timeout: '600'
+    kubernetes.io/tls-acme: 'true'
+    nginx.org/websocket-services: osa-andes-service
+  labels:
+    app: osa-andes
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: code-stage.osacontrol.com
+      http: &http
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: osa-andes-code-service
+                port:
+                  number: 3030
+    - host: code-stage.osacontrol.cl
+      http: *http
+  tls:
+    - hosts:
+        - code-stage.osacontrol.com
+        - code-stage.osacontrol.cl
+      secretName: code-stage-tls
 
