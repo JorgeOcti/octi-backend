@@ -67,7 +67,7 @@ import InventoryController from '../../inventory/controllers/inventory.controlle
 import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
-import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany} from '../interfaces/pdfContext.interface';
+import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -181,10 +181,38 @@ class FormController {
       destination = participant.sendTo.name;
     }
 
+    let signature: IParticipantFile | undefined;
+    if (participant.form?.triggers?.length > 0) {
+      let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
+        (trigger: IFormTrigger) =>
+          trigger.kind === KindTrigger.file && trigger.enabled
+      );
+      if (fileTriggers.length) {
+        let trigger: IFormTrigger = fileTriggers[0];
+        let signatureAnswer = participant?.sections
+          .reduce(
+            (
+              previousValue: any[],
+              currenSection: IParticipantSectionModel
+            ) => previousValue.concat(currenSection.answers),
+            []
+          )
+          .find((answer: IParticipantAnswerModel) => {
+            return (
+              answer._id.toString() === trigger.config.signature.toString()
+            );
+          });
+        if (signatureAnswer) {
+          signature = signatureAnswer.images[0];
+        }
+      }
+    }
+
     return {
       qr: qr,
       css: css?.replace(/(\r\n|\n|\r)/gm, ''),
       company: participantCompany,
+      signature: signature,
       moment: moment,
       name: participant.name || '',
       description: participant.description || '',
@@ -574,6 +602,18 @@ class FormController {
         path.join(__dirname, '../../../views/') + 'form/carDetail/new.pug';
 
       if (participant) {
+
+        if (participant.form?.triggers?.length > 0) {
+          let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
+            (trigger: IFormTrigger) =>
+              trigger.kind === KindTrigger.file && trigger.enabled
+          );
+          if (fileTriggers.length) {
+            let trigger: IFormTrigger = fileTriggers[0];
+            template =
+              path.join(__dirname, '../../../views/') + trigger.config.template;
+          }
+        }
         const css = fs.readFileSync(
           path.join(__dirname, '../../../views/') + 'form/carDetail/style.css',
           'utf8'

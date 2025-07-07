@@ -29,7 +29,7 @@ export interface IParticipantAnswer {
     optional: boolean;
 }
 
-interface IParticipantFile {
+export interface IParticipantFile {
     filename: string;
     url: string;
     mimetype: string;
@@ -162,5 +162,6 @@ export interface IPDFContext {
     createdAt?: Date;
     origin: string;
     destination: string;
+    signature?: IParticipantFile;
     company?: IParticipantCompany;
 }
