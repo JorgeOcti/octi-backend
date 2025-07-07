@@ -64,8 +64,8 @@ body
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0")
     tr
       td(width="80%")
-        if logo
-          img(src=logo, height="60px")
+        if company && company.image && company.image.url
+          img(src=company.image.url, height="60px")
       td(width="20%")
         .text-right
           img(src=qr, height="60px")
@@ -97,7 +97,7 @@ body
           td
             p.no-margin.strong=answer.question
           if ['scale', 'accessory'].includes(answer.kind) && answer.scale
-            td.text-center=getAnswer(answer.scale, answer)
+            td.text-center=answer.answer.choice || ''
           else
             td
           td.text-center
@@ -106,7 +106,7 @@ body
                 | Si
               else
                 | No
-        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+        if answer.kind === 'accessory' && answer.requireAccesory
           tr
             td(colspan=3, style="padding-bottom:0px").text-center
               if answer.accessories && answer.accessories.question
@@ -114,16 +114,13 @@ body
           tr.item
             td(colspan=3, style="padding-top:0px")
               if answer.accesoriesAnswered && answer.accessories && answer.accessories.items
-                - const accesorySeletedIds = answer.accesoriesAnswered.map(accesory=>accesory.item);
-                - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id ? item._id.toString() : item.id));
-                if items.length
+                if accesoriesAnswered.length
                   table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
-                    while items.length
+                    while accesoriesAnswered.length
                       tr
-                        each item in items.splice(0,4)
+                        each item in accesoriesAnswered.splice(0,4)
                           td(style="padding:4px 0", width="25%").no-border-bottom
-                            - const accesory = accesorySelected(answer, item);
-                            | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
+                            | #{'- '}#{item.item} #{item.amount ? `(${item.amount})` : ''}
                 else
                   tr.item-damage
                     td(colspan=2)
@@ -144,22 +141,22 @@ body
                   table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
                     tr
                       td
-                        if answer.damages && answer.damages.parts
-                          strong=getDamageItem(answer.damages.parts, ds.part)
+                        if ds.part
+                          strong=ds.part
                         else
-                          strong=ds.part || 'Parte no especificada'
+                          strong='Parte no especificada'
                     tr
                       td
                         strong Daño:
-                        if answer.damages && answer.damages.kinds
-                          | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        if ds.kinds
+                          | #{' ' + ds.kinds + ' '}
                         else
-                          | #{' ' + (ds.kind || 'No especificado') + ' '}
+                          | #{' ' + 'No especificado' + ' '}
                         strong Posición:
-                        if answer.damages && answer.damages.positions
-                          | #{' ' + getDamageItem(answer.damages.positions, ds.position)}
+                        if ds.position
+                          | #{' ' + ds.position}
                         else
-                          | #{' ' + (ds.position || 'No especificada')}
+                          | #{' ' + 'No especificada'}
                 td(class="text-center")
                   if ds.images && ds.images.length
                     | Si

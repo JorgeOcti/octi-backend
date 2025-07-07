@@ -5,11 +5,12 @@ interface IParticipantUser {
     lastName: string;
 }
 
-interface IParticipantChoices {
+export interface IParticipantChoices {
     id: string;
     choice: string;
     backgroundColor: string;
     order: number;
+    requireAccessory?: boolean;
 }
 
 interface IParticipantScale {
@@ -21,7 +22,6 @@ export interface IParticipantAnswer {
     question: string;
     kind: string;
     comment: string;
-    answer?: string;
     images?: IParticipantFile[];
     qualification: number;
     order: number;
@@ -35,11 +35,12 @@ interface IParticipantFile {
     mimetype: string;
 }
 
-interface IDamageSelected {
+export interface IDamageSelected {
     part: string;
     position: string;
     kind: string;
     severity?: number;
+    images?: IParticipantFile[];
 }
 
 interface IParticipantItem {
@@ -67,7 +68,7 @@ interface IMatrix {
 
 interface IParticipantAnswerScale extends IParticipantAnswer {
     scale: IParticipantScale;
-    answer: string;
+    answer: IParticipantChoices;
 }
 
 interface IParticipantAnswerNumericScale extends IParticipantAnswer {
@@ -82,12 +83,13 @@ interface IParticipantAnswerText extends IParticipantAnswer {
 
 interface IParticipantAnswerAccessory extends IParticipantAnswer {
     accessories: IParticipantAccessory;
-    accesoriesAnswered: Array<{ item: string }>;
+    accdesoriesAnswered: IParticipantItem[];
     scale?: IParticipantScale;
-    answer?: string;
+    answer?: IParticipantChoices;
 }
 
 interface IParticipantAnswerDamage extends IParticipantAnswer {
+    name: string;
     damagesSelected: IDamageSelected[];
 }
 
@@ -127,6 +129,10 @@ interface IParticipantProcess {
     text?: string;
     images?: string[];
 }
+export interface IParticipantCompany {
+    name: string;
+    image?: IParticipantFile;
+}
 
 interface IParticipantCar {
     vin: string;
@@ -154,12 +160,7 @@ export interface IPDFContext {
     conciliation: IParticipantProcess;
     car: IParticipantCar;
     createdAt?: Date;
-    logo: string | false;
-    // Helper functions for template usage
     origin: string;
     destination: string;
-    getAnswer: (scale: any, answer: any) => string;
-    requireAccesory: (scale: any, answer: any) => boolean;
-    getDamageItem: (items: any, item: string) => string;
-    accesorySelected: (answer: any, item: any) => any;
+    company?: IParticipantCompany;
 }

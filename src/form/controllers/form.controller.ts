@@ -67,7 +67,7 @@ import InventoryController from '../../inventory/controllers/inventory.controlle
 import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
-import { IPDFContext, IParticipantSection, IParticipantAnswerTypes } from '../interfaces/pdfContext.interface';
+import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany} from '../interfaces/pdfContext.interface';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -89,6 +89,7 @@ class FormController {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
     this.pdf = this.pdf.bind(this);
+    this.pdfForm = this.pdfForm.bind(this);
     this.pdfAforo = this.pdfAforo.bind(this);
     this.complete = this.complete.bind(this);
     this.deliveriesOfTheday = this.deliveriesOfTheday.bind(this);
@@ -102,8 +103,7 @@ class FormController {
     this.allControlsByVIN = this.allControlsByVIN.bind(this);
     this.getExternalOrder = this.getExternalOrder.bind(this);
     this.completeWebQuestion = this.completeWebQuestion.bind(this);
-    this.copyFormFileToInventoryFile =
-      this.copyFormFileToInventoryFile.bind(this);
+    this.copyFormFileToInventoryFile = this.copyFormFileToInventoryFile.bind(this);
   }
 
   public async getExternalOrder(req: IRequest, res: Response): Promise<any> {
@@ -141,6 +141,9 @@ class FormController {
    * const context = await this.mapPdfContext(participant, css, timezone);
    */
   private async mapPdfContext(participant: any, css?: string): Promise<IPDFContext> {
+    let participantCompany: IParticipantCompany | undefined;
+
+    console.log('Mapping PDF context for participant:', participant.user);
     
     const qr = await QRCode.toDataURL(participant.car.vin, {
       errorCorrectionLevel: 'H',
@@ -150,10 +153,22 @@ class FormController {
       }
     });
 
-    const participantCompany = (participant.user?.venue?.company) || {};
+    if (participant.user?.venue?.company) {
+      participantCompany = {
+        name: participant.user.venue.company.name || '',
+        image: participant.user.venue.company.image && participant.user.venue.company.image.hasOwnProperty('url')
+          ? {
+              url: decodeURI(participant.user.venue.company.image.url),
+              filename: participant.user.venue.company.image.filename || '',
+              mimetype: participant.user.venue.company.image.mimetype || ''
+          }: undefined
+      }
+    } 
 
     let origin: string = '';
     let destination: string = '';
+
+
     if (participant.reception && participant.receiveFrom) {
       origin = participant.receiveFrom.name;
     }
@@ -169,6 +184,7 @@ class FormController {
     return {
       qr: qr,
       css: css?.replace(/(\r\n|\n|\r)/gm, ''),
+      company: participantCompany,
       moment: moment,
       name: participant.name || '',
       description: participant.description || '',
@@ -207,53 +223,8 @@ class FormController {
         patent: participant.car?.patent || ''
       },
       createdAt: participant.createdAt,
-      logo: participantCompany.image && participantCompany.image.hasOwnProperty('url')
-        ? decodeURI(participantCompany.image.url)
-        : false,
-      // Helper functions
       origin: origin || '',
       destination: destination || '',
-
-      
-      // estos items se pueden eliminar, por que son de poblado de datos,
-      getAnswer: (scale: any, answer: any) => {
-        if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-          const choice = scale.choices.find(
-            (choice: any) =>
-              choice._id.toString() === answer.answer.toString()
-          );
-          return choice ? choice.choice : '';
-        }
-        return '';
-      },
-      requireAccesory: (scale: any, answer: any) => {
-        if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-          const choice = scale.choices.find(
-            (choice: any) =>
-              choice._id.toString() === answer.answer.toString()
-          );
-          return choice ? choice.requireAccesories : false;
-        }
-        return false;
-      },
-      getDamageItem: (items: any, item: string) => {
-        if (item) {
-          const result = items.find(
-            (i: any) => i._id.toString() === item.toString()
-          );
-          if (result && result.hasOwnProperty('name')) {
-            return result.name;
-          }
-        }
-        return '-';
-      },
-      accesorySelected: (answer: any, item: any) => {
-        return item && answer.accesoriesAnswered
-          ? answer.accesoriesAnswered.find((accesory: any) => {
-              return accesory.item === item._id.toString();
-            })
-          : false;
-      }
     };
   }
 
@@ -271,6 +242,54 @@ class FormController {
    */
   private mapParticipantAnswers(answers: any[]): IParticipantAnswerTypes[] {
     return answers.map(answer => {
+      let damagesSelected: IDamageSelected[] | undefined = undefined;
+      let answerChoice: IParticipantChoices | undefined = undefined;
+
+      for(const damage of answer.damagesSelected || []) {
+        let part: string | undefined = undefined;
+        let position: string | undefined = undefined;
+        let kind: string | undefined = undefined;
+        if (damage && damage.hasOwnProperty('part') && damage.part) {
+          answer.damages.parts.find((item: any) => {
+            if (item._id.toString() === damage.part.toString()) {
+              part = item.name;
+              return true;
+            }
+            return false;
+          });
+        }
+        if (damage && damage.hasOwnProperty('position') && damage.position) {
+          answer.damages.positions.find((item: any) => {
+            if (item._id.toString() === damage.position.toString()) {
+              position = item.name;
+              return true;
+            }
+            return false;
+          });
+        }
+        if (damage && damage.hasOwnProperty('kind') && damage.kind) {
+          answer.damages.kinds.find((item: any) => {
+            if (item._id.toString() === damage.kind.toString()) {
+              kind = item.name;
+              return true;
+            }
+            return false;
+          });
+        }
+        damagesSelected = damagesSelected || [];
+        damagesSelected.push({
+          part: part || '',
+          position: position || '',
+          kind: kind || '',
+          severity: damage.severity || undefined,
+          images: damage.images?.map((img: any) => ({
+            filename: img.filename || img.file?.filename || '',
+            url: img.url || img.file?.url || '',
+            mimetype: img.mimetype || img.file?.mimetype || ''
+          })) || []
+        });
+      }
+
       // Base properties shared by all answer types
       const baseAnswer = {
         question: answer.question || '',
@@ -279,7 +298,7 @@ class FormController {
         qualification: answer.qualification || 0,
         order: answer.order || 0,
         hint: answer.hint || undefined,
-        optional: answer.optional || false
+        optional: answer.optional || false,
       };
 
       // Map images if they exist
@@ -292,9 +311,16 @@ class FormController {
       // Return typed answer based on kind
       switch (answer.kind) {
         case 'scale':
+          if (answer.answer) {
+            const choice = answer.scale.choices.find(
+              (choice: any) =>
+                choice._id.toString() === answer.answer.toString()
+            );
+            answerChoice = choice ? choice: undefined;
+          }
           return {
             ...baseAnswer,
-            answer: answer.answer?.toString() || '',
+            answer: answerChoice || '',
             images: mappedImages,
             scale: answer.scale ? {
               name: answer.scale.name || '',
@@ -332,10 +358,17 @@ class FormController {
           } as const;
 
         case 'accessory':
+          if (answer.answer) {
+            const choice = answer.scale.choices.find(
+              (choice: any) =>
+                choice._id.toString() === answer.answer.toString()
+            );
+            answerChoice = choice ? choice: undefined;
+          }
           return {
             ...baseAnswer,
             images: mappedImages,
-            answer: answer.answer?.toString(),
+            answer: answerChoice || '',
             accessories: answer.accessories ? {
               question: answer.accessories.question || '',
               items: answer.accessories.items?.map((item: any) => ({
@@ -479,7 +512,17 @@ class FormController {
         .populate([
           {
             path: 'user',
-            select: ['firstName', 'lastName'],
+            select: ['firstName', 'lastName', 'venue'],
+            populate: [
+              {
+                path: 'venue',
+                populate: [
+                  {
+                    path: 'company'
+                  }
+                ]
+              }
+            ]
           },
           {
             path: 'receiveFrom',
@@ -537,6 +580,8 @@ class FormController {
         );
 
         const context = await this.mapPdfContext(participant, css);
+        console.log('PDF Context:', context);
+        //console.log('PDF Context:', context.sections[0].answers);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
@@ -697,7 +742,7 @@ class FormController {
         .lean();
 
       let template: string =
-        path.join(__dirname, '../../../views/') + 'form/carDetail/new.pug';
+        path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
 
       moment.locale('es');
       moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
@@ -818,6 +863,8 @@ class FormController {
             }
           }
         }
+        console.log('PDF Context:', context);
+        console.log(template);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
