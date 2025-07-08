@@ -1,0 +1,451 @@
+doctype html
+- var sectionsToShow = [
+  {
+    name: "PARTICIPANTES",
+    useGrid: true,
+    answers: [
+      {
+        name: '',
+        comment: sections[0].answers[1].comment,
+        images: sections[0].answers[1].images,
+      }
+    ]
+  },
+  {
+    name: "RECURSOS UTILIZADOS",
+    useGrid: true,
+    answers:[
+      {
+        name: '',
+        comment: sections[1].answers[1].question.accesoriesAnswered.map(accesory => `${accesory.item} (${accesory.amount})`).join('\n') || 'N/A',
+        images: []
+      }
+    ]
+  },
+          {
+    name: "OBSERVACIONES",
+    useGrid: true,
+    answers:[
+      {
+        name: '',
+        comment: sections[1].answers[2].comment || 'N/A',
+        images: [],
+      }
+    ]
+  },
+  {
+    name: "EVIDENCIA APERTURA",
+    useGrid: true,
+    answers: [
+      {
+        name: 'FOTOGRAFÍA FRONTAL CONTENEDOR',
+        comment: sections[0].answers[2].comment,
+        images: sections[0].answers[2].images,
+      },{
+        name: 'FOTOGRAFÍA SELLO',
+        comment: sections[0].answers[3].comment,
+        images: sections[0].answers[3].images,
+      },
+      {
+        name: 'FOTOGRAFÍA CONTENEDOR ABIERTO',
+        comment: sections[0].answers[4].comment,
+        images: sections[0].answers[4].images,
+      }
+    ]
+  },
+  {
+    name: "EVIDENCIA CARGA RETENIDA",
+    useGrid: true,
+    answers: [
+      {
+        name: "OBSERVACIONES",
+        comment: sections[2].answers[0].comment,
+        images: sections[2].answers[0].images,
+      },
+      {
+        name: "FOTOGRAFÍAS CARGA RETENIDA",
+        comment: sections[2].answers[1].comment,
+        images: sections[2].answers[1].images,
+      },
+    ]
+  },
+  {
+    name: "EVIDENCIA PROCESO AFORO",
+    useGrid: true,
+    answers: [
+      {
+        name: "OBSERVACIONES",
+        comment: sections[1].answers[3].comment,
+        images: sections[1].answers[3].images,
+      },
+      {
+        name: "FOTOGRAFÍAS PROCESO AFORO",
+        comment: sections[1].answers[4].comment,
+        images: sections[1].answers[4].images,
+      },
+    ]
+  },
+  {
+    name: "EVIDENCIA CIERRE",
+    useGrid: true,
+    answers: [
+      {
+        name: "CONTENEDOR PREVIO AL CIERRE",
+        comment: sections[3].answers[0].comment,
+        images: sections[3].answers[0].images,
+      },
+      {
+        name: "NUEVO SELLO",
+        comment: sections[3].answers[1].comment,
+        images: sections[3].answers[1].images,
+      }
+    ]
+  }
+];
+head
+  meta(charset='UTF-8')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Aforo de Contenedor
+  style.
+    /* General Styles */
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    font-size: 10px; /* Adjusted base font size */
+    color: #666;
+    }
+    .container {
+    background-color: #fff;
+    }
+    .box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    hr {
+    border: 0;
+    height: 1px;
+    background: #ddd;
+    margin: 20px 0; /* Increased margin for HR */
+    }
+    .grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px; /* Space between grid items */
+    }
+    .grid-item {
+    /* Styling for grid items if needed */
+    }
+    .full-width {
+    grid-column: 1 / -1; /* Span across all columns */
+    }
+    .text-bold {
+    font-weight: bold;
+    }
+    .text-sm {
+    font-size: 0.8em;
+    }
+    .text-gray {
+    color: #666;
+    }
+    /* Header Section */
+    .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    }
+    .header .logo-container img {
+    width: 120px; /* Adjusted logo size */
+    height: auto;
+    }
+    .header .company-info {
+    text-align: left;
+    flex-grow: 1; /* Allow it to take available space */
+    padding-left: 20px;
+    }
+    .header .company-info h1 {
+    font-size: 1.2em; /* Adjusted font size */
+    margin: 0 0 5px 0;
+    }
+    .header .company-info p {
+    font-size: 0.75em; /* Adjusted font size */
+    margin: 2px 0;
+    color: #333;
+    }
+    .header .aforo-number {
+    text-align: right;
+    font-size: 0.9em; /* Adjusted font size */
+    white-space: nowrap;
+    }
+    /* Simplified Header for continuation pages (as seen in second/third image) */
+    .simplified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically center items */
+    padding: 5px 0; /* Reduced padding */
+    margin-bottom: 15px; /* Space before next content */
+    font-size: 0.8em; /* Smaller font for simplified header */
+    }
+    .simplified-header .logo-small img {
+    height: 25px; /* Smaller logo */
+    width: auto;
+    }
+    .simplified-header .doc-info-item {
+    color: #333;
+    }
+    /* Document Title Section */
+    .document-title {
+    text-align: center;
+    margin: 20px 0;
+    }
+    .document-title h2 {
+    font-size: 1.3em; /* Adjusted font size */
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+    }
+    /* Info Sections General */
+    .info-section {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    }
+    .info-section .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns */
+    gap: 10px 20px; /* Row gap and column gap */
+    }
+    .info-section .info-item {
+    /* No border needed as per image */
+    }
+    .info-section .info-item-full {
+    grid-column: 1 / -1; /* Span across all columns */
+    }
+    .info-section .label {
+    font-size: 1em; /* Adjusted font size */
+    margin-bottom: 3px;
+    display: block;
+    font-weight: bold; /* Labels are bold in image */
+    }
+    .info-section .value {
+    font-size: 1.8em; /* Adjusted font size */
+    padding-bottom: 5px; /* Space for the underline */
+    border-bottom: 1px solid #ccc; /* Underline for values */
+    display: block; /* Ensure it takes full width for border */
+    min-height: 1.2em; /* Ensure space for text and border */
+    }
+    .info-section .value-no-underline {
+    font-size: 1em;
+    padding-bottom: 0;
+    border-bottom: none;
+    display: block;
+    }
+    /* Participants Section */
+    .participants-section .value {
+    font-size: 0.9em; /* Adjusted font size */
+    border-bottom: none; /* No underlines for participant names */
+    line-height: 1.4;
+    }
+    /* Evidence Section (Shared Styles) */
+    .evidence-section-base {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 10px;
+    padding-left: 10px;
+    }
+    .evidence-section-base h3 {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: left;
+    }
+    .evidence-section-base .evidence-images {
+    }
+    .evidence-section-base .image-container {
+    padding: 15px 0;
+    }
+    .evidence-images .image-container {
+          display: grid;
+    grid-template-columns: 1fr 1fr;
+    }
+
+    .evidence-images .image-container img {
+      margin: 10px;
+      width: 80%;
+    }
+    .evidence-section-base .image-container .image-label {
+    display: block;
+    font-size: 0.75em;
+    margin-bottom: 5px;
+    text-align: left;
+    font-weight: bold;
+    }
+    .evidence-section-base .image-container img {
+    width: 60%;
+    height: auto;
+    border: 1px solid #ddd;
+    margin: 10px;
+    }
+    img {
+
+    }
+    /* For single image in an evidence section that should span width or be centered */
+    .evidence-section-base .single-image-container {
+    text-align: left; /* Or center, depending on desired alignment */
+    margin-bottom: 10px; /* Space after the image if it's alone */
+      margin-top: 20px;
+    }
+    .evidence-section-base .single-image-container img {
+    max-width: 80%; /* Adjust as needed, image in example is not full width */
+    height: auto;
+    border: 1px solid #ddd;
+    }
+    /* Content Section (for "CONTENIDO DEL CONTENEDOR" and "CONTENIDO SACADO DEL CONTENEDOR") */
+    .content-section {
+    margin-top: 20px;
+    }
+    .content-section h3 {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px; /* Space for image or value */
+    font-weight: bold;
+    text-align: left;
+    }
+    h2 {
+      margin-bottom: 0;
+    }
+    .content-section .content-item .label {
+    font-size: 0.7em;
+    margin-bottom: 3px;
+    display: block;
+    font-weight: bold;
+    }
+    .content-section .content-item .value {
+    font-size: 0.9em;
+    //- padding: 8px;
+    border: 1px solid #ccc;
+    display: block;
+    min-height: 1.5em;
+    }
+    .content-section .content-image-container img {
+    max-width: 50%; /* Adjusted from 50% for better look */
+    height: auto;
+    border: 1px solid #ddd;
+    display: block;
+    margin: 10px;
+    }
+    /* Footer Section */
+    .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: 30px; /* More margin before footer */
+    font-size: 0.75em;
+    }
+    .footer .address-info p {
+    margin: 0;
+    line-height: 1.4;
+    }
+    .footer .page-number {
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+    }
+    .footer .powered-by {
+    text-align: right;
+    }
+    .footer .powered-by img {
+    height: 15px;
+    width: auto;
+    vertical-align: middle;
+    }
+    .footer .powered-by span {
+    font-size: 0.9em;
+    }
+    .label {
+      font-size: 1.2em;
+    }
+    .answer {
+    display: inline-block;
+    }
+    .answer-content{
+    grid-template-columns: 1fr 1fr;
+    display: grid;
+    }
+    .label.text-bold{
+      margin-bottom: 20px;
+      color: #333;
+    }
+.container
+  .header
+    .logo-container
+      img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png` alt='Medlog Logo')
+    .company-info
+      h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (SA)
+      p
+        span.text-bold Giro:
+        |  SERVICIOS EXTRAPORTUARIOS
+      p
+        span.text-bold Direcci&oacute;n:
+        |  !{venue.code}
+      p
+        span.text-bold Emitido por:
+        |  !{user.firstName} !{user.lastName} el 28/08/2025 a las 12:25
+    .aforo-number
+      span.text-bold AFORO N&deg; #{number}
+  .document-title
+    h2 AFORO DE CONTENEDOR
+  .info-section
+    .info-grid
+      .info-item
+        span.label CONTENEDOR
+        span.value.text-bold #{car.vin}
+      .info-item
+        span.label FECHA INICIO AFORO
+        span.value #{moment(createdAt).format('DD/MM/YYYY - HH:mm')}
+      .info-item
+        span.label FECHA T&Eacute;RMINO AFORO
+        span.value #{moment(startAt).format('DD/MM/YYYY - HH:mm')}
+  .info-section
+    .info-grid
+      .info-item
+        span.label CLIENTE
+        span.value #{company.name}
+      .info-item
+        span.label TAMA&Ntilde;O
+        span.value 40 M
+      .info-item
+        span.label HUBO RETENCI&Oacute;N
+        span.value #{sections[2].answers[6]?.comment === '' && sections[2].answers[7]?.length === 0 ? 'NO' : 'SI'}
+  .info-section
+    .info-grid
+      .info-item
+        span.label TIPO DE AFORO
+        span.value #{sectrions[0].answers[0].accesoryAnswered.map(accesory => `${accesory.item} (${accesory.amount})`).join('\n') || 'N/A'}
+  hr
+  each section in sectionsToShow
+      h2 #{section.name}
+      div(class=`${section.useGrid ? 'evidence-section-base' : ''}`)
+        each answer in section.answers
+            div.answer
+              span.label.text-bold #{answer.name}
+                  if answer.comment
+                        - var comment = answer.comment.split('\n')
+                        .info-section.participants-section
+                          .info-item-full
+                            each line in comment
+                                | #{line}
+                                br
+                  if answer.images.length
+                      if answer.images.length > 1
+                          .evidence-images
+                              .image-container
+                                  each image in answer.images
+                                      img(src=image.file.url)
+                      else
+                          .single-image-container
+                              img(src=answer.images[0].file.url)

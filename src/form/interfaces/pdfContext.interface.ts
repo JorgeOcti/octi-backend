@@ -82,8 +82,8 @@ interface IParticipantAnswerText extends IParticipantAnswer {
 }
 
 interface IParticipantAnswerAccessory extends IParticipantAnswer {
-    accessories: IParticipantAccessory;
-    accdesoriesAnswered: IParticipantItem[];
+    accesories: IParticipantAccessory;
+    accesoriesAnswered: IParticipantItem[];
     scale?: IParticipantScale;
     answer?: IParticipantChoices;
 }
@@ -133,6 +133,10 @@ export interface IParticipantCompany {
     name: string;
     image?: IParticipantFile;
 }
+interface IParticipantVenue {
+    name: string;
+    code?: string;
+}
 
 interface IParticipantCar {
     vin: string;
@@ -160,8 +164,10 @@ export interface IPDFContext {
     conciliation: IParticipantProcess;
     car: IParticipantCar;
     createdAt?: Date;
+    startAt?: Date;
     origin: string;
     destination: string;
     signature?: IParticipantFile;
     company?: IParticipantCompany;
+    venue?: IParticipantVenue;
 }

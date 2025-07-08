@@ -620,8 +620,6 @@ class FormController {
         );
 
         const context = await this.mapPdfContext(participant, css);
-        console.log('PDF Context:', context);
-        //console.log('PDF Context:', context.sections[0].answers);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
@@ -903,8 +901,6 @@ class FormController {
             }
           }
         }
-        console.log('PDF Context:', context);
-        console.log(template);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
