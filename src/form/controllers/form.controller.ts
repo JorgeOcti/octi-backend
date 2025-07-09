@@ -143,8 +143,6 @@ class FormController {
   private async mapPdfContext(participant: any, css?: string): Promise<IPDFContext> {
     let participantCompany: IParticipantCompany | undefined;
 
-    console.log('Mapping PDF context for participant:', participant.user);
-    
     const qr = await QRCode.toDataURL(participant.car.vin, {
       errorCorrectionLevel: 'H',
       margin: 0,
@@ -217,6 +215,9 @@ class FormController {
       name: participant.name || '',
       description: participant.description || '',
       number: participant.number || 0,
+      webQuestion: {
+        answer: participant.webQuestion?.answer || ''
+      },
       user: {
         firstName: participant.user?.firstName || '',
         lastName: participant.user?.lastName || ''
@@ -407,9 +408,10 @@ class FormController {
               question: '',
               items: []
             },
-            accesoriesAnswered: answer.accesoriesAnswered?.map((acc: any) => ({
-              item: acc.item || ''
-            })) || [],
+            accesoriesAnswered: answer.accesoriesAnswered?.map((acc: any) => {
+              const item = answer.accessories.items.find((item: any) => item._id.toString() === acc.item.toString());
+              return item
+            }) || [],
             scale: answer.scale ? {
               name: answer.scale.name || '',
               choices: answer.scale.choices?.map((choice: any) => ({
@@ -646,10 +648,15 @@ class FormController {
           const pdfBuffer = await page.pdf({
             format: 'Letter',
             printBackground: true,
+            displayHeaderFooter: true,
+            footerTemplate: `
+              <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
+              Página <span class="pageNumber"></span> / <span class="totalPages"></span>
+              </div>`,
             margin: {
               top: '0.3in',
               right: '0.5in',
-              bottom: '0.3in',
+              bottom: '0.5in',
               left: '0.5in'
             }
           });

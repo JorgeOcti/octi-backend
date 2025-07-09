@@ -82,7 +82,7 @@ interface IParticipantAnswerText extends IParticipantAnswer {
 }
 
 interface IParticipantAnswerAccessory extends IParticipantAnswer {
-    accesories: IParticipantAccessory;
+    accessories: IParticipantAccessory;
     accesoriesAnswered: IParticipantItem[];
     scale?: IParticipantScale;
     answer?: IParticipantChoices;
@@ -149,6 +149,10 @@ interface IParticipantCar {
 
 }
 
+interface IParticipantWebQuestion {
+    answer: string;
+}
+
 export interface IPDFContext {
     css?: string;
     qr: string;
@@ -170,4 +174,5 @@ export interface IPDFContext {
     signature?: IParticipantFile;
     company?: IParticipantCompany;
     venue?: IParticipantVenue;
+    webQuestion?: IParticipantWebQuestion;
 }
