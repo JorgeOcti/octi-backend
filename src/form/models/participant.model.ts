@@ -434,6 +434,12 @@ const participantSchema = new mongoose.Schema(
       type: String,
       trim: true
     },
+
+    template: {
+      type: String,
+      default: 'form/carDetail/base.pug'
+    },
+
     sections: [participantSectionsSchema],
 
     hasDamages: {

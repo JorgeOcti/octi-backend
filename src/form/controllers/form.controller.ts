@@ -519,6 +519,7 @@ class FormController {
           ]
         },
         {
+          template: true,
           name: true,
           number: true,
           user: true,
@@ -600,10 +601,10 @@ class FormController {
           }
         ])
         .lean();
-      let template: string =
-        path.join(__dirname, '../../../views/') + 'form/carDetail/new.pug';
 
       if (participant) {
+        let template: string =
+          path.join(__dirname, '../../../views/') + participant.template;
 
         if (participant.form?.triggers?.length > 0) {
           let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
@@ -624,7 +625,7 @@ class FormController {
         const context = await this.mapPdfContext(participant, css);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
-
+        
         if (debug) {
           return res.send(html);
         } else {
@@ -645,7 +646,7 @@ class FormController {
             waitUntil: 'networkidle0'
           });
 
-          const pdfBuffer = await page.pdf({
+            const pdfBuffer = await page.pdf({
             format: 'Letter',
             printBackground: true,
             displayHeaderFooter: true,
@@ -659,7 +660,7 @@ class FormController {
               bottom: '0.5in',
               left: '0.5in'
             }
-          });
+            });
           await browser.close();
 
           // Return Buffer
