@@ -64,28 +64,28 @@ body
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0")
     tr
       td(width="80%")
-        if logo
-          img(src=logo, height="60px")
+        if company && company.image && company.image.url
+          img(src=company.image.url, height="60px")
       td(width="20%")
         .text-right
           img(src=qr, height="60px")
 
   table(cellpadding='0', cellspacing='0')
     tr
-      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=participant.name
-    +headerDetailRight('Nº TRASLADO', participant.number, 'FECHA', moment(participant.createdAt).format('LLL'))
-    +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
-    +headerDetail('ORIGEN', origin(), 'DESTINO', destination())
-    +headerDetail('E. TRANSPORTADORA', carrier(), false, false)
+      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=name
+    +headerDetailRight('Nº TRASLADO', number, 'FECHA', moment(createdAt).format('LLL'))
+    +headerDetail('ENCARGADO', `${user.firstName} ${user.lastName}`)
+    +headerDetail('ORIGEN', origin, 'DESTINO', destination)
+    +headerDetail('E. TRANSPORTADORA', carrier.text, false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr
       td(colspan=6, class="strong")="DETALLES DE LA UNIDAD"
-    +carDetail('CHASIS', participant.car.vin, 'MARCA', participant.car.brand, 'MODELO', participant.car.denomination)
-    +carDetail('COLOR', participant.car.color, participant.car.patent ? 'PATENTE': false, participant.car.patent ? participant.car.patent: false, participant.car.engineNumber ? 'MOTOR': false, participant.car.engineNumber ? participant.car.engineNumber: false)
+    +carDetail('CHASIS', car.vin, 'MARCA', car.brand, 'MODELO', car.denomination)
+    +carDetail('COLOR', car.color, car.patent ? 'PATENTE': false, car.patent ? car.patent: false, car.engineNumber ? 'MOTOR': false, car.engineNumber ? car.engineNumber: false)
 
   table(cellpadding='0', cellspacing='0', class="border")
-    each section in participant.sections
+    each section in sections
       tr.heading
         td=section.name
         td(width="20%", class="text-center")
@@ -97,43 +97,42 @@ body
           td
             p.no-margin.strong=answer.question
           if ['scale', 'accessory'].includes(answer.kind) && answer.scale
-            td.text-center=getAnswer(answer.scale, answer)
+            td.text-center=answer.answer.choice || ''
           else
             td
           td.text-center
             if answer.kind === 'scale' && answer.scale
-              if answer.images.length
+              if answer.images && answer.images.length
                 | Si
               else
                 | No
-        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+        if answer.kind === 'accessory' && answer.requireAccesory
           tr
             td(colspan=3, style="padding-bottom:0px").text-center
-              strong=answer.accessories.question
+              if answer.accessories && answer.accessories.question
+                strong=answer.accessories.question
           tr.item
             td(colspan=3, style="padding-top:0px")
-              - const accesorySeletedIds = answer.accesoriesAnswered?answer.accesoriesAnswered.map(accesory=>accesory.item):[];
-              - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id.toString()));
-              if items.length
-                table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
-                  while items.length
-                    tr
-                      each item in items.splice(0,4)
-                        td(style="padding:4px 0", width="25%").no-border-bottom
-                          - const accesory = accesorySelected(answer, item);
-                          | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
-                          //- if accesory
-                          //-   | <i class="far fa-check-square"></i>
-                          //- else
-                          //-   | <i class="far fa-square"></i>
+              if answer.accesoriesAnswered && answer.accessories && answer.accessories.items
+                if accesoriesAnswered.length
+                  table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                    while accesoriesAnswered.length
+                      tr
+                        each item in accesoriesAnswered.splice(0,4)
+                          td(style="padding:4px 0", width="25%").no-border-bottom
+                            | #{'- '}#{item.item} #{item.amount ? `(${item.amount})` : ''}
+                else
+                  tr.item-damage
+                    td(colspan=2)
+                      | No se seleccionaron items.
               else
                 tr.item-damage
                   td(colspan=2)
-                    | No se seleccionaron items.
+                    | No hay información de accesorios disponible.
         if answer.kind === 'damage'
-          if !answer.damagesSelected.length
+          if !answer.damagesSelected || !answer.damagesSelected.length
             tr.item-damage
-              td(colspan=2)
+              td(colspan=3)
                 | No se encontraron daños
           else
             each ds in answer.damagesSelected
@@ -142,15 +141,24 @@ body
                   table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
                     tr
                       td
-                        strong=getDamageItem(answer.damages.parts, ds.part)
+                        if ds.part
+                          strong=ds.part
+                        else
+                          strong='Parte no especificada'
                     tr
                       td
                         strong Daño:
-                        | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        if ds.kinds
+                          | #{' ' + ds.kinds + ' '}
+                        else
+                          | #{' ' + 'No especificado' + ' '}
                         strong Posición:
-                        | #{' ' +getDamageItem(answer.damages.positions, ds.position)}
+                        if ds.position
+                          | #{' ' + ds.position}
+                        else
+                          | #{' ' + 'No especificada'}
                 td(class="text-center")
-                  if ds.images.length
+                  if ds.images && ds.images.length
                     | Si
                   else
                     | No

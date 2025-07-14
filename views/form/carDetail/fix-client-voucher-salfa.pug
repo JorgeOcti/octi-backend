@@ -71,18 +71,18 @@ body
   table(cellpadding='0', cellspacing='0')
     tr
       td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")="Acta de entrega"
-    +headerDetailRight('Nº TRASLADO', participant.number, 'FECHA', moment(participant.createdAt).format('LLL'))
-    +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
-    +headerDetail('ORIGEN', origin(), false, false)
+    +headerDetailRight('Nº TRASLADO', number, 'FECHA', moment(createdAt).format('LLL'))
+    +headerDetail('ENCARGADO', `${user.firstName} ${user.lastName}`)
+    +headerDetail('ORIGEN', origin, false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr
       td(colspan=6, class="strong")="DETALLES DE LA UNIDAD"
-    +carDetail('CHASIS', participant.car.vin, 'MARCA', participant.car.brand, 'MODELO', participant.car.denomination)
-    +carDetail('COLOR', participant.car.color, participant.car.patent ? 'PATENTE': false, participant.car.patent ? participant.car.patent: false, participant.car.engineNumber ? 'MOTOR': false, participant.car.engineNumber ? participant.car.engineNumber: false)
+    +carDetail('CHASIS', car.vin, 'MARCA', car.brand, 'MODELO', car.denomination)
+    +carDetail('COLOR', car.color, car.patent ? 'PATENTE': false, car.patent ? car.patent: false, car.engineNumber ? 'MOTOR': false, car.engineNumber ? car.engineNumber: false)
 
   table(cellpadding='0', cellspacing='0', class="border")
-    each section in participant.sections
+    each section in sections
       tr.heading
         td=section.name
         td(width="20%", class="text-center")
@@ -94,16 +94,16 @@ body
           td
             p.no-margin.strong=answer.question
           if ['scale', 'accessory'].includes(answer.kind) && answer.scale
-            td.text-center=getAnswer(answer.scale, answer)
+            td.text-center=answer.answer.choice || ''
           else
             td
           td.text-center
             if answer.kind === 'scale' && answer.scale
-              if answer.images.length
+              if answer.images && answer.images.length
                 | Si
               else
                 | No
-        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+        if answer.kind === 'accessory' && answer.requireAccesory
           tr
             td(colspan=3, style="padding-bottom:0px").text-center
               strong=answer.accessories.question
@@ -139,15 +139,15 @@ body
                   table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
                     tr
                       td
-                        strong=getDamageItem(answer.damages.parts, ds.part)
+                        strong=ds.part || 'Sin especificar'
                     tr
                       td
                         strong Daño:
-                        | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        | #{' ' + ds.kinds || 'No especificado' + ' '}
                         strong Posición:
-                        | #{' ' +getDamageItem(answer.damages.positions, ds.position)}
+                        | #{' ' + ds.position || 'No especificada' + ' '}
                 td(class="text-center")
-                  if ds.images.length
+                  if ds.images && ds.images.length
                     | Si
                   else
                     | No
@@ -167,4 +167,4 @@ body
       td(width="20%")
       if signature
         td(width="40%", class=" text-center strong")
-          img(src=signature, height="80px")
+          img(src=signature.url, height="80px")

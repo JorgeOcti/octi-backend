@@ -1,4 +1,107 @@
 doctype html
+-
+  var sectionsToShow = [{
+    name: "PARTICIPANTES",
+    useGrid: true,
+    answers: [
+      {
+        name: '',
+        comment: sections[0].answers[1].comment,
+        images: sections[0].answers[1].images,
+      }
+    ]
+  },
+  {
+    name: "RECURSOS UTILIZADOS",
+    useGrid: true,
+    answers:[
+      {
+        name: '',
+        comment: sections[1].answers[1].accesoriesAnswered?.map(accesory => `${accesory.item}`).join('\n') || 'N/A',
+        images: []
+      }
+    ]
+  },
+          {
+    name: "OBSERVACIONES",
+    useGrid: true,
+    answers:[
+      {
+        name: '',
+        comment: sections[1].answers[2].comment || 'N/A',
+        images: [],
+      }
+    ]
+  },
+  {
+    name: "EVIDENCIA APERTURA",
+    hint: "(Contenido en la siguiente página)",
+    useGrid: true,
+    answers: [
+      {
+        name: 'FOTOGRAFÍA FRONTAL CONTENEDOR',
+        comment: sections[0].answers[2].comment,
+        images: sections[0].answers[2].images,
+      },{
+        name: 'FOTOGRAFÍA SELLO',
+        comment: sections[0].answers[3].comment,
+        images: sections[0].answers[3].images,
+      },
+      {
+        name: 'FOTOGRAFÍA CONTENEDOR ABIERTO',
+        comment: sections[0].answers[4].comment,
+        images: sections[0].answers[4].images,
+      }
+    ]
+  },
+  {
+    name: "EVIDENCIA CARGA RETENIDA",
+    useGrid: true,
+    answers: [
+      {
+        name: "OBSERVACIONES",
+        comment: sections[2].answers[0].comment,
+        images: sections[2].answers[0].images,
+      },
+      {
+        name: "FOTOGRAFÍAS CARGA RETENIDA",
+        comment: sections[2].answers[1].comment,
+        images: sections[2].answers[1].images,
+      },
+    ]
+  },
+  {
+    name: "EVIDENCIA PROCESO AFORO",
+    useGrid: true,
+    answers: [
+      {
+        name: "OBSERVACIONES",
+        comment: sections[1].answers[3].comment,
+        images: sections[1].answers[3].images,
+      },
+      {
+        name: "FOTOGRAFÍAS PROCESO AFORO",
+        comment: sections[1].answers[4].comment,
+        images: sections[1].answers[4].images,
+      },
+    ]
+  },
+  {
+    name: "EVIDENCIA CIERRE",
+    useGrid: true,
+    answers: [
+      {
+        name: "CONTENEDOR PREVIO AL CIERRE",
+        comment: sections[3].answers[0].comment,
+        images: sections[3].answers[0].images,
+      },
+      {
+        name: "NUEVO SELLO",
+        comment: sections[3].answers[1].comment,
+        images: sections[3].answers[1].images,
+      }
+    ]
+  }]
 head
   meta(charset='UTF-8')
   meta(name='viewport' content='width=device-width, initial-scale=1.0')
@@ -287,45 +390,55 @@ head
         span.text-bold Giro:
         |  SERVICIOS EXTRAPORTUARIOS
       p
-        span.text-bold Direcci&oacute;n:
-        |  !{participant.venue.code}
+        if venue
+          span.text-bold Direcci&oacute;n:
+          |  #{venue.code}
+        else
+          span.text-bold Direcci&oacute;n:
       p
         span.text-bold Emitido por:
-        |  !{participant.user.firstName} !{participant.user.lastName} el 28/08/2025 a las 12:25
+        |  #{user.firstName} #{user.lastName} el 28/08/2025 a las 12:25
     .aforo-number
-      span.text-bold AFORO N&deg; #{participant.number}
+      span.text-bold AFORO N&deg; #{number}
   .document-title
     h2 AFORO DE CONTENEDOR
   .info-section
     .info-grid
       .info-item
         span.label CONTENEDOR
-        span.value.text-bold #{participant.car.vin}
+        span.value.text-bold #{car.vin}
       .info-item
         span.label FECHA INICIO AFORO
-        span.value #{moment(participant.createdAt).format('DD/MM/YYYY - HH:mm')}
+        span.value #{moment(createdAt).format('DD/MM/YYYY - HH:mm')}
       .info-item
         span.label FECHA T&Eacute;RMINO AFORO
-        span.value #{moment(participant.startAt).format('DD/MM/YYYY - HH:mm')}
+        span.value #{moment(startAt).format('DD/MM/YYYY - HH:mm')}
   .info-section
     .info-grid
       .info-item
         span.label CLIENTE
-        span.value #{companyName}
+        span.value #{webQuestion.answer}
       .info-item
         span.label TAMA&Ntilde;O
         span.value 40 M
       .info-item
         span.label HUBO RETENCI&Oacute;N
-        span.value #{hasRetention ? 'SI' : 'NO'}
+        if sections[2].answers[6] && sections[2].answers[7] && sections[2].answers[6].comment === '' && sections[2].answers[7].length === 0
+          span.value NO
+        else 
+          span.value SI
   .info-section
     .info-grid
       .info-item
         span.label TIPO DE AFORO
-        span.value #{aforoType}
+        if sections[0].answers[0].accesoriesAnswered
+          span.value #{sections[0].answers[0].accesoriesAnswered.map(accesory => `${accesory.item}`).join('\n') || 'N/A'}
   hr
   each section in sectionsToShow
+    if section.answers.some(answer => answer.images.length > 0 || answer.comment !== '')
       h2 #{section.name}
+      if section.hint
+        p.label #{section.hint}
       div(class=`${section.useGrid ? 'evidence-section-base' : ''}`)
         each answer in section.answers
             div.answer
@@ -342,7 +455,7 @@ head
                           .evidence-images
                               .image-container
                                   each image in answer.images
-                                      img(src=image.file.url)
+                                    img(src=image.url)
                       else
                           .single-image-container
-                              img(src=answer.images[0].file.url)
+                                img(src=answer.images[0].url)
