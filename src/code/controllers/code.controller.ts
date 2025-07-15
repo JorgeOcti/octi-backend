@@ -24,6 +24,13 @@ class CodeController {
             );
             
             if (codes) {
+                if (codes.length > 1000) {
+                    return res.status(400).json({
+                        message: 'El máximo número de códigos permitidos es 1000',
+                        status: 400
+                    });
+                }
+
                 const context =  {
                     codes: await Promise.all(codes.map(async (code: string) => ({
                         code: code,
