@@ -136,7 +136,7 @@ class FormController {
    * @param css - CSS string for styling
    * @param timezone - Timezone for date formatting
    * @returns IPDFContext - Mapped context object for PDF generation
-   * 
+   *
    * Example usage:
    * const context = await this.mapPdfContext(participant, css, timezone);
    */
@@ -161,7 +161,7 @@ class FormController {
               mimetype: participant.user.venue.company.image.mimetype || ''
           }: undefined
       }
-    } 
+    }
 
     let origin: string = '';
     let destination: string = '';
@@ -604,7 +604,7 @@ class FormController {
 
       if (participant) {
         let template: string =
-          path.join(__dirname, '../../../views/') + participant.template;
+          path.join(__dirname, '../../../views/') + participant.form.template;
 
         if (participant.form?.triggers?.length > 0) {
           let fileTriggers: IFormTrigger[] = participant.form.triggers.filter(
@@ -625,7 +625,7 @@ class FormController {
         const context = await this.mapPdfContext(participant, css);
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
-        
+
         if (debug) {
           return res.send(html);
         } else {
@@ -672,7 +672,7 @@ class FormController {
           return res.send(pdfBuffer);
         }
       }
-      
+
     } catch (e) {
       console.log(e);
       // Raven.captureException(e, { req });

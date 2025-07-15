@@ -451,7 +451,11 @@ const formSchema = new mongoose.Schema(
       default: {
         container: false,
         units: true
-      }
+      },
+      template: {
+        type: String,
+        default: 'form/carDetail/base.pug'
+      },
     },
 
     sections: [formSectionsSchema],
