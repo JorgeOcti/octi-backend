@@ -18,13 +18,18 @@ html(lang="es")
                 justify-content: center;
                 align-items: center;
             }
+            .svg-container.page-break {
+                page-break-after: always;
+            }
             .svg-responsive-incrustado {
                 height: 100%;
                 width: auto;
             }
     body
-        div.svg-container
-            svg#Capa_1.svg-responsive-incrustado(xmlns="http://www.w3.org/2000/svg", version="1.1", viewBox="0 0 99.2 155.9")
-                include osa_code_template.svg
-                image(href=qr, width="80", x="10", y="55")
-                text(x="50", y="147", text-anchor="middle", font-family="Verdana", font-size="8", fill="#333") #{code}
+        
+        each code, index in codes
+            div.svg-container(class=(index < codes.length - 1 ? 'page-break' : ''))
+                svg#Capa_1.svg-responsive-incrustado(xmlns="http://www.w3.org/2000/svg", version="1.1", viewBox="0 0 99.2 155.9")
+                    include osa_code_template.svg
+                    image(href=code.qr, width="80", x="10", y="55")
+                    text(x="50", y="147", text-anchor="middle", font-family="Verdana", font-size="8", fill="#333") #{code.code}

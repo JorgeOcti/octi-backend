@@ -12,6 +12,7 @@ class CodeController {
     }
     
     public async pdfCode(req: IRequest, res: Response): Promise<any> {
+        
         const { debug } = req.query as {
             debug: string;
         };
@@ -23,46 +24,38 @@ class CodeController {
             );
             
             if (codes) {
-                let finalPdf: string = '';
-
-                for (const code of codes) {
-                    const template = path.join(__dirname, '../../../views/code/qr_code.pug');
-                    const context = {
+                const context =  {
+                    codes: await Promise.all(codes.map(async (code: string) => ({
+                        code: code,
                         qr: await QRCode.toDataURL("https://code.osacontrol.cl/" + code + "/", {
                             errorCorrectionLevel: 'H',
                             margin: 0,
                             rendererOpts: {
                                 quality: 1
                             }
-                        }),
-                        code: code
-                    };
-                    const html = GeneralUtils.generateHtmlFromPugFile(template, context);
-                    
-                    if (finalPdf != '') {
-                        console.log(`Generating QR code for: ${code}`);
-                        finalPdf += '<div style="page-break-before: always;"></div>';
-                    }
-
-                    finalPdf += html;
+                        })
+                    })))
                 }
+
+                const template = path.join(__dirname, '../../../views/code/qr_code.pug');
+
+                const html = GeneralUtils.generateHtmlFromPugFile(template, context);
+                
                 
                 if (debug) {
-                    return res.send(finalPdf);
+                    return res.send(html);
                 } else {
                     const browser = await puppeteer.launch({
                         executablePath: '/usr/bin/chromium',
                         args: [
-                            '--no-sandbox',
-                            '--allow-file-access-from-files',
-                            '--enable-local-file-accesses'
+                            '--no-sandbox'
                         ],
                         headless: true
                     });
                     
                     const page = await browser.newPage();
                     
-                    await page.setContent(finalPdf, {
+                    await page.setContent(html, {
                         waitUntil: 'networkidle0'
                     });
                     
@@ -79,7 +72,6 @@ class CodeController {
                     
                     await browser.close();
                     
-                    // Return PDF Buffer
                     res.setHeader('Content-Type', 'application/pdf');
                     res.setHeader(
                         'Content-disposition',
@@ -105,4 +97,3 @@ class CodeController {
 }
 
 export default new CodeController();
-;
