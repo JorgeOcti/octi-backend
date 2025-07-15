@@ -135,6 +135,7 @@ export interface IForm {
   triggers: mongoose.Types.Array<IFormTriggerModel>;
 
   autosave: boolean;
+  template: string;
 
   webQuestion?: webQuestion;
 

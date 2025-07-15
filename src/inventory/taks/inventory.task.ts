@@ -116,7 +116,7 @@ class InventoryQueue {
         if(clientCompany) {
           container.extra["Cliente Razón Social"] = clientCompany.name
           clientCompanyId = clientCompany._id
-        }else{
+        } else {
           // Creo el company
           let existCompanyTeam = await Team.findOne({
             name: rutCompany.trim()
@@ -175,7 +175,8 @@ class InventoryQueue {
           car: currentContainer._id,
           extra: container.extra,
           comments: [],
-          images: []
+          images: [],
+          contentDescription: carsByContainer[BIC].cars.filter((c: any) => !c.isCar).map((c: any) => `${c.description} - ${c.brand}`),
         });
         activityHistories.push({
           team: team._id,
@@ -213,7 +214,7 @@ class InventoryQueue {
         if(clientContainerCompany) container.extra["Cliente Razón Social"] = clientContainerCompany.name
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         let virtualInventory = virtualInventories[virtualInventoryName];
-        const cars = carsByContainer[BIC].cars;
+        const cars = carsByContainer[BIC].cars.filter((c: any) => c.isCar);
 
         for (const car of cars) {
 

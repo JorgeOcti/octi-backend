@@ -159,8 +159,6 @@ export interface IParticipant {
 
   description: string;
 
-  template: string;
-
   sections: mongoose.Types.Array<IParticipantSectionModel>;
   hasDamages: boolean;
 

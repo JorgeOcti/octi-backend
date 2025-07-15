@@ -74,9 +74,14 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   readonly inputFile: RefObject<HTMLInputElement>;
   readonly inputBackup: RefObject<HTMLInputElement>;
 
+  readonly anyHeaders = [
+    "Tipo Carga",
+    "Descripción",
+    "VIN",
+  ]
+
   readonly mandatoryHeaders = [
     "BIC",
-    "VIN",
     "Marca",
     "Modelo",
     "Color",
@@ -94,7 +99,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   readonly excelHeaders = [
     "BIC",
-    "VIN",
+    "Cantidad",
+    "Tipo Carga",
+    "Descripción",
+    "Código",
     "Marca",
     "Modelo",
     "Color",
@@ -163,9 +171,28 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
       "bl": (data: any) => data["N° BL"]
   }
-  readonly carHeaders = {
-      "vin": (data : any) => data.VIN.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', ''),
-      "vin2": (data : any) => data.VIN.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6),
+
+  getDescription = (data: any): string => {
+    let description = ""
+    if (data.hasOwnProperty("Tipo Carga") && data["Tipo Carga"]) {
+      description = data.hasOwnProperty("Cantidad") && data.Cantidad ?
+        `(${data.Cantidad}) ${data["Tipo Carga"]}` : data["Tipo Carga"];
+    }
+    if (data.hasOwnProperty("Descripción") && data.Descripción) {
+      description += description ? ` - ${data.Descripción}` : data.Descripción;
+    }
+    return description;
+  }
+
+  isCar = (data: any): boolean => {
+    return data.hasOwnProperty("Código") && data["Código"]
+  }
+
+  readonly unitHeaders = {
+      "isCar": this.isCar,
+      "description": this.getDescription,
+      "vin": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '') : "",
+      "vin2": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6) : "",
       "brand": (data : any) => data.Marca,
       "denomination": (data : any) => data.Modelo,
       "isContainer": (data: any) => false,
@@ -280,6 +307,18 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         }
       }
     }
+
+    let anyHeaderFlag = false
+    for (let header of this.anyHeaders) {
+      if (data[header]) {
+        anyHeaderFlag = true;
+        break;
+      }
+    }
+    if (!anyHeaderFlag) {
+      return { error: true, message: "Debe ingresar al menos uno de los siguientes campos : " + this.anyHeaders.join(", ") }
+    }
+
     return { error: false }
   }
 
@@ -306,8 +345,8 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         let getter: (data: any) => any = this.containerHeaders[key as keyof typeof this.containerHeaders];
         container[key] = getter(data)
       })
-      Object.keys(this.carHeaders).forEach((key: string) => {
-        let getter: (data: any) => any = this.carHeaders[key as keyof typeof this.carHeaders];
+      Object.keys(this.unitHeaders).forEach((key: string) => {
+        let getter: (data: any) => any = this.unitHeaders[key as keyof typeof this.unitHeaders];
         car[key] = getter(data)
       })
       return {container, car}
@@ -534,13 +573,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     return <div className='container-fluid box-body table-responsive request-list'>
       <div className="row request bg-primary">
         <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-          <strong>VIN</strong>
+          <strong>Código</strong>
         </div>
         <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Marca</strong>
-        </div>
-        <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-          <strong>Color</strong>
+          <strong>Descripción</strong>
         </div>
       </div>
       { data.cars.map((car: any, index: number) => {
@@ -551,10 +587,11 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
               <strong>{car.vin}</strong>
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              {car.brand} - {car.denomination}
-            </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              <strong>{car.color}</strong>
+              {car.isCar ?
+                `${car.brand} - ${car.denomination} - ${car.color}` :
+                car.description
+
+              }
             </div>
           </div>
         )

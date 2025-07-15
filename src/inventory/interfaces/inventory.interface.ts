@@ -20,6 +20,12 @@ export interface IStatusEvidence {
   date: Date;
 }
 
+export interface IInventoryCarContent {
+  description: string;
+  participant: mongoose.Schema.Types.ObjectId;
+  content: any[];
+}
+
 export interface IInventoryCar {
   car: ICar;
   inventory?: mongoose.Schema.Types.ObjectId;
@@ -41,6 +47,8 @@ export interface IInventoryCar {
   extra: any;
   virtualInventory?: mongoose.Schema.Types.ObjectId;
   participant?: IParticipant;
+  contentDescription?: string;
+  units?: IInventoryCarContent[];
   updatedAt?: Date;
   createdAt?: Date;
 }
@@ -61,6 +69,7 @@ export interface IInventory {
   virtual: boolean;
   virtualInventories: IVirtualInventory[];
   unitForm?: IForm;
+  contentForm?: IForm;
   updatedAt: Date;
   createdAt: Date;
 }

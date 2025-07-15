@@ -24,6 +24,24 @@ const invetoryCommentCars = new mongoose.Schema({
   }
 });
 
+const inventoryCarContentSchema = new mongoose.Schema({
+  description: {
+    type: String,
+    required: true
+  },
+  content: [{
+    type: Object,
+    required: true
+  }],
+  participant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    required: true
+  }
+},{
+  id: false,
+});
+
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
   ChoicesStatusCarInventory.found,
@@ -142,7 +160,12 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Participant',
     required: false
-  }
+  },
+  units: [inventoryCarContentSchema],
+  contentDescription: [{
+      type: String,
+      required: true
+    }]
 }, {
   timestamps: true
 });
