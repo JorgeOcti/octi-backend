@@ -125,6 +125,11 @@ const inventorySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
     required: false
+  },
+  contentForm: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form',
+    required: false
   }
 }, {
   timestamps: true

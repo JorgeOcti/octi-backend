@@ -68,6 +68,7 @@ import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
+import InventoryCar from '../../inventory/models/inventoryCar.model';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -1893,6 +1894,7 @@ class FormController {
     const { id } = req.params;
     let {
       vin,
+      description,
       answers,
       transmittalItem,
       transmittal,
@@ -1902,6 +1904,7 @@ class FormController {
     } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
+    logger.debug(`FormController.complete: body: ${JSON.stringify(req.body)}`);
     logger.info(`FormController.complete email: ${req.user.email}`);
     // validate answers in body
     if (!answers) {
@@ -1916,7 +1919,8 @@ class FormController {
       }, answers: ${JSON.stringify(answers)}`
     );
     // validate vin in body
-    if (!vin && !transmittal && !id) {
+
+    if (!vin && !transmittal && !id && !description) {
       return res.status(400).json({
         message: 'Debes enviar el vin o OT o id',
         status: 400
@@ -1955,7 +1959,8 @@ class FormController {
       let inventoryCar: any = null;
       let inventoryItem: any = null;
       let images: string[] = [];
-      if (inventory) {
+      let content: any[] = [];
+      if (inventory && !description) {
         let check = await InventoryController.checkCarToInventory(
           req.user as IUserModel,
           vin,
@@ -2226,6 +2231,9 @@ class FormController {
               const matrixValues: any[] =
                 (question.kind === KindQuestion.matrix) &&
                 answer && answer.matrix ? answer.matrix : [];
+              if (matrixValues.length > 0) {
+                content = content.concat(matrixValues);
+              }
 
               // generate answer
               const comment =
@@ -2383,6 +2391,32 @@ class FormController {
               );
               inventoriedCar.participant = newParticipant._id;
               await inventoryCar.save();
+            }
+
+            if (description){
+              logger.info(`Adding description`);
+              let container = await InventoryCar.findOne({
+                _id: new mongoose.Types.ObjectId(containerFound),
+              });
+              if (container){
+                container.units = container.units || [];
+                container.units.push({
+                  description: description,
+                  participant: newParticipant._id,
+                  content: content.map((tmp: any[]) => {
+                    return tmp.reduce((acc: any, datum: any) => {
+                      if (!datum.value) {
+                        return acc;
+                      }
+                      return {
+                        ...acc,
+                        [datum.question.toLowerCase()]: datum.value
+                      }
+                    }, {})
+                  }),
+                });
+                await container.save()
+              }
             }
 
             // associate transmittalItem to participant

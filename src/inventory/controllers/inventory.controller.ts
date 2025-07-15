@@ -1104,7 +1104,9 @@ class InventoryController {
                 extra: car.extra,
                 evidenceStatus: car.evidenceStatus,
                 containerStatus: car.containerStatus,
-                inventoryRef: car.inventory
+                inventoryRef: car.inventory,
+                contentDescription: car.contentDescription,
+                units: car.units,
               };
             })
             })
@@ -2160,6 +2162,7 @@ class InventoryController {
             virtual: true,
             virtualInventories: true,
             unitForm: true,
+            contentForm: true,
           }
         ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
 
