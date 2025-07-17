@@ -362,6 +362,15 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   ],
   parking: {
     type: String
+  },
+  damageImages: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ParticipantFile'
+    }
+  ],
+  assistance: {
+    type: [mongoose.Schema.Types.Mixed],
   }
 });
 

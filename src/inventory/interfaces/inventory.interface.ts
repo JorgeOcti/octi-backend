@@ -24,6 +24,7 @@ export interface IInventoryCarContent {
   description: string;
   participant: mongoose.Schema.Types.ObjectId;
   content: any[];
+  images: mongoose.Schema.Types.ObjectId[];
 }
 
 export interface IInventoryCar {

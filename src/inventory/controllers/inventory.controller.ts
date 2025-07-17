@@ -2560,6 +2560,51 @@ class InventoryController {
         }
       }
 
+      let tmp = await InventoryCar.aggregate([
+        {
+          $sort: {createdAt: -1},
+        },
+        {
+          $limit: 10,
+        },
+        { $unwind: { path: "$units"}},
+        {
+          $lookup: {
+            from: "participants",
+            localField: "units.participant",
+            foreignField: "_id",
+            as: "units.participant",
+            pipeline: [
+              { $project: { name: 1, hasDamages: 1 } }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: "$_id", // Group by the original document's _id
+            inventory: { $first: "$inventory" },
+            car: { $first: "$car" },
+            venue: { $first: "$venue" },
+            images: { $first: "$images" },
+            status: { $first: "$status" },
+            containerStatus: { $first: "$containerStatus" },
+            extra: { $first: "$extra" },
+            contentDescription: { $first: "$contentDescription" },
+            evidenceStatus: { $first: "$evidenceStatus" },
+            venueFound: { $first: "$venueFound" },
+            openDate: { $first: "$openDate" },
+            cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
+            createdAt: { $first: "$createdAt" },
+            updatedAt: { $first: "$updatedAt" },
+            units: { $push: "$units" }, // Push the modified units back into an array
+            // To include other root fields, you'd list them here, e.g.,
+            // otherField: { $first: "$otherField" }
+          }
+        },
+      ]);
+      logger.debug("Aqui")
+      logger.debug(JSON.stringify(tmp));
+
       let containers = await InventoryCar.aggregatePaginate(
           InventoryCar.aggregate([
             {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
@@ -2574,6 +2619,40 @@ class InventoryController {
             { $unwind: {path: '$car'} },
             { $match: { 'car.isContainer': true } }, // Filter for container cars
             { $match: containerMatch },
+            { $unwind: { path: "$units", preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: "participants",
+                localField: "units.participant",
+                foreignField: "_id",
+                as: "units.participant",
+                pipeline: [
+                  { $project: { name: 1, hasDamages: 1, deliveryInfo: 1 } }
+                ]
+              }
+            },
+            {
+              $group: {
+                _id: "$_id", // Group by the original document's _id
+                inventory: { $first: "$inventory" },
+                car: { $first: "$car" },
+                venue: { $first: "$venue" },
+                images: { $first: "$images" },
+                status: { $first: "$status" },
+                containerStatus: { $first: "$containerStatus" },
+                extra: { $first: "$extra" },
+                contentDescription: { $first: "$contentDescription" },
+                evidenceStatus: { $first: "$evidenceStatus" },
+                venueFound: { $first: "$venueFound" },
+                openDate: { $first: "$openDate" },
+                cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
+                createdAt: { $first: "$createdAt" },
+                updatedAt: { $first: "$updatedAt" },
+                units: { $push: "$units" }, // Push the modified units back into an array
+                // To include other root fields, you'd list them here, e.g.,
+                // otherField: { $first: "$otherField" }
+              }
+            },
             {
               $lookup: {
                 from: 'inventoryfiles',
@@ -2656,6 +2735,8 @@ class InventoryController {
                 openDate: 1,
                 emptyDate: 1,
                 inventory: 1,
+                units: 1,
+                contentDescription: 1,
               }
             }
           ]),

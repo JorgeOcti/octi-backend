@@ -142,6 +142,8 @@ export interface IParticipantDeliveryInfo {
   signature: IParticipantFile[];
   identifyCard: IParticipantFile[];
   plateEvidence: IParticipantFile[];
+  assistance: any[];
+  damageImages: IParticipantFile[];
 }
 
 export interface IParticipant {

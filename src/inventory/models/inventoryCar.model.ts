@@ -37,7 +37,11 @@ const inventoryCarContentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Participant',
     required: true
-  }
+  },
+  images: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryFile'
+  }],
 },{
   id: false,
 });

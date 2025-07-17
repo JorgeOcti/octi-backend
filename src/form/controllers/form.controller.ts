@@ -105,6 +105,7 @@ class FormController {
     this.getExternalOrder = this.getExternalOrder.bind(this);
     this.completeWebQuestion = this.completeWebQuestion.bind(this);
     this.copyFormFileToInventoryFile = this.copyFormFileToInventoryFile.bind(this);
+    this.createAccessoriesObject = this.createAccessoriesObject.bind(this);
   }
 
   public async getExternalOrder(req: IRequest, res: Response): Promise<any> {
@@ -2253,7 +2254,11 @@ class FormController {
                 newParticipant.deliveryInfo.order = comment;
               } else if (question?.kindUpdate === 'participant.parking') {
                 newParticipant.deliveryInfo.parking = comment;
-              } else if (
+              } else if (question.kindUpdate === 'participant.damageImages') {
+                newParticipant.deliveryInfo.damageImages = answer?.images;
+              } else if (question.kindUpdate === 'participant.assistance') {
+                newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
+              }  else if (
                 question?.kindUpdate === 'participant.clientSignature'
               ) {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
@@ -2398,11 +2403,21 @@ class FormController {
               let container = await InventoryCar.findOne({
                 _id: new mongoose.Types.ObjectId(containerFound),
               });
+              let files: IInventoryFile[] = [];
+              if (images && images.length > 0) {
+                files = await this.copyFormFileToInventoryFile(
+                  images,
+                  inventory,
+                  car,
+                  req.user as IUserModel
+                );
+              }
               if (container){
                 container.units = container.units || [];
                 container.units.push({
                   description: description,
                   participant: newParticipant._id,
+                  images: files.map((file) => file._id),
                   content: content.map((tmp: any[]) => {
                     return tmp.reduce((acc: any, datum: any) => {
                       if (!datum.value) {
@@ -4658,6 +4673,25 @@ class FormController {
         }
       });
     });
+  }
+
+  private createAccessoriesObject(accessories: {_id?: string, item: string, amount: boolean}[],  selectedAccessories: {item: string, amount: number}[]){
+    let datum : any[] = [];
+
+    selectedAccessories.forEach((selectedAccessory) => {
+      let accessory = accessories.find((acc) => acc._id?.toString() === selectedAccessory.item)
+      if (accessory) {
+        datum.push({
+          item: accessory.item,
+          amount: selectedAccessory.amount
+        });
+      } else {
+        datum.push(selectedAccessory);
+      }
+    });
+
+    return datum
+
   }
 
   private async processAccesoryItems(accesories: any[]) {
