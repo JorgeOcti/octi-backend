@@ -967,7 +967,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
       });
 
-      data.units.forEach((unit: any) => {
+      data.units.filter((unit: any) => unit.hasOwnProperty("description")).forEach((unit: any) => {
         datum.push({
           vin: "-",
           description: unit.description || '',
