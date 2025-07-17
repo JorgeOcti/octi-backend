@@ -3686,9 +3686,20 @@ class InventoryController {
         { path: 'images'},
         { path: 'venueFound'},
         { path: 'car' },
-        { path: 'participant' },
+        { path: 'participant'},
         { path: 'evidenceStatus.images' },
-        { path: 'files' }
+        { path: 'files' },
+        {path: 'units.images'},
+        { path: 'units.participant', 
+          populate: [
+            {
+              path: 'deliveryInfo',
+              populate: [{ path: 'damageImages'}],
+            },
+
+         ],
+          select: ['_id', 'createdAt', 'hasDamages', 'deliveryInfo']
+        }
       ]);
 
       if (!container) {
@@ -3728,6 +3739,9 @@ class InventoryController {
             },
             {
               path: 'sections.answers.damagesSelected.images',
+            },
+            {
+              path: 'deliveryInfo',
             }
           ]
         },
@@ -3821,6 +3835,7 @@ class InventoryController {
           'Content-disposition',
           `inline; filename=Tarja-${container.car.vin}.pdf`
         );
+        console.log(JSON.stringify(container.units));
         return res.send(pdfBuffer);
       }
 
