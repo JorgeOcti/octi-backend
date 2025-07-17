@@ -2560,51 +2560,6 @@ class InventoryController {
         }
       }
 
-      let tmp = await InventoryCar.aggregate([
-        {
-          $sort: {createdAt: -1},
-        },
-        {
-          $limit: 10,
-        },
-        { $unwind: { path: "$units"}},
-        {
-          $lookup: {
-            from: "participants",
-            localField: "units.participant",
-            foreignField: "_id",
-            as: "units.participant",
-            pipeline: [
-              { $project: { name: 1, hasDamages: 1 } }
-            ]
-          }
-        },
-        {
-          $group: {
-            _id: "$_id", // Group by the original document's _id
-            inventory: { $first: "$inventory" },
-            car: { $first: "$car" },
-            venue: { $first: "$venue" },
-            images: { $first: "$images" },
-            status: { $first: "$status" },
-            containerStatus: { $first: "$containerStatus" },
-            extra: { $first: "$extra" },
-            contentDescription: { $first: "$contentDescription" },
-            evidenceStatus: { $first: "$evidenceStatus" },
-            venueFound: { $first: "$venueFound" },
-            openDate: { $first: "$openDate" },
-            cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
-            createdAt: { $first: "$createdAt" },
-            updatedAt: { $first: "$updatedAt" },
-            units: { $push: "$units" }, // Push the modified units back into an array
-            // To include other root fields, you'd list them here, e.g.,
-            // otherField: { $first: "$otherField" }
-          }
-        },
-      ]);
-      logger.debug("Aqui")
-      logger.debug(JSON.stringify(tmp));
-
       let containers = await InventoryCar.aggregatePaginate(
           InventoryCar.aggregate([
             {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
@@ -2627,8 +2582,17 @@ class InventoryController {
                 foreignField: "_id",
                 as: "units.participant",
                 pipeline: [
-                  { $project: { name: 1, hasDamages: 1, deliveryInfo: 1 } }
+                  { $project: { name: 1, hasDamages: 1, deliveryInfo: 1, createdAt: 1 } }
                 ]
+              }
+            },
+            { $unwind: { path: "$units.participant", preserveNullAndEmptyArrays: true }},
+            {
+              $lookup: {
+                from: "inventoryfiles",
+                localField: "units.images",
+                foreignField: "_id",
+                as: "units.images",
               }
             },
             {
@@ -2783,7 +2747,7 @@ class InventoryController {
             foreignField: '_id',
             as: 'participant',
             pipeline: [
-              {$project: {name: 1, hasDamages: 1}}
+              {$project: {name: 1, hasDamages: 1, createdAt: 1}}
             ]
           }
         },{
@@ -5405,8 +5369,15 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         });
       }
 
+      const user = req.user;
+      let filter : any = {vin}
+      if (user.company.handlerCompany){
+        filter['handlerCompany'] = user.company._id;
+      } else {
+        filter['company'] = user.company._id;
+      }
 
-      let car = await CarModel.findOne({vin: vin});
+      let car = await CarModel.findOne(filter);
       if (!car) {
         return res.status(404).json({
           message: 'El vehículo no se encuentra en el sistema.',

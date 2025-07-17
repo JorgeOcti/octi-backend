@@ -910,7 +910,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   private downloadData(): void {
     const params = new URLSearchParams({
-      ...this.state.pagination.filters, 
+      ...this.state.pagination.filters,
       ...this.getFilterDate(),
     }).toString();
     window.open(`/api/inventory/container/export?${params}`, '_blank');
@@ -954,19 +954,37 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       const { unitLabels } = this.state;
 
+      const datum : any[] = [];
+
+      data.cars.forEach((car: any) => {
+        datum.push({
+          vin: car.car.vin,
+          description: car.extra["Marca"] + ' ' + car.extra["Modelo"] + ' ' + car.car.color,
+          images: car.images,
+          updatedAt: car.participant.createdAt,
+          status: car.status,
+          participant: car.participant
+        });
+      });
+
+      data.units.forEach((unit: any) => {
+        datum.push({
+          vin: "-",
+          description: unit.description || '',
+          images: unit.images,
+          updatedAt: unit.participant.createdAt,
+          status: ContainerStatus.FOUND,
+          participant: unit.participant
+        });
+      })
+
       return <div className='table-responsive request-list'>
         <div className="row request-header bg-request-title ">
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
             Unidad
           </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Marca
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Modelo
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Color
+          <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
+            Descripción
           </div>
           <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
             Fotos
@@ -981,34 +999,29 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             Revisión
           </div>
         </div>
-        {data.cars.map((car: any, index: number) => {
+        {datum.map((car: any, index: number) => {
           let className = `${car.status}Class`;
-          let classNameEfect = car.car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+          let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
           return (
             <div key={index} className={`row request background-transition ${classNameEfect}`}>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong style={{"textDecoration": "underline"}}>{car.car.vin}</strong>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.extra["Marca"]}</strong>
+              <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                <strong className="text-black">{car.description}</strong>
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.extra["Modelo"]}</strong>
-              </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.car.color}</strong>
-              </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                 {imagesFormatter(car)}
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                <strong
+                  className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
               </div>
-              <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                 {
                   (unitLabels.length > 0) ?
-                    <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center'>
-                      <div className='inline-element'>
+                    <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
+                      <div className="inline-element">
                         <span
                           data-toggle="modal"
                           data-target="#modalForAddLabelUnit"
@@ -1025,7 +1038,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                           className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
                             ? inventorySettings[className]
                             : ''
-                            }`}>
+                          }`}>
                           {inventorySettings.hasOwnProperty(car.status)
                             ? inventorySettings[car.status]
                             : car.state}
@@ -1034,24 +1047,24 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                       {
                         (car.labelText && car.labelText !== '') ?
-                        <div className='row'>
-                            <div className='col-xs-12 label-min-with-170'>
-                              <p className='text-center-xs label-m-top-16 text-left-sm'>
-                                <i className='fa fa-tag' aria-hidden='true'></i> {car.labelText}
+                          <div className="row">
+                            <div className="col-xs-12 label-min-with-170">
+                              <p className="text-center-xs label-m-top-16 text-left-sm">
+                                <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
                               </p>
                             </div>
                           </div> : ''
                       }
                     </div>
                     :
-                    <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+                    <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                       <span
                         className={`label-units label-${inventorySettings.hasOwnProperty(className)
                           ? inventorySettings[className]
                           : ''
-                          }`}
+                        }`}
                         style={{
-                          padding: '5px 10px',
+                          padding: '5px 10px'
                         }}>
                         {inventorySettings.hasOwnProperty(car.status)
                           ? inventorySettings[car.status]
@@ -1060,156 +1073,158 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                 }
               </div>
-              <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                {car.participant? <><ShowIf condition={car.participant?.hasDamages}>
-                                    <React.Fragment>
-                                      {' '}
-                                      <i
-                                        className="fa fa-warning text-red pointer"
-                                        data-toggle="tooltip"
-                                        data-placement="top"
-                                        title="Daños encontrados en esta revisión."
-                                        onClick={
-                                          () => getParticipant(car.participant._id)
-                                        }
-                                      />
-                                    </React.Fragment>
-                                  </ShowIf>
-                                  <ShowIf condition={!car.participant?.hasDamages}>
-                                    <button
-                                      className="btn btn-primary btn-sm"
-                                      onClick={
-                                        () => getParticipant(car.participant._id)
-                                      }>
-                                        <ShowIf
-                                          condition={
-                                            !!(
-                                              loadingParticipant &&
-                                              loadingParticipant === car.participant._id
-                                            )
-                                          }
-                                          alternative={
-                                            <i className="fa fw fa-check-square-o" />
-                                          }>
-                                          <i className="fa fw fa-spin fa-spinner" />
-                                        </ShowIf>
-                                  </button>
-                                  </ShowIf>
-                                  </>
-                                  : <></> }
-
-              </div>
-            </div>
-          )
-        })
-        }
-      </div>
-    }
-
-
-    return (
-      <AppContainer title={
-        <div style={{ width: '180px' }}>
-           <DateRangeInput
-              options={getDateRangeOptions()}
-              onChange={(start: Date, end: Date) => {
-                this.setState({
-                  startDate: start,
-                  endDate: end,
-                  isFilteringByDate: true
-                });
-              }}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-            />
-          </div>
-      } cMenu="6" cSubMenu="6.1">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border flex flex-space-between">
-              { loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
-                Revisión Containers <span className="font-12 font-bold"> <span style={{color:"gray", fontWeight: "600"}}>{summary.total}</span> {summary.total>0 ? details : ''}</span>
-              </h3>}
-              <div className="pull-right box-tools">
-                {hasPermission(window.user, 'createInventory') ? (<>
-                    < button
-                      style={{marginRight: '10px'}}
-                    className = 'btn btn-sm btn-primary'
-                    onClick={this.downloadData}>
-                    <i className='fa fa-fw fa-download'/> Descargar Excel
-                    </button>
-
-                    <button
-                    className="btn btn-sm btn-success"
-                    onClick={this.create}>
-                      <i className="fa fa-plus"/> Cargar Anuncio
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-            {loading ?
-              <div className="overlay">
-                <i className="fa fa-refresh fa-spin"/>
-              </div>
-              : <>
-                <div className="box-body">
-
-                  <Filters
-                    blFilter={pagination.filters.blFilter || ''}
-                    containerFilter={pagination.filters.containerFilter || ''}
-                    clientFilter={pagination.filters.clientFilter || ''}
-                    clientSelector={window.user.company.clientCompanies || []}
-                    statusFilterSelected={pagination.filters.statusFilterSelected || []}
-                    shipFilter={pagination.filters.shipFilter || []}
-                    shipSelector={this.state.shipSelector}
-                    tripFilter={pagination.filters.tripFilter || []}
-                    tripSelector={this.state.tripSelector}
-                    filterHasDamage={pagination.filters.filterHasDamage}
-                    inventorySettings={inventorySettings}
-                    statusText={this.statusText}
-                    onFilterChange={(filter, value) => {
-                      this.addfilter(filter, value);
-                    }}
-                    onCleanFilters={this.cleanFilters}
-                  />
-
-                  <div className="row">
-                    <div className="col-md-12">
-                      <DataTable
-                        columns={this.columns}
-                        data={containers}
-                        customStyles={dataTableStyle}
-                        expandableRows
-                        expandableRowsComponent={ExpandedRowElement}
-                        expandOnRowClicked={true}
-                        pagination
-                        conditionalRowStyles={conditionalRowStyles}
-                        paginationComponentOptions={paginationComponentOptions}
-                        progressPending={this.state.loadingTable}
-                        sortServer
-                        onSort={this.sortTable}
-                        paginationServer
-                        paginationRowsPerPageOptions={ [pagination.pageSize, 100, 200]}
-                        paginationTotalRows={summary.total}
-                        progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x"/></div>}
-                        onChangeRowsPerPage={ this.changePageSize}
-                        onChangePage={this.changePage}
-                        noDataComponent={
-                          <div className="text-center">
-                            <h4>No hay datos</h4>
-                          </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                    <React.Fragment>
+                      {' '}
+                      <i
+                        className="fa fa-warning text-red pointer"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title="Daños encontrados en esta revisión."
+                        onClick={
+                          () => getParticipant(car.participant._id)
                         }
                       />
-                    </div>
-                  </div>
+                    </React.Fragment>
+                  </ShowIf>
+                    <ShowIf condition={!car.participant?.hasDamages}>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={
+                          () => getParticipant(car.participant._id)
+                        }>
+                        <ShowIf
+                          condition={
+                            !!(
+                              loadingParticipant &&
+                              loadingParticipant === car.participant._id
+                            )
+                          }
+                          alternative={
+                            <i className="fa fw fa-check-square-o" />
+                          }>
+                          <i className="fa fw fa-spin fa-spinner" />
+                        </ShowIf>
+                      </button>
+                    </ShowIf>
+                  </>
+                  : <></>}
 
-                  <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
-                    <div className="modal-dialog " role="document">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
+              </div>
+            </div>);
+              })}
+            </div>
+        }
+
+
+          return (
+          <AppContainer title={
+          <div style={{width: '180px'}}>
+        <DateRangeInput
+          options={getDateRangeOptions()}
+          onChange={(start: Date, end: Date) => {
+            this.setState({
+              startDate: start,
+              endDate: end,
+              isFilteringByDate: true
+            });
+          }}
+          startDate={this.state.startDate}
+          endDate={this.state.endDate}
+        />
+      </div>
+    } cMenu="6" cSubMenu="6.1">
+      <section className="content">
+        <div className="box">
+          <div className="box-header with-border flex flex-space-between">
+            {loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
+              Revisión Containers <span className="font-12 font-bold"> <span style={{
+              color: 'gray',
+              fontWeight: '600'
+            }}>{summary.total}</span> {summary.total > 0 ? details : ''}</span>
+            </h3>}
+            <div className="pull-right box-tools">
+              {hasPermission(window.user, 'createInventory') ? (<>
+                  < button
+                    style={{ marginRight: '10px' }}
+                    className="btn btn-sm btn-primary"
+                    onClick={this.downloadData}>
+                    <i className="fa fa-fw fa-download" /> Descargar Excel
+                  </button>
+
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.create}>
+                    <i className="fa fa-plus" /> Cargar Anuncio
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </div>
+          {loading ?
+            <div className="overlay">
+              <i className="fa fa-refresh fa-spin" />
+            </div>
+            : <>
+              <div className="box-body">
+
+                <Filters
+                  blFilter={pagination.filters.blFilter || ''}
+                  containerFilter={pagination.filters.containerFilter || ''}
+                  clientFilter={pagination.filters.clientFilter || ''}
+                  clientSelector={window.user.company.clientCompanies || []}
+                  statusFilterSelected={pagination.filters.statusFilterSelected || []}
+                  shipFilter={pagination.filters.shipFilter || []}
+                  shipSelector={this.state.shipSelector}
+                  tripFilter={pagination.filters.tripFilter || []}
+                  tripSelector={this.state.tripSelector}
+                  filterHasDamage={pagination.filters.filterHasDamage}
+                  inventorySettings={inventorySettings}
+                  statusText={this.statusText}
+                  onFilterChange={(filter, value) => {
+                    this.addfilter(filter, value);
+                  }}
+                  onCleanFilters={this.cleanFilters}
+                />
+
+                <div className="row">
+                  <div className="col-md-12">
+                    <DataTable
+                      columns={this.columns}
+                      data={containers}
+                      customStyles={dataTableStyle}
+                      expandableRows
+                      expandableRowsComponent={ExpandedRowElement}
+                      expandOnRowClicked={true}
+                      pagination
+                      conditionalRowStyles={conditionalRowStyles}
+                      paginationComponentOptions={paginationComponentOptions}
+                      progressPending={this.state.loadingTable}
+                      sortServer
+                      onSort={this.sortTable}
+                      paginationServer
+                      paginationRowsPerPageOptions={[pagination.pageSize, 100, 200]}
+                      paginationTotalRows={summary.total}
+                      progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x" />
+                      </div>}
+                      onChangeRowsPerPage={this.changePageSize}
+                      onChangePage={this.changePage}
+                      noDataComponent={
+                        <div className="text-center">
+                          <h4>No hay datos</h4>
+                        </div>
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="modal fade" id="modalForAddLabel" role="dialog" aria-labelledby="modalForAddLabel">
+                  <div className="modal-dialog " role="document">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span
+                          aria-hidden="true">&times;</span></button>
                           <h4 className="modal-title" id="modalForAddLabel">Cambiar estado asignando etiqueta</h4>
                         </div>
                         <div className="modal-body">

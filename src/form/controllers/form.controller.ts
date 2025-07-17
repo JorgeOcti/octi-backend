@@ -2171,11 +2171,12 @@ class FormController {
 
               if (
                 question.kind === KindQuestion.image &&
-                [KindQuestionImage.picture, KindQuestionImage.photo].includes(
-                  question.imageType as KindQuestionImage
-                )
+                [KindQuestionImage.picture, KindQuestionImage.photo]
+                  .includes(question.imageType as KindQuestionImage) &&
+                answer && answer.images && answer.images.length
               ) {
-                if (answer && answer.images && answer.images.length) {
+                allImages = [...allImages, ...answer.images];
+                if (question.kindUpdate !== 'participant.damageImages'){
                   images = [...images, ...answer.images];
                 }
               }
@@ -2210,6 +2211,7 @@ class FormController {
                 answer.images &&
                 answer.images.length
               ) {
+                images = [...images, ...answer.images];
                 allImages = [...answer.images, ...allImages];
               }
 
@@ -2233,6 +2235,11 @@ class FormController {
                 (question.kind === KindQuestion.matrix) &&
                 answer && answer.matrix ? answer.matrix : [];
               if (matrixValues.length > 0) {
+                matrixValues.map((items: any[]) => {
+                  items.filter((item: any) => item.type === "photo").map((item: any) => {
+                    images = [...images, ...item.images];
+                  });
+                });
                 content = content.concat(matrixValues);
               }
 

@@ -77,7 +77,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   readonly anyHeaders = [
     "Tipo Carga",
     "Descripción",
-    "VIN",
+    "Código",
   ]
 
   readonly mandatoryHeaders = [
