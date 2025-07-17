@@ -2263,6 +2263,7 @@ class FormController {
                 newParticipant.deliveryInfo.parking = comment;
               } else if (question.kindUpdate === 'participant.damageImages') {
                 newParticipant.deliveryInfo.damageImages = answer?.images;
+                newParticipant.hasDamages = newParticipant.hasDamages || answer?.images?.length > 0;
               } else if (question.kindUpdate === 'participant.assistance') {
                 newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
               }  else if (
