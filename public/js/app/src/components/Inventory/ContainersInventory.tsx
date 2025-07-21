@@ -961,7 +961,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           vin: car.car.vin,
           description: car.extra["Marca"] + ' ' + car.extra["Modelo"] + ' ' + car.car.color,
           images: car.images,
-          updatedAt: car.participant.createdAt,
+          updatedAt: car.updatedAt,
           status: car.status,
           participant: car.participant
         });
