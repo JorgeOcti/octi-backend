@@ -118,26 +118,101 @@ html
               span !{container.extra["Sello IN"]}
       .section-wrapper
         .section
-          .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
-          each image in evidences
-            .image-box
-              img(src=image.file.url, alt="Image")
-      .section-wrapper
-        .section
-          .title Resumen Carga (!{cars.length} Items)
+          .title Contenidos (!{container.units.length + cars.length})
           table
             thead
               tr
                 th #
-                th Tipo
-                th VIN
-                th Marca
-                th Modelo
+                th Descripción
+                th Daños
+                th Recursos
                 th Responsable
                 th Estado
             tbody
+              each unit, index in container.units
+                tr
+                  td #{index + 1}.
+                  td 
+                    div #{unit.description}
+                    if unit.content && unit.content.length > 0
+                      ul
+                        each item in unit.content
+                          li #{item['descripción']}
+                  td #{unit.participant.hasDamages ? 'Con daños' : 'Sin daños'}
+                  td 
+                    each assistance in unit.participant.deliveryInfo.assistance
+                      div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
+                  td
+                  td
               each car, index in cars
-                +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
+                tr
+                  td #{container.units.length + index + 1}.
+                  td 
+                    div #{car.car.vin}
+                    div #{car.car.brand + ' ' + car.car.denomination}
+                  td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
+                  td 
+                  td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""} 
+                  td #{car.status}
+      .section-wrapper
+        .section
+          .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
+          each image in evidences
+            .image-box
+              img(src=image.file.url, alt="Image")
+
+      .section-wrapper
+        .section 
+          .title Detalle de Unidades (!{container.units.length + cars.length} Unidades)
+          
+      each unit, index in container.units
+        .section-wrapper
+          .section
+            .title UNIDAD
+            ul.no-bullet
+              li !{unit.description}
+              if unit.content && unit.content.length > 0
+                li 
+                  ul
+                    each item in unit.content
+                      li !{item['descripción']}
+            
+            .title RECURSOS UTILIZADOS
+            ul
+              each assistance in unit.participant.deliveryInfo.assistance
+                li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
+            
+            .title Evidencia Fotográfica Unidad (!{unit.images.length} Fotos)
+            each image in unit.images
+              .image-box
+                img(src=image.file.url, alt="Image")
+
+            if unit.participant && !unit.participant.hasDamages
+              .title SIN DAÑOS
+            else if unit.participant && unit.participant.hasDamages
+              .title DAÑOS
+              if unit.participant.deliveryInfo && unit.participant.deliveryInfo.damageImages && unit.participant.deliveryInfo.damageImages.length > 0
+                each image in unit.participant.deliveryInfo.damageImages
+                  .image-box
+                    img(src=image.file.url, alt="Image")
+            
+        hr
+      //- .section-wrapper
+      //-   .section
+      //-     .title Resumen Carga (!{cars.length} Items)
+      //-     table
+      //-       thead
+      //-         tr
+      //-           th #
+      //-           th Tipo
+      //-           th VIN
+      //-           th Marca
+      //-           th Modelo
+      //-           th Responsable
+      //-           th Estado
+      //-       tbody
+      //-         each car, index in cars
+      //-           +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
       each car, index in cars
         .section-wrapper
           .section

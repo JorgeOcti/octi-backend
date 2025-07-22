@@ -85,19 +85,26 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
+  font-size: 12px;
+  border-left: 1px solid #666;
+  border-right: 1px solid #666;
+  border-top: 1px solid #666;
 }
 
-table, th, td {
-  border: 1px solid white;
-}
-
-th, td {
-  padding: 6px;
+table th, table td {
+  padding: 8px;
   text-align: left;
+  font-size: 12px;
+  border-bottom: 1px solid #666;
 }
 
-th {
-  background: #eee;
+table th {
+  font-weight: bold;
+  border-bottom: 2px solid #666;
+}
+
+table td {
+  border-bottom: 1px solid #666;
 }
 
 .containers {
@@ -131,4 +138,24 @@ img {
   border: 1px solid #ddd;
   border-radius: 5px;
   padding: 5px;
+}
+
+.no-bullet {
+  list-style-type: none;
+}
+
+.section ul {
+  font-size: 13px;
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.section > ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.section ul ul {
+  list-style: disc;
+  padding-left: 20px;
 }

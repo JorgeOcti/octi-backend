@@ -3835,7 +3835,6 @@ class InventoryController {
           'Content-disposition',
           `inline; filename=Tarja-${container.car.vin}.pdf`
         );
-        console.log(JSON.stringify(container.units));
         return res.send(pdfBuffer);
       }
 
