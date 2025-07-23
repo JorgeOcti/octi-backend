@@ -176,11 +176,11 @@ html
                   ul
                     each item in unit.content
                       li !{item['descripción']}
-            
-            .title RECURSOS UTILIZADOS
-            ul
-              each assistance in unit.participant.deliveryInfo.assistance
-                li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
+            if unit.participant && unit.participant.deliveryInfo && unit.participant.deliveryInfo.assistance.length > 0
+              .title RECURSOS UTILIZADOS
+              ul
+                each assistance in unit.participant.deliveryInfo.assistance
+                  li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
             
             .title Evidencia Fotográfica Unidad (!{unit.images.length} Fotos)
             each image in unit.images
