@@ -638,7 +638,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         summary: summary[`${params['id']}`],
         totalContainers: totalContainers,
         totalUnits: totalUnits,
-        inventoryName:  names
+        inventoryName:  names,
+        loading: false,
       });
 
     });
@@ -720,7 +721,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         inventory: summary,
         containers: containers,
         originalContainers: containers,
-        loading: false
+        loading: this.state.summary === null,
       });
 
     }).catch((error: any) => {
@@ -848,7 +849,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
               <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
                 <strong className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
               </div>
-              
+
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
                 {imagesFormatter(car)}
               </div>
@@ -910,7 +911,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                 }
               </div>
               <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-                { 
+                {
                   (ContainerStatus.EMPTY ===  containerStatus)?
                   <button className="btn btn-xs btn-default" onClick={() => {
                     window.open(`/api/inventory/${car.inventory}/container/tarja/${car.car._id}`, '_blank')
@@ -933,7 +934,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let containerEmpty = 0;
 
     let unitPending = 0;
-    let unitFound = 0; 
+    let unitFound = 0;
     let unitHasDamages = 0;
 
 
@@ -944,7 +945,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
     let classPending = 'summary-progress-label';
     let classFound = 'summary-progress-label';
     let classHasDamages = 'summary-progress-label';
-    
+
     let percentageContainerPending = '';
     let percentageContainerOpen = '';
     let percentageContainerCheck = '';
@@ -958,6 +959,8 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
 
 
     if (!loading) {
+
+      console.log('summary', summary);
 
       const { units, containers } = summary;
       const { pending, found, hasDamages } = units;
@@ -999,7 +1002,7 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
         classContainerPending = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
         countContainerVisible++;
       }
-      
+
       percentageContainerOpen = totalContainers > 0 ? `${Math.round((open / totalContainers) * 100)}%` : '0%';
       if(percentageContainerOpen !== '0%'){
         classContainerOpen = (countContainerVisible % 2 === 0)? 'summary-progress-label' : 'summary-progress-label-up';
