@@ -252,7 +252,8 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
-        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : null,
+        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("5f318477fcc6020190734b3b"),
+        contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? null: new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),
@@ -3690,7 +3691,7 @@ class InventoryController {
         { path: 'evidenceStatus.images' },
         { path: 'files' },
         {path: 'units.images'},
-        { path: 'units.participant', 
+        { path: 'units.participant',
           populate: [
             {
               path: 'deliveryInfo',
