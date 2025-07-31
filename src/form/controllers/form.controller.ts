@@ -2016,7 +2016,7 @@ class FormController {
           }
 
           const existControl = await Participant.findOne(query);
-          if (existControl) {
+          if (existControl && !description) {
             const today = moment().startOf('day');
             const count = await Participant.find({
               user: req.user,
