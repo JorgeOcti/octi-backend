@@ -599,7 +599,7 @@ class FormController {
           },
           {
             path: 'form',
-            select: ['triggers']
+            select: ['triggers', 'template']
           }
         ])
         .lean();
