@@ -69,6 +69,7 @@ import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interfa
 import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
 import InventoryCar from '../../inventory/models/inventoryCar.model';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -2410,7 +2411,11 @@ class FormController {
               logger.info(`Adding description`);
               let container = await InventoryCar.findOne({
                 _id: new mongoose.Types.ObjectId(containerFound),
-              });
+              }).populate([
+                {
+                  path: 'car',
+                }
+              ]);
               let files: IInventoryFile[] = [];
               if (images && images.length > 0) {
                 files = await this.copyFormFileToInventoryFile(
@@ -2438,7 +2443,9 @@ class FormController {
                     }, {})
                   }),
                 });
-                await container.save()
+                await container.save();
+                container = await container.populate('units.images');
+                InventoryController.sendUpdateNotification("UNIT_ADDED", updatedUser.venue._id, team._id, container, ChoicesStatusCarInventory.pending, updatedUser);
               }
             }
 

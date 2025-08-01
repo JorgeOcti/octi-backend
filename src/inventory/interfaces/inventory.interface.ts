@@ -12,7 +12,7 @@ import { IVirtualInventory } from './virtualInventory.interface';
 import { IForm } from '../../form/interfaces/form.interface';
 import { IParticipant } from '../../form/interfaces/participant.interface';
 
-export type MessageType = "VEHICLE_FOUND" | "CONTAINER_FOUND" | "EVIDENCE_ADDED";
+export type MessageType = "VEHICLE_FOUND" | "CONTAINER_FOUND" | "EVIDENCE_ADDED" | "UNIT_ADDED";
 
 export interface IStatusEvidence {
   status: string;
