@@ -756,7 +756,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     } else return container
   }
   updateContentContainer(content:any, containerUpdated:any, data:any){
-    if(content.car.vin === containerUpdated.car.vin){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
       let contentTemp = {...content}
       contentTemp.status = containerUpdated.status;
       contentTemp.images = containerUpdated.images;
@@ -767,7 +767,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   updateUnitsContentContainer(content:any, containerUpdated:any, data:any){
-    if(content.car.vin === containerUpdated.car.vin){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
       let contentTemp = {...content}
       contentTemp.units = containerUpdated.units;
       this.showAlert(data);
