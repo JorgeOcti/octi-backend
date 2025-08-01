@@ -958,6 +958,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       data.cars.forEach((car: any) => {
         datum.push({
+          _id: car._id,
           vin: car.car.vin,
           description: car.extra["Marca"] + ' ' + car.extra["Modelo"] + ' ' + car.car.color,
           images: car.images,
@@ -969,6 +970,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       data.units.filter((unit: any) => unit.hasOwnProperty("description")).forEach((unit: any) => {
         datum.push({
+          _id: unit.participant._id,
           vin: "-",
           description: unit.description || '',
           images: unit.images,
