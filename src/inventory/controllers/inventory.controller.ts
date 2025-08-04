@@ -1361,7 +1361,10 @@ class InventoryController {
     if (!inventoryCar){
       return {ok: false, message: 'El vehículo no está en el inventario', code: 404};
     }
-    if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
+    if (inventoryCar.status === ChoicesStatusCarInventory.found){
+      return {ok: true, message: 'El vehículo ya ha sido inventariado', code: 200};
+    }
+    else if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
       return {ok: false, message: 'El vehículo ya ha sido inventariado', code: 404};
     }
     return {ok: true, message: '', code: 200, inventoryCar: inventoryCar, inventory: inventory};
