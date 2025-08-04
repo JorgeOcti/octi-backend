@@ -716,6 +716,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     const containerUpdated = data.metadata.inventory;
       let containers = this.state.containers.map((container: any) => {
         if(containerUpdated.car.isContainer){
+            if(data.isUnitNotification) {
+              return this.updateUnitsContentContainer(container, containerUpdated, data)
+            }
               // Metodo para modificar la data del contenedor
           return this.updateDataContainer(container, containerUpdated, data)
         }else{
@@ -753,10 +756,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     } else return container
   }
   updateContentContainer(content:any, containerUpdated:any, data:any){
-    if(content.car.vin === containerUpdated.car.vin){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
       let contentTemp = {...content}
       contentTemp.status = containerUpdated.status;
       contentTemp.images = containerUpdated.images;
+      this.showAlert(data);
+      return contentTemp
+    }
+    return content
+  }
+
+  updateUnitsContentContainer(content:any, containerUpdated:any, data:any){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
+      let contentTemp = {...content}
+      contentTemp.units = containerUpdated.units;
       this.showAlert(data);
       return contentTemp
     }

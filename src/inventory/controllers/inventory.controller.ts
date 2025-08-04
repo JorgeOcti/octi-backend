@@ -1565,7 +1565,7 @@ class InventoryController {
 
   }*/
 
-  private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
+  async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
 
 
 
@@ -1585,6 +1585,11 @@ class InventoryController {
       }
     }
 
+    if(notificationType === "UNIT_ADDED"){
+      title = `Unidad agregada`;
+      message = `${user.firstName} ${user.lastName} agregó una unidad al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
     socket()
       .to(`dashboard-container-vin-view-${teamId}`)
       .emit('REFRESH', {
@@ -1593,6 +1598,7 @@ class InventoryController {
         status: status,
         venue: venueId,
         update: true,
+        isUnitNotification: notificationType === "UNIT_ADDED",
         metadata: {
           inventory: inventory
         }
