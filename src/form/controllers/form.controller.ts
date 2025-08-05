@@ -1707,7 +1707,10 @@ class FormController {
                   }),
                 });
                 await container.save();
-                container = await container.populate('units.images');
+                container = await container.populate([
+                  {path:'units.images'},
+                  {path:'units.participant'}
+                ]);
                 InventoryController.sendUpdateNotification("UNIT_ADDED", updatedUser.venue._id, team._id, container, ChoicesStatusCarInventory.pending, updatedUser);
               }
             }
