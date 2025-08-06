@@ -1154,7 +1154,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         <div className="box">
           <div className="box-header with-border flex flex-space-between">
             {loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
-              Revisión Containers <span className="font-12 font-bold"> <span style={{
+              Revisión contenedores <span className="font-12 font-bold"> <span style={{
               color: 'gray',
               fontWeight: '600'
             }}>{summary.total}</span> {summary.total > 0 ? details : ''}</span>
