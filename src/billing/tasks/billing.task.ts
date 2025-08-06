@@ -19,7 +19,6 @@ import * as console from "console";
 import Inventory from "../../inventory/models/inventory.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
 import Car from '../../app/models/car.model';
-import mongoose from 'mongoose';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
