@@ -175,8 +175,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   getDescription = (data: any): string => {
     let description = ""
     if (data.hasOwnProperty("Tipo Carga") && data["Tipo Carga"]) {
-      description = data.hasOwnProperty("Cantidad") && data.Cantidad ?
-        `(${data.Cantidad}) ${data["Tipo Carga"]}` : data["Tipo Carga"];
+      description = data["Tipo Carga"];
     }
     if (data.hasOwnProperty("Descripción") && data.Descripción) {
       description += description ? ` - ${data.Descripción}` : data.Descripción;
@@ -589,7 +588,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {car.isCar ?
                 `${car.brand} - ${car.denomination} - ${car.color}` :
-                car.description
+                `${car.extra["Cantidad"] ? `(${car.extra["Cantidad"]})` : "" } ${car.description}`
 
               }
             </div>
