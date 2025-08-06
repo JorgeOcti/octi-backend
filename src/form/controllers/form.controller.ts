@@ -1526,7 +1526,7 @@ class FormController {
               } else if (question?.kindUpdate === 'participant.parking') {
                 newParticipant.deliveryInfo.parking = comment;
               } else if (question.kindUpdate === 'participant.damageImages') {
-                if (answer.images && answer.images.length > 0){
+                if (answer && answer.images && answer.images.length > 0){
                   newParticipant.deliveryInfo.damageImages = answer.images;
                   newParticipant.hasDamages = true;
                 }
