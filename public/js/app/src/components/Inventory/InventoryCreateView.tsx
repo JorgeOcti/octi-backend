@@ -714,7 +714,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
       const file = files[0];
       if (!this.validateSize(file.size)) {
         swal!(
-          'Envió inventario',
+          'Importación de Datos',
           'El archivo supera los 10Mb permitidos.',
           'error'
         );
@@ -816,7 +816,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
     });
     if (!name.trim().length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'El nombre del inventario es obligatorio.',
         'error'
       );
@@ -825,7 +825,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
       });
     } else if (!carsByVenue.length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'No se ha importado la configuración o no contiene sucursales.',
         'error'
       );
@@ -849,7 +849,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
         })
         .then((response: any) => {
           const { message } = response.data;
-          swal!('Envió inventario', message, 'success');
+          swal!('Importación de Datos', message, 'success');
           setTimeout(() => {
             this.setState({
               sending: false
@@ -861,7 +861,7 @@ class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
         .catch((e) => {
           console.log('e', e);
           swal!(
-            'Envió inventario',
+            'Importación de Datos',
             'Se produjo un error al crear el inventario.',
             'error'
           );

@@ -1526,8 +1526,10 @@ class FormController {
               } else if (question?.kindUpdate === 'participant.parking') {
                 newParticipant.deliveryInfo.parking = comment;
               } else if (question.kindUpdate === 'participant.damageImages') {
-                newParticipant.deliveryInfo.damageImages = answer?.images;
-                newParticipant.hasDamages = newParticipant.hasDamages || answer?.images?.length > 0;
+                if (answer.images && answer.images.length > 0){
+                  newParticipant.deliveryInfo.damageImages = answer.images;
+                  newParticipant.hasDamages = true;
+                }
               } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer) {
                 newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
               }  else if (
@@ -1621,7 +1623,7 @@ class FormController {
             : 0;
           newParticipant.qualification = formQualification;
 
-          newParticipant.hasDamages = newParticipant.sections.some(
+          newParticipant.hasDamages = newParticipant.hasDamages || newParticipant.sections.some(
             (section: any) => {
               return section.answers.some((answer: any) => {
                 return answer.damagesSelected.length > 0;

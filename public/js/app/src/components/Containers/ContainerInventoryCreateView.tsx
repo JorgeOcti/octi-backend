@@ -238,7 +238,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     });
     if (!name.trim().length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'El nombre del inventario es obligatorio.',
         'error'
       );
@@ -247,7 +247,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       });
     } else if (!Object.keys(carsByContainer).length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'No se ha importado la configuración o no contiene sucursales.',
         'error'
       );
@@ -268,7 +268,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         })
         .then((response: any) => {
           const { message } = response.data;
-          swal!('Envió inventario', message, 'success');
+          swal!('Importación de Datos', message, 'success');
           setTimeout(() => {
             this.setState({
               sending: false
@@ -280,7 +280,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         .catch((e) => {
           console.log('e', e);
           swal!(
-            'Envió inventario',
+            'Importación de Datos',
             'Se produjo un error al crear el inventario.',
             'error'
           );

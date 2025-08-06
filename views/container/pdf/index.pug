@@ -91,7 +91,7 @@ html
               span !{container.car.bl}
             .item
               span.label Puerto Origen:
-              span
+              span !{container.extra["Puerto Origen"]}
             .item
               span.label Nave:
               span !{container.extra["Nave"]}
@@ -132,14 +132,14 @@ html
               each unit, index in container.units
                 tr
                   td #{index + 1}.
-                  td 
+                  td
                     div #{unit.description}
                     if unit.content && unit.content.length > 0
                       ul
                         each item in unit.content
                           li #{item['descripción']}
                   td #{unit.participant.hasDamages ? 'Con daños' : 'Sin daños'}
-                  td 
+                  td
                     each assistance in unit.participant.deliveryInfo.assistance
                       div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
                   td
@@ -147,12 +147,12 @@ html
               each car, index in cars
                 tr
                   td #{container.units.length + index + 1}.
-                  td 
+                  td
                     div #{car.car.vin}
                     div #{car.car.brand + ' ' + car.car.denomination}
                   td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
-                  td 
-                  td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""} 
+                  td
+                  td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""}
                   td #{car.status}
       .section-wrapper
         .section
@@ -162,9 +162,9 @@ html
               img(src=image.file.url, alt="Image")
 
       .section-wrapper
-        .section 
+        .section
           .title Detalle de Unidades (!{container.units.length + cars.length} Unidades)
-          
+
       each unit, index in container.units
         .section-wrapper
           .section
@@ -172,7 +172,7 @@ html
             ul.no-bullet
               li !{unit.description}
               if unit.content && unit.content.length > 0
-                li 
+                li
                   ul
                     each item in unit.content
                       li !{item['descripción']}
@@ -181,7 +181,7 @@ html
               ul
                 each assistance in unit.participant.deliveryInfo.assistance
                   li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
-            
+
             .title Evidencia Fotográfica Unidad (!{unit.images.length} Fotos)
             each image in unit.images
               .image-box
@@ -195,7 +195,7 @@ html
                 each image in unit.participant.deliveryInfo.damageImages
                   .image-box
                     img(src=image.file.url, alt="Image")
-            
+
         hr
       //- .section-wrapper
       //-   .section
@@ -222,7 +222,7 @@ html
                 span.label ITEM:
                 span #{index + 1}
               .item
-                span.label VEHÍCULO:
+                span.label UNIDAD:
                 span !{car.car.vin}
               .item
                 span.label MARCA:
@@ -263,4 +263,4 @@ html
                 each image in damage.images
                   .image-box
                     img(src=image.file.url, alt="Image")
-        hr 
+        hr

@@ -3148,7 +3148,7 @@ class InventoryController {
         if (answer.kind === KindQuestion.accessory){
           let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
           text = answer.accesoriesAnswered
-            .map((item) => itemsDict[item.item] ?? '-')
+            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount: ""}` ?? '-')
             .join(';')
         }
       }
