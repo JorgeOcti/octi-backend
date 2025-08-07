@@ -252,8 +252,8 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
-        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("5f318477fcc6020190734b3b"),
-        contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? null: new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
+        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
+        contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),
@@ -1361,7 +1361,10 @@ class InventoryController {
     if (!inventoryCar){
       return {ok: false, message: 'El vehículo no está en el inventario', code: 404};
     }
-    if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
+    if (inventoryCar.status === ChoicesStatusCarInventory.found){
+      return {ok: true, message: 'El vehículo ya ha sido inventariado', code: 200};
+    }
+    else if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
       return {ok: false, message: 'El vehículo ya ha sido inventariado', code: 404};
     }
     return {ok: true, message: '', code: 200, inventoryCar: inventoryCar, inventory: inventory};
@@ -1562,7 +1565,7 @@ class InventoryController {
 
   }*/
 
-  private async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
+  async sendUpdateNotification(notificationType: MessageType, venueId: string, teamId: string, inventory: any, status: string, user: any): Promise<void> {
 
 
 
@@ -1582,6 +1585,11 @@ class InventoryController {
       }
     }
 
+    if(notificationType === "UNIT_ADDED"){
+      title = `Unidad agregada`;
+      message = `${user.firstName} ${user.lastName} agregó una unidad al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
     socket()
       .to(`dashboard-container-vin-view-${teamId}`)
       .emit('REFRESH', {
@@ -1590,6 +1598,7 @@ class InventoryController {
         status: status,
         venue: venueId,
         update: true,
+        isUnitNotification: notificationType === "UNIT_ADDED",
         metadata: {
           inventory: inventory
         }
@@ -3139,7 +3148,7 @@ class InventoryController {
         if (answer.kind === KindQuestion.accessory){
           let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
           text = answer.accesoriesAnswered
-            .map((item) => itemsDict[item.item] ?? '-')
+            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount: ""}` ?? '-')
             .join(';')
         }
       }

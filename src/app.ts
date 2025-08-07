@@ -27,6 +27,7 @@ import BillingQueue from './billing/tasks/billing.task';
 import BillingTeamQueue from './billing/tasks/billingTeam.task';
 import { distributionRouter } from './distribution/router';
 import formRouter from './form/router';
+import codeRouter from './code/router';
 import { inventoryRouter } from './inventory/router';
 import inventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
@@ -193,6 +194,7 @@ app.use('/', requestRouter);
 app.use('/', distributionRouter);
 app.use('/', billingRouter);
 app.use('/', statsRouter);
+app.use('/', codeRouter);
 app.use('/api/v1', jwtRouter);
 
 const options: swaggerJSDoc.Options = {

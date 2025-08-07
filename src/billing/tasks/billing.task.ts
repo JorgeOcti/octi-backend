@@ -71,6 +71,7 @@ class BillingQueue {
         now.format('MM'),
         now.format('DD')
       ];
+      console.log(`Getting dolar for ${day}-${month}-${year}`);
       request.get(
         `https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`,
         (err, resp, body) => {
@@ -100,13 +101,27 @@ class BillingQueue {
         $lte: end_date
           .toDate()
       }
-    }, { _id: 1})
-    const iCars = await InventoryCar.find({
-      inventory: {$in: inventories.map((i: {_id: any}) => i._id)}
+    }, { _id: 1, unitForm: 1,  contentForm: 1 });
+
+    // get the ids of the forms without duplicates
+    let formIds: string[] = [];
+    inventories.forEach(i => {
+      if (i.unitForm && !formIds.includes(i.unitForm.toString())) {
+        formIds.push(i.unitForm.toString());
+      }
+      if (i.contentForm && !formIds.includes(i.contentForm.toString())) {
+        formIds.push(i.contentForm.toString());
+      }
     });
 
-    const countCars = await Car.count({
-      _id: {$in: iCars.map((ic: {car: any}) => ic.car)},
+
+    const iCars = await InventoryCar.find({
+      inventory: {$in: inventories.map((i: {_id: any}) => i._id)},
+      container: {$eq: null},
+    });
+
+    const participantCars = await Participant.find({
+      form: {$nin: formIds},
       company: company._id,
       createdAt: {
         $gte: start_date
@@ -114,8 +129,32 @@ class BillingQueue {
         $lte: end_date
           .toDate()
       }
-    })
-    return countCars;
+    }, { car: 1, _id: 0 });
+
+    let totalIds: string[] = participantCars.map((pc: {car: any}) => pc.car).concat(
+      iCars.map((ic: {car: any}) => ic.car)
+    )
+
+    console.log(`Total cars inventory for company ${company.name} (${company._id}): ${iCars.length}`);
+    console.log(`Total unique cars inventory for company ${company.name} (${company._id}): ${new Set(totalIds).size}`);
+    console.log(`Total cars participant for company ${company.name} (${company._id}): ${participantCars.length}`);
+    console.log(`Total unique cars participant for company ${company.name} (${company._id}): ${new Set(participantCars.map(pc => pc.car)).size}`);
+    console.log(`Total cars for company ${company.name} (${company._id}): ${totalIds.length}`);
+    // remove duplicates
+    totalIds = Array.from(new Set(totalIds));
+    console.log(`Total unique cars for company ${company.name} (${company._id}): ${totalIds.length}`);
+
+    const countCars = await Car.find({
+      isContainer: true,
+      _id: { $in: totalIds },
+      // vin dont start with OSA
+      vin: {$regex: /^(?!OSA)/},
+      company: company._id,
+    });
+
+    console.log(`Total containers for company ${company.name} (${company._id}): ${countCars.length}`);
+
+    return countCars.length;
   }
 
   private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {

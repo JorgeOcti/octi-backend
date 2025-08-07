@@ -716,6 +716,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     const containerUpdated = data.metadata.inventory;
       let containers = this.state.containers.map((container: any) => {
         if(containerUpdated.car.isContainer){
+            if(data.isUnitNotification) {
+              return this.updateUnitsContentContainer(container, containerUpdated, data)
+            }
               // Metodo para modificar la data del contenedor
           return this.updateDataContainer(container, containerUpdated, data)
         }else{
@@ -753,10 +756,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
     } else return container
   }
   updateContentContainer(content:any, containerUpdated:any, data:any){
-    if(content.car.vin === containerUpdated.car.vin){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
       let contentTemp = {...content}
       contentTemp.status = containerUpdated.status;
       contentTemp.images = containerUpdated.images;
+      this.showAlert(data);
+      return contentTemp
+    }
+    return content
+  }
+
+  updateUnitsContentContainer(content:any, containerUpdated:any, data:any){
+    if(content.car.vin === containerUpdated.car.vin  && content.inventory === containerUpdated.inventory){
+      let contentTemp = {...content}
+      contentTemp.units = containerUpdated.units;
       this.showAlert(data);
       return contentTemp
     }
@@ -958,6 +971,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       data.cars.forEach((car: any) => {
         datum.push({
+          _id: car._id,
           vin: car.car.vin,
           description: car.extra["Marca"] + ' ' + car.extra["Modelo"] + ' ' + car.car.color,
           images: car.images,
@@ -969,6 +983,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       data.units.filter((unit: any) => unit.hasOwnProperty("description")).forEach((unit: any) => {
         datum.push({
+          _id: unit.participant._id,
           vin: "-",
           description: unit.description || '',
           images: unit.images,
@@ -1139,7 +1154,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         <div className="box">
           <div className="box-header with-border flex flex-space-between">
             {loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
-              Revisión Containers <span className="font-12 font-bold"> <span style={{
+              Revisión contenedores <span className="font-12 font-bold"> <span style={{
               color: 'gray',
               fontWeight: '600'
             }}>{summary.total}</span> {summary.total > 0 ? details : ''}</span>

@@ -1173,7 +1173,7 @@ class CarController {
       let accessories = this.createObjectFromItems(answer.accessories.items);
       datum = {
         [`${formID}-${answer._id.toString()}`]: answer.accesoriesAnswered
-          .map((item) => accessories[item.item] ?? '-')
+          .map((item) => `${accessories[item.item]} ${item.amount > 0 ? item.amount: ""}`  ?? '-')
           .join(';')
       };
     } else if (answer.kind === 'numeric-scale') {
@@ -2101,19 +2101,19 @@ class CarController {
   private validateCode(code: string): string | false {
     const prefixMatch = code.match(/^OSA[A-Z]{2}/);
     if (!prefixMatch) return false;
-  
+
     const prefix = prefixMatch[0];
     const rest = code.slice(prefix.length);
-  
+
     const parts = rest.split("-");
     if (parts.length !== 2) return false;
-  
+
     const numberPart = parts[0];
     const verifierPart = parts[1];
-  
+
     // Validar que el número y verificador tengan formato correcto
     if (!/^\d+$/.test(numberPart) || !/^\d{2}$/.test(verifierPart)) return false;
-  
+
     const expectedVerifier = this.calculateVerifier(Number(numberPart));
     if (expectedVerifier !== verifierPart) return false
     return `${prefix}${numberPart}${verifierPart}`;
@@ -2128,7 +2128,7 @@ class CarController {
     return verificador.toString().padStart(2, "0");
   }
   public apiUnitHistoryByCode = async (req: Request, res: Response) => {
-    
+
     const { code } = req.params;
     const finalCode = this.validateCode(code)
 
@@ -2184,7 +2184,7 @@ class CarController {
       }
       let eventsArray = (car.events || []).filter(e => e.participant || e.status == "created" )
       const cleanEvents = eventsArray?.map((event: any) => {
-        const texts:Record<string, Record<string, string>> = { 
+        const texts:Record<string, Record<string, string>> = {
           'created-undefined':{
             title: `Unidad importada`,
             text: `Esta unidad ha sido ingresada al sistema por <strong> ${event.createdBy?.firstName?event.createdBy?.firstName:""} ${event.createdBy?.lastName? event.createdBy?.lastName : ""}</strong>`,
@@ -2192,49 +2192,49 @@ class CarController {
             color: "bg-green",
             step: "first"
           },
-          'available-reception':{ 
+          'available-reception':{
             title: `Recepción`,
             text: `Unidad disponible en <strong>${event.to?.name}</strong>`,
             icon: "reception",
             color: "bg-green",
             step: "six"
           },
-          'intransit-shipping': { 
+          'intransit-shipping': {
             title:`En transporte`,
             text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
             icon: "truck",
             color: "bg-sky-blue-ligth",
             step: "five"
           },
-          'intransit-delivery': { 
+          'intransit-delivery': {
             title:`En transporte`,
             text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
             icon: "truck",
             color: "bg-sky-blue-ligth",
             step: "five"
           },
-          'intransit-pol': { 
+          'intransit-pol': {
             title:`En transporte internacional`,
             text:`Esta unidad está en tránsito internacional rumbo a <strong>${event.to?.name}</strong>`,
             icon: "ship-load",
             color: "bg-sky-blue",
             step: "third"
           },
-          'available-pod': { 
+          'available-pod': {
             title:`Checklist POD`,
             text:`Unidad disponible en <strong>${event.to?.name}</strong>`,
             icon: "ship-download",
             color: "bg-sky-blue",
             step: "four"
           },
-          'readytoclient-delivery': { 
+          'readytoclient-delivery': {
             title:`Unidad disponible`,
             text:`Esta unidad ha llegado a su destino en <strong>${event.to?.name}</strong>`,
             icon: "check",
             color: "bg-sky-blue",
             step: "four"
           },
-          'sale-shipping': { 
+          'sale-shipping': {
             title:`Entrega a cliente`,
             text:`Esta unidad se ha entregado a su usuario final`,
             icon: "check",
@@ -2288,7 +2288,7 @@ class CarController {
         events: events,
         status: 200
       });
-      
+
     } catch (error) {
       logger.error(error);
       return res.status(500).json(error);
@@ -2461,19 +2461,19 @@ class CarController {
   }
   public groupEventsByMonth = (events: EventItem[]) => { 
     const formatter = new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' });
-  
+
     const grouped: GroupedEvents = {};
-  
+
     events.forEach(event => {
       const date = new Date(event.executedAt);
-      const key = formatter.format(date).charAt(0).toUpperCase() + formatter.format(date).slice(1); 
-      
+      const key = formatter.format(date).charAt(0).toUpperCase() + formatter.format(date).slice(1);
+
       if (!grouped[key]) {
         grouped[key] = [];
       }
       grouped[key].push(event);
     });
-  
+
     const sortedGroups = Object.entries(grouped)
       .sort((a, b) => {
         const dateA = new Date(a[1][0].executedAt);
@@ -2481,10 +2481,10 @@ class CarController {
         return dateB.getTime() - dateA.getTime();
       })
       .map(([label, events]) => ({
-        label, 
+        label,
         events:events.sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime()),
       }));
-  
+
     return sortedGroups;
   }
 

@@ -175,8 +175,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   getDescription = (data: any): string => {
     let description = ""
     if (data.hasOwnProperty("Tipo Carga") && data["Tipo Carga"]) {
-      description = data.hasOwnProperty("Cantidad") && data.Cantidad ?
-        `(${data.Cantidad}) ${data["Tipo Carga"]}` : data["Tipo Carga"];
+      description = data["Tipo Carga"];
     }
     if (data.hasOwnProperty("Descripción") && data.Descripción) {
       description += description ? ` - ${data.Descripción}` : data.Descripción;
@@ -238,7 +237,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     });
     if (!name.trim().length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'El nombre del inventario es obligatorio.',
         'error'
       );
@@ -247,7 +246,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       });
     } else if (!Object.keys(carsByContainer).length) {
       swal!(
-        'Envió inventario',
+        'Importación de Datos',
         'No se ha importado la configuración o no contiene sucursales.',
         'error'
       );
@@ -268,7 +267,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         })
         .then((response: any) => {
           const { message } = response.data;
-          swal!('Envió inventario', message, 'success');
+          swal!('Importación de Datos', message, 'success');
           setTimeout(() => {
             this.setState({
               sending: false
@@ -280,7 +279,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
         .catch((e) => {
           console.log('e', e);
           swal!(
-            'Envió inventario',
+            'Importación de Datos',
             'Se produjo un error al crear el inventario.',
             'error'
           );
@@ -589,7 +588,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {car.isCar ?
                 `${car.brand} - ${car.denomination} - ${car.color}` :
-                car.description
+                `${car.extra["Cantidad"] ? `(${car.extra["Cantidad"]})` : "" } ${car.description}`
 
               }
             </div>
