@@ -1210,7 +1210,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       customStyles={dataTableStyle}
                       expandableRows
                       expandableRowsComponent={ExpandedRowElement}
-                      expandableRowDisabled={(container: any) => !container.units || container.units.length === 0}
+                      expandableRowDisabled={(container: any) => (!container.units || container.units.length === 0) && (!container.cars || container.cars.length === 0)}
                       expandOnRowClicked={true}
                       pagination
                       conditionalRowStyles={conditionalRowStyles}
