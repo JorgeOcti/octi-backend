@@ -25,6 +25,7 @@ const InventoryTable = ({
             data={containers}
             customStyles={dataTableStyle}
             expandableRows
+            expandableRowDisabled={(container: any) => (!container.units || container.units.length === 0) && (!container.cars || container.cars.length === 0)}
             expandableRowsComponent={ExpandedRowElement}
             expandOnRowClicked={true}
             pagination
