@@ -2691,6 +2691,22 @@ class InventoryController {
               }
             },
             {
+              $addFields: {
+                units: {
+                  $filter: {
+                    input: "$units",
+                    as: "unit",
+                    cond: {
+                      $and: [
+                        { $ne: ["$$unit", {}] },
+                        { $ifNull: ["$$unit.participant", false] }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
               $match: containerDateFilter
             },
             { $sort: sortObject },
