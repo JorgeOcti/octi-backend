@@ -66,6 +66,7 @@ import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
 import { IParticipant } from '../../form/interfaces/participant.interface';
+import { OSA_LOGO_SVG } from "../../../src/utils/svg";
 
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
@@ -2692,6 +2693,22 @@ class InventoryController {
               }
             },
             {
+              $addFields: {
+                units: {
+                  $filter: {
+                    input: "$units",
+                    as: "unit",
+                    cond: {
+                      $and: [
+                        { $ne: ["$$unit", {}] },
+                        { $ifNull: ["$$unit.participant", false] }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
               $match: containerDateFilter
             },
             { $sort: sortObject },
@@ -3785,7 +3802,6 @@ class InventoryController {
         path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
         'utf8'
       );
-
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         moment,
@@ -3825,9 +3841,15 @@ class InventoryController {
         //   <h3 style="margin: 0; text-align: right;">24/01/2025 10:25 hrs</h3>
         // </div>
         //     `,
-          footerTemplate: `
-            <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
-              Página <span class="pageNumber"></span> / <span class="totalPages"></span>
+            footerTemplate: `
+            <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: center;">
+              <div>${container.venueFound?.code || 'Dirección no disponible'}</div>
+              <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+              <div style="color: #999; display: flex; align-items: baseline;">
+                Powered by 
+                ${OSA_LOGO_SVG}
+                www.osacontrol.com
+              </div>
             </div>`,
           // this is needed to prevent content from being placed over the footer
           margin: {
