@@ -28,13 +28,12 @@ export interface IResponsePaginateData<S> {
   results: S;
 }
 
-export interface IRequest extends Request {
-  user: IUserModel | IUser;
+export interface IFileRequest extends Request {
   files: Express.Multer.File[];
 }
 
-export interface IRequestPublic extends Request {
-  files: Express.Multer.File[];
+export interface IRequest extends IFileRequest {
+  user: IUserModel | IUser;
 }
 
 export interface IStringKeyObject<T> {

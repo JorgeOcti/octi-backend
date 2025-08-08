@@ -239,6 +239,7 @@ class InventoryController {
     return venue;
   }
 
+
   public async createContainerInventory(req: IRequest, res: Response) {
     let { name, carsByContainer, manualPhoto, reportPhoto } = req.body;
     carsByContainer = JSON.parse(carsByContainer);

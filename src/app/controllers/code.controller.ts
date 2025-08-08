@@ -1,9 +1,8 @@
 import { Response } from 'express';
-import type { IRequest, IRequestPublic } from '../../interfaces/global.interface';
+import type { IFileRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
 import CodeModel from '../models/code.model';
 import CodeFile from '../models/codeFile.model';
-import * as GraphicsMagick from 'gm';
 import GeneralUtils from '../../utils/general.utils';
 import History from '../models/history.model';
 import { ModuleHistory, StatusHistory } from '../models/history.types';
@@ -19,13 +18,13 @@ class CodeController {
     this.linkUnitToCode = this.linkUnitToCode.bind(this);
   }
 
-  public async linkUnitToCode(req: IRequestPublic, res: Response) {
-    try{    
+  public async linkUnitToCode(req: IFileRequest, res: Response) {
+    try{
         const { code } = req.params
         const {description, internalCode, type, fileCode, fileUnit} = req.body
         const codeFind = await CodeModel.findOne({code: code})
         if(!codeFind) return res.status(404).json({ok:false, message: "El código no existe"})
-        
+
         codeFind.description = description
         if(internalCode) codeFind.internalCode = internalCode
         if(type) codeFind.type = type
@@ -41,7 +40,7 @@ class CodeController {
         history.executedAt = new Date()
         await History.create(history)
         return res.status(200).json({
-            ok:true, 
+            ok:true,
             message:"Código actualizado correctamente",
             codeUpdated
         })
@@ -53,7 +52,7 @@ class CodeController {
         });
     }
   }
-  public async uploadFile(req: IRequestPublic, res: Response): Promise<any> {
+  public async uploadFile(req: IFileRequest, res: Response): Promise<any> {
       try {
         const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
         console.log(file)
@@ -85,7 +84,7 @@ class CodeController {
             file.headers = {
               'Content-Type': file.mimetype
             };
-  
+
             codeFile.attach('file', file, async (error: any) => {
               if (error) {
                 /* istanbul ignore next */
@@ -131,29 +130,29 @@ class CodeController {
       }
     }
 
-    private autoRotate(path: string): Promise<any> {
-        // doc http://aheckmann.github.io/gm/docs.html
-        /**** REQUIRE: imagemagick and graphicsmagick *****
-         brew install imagemagick
-         brew install graphicsmagick
-         * */
-        return new Promise((resolve, reject) => {
-          try {
-            GraphicsMagick(path)
-              .autoOrient()
-              .write(path, (err) => {
-                if (err) {
-                  /* istanbul ignore next */
-                  resolve({});
-                } else {
-                  resolve({});
-                }
-              });
-          } catch {
-            resolve({});
-          }
-        });
-    }
+    // private autoRotate(path: string): Promise<any> {
+    //     // doc http://aheckmann.github.io/gm/docs.html
+    //     /**** REQUIRE: imagemagick and graphicsmagick *****
+    //      brew install imagemagick
+    //      brew install graphicsmagick
+    //      * */
+    //     return new Promise((resolve, reject) => {
+    //       try {
+    //         GraphicsMagick(path)
+    //           .autoOrient()
+    //           .write(path, (err) => {
+    //             if (err) {
+    //               /* istanbul ignore next */
+    //               resolve({});
+    //             } else {
+    //               resolve({});
+    //             }
+    //           });
+    //       } catch {
+    //         resolve({});
+    //       }
+    //     });
+    // }
 }
 
 const codeController = new CodeController();
