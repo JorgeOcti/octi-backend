@@ -66,7 +66,7 @@ import { IInventoryFile } from '../interfaces/inventoryFile.interface';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
 import { IParticipant } from '../../form/interfaces/participant.interface';
-import { OSA_LOGO_SVG } from "../../../src/utils/svg";
+import { OSA_LOGO_SVG } from "../../utils/svg";
 
     const statusMap: Record<string, string> = {
       found: 'Encontrado',

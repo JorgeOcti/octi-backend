@@ -70,7 +70,7 @@ import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
 import InventoryCar from '../../inventory/models/inventoryCar.model';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
-import { OSA_LOGO_SVG } from '../../../src/utils/svg';
+import { OSA_LOGO_SVG } from '../../utils/svg';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
