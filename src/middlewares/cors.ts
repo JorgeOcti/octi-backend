@@ -3,6 +3,7 @@ const cors = require ('cors')
 const whiteList = [
   "https://code.osacontrol.cl",
   "https://code.osacontrol.com",
+  "http://localhost:5173"
 ];
 
 export const customCors = cors({

@@ -22,21 +22,23 @@ const historyAlertsSchema = new mongoose.Schema({
 const historySchema = new mongoose.Schema({
   from: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
+    ref: 'Venue',
+    required: false
   },
   to: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
+    ref: 'Venue',
+    required: false
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team',
-    required: true
+    required: false
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: false
   },
   handlerCompany: {
     type: mongoose.Schema.Types.ObjectId,
@@ -47,7 +49,12 @@ const historySchema = new mongoose.Schema({
   car: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Car',
-    required: true
+    required: false
+  },
+  code: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Code',
+    required: false
   },
   status: {
     type: String,
@@ -77,7 +84,7 @@ const historySchema = new mongoose.Schema({
   },
   changeLocation: {
     type: Boolean,
-    required: true,
+    required: false,
     default: false
   },
   current: {
