@@ -70,6 +70,7 @@ import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
 import InventoryCar from '../../inventory/models/inventoryCar.model';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
+import { OSA_LOGO_SVG } from '../../../src/utils/svg';
 
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
@@ -652,15 +653,21 @@ class FormController {
             printBackground: true,
             displayHeaderFooter: true,
             footerTemplate: `
-              <div style="width: 100%; font-size: 10px; text-align: center; padding: 10px;">
-              Página <span class="pageNumber"></span> / <span class="totalPages"></span>
-              </div>`,
-            margin: {
-              top: '0.3in',
-              right: '0.5in',
-              bottom: '0.5in',
-              left: '0.5in'
-            }
+            <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: center;">
+              <div>${participant.venue.name || ''}</div>
+              <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+              <div style="color: #999; display: flex; align-items: baseline;">
+              Powered by 
+              ${OSA_LOGO_SVG}
+              www.osacontrol.com
+              </div>
+            </div>`,
+          margin: {
+            top: '70px',
+            left: '30px',
+            right: '30px',
+            bottom: '70px'
+          },
             });
           await browser.close();
 
