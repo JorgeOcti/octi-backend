@@ -26,6 +26,7 @@ import BorderController from './controllers/admin/border.admin.controller';
 import { distributionRouter } from '../distribution/router';
 import { AppListCompaniesSchema, AppListVenuesSchema } from './inputsSchema';
 import { doubleCsrf } from 'csrf-csrf';
+import codeController from './controllers/code.controller';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -112,6 +113,13 @@ appRouter.get('/api/v1/users/drivers/', Middlewares.isJWTAuthenticated, UserCont
 
 // histories
 appRouter.get('/api/v1/histories/:vin/', Middlewares.isJWTAuthenticated, historyController.searchCar);
+
+//code
+router.options('/api/code/link-unit/:code', customCors, (req, res) => {
+  res.sendStatus(200);
+});
+router.post('/api/code/upload-file/',customCors, codeController.uploadFile);
+router.put('/api/code/link-unit/:code',customCors, codeController.linkUnitToCode);
 
 
 // admin venues

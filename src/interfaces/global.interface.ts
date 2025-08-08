@@ -33,6 +33,10 @@ export interface IRequest extends Request {
   files: Express.Multer.File[];
 }
 
+export interface IRequestPublic extends Request {
+  files: Express.Multer.File[];
+}
+
 export interface IStringKeyObject<T> {
   [key: string]: T;
 }
