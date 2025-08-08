@@ -3,11 +3,11 @@ import type { IParticipant } from '../../form/interfaces/participant.interface';
 import type { IInventory, IInventoryCar } from '../../inventory/interfaces/inventory.interface';
 import type { ModuleHistory, StatusHistory } from '../models/history.types';
 import type { ICar } from './car.interface';
+import { ICode } from './code.interface';
 import type { ICompany } from './company.interface';
 import type { ITeam } from './team.interface';
 import type { IUser } from './user.interface';
 import type { IVenue } from './venue.interface';
-import { ICode } from './code.interface';
 
 export interface IHistoryDamage {
   hasDamages: boolean
@@ -25,7 +25,7 @@ export interface IHistory {
   changeLocation: boolean;
   current: boolean;
   car: ICar | any;
-  code: ICode | null;
+  code: ICode | any;
   createdBy: IUser | any;
   form: IForm | any;
   participant: IParticipant | any;
