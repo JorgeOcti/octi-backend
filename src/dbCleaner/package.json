@@ -1,0 +1,23 @@
+{
+  "name": "andes-data-cleanup",
+  "version": "1.0.0",
+  "description": "Script independiente para limpieza de datos de Andes Backend",
+  "main": "standalone-cleanup-script.js",
+  "scripts": {
+    "cleanup:dry": "node standalone-cleanup-script.js",
+    "cleanup:help": "echo 'Para ejecución real, cambiar DRY_RUN: false en el archivo'",
+    "install": "npm install mongoose readline"
+  },
+  "dependencies": {
+    "mongoose": "^7.8.7",
+    "readline": "^1.3.0"
+  },
+  "keywords": [
+    "mongodb",
+    "cleanup",
+    "andes",
+    "data"
+  ],
+  "author": "",
+  "license": "ISC"
+}
