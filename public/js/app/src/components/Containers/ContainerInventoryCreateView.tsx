@@ -90,9 +90,9 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       flag3 = false;
       message = "Debe incluir Tipo Carga y/o Descripción";
     }
-    if (!(headers.includes("Código") && headers.includes("Marca") && headers.includes("Modelo"))) {
+    if (!(headers.includes("Código") && headers.includes("Marca"))) {
       flag2 = false;
-      message = "Debe incluir Código y Marca y Modelo";
+      message = "Debe incluir Código y Marca";
     }
 
     if (!flag1 && !flag2 && !flag3) {
@@ -221,10 +221,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       "description": this.getDescription,
       "vin": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '') : "",
       "vin2": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6) : "",
-      "brand": (data : any) => data.Marca,
-      "denomination": (data : any) => data.Modelo,
+      "brand": (data : any) => data.Marca || "",
+      "denomination": (data : any) => data.Modelo || "",
       "isContainer": (data: any) => false,
-      "color": (data : any) => data.Color,
+      "color": (data : any) => data.Color || "",
       "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
       "bl": (data: any) => data["N° BL"]
     }
@@ -611,7 +611,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {car.isCar ?
-                `${car.brand} - ${car.denomination}` :
+                `${car.brand} ${car.denomination ? `- ${car.denomination} ` : ""}` :
                 `${car.extra["Cantidad"] ? `(${car.extra["Cantidad"]})` : "" } ${car.description}`
 
               }
