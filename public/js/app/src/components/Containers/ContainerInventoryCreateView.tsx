@@ -114,8 +114,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   readonly mandatoryHeaders = [
     "BIC",
-    "Marca",
-    "Modelo",
     "Cliente Razón Social",
     "RUT Cliente",
     "Manifiesto",
