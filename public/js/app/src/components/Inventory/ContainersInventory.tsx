@@ -973,7 +973,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         datum.push({
           _id: car._id,
           vin: car.car.vin,
-          description: car.extra["Marca"] + ' ' + car.extra["Modelo"] + ' ' + car.car.color,
+          description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color,
           images: car.images,
           updatedAt: car.updatedAt,
           status: car.status,
