@@ -116,151 +116,152 @@ html
             .item
               span.label Precinto:
               span !{container.extra["Sello IN"]}
-      .section-wrapper
-        .section
-          .title Contenidos (!{container.units.length + cars.length})
-          table
-            thead
-              tr
-                th #
-                th Descripción
-                th Daños
-                th Recursos
-                th Responsable
-                th Estado
-            tbody
-              each unit, index in container.units
+      if container.units.length + cars.length > 0
+        .section-wrapper
+          .section
+            .title Contenidos (!{container.units.length + cars.length})
+            table
+              thead
                 tr
-                  td #{index + 1}.
-                  td
-                    div #{unit.description}
-                    if unit.content && unit.content.length > 0
-                      ul
-                        each item in unit.content
-                          li #{item['descripción']}
-                  td #{unit.participant.hasDamages ? 'Con daños' : 'Sin daños'}
-                  td
-                    each assistance in unit.participant.deliveryInfo.assistance
-                      div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
-                  td
-                  td
-              each car, index in cars
-                tr
-                  td #{container.units.length + index + 1}.
-                  td
-                    div #{car.car.vin}
-                    div #{car.car.brand + ' ' + car.car.denomination}
-                  td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
-                  td
-                  td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""}
-                  td #{car.status}
+                  th #
+                  th Descripción
+                  th Daños
+                  th Recursos
+                  th Responsable
+                  th Estado
+              tbody
+                each unit, index in container.units
+                  tr
+                    td #{index + 1}.
+                    td
+                      div #{unit.description}
+                      if unit.content && unit.content.length > 0
+                        ul
+                          each item in unit.content
+                            li #{item['descripción']}
+                    td #{unit.participant.hasDamages ? 'Con daños' : 'Sin daños'}
+                    td
+                      each assistance in unit.participant.deliveryInfo.assistance
+                        div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
+                    td
+                    td
+                each car, index in cars
+                  tr
+                    td #{container.units.length + index + 1}.
+                    td
+                      div #{car.car.vin}
+                      div #{car.car.brand + ' ' + car.car.denomination}
+                    td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
+                    td
+                    td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""}
+                    td #{car.status}
       .section-wrapper
         .section
           .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
           each image in evidences
             .image-box
               img(src=image.file.url, alt="Image")
-
-      .section-wrapper
-        .section
-          .title Detalle de Unidades (!{container.units.length + cars.length} Unidades)
-
-      each unit, index in container.units
+      if container.units.length + cars.length > 0
         .section-wrapper
           .section
-            .title UNIDAD
-            ul.no-bullet
-              li !{unit.description}
-              if unit.content && unit.content.length > 0
-                li
-                  ul
-                    each item in unit.content
-                      li !{item['descripción']}
-            if unit.participant && unit.participant.deliveryInfo && unit.participant.deliveryInfo.assistance.length > 0
-              .title RECURSOS UTILIZADOS
-              ul
-                each assistance in unit.participant.deliveryInfo.assistance
-                  li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
+            .title Detalle de Unidades (!{container.units.length + cars.length} Unidades)
 
-            .title Evidencia Fotográfica Unidad (!{unit.images.length} Fotos)
-            each image in unit.images
-              .image-box
-                img(src=image.file.url, alt="Image")
+        each unit, index in container.units
+          .section-wrapper
+            .section
+              .title UNIDAD
+              ul.no-bullet
+                li !{unit.description}
+                if unit.content && unit.content.length > 0
+                  li
+                    ul
+                      each item in unit.content
+                        li !{item['descripción']}
+              if unit.participant && unit.participant.deliveryInfo && unit.participant.deliveryInfo.assistance.length > 0
+                .title RECURSOS UTILIZADOS
+                ul
+                  each assistance in unit.participant.deliveryInfo.assistance
+                    li !{assistance.item}: !{assistance.amount == 0 ? 1 : assistance.amount}
 
-            if unit.participant && !unit.participant.hasDamages
-              .title SIN DAÑOS
-            else if unit.participant && unit.participant.hasDamages
-              .title DAÑOS
-              if unit.participant.deliveryInfo && unit.participant.deliveryInfo.damageImages && unit.participant.deliveryInfo.damageImages.length > 0
-                each image in unit.participant.deliveryInfo.damageImages
-                  .image-box
-                    img(src=image.file.url, alt="Image")
+              .title Evidencia Fotográfica Unidad (!{unit.images.length} Fotos)
+              each image in unit.images
+                .image-box
+                  img(src=image.file.url, alt="Image")
 
-        hr
-      //- .section-wrapper
-      //-   .section
-      //-     .title Resumen Carga (!{cars.length} Items)
-      //-     table
-      //-       thead
-      //-         tr
-      //-           th #
-      //-           th Tipo
-      //-           th VIN
-      //-           th Marca
-      //-           th Modelo
-      //-           th Responsable
-      //-           th Estado
-      //-       tbody
-      //-         each car, index in cars
-      //-           +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
-      each car, index in cars
-        .section-wrapper
-          .section
-            .title CARGA
-            .item-info
-              .item
-                span.label ITEM:
-                span #{index + 1}
-              .item
-                span.label UNIDAD:
-                span !{car.car.vin}
-              .item
-                span.label MARCA:
-                span !{car.car.brand}
-          .section
-            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
-            each image in car.images
-              .image-box
-                img(src=image.file.url, alt="Image")
+              if unit.participant && !unit.participant.hasDamages
+                .title SIN DAÑOS
+              else if unit.participant && unit.participant.hasDamages
+                .title DAÑOS
+                if unit.participant.deliveryInfo && unit.participant.deliveryInfo.damageImages && unit.participant.deliveryInfo.damageImages.length > 0
+                  each image in unit.participant.deliveryInfo.damageImages
+                    .image-box
+                      img(src=image.file.url, alt="Image")
 
-        .section-wrapper
-          .section
-            if car.damages.length == 0
-              .title SIN DAÑOS
-            else
-              .title DAÑOS
-            each damage, index in car.damages
-              .item-info.bottom-margin
+          hr
+        //- .section-wrapper
+        //-   .section
+        //-     .title Resumen Carga (!{cars.length} Items)
+        //-     table
+        //-       thead
+        //-         tr
+        //-           th #
+        //-           th Tipo
+        //-           th VIN
+        //-           th Marca
+        //-           th Modelo
+        //-           th Responsable
+        //-           th Estado
+        //-       tbody
+        //-         each car, index in cars
+        //-           +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
+        each car, index in cars
+          .section-wrapper
+            .section
+              .title CARGA
+              .item-info
                 .item
-                  span.label DAÑO:
+                  span.label ITEM:
                   span #{index + 1}
-                if damage.kind
+                .item
+                  span.label UNIDAD:
+                  span !{car.car.vin}
+                .item
+                  span.label MARCA:
+                  span !{car.car.brand}
+            .section
+              .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
+              each image in car.images
+                .image-box
+                  img(src=image.file.url, alt="Image")
+
+          .section-wrapper
+            .section
+              if car.damages.length == 0
+                .title SIN DAÑOS
+              else
+                .title DAÑOS
+              each damage, index in car.damages
+                .item-info.bottom-margin
                   .item
-                    span.label TIPO:
-                    span !{damage.kind.name}
-                if damage.position
-                  .item
-                    span.label POSICIÓN:
-                    span !{damage.position.name}
-                if damage.part
-                  .item
-                    span.label PARTE:
-                    span !{damage.part.name}
-                if damage.severity
-                  .item
-                    span.label SEVERIDAD:
-                    span !{damage.severity}
-                each image in damage.images
-                  .image-box
-                    img(src=image.file.url, alt="Image")
-        hr
+                    span.label DAÑO:
+                    span #{index + 1}
+                  if damage.kind
+                    .item
+                      span.label TIPO:
+                      span !{damage.kind.name}
+                  if damage.position
+                    .item
+                      span.label POSICIÓN:
+                      span !{damage.position.name}
+                  if damage.part
+                    .item
+                      span.label PARTE:
+                      span !{damage.part.name}
+                  if damage.severity
+                    .item
+                      span.label SEVERIDAD:
+                      span !{damage.severity}
+                  each image in damage.images
+                    .image-box
+                      img(src=image.file.url, alt="Image")
+          hr
