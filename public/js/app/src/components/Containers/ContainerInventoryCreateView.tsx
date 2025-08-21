@@ -74,17 +74,46 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   readonly inputFile: RefObject<HTMLInputElement>;
   readonly inputBackup: RefObject<HTMLInputElement>;
 
-  readonly anyHeaders = [
-    "Tipo Carga",
-    "Descripción",
-    "Código",
-  ]
+  checkHeaders = (headers: string[]): {ok: boolean, message: string} => {
+    let flag = false;
+    let message = "";
+
+    let flag1 = true
+    let flag3= true
+    let flag2 = true
+
+    if (!headers.includes("Tipo Carga")) {
+      flag1 = false;
+      message = "Debe incluir Tipo Carga y/o Descripción";
+    }
+    if (!headers.includes("Descripción")) {
+      flag3 = false;
+      message = "Debe incluir Tipo Carga y/o Descripción";
+    }
+    if (!(headers.includes("Código") && headers.includes("Marca"))) {
+      flag2 = false;
+      message = "Debe incluir Código y Marca";
+    }
+
+    if (!flag1 && !flag2 && !flag3) {
+      return { ok: false, message: message };
+    }
+
+    for (let header of this.mandatoryHeaders) {
+      if (!headers.includes(header)) {
+        flag = true;
+        message = `Debe incluir ${header}`
+      }
+    }
+
+    if (flag) {
+      return { ok: false, message: message };
+    }
+    return { ok: true, message: "" };
+  }
 
   readonly mandatoryHeaders = [
     "BIC",
-    "Marca",
-    "Modelo",
-    "Color",
     "Cliente Razón Social",
     "RUT Cliente",
     "Manifiesto",
@@ -192,10 +221,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       "description": this.getDescription,
       "vin": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '') : "",
       "vin2": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6) : "",
-      "brand": (data : any) => data.Marca,
-      "denomination": (data : any) => data.Modelo,
+      "brand": (data : any) => data.Marca || "",
+      "denomination": (data : any) => data.Modelo || "",
       "isContainer": (data: any) => false,
-      "color": (data : any) => data.Color,
+      "color": (data : any) => data.Color || "",
       "client": (data : any) => `${data["Cliente Razón Social"]} - ${data["RUT Cliente"]}`,
       "bl": (data: any) => data["N° BL"]
     }
@@ -307,15 +336,10 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       }
     }
 
-    let anyHeaderFlag = false
-    for (let header of this.anyHeaders) {
-      if (data[header]) {
-        anyHeaderFlag = true;
-        break;
-      }
-    }
-    if (!anyHeaderFlag) {
-      return { error: true, message: "Debe ingresar al menos uno de los siguientes campos : " + this.anyHeaders.join(", ") }
+    let anyHeader = this.checkHeaders(Object.keys(data))
+
+    if (!anyHeader.ok) {
+      return { error: true, message: anyHeader.message }
     }
 
     return { error: false }
@@ -587,7 +611,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             </div>
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {car.isCar ?
-                `${car.brand} - ${car.denomination} - ${car.color}` :
+                `${car.brand} ${car.denomination ? `- ${car.denomination} ` : ""}` :
                 `${car.extra["Cantidad"] ? `(${car.extra["Cantidad"]})` : "" } ${car.description}`
 
               }
