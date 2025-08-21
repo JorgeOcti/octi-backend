@@ -3552,6 +3552,13 @@ class InventoryController {
                   path: 'comments.user',
                   select: ['_id', 'firstName', 'lastName']
                 },
+                {
+                  path: 'units.participant',
+                  select: ['name', 'hasDamages', 'createdAt', 'deliveryInfo'],
+                },
+                {
+                  path: 'units.images',
+                }
               ],
               select: { meta: false }
             },
@@ -3568,7 +3575,7 @@ class InventoryController {
                   name: 1
                 }
               }
-            }
+            },
           ])
           .lean()
       ]);
@@ -3846,7 +3853,7 @@ class InventoryController {
               <div>${container.venueFound?.code || 'Dirección no disponible'}</div>
               <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
               <div style="color: #999; display: flex; align-items: baseline;">
-                Powered by 
+                Powered by
                 ${OSA_LOGO_SVG}
                 www.osacontrol.com
               </div>
@@ -5467,6 +5474,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
       inventoryCar = await inventoryCar.save()
 
       // Check if the inventory is inventoryContainer and if there's any inventoryCar pending to be found
+      /*
       if (inventory.containerInventory) {
         await this.closeInventory(inventory, req.user);
         if (inventoryCar.virtualInventory) {
@@ -5479,6 +5487,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
           }
         }
       }
+      */
 
       if(car.isContainer) {
 
