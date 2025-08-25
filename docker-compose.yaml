@@ -31,7 +31,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
-    command: ts-node-dev --trace-warnings --transpile-only --debounce 1000 --files --respawn --max_old_space_size=4096 --watch src src/server.ts
+    command: ts-node-dev --inspect=0.0.0.0:9229 --trace-warnings --transpile-only --debounce 1000 --files --respawn --max_old_space_size=4096 --watch src src/server.ts
     # command: ts-node-dev --files --respawn --transpile-only --max_old_space_size=4096 --watch src src/server.ts
     env_file:
       - .env

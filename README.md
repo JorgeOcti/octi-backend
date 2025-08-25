@@ -43,6 +43,7 @@
         <li><a href="#user">Usuarios disponibles por defecto</a></li>
         <li><a href="#upload">Como subir código</a></li>
         <li><a href="#feedback">Proceso de revisión</a></li>
+        <li><a href="#debug">Debug con VS Code y Docker</a></li>
         <li><a href="#makefile">Makefile</a></li>
       </ul>
     </li>
@@ -325,6 +326,101 @@ Cuando un PR es aprobado y pasa a `develop`, entra en *stage*, el cual es un amb
 Periódicamente se hacen PR desde `develop` a `master` en el repositorio principal. Cuando estos son hechos y aprobados, se pasa el código a producción para uso de los clientes.
 
 La mayor parte del proceso está automatizado; por ende, una vez que cae código nuevo a `develop` o `master`, se hacen los *rebuilds* y se cargan las nuevas *features* en el ambiente correspondiente.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<a id="debug"></a>
+### Debug con VS Code y Docker
+
+La aplicación está configurada para permitir debugging usando VS Code con Docker. Para habilitar el debugging, sigue estos pasos:
+
+#### Configuración del debug
+
+1. **Crear el archivo de configuración de launch**
+   
+   Crea o edita el archivo `.vscode/launch.json` en la raíz del proyecto con la siguiente configuración:
+
+   ```json
+   {
+       "version": "0.2.0",
+       "configurations": [
+           {
+               "name": "Containers: Node.js Launch",
+               "type": "docker",
+               "request": "launch",
+               "preLaunchTask": "docker-run: debug",
+               "platform": "node"
+           },
+           {
+               "name": "Docker Compose: Attach to Node.js",
+               "type": "node",
+               "request": "attach",
+               "port": 9229,
+               "address": "localhost",
+               "localRoot": "${workspaceFolder}/src",
+               "remoteRoot": "/srv/src",
+               "protocol": "inspector",
+               "restart": true,
+               "sourceMaps": true,
+               "skipFiles": [
+                   "<node_internals>/**",
+                   "**/node_modules/**"
+               ],
+               "outFiles": [
+                   "${workspaceFolder}/dist/**/*.js"
+               ],
+               "trace": "verbose"
+           },
+           {
+               "name": "Chrome: Debug Remote Target",
+               "type": "node",
+               "request": "attach",
+               "port": 9229,
+               "address": "localhost",
+               "localRoot": "${workspaceFolder}/src",
+               "remoteRoot": "/srv/src",
+               "protocol": "inspector",
+               "restart": true,
+               "sourceMaps": true,
+               "skipFiles": [
+                   "<node_internals>/**"
+               ]
+           }
+       ]
+   }
+   ```
+
+2. **Iniciar el contenedor en modo debug**
+
+   El docker-compose.yaml ya está configurado para soportar debugging. Para iniciar la aplicación en modo debug, ejecuta:
+
+   ```sh
+   docker compose up -d
+   ```
+
+   O utiliza el task de VS Code disponible: `docker-run: debug`
+
+3. **Conectar el debugger**
+
+   Una vez que los contenedores estén corriendo:
+   
+   - Ve a la pestaña "Run and Debug" en VS Code (Ctrl+Shift+D)
+   - Selecciona una de las configuraciones disponibles:
+     - **"Containers: Node.js Launch"**: Para iniciar el contenedor y conectar automáticamente
+     - **"Docker Compose: Attach to Node.js"**: Para conectarse a un contenedor ya en ejecución
+     - **"Chrome: Debug Remote Target"**: Configuración alternativa para debugging
+   - Presiona F5 o haz clic en el botón de play
+
+4. **Agregar breakpoints**
+
+   Ahora puedes agregar breakpoints en tu código TypeScript en la carpeta `src/` y el debugger se detendrá en esos puntos cuando se ejecute el código.
+
+#### Notas importantes
+
+- El puerto 9229 está expuesto para el debugging inspector de Node.js
+- Los source maps están habilitados para debugging directo en TypeScript
+- La configuración mapea correctamente los archivos locales con los del contenedor
+- El debugger se reconectará automáticamente cuando el código cambie gracias a `ts-node-dev`
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <a id="makefile"></a>
