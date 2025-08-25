@@ -952,7 +952,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       {
         when: (row: any) => {
           const {containerUpdated} = this.state;
-
           if(containerUpdated?.car?.isContainer){
             return row.car.vin === containerUpdated.car?.vin && row.inventory === containerUpdated?.inventory
           }else{
@@ -968,6 +967,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       const { unitLabels } = this.state;
 
       const datum : any[] = [];
+      const descriptions : any[] = [];
+
+      #TODO: Add Tarja description from cars and extra (cantidad y tipo)[Cuando no haya código]
 
       data.cars.forEach((car: any) => {
         datum.push({
@@ -978,6 +980,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           updatedAt: car.updatedAt,
           status: car.status,
           participant: car.participant
+        });
+        descriptions.push({
+          vin: car.car.vin,
+          description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color,
         });
       });
 
@@ -993,144 +999,151 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
       })
 
-      return <div className='table-responsive request-list'>
-        <div className="row request-header bg-request-title ">
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Unidad
+      return <div>
+        <div className='table-responsive request-list'>
+          <div className="row request-header bg-request-title ">
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              Unidad
+            </div>
+            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
+              Descripción
+            </div>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              Fotos
+            </div>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              Fecha desconsolidado
+            </div>
+            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
+              Estado
+            </div>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              Revisión
+            </div>
           </div>
-          <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-            Descripción
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Fotos
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Fecha desconsolidado
-          </div>
-          <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-            Estado
-          </div>
-          <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-            Revisión
-          </div>
-        </div>
-        {datum.map((car: any, index: number) => {
-          let className = `${car.status}Class`;
-          let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
-          return (
-            <div key={index} className={`row request background-transition ${classNameEfect}`}>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
-              </div>
-              <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
-                <strong className="text-black">{car.description}</strong>
-              </div>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                {imagesFormatter(car)}
-              </div>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                <strong
-                  className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
-              </div>
-              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
-                {
-                  (unitLabels.length > 0) ?
-                    <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
-                      <div className="inline-element">
+          {datum.map((car: any, index: number) => {
+            let className = `${car.status}Class`;
+            let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
+            return (
+              <div key={index} className={`row request background-transition ${classNameEfect}`}>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
+                </div>
+                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                  <strong className="text-black">{car.description}</strong>
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  {imagesFormatter(car)}
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  <strong
+                    className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
+                </div>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                  {
+                    (unitLabels.length > 0) ?
+                      <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
+                        <div className="inline-element">
+                          <span
+                            data-toggle="modal"
+                            data-target="#modalForAddLabelUnit"
+
+                            onClick={() => {
+                              this.setState({
+                                inventorySelected: car.inventory, //inventario
+                                carSelected: car._id, //inventory car
+                                cardIDSelected: car.car._id, // car
+                                unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
+                              });
+                            }}
+
+                            className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
+                              ? inventorySettings[className]
+                              : ''
+                            }`}>
+                            {inventorySettings.hasOwnProperty(car.status)
+                              ? inventorySettings[car.status]
+                              : car.state}
+                            <i className="fa fa-plus icon-add-label-units"></i>
+                          </span>
+                        </div>
+                        {
+                          (car.labelText && car.labelText !== '') ?
+                            <div className="row">
+                              <div className="col-xs-12 label-min-with-170">
+                                <p className="text-center-xs label-m-top-16 text-left-sm">
+                                  <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
+                                </p>
+                              </div>
+                            </div> : ''
+                        }
+                      </div>
+                      :
+                      <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                         <span
-                          data-toggle="modal"
-                          data-target="#modalForAddLabelUnit"
-
-                          onClick={() => {
-                            this.setState({
-                              inventorySelected: car.inventory, //inventario
-                              carSelected: car._id, //inventory car
-                              cardIDSelected: car.car._id, // car
-                              unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
-                            });
-                          }}
-
-                          className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
+                          className={`label-units label-${inventorySettings.hasOwnProperty(className)
                             ? inventorySettings[className]
                             : ''
-                          }`}>
+                          }`}
+                          style={{
+                            padding: '5px 10px'
+                          }}>
                           {inventorySettings.hasOwnProperty(car.status)
                             ? inventorySettings[car.status]
                             : car.state}
-                          <i className="fa fa-plus icon-add-label-units"></i>
                         </span>
                       </div>
-                      {
-                        (car.labelText && car.labelText !== '') ?
-                          <div className="row">
-                            <div className="col-xs-12 label-min-with-170">
-                              <p className="text-center-xs label-m-top-16 text-left-sm">
-                                <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
-                              </p>
-                            </div>
-                          </div> : ''
-                      }
-                    </div>
-                    :
-                    <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
-                      <span
-                        className={`label-units label-${inventorySettings.hasOwnProperty(className)
-                          ? inventorySettings[className]
-                          : ''
-                        }`}
-                        style={{
-                          padding: '5px 10px'
-                        }}>
-                        {inventorySettings.hasOwnProperty(car.status)
-                          ? inventorySettings[car.status]
-                          : car.state}
-                      </span>
-                    </div>
-                }
-              </div>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
-                    <React.Fragment>
-                      {' '}
-                      <i
-                        className="fa fa-warning text-red pointer"
-                        data-toggle="tooltip"
-                        data-placement="top"
-                        title="Daños encontrados en esta revisión."
-                        onClick={
-                          () => getParticipant(car.participant._id)
-                        }
-                      />
-                    </React.Fragment>
-                  </ShowIf>
-                    <ShowIf condition={!car.participant?.hasDamages}>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={
-                          () => getParticipant(car.participant._id)
-                        }>
-                        <ShowIf
-                          condition={
-                            !!(
-                              loadingParticipant &&
-                              loadingParticipant === car.participant._id
-                            )
+                  }
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                      <React.Fragment>
+                        {' '}
+                        <i
+                          className="fa fa-warning text-red pointer"
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Daños encontrados en esta revisión."
+                          onClick={
+                            () => getParticipant(car.participant._id)
                           }
-                          alternative={
-                            <i className="fa fw fa-check-square-o" />
-                          }>
-                          <i className="fa fw fa-spin fa-spinner" />
-                        </ShowIf>
-                      </button>
+                        />
+                      </React.Fragment>
                     </ShowIf>
-                  </>
-                  : <></>}
+                      <ShowIf condition={!car.participant?.hasDamages}>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={
+                            () => getParticipant(car.participant._id)
+                          }>
+                          <ShowIf
+                            condition={
+                              !!(
+                                loadingParticipant &&
+                                loadingParticipant === car.participant._id
+                              )
+                            }
+                            alternative={
+                              <i className="fa fw fa-check-square-o" />
+                            }>
+                            <i className="fa fw fa-spin fa-spinner" />
+                          </ShowIf>
+                        </button>
+                      </ShowIf>
+                    </>
+                    : <></>}
 
-              </div>
-            </div>);
-              })}
+                </div>
+              </div>);
+                })}
             </div>
-        }
+        <div>
+          <div>
+            Según el anuncio debe contener:
+          </div>
+        </div>
+      </div>
+    }
 
           return (
           <AppContainer title={
