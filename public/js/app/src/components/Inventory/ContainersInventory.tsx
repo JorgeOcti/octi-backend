@@ -967,9 +967,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       const { unitLabels } = this.state;
 
       const datum : any[] = [];
-      const descriptions : any[] = [];
+      const descriptions : any[] = [{
+        qty: data.extra["Cantidad"],
+        description: `${data.extra["Tipo Carga"]} ${data.extra["Descripción"]}`,
+      }];
 
-      #TODO: Add Tarja description from cars and extra (cantidad y tipo)[Cuando no haya código]
+
 
       data.cars.forEach((car: any) => {
         datum.push({
@@ -1140,6 +1143,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         <div>
           <div>
             Según el anuncio debe contener:
+          </div>
+          <div>
+            {descriptions.map((desc, index) => (
+              <div key={index}>
+                {desc.qty ? <strong>{desc.qty} x </strong> : null} {desc.description}
+              </div>
+            ))}
           </div>
         </div>
       </div>

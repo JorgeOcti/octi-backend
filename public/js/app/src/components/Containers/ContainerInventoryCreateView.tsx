@@ -612,7 +612,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
               {car.isCar ?
                 `${car.brand} ${car.denomination ? `- ${car.denomination} ` : ""}` :
-                `${car.extra["Cantidad"] ? `(${car.extra["Cantidad"]})` : "" } ${car.description}`
+                `${car.extra["Cantidad"] ? `${car.extra["Cantidad"]}` : "" } ${car.description}`
 
               }
             </div>
