@@ -967,10 +967,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       const { unitLabels } = this.state;
 
       const datum : any[] = [];
-      const descriptions : any[] = [{
-        qty: data.extra["Cantidad"],
-        description: `${data.extra["Tipo Carga"]} ${data.extra["Descripción"]}`,
-      }];
+      const descriptions : any[] = [];
+      if(data.extra["Cantidad"] && data.extra["Descripción"] && data.extra["Tipo Carga"]){
+        descriptions.push({
+          qty: data.extra["Cantidad"],
+          description: `${data.extra["Tipo Carga"]} ${data.extra["Descripción"]}`,
+        });
+      }
 
 
 
@@ -1012,6 +1015,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               Descripción
             </div>
             <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
+              Cantidad
+            </div>
+            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
               Fotos
             </div>
             <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
@@ -1034,6 +1040,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
                 <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
                   <strong className="text-black">{car.description}</strong>
+                </div>
+                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                  <strong className="text-black">-</strong>
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                   {imagesFormatter(car)}
@@ -1139,19 +1148,38 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>);
                 })}
+                <div className='tally-description'>
+                <div className="col-12 tally-description-header text-gray-dark">
+                  Según el anuncio debe contener:
+                </div>
+                {descriptions.map((desc, index) => {
+                  return (
+              <div key={index} className={`row request background-transition text-gray-dark`}>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                  <span style={{ 'textDecoration': 'underline' }}>{desc.vin || "-"}</span>
+                </div>
+                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
+                  {desc.description || '-'}
+                </div>
+                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
+                  {desc.qty || '-'}
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                  -
+                </div>
+                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                  -
+                </div>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center cell">
+                  -
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                  -
+                </div>
+              </div>);
+                })}
             </div>
-        <div>
-          <div>
-            Según el anuncio debe contener:
-          </div>
-          <div>
-            {descriptions.map((desc, index) => (
-              <div key={index}>
-                {desc.qty ? <strong>{desc.qty} x </strong> : null} {desc.description}
-              </div>
-            ))}
-          </div>
-        </div>
+            </div>
       </div>
     }
 
@@ -1233,7 +1261,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       customStyles={dataTableStyle}
                       expandableRows
                       expandableRowsComponent={ExpandedRowElement}
-                      expandableRowDisabled={(container: any) => !(container.units && container.units.length) && !(container.cars && container.cars.length)}
                       expandOnRowClicked={true}
                       pagination
                       conditionalRowStyles={conditionalRowStyles}
