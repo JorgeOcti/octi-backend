@@ -219,8 +219,8 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   readonly unitHeaders = {
       "isCar": this.isCar,
       "description": this.getDescription,
-      "vin": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '') : "",
-      "vin2": (data : any) => data["Código"] ? data["Código"].replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6) : "",
+      "vin": (data : any) => data["Código"] ? data["Código"].toString().replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '') : "",
+      "vin2": (data : any) => data["Código"] ? data["Código"].toString().replaceAll(' ', '').replaceAll('-', '').replaceAll('_', '').slice(6) : "",
       "brand": (data : any) => data.Marca || "",
       "denomination": (data : any) => data.Modelo || "",
       "isContainer": (data: any) => false,
