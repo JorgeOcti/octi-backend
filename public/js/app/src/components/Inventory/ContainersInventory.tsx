@@ -968,14 +968,12 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       const datum : any[] = [];
       const descriptions : any[] = [];
-      if(data.extra["Cantidad"] && data.extra["Descripción"] && data.extra["Tipo Carga"]){
+      if (data.extra["Cantidad"] && data.extra["Tipo Carga"]){
         descriptions.push({
           qty: data.extra["Cantidad"],
-          description: `${data.extra["Tipo Carga"]} ${data.extra["Descripción"]}`,
+          description: `${data.extra["Tipo Carga"]} ${data.extra["Descripción"] ? data.extra["Descripción"] : ''}`.trim(),
         });
       }
-
-
 
       data.cars.forEach((car: any) => {
         datum.push({
