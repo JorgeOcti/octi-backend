@@ -2530,16 +2530,24 @@ class InventoryController {
       }
 
       if (clientFilter) {
+        let company = await Company.findOne({
+          _id: new mongoose.Types.ObjectId(clientFilter.toString()),
+        }).populate('team');
+
         let clientCars = await Car.find({
           company: new mongoose.Types.ObjectId(clientFilter.toString()),
         }, { _id: 1});
-        let damagedCars = await InventoryCar.find({
+
+        let inventoryCars = await InventoryCar.find({
           car: {$in: clientCars.map((p: any) => p._id)},
         }, {containerFound: 1, container: 1});
 
-        containerMatch['_id'] = {
-          $in: damagedCars.map((c: any) => c.container || c.containerFound)
-        }
+        containerMatch["$or"] = [{
+          '_id': {
+            $in: inventoryCars.map((c: any) => c.container || c.containerFound)
+          }},
+          {"extra.RUT Cliente" : company?.rut}
+        ]
 
         carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
       }
