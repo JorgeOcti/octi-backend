@@ -371,6 +371,12 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   ],
   assistance: {
     type: [mongoose.Schema.Types.Mixed],
+  },
+  damageComment: {
+    type: String
+  },
+  comment: {
+    type: String
   }
 });
 

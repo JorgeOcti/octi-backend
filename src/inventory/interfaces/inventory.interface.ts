@@ -71,6 +71,7 @@ export interface IInventory {
   virtualInventories: IVirtualInventory[];
   unitForm?: IForm;
   contentForm?: IForm;
+  finishForm?: IForm;
   updatedAt: Date;
   createdAt: Date;
 }

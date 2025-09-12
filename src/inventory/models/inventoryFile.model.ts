@@ -39,8 +39,11 @@ export const inventoryFileSchema = new mongoose.Schema({
     ref: 'User'
   },
   file: fileSchema,
-  thumbnail: fileSchema
-
+  thumbnail: fileSchema,
+  comment: {
+    type: String,
+    required: false
+  }
 }, {
   timestamps: true
 });
