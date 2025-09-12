@@ -1682,7 +1682,7 @@ class FormController {
               logger.debug(`Car: ${JSON.stringify(car)}`);
               if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()){
                 logger.info(`Finishing container inventory form`);
-                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence) => evidence.status === 'empty');
+                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === 'empty');
                 if (!emptyEvideces){
                   emptyEvideces = {
                     status: 'empty',
@@ -1707,7 +1707,7 @@ class FormController {
                 ];
 
                 inventoryCar.evidenceStatus = [
-                  ...inventoryCar.evidenceStatus.filter((evidence) => evidence.status !== 'empty'),
+                  ...inventoryCar.evidenceStatus.filter((evidence: any) => evidence.status !== 'empty'),
                   emptyEvideces
                 ];
 
