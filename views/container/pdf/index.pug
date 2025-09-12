@@ -144,7 +144,8 @@ html
                       each assistance in unit.participant.deliveryInfo.assistance
                         div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
                     td
-                    td
+                      div #{unit.participant.user ? `${unit.participant.user.firstName} ${unit.participant.user.lastName}` : ""}
+                    td #{'Encontrado'}
                 each car, index in cars
                   tr
                     td #{container.units.length + index + 1}.
@@ -160,7 +161,9 @@ html
           .title Evidencia Fotográfica Container (!{evidences.length} Fotos)
           each image in evidences
             .image-box
-              img(src=image.file.url, alt="Image")
+              .content
+                span !{image.comment || ''}
+                //- img(src=image.file.url, alt="Image")
       if container.units.length + cars.length > 0
         .section-wrapper
           .section
@@ -192,47 +195,51 @@ html
                 .title SIN DAÑOS
               else if unit.participant && unit.participant.hasDamages
                 .title DAÑOS
-                if unit.participant.deliveryInfo && unit.participant.deliveryInfo.damageImages && unit.participant.deliveryInfo.damageImages.length > 0
+                if unit.participant.deliveryInfo
+                  span.comment !{unit.participant.deliveryInfo.damageComment || ''}
+                  br
                   each image in unit.participant.deliveryInfo.damageImages
                     .image-box
-                      img(src=image.file.url, alt="Image")
+                      .content
+                        img(src=image.file.url, alt="Image")
 
-          hr
-        //- .section-wrapper
-        //-   .section
-        //-     .title Resumen Carga (!{cars.length} Items)
-        //-     table
-        //-       thead
-        //-         tr
-        //-           th #
-        //-           th Tipo
-        //-           th VIN
-        //-           th Marca
-        //-           th Modelo
-        //-           th Responsable
-        //-           th Estado
-        //-       tbody
-        //-         each car, index in cars
-        //-           +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
-        each car, index in cars
-          .section-wrapper
-            .section
-              .title CARGA
-              .item-info
-                .item
-                  span.label ITEM:
-                  span #{index + 1}
-                .item
-                  span.label UNIDAD:
-                  span !{car.car.vin}
-                .item
-                  span.label MARCA:
-                  span !{car.car.brand}
-            .section
-              .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
-              each image in car.images
-                .image-box
-                  img(src=image.file.url, alt="Image")
+        hr
+      //- .section-wrapper
+      //-   .section
+      //-     .title Resumen Carga (!{cars.length} Items)
+      //-     table
+      //-       thead
+      //-         tr
+      //-           th #
+      //-           th Tipo
+      //-           th VIN
+      //-           th Marca
+      //-           th Modelo
+      //-           th Responsable
+      //-           th Estado
+      //-       tbody
+      //-         each car, index in cars
+      //-           +carResumen(index + 1, car.car.vin, car.car.brand, car.car.denomination , car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : "", car.status)
+      each car, index in cars
+        .section-wrapper
+          .section
+            .title CARGA
+            .item-info
+              .item
+                span.label ITEM:
+                span #{index + 1}
+              .item
+                span.label UNIDAD:
+                span !{car.car.vin}
+              .item
+                span.label MARCA:
+                span !{car.car.brand}
+          .section
+            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
+            each image in car.images
+              .image-box
+                img(src=image.file.url, alt="Image")
+                span !{image.comment}
 
           .section-wrapper
             .section
@@ -265,3 +272,14 @@ html
                     .image-box
                       img(src=image.file.url, alt="Image")
           hr
+
+      if emptyEvidences.length > 0
+        .section
+          .title EVIDENCIA CIERRE
+          each evidence in emptyEvidences
+            .image-box
+                img(src=evidence.file.url, alt="Image")
+          if(lastEmptyComment.length > 0)
+            .title COMENTARIO
+            .empty-evidence
+              span !{lastEmptyComment[0]}
