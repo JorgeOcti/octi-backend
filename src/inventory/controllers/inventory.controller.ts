@@ -3731,6 +3731,7 @@ class InventoryController {
         { path: 'car' },
         { path: 'participant'},
         { path: 'evidenceStatus.images' },
+        { path: 'evidenceStatus.images.comment' },
         { path: 'files' },
         {path: 'units.images'},
         { path: 'units.participant',
@@ -3739,11 +3740,13 @@ class InventoryController {
               path: 'deliveryInfo',
               populate: [{ path: 'damageImages'}],
             },
-
+            {
+              path: 'user'
+            },
          ],
           select: ['_id', 'createdAt', 'hasDamages', 'deliveryInfo']
         }
-      ]);
+      ]).lean();
 
       if (!container) {
         return res.status(404).json({
@@ -3752,9 +3755,10 @@ class InventoryController {
         });
       }
 
-      let evidences = container.evidenceStatus.length ? container.evidenceStatus.map((e: any) => {
-        return e.images;
-      }).flat() : container.images;
+      let evidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status != 'empty').map((e: any) => e.images).flat() : container.images;
+
+      let emptyEvidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status == 'empty').map(e => e.images).flat() : [];
+      let lastEmptyComment = emptyEvidences.map((e: any) => e.comment).reverse();
 
       let statusContainer = inventorySettings[foundStatusContainer(container)];
       container.status = statusContainer;
@@ -3810,19 +3814,21 @@ class InventoryController {
           status
         }
       })
-
       let template: string =
         path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
       const css = fs.readFileSync(
         path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
         'utf8'
       );
+
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         moment,
         cars,
         container,
         evidences,
+        emptyEvidences,
+        lastEmptyComment,
         userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
       })
       if (0) {
