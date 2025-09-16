@@ -3762,7 +3762,12 @@ class InventoryController {
         });
       }
 
-      let evidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status != 'empty').map((e: any) => e.images).flat() : container.images;
+      let evidences = container.evidenceStatus.length ?
+        container.evidenceStatus
+          .filter((e: any) => e.status != 'empty')
+          .map((e: any) => e.images)
+          .flat() :
+        container.images;
 
       let emptyEvidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status == 'empty').map(e => e.images).flat() : [];
       let lastEmptyComment = emptyEvidences.map((e: any) => e.comment).reverse();
