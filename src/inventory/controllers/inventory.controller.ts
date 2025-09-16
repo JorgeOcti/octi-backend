@@ -1226,7 +1226,7 @@ class InventoryController {
         inventoryFile.inventory = id;
         inventoryFile.user = req.user._id;
         inventoryFile.company = company._id;
-        if (comment && comment.toString().trim().length) {
+        if (comment && comment !== "null" && comment.toString().trim().length) {
           inventoryFile.comment = comment.toString().trim();
         }
         // fix exif
