@@ -113,9 +113,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public printPdf(url: string, carLoading: string) {
+    const timezone = moment.tz.guess();
+    window.open(`${url}?timezone=${timezone}`, '_blank');
+    /*
     this.setState({ carLoading });
     let iframe: any = this.printIframe;
-    const timezone = moment.tz.guess();
     if (!this.printIframe) {
       iframe = this.printIframe = document.createElement('iframe');
       window.document.body.appendChild(iframe);
@@ -130,6 +132,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       };
     }
     iframe.src = `${url}?timezone=${timezone}`;
+    */
   }
 
   public componentWillMount(): void {
