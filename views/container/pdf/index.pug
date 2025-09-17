@@ -154,6 +154,8 @@ html
                       div #{car.car.brand + ' ' + car.car.denomination}
                     td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
                     td
+                      each assistance in car.participant.deliveryInfo.assistance
+                        div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
                     td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""}
                     td #{car.status}
       .section-wrapper
