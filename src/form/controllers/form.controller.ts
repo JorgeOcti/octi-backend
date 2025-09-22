@@ -1546,7 +1546,7 @@ class FormController {
                   newParticipant.deliveryInfo.damageImages = answer.images;
                   newParticipant.hasDamages = true;
                 }
-              } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer) {
+              } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer && answer.accesories) {
                 newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
               }  else if (
                 question?.kindUpdate === 'participant.clientSignature'
