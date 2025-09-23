@@ -46,6 +46,29 @@ const inventoryCarContentSchema = new mongoose.Schema({
   id: false,
 });
 
+const contentDetailSchema = new mongoose.Schema({
+  code: {
+    type: String,
+    required: false,
+    default: ''
+  },
+  item: {
+    type: String,
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 1
+  },
+  extra: {
+    type: Object,
+    default: {}
+  }
+},{
+  id: false,
+})
+
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
   ChoicesStatusCarInventory.found,
@@ -169,7 +192,8 @@ const inventoryCarSchema = new mongoose.Schema({
   contentDescription: [{
       type: String,
       required: true
-    }]
+    }],
+  contentDetails: [contentDetailSchema],
 }, {
   timestamps: true
 });

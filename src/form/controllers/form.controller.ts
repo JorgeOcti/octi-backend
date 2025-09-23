@@ -1530,7 +1530,7 @@ class FormController {
                 newParticipant.deliveryInfo.name = comment;
               } else if (question?.kindUpdate === 'participant.clientEmail') {
                 newParticipant.deliveryInfo.email = comment;
-              } else if (question?.kindUpdate === 'participant.damageComment') {
+              } else if (question?.kindUpdate === 'participant.damageComment' && comment) {
                 newParticipant.deliveryInfo.damageComment = comment;
                 newParticipant.hasDamages = true;
               } else if (question?.kindUpdate === 'participant.comment') {

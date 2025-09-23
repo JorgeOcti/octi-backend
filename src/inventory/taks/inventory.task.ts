@@ -168,6 +168,27 @@ class InventoryQueue {
           virtualInventories[virtualInventoryName] = virtualInventory;
         }
         containersByBIC[BIC] = currentContainer._id;
+
+        let contentDetails = [];
+        carsByContainer[BIC].cars.map((item: any)=> {
+          if (!item.isCar) {
+            let qty = parseInt(item.extra['Cantidad'])
+            contentDetails.push({
+              item: item.description,
+              quantity: isNaN(qty) ? 1 : qty,
+              extra: item.extra
+            })
+          } else {
+            contentDetails.push({
+              code: item.vin,
+              item: `${item.denomination} - ${item.brand} - ${item.vin}`,
+              quantity: 1,
+              extra: item.extra
+            })
+          }
+        });
+
+
         inventoryContainers.push({
           inventory: inventory!._id,
           virtualInventory: virtualInventories[virtualInventoryName]._id,
@@ -177,6 +198,7 @@ class InventoryQueue {
           comments: [],
           images: [],
           contentDescription: carsByContainer[BIC].cars.filter((c: any) => !c.isCar).map((c: any) => `${c.description} - ${c.brand}`),
+          contentDetails,
         });
         activityHistories.push({
           team: team._id,

@@ -2633,6 +2633,7 @@ class InventoryController {
                 containerStatus: { $first: "$containerStatus" },
                 extra: { $first: "$extra" },
                 contentDescription: { $first: "$contentDescription" },
+                contentDetails: { $first: "$contentDetails" },
                 evidenceStatus: { $first: "$evidenceStatus" },
                 venueFound: { $first: "$venueFound" },
                 openDate: { $first: "$openDate" },
@@ -2736,6 +2737,7 @@ class InventoryController {
                 evidenceStatus: 1,
                 status: 1,
                 containerStatus: 1,
+                contentDetails: 1,
                 venueFound: 1,
                 venue: 1,
                 extra: 1,
@@ -2802,10 +2804,9 @@ class InventoryController {
       containers.docs = containers.docs.map(c => {
         let tmp = {...c}
         tmp.cars = cars.filter(car => {
-          return (
-            (car.containerFound && car.containerFound.toString() === c._id.toString()) ||
-            (car.container && car.container.toString() === c._id.toString())
-          )
+          return car.containerFound ?
+            car.containerFound.toString() === c._id.toString() :
+            car.container.toString() === c._id.toString()
         });
         return tmp;
       });
@@ -3762,12 +3763,18 @@ class InventoryController {
         });
       }
 
+      logger.debug(JSON.stringify(container.evidenceStatus));
+      logger.debug(JSON.stringify(container.evidenceStatus.length));
+
       let evidences = container.evidenceStatus.length ?
         container.evidenceStatus
           .filter((e: any) => e.status != 'empty')
           .map((e: any) => e.images)
           .flat() :
         container.images;
+
+      logger.debug(JSON.stringify(evidences));
+      logger.debug(JSON.stringify(evidences.length));
 
       let emptyEvidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status == 'empty').map(e => e.images).flat() : [];
       let lastEmptyComment = emptyEvidences.map((e: any) => e.comment).reverse();
@@ -3808,6 +3815,8 @@ class InventoryController {
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]).lean();
+
+      logger.debug(JSON.stringify(cars));
 
       cars = cars.map((tmp: any) => {
         tmp.damages = [];

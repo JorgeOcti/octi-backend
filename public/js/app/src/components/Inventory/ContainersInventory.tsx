@@ -722,7 +722,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               // Metodo para modificar la data del contenedor
           return this.updateDataContainer(container, containerUpdated, data)
         }else{
-          if (container._id !== containerUpdated.container) return container
+          if (container._id !== containerUpdated.containerFound) return container
             let contents = container.cars.map((e:any) => {
               // Metodo para modificar el array de contents del contenedor
               return this.updateContentContainer(e, containerUpdated, data)
@@ -969,13 +969,29 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       const datum : any[] = [];
       const descriptions : any[] = [];
 
-      if (data.contentDescription){
-        data.contentDescription.map((content: any) => {
+      if (data.contentDetails){
+        data.contentDetails.map((content: any) => {
           descriptions.push({
-            description: content,
+            code: content.code,
+            description: content.item,
+            quanty: content.quantity,
           });
-          return content;
-        })
+        });
+      } else {
+        if (data.contentDescription){
+          data.contentDescription.map((content: any) => {
+            descriptions.push({
+              description: content,
+            });
+            return content;
+          })
+        }
+        data.cars.forEach((car: any) => {
+          descriptions.push({
+            vin: car.car.vin,
+            description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color,
+          });
+        });
       }
 
       data.cars.forEach((car: any) => {
@@ -987,10 +1003,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           updatedAt: car.updatedAt,
           status: car.status,
           participant: car.participant
-        });
-        descriptions.push({
-          vin: car.car.vin,
-          description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color,
         });
       });
 
@@ -1157,13 +1169,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   return (
               <div key={index} className={`row request background-transition text-gray-dark`}>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
-                  <span style={{ 'textDecoration': 'underline' }}>{desc.vin || "-"}</span>
+                  <span style={{ 'textDecoration': 'underline' }}>{desc.code || "-"}</span>
                 </div>
                 <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
                   {desc.description || '-'}
                 </div>
                 <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
-                  {desc.qty || '-'}
+                  {desc.quanty || '-'}
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
                   -
