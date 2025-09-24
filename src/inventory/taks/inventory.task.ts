@@ -10,7 +10,7 @@ import Venue, { IVenueModel } from '../../app/models/venue.model';
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
-import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IContentDetail, IInventoryCar } from '../interfaces/inventory.interface';
 import { IUserModel } from '../../app/schemas/user.schema';
 import InventoryCar from '../models/inventoryCar.model';
 import Team from '../../app/models/team.model';
@@ -169,11 +169,12 @@ class InventoryQueue {
         }
         containersByBIC[BIC] = currentContainer._id;
 
-        let contentDetails = [];
+        let contentDetails: IContentDetail[] = [];
         carsByContainer[BIC].cars.map((item: any)=> {
           if (!item.isCar) {
             let qty = parseInt(item.extra['Cantidad'])
             contentDetails.push({
+              code: '',
               item: item.description,
               quantity: isNaN(qty) ? 1 : qty,
               extra: item.extra
