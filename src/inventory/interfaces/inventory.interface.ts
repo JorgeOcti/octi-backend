@@ -27,6 +27,13 @@ export interface IInventoryCarContent {
   images: mongoose.Schema.Types.ObjectId[];
 }
 
+export interface IContentDetail {
+  code: string;
+  item: string;
+  quantity: number;
+  extra: any;
+}
+
 export interface IInventoryCar {
   car: ICar;
   inventory?: mongoose.Schema.Types.ObjectId;
@@ -49,6 +56,7 @@ export interface IInventoryCar {
   virtualInventory?: mongoose.Schema.Types.ObjectId;
   participant?: IParticipant;
   contentDescription?: string;
+  contentDetails?: IContentDetail[];
   units?: IInventoryCarContent[];
   updatedAt?: Date;
   createdAt?: Date;
@@ -71,6 +79,7 @@ export interface IInventory {
   virtualInventories: IVirtualInventory[];
   unitForm?: IForm;
   contentForm?: IForm;
+  finishForm?: IForm;
   updatedAt: Date;
   createdAt: Date;
 }

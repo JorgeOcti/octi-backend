@@ -10,7 +10,7 @@ import Venue, { IVenueModel } from '../../app/models/venue.model';
 import ActivityHistory from '../../billing/models/activityHistory.model';
 import { ChoicesTypeActivity } from '../../billing/models/activiHistory.types';
 import { IActivityHistoryInterface } from '../../billing/interfaces/activityHistory.interface';
-import { IInventoryCar } from '../interfaces/inventory.interface';
+import { IContentDetail, IInventoryCar } from '../interfaces/inventory.interface';
 import { IUserModel } from '../../app/schemas/user.schema';
 import InventoryCar from '../models/inventoryCar.model';
 import Team from '../../app/models/team.model';
@@ -168,6 +168,28 @@ class InventoryQueue {
           virtualInventories[virtualInventoryName] = virtualInventory;
         }
         containersByBIC[BIC] = currentContainer._id;
+
+        let contentDetails: IContentDetail[] = [];
+        carsByContainer[BIC].cars.map((item: any)=> {
+          if (!item.isCar) {
+            let qty = parseInt(item.extra['Cantidad'])
+            contentDetails.push({
+              code: '',
+              item: item.description,
+              quantity: isNaN(qty) ? 1 : qty,
+              extra: item.extra
+            })
+          } else {
+            contentDetails.push({
+              code: item.vin,
+              item: `${item.denomination} - ${item.brand} - ${item.vin}`,
+              quantity: 1,
+              extra: item.extra
+            })
+          }
+        });
+
+
         inventoryContainers.push({
           inventory: inventory!._id,
           virtualInventory: virtualInventories[virtualInventoryName]._id,
@@ -177,6 +199,7 @@ class InventoryQueue {
           comments: [],
           images: [],
           contentDescription: carsByContainer[BIC].cars.filter((c: any) => !c.isCar).map((c: any) => `${c.description} - ${c.brand}`),
+          contentDetails,
         });
         activityHistories.push({
           team: team._id,

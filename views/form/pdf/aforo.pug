@@ -76,13 +76,13 @@ doctype html
     answers: [
       {
         name: "OBSERVACIONES",
-        comment: sections[1].answers[3].comment,
-        images: sections[1].answers[3].images,
+        comment: sections[1].answers[0].comment,
+        images: sections[1].answers[0].images,
       },
       {
         name: "FOTOGRAFÍAS PROCESO AFORO",
-        comment: sections[1].answers[4].comment,
-        images: sections[1].answers[4].images,
+        comment: sections[1].answers[0].comment,
+        images: sections[1].answers[0].images,
       },
     ]
   },
@@ -425,7 +425,7 @@ head
         span.label HUBO RETENCI&Oacute;N
         if sections[2].answers[6] && sections[2].answers[7] && sections[2].answers[6].comment === '' && sections[2].answers[7].length === 0
           span.value NO
-        else 
+        else
           span.value SI
   .info-section
     .info-grid

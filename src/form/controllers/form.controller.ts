@@ -68,7 +68,7 @@ import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
-import InventoryCar from '../../inventory/models/inventoryCar.model';
+import InventoryCar, { ChoicesStatusContainer } from '../../inventory/models/inventoryCar.model';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import { OSA_LOGO_SVG } from '../../utils/svg';
 
@@ -657,7 +657,7 @@ class FormController {
               <div>${participant.venue.name || ''}</div>
               <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
               <div style="color: #999; display: flex; align-items: baseline;">
-              Powered by 
+              Powered by
               ${OSA_LOGO_SVG}
               www.osacontrol.com
               </div>
@@ -1246,6 +1246,9 @@ class FormController {
             status: code
           });
         }
+        logger.info(
+          `InventoryController.checkCarToInventory: car checked to inventory ${inventory} inventoryCar ${JSON.stringify(check)}`
+        );
         inventoryCar = check.inventoryCar;
         inventoryItem = check.inventory;
       }
@@ -1522,10 +1525,16 @@ class FormController {
                 answer.comment
                   ? answer.comment
                   : '';
+              logger.debug(`complete: question.kindUpdate: ${question.kindUpdate} comment: ${comment}`);
               if (question?.kindUpdate === 'participant.clientName') {
                 newParticipant.deliveryInfo.name = comment;
               } else if (question?.kindUpdate === 'participant.clientEmail') {
                 newParticipant.deliveryInfo.email = comment;
+              } else if (question?.kindUpdate === 'participant.damageComment' && comment) {
+                newParticipant.deliveryInfo.damageComment = comment;
+                newParticipant.hasDamages = true;
+              } else if (question?.kindUpdate === 'participant.comment') {
+              newParticipant.deliveryInfo.comment = comment;
               } else if (question?.kindUpdate === 'participant.clientRut') {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.order') {
@@ -1537,7 +1546,7 @@ class FormController {
                   newParticipant.deliveryInfo.damageImages = answer.images;
                   newParticipant.hasDamages = true;
                 }
-              } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer) {
+              } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer && answer.accesories) {
                 newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
               }  else if (
                 question?.kindUpdate === 'participant.clientSignature'
@@ -1668,15 +1677,55 @@ class FormController {
                   req.user as IUserModel
                 );
               }
-              let inventoriedCar = await InventoryController.inventoryCar(
-                req.user as IUserModel,
-                inventoryItem,
-                inventoryCar,
-                files,
-                containerFound
-              );
-              inventoriedCar.participant = newParticipant._id;
-              await inventoryCar.save();
+              logger.info(`Container found: ${containerFound}`);
+              logger.debug(`InventoryCar before update: ${JSON.stringify(inventoryCar)}`);
+              logger.debug(`Car: ${JSON.stringify(car)}`);
+              if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()){
+                logger.info(`Finishing container inventory form`);
+                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === 'empty');
+                if (!emptyEvideces){
+                  emptyEvideces = {
+                    status: 'empty',
+                    date: new Date(),
+                    images: []
+                  }
+                }
+
+                if (newParticipant.deliveryInfo.comment) {
+                  await InventoryFileModel.updateMany({
+                    _id: {$in: files.map((file) => file._id)}
+                  }, {
+                    $set: {
+                      comment: newParticipant.deliveryInfo.comment
+                    }
+                  })
+                }
+
+                emptyEvideces.images = [
+                  ...emptyEvideces.images,
+                  ...files.map((file) => file._id)
+                ];
+
+                inventoryCar.evidenceStatus = [
+                  ...inventoryCar.evidenceStatus.filter((evidence: any) => evidence.status !== 'empty'),
+                  emptyEvideces
+                ];
+
+                inventoryCar.containerStatus = ChoicesStatusContainer.empty;
+                inventoryCar.participant = newParticipant._id;
+                await inventoryCar.save();
+
+              } else {
+                let inventoriedCar = await InventoryController.inventoryCar(
+                  req.user as IUserModel,
+                  inventoryItem,
+                  inventoryCar,
+                  files,
+                  containerFound
+                );
+                inventoriedCar.participant = newParticipant._id;
+                await inventoryCar.save();
+              }
             }
 
             if (description){

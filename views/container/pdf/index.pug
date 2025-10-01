@@ -88,7 +88,7 @@ html
           .info-grid
             .item
               span.label BL:
-              span !{container.car.bl}
+              span !{container.extra["N° BL"]}
             .item
               span.label Puerto Origen:
               span !{container.extra["Puerto Origen"]}
@@ -154,6 +154,9 @@ html
                       div #{car.car.brand + ' ' + car.car.denomination}
                     td #{car.damages && car.damages.length > 0 ? 'Con daños' : 'Sin daños'}
                     td
+                      if car.participant && car.participant.deliveryInfo && car.participant.deliveryInfo.assistance
+                        each assistance in car.participant.deliveryInfo.assistance
+                          div #{assistance.item} (#{assistance.amount == 0 ? 1 : assistance.amount})
                     td #{car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : ""}
                     td #{car.status}
       .section-wrapper
@@ -163,7 +166,7 @@ html
             .image-box
               .content
                 span !{image.comment || ''}
-                //- img(src=image.file.url, alt="Image")
+                img(src=image.file.url, alt="Image")
       if container.units.length + cars.length > 0
         .section-wrapper
           .section

@@ -144,6 +144,8 @@ export interface IParticipantDeliveryInfo {
   plateEvidence: IParticipantFile[];
   assistance: any[];
   damageImages: IParticipantFile[];
+  damageComment: string;
+  comment: string;
 }
 
 export interface IParticipant {

@@ -9,4 +9,5 @@ export interface IInventoryFile {
   company: ICompanyModel;
   user: IUserModel;
   file: IIFile;
+  comment?: string;
 }

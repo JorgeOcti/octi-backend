@@ -254,8 +254,10 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
+        // 67aac5f594ed0a1f9da3478a Medlog
         unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
         contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
+        finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68c432fa00000000007f20a1"),
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),
@@ -1193,6 +1195,7 @@ class InventoryController {
     const { id } = req.params;
     const { company, venue, team } = req.user;
     const { inventoryCardId } = req.body;
+    let { comment } = req.query;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
@@ -1223,6 +1226,9 @@ class InventoryController {
         inventoryFile.inventory = id;
         inventoryFile.user = req.user._id;
         inventoryFile.company = company._id;
+        if (comment && comment !== "null" && comment.toString().trim().length) {
+          inventoryFile.comment = comment.toString().trim();
+        }
         // fix exif
         if (new RegExp('\\bimage\\b').test(file.mimetype)) {
           await this.autoRotate(file.path);
@@ -1364,7 +1370,7 @@ class InventoryController {
       return {ok: false, message: 'El vehículo no está en el inventario', code: 404};
     }
     if (inventoryCar.status === ChoicesStatusCarInventory.found){
-      return {ok: true, message: 'El vehículo ya ha sido inventariado', code: 200};
+      return {ok: true, message: 'El vehículo ya ha sido inventariado', code: 200, inventory, inventoryCar};
     }
     else if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
       return {ok: false, message: 'El vehículo ya ha sido inventariado', code: 404};
@@ -2175,6 +2181,7 @@ class InventoryController {
             virtualInventories: true,
             unitForm: true,
             contentForm: true,
+            finishForm: true,
           }
         ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
 
@@ -2626,6 +2633,7 @@ class InventoryController {
                 containerStatus: { $first: "$containerStatus" },
                 extra: { $first: "$extra" },
                 contentDescription: { $first: "$contentDescription" },
+                contentDetails: { $first: "$contentDetails" },
                 evidenceStatus: { $first: "$evidenceStatus" },
                 venueFound: { $first: "$venueFound" },
                 openDate: { $first: "$openDate" },
@@ -2729,6 +2737,7 @@ class InventoryController {
                 evidenceStatus: 1,
                 status: 1,
                 containerStatus: 1,
+                contentDetails: 1,
                 venueFound: 1,
                 venue: 1,
                 extra: 1,
@@ -2795,10 +2804,9 @@ class InventoryController {
       containers.docs = containers.docs.map(c => {
         let tmp = {...c}
         tmp.cars = cars.filter(car => {
-          return (
-            (car.containerFound && car.containerFound.toString() === c._id.toString()) ||
-            (car.container && car.container.toString() === c._id.toString())
-          )
+          return car.containerFound ?
+            car.containerFound.toString() === c._id.toString() :
+            car.container.toString() === c._id.toString()
         });
         return tmp;
       });
@@ -3755,7 +3763,18 @@ class InventoryController {
         });
       }
 
-      let evidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status != 'empty').map((e: any) => e.images).flat() : container.images;
+      logger.debug(JSON.stringify(container.evidenceStatus));
+      logger.debug(JSON.stringify(container.evidenceStatus.length));
+
+      let evidences = container.evidenceStatus.length ?
+        container.evidenceStatus
+          .filter((e: any) => e.status != 'empty')
+          .map((e: any) => e.images)
+          .flat() :
+        container.images;
+
+      logger.debug(JSON.stringify(evidences));
+      logger.debug(JSON.stringify(evidences.length));
 
       let emptyEvidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status == 'empty').map(e => e.images).flat() : [];
       let lastEmptyComment = emptyEvidences.map((e: any) => e.comment).reverse();
@@ -3796,6 +3815,8 @@ class InventoryController {
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]).lean();
+
+      logger.debug(JSON.stringify(cars));
 
       cars = cars.map((tmp: any) => {
         tmp.damages = [];
