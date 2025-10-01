@@ -28,6 +28,7 @@ import { connect } from 'react-redux';
 import { parseReplicableURL } from '../../utils/common';
 import { ModuleHistory, StatusHistory } from '../../../../../../src/app/models/history.types';
 import { ChoicesStatusCarInventory } from '../../../../../../src/app/models/inventoryCar.types';
+import Code from '../../../../../../src/app/models/code.model';
 
 enum HistoryColors {
   GREEN = "bg-green",
@@ -124,6 +125,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     const { loading, car } = this.props.cars;
     const { params } = this.props.match;
     const isSameCar = !!(car?._id === params.id);
+    const isOSACode = car?.vin?.toLowerCase().startsWith('osa');
     const groupedEvents = car?.events.reduce((groups: { [key: string]: any[] }, event: any) => {
       const date = moment(event.createdAt);
       const monthKey = date.format('YYYY-MM'); // Format as YYYY-MM for sorting
@@ -139,6 +141,7 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
     return (
       <AppContainer
         title={`${isSameCar ? car?.vin : ''}`}
+        isOSACode={isOSACode}
         cMenu="1"
         cSubMenu="1.0"
         cAction="Detalle">
@@ -152,6 +155,57 @@ class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                   <div className="overlay">
                     <i className="fa fa-spinner fa-spin text-purple" />
+                  </div>
+                </div>
+              ) : isOSACode ? (
+                <div className="box box-primary">
+                  <div className="box-body box-profile">
+                    <h3 className="profile-username text-center text-black">
+                      {car && car.brand ? car.brand : '-'}
+                    </h3>
+                    <p className="text-muted text-center text-black">
+                      {car && car.denomination ? car.denomination : '-'}
+                    </p>
+                    <ul className="list-group list-group-unbordered no-margin text-muted">
+                      <li className="list-group-item">
+                        <strong className='osacode-text-color'>
+                          <img src="/static/images/files/icon_osacode.png" className='osacode-icon small' alt="icon" />
+                          <span>OSA Code</span>
+                        </strong>
+                        <span className="pull-right text-primary">
+                          <CopyText value={car?.vin ?? ''}>
+                            <strong className='osacode-text-color'>
+                              {car && car.vin ? car.vin : '-'}
+                              </strong>
+                          </CopyText>
+                        </span>
+                      </li>
+                        <li className="list-group-item">
+                        <strong>Código</strong>
+                        <span className="pull-right text-primary">
+                          <CopyText value={car?.vin ?? ''}>
+                            <strong>
+                              {car && car.vin ? car.vin : '-'}
+                              </strong>
+                          </CopyText>
+                        </span>
+                      </li>
+                      <li className="list-group-item">
+                        <strong>Color</strong>
+                        <strong className="pull-right">
+                          {car && car.color ? car.color : '-'}
+                        </strong>
+                      </li>
+                    </ul>
+                    <button
+                      className="btn btn-primary btn-block"
+                      onClick={() => {
+                        this.props.history.replace(
+                          parseReplicableURL(`/cars/${car?._id}`)
+                        );
+                      }}>
+                      <strong>Ver Controles</strong>
+                    </button>
                   </div>
                 </div>
               ) : (
