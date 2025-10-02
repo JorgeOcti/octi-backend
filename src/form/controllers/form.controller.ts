@@ -1725,8 +1725,6 @@ class FormController {
                   files,
                   containerFound
                 );
-                // inventoriedCar.participant = newParticipant._id;
-
               }
             }
 
