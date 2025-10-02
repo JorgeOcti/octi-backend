@@ -1384,7 +1384,7 @@ class InventoryController {
       const {team} = user;
       const teamSettings = await TeamSetting.findOne({ team });
       inventoryCar.venueFound = venueId;
-      await inventoryCar.populate('car.participant');
+      await inventoryCar.populate('participant');
       if (containerFound){
         let inventoryContainer = await InventoryCar.findOne({
           _id: new mongoose.Types.ObjectId(containerFound),

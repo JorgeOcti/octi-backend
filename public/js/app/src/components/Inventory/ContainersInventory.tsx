@@ -708,7 +708,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       });
     });
     this.socket.on('REFRESH', (data: any): void => {
-      console.log(data);
      this.updateDataContainersRealTime(data);
     });
 
@@ -761,6 +760,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let contentTemp = {...content}
       contentTemp.status = containerUpdated.status;
       contentTemp.images = containerUpdated.images;
+      contentTemp.participant = data.metadata.inventory.participant;
       this.showAlert(data);
       return contentTemp
     }
