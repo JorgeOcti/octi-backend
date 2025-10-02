@@ -1384,6 +1384,7 @@ class InventoryController {
       const {team} = user;
       const teamSettings = await TeamSetting.findOne({ team });
       inventoryCar.venueFound = venueId;
+      await inventoryCar.populate('car.participant');
       if (containerFound){
         let inventoryContainer = await InventoryCar.findOne({
           _id: new mongoose.Types.ObjectId(containerFound),
@@ -1503,10 +1504,10 @@ class InventoryController {
       }
       let { inventoryCar, inventory } = check;
       inventoryCar = await inventoryCar!.populate([
-        {path: 'car'},
+        {path: 'car',},
         {path: 'evidenceStatus'},
         {path: 'evidenceStatus.images'},
-        {path: 'images'}
+        {path: 'images'},
       ]);
 
       let imageFiles: any[] = [];

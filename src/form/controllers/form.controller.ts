@@ -1716,15 +1716,17 @@ class FormController {
                 await inventoryCar.save();
 
               } else {
-                let inventoriedCar = await InventoryController.inventoryCar(
+                inventoryCar.participant = newParticipant._id;
+                await inventoryCar.save();
+                await InventoryController.inventoryCar(
                   req.user as IUserModel,
                   inventoryItem,
                   inventoryCar,
                   files,
                   containerFound
                 );
-                inventoriedCar.participant = newParticipant._id;
-                await inventoryCar.save();
+                // inventoriedCar.participant = newParticipant._id;
+
               }
             }
 
