@@ -825,6 +825,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       loadingSummary: true,
       pagination: {
         ...this.state.pagination,
+        page: 1,
         filters: {},
       }
     }, () => {
@@ -896,6 +897,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         loadingSummary: true,
         pagination: {
           ...this.state.pagination,
+          page: 1,
           filters: {
             ...this.state.pagination.filters,
             [filter]: value
