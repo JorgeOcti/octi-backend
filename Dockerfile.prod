@@ -77,6 +77,8 @@ RUN tsc --project tsconfig.json
 
 WORKDIR /srv/public/js/app
 
+RUN npm i
+
 RUN npm run build
 
 WORKDIR /srv
