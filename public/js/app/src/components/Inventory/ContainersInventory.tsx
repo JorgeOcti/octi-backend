@@ -760,6 +760,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       let contentTemp = {...content}
       contentTemp.status = containerUpdated.status;
       contentTemp.images = containerUpdated.images;
+      contentTemp.participant = data.metadata.inventory.participant;
       this.showAlert(data);
       return contentTemp
     }

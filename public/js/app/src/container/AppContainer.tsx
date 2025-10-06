@@ -13,6 +13,7 @@ interface IPropsType extends RouteComponentProps<{}> {
   children: JSX.Element;
   router: any;
   title: any;
+  isOSACode?: boolean;
   cMenu: string;
   cSubMenu: string;
   cAction?: string;
@@ -26,6 +27,7 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     title: PropTypes.any.isRequired,
+    isOSACode: PropTypes.bool,
     cMenu: PropTypes.string.isRequired,
     cSubMenu: PropTypes.string.isRequired,
     cAction: PropTypes.string
@@ -44,7 +46,7 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { title, cMenu, cSubMenu, cAction } = this.props;
+    const { title, cMenu, cSubMenu, cAction, isOSACode } = this.props;
     const { location: { query } } = this.props.router;
     if (query?.integration === 'webview') {
       return (
@@ -60,7 +62,10 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
         <div className='content-wrapper' style={{ minHeight: `${window.innerHeight - 51}px` }}>
           <section className='content-header'>
             <ShowIf condition={typeof title === 'string'} alternative={title ??<h1>&nbsp;</h1>}>
-              <h1>{title ?? ''}&nbsp;</h1>
+              <h1 className={`flex items-center ${isOSACode ? 'osacode-text-color' : ''}`}>
+                {isOSACode && <img src="/static/images/files/icon_osacode.png" className='osacode-icon' alt="icon" />}
+                {title ?? ''}&nbsp;
+              </h1>
             </ShowIf>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction} />
           </section>
