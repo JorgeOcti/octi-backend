@@ -1694,6 +1694,8 @@ class FormController {
 
                 openEvidences.images = files.map((file) => file._id);
                 inventoryCar.evidenceStatus = [openEvidences];
+                inventoryCar.inventoriedBy = newParticipant.user;
+                inventoryCar.venueFound = newParticipant.venue;
 
                 inventoryCar.containerStatus = ChoicesStatusContainer.open;
                 inventoryCar.status = ChoicesStatusCarInventory.found;
