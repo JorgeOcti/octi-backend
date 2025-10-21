@@ -43,6 +43,10 @@ export const inventoryFileSchema = new mongoose.Schema({
   comment: {
     type: String,
     required: false
+  },
+  showDamage: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

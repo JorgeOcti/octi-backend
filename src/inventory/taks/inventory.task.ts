@@ -223,7 +223,7 @@ class InventoryQueue {
 
       inventoryContainers = await InventoryCar.insertMany(inventoryContainers);
       inventoryContainers.forEach((container: any) => {
-        containersByBIC[container.extra.BIC] = container._id;
+        containersByBIC[container.vin] = container._id;
       })
 
       let inventoryCars = [];
