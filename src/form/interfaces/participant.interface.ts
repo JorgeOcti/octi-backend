@@ -146,6 +146,7 @@ export interface IParticipantDeliveryInfo {
   damageImages: IParticipantFile[];
   damageComment: string;
   comment: string;
+  seal: string;
 }
 
 export interface IParticipant {

@@ -377,7 +377,10 @@ const participantDeliveryInfoSchema = new mongoose.Schema({
   },
   comment: {
     type: String
-  }
+  },
+  seal: {
+    type: String
+  },
 });
 
 const webQuestionSchema = new mongoose.Schema({

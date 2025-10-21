@@ -1537,6 +1537,8 @@ class FormController {
               newParticipant.deliveryInfo.comment = comment;
               } else if (question?.kindUpdate === 'participant.clientRut') {
                 newParticipant.deliveryInfo.rut = comment;
+              } else if (question?.kindUpdate === 'participant.seal') {
+                newParticipant.deliveryInfo.seal = comment;
               } else if (question?.kindUpdate === 'participant.order') {
                 newParticipant.deliveryInfo.order = comment;
               } else if (question?.kindUpdate === 'participant.parking') {
