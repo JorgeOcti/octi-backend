@@ -2798,6 +2798,7 @@ class InventoryController {
                 extra: 1,
                 openDate: 1,
                 openParticipant: 1,
+                closeParticipant: 1,
                 emptyDate: 1,
                 inventory: 1,
                 units: 1,
