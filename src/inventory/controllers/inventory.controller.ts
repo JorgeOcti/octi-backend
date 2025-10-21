@@ -2186,6 +2186,8 @@ class InventoryController {
             unitForm: true,
             contentForm: true,
             finishForm: true,
+            openForm: true,
+            contentType: true,
           }
         ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
 
@@ -2603,6 +2605,7 @@ class InventoryController {
               }
             },
             { $unwind: {path: '$car'} },
+
             { $match: { 'car.isContainer': true } }, // Filter for container cars
             { $match: containerMatch },
             { $unwind: { path: "$units", preserveNullAndEmptyArrays: true } },
@@ -2644,11 +2647,59 @@ class InventoryController {
                 cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
                 createdAt: { $first: "$createdAt" },
                 updatedAt: { $first: "$updatedAt" },
-                units: { $push: "$units" }, // Push the modified units back into an array
+                units: { $push: "$units" },
+                openParticipant: {$first: "$openParticipant"},
+                closeParticipant: {$first: "$closeParticipant"},// Push the modified units back into an array
                 // To include other root fields, you'd list them here, e.g.,
                 // otherField: { $first: "$otherField" }
               }
             },
+            {
+              $lookup: {
+                from: 'participants',
+                localField: 'openParticipant',
+                foreignField: '_id',
+                as: 'openParticipant',
+                pipeline: [
+                  { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
+                  { $lookup: {
+                      from: 'users',
+                      localField: 'user',
+                      foreignField: '_id',
+                      as: 'user',
+                      pipeline: [
+                        { $project: { firstName: 1, lastName: 1, email: 1 } }
+                      ]
+                    }
+                  },
+                  { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+                ]
+              }
+            },
+            {$unwind: {path: "$openParticipant", preserveNullAndEmptyArrays: true }},
+            {
+              $lookup: {
+                from: 'participants',
+                localField: 'closeParticipant',
+                foreignField: '_id',
+                as: 'closeParticipant',
+                pipeline: [
+                  { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
+                  { $lookup: {
+                      from: 'users',
+                      localField: 'user',
+                      foreignField: '_id',
+                      as: 'user',
+                      pipeline: [
+                        { $project: { firstName: 1, lastName: 1, email: 1 } }
+                      ]
+                    }
+                  },
+                  { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+                ]
+              }
+            },
+            {$unwind: {path: "$closeParticipant", preserveNullAndEmptyArrays: true }},
             {
               $lookup: {
                 from: 'inventoryfiles',
@@ -2746,6 +2797,7 @@ class InventoryController {
                 venue: 1,
                 extra: 1,
                 openDate: 1,
+                openParticipant: 1,
                 emptyDate: 1,
                 inventory: 1,
                 units: 1,

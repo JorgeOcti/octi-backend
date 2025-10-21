@@ -188,6 +188,16 @@ const inventoryCarSchema = new mongoose.Schema({
     ref: 'Participant',
     required: false
   },
+  openParticipant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    required: false
+  },
+  closeParticipant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    required: false
+  },
   units: [inventoryCarContentSchema],
   contentDescription: [{
       type: String,

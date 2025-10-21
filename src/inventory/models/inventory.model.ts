@@ -59,6 +59,16 @@ export const choicesStatusInventory = [
   ChoicesStatusInventory.finalized
 ];
 
+export enum ContainerInventoryContentType {
+  coded_items = 'coded-items',
+  general_items = 'general-items',
+}
+
+export const containerInventoryContentTypes = [
+  ContainerInventoryContentType.coded_items,
+  ContainerInventoryContentType.general_items
+];
+
 const inventorySchema = new mongoose.Schema({
   name: {
     type: String
@@ -127,6 +137,16 @@ const inventorySchema = new mongoose.Schema({
     required: false
   },
   contentForm: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form',
+    required: false
+  },
+  contentType: {
+    type: String,
+    enum: containerInventoryContentTypes,
+    required: false
+  },
+  openForm: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
     required: false

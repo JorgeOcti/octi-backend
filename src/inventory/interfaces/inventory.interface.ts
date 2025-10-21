@@ -58,6 +58,8 @@ export interface IInventoryCar {
   contentDescription?: string;
   contentDetails?: IContentDetail[];
   units?: IInventoryCarContent[];
+  openParticipant?: mongoose.Schema.Types.ObjectId;
+  closeParticipant?: mongoose.Schema.Types.ObjectId;
   updatedAt?: Date;
   createdAt?: Date;
 }
@@ -80,6 +82,8 @@ export interface IInventory {
   unitForm?: IForm;
   contentForm?: IForm;
   finishForm?: IForm;
+  openForm?: IForm;
+  contentType: string;
   updatedAt: Date;
   createdAt: Date;
 }
