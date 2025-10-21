@@ -68,7 +68,9 @@ import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
 import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
-import InventoryCar, { ChoicesStatusContainer } from '../../inventory/models/inventoryCar.model';
+import InventoryCar, {
+  ChoicesStatusContainer
+} from '../../inventory/models/inventoryCar.model';
 import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import { OSA_LOGO_SVG } from '../../utils/svg';
 
@@ -1682,12 +1684,28 @@ class FormController {
               logger.info(`Container found: ${containerFound}`);
               logger.debug(`InventoryCar before update: ${JSON.stringify(inventoryCar)}`);
               logger.debug(`Car: ${JSON.stringify(car)}`);
-              if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()){
+              if (car.isContainer && inventoryItem.openForm.toString() === form._id.toString()){
+                logger.info(`Opening container inventory form`);
+                let openEvidences : any = {
+                  status: ChoicesStatusContainer.open,
+                  date: new Date(),
+                  images: []
+                };
+
+                openEvidences.images = files.map((file) => file._id);
+                inventoryCar.evidenceStatus = [openEvidences];
+
+                inventoryCar.containerStatus = ChoicesStatusContainer.open;
+                inventoryCar.status = ChoicesStatusCarInventory.found;
+                inventoryCar.openParticipant = newParticipant._id;
+                await inventoryCar.save();
+
+              } else if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()) {
                 logger.info(`Finishing container inventory form`);
-                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === 'empty');
-                if (!emptyEvideces){
+                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === ChoicesStatusContainer.empty);
+                if (!emptyEvideces) {
                   emptyEvideces = {
-                    status: 'empty',
+                    status: ChoicesStatusContainer.empty,
                     date: new Date(),
                     images: []
                   }
@@ -1709,14 +1727,14 @@ class FormController {
                 ];
 
                 inventoryCar.evidenceStatus = [
-                  ...inventoryCar.evidenceStatus.filter((evidence: any) => evidence.status !== 'empty'),
+                  ...inventoryCar.evidenceStatus.filter((evidence: any) => evidence.status !== ChoicesStatusContainer.empty),
                   emptyEvideces
                 ];
 
                 inventoryCar.containerStatus = ChoicesStatusContainer.empty;
-                inventoryCar.participant = newParticipant._id;
-                await inventoryCar.save();
 
+                inventoryCar.closeParticipant = newParticipant._id;
+                await inventoryCar.save();
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();
@@ -1730,7 +1748,7 @@ class FormController {
               }
             }
 
-            if (description){
+            if (description) {
               logger.info(`Adding description`);
               let container = await InventoryCar.findOne({
                 _id: new mongoose.Types.ObjectId(containerFound),
