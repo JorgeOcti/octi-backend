@@ -10,4 +10,5 @@ export interface IInventoryFile {
   user: IUserModel;
   file: IIFile;
   comment?: string;
+  showDamage?: boolean;
 }

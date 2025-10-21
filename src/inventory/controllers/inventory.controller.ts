@@ -1195,7 +1195,7 @@ class InventoryController {
     const { id } = req.params;
     const { company, venue, team } = req.user;
     const { inventoryCardId } = req.body;
-    let { comment } = req.query;
+    let { comment, damage } = req.query;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
@@ -1228,6 +1228,9 @@ class InventoryController {
         inventoryFile.company = company._id;
         if (comment && comment !== "null" && comment.toString().trim().length) {
           inventoryFile.comment = comment.toString().trim();
+        }
+        if (damage && damage === '1') {
+          inventoryFile.showDamage = true;
         }
         // fix exif
         if (new RegExp('\\bimage\\b').test(file.mimetype)) {
