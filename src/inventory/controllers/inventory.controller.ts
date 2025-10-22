@@ -3818,6 +3818,7 @@ class InventoryController {
         },
         {
           path: 'openParticipant',
+          populate: [{path: 'company'}]
         }
       ]).lean();
 

@@ -113,13 +113,13 @@ html(lang="es")
           .logo-placeholder
                       img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
           .company
-            h2 NOMBRE DE TU EMPRESA PARA DEMOSTRACIÓN
+            h2= container.openParticipant.company.name.toUpperCase()
             .meta
-              | GIRO/ACTIVIDAD EMPRESARIAL
+              | Giro: SERVICIOS EXTRAPORTUARIOS
               br
-              | Dirección: Calle Ficticia 123, Ciudad, País
+              | Dirección: !{container.venueFound.code || 'Dirección no disponible'}
               br
-              | Email: contacto@empresa.com · Tel: +56 2 2345 6789
+              | Email: CHL-info@medlog.com · Tel: +562 2763 9500
       .doc-title DESCONSOLIDADO DE CONTENEDOR
 
       section.primary
@@ -154,9 +154,9 @@ html(lang="es")
       section.section-box.box
         .section-title RECURSOS TOTALES
         .listish
-          | 2 × Grúa 4T × 2
-          br
-          | 1 × Supervisor A × 1 × 10 h
+          each item in container.closeParticipant.deliveryInfo.assistance
+            | - !{item.amount == 0 ? '1' : item.amount} x !{item.item}
+            br
 
       section.section-box.box
         .section-title RESUMEN FINAL DE CARGA
