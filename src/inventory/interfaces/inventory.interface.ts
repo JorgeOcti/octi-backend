@@ -36,7 +36,7 @@ export interface IContentDetail {
 
 export interface IInventoryCar {
   car: ICar;
-  inventory?: mongoose.Schema.Types.ObjectId;
+  inventory?: mongoose.Schema.Types.ObjectId | IInventory;
   venue: IVenue;
   venueFound?: IVenue;
   comments: IInventoryComment[];

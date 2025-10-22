@@ -1,0 +1,199 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    style.
+      body {
+        margin: 0;
+        font-family: Inter, Roboto, Arial, sans-serif;
+        background: #f9f9f9;
+        color: #222;
+      }
+
+      .container { background: #fff; }
+
+      .topline {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        letter-spacing: .03em;
+      }
+
+      .header { border-bottom: 1px solid #e4e4e4; border-radius: 4px; padding: 16px; }
+
+      .header-grid {
+        display: grid;
+        grid-template-columns: 120px 1fr auto;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .logo-placeholder {
+        height: 64px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 12px;
+      }
+
+      .company h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; }
+      .company .meta { font-size: 12px; color: #666; line-height: 1.5; }
+
+      .doc-meta { text-align: right; font-size: 12px; }
+
+      .doc-title { text-align: center; font-size: 22px; font-weight: 700; margin-top: 16px; }
+
+      .primary { padding: 16px; margin-top: 24px; }
+
+      .primary-grid { border: 1px solid #e4e4e4; border-radius: 4px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 16px; }
+
+      .code-box { border-bottom: 3px solid #ddd; padding: 12px; }
+
+      .label { font-size: 12px; font-weight: bold; color: #777; text-transform: uppercase; letter-spacing: .03em; }
+
+      .primary-grid .label { font-size: 12px; font-weight: bold; color: #777; text-transform: uppercase; letter-spacing: .03em; }
+
+      .big-code { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+      .kv {
+        border-bottom: 3px solid #ddd;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 6px 12px;
+      }
+
+      .primary-grid .kv .value { font-size: 16px; font-weight: 300; }
+      .kv .value { font-size: 13px; font-weight: 600; }
+
+      .details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+
+      .cell { border-bottom: 3px solid #ddd; padding: 0 10px; min-height: 48px; }
+      .cell .value { font-weight: 600; margin-top: 4px; font-size: 13px; color: #666; }
+
+      .section-box { padding: 12px; margin-top: 20px; }
+      .section-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+      .listish { font-size: 15px; line-height: 1.6; }
+      .box {
+        border: 1px solid #e4e4e4;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: #777;
+        margin-top: 32px;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+      }
+      .evidence-section { padding: 16px; margin-top: 24px; page-break-before: always; page-break-inside: avoid; }
+      .evidence-title { font-weight: 700; font-size: 16px; margin-bottom: 12px; }
+      .evidence-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; border: 1px solid #e4e4e4; }
+
+      .evidence-card { border-radius: 4px; padding: 8px; page-break-inside: avoid; break-inside: avoid; }
+
+      .caption { font-size: 18px; color: #444; margin: 4px 4px 10px; min-height: 1em; }
+      .caption:empty { display: none; }
+
+      .image-frame { background: #cbd9e6; overflow: hidden; }
+      .image-frame img { width: 100%; object-fit: cover; display: block; align-self: center; }
+      .break-before { page-break-before: always; }
+  body
+    .container
+      section.header
+        .header-grid
+          .logo-placeholder
+                      img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
+          .company
+            h2 NOMBRE DE TU EMPRESA PARA DEMOSTRACIÓN
+            .meta
+              | GIRO/ACTIVIDAD EMPRESARIAL
+              br
+              | Dirección: Calle Ficticia 123, Ciudad, País
+              br
+              | Email: contacto@empresa.com · Tel: +56 2 2345 6789
+      .doc-title DESCONSOLIDADO DE CONTENEDOR
+
+      section.primary
+        .primary-grid
+          .code-box
+            .label Contenedor
+            .big-code= container.car.vin
+          .kv
+            .label Fecha apertura
+            .value !{container.openParticipant.createdAt.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          .kv
+            .label Fecha término desconsolidado
+            .value !{container.closeParticipant.createdAt.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        .details
+          .cell
+            .label Cliente
+            .value !{container.car.client.toUpperCase()}
+          .cell
+            .label Desconsolidado por 
+            .value !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
+          .cell 
+            .label Revisado en
+            .value !{container.venueFound.name}
+          .cell
+            .label Precinto
+            .value !{container.openParticipant.deliveryInfo.seal.toUpperCase() || 'SIN PRECINTO'}
+          .cell
+            .label Daños
+            .value= evidenceStatusMap['check'].hasDamage || evidenceStatusMap['open'].hasDamage || evidenceStatusMap['empty'].hasDamage ? 'SÍ' : 'NO'
+
+
+      section.section-box.box
+        .section-title RECURSOS TOTALES
+        .listish
+          | 2 × Grúa 4T × 2
+          br
+          | 1 × Supervisor A × 1 × 10 h
+
+      section.section-box.box
+        .section-title RESUMEN FINAL DE CARGA
+        .listish !{container.closeParticipant.deliveryInfo.comment || 'Sin comentarios adicionales.'}
+
+      section.section-box.evidence-section
+        .evidence-title EVIDENCIA APERTURA
+        .evidence-grid
+          each item in evidenceStatusMap['open'].images
+            .evidence-card
+              .caption= item.comment || ' '
+              .image-frame
+              img(src=item.file.url || '')
+      
+      section.section-box.evidence-section
+        .evidence-title CARGA DESCONSOLIDADA
+        .evidence-grid
+          each item in evidenceStatusMap['check'].images.filter(item => !item.showDamage)
+            .evidence-card
+              .caption= item.comment || ' '
+              .image-frame
+              img(src=item.file.url || '')
+        if evidenceStatusMap['check'].images.filter(item => item.showDamage).length > 0
+          .evidence-title.break-before DAÑOS
+          .evidence-grid
+          each item in evidenceStatusMap['check'].images.filter(item => item.showDamage)
+            .evidence-card
+              .caption= item.comment || ' '
+              .image-frame
+              img(src=item.file.url || '')
+
+      section.section-box.evidence-section
+        .evidence-title EVIDENCIA CIERRE
+        .evidence-grid
+          each item in evidenceStatusMap['empty'].images
+            .evidence-card
+              .caption= ' '
+              .image-frame
+              img(src=item.file.url || '')
+
