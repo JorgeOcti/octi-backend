@@ -72,7 +72,9 @@ import {TraceabilityView} from "./components/Traceability/TraceabilityView";
 import OSAView from "./components/OSA/OSAView";
 import {LBZView} from "./components/LBZ/LBZ";
 import ContainersInventory from "./components/Inventory/ContainersInventory";
-import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView";
+import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView/ContainerInventoryCreateView";
+import GeneralItemsCreateView from './components/Containers/ContainerInventoryCreateView/GeneralItemsCreateView';
+import CodedItemsCreateView from './components/Containers/ContainerInventoryCreateView/CodedItemsCreateView';
 import DesconsolidatedUnitsView from './components/DeconsolidatedUnits/DesconsolidatedUnitsView';
 import InventoryManagement from './components/Inventory/InventoryManagement';
 import InventoryDetail from './components/Inventory/InventoryDetail';
@@ -115,6 +117,8 @@ const App = () => (
         <Route exact path='/inventory/management/' component={InventoryManagement} />
         <Route exact path='/inventory/management/:id' component={InventoryDetail} />
         <Route exact path='/inventory/container/create/' component={ContainerInventoryCreateView} />
+        <Route exact path='/inventory/container/create/coded/' component={CodedItemsCreateView} />
+        <Route exact path='/inventory/container/create/general/' component={GeneralItemsCreateView} />
         <Route exact path='/inventory/studio/' component={VInventoryDashboardStatsView} />
         <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />
         <Route exact path='/inventory/create/' component={InventoryCreateView} />

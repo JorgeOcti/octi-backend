@@ -600,12 +600,14 @@ export default class ApiService {
     carsByContainer,
     name,
     file,
-    backupFile
+    backupFile,
+    contentType
     }: {
     carsByContainer: any;
     name: string;
     file: File | null;
     backupFile: File | null;
+    contentType: string;
   }): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByContainer', JSON.stringify(carsByContainer));
@@ -613,6 +615,7 @@ export default class ApiService {
     formData.append('file', file!);
     formData.append('manualPhoto', "4");
     formData.append('reportPhoto', "3");
+    formData.append('contentType', contentType);
     if (backupFile) {
       formData.append('backup', backupFile);
     }

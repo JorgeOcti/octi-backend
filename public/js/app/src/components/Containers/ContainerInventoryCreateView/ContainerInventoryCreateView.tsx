@@ -1,24 +1,27 @@
 import {RouteComponentProps} from "react-router";
-import {AlertReduxAction, IAlertsState} from "../../actions/alerts.actions";
+import {AlertReduxAction, IAlertsState} from "../../../actions/alerts.actions";
 import {Dispatch} from "redux";
-import {loadDataAction, ModalReduxAction} from "../../actions/modal.actions";
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import {loadDataAction, ModalReduxAction} from "../../../actions/modal.actions";
+import TrackingBasePage from "../../Utils/TrackingBasePage";
 import * as React from 'react';
 import {RefObject} from "react";
-import AppContainer from "../../container/AppContainer";
-import Checkbox from "../Utils/CheckBox";
+import AppContainer from "../../../container/AppContainer";
+import Checkbox from "../../Utils/CheckBox";
 import * as XLSX from "xlsx-color";
 import * as swal from 'sweetalert';
-import ApiService from "../../utils/axios";
+import ApiService from "../../../utils/axios";
 import {connect} from "react-redux";
 import * as moment from "moment/moment";
-import { hasPermission } from '../../utils/common';
+import { hasPermission } from '../../../utils/common';
 import DataTable from 'react-data-table-component';
-import { format, validate } from '../../utils/rut';
+import { format, validate } from '../../../utils/rut';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
   dispatch: Dispatch<AlertReduxAction>;
+  excelHeaders: string[];
+  mandatoryHeaders: string[];
+  contentType: string;
   loadDataAction(
     title: string,
     body: JSX.Element,
@@ -73,125 +76,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
 
   readonly inputFile: RefObject<HTMLInputElement>;
   readonly inputBackup: RefObject<HTMLInputElement>;
-
-  checkHeaders = (headers: string[]): {ok: boolean, message: string} => {
-    let flag = false;
-    let message = "";
-
-    let flag1 = true
-    let flag3= true
-    let flag2 = true
-
-    if (!headers.includes("Tipo Carga")) {
-      flag1 = false;
-      message = "Debe incluir Tipo Carga y/o Descripción";
-    }
-    if (!headers.includes("Descripción")) {
-      flag3 = false;
-      message = "Debe incluir Tipo Carga y/o Descripción";
-    }
-    if (!(headers.includes("Código") && headers.includes("Marca"))) {
-      flag2 = false;
-      message = "Debe incluir Código y Marca";
-    }
-
-    if (!flag1 && !flag2 && !flag3) {
-      return { ok: false, message: message };
-    }
-
-    for (let header of this.mandatoryHeaders) {
-      if (!headers.includes(header)) {
-        flag = true;
-        message = `Debe incluir ${header}`
-      }
-    }
-
-    if (flag) {
-      return { ok: false, message: message };
-    }
-    return { ok: true, message: "" };
-  }
-
-  readonly mandatoryHeaders = [
-    "BIC",
-    "Cliente Razón Social",
-    "RUT Cliente",
-    "Manifiesto",
-    "N° BL",
-    "Nave",
-    "N° Viaje",
-    "Sello IN",
-    "Puerto Origen",
-    "Peso",
-    "Emplazamiento",
-  ]
-
-  readonly excelHeaders = [
-    "BIC",
-    "Cantidad",
-    "Tipo Carga",
-    "Descripción",
-    "Código",
-    "Marca",
-    "Modelo",
-    "Color",
-    "Cliente Razón Social",
-    "RUT Cliente",
-    "Manifiesto",
-    "N° BL",
-    "Emplazamiento",
-    "Año DR",
-    "N° DR",
-    "Item",
-    "Mes",
-    "Contenedor",
-    "Tipo CTR",
-    "Tamaño CTR",
-    "Ubicación",
-    "Zona",
-    "Origen",
-    "Tipo Retiro",
-    "RUT Asociado",
-    "Cliente Asoc. Razón Social",
-    "Forwarder",
-    "Agencia",
-    "N° Destinación",
-    "Fecha Destinación",
-    "Línea Operadora",
-    "St.CTR IN",
-    "St.CTR OUT",
-    "Nave",
-    "N° Viaje",
-    "Tráfico",
-    "N° Booking IN",
-    "N° Booking OUT",
-    "Sello IN",
-    "Sello OUT",
-    "N° TATC",
-    "Puerto Origen",
-    "Doc.Pta IN",
-    "N° Doc.Pta IN",
-    "Doc.Pta OUT",
-    "N° Doc.Pta OUT",
-    "Estado",
-    "Fch.Inicio Alm.",
-    "F. Recep .Efec.",
-    "Fch. Provid.",
-    "Fch. Descon.",
-    "F. Sol. Retiro",
-    "F. Aut. Salida",
-    "F. Carga Camión",
-    "Tº Espera",
-    "Fch.Salida AEP",
-    "Días Alm.",
-    "Peso",
-    "Tipo IMO",
-    "N° UN",
-    "Patente IN",
-    "Patente OUT",
-    "Consignatario",
-    "Notificado",
-  ]
 
   readonly containerHeaders = {
       "vin": (data : any) => data.BIC.replaceAll(' ', '').replaceAll('-', '').replaceAll('_', ''),
@@ -293,6 +177,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           name,
           file,
           backupFile,
+          contentType: this.props.contentType
         })
         .then((response: any) => {
           const { message } = response.data;
@@ -320,7 +205,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   }
 
   private validateRow(data: any) {
-    for (let header of this.mandatoryHeaders) {
+    for (let header of this.props.mandatoryHeaders) {
       if (header === "RUT Cliente") {
         let value = data[header].replaceAll(" ", "")
         let validateRut = validate(value)
@@ -336,12 +221,6 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
       }
     }
 
-    let anyHeader = this.checkHeaders(Object.keys(data))
-
-    if (!anyHeader.ok) {
-      return { error: true, message: anyHeader.message }
-    }
-
     return { error: false }
   }
 
@@ -349,7 +228,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     let isValid = this.validateRow(data)
     if (!isValid.error) {
       let extra : any = {}
-      this.excelHeaders.forEach((header: string) => {
+      this.props.excelHeaders.forEach((header: string) => {
         let value = data[header]
         if (value){
           if (header === "RUT Cliente"){
@@ -535,13 +414,13 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
   private downloadTemplate(): void {
 
     /* make the worksheet */
-    const ws = XLSX.utils.aoa_to_sheet([this.excelHeaders]);
+    const ws = XLSX.utils.aoa_to_sheet([this.props.excelHeaders]);
 
-    this.excelHeaders.forEach((header: string, index: number) => {
+    this.props.excelHeaders.forEach((header: string, index: number) => {
       let style: any = {
         font: {bold: true}
       }
-      if (this.mandatoryHeaders.includes(header)){
+      if (this.props.mandatoryHeaders.includes(header)){
         style = {
           font: {bold: true},
           fill: {fgColor: {rgb: "95dcf7"}}
@@ -554,7 +433,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Planilla OSA');
     /* generate an XLSX file */
-    XLSX.writeFile(wb, 'template_container_inventory_settings.xlsx');
+    XLSX.writeFile(wb, `template_container_inventory_settings_${this.props.contentType}.xlsx`);
   }
 
   private columns = [

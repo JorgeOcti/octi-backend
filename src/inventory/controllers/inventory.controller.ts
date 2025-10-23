@@ -242,7 +242,7 @@ class InventoryController {
 
 
   public async createContainerInventory(req: IRequest, res: Response) {
-    let { name, carsByContainer, manualPhoto, reportPhoto } = req.body;
+    let { name, carsByContainer, manualPhoto, reportPhoto, contentType } = req.body;
     carsByContainer = JSON.parse(carsByContainer);
     try {
       const { company, team, venue } = req.user;
@@ -257,7 +257,8 @@ class InventoryController {
         // 67aac5f594ed0a1f9da3478a Medlog
         unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
         contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
-        finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68c432fa00000000007f20a1"),
+        finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68f6620f0000000000156042"),
+        contentType: contentType || 'general-items',
         settings: {
           photos: {
             manual: parseInt(manualPhoto, 10),

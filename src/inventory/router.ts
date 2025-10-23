@@ -18,6 +18,8 @@ inventoryRouter.get('/desconsolidated/unit/', Middlewares.isLoggedIn, InventoryC
 inventoryRouter.get('/inventory/management/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/management/:id/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/container/create/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/container/create/coded/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/container/create/general/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detail);
 inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryController.detail);
 
