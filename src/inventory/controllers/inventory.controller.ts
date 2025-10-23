@@ -3937,6 +3937,8 @@ class InventoryController {
         case ContainerInventoryContentType.coded_items:
           urlTemplate = 'container/pdf/coded-items.pug';
           break;
+        default:
+          urlTemplate = 'container/pdf/coded-items.pug';
       }
 
       let template: string =

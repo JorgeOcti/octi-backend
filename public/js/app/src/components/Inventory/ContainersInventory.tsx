@@ -192,7 +192,6 @@ const imagesFormatter = ( row: any) => {
               <button className="btn btn-xs btn-default">
                 <i className="fa fa-fw fa-image" /> {row.images.length}
               </button>
-              {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
             </a>
           </div>
         ))}
@@ -355,7 +354,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     <a
                       href={decodeURI(image.file.url)}
                       data-toggle="lightbox"
-                      data-title={image.comment || ''}
+                      data-title={!!image.comment ? `Daño: ${image.comment || ''}` : ''}
                       data-gallery={row._id + '-damages'}>
                       <button className="btn btn-xs btn-default">
                         <i className="fa fa-fw fa-warning text-red" /> {row.damageImages.length}
@@ -1461,10 +1460,28 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     </button>
 
                     <button
-                      className="btn btn-sm btn-success"
-                      onClick={this.create}>
-                    <i className="fa fa-plus" /> Cargar Anuncio
+                      className="btn btn-sm btn-success dropdown-toggle"
+                      data-toggle="dropdown">
+                    <i className="fa fa-plus" /> Cargar Anuncio <span className="caret" />
                   </button>
+                              <ul
+                                className="dropdown-menu pull-right"
+                                role="menu">
+                                <li>
+                                  <a href='#'
+                                  onClick={this.create}>
+                                    <i className="fa fa-fw fa-table" />
+                                    Anuncio Autos
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href='#'
+                                  onClick={this.create}>
+                                    <i className="fa fa-fw fa-table" />
+                                    Anuncio Carga 
+                                  </a>
+                                </li>
+                              </ul>
                 </>
               ) : null}
             </div>
