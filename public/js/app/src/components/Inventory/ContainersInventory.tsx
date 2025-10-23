@@ -186,7 +186,9 @@ const imagesFormatter = ( row: any) => {
             <a
               href={decodeURI(image.file.url)}
               data-toggle="lightbox"
-              data-gallery={row._id}>
+              data-gallery={row._id}
+              data-title={image.comment || ''}
+            >
               <button className="btn btn-xs btn-default">
                 <i className="fa fa-fw fa-image" /> {row.images.length}
               </button>
@@ -335,31 +337,68 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         selector: (row: any) => row.extra["N° BL"],
       },
       {
-        name: 'Puerto',
-        selector: (row: any) => row.extra["Emplazamiento"],
-      },
-      {
-        name: 'Nave',
-        selector: (row: any) => row.extra["Nave"],
-      },
-      {
-        name: 'Cliente',
-        selector: (row: any) => {
-              return row.extra["Cliente Razón Social"];
-        },
+        name: 'Daños',
         cell: (row: any) => {
-          return <div>{row.extra["Cliente Razón Social"]}</div>
+          if(row.evidenceStatus && row.evidenceStatus.length > 0) {
+            row.damageImages = row.evidenceStatus.map((evidence: any) =>
+              evidence.images.filter((img: any) => img.showDamage)
+            ).flat();
+          }
+          if (row.damageImages && row.damageImages.length) {
+            return (
+              <div className="row">
+                {row.damageImages.map((image: any, index: number) => (
+                  <div
+                    key={image._id}
+                    className={'col-md-12 images-25 text-center'}
+                    style={{ display: index === 0 ? '' : 'none' }}>
+                    <a
+                      href={decodeURI(image.file.url)}
+                      data-toggle="lightbox"
+                      data-title={image.comment || ''}
+                      data-gallery={row._id + '-damages'}>
+                      <button className="btn btn-xs btn-default">
+                        <i className="fa fa-fw fa-warning text-red" /> {row.damageImages.length}
+                      </button>
+                      {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          return null;
         }
       },
       {
-        name: 'Viaje',
-        selector: (row: any) => row.extra["N° Viaje"],
+        name: 'Reportes',
+        cell: (row: any) => {
+          if (row.openParticipant && row.openParticipant.deliveryInfo.seal &&
+            row.extra["Sello IN"].toUpperCase() !== row.openParticipant.deliveryInfo.seal.toUpperCase()
+          ) {
+            return <div
+              className={'col-md-12 images-25 text-center'}>
+                <button
+                  className="btn btn-xs btn-default"
+                  style={{ backgroundColor: "#CD5542", border: "1p", borderColor: "#CD5542", color: "white" }}
+                  data-toggle="tooltip"
+                  data-placement="right"
+                  title={`Número del precinto cargado: ${row.extra["Sello IN"]}. Número del precinto ingresado por el usuario: ${row.openParticipant.deliveryInfo.seal}`}
+                >
+                  <i className="fa fa-fw fa-lock" />
+                </button>
+            </div>;
+          }
+          return null;
+        }
       },
       {
         name: 'Imágenes',
         cell: (row: any) => {
-          if(row.evidenceStatus && row.evidenceStatus.length > 0) {
-            row.images = row.evidenceStatus.map((evidence: any) => evidence.images).flat();
+          if (row.evidenceStatus && row.evidenceStatus.length > 0) {
+            row.images = row.evidenceStatus.map((evidence: any) =>
+              evidence.images.filter((img: any) => !img.hasOwnProperty('showDamage') || !img.showDamage)
+            ).flat();
           }
           return imagesFormatter(row);
         }
@@ -367,7 +406,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       {
         name: 'Ubicación',
         selector: (row: any) => {
-              return row.venue.name;
+          return row.venue.name;
         }
       },
       {
@@ -798,6 +837,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any) {
+    $('[data-toggle="tooltip"]').tooltip();
     if (this.state.startDate !== prevState.startDate ||
       this.state.endDate !== prevState.endDate) {
         this.setState({
@@ -969,30 +1009,33 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
       const { unitLabels } = this.state;
 
-      const datum : any[] = [];
-      const descriptions : any[] = [];
+      const datum: any[] = [];
+      // description of the items in the container by the anuncio uploaded
+      const descriptions: any[] = [];
 
-      if (data.contentDetails){
+      // Content
+
+      if (data.contentDetails) {
         data.contentDetails.map((content: any) => {
           descriptions.push({
             code: content.code,
             description: content.item,
-            quanty: content.quantity,
+            quanty: content.quantity
           });
         });
-      } else {
-        if (data.contentDescription){
-          data.contentDescription.map((content: any) => {
-            descriptions.push({
-              description: content,
-            });
-            return content;
-          })
-        }
+      } else if (data.contentDescription) {
+
+        data.contentDescription.map((content: any) => {
+          descriptions.push({
+            description: content
+          });
+          return content;
+        });
+      } else if (data.cars) {
         data.cars.forEach((car: any) => {
           descriptions.push({
             vin: car.car.vin,
-            description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color,
+            description: car.car.brand + ' ' + car.car.denomination + ' ' + car.car.color
           });
         });
       }
@@ -1009,69 +1052,115 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         });
       });
 
-      data.units.filter((unit: any) => unit.hasOwnProperty("description")).forEach((unit: any) => {
+      data.units.filter((unit: any) => unit.hasOwnProperty('description')).forEach((unit: any) => {
         datum.push({
           _id: unit.participant._id,
-          vin: "-",
+          vin: '-',
           description: unit.description || '',
           images: unit.images,
           updatedAt: unit.participant.createdAt,
           status: ContainerStatus.FOUND,
           participant: unit.participant
         });
-      })
+      });
 
-      return <div>
-        <div className='table-responsive request-list'>
-          <div className="row request-header bg-request-title ">
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              Unidad
+
+      if (data.closeParticipant) {
+        datum.push({
+          _id: data.closeParticipant._id,
+          vin: '-',
+          description: data.closeParticipant.deliveryInfo.comment || '',
+          images: [],
+          updatedAt: data.closeParticipant.createdAt,
+          status: ContainerStatus.FOUND,
+          participant: data.closeParticipant
+        });
+      }
+
+      let loadDescription = <div className="tally-description">
+        <div className="col-12 tally-description-header text-gray-dark">
+          Según el anuncio debe contener:
+        </div>
+        {descriptions.map((desc, index) => {
+          return (
+            <div key={index} className={`row request background-transition text-gray-dark`}>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                <span style={{ 'textDecoration': 'underline' }}>{desc.code || '-'}</span>
+              </div>
+              <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
+                {desc.description || '-'}
+              </div>
+              <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
+                {desc.quanty || '-'}
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                -
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                -
+              </div>
+              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center cell">
+                -
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
+                -
+              </div>
+            </div>);
+        })}
+      </div>;
+
+      let unitheaders = () => {
+        return <div>
+          <div className="table-responsive request-list">
+            <div className="row request-header bg-request-title ">
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Unidad
+              </div>
+              <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                Descripción
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Cantidad
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Fotos
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Fecha desconsolidado
+              </div>
+              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                Estado
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Revisión
+              </div>
             </div>
-            <div className='col-sm-3 col-xs-3 col-md-3 col-lg-3 center'>
-              Descripción
-            </div>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              Cantidad
-            </div>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              Fotos
-            </div>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              Fecha desconsolidado
-            </div>
-            <div className='col-sm-2 col-xs-2 col-md-2 col-lg-2 center'>
-              Estado
-            </div>
-            <div className='col-sm-1 col-xs-1 col-md-1 col-lg-1 center'>
-              Revisión
-            </div>
-          </div>
-          {datum.map((car: any, index: number) => {
-            let className = `${car.status}Class`;
-            let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? "highlight-info" : "";
-            return (
-              <div key={index} className={`row request background-transition ${classNameEfect}`}>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
-                </div>
-                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
-                  <strong className="text-black">{car.description}</strong>
-                </div>
-                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
-                  <strong className="text-black">-</strong>
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  {imagesFormatter(car)}
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  <strong
-                    className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
-                </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
-                  {
-                    (unitLabels.length > 0) ?
-                      <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
-                        <div className="inline-element">
+            {datum.map((car: any, index: number) => {
+              let className = `${car.status}Class`;
+              let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? 'highlight-info' : '';
+              return (
+                <div key={index} className={`row request background-transition ${classNameEfect}`}>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
+                  </div>
+                  <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                    <strong className="text-black">{car.description}</strong>
+                  </div>
+                  <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
+                    <strong className="text-black">-</strong>
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    {imagesFormatter(car)}
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong
+                      className="text-black">{car.updatedAt && car.status === ContainerStatus.FOUND ? formaDate(car.updatedAt) : 'Sin registro'}</strong>
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                    {
+                      (unitLabels.length > 0) ?
+                        <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
+                          <div className="inline-element">
                           <span
                             data-toggle="modal"
                             data-target="#modalForAddLabelUnit"
@@ -1094,20 +1183,20 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                               : car.state}
                             <i className="fa fa-plus icon-add-label-units"></i>
                           </span>
+                          </div>
+                          {
+                            (car.labelText && car.labelText !== '') ?
+                              <div className="row">
+                                <div className="col-xs-12 label-min-with-170">
+                                  <p className="text-center-xs label-m-top-16 text-left-sm">
+                                    <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
+                                  </p>
+                                </div>
+                              </div> : ''
+                          }
                         </div>
-                        {
-                          (car.labelText && car.labelText !== '') ?
-                            <div className="row">
-                              <div className="col-xs-12 label-min-with-170">
-                                <p className="text-center-xs label-m-top-16 text-left-sm">
-                                  <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
-                                </p>
-                              </div>
-                            </div> : ''
-                        }
-                      </div>
-                      :
-                      <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                        :
+                        <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                         <span
                           className={`label-units label-${inventorySettings.hasOwnProperty(className)
                             ? inventorySettings[className]
@@ -1120,123 +1209,260 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                             ? inventorySettings[car.status]
                             : car.state}
                         </span>
-                      </div>
-                  }
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
-                      <React.Fragment>
-                        {' '}
-                        <i
-                          className="fa fa-warning text-red pointer"
-                          data-toggle="tooltip"
-                          data-placement="top"
-                          title="Daños encontrados en esta revisión."
-                          onClick={
-                            () => getParticipant(car.participant._id)
-                          }
-                        />
-                      </React.Fragment>
-                    </ShowIf>
-                      <ShowIf condition={!car.participant?.hasDamages}>
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={
-                            () => getParticipant(car.participant._id)
-                          }>
-                          <ShowIf
-                            condition={
-                              !!(
-                                loadingParticipant &&
-                                loadingParticipant === car.participant._id
-                              )
+                        </div>
+                    }
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                        <React.Fragment>
+                          {' '}
+                          <i
+                            className="fa fa-warning text-red pointer"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title="Daños encontrados en esta revisión."
+                            onClick={
+                              () => getParticipant(car.participant._id)
                             }
-                            alternative={
-                              <i className="fa fw fa-check-square-o" />
-                            }>
-                            <i className="fa fw fa-spin fa-spinner" />
-                          </ShowIf>
-                        </button>
+                          />
+                        </React.Fragment>
                       </ShowIf>
-                    </>
-                    : <></>}
+                        <ShowIf condition={!car.participant?.hasDamages}>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={
+                              () => getParticipant(car.participant._id)
+                            }>
+                            <ShowIf
+                              condition={
+                                !!(
+                                  loadingParticipant &&
+                                  loadingParticipant === car.participant._id
+                                )
+                              }
+                              alternative={
+                                <i className="fa fw fa-check-square-o" />
+                              }>
+                              <i className="fa fw fa-spin fa-spinner" />
+                            </ShowIf>
+                          </button>
+                        </ShowIf>
+                      </>
+                      : <></>}
 
-                </div>
-              </div>);
-                })}
-                <div className='tally-description'>
-                <div className="col-12 tally-description-header text-gray-dark">
-                  Según el anuncio debe contener:
-                </div>
-                {descriptions.map((desc, index) => {
-                  return (
-              <div key={index} className={`row request background-transition text-gray-dark`}>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
-                  <span style={{ 'textDecoration': 'underline' }}>{desc.code || "-"}</span>
-                </div>
-                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
-                  {desc.description || '-'}
-                </div>
-                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center cell">
-                  {desc.quanty || '-'}
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
-                  -
-                </div>
-                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
-                  -
-                </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center cell">
-                  -
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center cell">
-                  -
-                </div>
-              </div>);
-                })}
+                  </div>
+                </div>);
+            })}
+            {loadDescription}
+          </div>
+        </div>;
+      };
+
+      let contentHeader = () => {
+        return <div>
+          <div className="table-responsive request-list">
+            <div className="row request-header bg-request-title ">
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                ID
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                OSACode
+              </div>
+              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                Descripción
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Servicios
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Desconsolidado por
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Fecha desconsolidado
+              </div>
+              <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                Estado
+              </div>
+              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                Revisión
+              </div>
             </div>
-            </div>
-      </div>
-    }
+            {datum.map((car: any, index: number) => {
+              let className = `${car.status}Class`;
+              let classNameEfect = car.vin === this.state.containerUpdated?.car?.vin ? 'highlight-info' : '';
+              return (
+                <div key={index} className={`row request background-transition ${classNameEfect}`}>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong style={{ 'textDecoration': 'underline' }}>-</strong>
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong style={{ 'textDecoration': 'underline' }}>-</strong>
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                    <strong className="text-black">{car.description}</strong>
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong className="text-black">{
+                      car.openForm && car.openForm.deliveryInfo.assistance.length > 0 ?
+                        car.openForm.deliveryInfo.assistance.map((service: any) => service.name).join('<br>')
+                        : '-'
+                    }</strong>
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    {car.user}
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    <strong
+                      className="text-black">{car.openDate ? formaDate(car.openDate) : 'Sin registro'}</strong>
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                    {
+                      (unitLabels.length > 0) ?
+                        <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 inline-element center">
+                          <div className="inline-element">
+                          <span
+                            data-toggle="modal"
+                            data-target="#modalForAddLabelUnit"
 
-          return (
-          <AppContainer title={
-          <div style={{width: '180px'}}>
-        <DateRangeInput
-          options={getDateRangeOptions()}
-          onChange={(start: Date, end: Date) => {
-            this.setState({
-              startDate: start,
-              endDate: end,
-              isFilteringByDate: true
-            });
-          }}
-          startDate={this.state.startDate}
-          endDate={this.state.endDate}
-        />
-      </div>
-    } cMenu="6" cSubMenu="6.1">
-      <section className="content">
-        <div className="box">
-          <div className="box-header with-border flex flex-space-between">
-            {loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
-              Revisión contenedores <span className="font-12 font-bold"> <span style={{
-              color: 'gray',
-              fontWeight: '600'
-            }}>{summary.total}</span> {summary.total > 0 ? details : ''}</span>
-            </h3>}
-            <div className="pull-right box-tools">
-              {hasPermission(window.user, 'createInventory') ? (<>
-                  < button
-                    style={{ marginRight: '10px' }}
-                    className="btn btn-sm btn-primary"
-                    onClick={this.downloadData}>
-                    <i className="fa fa-fw fa-download" /> Descargar Excel
-                  </button>
+                            onClick={() => {
+                              this.setState({
+                                inventorySelected: car.inventory, //inventario
+                                carSelected: car._id, //inventory car
+                                cardIDSelected: car.car._id, // car
+                                unitLabelSelected: unitLabels[this.state.activeUnitIndex] //label
+                              });
+                            }}
 
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={this.create}>
+                            className={`label-units btn-add-unit-labels label-${inventorySettings.hasOwnProperty(className)
+                              ? inventorySettings[className]
+                              : ''
+                            }`}>
+                            {inventorySettings.hasOwnProperty(car.status)
+                              ? inventorySettings[car.status]
+                              : car.state}
+                            <i className="fa fa-plus icon-add-label-units"></i>
+                          </span>
+                          </div>
+                          {
+                            (car.labelText && car.labelText !== '') ?
+                              <div className="row">
+                                <div className="col-xs-12 label-min-with-170">
+                                  <p className="text-center-xs label-m-top-16 text-left-sm">
+                                    <i className="fa fa-tag" aria-hidden="true"></i> {car.labelText}
+                                  </p>
+                                </div>
+                              </div> : ''
+                          }
+                        </div>
+                        :
+                        <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                        <span
+                          className={`label-units label-${inventorySettings.hasOwnProperty(className)
+                            ? inventorySettings[className]
+                            : ''
+                          }`}
+                          style={{
+                            padding: '5px 10px'
+                          }}>
+                          {inventorySettings.hasOwnProperty(car.status)
+                            ? inventorySettings[car.status]
+                            : car.state}
+                        </span>
+                        </div>
+                    }
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    {car.participant ? <><ShowIf condition={car.participant?.hasDamages}>
+                        <React.Fragment>
+                          {' '}
+                          <i
+                            className="fa fa-warning text-red pointer"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title="Daños encontrados en esta revisión."
+                            onClick={
+                              () => getParticipant(car.participant._id)
+                            }
+                          />
+                        </React.Fragment>
+                      </ShowIf>
+                        <ShowIf condition={!car.participant?.hasDamages}>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={
+                              () => getParticipant(car.participant._id)
+                            }>
+                            <ShowIf
+                              condition={
+                                !!(
+                                  loadingParticipant &&
+                                  loadingParticipant === car.participant._id
+                                )
+                              }
+                              alternative={
+                                <i className="fa fw fa-check-square-o" />
+                              }>
+                              <i className="fa fw fa-spin fa-spinner" />
+                            </ShowIf>
+                          </button>
+                        </ShowIf>
+                      </>
+                      : <></>}
+
+                  </div>
+                </div>);
+            })}
+            {loadDescription}
+          </div>
+        </div>;
+      }
+
+      if (data.closeParticipant) {
+        return contentHeader();
+      } else {
+        return unitheaders();
+      }
+
+    };
+
+    return (
+      <AppContainer title={
+        <div style={{ width: '180px' }}>
+          <DateRangeInput
+            options={getDateRangeOptions()}
+            onChange={(start: Date, end: Date) => {
+              this.setState({
+                startDate: start,
+                endDate: end,
+                isFilteringByDate: true
+              });
+            }}
+            startDate={this.state.startDate}
+            endDate={this.state.endDate}
+          />
+        </div>
+      } cMenu="6" cSubMenu="6.1">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border flex flex-space-between">
+              {loadingTable || loadingSummary ? <span>Cargando...</span> : <h3 className="box-title">
+                Revisión contenedores <span className="font-12 font-bold"> <span style={{
+                color: 'gray',
+                fontWeight: '600'
+              }}>{summary.total}</span> {summary.total > 0 ? details : ''}</span>
+              </h3>}
+              <div className="pull-right box-tools">
+                {hasPermission(window.user, 'createInventory') ? (<>
+                    < button
+                      style={{ marginRight: '10px' }}
+                      className="btn btn-sm btn-primary"
+                      onClick={this.downloadData}>
+                      <i className="fa fa-fw fa-download" /> Descargar Excel
+                    </button>
+
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={this.create}>
                     <i className="fa fa-plus" /> Cargar Anuncio
                   </button>
                 </>
@@ -1478,4 +1704,4 @@ const inventorySettings: { [key: string]: any } = {
     "primaryRequired": false,
     "secondaryRequired": false
   }
-}
+};
