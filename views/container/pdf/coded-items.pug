@@ -67,9 +67,9 @@ html
         .logo
           img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
         .company-info
-          h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (!{container.venueFound.abbreviation})
+          h1 MEDLOG CHILE EXTRAPORTUARIOS LIMITADA (!{container.venueFound && container.venueFound.abbreviation || ''})
           p Giro: SERVICIOS EXTRAPORTUARIOS
-          p Dirección: !{container.venueFound.code}
+          p Dirección: !{container.venueFound && container.venueFound.code || ''}
           p Emitido por: !{userName} el !{moment().format('DD/MM/YYYY - HH:mm')}
       .section-wrapper
         .section

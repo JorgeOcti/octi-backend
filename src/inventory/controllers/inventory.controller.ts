@@ -19,8 +19,8 @@ import {
 } from '../../app/models/car.model';
 import {
   ChoicesStatusInventory,
-  default as Inventory,
-  default as InventoryModel, IInventoryModel
+  default as InventoryModel, IInventoryModel,
+  ContainerInventoryContentType
 } from '../models/inventory.model';
 import {
   IVenueModel,
@@ -67,6 +67,7 @@ import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Participant from '../../form/models/participant.model';
 import { IParticipant } from '../../form/interfaces/participant.interface';
 import { OSA_LOGO_SVG } from "../../utils/svg";
+import Inventory from '../models/inventory.model';
 
     const statusMap: Record<string, string> = {
       found: 'Encontrado',
@@ -3793,6 +3794,7 @@ class InventoryController {
       }).populate([
         { path: 'inventoriedBy' },
         { path: 'images'},
+        { path: 'inventory', select: ['name', 'contentType'] },
         { path: 'venueFound'},
         { path: 'car' },
         { path: 'participant'},
@@ -3811,6 +3813,13 @@ class InventoryController {
             },
          ],
           select: ['_id', 'createdAt', 'hasDamages', 'deliveryInfo']
+        },
+        {
+          path: 'closeParticipant',
+        },
+        {
+          path: 'openParticipant',
+          populate: [{path: 'company'}]
         }
       ]).lean();
 
@@ -3836,6 +3845,33 @@ class InventoryController {
 
       let emptyEvidences = container.evidenceStatus.length ? container.evidenceStatus.filter((e: any) => e.status == 'empty').map(e => e.images).flat() : [];
       let lastEmptyComment = emptyEvidences.map((e: any) => e.comment).reverse();
+
+      let evidenceStatusMap: Record<string, { images: any[], hasDamage: boolean }> = {
+        "open": { images: [], hasDamage: false },
+        "check": { images: [], hasDamage: false },
+        "empty": { images: [], hasDamage: false },
+      };
+
+      container.evidenceStatus.forEach((evidence: any) => {
+        let hasDamage = false;
+        evidence.images.forEach((image: any) => {
+          if (image.showDamage && image.showDamage === true) {
+            hasDamage = true;
+          }
+        });
+        if (evidenceStatusMap[evidence.status]) {
+          evidenceStatusMap[evidence.status].images = [
+            ...evidenceStatusMap[evidence.status].images,
+            ...evidence.images
+          ];
+          evidenceStatusMap[evidence.status].hasDamage = evidenceStatusMap[evidence.status].hasDamage || hasDamage;
+        } else {
+          evidenceStatusMap[evidence.status] = {
+            images: evidence.images,
+            hasDamage
+          };
+        }
+      });
 
       let statusContainer = inventorySettings[foundStatusContainer(container)];
       container.status = statusContainer;
@@ -3893,8 +3929,21 @@ class InventoryController {
           status
         }
       })
+
+      let urlTemplate;
+      switch (container.inventory && (container.inventory as IInventory).contentType) {
+        case ContainerInventoryContentType.general_items:
+          urlTemplate = 'container/pdf/general-items.pug';
+          break;
+        case ContainerInventoryContentType.coded_items:
+          urlTemplate = 'container/pdf/coded-items.pug';
+          break;
+        default:
+          urlTemplate = 'container/pdf/coded-items.pug';
+      }
+
       let template: string =
-        path.join(__dirname, '../../../views/') + 'container/pdf/index.pug';
+        path.join(__dirname, '../../../views/') + urlTemplate;
       const css = fs.readFileSync(
         path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
         'utf8'
@@ -3907,6 +3956,7 @@ class InventoryController {
         container,
         evidences,
         emptyEvidences,
+        evidenceStatusMap,
         lastEmptyComment,
         userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
       })
@@ -3933,22 +3983,17 @@ class InventoryController {
         const pdfBuffer = await page.pdf({
           format: 'A4',
           displayHeaderFooter: true,
-
-        //   headerTemplate: `
-        //  <div style="width: 100%; font-size: 9px; display: flex; align-items: center; justify-content: space-between; margin: 10px 50px;">
-        //   <img src="data:image/png;base64,${imageBase64}" style="width: 80px; height: auto; object-fit: contain;"/>
-        //   <h3 style="margin: 0; flex: 1; text-align: center;">CIBU 782725-9</h3>
-        //   <h3 style="margin: 0; text-align: right;">24/01/2025 10:25 hrs</h3>
-        // </div>
-        //     `,
+          headerTemplate: `
+         <div></div>
+            `,
             footerTemplate: `
-            <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: baseline;">
               <div>${container.venueFound?.code || 'Dirección no disponible'}</div>
               <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
               <div style="color: #999; display: flex; align-items: baseline;">
-                Powered by
-                ${OSA_LOGO_SVG}
-                www.osacontrol.com
+              Powered by
+              ${OSA_LOGO_SVG}
+              www.osacontrol.com
               </div>
             </div>`,
           // this is needed to prevent content from being placed over the footer
