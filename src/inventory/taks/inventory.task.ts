@@ -222,9 +222,18 @@ class InventoryQueue {
       );
 
       inventoryContainers = await InventoryCar.insertMany(inventoryContainers);
-      inventoryContainers.forEach((container: any) => {
-        containersByBIC[container.vin] = container._id;
-      })
+      for (const container of inventoryContainers) {
+        let car = container.car.vin ? container.car : null;
+        if (!car){
+          car = await CarModel.findOne({_id: container.car});
+        }
+        if (car){
+          console.log('Inserted container inventoryCar:', container._id, 'for container VIN:', car.vin);
+          containersByBIC[car.vin] = container._id;
+        } else {
+          logger.error(`InventoryQueue.processCreateContainerInventory: Car not found for container inventoryCar ${container._id}`);
+        }
+      }
 
       let inventoryCars = [];
 

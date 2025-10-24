@@ -5,7 +5,6 @@ import { Dispatch } from 'redux';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
 import React = require('react');
-import { string } from 'yup';
 import { connect } from 'react-redux';
 
 const mandatoryHeaders = [

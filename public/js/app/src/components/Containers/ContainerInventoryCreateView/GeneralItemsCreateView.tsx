@@ -5,7 +5,6 @@ import { Dispatch } from 'redux';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
 import TrackingBasePage from '../../Utils/TrackingBasePage';
 import React = require('react');
-import { string } from 'yup';
 import { connect } from 'react-redux';
 
 const mandatoryHeaders = [
@@ -115,7 +114,7 @@ class GeneralItemsCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Crear Desconsolidad - Elementos con código';
+    this.title = 'Crear Desconsolidad - Carga General';
   }
 
   public render(): React.ReactElement<IPropsType> {

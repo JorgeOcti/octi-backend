@@ -314,7 +314,8 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         sortable: true,
         sortFunction: (a: any, b: any) => {
           return moment(a.openDate).isAfter(b.openDate) ? 1 : -1;
-        }
+        },
+        maxWidth: "10%"
       },
       {
         name: 'F. Finalización',
@@ -326,17 +327,29 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
           return moment(a.emptyDate).isAfter(b.emptyDate) ? 1 : -1;
         },
         id: 'emptyDate',
+        maxWidth: "10%"
       },
       {
         name: 'Contenedor',
         selector: (row: any) => row.car.vin,
+        maxWidth: "10%"
       },
       {
-        name: 'BL',
-        selector: (row: any) => row.extra["N° BL"],
+        name: 'Cliente',
+        selector: (row: any) => {
+          return row.extra["Cliente Razón Social"];
+        },
+        maxWidth: "10%"
+      },
+      {
+        name: 'Nave / Viaje / BL',
+        selector: (row: any) =>
+          `${row.extra["Nave"] || ''} / ${row.extra["N° Viaje"] || ''} / ${row.extra["N° BL"] || ''}`,
+        maxWidth: "15%"
       },
       {
         name: 'Daños',
+        maxWidth: "5%",
         cell: (row: any) => {
           if(row.evidenceStatus && row.evidenceStatus.length > 0) {
             row.damageImages = row.evidenceStatus.map((evidence: any) =>
@@ -365,27 +378,63 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 ))}
               </div>
             );
+          } else if (row.cars && row.cars.length > 0) {
+            let damagedCars = row.cars.filter((car: any) => car.participant && car.participant.hasDamages);
+            let damagedCarsEvidence = damagedCars.map((car: any) => car.participant.deliveryInfo.damageImages || []).flat();
+            if (damagedCarsEvidence.length){
+              row.damageImages = damagedCarsEvidence;
+              return (
+                <div className="row">
+                  {row.damageImages.map((image: any, index: number) => (
+                    <div
+                      key={image._id}
+                      className={'col-md-12 images-25 text-center'}
+                      style={{ display: index === 0 ? '' : 'none' }}>
+                      <a
+                        href={decodeURI(image.file.url)}
+                        data-toggle="lightbox"
+                        data-title={!!image.comment ? `Daño: ${image.comment || ''}` : ''}
+                        data-gallery={row._id + '-damages'}>
+                        <button className="btn btn-xs btn-default">
+                          <i className="fa fa-fw fa-warning text-red" /> {row.damageImages.length}
+                        </button>
+                        {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              );
+            } else if (damagedCars.length > 0) {
+              return <div className={'row'}>
+                <div className={'col-md-12 images-25 text-center'} >
+                  <button className="btn btn-xs btn-default">
+                    <i className="fa fa-fw fa-warning text-red" />
+                  </button>
+                </div>
+              </div>;
+            }
           }
           return null;
         }
       },
       {
         name: 'Reportes',
+        maxWidth: '5%',
         cell: (row: any) => {
           if (row.openParticipant && row.openParticipant.deliveryInfo.seal &&
-            row.extra["Sello IN"].toUpperCase() !== row.openParticipant.deliveryInfo.seal.toUpperCase()
+            row.extra['Sello IN'].toUpperCase() !== row.openParticipant.deliveryInfo.seal.toUpperCase()
           ) {
             return <div
               className={'col-md-12 images-25 text-center'}>
-                <button
-                  className="btn btn-xs btn-default"
-                  style={{ backgroundColor: "#CD5542", border: "1p", borderColor: "#CD5542", color: "white" }}
-                  data-toggle="tooltip"
-                  data-placement="right"
-                  title={`Número del precinto cargado: ${row.extra["Sello IN"]}. Número del precinto ingresado por el usuario: ${row.openParticipant.deliveryInfo.seal}`}
-                >
-                  <i className="fa fa-fw fa-lock" />
-                </button>
+              <button
+                className="btn btn-xs btn-default"
+                style={{ backgroundColor: '#CD5542', border: '1p', borderColor: '#CD5542', color: 'white' }}
+                data-toggle="tooltip"
+                data-placement="right"
+                title={`Número del precinto cargado: ${row.extra['Sello IN']}. Número del precinto ingresado por el usuario: ${row.openParticipant.deliveryInfo.seal}`}
+              >
+                <i className="fa fa-fw fa-lock" />
+              </button>
             </div>;
           }
           return null;
@@ -393,6 +442,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       },
       {
         name: 'Imágenes',
+        maxWidth: "5%",
         cell: (row: any) => {
           if (row.evidenceStatus && row.evidenceStatus.length > 0) {
             row.images = row.evidenceStatus.map((evidence: any) =>
@@ -404,12 +454,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       },
       {
         name: 'Ubicación',
+        maxWidth: "10%",
         selector: (row: any) => {
           return row.venue.name;
         }
       },
       {
         name: 'Estado',
+        maxWidth: "10%",
         selector: (row: any) => {
           return row.containerStatus || row.status;
         },
@@ -421,6 +473,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       },
       {
         name: 'Tarja',
+        maxWidth: "10%",
         selector: (row: any) => {
           return row.car.bl;
         },
@@ -952,8 +1005,13 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
 
   }
 
-  create = () => {
-    this.props.history.push('/inventory/container/create/');
+  create = (type: string) => {
+    if (type === 'general')
+      this.props.history.push('/inventory/container/create/general/');
+    else if (type === 'coded')
+      this.props.history.push('/inventory/container/create/coded/');
+    else
+      this.props.history.push('/inventory/container/create/');
   }
 
   private getFilterDate(): any {
@@ -1108,7 +1166,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         })}
       </div>;
 
-      let unitheaders = () => {
+      let contentHeaders = () => {
         return <div>
           <div className="table-responsive request-list">
             <div className="row request-header bg-request-title ">
@@ -1257,7 +1315,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         </div>;
       };
 
-      let contentHeader = () => {
+      let unitHeaders = () => {
         return <div>
           <div className="table-responsive request-list">
             <div className="row request-header bg-request-title ">
@@ -1292,7 +1350,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               return (
                 <div key={index} className={`row request background-transition ${classNameEfect}`}>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                    <strong style={{ 'textDecoration': 'underline' }}>-</strong>
+                    <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                     <strong style={{ 'textDecoration': 'underline' }}>-</strong>
@@ -1417,9 +1475,9 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       }
 
       if (data.closeParticipant) {
-        return contentHeader();
+        return contentHeaders();
       } else {
-        return unitheaders();
+        return unitHeaders();
       }
 
     };
@@ -1469,16 +1527,16 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                 role="menu">
                                 <li>
                                   <a href='#'
-                                  onClick={this.create}>
+                                  onClick={() => this.create("coded")}>
                                     <i className="fa fa-fw fa-table" />
                                     Anuncio Autos
                                   </a>
                                 </li>
                                 <li>
                                   <a href='#'
-                                  onClick={this.create}>
+                                  onClick={() => this.create("general")}>
                                     <i className="fa fa-fw fa-table" />
-                                    Anuncio Carga 
+                                    Anuncio Carga
                                   </a>
                                 </li>
                               </ul>

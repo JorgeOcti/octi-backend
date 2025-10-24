@@ -2851,7 +2851,7 @@ class InventoryController {
             foreignField: '_id',
             as: 'participant',
             pipeline: [
-              {$project: {name: 1, hasDamages: 1, createdAt: 1}}
+              {$project: {name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1}}
             ]
           }
         },{
