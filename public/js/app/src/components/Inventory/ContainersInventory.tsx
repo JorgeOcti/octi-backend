@@ -178,23 +178,26 @@ const imagesFormatter = ( row: any) => {
   if (row.images && row.images.length) {
     return (
       <div className="row">
-        {row.images.map((image: any, index: number) => (
-          <div
-            key={image._id}
-            className={'col-md-12 images-25 text-center'}
-            style={{ display: index === 0 ? '' : 'none' }}>
-            <a
-              href={decodeURI(image.file.url)}
-              data-toggle="lightbox"
-              data-gallery={row._id}
-              data-title={image.comment || ''}
-            >
-              <button className="btn btn-xs btn-default">
-                <i className="fa fa-fw fa-image" /> {row.images.length}
-              </button>
-            </a>
-          </div>
-        ))}
+        {row.images.map((image: any, index: number) => {
+            return (
+              <div
+                key={image._id}
+                className={'col-md-12 images-25 text-center'}
+                style={{ display: index === 0 ? '' : 'none' }}>
+                <a
+                  href={decodeURI(image.file.url)}
+                  data-toggle="lightbox"
+                  data-gallery={row._id}
+                  data-title={!!image.comment ? `Comentario: ${image.comment || ''}` : ''}
+                >
+                  <button className="btn btn-xs btn-default">
+                    <i className="fa fa-fw fa-image" /> {row.images.length}
+                  </button>
+                </a>
+              </div>
+            )
+          }
+        )}
       </div>
     );
   }
@@ -1177,9 +1180,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                 Descripción
               </div>
               <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                Cantidad
-              </div>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                 Fotos
               </div>
               <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
@@ -1202,9 +1202,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                   <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
                     <strong className="text-black">{car.description}</strong>
-                  </div>
-                  <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3 center">
-                    <strong className="text-black">-</strong>
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                     {imagesFormatter(car)}
@@ -1322,9 +1319,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
               <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                 ID
               </div>
-              <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                OSACode
-              </div>
               <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                 Descripción
               </div>
@@ -1352,9 +1346,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                     <strong style={{ 'textDecoration': 'underline' }}>{car.vin}</strong>
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                    <strong style={{ 'textDecoration': 'underline' }}>-</strong>
-                  </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
                     <strong className="text-black">{car.description}</strong>
                   </div>
@@ -1364,9 +1355,6 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                         car.openForm.deliveryInfo.assistance.map((service: any) => service.name).join('<br>')
                         : '-'
                     }</strong>
-                  </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                    {car.user}
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                     <strong

@@ -308,7 +308,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
 
   private downloadData(): void {
         const params = new URLSearchParams({
-      ...this.state.filters, 
+      ...this.state.filters,
       ...this.getFilterDate(),
     }).toString();
     const company = this.state.clientFilter || window.user.company._id;
@@ -396,7 +396,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         selector: (row: any) => row.car.denomination,
       },
       {
-        name: 'Contendor',
+        name: 'Contenedor',
         selector: (row: any) => row.inventoryCar.extra["BIC"],
       }, {
         name: 'BL',

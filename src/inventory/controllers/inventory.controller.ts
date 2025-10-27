@@ -256,9 +256,15 @@ class InventoryController {
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
         // 67aac5f594ed0a1f9da3478a Medlog
-        unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
-        contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
-        finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68f6620f0000000000156042"),
+        // unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
+        // contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
+        // finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68f6620f0000000000156042"),
+        unitForm: new mongoose.Types.ObjectId("68ffc004000000000049cda8"),
+        openForm: new mongoose.Types.ObjectId("68ffba9b000000000049cda4"),
+        finishForm: contentType === "general-items" ?
+          new mongoose.Types.ObjectId("68ffc0b3000000000049cdb4"):
+          new mongoose.Types.ObjectId("68ffc0c3000000000049cdbd")
+        ,
         contentType: contentType || 'general-items',
         settings: {
           photos: {
@@ -5771,3 +5777,11 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
 }
 
 export default new InventoryController();
+
+//
+/*
+Cambiar icono para las opciones de tipo de carga de anuncio
+En modo general-items debe cambiar el texto titulo
+Revisar comentario en evidencia de foto normal
+Revidar alineación elementos para general-items
+ */
