@@ -614,8 +614,13 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
   }
 
-  create = () => {
-    this.props.history.push('/inventory/container/create/');
+  create = (type: string) => {
+    if (type === 'general')
+      this.props.history.push('/inventory/container/create/general/');
+    else if (type === 'coded')
+      this.props.history.push('/inventory/container/create/coded/');
+    else
+      this.props.history.push('/inventory/container/create/');
   }
 
   private goToDetail(id: string): void {
@@ -694,11 +699,29 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
               </h4>
               <div className="pull-right box-tools">
                 {hasPermission(window.user, 'createInventory') ? (<>
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={this.create}>
-                    <i className="fa fa-plus" /> Cargar Anuncio
+ <button
+                      className="btn btn-sm btn-success dropdown-toggle"
+                      data-toggle="dropdown">
+                    <i className="fa fa-plus" /> Cargar Anuncio <span className="caret" />
                   </button>
+                              <ul
+                                className="dropdown-menu pull-right"
+                                role="menu">
+                                <li>
+                                  <a href='#'
+                                  onClick={() => this.create("coded")}>
+                                    <i className="fa fa-fw fa-icon-units-coded" />
+                                    Anuncio Autos
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href='#'
+                                  onClick={() => this.create("general")}>
+                                    <i className="fa fa-fw fa-icon-units-general" />
+                                    Anuncio Carga
+                                  </a>
+                                </li>
+                              </ul>
                 </>
                 ) : null}
               </div>

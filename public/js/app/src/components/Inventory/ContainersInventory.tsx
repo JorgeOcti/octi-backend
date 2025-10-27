@@ -1516,14 +1516,14 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                 <li>
                                   <a href='#'
                                   onClick={() => this.create("coded")}>
-                                    <i className="fa fa-fw fa-table" />
+                                    <i className="fa fa-fw fa-icon-units-coded" />
                                     Anuncio Autos
                                   </a>
                                 </li>
                                 <li>
                                   <a href='#'
                                   onClick={() => this.create("general")}>
-                                    <i className="fa fa-fw fa-table" />
+                                    <i className="fa fa-fw fa-icon-units-general" />
                                     Anuncio Carga
                                   </a>
                                 </li>
