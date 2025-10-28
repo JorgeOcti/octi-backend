@@ -238,7 +238,7 @@ html
                 span.label MARCA:
                 span !{car.car.brand}
           .section
-            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos)
+            .title Evidencia Fotográfica Unidad (!{car.images.length} Fotos) (!{car.car.vin})
             each image in car.images
               .image-box
                 img(src=image.file.url, alt="Image")
@@ -249,7 +249,7 @@ html
               if car.damages.length == 0
                 .title SIN DAÑOS
               else
-                .title DAÑOS
+                .title DAÑOS (!{car.car.vin})
               each damage, index in car.damages
                 .item-info.bottom-margin
                   .item
