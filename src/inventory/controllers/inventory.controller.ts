@@ -3173,22 +3173,26 @@ class InventoryController {
   }
 
   private getAccessories(participant: IParticipant) {
-    let text = '';
+    let response = {
+      accessoriesTotal: 0,
+      accessoriesText: ''
+    };
     if (!participant || !participant.sections) {
-      return text;
+      return response;
     }
 
     for (const section of participant.sections) {
       for (const answer of section.answers) {
         if (answer.kind === KindQuestion.accessory){
           let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
-          text = answer.accesoriesAnswered
-            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount: ""}` ?? '-')
+          response.accessoriesText = answer.accesoriesAnswered
+            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount: ""}`)
             .join(';')
+          response.accessoriesTotal = answer.accesoriesAnswered.reduce((sum, item) => sum + (item.amount || 1), 0);
         }
       }
     }
-    return text;
+    return response;
   }
 
   private createObjectFromItems(items: any[]) {
@@ -4983,8 +4987,10 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         { header: 'Modelo', key: 'model', width: 20 },
         { header: 'Daños', key: 'hasDamage', width: 10 },
         { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
+        { header: 'Cantidad Asistencia', key: 'qty-accesories', width: 30 },
         { header: 'Contenedor', key: 'container', width: 25 },
         { header: 'BL', key: 'bl', width: 20 },
+        { header: 'Nave', key: 'ship', width: 20 },
         { header: 'Sucursal', key: 'venue', width: 20 },
         { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
         { header: 'F. Despacho', key: 'inTransitDate', width: 20 },
@@ -5199,6 +5205,10 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
             car.readyToClientHistory?.inventoryCar?.venueFound.name ||
             '';
 
+          const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
+            this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
+            null;
+
           // Crear fila del Excel
           const row = {
             vin: car.vin || '',
@@ -5208,9 +5218,13 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
             bl: containerInfo.bl,
             venue: venue,
             hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
-            accesories: car.readyToClientHistory?.inventoryCar?.participant ?
-              this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
-              '',
+            accesories: accessories?.accessoriesText || '',
+            'qty-accesories': accessories?.accessoriesTotal || '',
+            ship: car.inTransitHistory?.inventoryCar?.extra ?
+              car.inTransitHistory.inventoryCar.extra['Nave'] || '' :
+              car.readyToClientHistory?.inventoryCar?.extra ?
+                car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
+                '',
             readyToClientDate: formatDate(car.readyToClientHistory?.executedAt),
             inTransitDate: formatDate(car.inTransitHistory?.executedAt),
             status: getStatus(car.inTransitHistory, car.readyToClientHistory)
