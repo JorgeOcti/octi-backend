@@ -118,6 +118,7 @@ class InventoryController {
     this.processContainerBatch = this.processContainerBatch.bind(this);
     this.containerInventorySummary = this.containerInventorySummary.bind(this);
     this.currentCompanyStockExport = this.currentCompanyStockExport.bind(this);
+    this.getInventoryForms = this.getInventoryForms.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -241,6 +242,41 @@ class InventoryController {
     return venue;
   }
 
+  public getInventoryForms(type: ContainerInventoryContentType, companyId: string) {
+    // OSA     5b590abca9683b0413293aa1
+    // Medlog  67aac5f594ed0a1f9da3478a
+
+    // OSA 5b590abca9683b0413293aa1
+
+// open 68f64e1a000000000015603e
+// Unit 688b9b8100000000006507f2
+// close - unit    68f6620f0000000000156042
+// close - general 690166255bc73066a22d1f25
+
+
+// Medlog 67aac64a94ed0a1f9da3478c
+
+// open 690168900000000000645eb1
+// Unit 67f47db80000000000766e66
+// close - unit     69016ba35bc73066a22d1f27
+    // close - general 68c4334700000000007f20a5
+
+    switch(type){
+      case ContainerInventoryContentType.coded_items:
+        return {
+          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
+          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
+          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f6620f0000000000156042") : new mongoose.Types.ObjectId("69016ba35bc73066a22d1f27"),
+        }
+      case ContainerInventoryContentType.general_items:
+        return {
+          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
+          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
+          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("690166255bc73066a22d1f25") : new mongoose.Types.ObjectId("68c4334700000000007f20a5"),
+        }
+    }
+  }
+
 
   public async createContainerInventory(req: IRequest, res: Response) {
     let { name, carsByContainer, manualPhoto, reportPhoto, contentType } = req.body;
@@ -248,6 +284,7 @@ class InventoryController {
     try {
       const { company, team, venue } = req.user;
       const inventory = new Inventory({
+        ...this.getInventoryForms(contentType, req.user.company._id.toString()),
         name,
         company: company._id,
         team: team._id,
@@ -255,16 +292,6 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.pending,
         containerInventory: true,
-        // 67aac5f594ed0a1f9da3478a Medlog
-        // unitForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("67f47db80000000000766e66") : new mongoose.Types.ObjectId("688b9b8100000000006507f2"),
-        // contentForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("689228888d79e948bcd836c9"): new mongoose.Types.ObjectId("68759fc900000000009e57c1"),
-        // finishForm: req.user.team._id === "67aac5f594ed0a1f9da3478a" ? new mongoose.Types.ObjectId("68c4334700000000007f20a5") : new mongoose.Types.ObjectId("68f6620f0000000000156042"),
-        unitForm: new mongoose.Types.ObjectId("68ffc004000000000049cda8"),
-        openForm: new mongoose.Types.ObjectId("68ffba9b000000000049cda4"),
-        finishForm: contentType === "general-items" ?
-          new mongoose.Types.ObjectId("68ffc0b3000000000049cdb4"):
-          new mongoose.Types.ObjectId("68ffc0c3000000000049cdbd")
-        ,
         contentType: contentType || 'general-items',
         settings: {
           photos: {
