@@ -5125,6 +5125,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         { header: 'Cantidad Asistencia', key: 'qty-accesories', width: 30 },
         { header: 'Contenedor', key: 'container', width: 25 },
         { header: 'BL', key: 'bl', width: 20 },
+        { header: 'Nave', key: 'ship', width: 20 },
         { header: 'Sucursal', key: 'venue', width: 20 },
         { header: 'Nave', key: 'ship', width: 20 },
         { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
@@ -5339,9 +5340,11 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
           const venue = car.inTransitHistory?.participant?.venue.name ||
             car.readyToClientHistory?.inventoryCar?.venueFound.name ||
             '';
+
           const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
-              this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
-              null;
+            this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
+            null;
+
           // Crear fila del Excel
           const row = {
             vin: car.vin || '',
@@ -5353,8 +5356,11 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
             hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
             accesories: accessories?.accessoriesText || '',
             'qty-accesories': accessories?.accessoriesTotal || '',
-            ship: car.inTransitHistory?.inventoryCar?.extra ? car.inTransitHistory.inventoryCar.extra['Nave'] || '' :
-              car.readyToClientHistory?.inventoryCar?.extra ? car.readyToClientHistory.inventoryCar.extra['Nave'] || '' : '',
+            ship: car.inTransitHistory?.inventoryCar?.extra ?
+              car.inTransitHistory.inventoryCar.extra['Nave'] || '' :
+              car.readyToClientHistory?.inventoryCar?.extra ?
+                car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
+                '',
             readyToClientDate: formatDate(car.readyToClientHistory?.executedAt),
             inTransitDate: formatDate(car.inTransitHistory?.executedAt),
             status: getStatus(car.inTransitHistory, car.readyToClientHistory)
