@@ -118,6 +118,7 @@ class InventoryController {
     this.processContainerBatch = this.processContainerBatch.bind(this);
     this.containerInventorySummary = this.containerInventorySummary.bind(this);
     this.currentCompanyStockExport = this.currentCompanyStockExport.bind(this);
+    this.createContainerInventory = this.createContainerInventory.bind(this);
     this.getInventoryForms = this.getInventoryForms.bind(this);
   }
 
@@ -242,24 +243,9 @@ class InventoryController {
     return venue;
   }
 
-  public getInventoryForms(type: ContainerInventoryContentType, companyId: string) {
-    // OSA     5b590abca9683b0413293aa1
-    // Medlog  67aac5f594ed0a1f9da3478a
-
+  private getInventoryForms(type: string, companyId: string) {
     // OSA 5b590abca9683b0413293aa1
-
-// open 68f64e1a000000000015603e
-// Unit 688b9b8100000000006507f2
-// close - unit    68f6620f0000000000156042
-// close - general 690166255bc73066a22d1f25
-
-
-// Medlog 67aac64a94ed0a1f9da3478c
-
-// open 690168900000000000645eb1
-// Unit 67f47db80000000000766e66
-// close - unit     69016ba35bc73066a22d1f27
-    // close - general 68c4334700000000007f20a5
+    // Medlog 67aac64a94ed0a1f9da3478c
 
     switch(type){
       case ContainerInventoryContentType.coded_items:
@@ -275,16 +261,19 @@ class InventoryController {
           finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("690166255bc73066a22d1f25") : new mongoose.Types.ObjectId("68c4334700000000007f20a5"),
         }
     }
+
+    return {}
   }
 
 
   public async createContainerInventory(req: IRequest, res: Response) {
     let { name, carsByContainer, manualPhoto, reportPhoto, contentType } = req.body;
     carsByContainer = JSON.parse(carsByContainer);
+    let inventoryForms : any = this.getInventoryForms(contentType, req.user.company._id.toString());
     try {
       const { company, team, venue } = req.user;
       const inventory = new Inventory({
-        ...this.getInventoryForms(contentType, req.user.company._id.toString()),
+        ...inventoryForms,
         name,
         company: company._id,
         team: team._id,
