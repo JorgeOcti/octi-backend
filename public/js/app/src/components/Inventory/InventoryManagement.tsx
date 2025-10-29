@@ -711,7 +711,7 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
                                   <a href='#'
                                   onClick={() => this.create("coded")}>
                                     <i className="fa fa-fw fa-icon-units-coded" />
-                                    Anuncio Autos
+                                    Anuncio Vehículos
                                   </a>
                                 </li>
                                 <li>

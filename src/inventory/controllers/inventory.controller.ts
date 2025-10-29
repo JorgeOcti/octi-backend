@@ -3968,6 +3968,10 @@ class InventoryController {
           urlTemplate = 'container/pdf/coded-items.pug';
       }
 
+      if(!container.openParticipant || !container.closeParticipant) {
+        urlTemplate = 'container/pdf/coded-items.pug';
+      }
+
       let template: string =
         path.join(__dirname, '../../../views/') + urlTemplate;
       const css = fs.readFileSync(

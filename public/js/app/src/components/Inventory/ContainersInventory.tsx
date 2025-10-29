@@ -383,7 +383,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             );
           } else if (row.cars && row.cars.length > 0) {
             let damagedCars = row.cars.filter((car: any) => car.participant && car.participant.hasDamages);
-            let damagedCarsEvidence = damagedCars.map((car: any) => car.participant.deliveryInfo.damageImages || []).flat();
+            let damagedCarsEvidence = damagedCars.map((car: any) => car.participant.deliveryInfo?.damageImages || []).flat();
             if (damagedCarsEvidence.length){
               row.damageImages = damagedCarsEvidence;
               return (
@@ -1517,7 +1517,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                   <a href='#'
                                   onClick={() => this.create("coded")}>
                                     <i className="fa fa-fw fa-icon-units-coded" />
-                                    Anuncio Autos
+                                    Anuncio Vehículos
                                   </a>
                                 </li>
                                 <li>
