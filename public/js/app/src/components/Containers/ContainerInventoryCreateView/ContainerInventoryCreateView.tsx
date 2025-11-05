@@ -213,7 +213,16 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           console.log("Error", header, data)
           return { error: true, message: `Rut incorrecto` }
         }
-      } else {
+      } else if (header === "BIC") {
+        let value = data[header].replaceAll(" ", "").replaceAll("-", "").replaceAll("_", "")
+        if (value.length !== 11) {
+          console.log("Error", header, data)
+          return {
+            error: true,
+            message: `BIC incorrecto, debe tener 11 caracteres (4 letras y 7 números) sin espacios ni guiones`
+          }
+        }
+      }else {
         if (!data[header]) {
           console.log("Error", header, data)
           return { error: true, message: `Falta el campo ${header}` }
