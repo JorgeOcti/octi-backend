@@ -544,6 +544,26 @@ export default class ApiService {
     });
   }
 
+    public getSummaryByCompany(companyId: string,filters?: any): AxiosPromise {
+    let url = `/api/company/stock/${companyId}/summary`;
+    if (filters) {
+      url += '?'
+      for (const key in filters) {
+        let value = filters[key];
+        if (filters[key]) {
+          // if is array join with comma first
+          if (Array.isArray(value)) {
+            value = value.join(',');
+          }
+          url += `&${key}=${filters[key]}`
+        }
+      }
+    }
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getUnitsByCompany(companyId: string, page: number, pageSize: number, filters: any, sortField?: string, sortOption?: 'asc' | 'desc'): AxiosPromise {
     let url = `/api/company/stock/${companyId}?page=${page}&pageSize=${pageSize}`;
 
