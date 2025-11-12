@@ -711,6 +711,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                           value={filters.venueFilter || ''}
                           onChange={(e) => {
                             this.setState({ venueFilter: e.target.value });
+                            this.changeFilter('venueFilter', [e.target.value]);
                           }}
                         >
                           <option value="">Todas</option>

@@ -4436,7 +4436,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
     const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate, venueFilter } = req.query;
 
     let filterCompanies: any = null;
     let userCompany = await Company.findById(company._id);
@@ -4502,6 +4502,13 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
 
     if (blFilter) {
       inventoryCarFilter['extra.N° BL'] = blFilter;
+    }
+
+    if(venueFilter) {
+      const venueNames = venueFilter.toString().split(',').map(name => name.trim());
+      const venues = await Venue.find({ name: { $in: venueNames } }, { _id: 1 });
+      const venueIds = venues.map(v => v._id);
+      inventoryCarFilter['venue'] = { $in: venueIds };
     }
 
     if (Object.keys(inventoryCarFilter).length > 0) {
