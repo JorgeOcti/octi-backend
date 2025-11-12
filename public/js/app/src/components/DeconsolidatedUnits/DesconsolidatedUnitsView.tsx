@@ -191,6 +191,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     this.downloadData = this.downloadData.bind(this);
     this.changeFilter = this.changeFilter.bind(this);
     this.getFilterDate = this.getFilterDate.bind(this);
+    this.updateFilters = this.updateFilters.bind(this);
   }
 
     cleanFilters = (update = false) => {
@@ -257,7 +258,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const pageSize = this.state.paginationPageSize || 50;
     const sortField = this.state.sort.sortColumn || '';
     const sortDirection : 'asc' | 'desc' = this.state.sort.sortDirection || 'desc';
-
+    this.updateFilters(companyId);
     api.getUnitsByCompany(companyId, page, pageSize, {...this.state.filters,...this.getFilterDate()}, sortField, sortDirection ).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
@@ -272,13 +273,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         car.venue = venue.name ?? ""
         car.lastDate = histories[0].createdAt;
 
-        if (car.venue && !venueOptions.includes(car.venue)) {
-          venueOptions.push(car.venue)
-        }
-
-        if (!tripOptions.includes(inventoryCar?.extra["N° Viaje"].toString().toLowerCase())) tripOptions.push(inventoryCar?.extra["N° Viaje"].toString().toLowerCase())
-        if (!shipOptions.includes(inventoryCar?.extra["Nave"].toString().toLowerCase())) shipOptions.push(inventoryCar?.extra["Nave"].toString().toLowerCase())
-
         return {
           inventoryCar,
           car,
@@ -292,9 +286,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         units: units,
         originalUnits: units,
         dataLoading: false,
-        venueSelector: venueOptions,
-        shipSelector: shipOptions,
-        tripSelector: tripOptions
       });
     });
   }
@@ -363,6 +354,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       this.timer = setTimeout(() => {
         this.getUnitsByCompanyId();
       }, 500);
+    });
+  }
+
+  private updateFilters(companyId: string) {
+    const api: ApiService = new ApiService();
+    api.getSource();
+    api.getSummaryByCompany(companyId, {...this.state.filters, ...this.getFilterDate()}).then((data: any) => {
+      this.setState({
+        shipSelector: data.data.ships || [],
+        tripSelector: data.data.trips || [],
+        venueSelector: data.data.venues || [],
+      });
     });
   }
 
@@ -722,9 +725,13 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                             className="form-control"
                             value={this.state.clientFilter}
                             onChange={(e) => {
-                              this.setState({ clientFilter: e.target.value, dataLoading: true }, () => {
+                              const companyId = e.target.value;
+                              this.setState({ clientFilter: companyId, dataLoading: true }, () => {
+                                // Actualizar los selectores (ships, trips, venues) con la nueva compañía
+                                this.updateFilters(companyId);
+                                // Limpiar filtros y recargar datos
                                 this.cleanFilters(true);
-                              })
+                              });
                             }}
                           >
                             {this.state.clientSelector.map((client: any, index: number) => {

@@ -4894,6 +4894,120 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
   }
 }
 
+public async currentCompanyStockSummary(req: IRequest, res: Response): Promise<any> {
+  try {
+    const { company } = req.user;
+    let { companyId } = req.params;
+    
+    // Verificar permisos de acceso a la compañía
+    let filterCompanies: any = null;
+    let userCompany = await Company.findById(company._id);
+
+    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: new Types.ObjectId(company._id),
+      }
+    } else {
+      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+        return res.status(403).json({
+          message: 'No tienes acceso a este inventario',
+          status: 403
+        });
+      }
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: { $exists: true },
+      }
+    }
+
+    // Obtener cars de la compañía
+    let cars = await Car.aggregate([
+      {$match: filterCompanies},
+      {$project: {_id: 1}}
+    ]);
+
+    let carIds = cars.map((c: any) => c._id);
+
+    // Obtener ships únicos
+    let ships = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {$group: {_id: '$extra.Nave'}},
+      {$match: {_id: {$ne: null}}},
+      {$sort: {_id: 1}}
+    ]);
+
+    // Obtener trips únicos
+    let trips = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {$group: {_id: '$extra.N° Viaje'}},
+      {$match: {_id: {$ne: null}}},
+      {$sort: {_id: 1}}
+    ]);
+
+    // Obtener venues únicos (venue o venueFound)
+    let venues = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {
+        $lookup: {
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue'
+        }
+      },
+      {$unwind: {path: '$venue', preserveNullAndEmptyArrays: true}},
+      {
+        $lookup: {
+          from: 'venues',
+          localField: 'venueFound',
+          foreignField: '_id',
+          as: 'venueFound'
+        }
+      },
+      {$unwind: {path: '$venueFound', preserveNullAndEmptyArrays: true}},
+      {
+        $project: {
+          venue: {
+            $cond: {
+              if: {$ne: ['$venueFound', null]},
+              then: '$venueFound',
+              else: '$venue'
+            }
+          }
+        }
+      },
+      {$match: {'venue._id': {$ne: null}}},
+      {$group: {_id: '$venue._id', name: {$first: '$venue.name'}}},
+      {$sort: {name: 1}}
+    ]);
+
+    // Obtener información de la compañía
+    let companyInfo = await Company.findById(companyId, {
+      _id: 1,
+      name: 1,
+      rut: 1
+    });
+
+    return res.status(200).json({
+      ships: ships.map(s => s._id),
+      trips: trips.map(t => t._id),
+      venues: venues.map(v => v.name),
+      company: companyInfo,
+      status: 200
+    });
+    
+  } catch (e) {
+    logger.error(`InventoryController.currentCompanyStockSummary: Error.`);
+    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.error(e);
+    return res.status(500).json({
+      message: JSON.stringify(e),
+      status: 500
+    });
+  }
+}
+
 public async currentCompanyStockExport(req: IRequest, res: Response): Promise<any> {
   try {
     const { company } = req.user; // user request company
