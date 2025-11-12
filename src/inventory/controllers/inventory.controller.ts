@@ -4436,7 +4436,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
     const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate, venueFilter } = req.query;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate, venueFilter, unitFilter } = req.query;
 
     let filterCompanies: any = null;
     let userCompany = await Company.findById(company._id);
@@ -4461,6 +4461,9 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
         company: new Types.ObjectId(companyId),
         handlerCompany: { $exists: true },
       }
+    }
+    if (unitFilter) {
+      filterCompanies['vin'] = {$regex: unitFilter.toString(), $options: 'i'};
     }
 
     let cars = await Car.aggregate([
@@ -4501,7 +4504,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     }
 
     if (blFilter) {
-      inventoryCarFilter['extra.N° BL'] = blFilter;
+      inventoryCarFilter['extra.N° BL'] = {$regex: blFilter.toString(), $options: 'i'};
     }
 
     if(venueFilter) {
@@ -4586,7 +4589,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
       if (Object.keys(damageFilter).length > 0){
         pipeline = [
           {$match:{
-              ...filterCompanies,
+              car: {$in: cars.map((c: any) => c._id)},
               ...statusFiletr,
             }
           },
@@ -4618,7 +4621,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
                 ...statusFiletr,
               } :
               {
-                ...filterCompanies,
+                car: {$in: cars.map((c: any) => c._id)},
                 ...statusFiletr
               }
           }
@@ -4665,11 +4668,11 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
       logger.info(`Found ${histories.length} histories for the given filters.`);
       logger.info(`Paginating results with options: ${JSON.stringify(options)}`);
 
-      let cars = histories.map((h: any) => h._id);
+      let carsHistories = histories.map((h: any) => h._id);
 
       // Inicia el pipeline de agregación de Car
       const carAggregationPipeline: any[] = [
-        { $match: { ...filterCompanies, _id: { $in: cars } } },
+        { $match: { ...filterCompanies, _id: { $in: carsHistories } } },
         {
           $lookup: {
             from: 'histories',
