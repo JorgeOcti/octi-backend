@@ -38,6 +38,7 @@ interface IStateType {
   paginationPageSize: number;
   totalRows: number;
   dataLoading: boolean;
+  filtersLoading: boolean;
   sort: {
     sortColumn: string;
     sortDirection: 'asc' | 'desc';
@@ -158,6 +159,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       loading: true,
       filters: {},
       dataLoading: true,
+      filtersLoading: true,
       error: null,
       originalUnits: [],
       units: [],
@@ -216,6 +218,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         clientFilter: company?.clientCompanies[0]._id,
         clientSelector: company?.clientCompanies,
       },() => {
+        this.updateFilters(company?.clientCompanies[0]._id);
         this.getUnitsByCompanyId();
       });
     } else {
@@ -227,6 +230,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           clientSelector: companyList,
           dataLoading: true,
         }, () => {
+          this.updateFilters(companyList[0]._id);
           this.getUnitsByCompanyId();
         })
       }
@@ -258,7 +262,6 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
     const pageSize = this.state.paginationPageSize || 50;
     const sortField = this.state.sort.sortColumn || '';
     const sortDirection : 'asc' | 'desc' = this.state.sort.sortDirection || 'desc';
-    this.updateFilters(companyId);
     api.getUnitsByCompany(companyId, page, pageSize, {...this.state.filters,...this.getFilterDate()}, sortField, sortDirection ).then((data: any) => {
       let venueOptions: any[] = []
       let shipOptions: any[] = []
@@ -358,6 +361,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private updateFilters(companyId: string) {
+    this.setState({ filtersLoading: true });
     const api: ApiService = new ApiService();
     api.getSource();
     api.getSummaryByCompany(companyId, {...this.state.filters, ...this.getFilterDate()}).then((data: any) => {
@@ -365,6 +369,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         shipSelector: data.data.ships || [],
         tripSelector: data.data.trips || [],
         venueSelector: data.data.venues || [],
+        filtersLoading: false
       });
     });
   }
@@ -580,7 +585,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                     </button>
               </div>
             </div>
-            { loading ?
+            { this.state.filtersLoading ?
               <div className="overlay">
                 <i className="fa fa-refresh fa-spin" />
               </div>
