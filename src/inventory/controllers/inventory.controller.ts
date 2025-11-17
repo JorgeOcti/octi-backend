@@ -3659,6 +3659,13 @@ class InventoryController {
                 },
                 {
                   path: 'units.images',
+                },
+                {
+                  path: "closeParticipant",
+                  select: ['name', 'hasDamages', 'createdAt', 'deliveryInfo', 'user'],
+                  populate: [
+                    {path: 'user', select: ['firstName', 'lastName', 'email'] }
+                  ]
                 }
               ],
               select: { meta: false }
