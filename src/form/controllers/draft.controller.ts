@@ -4,7 +4,6 @@ import Draft, { IDraftModel } from '../models/draft.model';
 import mongoose from 'mongoose';
 import ParticipantFile from '../models/participantFile.model';
 import logger from '../../services/logger.service';
-import Da from '../../../public/theme/bower_components/moment/src/locale/da';
 
 class DraftController {
 
