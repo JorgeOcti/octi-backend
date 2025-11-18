@@ -4443,7 +4443,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     const { company } = req.user; // user request company
     let { companyId } = req.params; //filter param company
     const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
+    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate, venueFilter, unitFilter } = req.query;
 
     let filterCompanies: any = null;
     let userCompany = await Company.findById(company._id);
@@ -4468,6 +4468,9 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
         company: new Types.ObjectId(companyId),
         handlerCompany: { $exists: true },
       }
+    }
+    if (unitFilter) {
+      filterCompanies['vin'] = {$regex: unitFilter.toString(), $options: 'i'};
     }
 
     let cars = await Car.aggregate([
@@ -4508,7 +4511,14 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     }
 
     if (blFilter) {
-      inventoryCarFilter['extra.N° BL'] = blFilter;
+      inventoryCarFilter['extra.N° BL'] = {$regex: blFilter.toString(), $options: 'i'};
+    }
+
+    if(venueFilter) {
+      const venueNames = venueFilter.toString().split(',').map(name => name.trim());
+      const venues = await Venue.find({ name: { $in: venueNames } }, { _id: 1 });
+      const venueIds = venues.map(v => v._id);
+      inventoryCarFilter['venue'] = { $in: venueIds };
     }
 
     if (Object.keys(inventoryCarFilter).length > 0) {
@@ -4586,7 +4596,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
       if (Object.keys(damageFilter).length > 0){
         pipeline = [
           {$match:{
-              ...filterCompanies,
+              car: {$in: cars.map((c: any) => c._id)},
               ...statusFiletr,
             }
           },
@@ -4618,7 +4628,7 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
                 ...statusFiletr,
               } :
               {
-                ...filterCompanies,
+                car: {$in: cars.map((c: any) => c._id)},
                 ...statusFiletr
               }
           }
@@ -4665,11 +4675,11 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
       logger.info(`Found ${histories.length} histories for the given filters.`);
       logger.info(`Paginating results with options: ${JSON.stringify(options)}`);
 
-      let cars = histories.map((h: any) => h._id);
+      let carsHistories = histories.map((h: any) => h._id);
 
       // Inicia el pipeline de agregación de Car
       const carAggregationPipeline: any[] = [
-        { $match: { ...filterCompanies, _id: { $in: cars } } },
+        { $match: { ...filterCompanies, _id: { $in: carsHistories } } },
         {
           $lookup: {
             from: 'histories',
@@ -4892,6 +4902,120 @@ public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
 
   } catch (e) {
     logger.error(`InventoryController.currentCompanyStock: Error.`);
+    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+    logger.error(e);
+    return res.status(500).json({
+      message: JSON.stringify(e),
+      status: 500
+    });
+  }
+}
+
+public async currentCompanyStockSummary(req: IRequest, res: Response): Promise<any> {
+  try {
+    const { company } = req.user;
+    let { companyId } = req.params;
+    
+    // Verificar permisos de acceso a la compañía
+    let filterCompanies: any = null;
+    let userCompany = await Company.findById(company._id);
+
+    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: new Types.ObjectId(company._id),
+      }
+    } else {
+      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+        return res.status(403).json({
+          message: 'No tienes acceso a este inventario',
+          status: 403
+        });
+      }
+      filterCompanies = {
+        company: new Types.ObjectId(companyId),
+        handlerCompany: { $exists: true },
+      }
+    }
+
+    // Obtener cars de la compañía
+    let cars = await Car.aggregate([
+      {$match: filterCompanies},
+      {$project: {_id: 1}}
+    ]);
+
+    let carIds = cars.map((c: any) => c._id);
+
+    // Obtener ships únicos
+    let ships = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {$group: {_id: '$extra.Nave'}},
+      {$match: {_id: {$ne: null}}},
+      {$sort: {_id: 1}}
+    ]);
+
+    // Obtener trips únicos
+    let trips = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {$group: {_id: '$extra.N° Viaje'}},
+      {$match: {_id: {$ne: null}}},
+      {$sort: {_id: 1}}
+    ]);
+
+    // Obtener venues únicos (venue o venueFound)
+    let venues = await InventoryCar.aggregate([
+      {$match: {car: {$in: carIds}}},
+      {
+        $lookup: {
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue'
+        }
+      },
+      {$unwind: {path: '$venue', preserveNullAndEmptyArrays: true}},
+      {
+        $lookup: {
+          from: 'venues',
+          localField: 'venueFound',
+          foreignField: '_id',
+          as: 'venueFound'
+        }
+      },
+      {$unwind: {path: '$venueFound', preserveNullAndEmptyArrays: true}},
+      {
+        $project: {
+          venue: {
+            $cond: {
+              if: {$ne: ['$venueFound', null]},
+              then: '$venueFound',
+              else: '$venue'
+            }
+          }
+        }
+      },
+      {$match: {'venue._id': {$ne: null}}},
+      {$group: {_id: '$venue._id', name: {$first: '$venue.name'}}},
+      {$sort: {name: 1}}
+    ]);
+
+    // Obtener información de la compañía
+    let companyInfo = await Company.findById(companyId, {
+      _id: 1,
+      name: 1,
+      rut: 1
+    });
+
+    return res.status(200).json({
+      ships: ships.map(s => s._id),
+      trips: trips.map(t => t._id),
+      venues: venues.map(v => v.name),
+      company: companyInfo,
+      status: 200
+    });
+    
+  } catch (e) {
+    logger.error(`InventoryController.currentCompanyStockSummary: Error.`);
     logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
     logger.error(e);
     return res.status(500).json({
