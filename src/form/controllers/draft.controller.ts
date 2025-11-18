@@ -4,6 +4,7 @@ import Draft, { IDraftModel } from '../models/draft.model';
 import mongoose from 'mongoose';
 import ParticipantFile from '../models/participantFile.model';
 import logger from '../../services/logger.service';
+import Da from '../../../public/theme/bower_components/moment/src/locale/da';
 
 class DraftController {
 
@@ -15,12 +16,13 @@ class DraftController {
     const {user} = req;
     const {venue} =  user;
     const {id} = req.params;
-    const {answers} = req.body;
-    const {car} = req.body;
+    const {answers, startedAt, car} = req.body;
+
 
     logger.info(`Save Draft from user: ${user.email}`);
     logger.info(`Saving draft for car ${car} and form ${id}`);
     logger.info(`Draft answers: ${JSON.stringify(answers)}`);
+    logger.info(`Draft body: ${JSON.stringify(req.body)}`);
 
     if (!car) {
       return res.status(400).json({
@@ -38,12 +40,18 @@ class DraftController {
         }, {
           $set: {
             answers,
-          }
+          },
         },{
           new: true,
           upsert: true
         }
       )
+
+      if (!draft.startedAt) {
+        draft.startedAt = startedAt ? new Date(startedAt) : new Date();
+        draft.save();
+      }
+
 
       return res.status(200).json({
         status: 200,
