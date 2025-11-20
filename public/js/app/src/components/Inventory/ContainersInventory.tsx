@@ -1125,7 +1125,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       });
 
 
-      if (data.closeParticipant) {
+      if (datum.length === 0 && data.closeParticipant) {
         datum.push({
           _id: data.closeParticipant._id,
           vin: '-',
