@@ -5837,7 +5837,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
     }
   }
 
-  private async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
+  public async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
 
     const inventoryCarList = await InventoryCar.find({
       containerFound: container,
