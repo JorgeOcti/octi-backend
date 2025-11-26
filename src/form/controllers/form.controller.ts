@@ -209,7 +209,7 @@ class FormController {
         }
       }
     }
-    let startDate: Date = participant.startDate;
+    let startDate: Date = participant.startedAt || participant.startDate;
 
     return {
       qr: qr,
@@ -546,6 +546,7 @@ class FormController {
           conciliationImages: true,
           createdAt: true,
           startDate: true,
+          startedAt: true,
         }
       )
         .allowDiskUse(true)
@@ -1181,7 +1182,8 @@ class FormController {
       transmittal,
       reliability,
       inventory,
-      containerFound
+      containerFound,
+      startedAt
     } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
@@ -1350,8 +1352,10 @@ class FormController {
             form: id
           });
 
-          if (draft) {
-            participantObject.startDate = draft.createdAt;
+          if (startedAt) {
+            participantObject.startedAt = new Date(startedAt);
+          } else if (draft) {
+            participantObject.startedAt = draft.startedAt || draft.createdAt;
           }
 
           if (req.user.company.handler) {
