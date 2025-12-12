@@ -3014,7 +3014,8 @@ class InventoryController {
       { header: 'Carga', key: 'vin', width: 15 },
       { header: 'Descripción carga', key: 'description', width: 30 },
       { header: 'Daños', key: 'hasDamages', width: 30 },
-      { header: 'Asistencia mecánica', key: 'accessories', width: 30 },
+      { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
+      { header: 'Cantidad asistencia mecánica', key: 'qty-accesories', width: 30 },
       { header: 'BL', key: 'bl', width: 20 },
       { header: 'Puerto', key: 'port', width: 20 },
       { header: 'Nave', key: 'ship', width: 20 },
@@ -3239,6 +3240,10 @@ class InventoryController {
         }
       }
 
+      const accessories = car?.participant ?
+            this.getAccessories(car?.participant) :
+            null;
+
       worksheet.addRow({
         openDate: openDate,
         finishDate: finishDate,
@@ -3246,7 +3251,8 @@ class InventoryController {
         vin: car.car.vin,
         description: `${car.car.brand} ${car.car.model || ''}`,
         hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
-        accessories: car.participant ? this.getAccessories(car.participant) : "",
+        accesories: accessories?.accessoriesText || '',
+        'qty-accesories': accessories?.accessoriesTotal || '',
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
