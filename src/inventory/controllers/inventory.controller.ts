@@ -2978,7 +2978,12 @@ class InventoryController {
     if (shipFilter) containerFilter['extra.Nave'] = shipFilter;
     if (container) containerFilter['extra.BIC'] = container;
     if (blFilter) containerFilter['extra.N° BL'] = blFilter;
-    if (clientFilter) containerFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+    if (clientFilter) {
+      let company = await Company.findOne({
+      _id: new mongoose.Types.ObjectId(clientFilter.toString()),
+      });
+      containerFilter['extra.RUT Cliente'] = company?.rut;
+    }
 
     let sortField: string = sort ? sort.toString() : 'createdAt';
     let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
