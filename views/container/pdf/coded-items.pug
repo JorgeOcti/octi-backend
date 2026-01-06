@@ -109,7 +109,7 @@ html
           .info-grid
             .item
               span.label Registra Desconsolidado:
-              span !{container.inventoriedBy.firstName} !{container.inventoriedBy.lastName}
+              span !{container.inventoriedBy && container.inventoriedBy.firstName || "Sin información"} !{container.inventoriedBy && container.inventoriedBy.lastName || ""}
             .item
               span.label Ubicación:
               span !{container.extra["Ubicación"]}

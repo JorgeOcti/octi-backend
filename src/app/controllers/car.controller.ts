@@ -3046,6 +3046,9 @@ class CarController {
         ]);
 
         if (keys.length) {
+          const escapedSearchUser = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const searchRegexUser = new RegExp(escapedSearchUser, 'i');
+
           const users = await User.aggregate([
             {
               $match: {
@@ -3054,21 +3057,31 @@ class CarController {
                   $in: keys[0].users
                 },
                 active: true,
-                $text: { $search: `"${search.split(' ').join('" "')}"` }
-                // $text: { $search: search }
+                $or: [
+                  { firstName: searchRegexUser },
+                  { lastName: searchRegexUser },
+                  { email: searchRegexUser },
+                  {
+                    $expr: {
+                      $regexMatch: {
+                        input: { $concat: ['$firstName', ' ', '$lastName'] },
+                        regex: escapedSearchUser,
+                        options: 'i'
+                      }
+                    }
+                  }
+                ]
               }
             },
             {
               $project: {
                 _id: 1,
-                email: 1,
-                score: { $meta: 'textScore' }
+                firstName: 1,
+                lastName: 1,
+                email: 1
               }
             },
-            // { $match: { score: { $gte: 5.5 } } },
-            { $sort: { score: { $meta: 'textScore' } } },
             { $limit: 1 }
-            // { $limit: 5 }
           ]);
 
           if (users.length) {
@@ -3113,6 +3126,9 @@ class CarController {
             };
             ponderations['venues'] = venues;
           }
+          const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const searchRegex = new RegExp(escapedSearch, 'i');
+
           const cars = await Car.aggregate([
             {
               $match: {
@@ -3120,18 +3136,18 @@ class CarController {
                 _id: {
                   $in: keys[0].cars
                 },
-                $text: { $search: search }
+                $or: [
+                  { vin: searchRegex },
+                  { internalNumber: searchRegex }
+                ]
               }
             },
-
             {
               $project: {
                 _id: 1,
-                score: { $meta: 'textScore' }
+                vin: 1,
               }
             },
-            { $sort: { score: { $meta: 'textScore' } } },
-            { $match: { score: { $gt: 10 } } },
             { $limit: !users.length && !venues.length ? 40 : 1000 }
           ]);
 

@@ -1748,6 +1748,7 @@ class FormController {
 
                 inventoryCar.closeParticipant = newParticipant._id;
                 await inventoryCar.save();
+                await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();

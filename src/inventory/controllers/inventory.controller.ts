@@ -2978,7 +2978,12 @@ class InventoryController {
       if (shipFilter) containerFilter['extra.Nave'] = shipFilter;
       if (container) containerFilter['extra.BIC'] = container;
       if (blFilter) containerFilter['extra.N° BL'] = blFilter;
-      if (clientFilter) containerFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+      if (clientFilter) {
+        let company = await Company.findOne({
+          _id: new mongoose.Types.ObjectId(clientFilter.toString()),
+        });
+        containerFilter['extra.RUT Cliente'] = company?.rut;
+      }
 
       let sortField: string = sort ? sort.toString() : 'createdAt';
       let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
@@ -3009,7 +3014,8 @@ class InventoryController {
         { header: 'Carga', key: 'vin', width: 15 },
         { header: 'Descripción carga', key: 'description', width: 30 },
         { header: 'Daños', key: 'hasDamages', width: 30 },
-        { header: 'Asistencia mecánica', key: 'accessories', width: 30 },
+        { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
+        { header: 'Cantidad asistencia mecánica', key: 'qty-accesories', width: 30 },
         { header: 'BL', key: 'bl', width: 20 },
         { header: 'Puerto', key: 'port', width: 20 },
         { header: 'Nave', key: 'ship', width: 20 },
@@ -3234,6 +3240,10 @@ class InventoryController {
         }
       }
 
+      const accessories = car?.participant ?
+        this.getAccessories(car?.participant) :
+        null;
+
       worksheet.addRow({
         openDate: openDate,
         finishDate: finishDate,
@@ -3241,7 +3251,8 @@ class InventoryController {
         vin: car.car.vin,
         description: `${car.car.brand} ${car.car.model || ''}`,
         hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
-        accessories: car.participant ? this.getAccessories(car.participant) : "",
+        accesories: accessories?.accessoriesText || '',
+        'qty-accesories': accessories?.accessoriesTotal || '',
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
@@ -5497,7 +5508,7 @@ class InventoryController {
                 car.readyToClientHistory?.inventoryCar?.extra ?
                   car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
                   '',
-              readyToClientDate: formatDate(car.readyToClientHistory?.participant.createdAt),
+              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar.participant.createdAt),
               inTransitDate: formatDate(car.inTransitHistory?.executedAt),
               status: getStatus(car.inTransitHistory, car.readyToClientHistory)
             };
@@ -5858,7 +5869,7 @@ class InventoryController {
     }
   }
 
-  private async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
+  public async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
 
     const inventoryCarList = await InventoryCar.find({
       containerFound: container,

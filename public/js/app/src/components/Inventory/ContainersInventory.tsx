@@ -425,7 +425,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         maxWidth: '5%',
         cell: (row: any) => {
           if (row.openParticipant && row.openParticipant.deliveryInfo.seal &&
-            row.extra['Sello IN'].toUpperCase() !== row.openParticipant.deliveryInfo.seal.toUpperCase()
+            row.extra['Sello IN'].toUpperCase().trim() !== row.openParticipant.deliveryInfo.seal.toUpperCase().trim()
           ) {
             return <div
               className={'col-md-12 images-25 text-center'}>
