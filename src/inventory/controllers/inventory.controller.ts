@@ -243,33 +243,26 @@ class InventoryController {
     return venue;
   }
 
-  private getInventoryForms(type: string, companyId: string) {
-    // OSA 5b590abca9683b0413293aa1
-    // Medlog 67aac64a94ed0a1f9da3478c
+  private async getInventoryForms(type: string, user: IUser) {
+    const unitFormKind = type === ContainerInventoryContentType.coded_items ? KindForm.codedUnitType : KindForm.generalUnitType;
+    const closeFormKind = type === ContainerInventoryContentType.coded_items ? KindForm.closeCodedContainer : KindForm.closeGeneralContainer;
 
-    switch (type) {
-      case ContainerInventoryContentType.coded_items:
-        return {
-          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
-          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
-          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f6620f0000000000156042") : new mongoose.Types.ObjectId("69016ba35bc73066a22d1f27"),
-        }
-      case ContainerInventoryContentType.general_items:
-        return {
-          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
-          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
-          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("690166255bc73066a22d1f25") : new mongoose.Types.ObjectId("68c4334700000000007f20a5"),
-        }
+    let unitForm = await Form.findOne({ kind: unitFormKind, team: user.team._id, company: user.company._id });
+    let openForm = await Form.findOne({ kind: KindForm.openContainer, team: user.team._id, company: user.company._id });
+    let finishForm = await Form.findOne({ kind: closeFormKind, team: user.team._id, company: user.company._id });
+
+    return {
+      unitForm: unitForm?._id || null,
+      openForm: openForm?._id || null,
+      finishForm: finishForm?._id || null
     }
-
-    return {}
   }
 
 
   public async createContainerInventory(req: IRequest, res: Response) {
     let { name, carsByContainer, manualPhoto, reportPhoto, contentType } = req.body;
     carsByContainer = JSON.parse(carsByContainer);
-    let inventoryForms: any = this.getInventoryForms(contentType, req.user.company._id.toString());
+    let inventoryForms: any = await this.getInventoryForms(contentType, req.user);
     try {
       const { company, team, venue } = req.user;
       const inventory = new Inventory({

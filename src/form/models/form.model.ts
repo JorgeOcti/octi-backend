@@ -302,7 +302,8 @@ export enum KindForm {
   final = 'final',
   transmittal = 'transmittal',
   openContainer = 'openContainer',
-  closeContainer = 'closeContainer',
+  closeGeneralContainer = 'closeGeneralContainer',
+  closeCodedContainer = 'closeCodedContainer',
   generalUnitType = 'unitType',
   codedUnitType = 'codedUnitType'
 }
@@ -313,7 +314,8 @@ export const kindForm = [
   KindForm.control,
   KindForm.transmittal,
   KindForm.openContainer,
-  KindForm.closeContainer,
+  KindForm.closeGeneralContainer,
+  KindForm.closeCodedContainer,
   KindForm.generalUnitType,
   KindForm.codedUnitType
 ];
@@ -465,10 +467,6 @@ const formSchema = new mongoose.Schema(
         default: 'form/carDetail/base.pug'
       },
     },
-
-    kind: {
-
-    }
 
     sections: [formSectionsSchema],
     triggers: [formTriggerSchema],
