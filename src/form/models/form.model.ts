@@ -9,12 +9,12 @@ import type {
   IFormSection
 } from '../interfaces/form.interface';
 
-import {formTriggerSchema} from './trigger.model';
-import {questionTriggerSchema} from "./questionTrigger.model";
+import { formTriggerSchema } from './trigger.model';
+import { questionTriggerSchema } from "./questionTrigger.model";
 
 export interface IFormItemModel
   extends IFormItems,
-    mongoose.Types.Subdocument {}
+  mongoose.Types.Subdocument { }
 
 const itemSchema = new mongoose.Schema({
   item: {
@@ -30,7 +30,7 @@ const itemSchema = new mongoose.Schema({
 
 export interface IFormAccesoryModel
   extends IFormAccesory,
-    mongoose.Types.Subdocument {}
+  mongoose.Types.Subdocument { }
 
 const accessorySchema = new mongoose.Schema({
   question: {
@@ -73,10 +73,10 @@ export const MatrixItemSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  images:  [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ParticipantFile'
-    }]
+  images: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }]
 })
 
 export const MatrixSchema = new mongoose.Schema({
@@ -152,7 +152,7 @@ export const kindQuestionImage = [
 
 export interface IFormQuestionModel
   extends IFormQuestion,
-    mongoose.Types.Subdocument {}
+  mongoose.Types.Subdocument { }
 
 const formQuestionsSchema = new mongoose.Schema({
   question: {
@@ -257,7 +257,7 @@ const formQuestionsSchema = new mongoose.Schema({
 
 export interface IFormSectionModel
   extends IFormSection,
-    mongoose.Types.Subdocument {}
+  mongoose.Types.Subdocument { }
 
 const formSectionsSchema = new mongoose.Schema({
   name: {
@@ -300,14 +300,22 @@ export enum KindForm {
   init = 'init',
   control = 'control',
   final = 'final',
-  transmittal = 'transmittal'
+  transmittal = 'transmittal',
+  openContainer = 'openContainer',
+  closeContainer = 'closeContainer',
+  generalUnitType = 'unitType',
+  codedUnitType = 'codedUnitType'
 }
 
 export const kindForm = [
   KindForm.init,
   KindForm.final,
   KindForm.control,
-  KindForm.transmittal
+  KindForm.transmittal,
+  KindForm.openContainer,
+  KindForm.closeContainer,
+  KindForm.generalUnitType,
+  KindForm.codedUnitType
 ];
 
 const webQuestionSchema = new mongoose.Schema({
@@ -329,7 +337,7 @@ const webQuestionSchema = new mongoose.Schema({
   _id: false
 })
 
-export interface IFormModel extends IForm, mongoose.Document {}
+export interface IFormModel extends IForm, mongoose.Document { }
 
 const formSchema = new mongoose.Schema(
   {
@@ -436,7 +444,7 @@ const formSchema = new mongoose.Schema(
       enum: kindActionForm
     },
 
-    hidden : {
+    hidden: {
       type: Boolean,
       default: false
     },
@@ -457,6 +465,10 @@ const formSchema = new mongoose.Schema(
         default: 'form/carDetail/base.pug'
       },
     },
+
+    kind: {
+
+    }
 
     sections: [formSectionsSchema],
     triggers: [formTriggerSchema],
