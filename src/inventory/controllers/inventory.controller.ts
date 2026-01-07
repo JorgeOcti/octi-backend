@@ -3992,6 +3992,8 @@ class InventoryController {
         'utf8'
       );
 
+      req.user.company = await Company.findById(req.user.company._id);
+
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         moment,
@@ -4001,7 +4003,8 @@ class InventoryController {
         emptyEvidences,
         evidenceStatusMap,
         lastEmptyComment,
-        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
+        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
+        user: req.user,
       })
       if (0) {
         return res.send(html);
