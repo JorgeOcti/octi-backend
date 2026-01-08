@@ -13,14 +13,12 @@ const mandatoryHeaders = [
   "Descripción",
   "Cliente Razón Social",
   "RUT Cliente",
-  "Manifiesto",
   "N° BL",
   "Nave",
   "N° Viaje",
   "Sello IN",
   "Puerto Origen",
   "Peso",
-  "Emplazamiento",
 ]
 
 const excelHeaders = [
