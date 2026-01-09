@@ -14,6 +14,7 @@ inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryContr
 inventoryRouter.get('/inventory/excel/', Middlewares.isLoggedIn, InventoryController.inventoryByCars);
 inventoryRouter.get('/inventory/containers/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/containers/aforo/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/containers/aforo-sag/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/desconsolidated/unit/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/management/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/management/:id/', Middlewares.isLoggedIn, InventoryController.index);
