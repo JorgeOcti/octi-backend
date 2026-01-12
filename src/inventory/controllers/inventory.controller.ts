@@ -1614,6 +1614,16 @@ class InventoryController {
       message = `${user.firstName} ${user.lastName} agregó una unidad al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
     }
 
+    if (notificationType === "CONTAINER_OPENED") {
+      title = `Contenedor abierto`;
+      message = `${user.firstName} ${user.lastName} abrió el contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
+    if (notificationType === "CONTAINER_CLOSED") {
+      title = `Contenedor cerrado`;
+      message = `${user.firstName} ${user.lastName} cerró el contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
     socket()
       .to(`dashboard-container-vin-view-${teamId}`)
       .emit('REFRESH', {

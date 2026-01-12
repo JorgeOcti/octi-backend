@@ -1715,6 +1715,17 @@ class FormController {
                 inventoryCar.openParticipant = newParticipant._id;
                 await inventoryCar.save();
 
+                // Emitir notificación de socket para apertura de contenedor
+                const populatedInventoryCarOpen = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_OPENED", updatedUser.venue._id, team._id, populatedInventoryCarOpen, ChoicesStatusContainer.open, updatedUser);
+
+
               } else if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()) {
                 logger.info(`Finishing container inventory form`);
                 let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === ChoicesStatusContainer.empty);
@@ -1751,6 +1762,16 @@ class FormController {
                 inventoryCar.closeParticipant = newParticipant._id;
                 await inventoryCar.save();
                 await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
+
+                // Emitir notificación de socket para cierre de contenedor
+                const populatedInventoryCarClose = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_CLOSED", updatedUser.venue._id, team._id, populatedInventoryCarClose, ChoicesStatusContainer.empty, updatedUser);
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();
