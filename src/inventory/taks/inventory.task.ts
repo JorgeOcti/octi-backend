@@ -145,6 +145,16 @@ class InventoryQueue {
           clientCompanyId = clientCompany._id
         }
 
+        if (!company.clientCompanies.includes(clientCompany._id)) {
+          company.clientCompanies.push(clientCompany._id);
+        }
+
+        if (Array.isArray(clientCompany.handlerCompanies) && !clientCompany.handlerCompanies.includes(company._id)) {
+          clientCompany.handlerCompanies.push(company._id);
+        }
+        await company.save();
+        await clientCompany.save();
+
         let virtualInventoryName = `${container.extra["Nave"]} - ${container.extra["Cliente Razón Social"]}`;
         if (!Object.hasOwn(virtualInventories, virtualInventoryName)) {
           let virtualInventory = await VirtualInventory.findOne({

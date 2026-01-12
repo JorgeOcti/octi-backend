@@ -209,6 +209,7 @@ class FormController {
         }
       }
     }
+    let startDate: Date = participant.startedAt || participant.startDate;
 
     return {
       qr: qr,
@@ -256,6 +257,7 @@ class FormController {
         patent: participant.car?.patent || ''
       },
       createdAt: participant.createdAt,
+      startAt: startDate,
       origin: origin || '',
       destination: destination || '',
     };
@@ -316,6 +318,7 @@ class FormController {
           kind: kind || '',
           severity: damage.severity || undefined,
           images: damage.images?.map((img: any) => ({
+            createdAt: img.createdAt,
             filename: img.filename || img.file?.filename || '',
             url: img.url || img.file?.url || '',
             mimetype: img.mimetype || img.file?.mimetype || ''
@@ -336,6 +339,7 @@ class FormController {
 
       // Map images if they exist
       const mappedImages = answer.images?.map((img: any) => ({
+        createdAt: img.createdAt,
         filename: img.filename || img.file?.filename || '',
         url: img.url || img.file?.url || '',
         mimetype: img.mimetype || img.file?.mimetype || ''
@@ -540,7 +544,9 @@ class FormController {
           conciliation: true,
           conciliationText: true,
           conciliationImages: true,
-          createdAt: true
+          createdAt: true,
+          startDate: true,
+          startedAt: true,
         }
       )
         .allowDiskUse(true)
@@ -627,6 +633,8 @@ class FormController {
         );
 
         const context = await this.mapPdfContext(participant, css);
+
+        logger.info(JSON.stringify(context))
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
@@ -1174,7 +1182,8 @@ class FormController {
       transmittal,
       reliability,
       inventory,
-      containerFound
+      containerFound,
+      startedAt
     } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
@@ -1343,8 +1352,10 @@ class FormController {
             form: id
           });
 
-          if (draft) {
-            participantObject.startDate = draft.createdAt;
+          if (startedAt) {
+            participantObject.startedAt = new Date(startedAt);
+          } else if (draft) {
+            participantObject.startedAt = draft.startedAt || draft.createdAt;
           }
 
           if (req.user.company.handler) {
@@ -1737,6 +1748,7 @@ class FormController {
 
                 inventoryCar.closeParticipant = newParticipant._id;
                 await inventoryCar.save();
+                await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();

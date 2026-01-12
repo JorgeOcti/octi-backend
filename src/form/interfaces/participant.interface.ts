@@ -212,6 +212,7 @@ export interface IParticipant {
   importedFrom: string;
   importedID: string;
   importedAt: Date;
+  startedAt?: Date;
 
   webQuestion?: webQuestion;
 

@@ -603,7 +603,7 @@ const participantSchema = new mongoose.Schema(
       type: Object,
       default: {}
     },
-    startDate: {
+    startedAt: {
       type: Date,
       required: false,
     },

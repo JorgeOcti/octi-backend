@@ -1052,13 +1052,26 @@ class AdminUsersController {
     search?: string
   ): Promise<PaginateResult<IUserModel>> {
     if (search && search.length) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      const searchRegex = new RegExp(escapedSearch, 'i');
+      
       filter = {
         ...filter,
-        $text: { $search: search }
-      };
-      options = {
-        ...options,
-        sort: { score: { $meta: 'textScore' } }
+        $or: [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { email: searchRegex },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $concat: ['$firstName', ' ', '$lastName'] },
+                regex: escapedSearch,
+                options: 'i'
+              }
+            }
+          }
+        ]
       };
     }
     return new Promise((resolve, reject) => {

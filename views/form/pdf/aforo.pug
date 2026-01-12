@@ -409,10 +409,11 @@ head
         span.value.text-bold #{car.vin}
       .info-item
         span.label FECHA INICIO AFORO
-        span.value #{moment(createdAt).format('DD/MM/YYYY - HH:mm')}
+        if startAt
+          span.value #{moment(startAt).format('DD/MM/YYYY - HH:mm')}
       .info-item
         span.label FECHA T&Eacute;RMINO AFORO
-        span.value #{moment(startAt).format('DD/MM/YYYY - HH:mm')}
+        span.value #{moment(createdAt).format('DD/MM/YYYY - HH:mm')}
   .info-section
     .info-grid
       .info-item
@@ -423,10 +424,10 @@ head
         span.value 40 M
       .info-item
         span.label HUBO RETENCI&Oacute;N
-        if sections[2].answers[6] && sections[2].answers[7] && sections[2].answers[6].comment === '' && sections[2].answers[7].length === 0
-          span.value NO
-        else
+        if sections[2].answers[6] && sections[2].answers[7] && (sections[2].answers[6].comment !== '' || sections[2].answers[7].length > 0)
           span.value SI
+        else
+          span.value NO
   .info-section
     .info-grid
       .info-item
