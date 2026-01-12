@@ -739,14 +739,16 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const { forContainer, forUnit } = req.query as {
+    const { forContainer, forUnit, showHidden } = req.query as {
       forContainer: string;
       forUnit: string;
+      showHidden: string;
     };
+
     try {
       const filter: any = {
         team: team,
-        hidden: false,
+        hidden: showHidden === '1' ? { $in: [true, false] } : false,
         $and: [
           {
             _id: {
@@ -3945,7 +3947,8 @@ class FormController {
     return new Promise(async (resolve, reject) => {
       const forms = await Form.find(filter, {
         _id: 1,
-        name: 1
+        name: 1,
+        hidden: 1,
       }).lean();
       return resolve(forms);
     });
