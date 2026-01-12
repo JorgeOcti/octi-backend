@@ -17,7 +17,6 @@ const mandatoryHeaders = [
   "N° Viaje",
   "Sello IN",
   "Puerto Origen",
-  "Peso",
 ]
 
 const excelHeaders = [
