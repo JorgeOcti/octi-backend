@@ -10,6 +10,7 @@ import {
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import DashboardVinView from '../DashboardVin/DashboardVinView';
 import ApiService from '../../utils/axios';
+import AppContainer from '../../container/AppContainer';
 
 // Hardcoded kindForm - the only hardcoded value as per requirements
 const KIND_FORM_AFORO_SAG = 'aforoSAG';
@@ -48,7 +49,7 @@ class AforoSAGContainerDashboard extends TrackingBasePage<IPropsType, IStateType
   private async fetchFormsByKind(): Promise<void> {
     try {
       const response = await this.api.getFormsByKind(KIND_FORM_AFORO_SAG);
-      const formIds = response.data.results?.map((form: any) => form._id) || [];
+      const formIds = response.data.results?.map((form: any) => form._id) || undefined;
       this.setState({ forms: formIds, loading: false });
     } catch (error) {
       console.error('Error fetching forms by kind:', error);
@@ -59,11 +60,15 @@ class AforoSAGContainerDashboard extends TrackingBasePage<IPropsType, IStateType
   public render(): React.ReactElement<IPropsType> {
     const { forms, loading } = this.state;
 
-    if (loading) {
-      return <div>Cargando...</div>;
-    }
-
-    return (
+    return forms && forms.length == 0 ? <AppContainer cMenu="6" cSubMenu="6.5">
+      <section className="content">
+        <div className='box'>
+          <div className='box-body'>
+            <p>No existen formularios de tipo "Aforo SAG" creados en el sistema. Por favor, contacte al administrador para más detalles.</p>
+            </div>
+        </div>
+      </section>
+    </AppContainer> : (
       <DashboardVinView formsId={forms}
         history={this.props.history}
         location={this.props.location}
