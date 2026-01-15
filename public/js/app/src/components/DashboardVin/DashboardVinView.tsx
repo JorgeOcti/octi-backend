@@ -232,7 +232,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public downloadReport() {
     const { searchFrom, searchTo, searchForms, searchText } = this.props.dashboard.filter;
-    const {formsId} = this.props;
+    const { formsId } = this.props;
     const monthsDiff = moment(searchTo).diff(moment(searchFrom), 'months');
     this.trackClick('Descargar reporte', {
       searchFrom,
@@ -329,7 +329,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   className="btn btn-sm btn-primary hidden-xs hidden-sm hidden-sm"
                   onClick={this.downloadReport}
                   disabled={downloading}>
-                  <i className="fa fa-fw fa-download"/> Exportar
+                  <i className="fa fa-fw fa-download" /> Exportar
                 </button>
               </div>
             </div>
@@ -354,47 +354,47 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 {/* <div className="col-md-4 col-md-offset-8 no-padding"> */}
-                {formsId && formsId.length > 0  ?
+                {formsId && formsId.length > 0 ?
                   null :
                   <>
-                  <div className="col-md-6 no-padding">
-                  <div style={{ padding: '10px' }}>
-                    <BootstrapSelect
-                      noneSelectedText="Todos los controles"
-                      displayItems={4}
-                      autoClouse={true}
-                      selectedText="formularios seleccionadas."
-                      selected={filter.searchForms}
-                      allOption={true}
-                      selectAll={this.filterAllForms}
-                      separator=" - "
-                      options={forms.map((form: IForm) => ({
-                        value: form._id,
-                        text: form.name
-                      }))}
-                      onClick={this.filterForms}
-                      notHideOnClickOutside={false}
-                    />
-                  </div>
-                </div>
-                  <div className="col-md-6 no-padding">
-                  <div style={{ padding: '10px' }}>
-                <BootstrapSelect
-                  noneSelectedText="Todas las marcas"
-                  displayItems={4}
-                  autoClouse={false}
-                  search={true}
-                  selectedText="marcas seleccionadas."
-                  allOption={true}
-                  separator=" - "
-                  options={brands.map((brand) => ({value: brand._id, text: brand.name}))}
-                  notHideOnClickOutside={false}
-                  selected={filter.searchBrands}
-                  onClick={this.filterBrands}
-                  selectAll={this.filterAllBrands}
-                />
-              </div>
-            </div>
+                    <div className="col-md-6 no-padding">
+                      <div style={{ padding: '10px' }}>
+                        <BootstrapSelect
+                          noneSelectedText="Todos los controles"
+                          displayItems={4}
+                          autoClouse={true}
+                          selectedText="formularios seleccionadas."
+                          selected={filter.searchForms}
+                          allOption={true}
+                          selectAll={this.filterAllForms}
+                          separator=" - "
+                          options={forms.map((form: IForm) => ({
+                            value: form._id,
+                            text: form.name
+                          }))}
+                          onClick={this.filterForms}
+                          notHideOnClickOutside={false}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6 no-padding">
+                      <div style={{ padding: '10px' }}>
+                        <BootstrapSelect
+                          noneSelectedText="Todas las marcas"
+                          displayItems={4}
+                          autoClouse={false}
+                          search={true}
+                          selectedText="marcas seleccionadas."
+                          allOption={true}
+                          separator=" - "
+                          options={brands.map((brand) => ({ value: brand._id, text: brand.name }))}
+                          notHideOnClickOutside={false}
+                          selected={filter.searchBrands}
+                          onClick={this.filterBrands}
+                          selectAll={this.filterAllBrands}
+                        />
+                      </div>
+                    </div>
                   </>
                 }
 
@@ -409,7 +409,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div> */}
               </div>
-              {participants.length ? (
+              {formsId && formsId.length === 0 ? (
+                <p style={{ padding: '10px' }}>
+                  <strong>No hay formularios configurados para esta empresa.</strong>
+                </p>
+              ) : participants.length ? (
                 <div className="table-responsive" style={{ border: 0 }}>
                   <table className="table table-andes table-striped table-hover">
                     <thead>
@@ -450,7 +454,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                             id={`car-${participant._id}`}
                             className={
                               highlight.length &&
-                              highlight.includes(participant._id as never)
+                                highlight.includes(participant._id as never)
                                 ? 'highlight-info'
                                 : ''
                             }>
@@ -509,7 +513,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <div>
                                     <i className="fa fa-fw fa-id-card-o" />{' '}
                                     {participant.car?.patent &&
-                                    participant.car?.patent.length
+                                      participant.car?.patent.length
                                       ? participant.car?.patent
                                       : '-'}
                                   </div>
@@ -518,20 +522,18 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <div className="visible-xs visible-sm text-muted text-sm">
                                 <span>
                                   <i className="fa fa-fw fa-user-o" />{' '}
-                                  {`${
-                                    participant.user
-                                      ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
-                                      : ''
-                                  }`}
+                                  {`${participant.user
+                                    ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
+                                    : ''
+                                    }`}
                                 </span>
                                 <br />
                                 <span>
                                   <i className="fa fa-fw fa-flag-o" />{' '}
-                                  {`${
-                                    participant.venue
-                                      ? `${participant.venue.name}`
-                                      : '-'
-                                  }`}{' '}
+                                  {`${participant.venue
+                                    ? `${participant.venue.name}`
+                                    : '-'
+                                    }`}{' '}
                                   <ShowIf condition={participant.hasDamages}>
                                     <React.Fragment>
                                       {' '}
@@ -555,7 +557,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                   <span>
                                     <i className="fa fa-fw fa-id-card-o" />{' '}
                                     {participant.car?.patent &&
-                                    participant.car?.patent.length
+                                      participant.car?.patent.length
                                       ? participant.car?.patent
                                       : '-'}
                                   </span>
@@ -577,21 +579,19 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <div className="text-muted">
                                 <strong>
                                   <i className="fa fa-fw fa-user-o" />{' '}
-                                  {`${
-                                    participant.user
-                                      ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
-                                      : ''
-                                  }`}
+                                  {`${participant.user
+                                    ? `${participant.user.firstName?.toLocaleUpperCase()} ${participant.user.lastName?.toLocaleUpperCase()}`
+                                    : ''
+                                    }`}
                                 </strong>
                                 <br />
                               </div>
                               <div className="text-muted text-sm">
                                 <i className="fa fa-fw fa-flag-o" />{' '}
-                                {`${
-                                  participant.venue
-                                    ? `${participant.venue.name}`
-                                    : '-'
-                                }`}{' '}
+                                {`${participant.venue
+                                  ? `${participant.venue.name}`
+                                  : '-'
+                                  }`}{' '}
                                 <ShowIf condition={participant.hasDamages}>
                                   <React.Fragment>
                                     {' '}
@@ -605,11 +605,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 </ShowIf>
                               </div>
                               <div className="text-muted text-sm">
-                                {`${
-                                  participant.company
-                                    ? `${participant.company.name}`
-                                    : '-'
-                                }`}
+                                {`${participant.company
+                                  ? `${participant.company.name}`
+                                  : '-'
+                                  }`}
                               </div>
                             </td>
                             <td className="middle-left hidden-xs hidden-sm">
@@ -642,17 +641,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               </div>
                             </td>
                             <td className="middle-center hidden-xs hidden-sm text-muted text-sm">
-                              {`${
-                                participant.hasOwnProperty('qualification')
-                                  ? participant.qualification
-                                    ? `${Math.round(
-                                        participant.qualification
-                                      )}%`
-                                    : !participant.hasDamages
+                              {`${participant.hasOwnProperty('qualification')
+                                ? participant.qualification
+                                  ? `${Math.round(
+                                    participant.qualification
+                                  )}%`
+                                  : !participant.hasDamages
                                     ? ''
                                     : ''
-                                  : ''
-                              }`}
+                                : ''
+                                }`}
                             </td>
                             <td className="text-primary middle-center text-ellipsis">
                               <div className="hidden-xs hidden-sm">
@@ -678,10 +676,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                           `/report/aforo/pdf/${participant._id}.pdf`,
                                           participant._id
                                         ) :
-                                      this.printPdf(
-                                        `/report/forms/pdf/${participant._id}.pdf`,
-                                        participant._id
-                                      )
+                                        this.printPdf(
+                                          `/report/forms/pdf/${participant._id}.pdf`,
+                                          participant._id
+                                        )
                                     }>
                                     <i
                                       className={
@@ -744,7 +742,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                 </p>
               ) : null}
             </div>
-            {pagination.pages > 1 && (
+            {pagination.pages > 1 && formsId && formsId.length > 0 && (
               <div className="box-footer">
                 <div className="row">
                   <div className="col-md-6" style={{ padding: '20px 15px' }}>
@@ -824,23 +822,23 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private getWebQuestionParticipantByID(revisionId: string): any {
-    const  participants  = this.props.dashboard.participants;
+    const participants = this.props.dashboard.participants;
     const participantFiltered = participants.filter(participant => participant._id == revisionId);
     return participantFiltered.length > 0 ? participantFiltered[0].webQuestion : undefined;
   }
 
   private onChangeQuestion(e: React.ChangeEvent<HTMLInputElement>, revisionId: string): void {
-      e.preventDefault();
-      const value = e.target.value;
-      const webQuestion = this.getWebQuestionParticipantByID(revisionId);
-      webQuestion.answer = value;
-      this.setState({
-        revisionAnswers: { [revisionId]: webQuestion }
-      });
-      this.debounceOnChangeParticipantAnswer();
+    e.preventDefault();
+    const value = e.target.value;
+    const webQuestion = this.getWebQuestionParticipantByID(revisionId);
+    webQuestion.answer = value;
+    this.setState({
+      revisionAnswers: { [revisionId]: webQuestion }
+    });
+    this.debounceOnChangeParticipantAnswer();
   }
 
-private debounceOnChangeParticipantAnswer(): void {
+  private debounceOnChangeParticipantAnswer(): void {
     const { revisionAnswers } = this.state;
     if (revisionAnswers && Object.keys(revisionAnswers).length) {
       const revisionId = Object.keys(revisionAnswers)[0];
@@ -924,18 +922,18 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getParticipant: (id: string) => dispatch(getParticipant(id)),
-    getRevisionsThunkAction: ( page: number, loading: boolean, search?: string, forms?: string[] ) => dispatch(
-        getRevisionsThunkAction(
-          page,
-          loading,
-          search,
-          undefined,
-          undefined,
-          undefined,
-          forms,
-        )
+    getRevisionsThunkAction: (page: number, loading: boolean, search?: string, forms?: string[]) => dispatch(
+      getRevisionsThunkAction(
+        page,
+        loading,
+        search,
+        undefined,
+        undefined,
+        undefined,
+        forms,
+      )
     ),
-    changeFilterDashboardAction: (filter:IDashboardFilter, forms?: string[]) => dispatch(changeFilterDashboardAction(filter, forms)),
+    changeFilterDashboardAction: (filter: IDashboardFilter, forms?: string[]) => dispatch(changeFilterDashboardAction(filter, forms)),
     getRevisionsAction: (page: number, loading: boolean, search?: string, forms?: string[]) => dispatch(getRevisionsAction(page, loading, search, undefined, undefined, forms)),
     changingParticipantAnswer: (revisionId: string, answer: string) => dispatch(changingParticipantAnswer(revisionId, answer)),
   };

@@ -7,11 +7,12 @@ import {
   IDashboardState,
   IDashboardFilter,
 } from '../../actions/dashboard.actions';
-import { IWindow } from '../../interfaces/window';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import DashboardVinView from '../DashboardVin/DashboardVinView';
+import ApiService from '../../utils/axios';
 
-declare let window: IWindow;
+// Hardcoded kindForm - the only hardcoded value as per requirements
+const KIND_FORM_AFORO = 'aforo';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -20,53 +21,72 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  forms: string[];
+  loading: boolean;
 }
 
 class AforoContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
+  private api: ApiService;
 
   readonly state: IStateType = {
     error: null,
+    forms: [],
+    loading: true,
   };
+
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Buscador de aforos';
+    this.api = new ApiService();
+  }
+
+  public componentDidMount(): void {
+    this.fetchFormsByKind();
+  }
+
+  private async fetchFormsByKind(): Promise<void> {
+    try {
+      const response = await this.api.getFormsByKind(KIND_FORM_AFORO);
+      const formIds = response.data.results?.map((form: any) => form._id) || [];
+      this.setState({ forms: formIds, loading: false });
+    } catch (error) {
+      console.error('Error fetching forms by kind:', error);
+      this.setState({ error: error as Error, loading: false });
+    }
   }
 
   public render(): React.ReactElement<IPropsType> {
+    const { forms, loading } = this.state;
 
-    let forms : string[] = [];
-
-    if (window.user.company._id === '5b590abca9683b0413293aa1') { // OSA
-      forms = ['685ac8676c276d713ec75d59']
-    } else if (window.user.company._id == '67aac64a94ed0a1f9da3478c') { // Medlog
-      forms = ['681917760000000000f5da10']
+    if (loading) {
+      return <div>Cargando...</div>;
     }
 
     return (
       <DashboardVinView formsId={forms}
-                        history={this.props.history}
-                        location={this.props.location}
-                        match={this.props.match}
-                        dispatch={this.props.dispatch}
-                        dashboard={this.props.dashboard}
-                        menu={'6'}
-                        subMenu={'6.4'}
-                        getRevisionsThunkAction={function(page: number, loading: boolean, search?: string | undefined, forms?: string[] | undefined): void {
-                          throw new Error('Function not implemented.');
-                        }}
-                        getParticipant={function(id: string): void {
-                          throw new Error('Function not implemented.');
-                        }}
-                        getRevisionsAction={function(page: number, loading: boolean, search?: string | undefined, forms?: string[] | undefined): void {
-                          throw new Error('Function not implemented.');
-                        }}
-                        changeFilterDashboardAction={function(filter: IDashboardFilter, forms?: string[] | undefined): void {
-                          throw new Error('Function not implemented.');
-                        }}
-                        changingParticipantAnswer={function(revisionId: string, answer: string): void {
-                          throw new Error('Function not implemented.');
-                        }}
+        history={this.props.history}
+        location={this.props.location}
+        match={this.props.match}
+        dispatch={this.props.dispatch}
+        dashboard={this.props.dashboard}
+        menu={'6'}
+        subMenu={'6.4'}
+        getRevisionsThunkAction={function (page: number, loading: boolean, search?: string | undefined, forms?: string[] | undefined): void {
+          throw new Error('Function not implemented.');
+        }}
+        getParticipant={function (id: string): void {
+          throw new Error('Function not implemented.');
+        }}
+        getRevisionsAction={function (page: number, loading: boolean, search?: string | undefined, forms?: string[] | undefined): void {
+          throw new Error('Function not implemented.');
+        }}
+        changeFilterDashboardAction={function (filter: IDashboardFilter, forms?: string[] | undefined): void {
+          throw new Error('Function not implemented.');
+        }}
+        changingParticipantAnswer={function (revisionId: string, answer: string): void {
+          throw new Error('Function not implemented.');
+        }}
       />
     );
   }
@@ -88,3 +108,4 @@ export default connect<{}, {}, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
 )(AforoContainerDashboard);
+

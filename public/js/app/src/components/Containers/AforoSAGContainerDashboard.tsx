@@ -7,14 +7,12 @@ import {
   IDashboardState,
   IDashboardFilter,
 } from '../../actions/dashboard.actions';
-import { IWindow } from '../../interfaces/window';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import DashboardVinView from '../DashboardVin/DashboardVinView';
+import ApiService from '../../utils/axios';
 
-declare let window: IWindow;
-
-// TODO: Replace this placeholder form ID with the actual SAG form ID
-const AFORO_SAG_FORM_ID = 'PLACEHOLDER_FORM_ID_CHANGE_ME';
+// Hardcoded kindForm - the only hardcoded value as per requirements
+const KIND_FORM_AFORO_SAG = 'aforoSAG';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -23,26 +21,46 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  forms: string[];
+  loading: boolean;
 }
 
 class AforoSAGContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
+  private api: ApiService;
 
   readonly state: IStateType = {
     error: null,
+    forms: [],
+    loading: true,
   };
+
   constructor(props: IPropsType) {
     super(props);
     this.title = 'Buscador de aforos SAG';
+    this.api = new ApiService();
+  }
+
+  public componentDidMount(): void {
+    this.fetchFormsByKind();
+  }
+
+  private async fetchFormsByKind(): Promise<void> {
+    try {
+      const response = await this.api.getFormsByKind(KIND_FORM_AFORO_SAG);
+      const formIds = response.data.results?.map((form: any) => form._id) || [];
+      this.setState({ forms: formIds, loading: false });
+    } catch (error) {
+      console.error('Error fetching forms by kind:', error);
+      this.setState({ error: error as Error, loading: false });
+    }
   }
 
   public render(): React.ReactElement<IPropsType> {
+    const { forms, loading } = this.state;
 
-    let forms: string[] = [];
-
-    // TODO: Update this condition with the correct company ID for Aforo SAG
-    if (window.user.company._id === 'PLACEHOLDER_COMPANY_ID_CHANGE_ME') {
-      forms = [AFORO_SAG_FORM_ID]
+    if (loading) {
+      return <div>Cargando...</div>;
     }
 
     return (
@@ -90,3 +108,4 @@ export default connect<{}, {}, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
 )(AforoSAGContainerDashboard);
+
