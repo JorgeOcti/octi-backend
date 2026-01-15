@@ -305,7 +305,9 @@ export enum KindForm {
   closeGeneralContainer = 'closeGeneralContainer',
   closeCodedContainer = 'closeCodedContainer',
   generalUnitType = 'unitType',
-  codedUnitType = 'codedUnitType'
+  codedUnitType = 'codedUnitType',
+  aforoSAG = 'aforoSAG',
+  aforo = 'aforo'
 }
 
 export const kindForm = [
@@ -317,7 +319,9 @@ export const kindForm = [
   KindForm.closeGeneralContainer,
   KindForm.closeCodedContainer,
   KindForm.generalUnitType,
-  KindForm.codedUnitType
+  KindForm.codedUnitType,
+  KindForm.aforoSAG,
+  KindForm.aforo
 ];
 
 const webQuestionSchema = new mongoose.Schema({
