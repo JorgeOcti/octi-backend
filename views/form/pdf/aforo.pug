@@ -22,6 +22,17 @@ doctype html
       }
     ]
   },
+    {
+    name: "MOTIVO DE RETENCIÓN",
+    useGrid: true,
+    answers:[
+      {
+        name: '',
+        comment: sections[2].answers[2].accesoriesAnswered?.map(accesory => `${accesory.item}`).join('\n') || 'No especificado',
+        images: []
+      }
+    ]
+  },
           {
     name: "OBSERVACIONES",
     useGrid: true,
