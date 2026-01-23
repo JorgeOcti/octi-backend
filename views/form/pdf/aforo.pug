@@ -28,7 +28,7 @@ doctype html
     answers:[
       {
         name: '',
-        comment: sections[2].answers[2].accesoriesAnswered?.map(accesory => `${accesory.item}`).join('\n') || 'No especificado',
+        comment: sections[2]?.answers[2]?.accesoriesAnswered?.map(accesory => `${accesory.item}`).join('\n') || 'No especificado',
         images: []
       }
     ]
