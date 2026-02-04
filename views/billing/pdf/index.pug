@@ -52,6 +52,9 @@ body
           strong
             | Cantidad de vehículos
         th.text-right
+          strong
+            | Cantidad de contenedores
+        th.text-right
           if invoice.company.handler
             strong
               | Valor minimo (USD)
@@ -67,14 +70,15 @@ body
     if invoice.company.handler
       tbody
         tr.item
-          td(width="20%")
+          td(width="16%")
             | 1 Desconsolidados
-          td(width="20%").text-right=invoice.containers
-          td(width="20%").text-right
+          td(width="16%").text-right=invoice.inventoryCars
+          td(width="16%").text-right=invoice.containers
+          td(width="16%").text-right
             | 665 USD
-          td(width="20%").text-right
+          td(width="16%").text-right
             | #{(invoice.totalDolar).toFixed(2)} USD
-          td(width="20%").text-right
+          td(width="16%").text-right
             | #{new Intl.NumberFormat("de-DE").format(invoice.totalPeso.toFixed(2))} CLP
     else
       tbody

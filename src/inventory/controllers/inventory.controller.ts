@@ -3015,6 +3015,7 @@ class InventoryController {
         { header: 'F. Finalización', key: 'finishDate', width: 20 },
         { header: 'Contenedor', key: 'container', width: 25 },
         { header: 'Carga', key: 'vin', width: 15 },
+        { header: 'Estado de carga', key: 'carStatus', width: 15 },
         { header: 'Descripción carga', key: 'description', width: 30 },
         { header: 'Daños', key: 'hasDamages', width: 30 },
         { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
@@ -3252,6 +3253,7 @@ class InventoryController {
         finishDate: finishDate,
         container: container ? container.car.vin : '',
         vin: car.car.vin,
+        carStatus: statusMap[car.status] || '',
         description: `${car.car.brand} ${car.car.model || ''}`,
         hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
         accesories: accessories?.accessoriesText || '',
@@ -3926,7 +3928,7 @@ class InventoryController {
 
 
       let cars = await InventoryCar.find({
-        container: container._id
+        containerFound: container._id
       }).populate([
         { path: 'inventoriedBy' },
         { path: 'images' },
