@@ -209,6 +209,7 @@ class FormController {
         }
       }
     }
+    let startDate: Date = participant.startedAt || participant.startDate;
 
     return {
       qr: qr,
@@ -256,6 +257,7 @@ class FormController {
         patent: participant.car?.patent || ''
       },
       createdAt: participant.createdAt,
+      startAt: startDate,
       origin: origin || '',
       destination: destination || '',
     };
@@ -316,6 +318,7 @@ class FormController {
           kind: kind || '',
           severity: damage.severity || undefined,
           images: damage.images?.map((img: any) => ({
+            createdAt: img.createdAt,
             filename: img.filename || img.file?.filename || '',
             url: img.url || img.file?.url || '',
             mimetype: img.mimetype || img.file?.mimetype || ''
@@ -336,6 +339,7 @@ class FormController {
 
       // Map images if they exist
       const mappedImages = answer.images?.map((img: any) => ({
+        createdAt: img.createdAt,
         filename: img.filename || img.file?.filename || '',
         url: img.url || img.file?.url || '',
         mimetype: img.mimetype || img.file?.mimetype || ''
@@ -540,7 +544,9 @@ class FormController {
           conciliation: true,
           conciliationText: true,
           conciliationImages: true,
-          createdAt: true
+          createdAt: true,
+          startDate: true,
+          startedAt: true,
         }
       )
         .allowDiskUse(true)
@@ -627,6 +633,8 @@ class FormController {
         );
 
         const context = await this.mapPdfContext(participant, css);
+
+        logger.info(JSON.stringify(context))
 
         const html = GeneralUtils.generateHtmlFromPugFile(template, context);
 
@@ -731,14 +739,16 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const { forContainer, forUnit } = req.query as {
+    const { forContainer, forUnit, showHidden } = req.query as {
       forContainer: string;
       forUnit: string;
+      showHidden: string;
     };
+
     try {
       const filter: any = {
         team: team,
-        hidden: false,
+        hidden: showHidden === '1' ? { $in: [true, false] } : false,
         $and: [
           {
             _id: {
@@ -1174,7 +1184,8 @@ class FormController {
       transmittal,
       reliability,
       inventory,
-      containerFound
+      containerFound,
+      startedAt
     } = req.body;
     let carId = req.body.id;
     const { company, team } = req.user;
@@ -1343,8 +1354,10 @@ class FormController {
             form: id
           });
 
-          if (draft) {
-            participantObject.startDate = draft.createdAt;
+          if (startedAt) {
+            participantObject.startedAt = new Date(startedAt);
+          } else if (draft) {
+            participantObject.startedAt = draft.startedAt || draft.createdAt;
           }
 
           if (req.user.company.handler) {
@@ -1702,6 +1715,17 @@ class FormController {
                 inventoryCar.openParticipant = newParticipant._id;
                 await inventoryCar.save();
 
+                // Emitir notificación de socket para apertura de contenedor
+                const populatedInventoryCarOpen = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_OPENED", updatedUser.venue._id, team._id, populatedInventoryCarOpen, ChoicesStatusContainer.open, updatedUser);
+
+
               } else if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()) {
                 logger.info(`Finishing container inventory form`);
                 let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === ChoicesStatusContainer.empty);
@@ -1737,6 +1761,17 @@ class FormController {
 
                 inventoryCar.closeParticipant = newParticipant._id;
                 await inventoryCar.save();
+                await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
+
+                // Emitir notificación de socket para cierre de contenedor
+                const populatedInventoryCarClose = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_CLOSED", updatedUser.venue._id, team._id, populatedInventoryCarClose, ChoicesStatusContainer.empty, updatedUser);
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();
@@ -3933,7 +3968,8 @@ class FormController {
     return new Promise(async (resolve, reject) => {
       const forms = await Form.find(filter, {
         _id: 1,
-        name: 1
+        name: 1,
+        hidden: 1,
       }).lean();
       return resolve(forms);
     });

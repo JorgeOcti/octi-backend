@@ -28,7 +28,11 @@ const draftSchema = new mongoose.Schema({
   answers : {
     type: Object,
     default: {},
-  }
+  },
+  startedAt: {
+    type: Date,
+    default: null
+  },
 },{
   timestamps: true
 });

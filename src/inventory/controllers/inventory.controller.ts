@@ -69,14 +69,14 @@ import { IParticipant } from '../../form/interfaces/participant.interface';
 import { OSA_LOGO_SVG } from "../../utils/svg";
 import Inventory from '../models/inventory.model';
 
-    const statusMap: Record<string, string> = {
-      found: 'Encontrado',
-      pending: 'Pendiente',
-      open: 'Abierto',
-      check: 'En descarga',
-      empty: 'Vacío',
-      missing: 'Faltante'
-    };
+const statusMap: Record<string, string> = {
+  found: 'Encontrado',
+  pending: 'Pendiente',
+  open: 'Abierto',
+  check: 'En descarga',
+  empty: 'Vacío',
+  missing: 'Faltante'
+};
 
 
 class InventoryController {
@@ -243,33 +243,26 @@ class InventoryController {
     return venue;
   }
 
-  private getInventoryForms(type: string, companyId: string) {
-    // OSA 5b590abca9683b0413293aa1
-    // Medlog 67aac64a94ed0a1f9da3478c
+  private async getInventoryForms(type: string, user: IUser) {
+    const unitFormKind = type === ContainerInventoryContentType.coded_items ? KindForm.codedUnitType : KindForm.generalUnitType;
+    const closeFormKind = type === ContainerInventoryContentType.coded_items ? KindForm.closeCodedContainer : KindForm.closeGeneralContainer;
 
-    switch(type){
-      case ContainerInventoryContentType.coded_items:
-        return {
-          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
-          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
-          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f6620f0000000000156042") : new mongoose.Types.ObjectId("69016ba35bc73066a22d1f27"),
-        }
-      case ContainerInventoryContentType.general_items:
-        return {
-          unitForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("688b9b8100000000006507f2") : new mongoose.Types.ObjectId("67f47db80000000000766e66"),
-          openForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("68f64e1a000000000015603e") : new mongoose.Types.ObjectId("690168900000000000645eb1"),
-          finishForm: companyId === "5b590abca9683b0413293aa1" ? new mongoose.Types.ObjectId("690166255bc73066a22d1f25") : new mongoose.Types.ObjectId("68c4334700000000007f20a5"),
-        }
+    let unitForm = await Form.findOne({ kind: unitFormKind, team: user.team._id, company: user.company._id });
+    let openForm = await Form.findOne({ kind: KindForm.openContainer, team: user.team._id, company: user.company._id });
+    let finishForm = await Form.findOne({ kind: closeFormKind, team: user.team._id, company: user.company._id });
+
+    return {
+      unitForm: unitForm?._id || null,
+      openForm: openForm?._id || null,
+      finishForm: finishForm?._id || null
     }
-
-    return {}
   }
 
 
   public async createContainerInventory(req: IRequest, res: Response) {
     let { name, carsByContainer, manualPhoto, reportPhoto, contentType } = req.body;
     carsByContainer = JSON.parse(carsByContainer);
-    let inventoryForms : any = this.getInventoryForms(contentType, req.user.company._id.toString());
+    let inventoryForms: any = await this.getInventoryForms(contentType, req.user);
     try {
       const { company, team, venue } = req.user;
       const inventory = new Inventory({
@@ -617,7 +610,7 @@ class InventoryController {
           path: 'car'
         },
         {
-          path:'virtualInventory',
+          path: 'virtualInventory',
           select: ['name']
         },
         {
@@ -645,7 +638,7 @@ class InventoryController {
             trip: item.extra['N° Viaje'],
             location: item.extra['Ubicación'],
             client: item.extra['Cliente Razón Social'],
-            units: { pending: 0, found: 0 , hasDamages: 0 },
+            units: { pending: 0, found: 0, hasDamages: 0 },
             containers: {
               pending: 0,
               found: 0,
@@ -656,12 +649,12 @@ class InventoryController {
             }
           };
 
-          if(item.virtualInventory !== undefined){
-            const  virtualInventory:any  = item.virtualInventory
-            const {name} = virtualInventory;
-            if(inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(name)){
+          if (item.virtualInventory !== undefined) {
+            const virtualInventory: any = item.virtualInventory
+            const { name } = virtualInventory;
+            if (inventoryMap[inventoryId].names !== '' && !inventoryMap[inventoryId].names.includes(name)) {
               inventoryMap[inventoryId].names = `${inventoryMap[inventoryId].names}, ${name}`;
-            }else{
+            } else {
               inventoryMap[inventoryId].names = `${name}`;
             }
           }
@@ -726,7 +719,7 @@ class InventoryController {
             summary.units[status]++;
           }
 
-          if(item.participant && item.participant.hasDamages){
+          if (item.participant && item.participant.hasDamages) {
             summary.units['hasDamages']++;
           }
         }
@@ -789,7 +782,7 @@ class InventoryController {
       limit: parseInt(pageSize ? pageSize : '10', 10)
     };
 
-    let match : any[] = [
+    let match: any[] = [
       {
         team,
         venues: {
@@ -961,18 +954,15 @@ class InventoryController {
         });
       } else {
         logger.info(
-          `InventoryController.apiList email: ${
-            req.user.email
+          `InventoryController.apiList email: ${req.user.email
           }, query: ${JSON.stringify(req.query)}`
         );
         logger.debug(
-          `InventoryController.apiList email: ${
-            req.user.email
+          `InventoryController.apiList email: ${req.user.email
           }, aggregate: ${JSON.stringify(aggregate)}`
         );
         logger.debug(
-          `InventoryController.apiList email: ${
-            req.user.email
+          `InventoryController.apiList email: ${req.user.email
           }, options: ${JSON.stringify(options)}`
         );
         const response: any[] = [];
@@ -999,13 +989,13 @@ class InventoryController {
               : null,
             createdBy: inventory.createdBy.length
               ? {
-                  fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
-                }
+                fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
+              }
               : {},
             finalizedBy: inventory.finalizedBy.length
               ? {
-                  fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
-                }
+                fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
+              }
               : {},
             containers: inventory.containers,
             results: inventory.results.reduce(
@@ -1138,7 +1128,7 @@ class InventoryController {
                 units: car.units,
               };
             })
-            })
+          })
 
           res.status(200).json({
             data: {
@@ -1224,8 +1214,7 @@ class InventoryController {
     if (file) {
       try {
         logger.info(
-          `InventoryController.uploadFile email: ${
-            req.user.email
+          `InventoryController.uploadFile email: ${req.user.email
           } inventory: ${id} file: ${JSON.stringify(file)}`
         );
         const inventoryFile = new InventoryFileModel();
@@ -1349,8 +1338,8 @@ class InventoryController {
     const virtualInventoryCars = await InventoryCar.find({
       virtualInventory: virtualInventory._id,
       $or: [
-        {status: ChoicesStatusCarInventory.pending, container: {$exists: true}},
-        {containerStatus: {$ne: ChoicesStatusContainer.empty}, container: {$exists: false}}
+        { status: ChoicesStatusCarInventory.pending, container: { $exists: true } },
+        { containerStatus: { $ne: ChoicesStatusContainer.empty }, container: { $exists: false } }
       ]
     });
     logger.info(`apiFoundCar: virtualInventoryCars: ${virtualInventoryCars.length}`);
@@ -1364,8 +1353,8 @@ class InventoryController {
     const inventoryCars = await InventoryCar.find({
       inventory: inventory._id,
       $or: [
-        {status: ChoicesStatusCarInventory.pending, container: {$exists: true}},
-        {containerStatus: {$ne: ChoicesStatusContainer.empty}, container: {$exists: false}}
+        { status: ChoicesStatusCarInventory.pending, container: { $exists: true } },
+        { containerStatus: { $ne: ChoicesStatusContainer.empty }, container: { $exists: false } }
       ]
     });
     if (inventoryCars.length === 0) {
@@ -1376,50 +1365,50 @@ class InventoryController {
     }
   }
 
-  public async checkCarToInventory(user: IUserModel, vin: string, inventoryId: string): Promise<{ok: boolean, message: string, code: number, car?: ICarModel, inventoryCar?: IInventoryCarModel, inventory?: IInventoryModel}> {
+  public async checkCarToInventory(user: IUserModel, vin: string, inventoryId: string): Promise<{ ok: boolean, message: string, code: number, car?: ICarModel, inventoryCar?: IInventoryCarModel, inventory?: IInventoryModel }> {
     const { team } = user;
     let carFilter = user.company.handler ?
-      { vin, $or: [{company: user.company._id }, {handlerCompany: user.company._id }] } :
+      { vin, $or: [{ company: user.company._id }, { handlerCompany: user.company._id }] } :
       { vin, team };
     const car = await Car.findOne(carFilter);
-    if (!car){
-      return {ok: false, message: 'El vehículo no existe', code: 404};
+    if (!car) {
+      return { ok: false, message: 'El vehículo no existe', code: 404 };
     }
-    const inventory = await InventoryModel.findOne({_id: inventoryId, team: user.team._id});
-    if (!inventory){
-      return {ok: false, message: 'El inventario no existe', code: 404};
+    const inventory = await InventoryModel.findOne({ _id: inventoryId, team: user.team._id });
+    if (!inventory) {
+      return { ok: false, message: 'El inventario no existe', code: 404 };
     }
-    const inventoryCar = await InventoryCar.findOne({car: car._id, inventory: inventory._id})
+    const inventoryCar = await InventoryCar.findOne({ car: car._id, inventory: inventory._id })
       .populate([
-        {'path': 'car'},
+        { 'path': 'car' },
       ]);
-    if (!inventoryCar){
-      return {ok: false, message: 'El vehículo no está en el inventario', code: 404};
+    if (!inventoryCar) {
+      return { ok: false, message: 'El vehículo no está en el inventario', code: 404 };
     }
-    if (inventoryCar.status === ChoicesStatusCarInventory.found){
-      return {ok: true, message: 'El vehículo ya ha sido inventariado', code: 200, inventory, inventoryCar};
+    if (inventoryCar.status === ChoicesStatusCarInventory.found) {
+      return { ok: true, message: 'El vehículo ya ha sido inventariado', code: 200, inventory, inventoryCar };
     }
-    else if (inventoryCar.status !== ChoicesStatusCarInventory.pending){
-      return {ok: false, message: 'El vehículo ya ha sido inventariado', code: 404};
+    else if (inventoryCar.status !== ChoicesStatusCarInventory.pending) {
+      return { ok: false, message: 'El vehículo ya ha sido inventariado', code: 404 };
     }
-    return {ok: true, message: '', code: 200, inventoryCar: inventoryCar, inventory: inventory};
+    return { ok: true, message: '', code: 200, inventoryCar: inventoryCar, inventory: inventory };
   }
 
   public async inventoryCar(user: IUserModel, inventory: IInventoryModel, inventoryCar: IInventoryCarModel, images?: IInventoryFile[], containerFound?: string, createHistory: boolean = true): Promise<IInventoryCarModel> {
     try {
       const venueId = user.venue._id;
-      const {team} = user;
+      const { team } = user;
       const teamSettings = await TeamSetting.findOne({ team });
       inventoryCar.venueFound = venueId;
       await inventoryCar.populate('participant');
-      if (containerFound){
+      if (containerFound) {
         let inventoryContainer = await InventoryCar.findOne({
           _id: new mongoose.Types.ObjectId(containerFound),
           inventory: inventory._id
         });
-        if (inventoryContainer){
+        if (inventoryContainer) {
           inventoryCar.containerFound = inventoryContainer._id;
-          if (inventoryContainer.containerStatus !== ContainerStatus.CHECK){
+          if (inventoryContainer.containerStatus !== ContainerStatus.CHECK) {
             inventoryContainer.containerStatus = ContainerStatus.CHECK;
             inventoryContainer = await inventoryContainer.save();
           }
@@ -1452,7 +1441,7 @@ class InventoryController {
             update: true
           });
       }
-      if (inventoryCar.car.isContainer){
+      if (inventoryCar.car.isContainer) {
         if (images) {
           inventoryCar.evidenceStatus = [
             { status: ChoicesStatusContainer.open, images, date: new Date() },
@@ -1488,14 +1477,14 @@ class InventoryController {
       await this.sendUpdateNotification("VEHICLE_FOUND", venueId, team._id, inventoryCar, ChoicesStatusCarInventory.found, user);
       return inventoryCar;
     } catch (e) {
-        /* istanbul ignore next */
-        logger.error(`inventoryCar: Async Error.`);
-        /* istanbul ignore next */
-        logger.error(`{user: {_id: ${user._id}, email: ${user.email}}`);
-        /* istanbul ignore next */
-        logger.error(e);
-        /* istanbul ignore next */
-        throw e;
+      /* istanbul ignore next */
+      logger.error(`inventoryCar: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${user._id}, email: ${user.email}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      throw e;
     }
   }
 
@@ -1504,8 +1493,7 @@ class InventoryController {
     const { vin, images, containerFound } = req.body;
     logger.info(`apiFoundCar`);
     logger.info(
-      `{user: {_id: ${req.user._id}, email: ${
-        req.user.email
+      `{user: {_id: ${req.user._id}, email: ${req.user.email
       }, body: ${JSON.stringify(req.body)}}`
     );
     try {
@@ -1531,15 +1519,15 @@ class InventoryController {
       }
       let { inventoryCar, inventory } = check;
       inventoryCar = await inventoryCar!.populate([
-        {path: 'car',},
-        {path: 'evidenceStatus'},
-        {path: 'evidenceStatus.images'},
-        {path: 'images'},
+        { path: 'car', },
+        { path: 'evidenceStatus' },
+        { path: 'evidenceStatus.images' },
+        { path: 'images' },
       ]);
 
       let imageFiles: any[] = [];
-      if (images){
-        imageFiles = await InventoryFile.find({_id: {$in: images.map((i: string) => new mongoose.Types.ObjectId(i))}});
+      if (images) {
+        imageFiles = await InventoryFile.find({ _id: { $in: images.map((i: string) => new mongoose.Types.ObjectId(i)) } });
       }
 
       let inventoriedCar = await this.inventoryCar(updatedUser, inventory!, inventoryCar, imageFiles, containerFound);
@@ -1608,9 +1596,9 @@ class InventoryController {
     const messageStatus = statusMap[`${status}`];
 
     let title = `${user.firstName} ${user.lastName} agregó evidencia al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
-    let message = `Ahora el contenedor está ${ messageStatus }.`;
+    let message = `Ahora el contenedor está ${messageStatus}.`;
 
-    if(notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND"){
+    if (notificationType === "VEHICLE_FOUND" || notificationType === "CONTAINER_FOUND") {
 
       title = `Vehículo encontrado`;
       message = `${user.firstName} ${user.lastName} encontró ${inventory.car.brand} (${inventory.car.denomination}) en ${user.venue.name}.`;
@@ -1621,9 +1609,19 @@ class InventoryController {
       }
     }
 
-    if(notificationType === "UNIT_ADDED"){
+    if (notificationType === "UNIT_ADDED") {
       title = `Unidad agregada`;
       message = `${user.firstName} ${user.lastName} agregó una unidad al contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
+    if (notificationType === "CONTAINER_OPENED") {
+      title = `Contenedor abierto`;
+      message = `${user.firstName} ${user.lastName} abrió el contenedor ${inventory.car.vin} en ${user.venue.name}.`;
+    }
+
+    if (notificationType === "CONTAINER_CLOSED") {
+      title = `Contenedor cerrado`;
+      message = `${user.firstName} ${user.lastName} cerró el contenedor ${inventory.car.vin} en ${user.venue.name}.`;
     }
 
     socket()
@@ -1638,7 +1636,7 @@ class InventoryController {
         metadata: {
           inventory: inventory
         }
-      } );
+      });
   }
 
 
@@ -1873,9 +1871,8 @@ class InventoryController {
         const imagesToCompress: any = [];
         for (const car of inventoriesCars) {
           for (const image of car.images) {
-            const destDirectory = `/tmp/${car._id}${image._id}.${
-              image.file.name.split('.')[image.file.name.split('.').length - 1]
-            }`;
+            const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]
+              }`;
             imagesToDownload.push(() =>
               this.downloadFile(image.file.url, destDirectory)
             );
@@ -1884,11 +1881,10 @@ class InventoryController {
               name: `${car.car.vin}/IMAGE${image._id
                 .toString()
                 .substr(image._id.length - 10, 10)
-                .toUpperCase()}.${
-                image.file.name.split('.')[
-                  image.file.name.split('.').length - 1
+                .toUpperCase()}.${image.file.name.split('.')[
+                image.file.name.split('.').length - 1
                 ]
-              }`
+                }`
             });
           }
         }
@@ -1958,8 +1954,7 @@ class InventoryController {
     const { vin, patent, denomination, brand, color, images, containerFound } = req.body;
     logger.info(`reportCar`);
     logger.info(
-      `{user: {_id: ${req.user._id}, email: ${
-        req.user.email
+      `{user: {_id: ${req.user._id}, email: ${req.user.email
       }, body: ${JSON.stringify(req.body)}}`
     );
     try {
@@ -2014,7 +2009,7 @@ class InventoryController {
             : [],
           status: ChoicesStatusCarInventory.reported
         });
-        if (containerFound){
+        if (containerFound) {
           let inventoryContainer = await InventoryCar.findOne({
             _id: new mongoose.Types.ObjectId(containerFound),
             inventory
@@ -2073,8 +2068,7 @@ class InventoryController {
 
     logger.info(`setLabel`);
     logger.info(
-      `{user: {_id: ${req.user._id}, email: ${
-        req.user.email
+      `{user: {_id: ${req.user._id}, email: ${req.user.email
       }, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(
         req.params
       )}}`
@@ -2115,7 +2109,7 @@ class InventoryController {
         });
         if (newLabel) {
 
-          let updatedParam:any = {
+          let updatedParam: any = {
             label: newLabel._id,
             labelBy: req.user._id,
             labelText: custom
@@ -2213,13 +2207,13 @@ class InventoryController {
             openForm: true,
             contentType: true,
           }
-        ).populate({path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess }}).lean();
+        ).populate({ path: "virtualInventories", match: { status: ChoicesStatusInventory.inProcess } }).lean();
 
         let dataInventories: any = {};
 
-        inventories.map((inventory:  HydratedDocument<IInventory>)  => {
+        inventories.map((inventory: HydratedDocument<IInventory>) => {
           if (inventory.virtual) {
-            inventory.virtualInventories = inventory.virtualInventories.map((virtualInventory: any ) => {
+            inventory.virtualInventories = inventory.virtualInventories.map((virtualInventory: any) => {
               if (!Object.hasOwn(dataInventories, virtualInventory._id.toString())) {
                 dataInventories[virtualInventory._id.toString()] = {
                   ...inventory,
@@ -2292,7 +2286,7 @@ class InventoryController {
       })
 
 
-      let carFilter : any = {}
+      let carFilter: any = {}
 
       if (statusFilterSelected) {
         containerMatch['containerStatus'] = {
@@ -2311,11 +2305,11 @@ class InventoryController {
 
       if (filterHasDamage?.toString() === "true") {
         let damagedParticpants = await Participant.find({
-          form: {$in: inventories.map((i: any) => i.unitForm)},
-        }, { car: 1});
+          form: { $in: inventories.map((i: any) => i.unitForm) },
+        }, { car: 1 });
         let damagedCars = await InventoryCar.find({
-          car: {$in: damagedParticpants.map((p: any) => p.car)},
-        }, {containerFound: 1});
+          car: { $in: damagedParticpants.map((p: any) => p.car) },
+        }, { containerFound: 1 });
 
         containerMatch['_id'] = {
           $in: damagedCars.map((c: any) => c.containerFound)
@@ -2324,15 +2318,15 @@ class InventoryController {
       }
 
       if (tripFilter) {
-        containerMatch['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
+        containerMatch['extra.N° Viaje'] = { $in: tripFilter.toString().split(',').map((t: string) => t.trim()) };
       }
 
       if (shipFilter) {
-        containerMatch['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
+        containerMatch['extra.Nave'] = { $in: shipFilter.toString().split(',').map((s: string) => s.trim()) };
       }
 
       if (containerFilter) {
-        containerMatch['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
+        containerMatch['extra.BIC'] = { $regex: containerFilter.toString(), $options: 'i' };
       }
 
       if (blFilter) {
@@ -2423,7 +2417,7 @@ class InventoryController {
       ]);
 
       let ships = await InventoryCar.aggregate([
-        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
         {
           $lookup: {
             from: 'cars', // The collection name for the 'cars' field
@@ -2432,17 +2426,18 @@ class InventoryController {
             as: 'car',
           }
         },
-        { $unwind: {path: '$car'} },
+        { $unwind: { path: '$car' } },
         { $match: { 'car.isContainer': true } }, // Filter for container cars
         { $match: containerMatch },
-        { $group: {
+        {
+          $group: {
             _id: '$extra.Nave',
           }
         }
       ])
 
       let trips = await InventoryCar.aggregate([
-        {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
+        { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
         {
           $lookup: {
             from: 'cars', // The collection name for the 'cars' field
@@ -2451,10 +2446,11 @@ class InventoryController {
             as: 'car',
           }
         },
-        { $unwind: {path: '$car'} },
+        { $unwind: { path: '$car' } },
         { $match: { 'car.isContainer': true } }, // Filter for container cars
         { $match: containerMatch },
-        { $group: {
+        {
+          $group: {
             _id: '$extra.N° Viaje',
           }
         }
@@ -2513,7 +2509,7 @@ class InventoryController {
       })
 
 
-      let carFilter : any = {}
+      let carFilter: any = {}
 
       if (statusFilterSelected) {
         containerMatch['containerStatus'] = {
@@ -2533,14 +2529,14 @@ class InventoryController {
       if (filterHasDamage?.toString() === "true") {
         logger.info("FIltrando con daños")
         let damagedParticpants = await Participant.find({
-          form: {$in: inventories.map((i: any) => i.unitForm)},
+          form: { $in: inventories.map((i: any) => i.unitForm) },
           hasDamages: true,
-        }, { car: 1});
+        }, { car: 1 });
 
         logger.info(`damagedParticpants: ${JSON.stringify(damagedParticpants.length)}`);
         let damagedCars = await InventoryCar.find({
-          car: {$in: damagedParticpants.map((p: any) => p.car)},
-        }, {containerFound: 1});
+          car: { $in: damagedParticpants.map((p: any) => p.car) },
+        }, { containerFound: 1 });
 
         logger.info(`damagedParticpants: ${JSON.stringify(damagedCars.length)}`);
 
@@ -2551,15 +2547,15 @@ class InventoryController {
       }
 
       if (tripFilter) {
-        containerMatch['extra.N° Viaje'] = {$in: tripFilter.toString().split(',').map((t: string) => t.trim())};
+        containerMatch['extra.N° Viaje'] = { $in: tripFilter.toString().split(',').map((t: string) => t.trim()) };
       }
 
       if (shipFilter) {
-        containerMatch['extra.Nave'] = {$in: shipFilter.toString().split(',').map((s: string) => s.trim())};
+        containerMatch['extra.Nave'] = { $in: shipFilter.toString().split(',').map((s: string) => s.trim()) };
       }
 
       if (containerFilter) {
-        containerMatch['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
+        containerMatch['extra.BIC'] = { $regex: containerFilter.toString(), $options: 'i' };
       }
 
       if (blFilter) {
@@ -2573,17 +2569,18 @@ class InventoryController {
 
         let clientCars = await Car.find({
           company: new mongoose.Types.ObjectId(clientFilter.toString()),
-        }, { _id: 1});
+        }, { _id: 1 });
 
         let inventoryCars = await InventoryCar.find({
-          car: {$in: clientCars.map((p: any) => p._id)},
-        }, {containerFound: 1, container: 1});
+          car: { $in: clientCars.map((p: any) => p._id) },
+        }, { containerFound: 1, container: 1 });
 
         containerMatch["$or"] = [{
           '_id': {
             $in: inventoryCars.map((c: any) => c.container || c.containerFound)
-          }},
-          {"extra.RUT Cliente" : company?.rut}
+          }
+        },
+        { "extra.RUT Cliente": company?.rut }
         ]
 
         carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
@@ -2591,7 +2588,7 @@ class InventoryController {
 
       let sortField: string = sort ? sort.toString() : 'createdAt';
       let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
-      let sortObject : Record<string, 1 | -1> = {};
+      let sortObject: Record<string, 1 | -1> = {};
       sortObject[sortField] = sortDirection;
 
       logger.info(
@@ -2605,232 +2602,234 @@ class InventoryController {
       }
 
       let containerDateFilter: any = {};
-      if( startDate && endDate) {
+      if (startDate && endDate) {
         let sDate = moment(startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
         let eDate = moment(endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
         containerDateFilter = {
-            $or: [
-              { 'openDate': { $gte: sDate, $lte: eDate } },
-              { 'emptyDate': { $gte: sDate, $lte: eDate } },
-              { 'createdAt': { $gte: sDate, $lte: eDate } }
-            ]
+          $or: [
+            { 'openDate': { $gte: sDate, $lte: eDate } },
+            { 'emptyDate': { $gte: sDate, $lte: eDate } },
+            { 'createdAt': { $gte: sDate, $lte: eDate } }
+          ]
         }
       }
 
       let containers = await InventoryCar.aggregatePaginate(
-          InventoryCar.aggregate([
-            {$match: {inventory: {$in: inventories.map((i: any) => i._id)}, }},
-            {
-              $lookup: {
-                from: 'cars', // The collection name for the 'cars' field
-                localField: 'car', // Field in InventoryCar
-                foreignField: '_id', // Field in carinventories
-                as: 'car',
-              }
-            },
-            { $unwind: {path: '$car'} },
+        InventoryCar.aggregate([
+          { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
+          {
+            $lookup: {
+              from: 'cars', // The collection name for the 'cars' field
+              localField: 'car', // Field in InventoryCar
+              foreignField: '_id', // Field in carinventories
+              as: 'car',
+            }
+          },
+          { $unwind: { path: '$car' } },
 
-            { $match: { 'car.isContainer': true } }, // Filter for container cars
-            { $match: containerMatch },
-            { $unwind: { path: "$units", preserveNullAndEmptyArrays: true } },
-            {
-              $lookup: {
-                from: "participants",
-                localField: "units.participant",
-                foreignField: "_id",
-                as: "units.participant",
-                pipeline: [
-                  { $project: { name: 1, hasDamages: 1, deliveryInfo: 1, createdAt: 1 } }
-                ]
-              }
-            },
-            { $unwind: { path: "$units.participant", preserveNullAndEmptyArrays: true }},
-            {
-              $lookup: {
-                from: "inventoryfiles",
-                localField: "units.images",
-                foreignField: "_id",
-                as: "units.images",
-              }
-            },
-            {
-              $group: {
-                _id: "$_id", // Group by the original document's _id
-                inventory: { $first: "$inventory" },
-                car: { $first: "$car" },
-                venue: { $first: "$venue" },
-                images: { $first: "$images" },
-                status: { $first: "$status" },
-                containerStatus: { $first: "$containerStatus" },
-                extra: { $first: "$extra" },
-                contentDescription: { $first: "$contentDescription" },
-                contentDetails: { $first: "$contentDetails" },
-                evidenceStatus: { $first: "$evidenceStatus" },
-                venueFound: { $first: "$venueFound" },
-                openDate: { $first: "$openDate" },
-                cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
-                createdAt: { $first: "$createdAt" },
-                updatedAt: { $first: "$updatedAt" },
-                units: { $push: "$units" },
-                openParticipant: {$first: "$openParticipant"},
-                closeParticipant: {$first: "$closeParticipant"},// Push the modified units back into an array
-                // To include other root fields, you'd list them here, e.g.,
-                // otherField: { $first: "$otherField" }
-              }
-            },
-            {
-              $lookup: {
-                from: 'participants',
-                localField: 'openParticipant',
-                foreignField: '_id',
-                as: 'openParticipant',
-                pipeline: [
-                  { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
-                  { $lookup: {
-                      from: 'users',
-                      localField: 'user',
-                      foreignField: '_id',
-                      as: 'user',
-                      pipeline: [
-                        { $project: { firstName: 1, lastName: 1, email: 1 } }
-                      ]
-                    }
-                  },
-                  { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
-                ]
-              }
-            },
-            {$unwind: {path: "$openParticipant", preserveNullAndEmptyArrays: true }},
-            {
-              $lookup: {
-                from: 'participants',
-                localField: 'closeParticipant',
-                foreignField: '_id',
-                as: 'closeParticipant',
-                pipeline: [
-                  { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
-                  { $lookup: {
-                      from: 'users',
-                      localField: 'user',
-                      foreignField: '_id',
-                      as: 'user',
-                      pipeline: [
-                        { $project: { firstName: 1, lastName: 1, email: 1 } }
-                      ]
-                    }
-                  },
-                  { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
-                ]
-              }
-            },
-            {$unwind: {path: "$closeParticipant", preserveNullAndEmptyArrays: true }},
-            {
-              $lookup: {
-                from: 'inventoryfiles',
-                localField: 'images',
-                foreignField: '_id',
-                as: 'images'
-              }
-            },
-            {
-              $lookup: {
-                from: "venues",
-                localField: "venue",
-                foreignField: "_id",
-                as: "venue",
-                pipeline: [
-                  { $project: { name: 1 } },
-                ]
-              }
-            },
-            { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
-            {
-              $lookup: {
-                from: "venues",
-                localField: "venueFound",
-                foreignField: "_id",
-                as: "venueFound",
-                pipeline: [
-                  { $project: { name: 1 } },
-                ]
-              }
-            },
-            {
-              $addFields: {
-                openEvidence: {
-                  $filter: {
-                    input: '$evidenceStatus',
-                    as: 'evidence',
-                    cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
+          { $match: { 'car.isContainer': true } }, // Filter for container cars
+          { $match: containerMatch },
+          { $unwind: { path: "$units", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: "participants",
+              localField: "units.participant",
+              foreignField: "_id",
+              as: "units.participant",
+              pipeline: [
+                { $project: { name: 1, hasDamages: 1, deliveryInfo: 1, createdAt: 1 } }
+              ]
+            }
+          },
+          { $unwind: { path: "$units.participant", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: "inventoryfiles",
+              localField: "units.images",
+              foreignField: "_id",
+              as: "units.images",
+            }
+          },
+          {
+            $group: {
+              _id: "$_id", // Group by the original document's _id
+              inventory: { $first: "$inventory" },
+              car: { $first: "$car" },
+              venue: { $first: "$venue" },
+              images: { $first: "$images" },
+              status: { $first: "$status" },
+              containerStatus: { $first: "$containerStatus" },
+              extra: { $first: "$extra" },
+              contentDescription: { $first: "$contentDescription" },
+              contentDetails: { $first: "$contentDetails" },
+              evidenceStatus: { $first: "$evidenceStatus" },
+              venueFound: { $first: "$venueFound" },
+              openDate: { $first: "$openDate" },
+              cars: { $first: "$cars" }, // If 'cars' is a top-level array, use $first to get the whole array
+              createdAt: { $first: "$createdAt" },
+              updatedAt: { $first: "$updatedAt" },
+              units: { $push: "$units" },
+              openParticipant: { $first: "$openParticipant" },
+              closeParticipant: { $first: "$closeParticipant" },// Push the modified units back into an array
+              // To include other root fields, you'd list them here, e.g.,
+              // otherField: { $first: "$otherField" }
+            }
+          },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'openParticipant',
+              foreignField: '_id',
+              as: 'openParticipant',
+              pipeline: [
+                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
+                {
+                  $lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'user',
+                    pipeline: [
+                      { $project: { firstName: 1, lastName: 1, email: 1 } }
+                    ]
                   }
-                }
-              }
-            },
-            {
-              $addFields: {
-                openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
-              }
-            },
-            {
-              $addFields: {
-                emptyEvidence: {
-                  $filter: {
-                    input: '$evidenceStatus',
-                    as: 'evidence',
-                    cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+                },
+                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+              ]
+            }
+          },
+          { $unwind: { path: "$openParticipant", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'closeParticipant',
+              foreignField: '_id',
+              as: 'closeParticipant',
+              pipeline: [
+                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
+                {
+                  $lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'user',
+                    pipeline: [
+                      { $project: { firstName: 1, lastName: 1, email: 1 } }
+                    ]
                   }
+                },
+                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+              ]
+            }
+          },
+          { $unwind: { path: "$closeParticipant", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: 'inventoryfiles',
+              localField: 'images',
+              foreignField: '_id',
+              as: 'images'
+            }
+          },
+          {
+            $lookup: {
+              from: "venues",
+              localField: "venue",
+              foreignField: "_id",
+              as: "venue",
+              pipeline: [
+                { $project: { name: 1 } },
+              ]
+            }
+          },
+          { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: "venues",
+              localField: "venueFound",
+              foreignField: "_id",
+              as: "venueFound",
+              pipeline: [
+                { $project: { name: 1 } },
+              ]
+            }
+          },
+          {
+            $addFields: {
+              openEvidence: {
+                $filter: {
+                  input: '$evidenceStatus',
+                  as: 'evidence',
+                  cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
                 }
-              }
-            },
-            {
-              $addFields: {
-                emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
-              }
-            },
-            {
-              $addFields: {
-                units: {
-                  $filter: {
-                    input: "$units",
-                    as: "unit",
-                    cond: {
-                      $and: [
-                        { $ne: ["$$unit", {}] },
-                        { $ifNull: ["$$unit.participant", false] }
-                      ]
-                    }
-                  }
-                }
-              }
-            },
-            {
-              $match: containerDateFilter
-            },
-            { $sort: sortObject },
-            { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
-            {
-              $project: {
-                _id: 1,
-                car: 1,
-                images: 1,
-                evidenceStatus: 1,
-                status: 1,
-                containerStatus: 1,
-                contentDetails: 1,
-                venueFound: 1,
-                venue: 1,
-                extra: 1,
-                openDate: 1,
-                openParticipant: 1,
-                closeParticipant: 1,
-                emptyDate: 1,
-                inventory: 1,
-                units: 1,
-                contentDescription: 1,
               }
             }
-          ]),
-          options
+          },
+          {
+            $addFields: {
+              openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
+            }
+          },
+          {
+            $addFields: {
+              emptyEvidence: {
+                $filter: {
+                  input: '$evidenceStatus',
+                  as: 'evidence',
+                  cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+                }
+              }
+            }
+          },
+          {
+            $addFields: {
+              emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+            }
+          },
+          {
+            $addFields: {
+              units: {
+                $filter: {
+                  input: "$units",
+                  as: "unit",
+                  cond: {
+                    $and: [
+                      { $ne: ["$$unit", {}] },
+                      { $ifNull: ["$$unit.participant", false] }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            $match: containerDateFilter
+          },
+          { $sort: sortObject },
+          { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
+          {
+            $project: {
+              _id: 1,
+              car: 1,
+              images: 1,
+              evidenceStatus: 1,
+              status: 1,
+              containerStatus: 1,
+              contentDetails: 1,
+              venueFound: 1,
+              venue: 1,
+              extra: 1,
+              openDate: 1,
+              openParticipant: 1,
+              closeParticipant: 1,
+              emptyDate: 1,
+              inventory: 1,
+              units: 1,
+              contentDescription: 1,
+            }
+          }
+        ]),
+        options
       )
 
       for (const container of containers.docs) {
@@ -2844,46 +2843,50 @@ class InventoryController {
       }
 
       let cars = await InventoryCar.aggregate([
-        { $match: {
-          inventory: { $in: inventories.map((i: any) => i._id) },
-          $or: [
-            {container: {$in: containers.docs.map((c: any) => c._id)}},
-            {containerFound: {$in: containers.docs.map((c: any) => c._id)}}
-          ],
+        {
+          $match: {
+            inventory: { $in: inventories.map((i: any) => i._id) },
+            $or: [
+              { container: { $in: containers.docs.map((c: any) => c._id) } },
+              { containerFound: { $in: containers.docs.map((c: any) => c._id) } }
+            ],
           }
         },
-        { $lookup: {
+        {
+          $lookup: {
             from: 'cars',
             localField: 'car',
             foreignField: '_id',
             as: 'car'
           }
         },
-        { $unwind: {path: '$car'} },
-        { $lookup: {
+        { $unwind: { path: '$car' } },
+        {
+          $lookup: {
             from: 'inventoryfiles',
             localField: 'images',
             foreignField: '_id',
             as: 'images'
           }
         },
-        { $lookup: {
+        {
+          $lookup: {
             from: 'participants',
             localField: 'participant',
             foreignField: '_id',
             as: 'participant',
             pipeline: [
-              {$project: {name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1}}
+              { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1 } }
             ]
           }
-        },{
+        }, {
           $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
         },
-        {$match: carFilter},
+        { $match: carFilter },
       ])
 
       containers.docs = containers.docs.map(c => {
-        let tmp = {...c}
+        let tmp = { ...c }
         tmp.cars = cars.filter(car => {
           return car.containerFound ?
             car.containerFound.toString() === c._id.toString() :
@@ -2915,250 +2918,256 @@ class InventoryController {
 
   public async containerInventoryDetailExport(req: IRequest, res: Response) {
     try {
-          const {
-            shipFilter,
-            tripFilter,
-            containerFilter: container,
-            blFilter,
-            clientFilter,
-            statusFilterSelected,
-            filterHasDamage,
-            sort,
-            sortOption
-          } = req.query;
+      const {
+        shipFilter,
+        tripFilter,
+        containerFilter: container,
+        blFilter,
+        clientFilter,
+        statusFilterSelected,
+        filterHasDamage,
+        sort,
+        sortOption
+      } = req.query;
 
-    const venuesPermissions = req.user.venuesPermissions();
+      const venuesPermissions = req.user.venuesPermissions();
 
-    let containerFilter: any = {
-      $or: [
-      { 'venue': { $in: venuesPermissions } },
-      { 'venueFound': { $in: venuesPermissions } }
-      ],
-    };
-
-    let inventories = await Inventory.find({
-      team: req.user.team._id,
-      containerInventory: true,
-      venues: { $in: venuesPermissions }
-    }, {
-      _id: true,
-      unitForm: true,
-    });
-
-    let carFilter: any = {};
-
-    if (statusFilterSelected) {
-      containerFilter['containerStatus'] = { $in: statusFilterSelected.toString().split(',') };
-    } else {
-      containerFilter['containerStatus'] = {
-      $in: [
-        ChoicesStatusContainer.pending,
-        ChoicesStatusContainer.open,
-        ChoicesStatusContainer.check,
-        ChoicesStatusContainer.empty,
-      ]
-      };
-    }
-
-    if (filterHasDamage) {
-      let damagedParticpants = await Participant.find({
-      form: { $in: inventories.map((i: any) => i.unitForm) },
-      }, { car: 1 });
-      let damagedCars = await InventoryCar.find({
-      car: { $in: damagedParticpants.map((p: any) => p.car) },
-      }, { containerFound: 1 });
-
-      containerFilter['_id'] = {
-      $in: damagedCars.map((c: any) => c.containerFound)
-      };
-      carFilter['participant.hasDamages'] = true;
-    }
-
-    if (tripFilter) containerFilter['extra.N° Viaje'] = tripFilter;
-    if (shipFilter) containerFilter['extra.Nave'] = shipFilter;
-    if (container) containerFilter['extra.BIC'] = container;
-    if (blFilter) containerFilter['extra.N° BL'] = blFilter;
-    if (clientFilter) containerFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
-
-    let sortField: string = sort ? sort.toString() : 'createdAt';
-    let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
-    let sortObject: Record<string, 1 | -1> = {};
-    sortObject[sortField] = sortDirection;
-
-    logger.info(
-      `InventoryController.containerInventoryDetailExport {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
-    );
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=detalle-unidades-contenedor.xlsx');
-    res.setHeader('Transfer-Encoding', 'chunked');
-
-    const workbook = new excel.stream.xlsx.WorkbookWriter({
-      stream: res,
-      useStyles: false,
-      useSharedStrings: false
-    });
-
-    const worksheet = workbook.addWorksheet('Unidades');
-
-    // Header
-    worksheet.columns = [
-      { header: 'F. Apertura', key: 'openDate', width: 20 },
-      { header: 'F. Finalización', key: 'finishDate', width: 20 },
-      { header: 'Contenedor', key: 'container', width: 25 },
-      { header: 'Carga', key: 'vin', width: 15 },
-      { header: 'Descripción carga', key: 'description', width: 30 },
-      { header: 'Daños', key: 'hasDamages', width: 30 },
-      { header: 'Asistencia mecánica', key: 'accessories', width: 30 },
-      { header: 'BL', key: 'bl', width: 20 },
-      { header: 'Puerto', key: 'port', width: 20 },
-      { header: 'Nave', key: 'ship', width: 20 },
-      { header: 'Cliente', key: 'client', width: 25 },
-      { header: 'Viaje', key: 'voyage', width: 15 },
-      { header: 'Estado', key: 'status', width: 15 },
-    ];
-    let containerDateFilter: any = {};
-    if (req.query.startDate && req.query.endDate) {
-      let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
-      let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
-      containerDateFilter = {
+      let containerFilter: any = {
         $or: [
-          { 'openDate': { $gte: sDate, $lte: eDate } },
-          { 'emptyDate': { $gte: sDate, $lte: eDate } },
-          { 'createdAt': { $gte: sDate, $lte: eDate } }
-        ]
-      }
-    }
+          { 'venue': { $in: venuesPermissions } },
+          { 'venueFound': { $in: venuesPermissions } }
+        ],
+      };
 
-    const BATCH_SIZE = 100;
-    const containerPipeline = [
-      { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
-      {
-      $lookup: {
-        from: 'cars',
-        localField: 'car',
-        foreignField: '_id',
-        as: 'car',
+      let inventories = await Inventory.find({
+        team: req.user.team._id,
+        containerInventory: true,
+        venues: { $in: venuesPermissions }
+      }, {
+        _id: true,
+        unitForm: true,
+      });
+
+      let carFilter: any = {};
+
+      if (statusFilterSelected) {
+        containerFilter['containerStatus'] = { $in: statusFilterSelected.toString().split(',') };
+      } else {
+        containerFilter['containerStatus'] = {
+          $in: [
+            ChoicesStatusContainer.pending,
+            ChoicesStatusContainer.open,
+            ChoicesStatusContainer.check,
+            ChoicesStatusContainer.empty,
+          ]
+        };
       }
-      },
-      { $unwind: { path: '$car' } },
-      { $match: { 'car.isContainer': true } },
-      { $match: containerFilter },
-      { $sort: sortObject },
-      {
-      $lookup: {
-        from: 'inventoryfiles',
-        localField: 'images',
-        foreignField: '_id',
-        as: 'images'
+
+      if (filterHasDamage) {
+        let damagedParticpants = await Participant.find({
+          form: { $in: inventories.map((i: any) => i.unitForm) },
+        }, { car: 1 });
+        let damagedCars = await InventoryCar.find({
+          car: { $in: damagedParticpants.map((p: any) => p.car) },
+        }, { containerFound: 1 });
+
+        containerFilter['_id'] = {
+          $in: damagedCars.map((c: any) => c.containerFound)
+        };
+        carFilter['participant.hasDamages'] = true;
       }
-      },
-      {
-      $lookup: {
-        from: "venues",
-        localField: "venue",
-        foreignField: "_id",
-        as: "venue",
-        pipeline: [{ $project: { name: 1 } }]
+
+      if (tripFilter) containerFilter['extra.N° Viaje'] = tripFilter;
+      if (shipFilter) containerFilter['extra.Nave'] = shipFilter;
+      if (container) containerFilter['extra.BIC'] = container;
+      if (blFilter) containerFilter['extra.N° BL'] = blFilter;
+      if (clientFilter) {
+        let company = await Company.findOne({
+          _id: new mongoose.Types.ObjectId(clientFilter.toString()),
+        });
+        containerFilter['extra.RUT Cliente'] = company?.rut;
       }
-      },
-      { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
-      {
-      $lookup: {
-        from: "venues",
-        localField: "venueFound",
-        foreignField: "_id",
-        as: "venueFound",
-        pipeline: [{ $project: { name: 1 } }]
+
+      let sortField: string = sort ? sort.toString() : 'createdAt';
+      let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
+      let sortObject: Record<string, 1 | -1> = {};
+      sortObject[sortField] = sortDirection;
+
+      logger.info(
+        `InventoryController.containerInventoryDetailExport {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
+      );
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=detalle-unidades-contenedor.xlsx');
+      res.setHeader('Transfer-Encoding', 'chunked');
+
+      const workbook = new excel.stream.xlsx.WorkbookWriter({
+        stream: res,
+        useStyles: false,
+        useSharedStrings: false
+      });
+
+      const worksheet = workbook.addWorksheet('Unidades');
+
+      // Header
+      worksheet.columns = [
+        { header: 'F. Apertura', key: 'openDate', width: 20 },
+        { header: 'F. Finalización', key: 'finishDate', width: 20 },
+        { header: 'Contenedor', key: 'container', width: 25 },
+        { header: 'Carga', key: 'vin', width: 15 },
+        { header: 'Descripción carga', key: 'description', width: 30 },
+        { header: 'Daños', key: 'hasDamages', width: 30 },
+        { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
+        { header: 'Cantidad asistencia mecánica', key: 'qty-accesories', width: 30 },
+        { header: 'BL', key: 'bl', width: 20 },
+        { header: 'Puerto', key: 'port', width: 20 },
+        { header: 'Nave', key: 'ship', width: 20 },
+        { header: 'Cliente', key: 'client', width: 25 },
+        { header: 'Viaje', key: 'voyage', width: 15 },
+        { header: 'Estado', key: 'status', width: 15 },
+      ];
+      let containerDateFilter: any = {};
+      if (req.query.startDate && req.query.endDate) {
+        let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+        let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
+        containerDateFilter = {
+          $or: [
+            { 'openDate': { $gte: sDate, $lte: eDate } },
+            { 'emptyDate': { $gte: sDate, $lte: eDate } },
+            { 'createdAt': { $gte: sDate, $lte: eDate } }
+          ]
+        }
       }
-      },
-      {
-        $addFields: {
-          openEvidence: {
-            $filter: {
-              input: '$evidenceStatus',
-              as: 'evidence',
-              cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
+
+      const BATCH_SIZE = 100;
+      const containerPipeline = [
+        { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
+        {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car',
+          }
+        },
+        { $unwind: { path: '$car' } },
+        { $match: { 'car.isContainer': true } },
+        { $match: containerFilter },
+        { $sort: sortObject },
+        {
+          $lookup: {
+            from: 'inventoryfiles',
+            localField: 'images',
+            foreignField: '_id',
+            as: 'images'
+          }
+        },
+        {
+          $lookup: {
+            from: "venues",
+            localField: "venue",
+            foreignField: "_id",
+            as: "venue",
+            pipeline: [{ $project: { name: 1 } }]
+          }
+        },
+        { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: "venues",
+            localField: "venueFound",
+            foreignField: "_id",
+            as: "venueFound",
+            pipeline: [{ $project: { name: 1 } }]
+          }
+        },
+        {
+          $addFields: {
+            openEvidence: {
+              $filter: {
+                input: '$evidenceStatus',
+                as: 'evidence',
+                cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] }
+              }
             }
           }
-        }
-      },
-      {
-        $addFields: {
-          openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
-        }
-      },
-      {
-        $addFields: {
-          emptyEvidence: {
-            $filter: {
-              input: '$evidenceStatus',
-              as: 'evidence',
-              cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+        },
+        {
+          $addFields: {
+            openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
+          }
+        },
+        {
+          $addFields: {
+            emptyEvidence: {
+              $filter: {
+                input: '$evidenceStatus',
+                as: 'evidence',
+                cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] }
+              }
             }
           }
+        },
+        {
+          $addFields: {
+            emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+          }
+        },
+        {
+          $match: containerDateFilter
+        },
+        { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 1,
+            car: 1,
+            images: 1,
+            evidenceStatus: 1,
+            status: 1,
+            containerStatus: 1,
+            venueFound: 1,
+            venue: 1,
+            extra: 1
+          }
         }
-      },
-      {
-        $addFields: {
-          emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
+      ];
+
+      const containerCursor = InventoryCar.aggregate(containerPipeline).cursor();
+      const containerMap = new Map<string, any>();
+      let containerBatch: any[] = [];
+
+      for (let container = await containerCursor.next(); container != null; container = await containerCursor.next()) {
+        containerMap.set(container._id.toString(), container);
+        containerBatch.push(container);
+
+        if (containerBatch.length >= BATCH_SIZE) {
+          await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap, carFilter);
+          containerBatch = [];
         }
-      },
-      {
-        $match: containerDateFilter
-      },
-      { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
-      {
-      $project: {
-        _id: 1,
-        car: 1,
-        images: 1,
-        evidenceStatus: 1,
-        status: 1,
-        containerStatus: 1,
-        venueFound: 1,
-        venue: 1,
-        extra: 1
       }
-      }
-    ];
 
-    const containerCursor = InventoryCar.aggregate(containerPipeline).cursor();
-    const containerMap = new Map<string, any>();
-    let containerBatch: any[] = [];
-
-    for (let container = await containerCursor.next(); container != null; container = await containerCursor.next()) {
-      containerMap.set(container._id.toString(), container);
-      containerBatch.push(container);
-
-      if (containerBatch.length >= BATCH_SIZE) {
+      if (containerBatch.length > 0) {
         await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap, carFilter);
-        containerBatch = [];
       }
-    }
 
-    if (containerBatch.length > 0) {
-      await this.processContainerBatch(containerBatch, inventories, worksheet, containerMap, carFilter);
-    }
+      worksheet.commit();
+      await workbook.commit();
 
-    worksheet.commit();
-    await workbook.commit();
-
-    return;
+      return;
 
     } catch (e) {
-    logger.error(`containerInventoryDetailExport: Async Error.`);
-    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-    logger.error(e);
-    logger.error(e.stack);
-    // Solo enviar respuesta de error si aún no se han enviado headers
-    if (!res.headersSent) {
-      return res.status(500).json({
-        message: 'Ha ocurrido un error',
-        status: 500
-      });
-    }
-    return res.end();
+      logger.error(`containerInventoryDetailExport: Async Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      logger.error(e.stack);
+      // Solo enviar respuesta de error si aún no se han enviado headers
+      if (!res.headersSent) {
+        return res.status(500).json({
+          message: 'Ha ocurrido un error',
+          status: 500
+        });
+      }
+      return res.end();
     }
   }
 
@@ -3172,39 +3181,39 @@ class InventoryController {
     const containerIds = containers.map(c => c._id);
     let cars = await InventoryCar.aggregate([
       {
-      $match: {
-        inventory: { $in: inventories.map((i: any) => i._id) },
-        $or: [
-        { container: { $in: containerIds } },
-        { containerFound: { $in: containerIds } }
-        ],
-      }
+        $match: {
+          inventory: { $in: inventories.map((i: any) => i._id) },
+          $or: [
+            { container: { $in: containerIds } },
+            { containerFound: { $in: containerIds } }
+          ],
+        }
       },
       {
-      $lookup: {
-        from: 'cars',
-        localField: 'car',
-        foreignField: '_id',
-        as: 'car'
-      }
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car'
+        }
       },
       { $unwind: { path: '$car' } },
       {
-      $lookup: {
-        from: 'inventoryfiles',
-        localField: 'images',
-        foreignField: '_id',
-        as: 'images'
-      }
+        $lookup: {
+          from: 'inventoryfiles',
+          localField: 'images',
+          foreignField: '_id',
+          as: 'images'
+        }
       },
       {
-      $lookup: {
-        from: 'participants',
-        localField: 'participant',
-        foreignField: '_id',
-        as: 'participant',
-        pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1 } }]
-      }
+        $lookup: {
+          from: 'participants',
+          localField: 'participant',
+          foreignField: '_id',
+          as: 'participant',
+          pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1 } }]
+        }
       },
       {
         $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
@@ -3234,6 +3243,10 @@ class InventoryController {
         }
       }
 
+      const accessories = car?.participant ?
+        this.getAccessories(car?.participant) :
+        null;
+
       worksheet.addRow({
         openDate: openDate,
         finishDate: finishDate,
@@ -3241,7 +3254,8 @@ class InventoryController {
         vin: car.car.vin,
         description: `${car.car.brand} ${car.car.model || ''}`,
         hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
-        accessories: car.participant ? this.getAccessories(car.participant) : "",
+        accesories: accessories?.accessoriesText || '',
+        'qty-accesories': accessories?.accessoriesTotal || '',
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
@@ -3263,10 +3277,10 @@ class InventoryController {
 
     for (const section of participant.sections) {
       for (const answer of section.answers) {
-        if (answer.kind === KindQuestion.accessory){
+        if (answer.kind === KindQuestion.accessory) {
           let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
           response.accessoriesText = answer.accesoriesAnswered
-            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount: ""}`)
+            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount : ""}`)
             .join(';')
           response.accessoriesTotal = answer.accesoriesAnswered.reduce((sum, item) => sum + (item.amount || 1), 0);
         }
@@ -3293,28 +3307,28 @@ class InventoryController {
       const venuesPermissions = req.user.venuesPermissions();
 
       let carFilter = {
-          $or: [
-            {
-              'cars.venue': {
-                $in: venuesPermissions
-              }
-            },
-            {
-              'cars.venueFound': {
-                $in: venuesPermissions
-              }
+        $or: [
+          {
+            'cars.venue': {
+              $in: venuesPermissions
             }
-          ],
-          'cars.status': {
-            $in: [
-              ChoicesStatusCarInventory.pending,
-              ChoicesStatusCarInventory.found,
-              ChoicesStatusCarInventory.missing,
-              ChoicesStatusCarInventory.leftover,
-              ChoicesStatusCarInventory.reported
-            ]
+          },
+          {
+            'cars.venueFound': {
+              $in: venuesPermissions
+            }
           }
+        ],
+        'cars.status': {
+          $in: [
+            ChoicesStatusCarInventory.pending,
+            ChoicesStatusCarInventory.found,
+            ChoicesStatusCarInventory.missing,
+            ChoicesStatusCarInventory.leftover,
+            ChoicesStatusCarInventory.reported
+          ]
         }
+      }
 
       const [
         inventory,
@@ -3619,7 +3633,7 @@ class InventoryController {
                     {
                       path: 'company'
                     }
-                    ]
+                  ]
                 },
                 {
                   path: 'label'
@@ -3659,6 +3673,13 @@ class InventoryController {
                 },
                 {
                   path: 'units.images',
+                },
+                {
+                  path: "closeParticipant",
+                  select: ['name', 'hasDamages', 'createdAt', 'deliveryInfo', 'user'],
+                  populate: [
+                    { path: 'user', select: ['firstName', 'lastName', 'email'] }
+                  ]
                 }
               ],
               select: { meta: false }
@@ -3728,9 +3749,9 @@ class InventoryController {
           name: currentInventory.name,
           createdBy: currentInventory.userInfo
             ? {
-                ...currentInventory.userInfo,
-                fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
-              }
+              ...currentInventory.userInfo,
+              fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
+            }
             : {},
           results: currentInventory.results.reduce(
             (acc: any, cur: any) => {
@@ -3798,13 +3819,13 @@ class InventoryController {
 
     const foundStatusContainer = (container: any) => {
       let status = container.status;
-      if(container.evidenceStatus && container.evidenceStatus.length > 0) {
+      if (container.evidenceStatus && container.evidenceStatus.length > 0) {
         const statusList = container.evidenceStatus.map((evidence: any) => evidence.status);
-        if(statusList.includes('empty')) {
+        if (statusList.includes('empty')) {
           status = 'empty';
-        } else if(statusList.includes('check')) {
+        } else if (statusList.includes('check')) {
           status = 'check';
-        } else if(statusList.includes('open')) {
+        } else if (statusList.includes('open')) {
           status = 'open';
         } else {
           status = container.status;
@@ -3813,31 +3834,32 @@ class InventoryController {
       return status;
     }
 
-    try{
+    try {
       const container = await InventoryCar.findOne({
         car: new mongoose.Types.ObjectId(carId),
         inventory: new mongoose.Types.ObjectId(inventoryId)
       }).populate([
         { path: 'inventoriedBy' },
-        { path: 'images'},
+        { path: 'images' },
         { path: 'inventory', select: ['name', 'contentType'] },
-        { path: 'venueFound'},
+        { path: 'venueFound' },
         { path: 'car' },
-        { path: 'participant'},
+        { path: 'participant' },
         { path: 'evidenceStatus.images' },
         { path: 'evidenceStatus.images.comment' },
         { path: 'files' },
-        {path: 'units.images'},
-        { path: 'units.participant',
+        { path: 'units.images' },
+        {
+          path: 'units.participant',
           populate: [
             {
               path: 'deliveryInfo',
-              populate: [{ path: 'damageImages'}],
+              populate: [{ path: 'damageImages' }],
             },
             {
               path: 'user'
             },
-         ],
+          ],
           select: ['_id', 'createdAt', 'hasDamages', 'deliveryInfo']
         },
         {
@@ -3845,7 +3867,7 @@ class InventoryController {
         },
         {
           path: 'openParticipant',
-          populate: [{path: 'company'}]
+          populate: [{ path: 'company' }]
         }
       ]).lean();
 
@@ -3907,9 +3929,10 @@ class InventoryController {
         container: container._id
       }).populate([
         { path: 'inventoriedBy' },
-        { path: 'images'},
-        { path: 'venueFound'},
-        {path: 'participant',
+        { path: 'images' },
+        { path: 'venueFound' },
+        {
+          path: 'participant',
           populate: [
             {
               path: 'sections.answers.damagesSelected.kind',
@@ -3968,12 +3991,18 @@ class InventoryController {
           urlTemplate = 'container/pdf/coded-items.pug';
       }
 
+      if (!container.openParticipant || !container.closeParticipant) {
+        urlTemplate = 'container/pdf/coded-items.pug';
+      }
+
       let template: string =
         path.join(__dirname, '../../../views/') + urlTemplate;
       const css = fs.readFileSync(
         path.join(__dirname, '../../../views/') + 'container/pdf/styles.css',
         'utf8'
       );
+
+      req.user.company = await Company.findById(req.user.company._id);
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
@@ -3984,7 +4013,8 @@ class InventoryController {
         emptyEvidences,
         evidenceStatusMap,
         lastEmptyComment,
-        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`
+        userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
+        user: req.user,
       })
       if (0) {
         return res.send(html);
@@ -4012,7 +4042,7 @@ class InventoryController {
           headerTemplate: `
          <div></div>
             `,
-            footerTemplate: `
+          footerTemplate: `
             <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: baseline;">
               <div>${container.venueFound?.code || 'Dirección no disponible'}</div>
               <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
@@ -4427,978 +4457,1112 @@ class InventoryController {
 
 
 
-public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
-  try {
-    const { company } = req.user; // user request company
-    let { companyId } = req.params; //filter param company
-    const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
+  public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { company } = req.user; // user request company
+      let { companyId } = req.params; //filter param company
+      const { page, pageSize, sortColumn, sortDirection } = req.query as Record<string, string>;
+      const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate, venueFilter, unitFilter } = req.query;
 
-    let filterCompanies: any = null;
-    let userCompany = await Company.findById(company._id);
+      let filterCompanies: any = null;
+      let userCompany = await Company.findById(company._id);
 
-    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
-      // for handler Companies
-      filterCompanies = {
-        $and: [{
+      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+        // for handler Companies
+        filterCompanies = {
+          $and: [{
+            company: new Types.ObjectId(companyId),
+            handlerCompany: new Types.ObjectId(company._id),
+          }]
+        }
+      } else {
+        //for clients
+        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+          return res.status(403).json({
+            message: 'No tienes acceso a este inventario',
+            status: 403
+          });
+        }
+        filterCompanies = {
           company: new Types.ObjectId(companyId),
-          handlerCompany: new Types.ObjectId(company._id),
-        }]
-      }
-    } else {
-      //for clients
-      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
-        return res.status(403).json({
-          message: 'No tienes acceso a este inventario',
-          status: 403
-        });
-      }
-      filterCompanies = {
-        company: new Types.ObjectId(companyId),
-        handlerCompany: { $exists: true },
-      }
-    }
-
-    let cars = await Car.aggregate([
-      {$match: filterCompanies},
-      {$project: {_id: 1}}
-    ]);
-    let inventoryCars : any[] | null = null
-
-    let statusFiletr : any = {}
-    let damageFilter: any = {}
-
-    let inventoryCarFilter: any = {}
-    let inventoryCarDamageFilter: any = {}
-
-    if (statusFilter) {
-      statusFiletr['status'] = statusFilter.toString()
-    } else {
-      statusFiletr['status'] = {
-        $in: ['inTransit', 'readyToClient']
-      }
-    }
-
-    if (filterHasDamage?.toString() === "true") {
-      inventoryCarDamageFilter['participant.hasDamage'] = true;
-      damageFilter['participant.hasDamage'] = true;
-    }
-
-    if (tripFilter) {
-      inventoryCarFilter['extra.N° Viaje'] = {$regex: tripFilter.toString(), $options: 'i'};
-    }
-
-    if (shipFilter) {
-      inventoryCarFilter['extra.Nave'] = {$regex: shipFilter.toString(), $options: 'i'};
-    }
-
-    if (containerFilter) {
-      inventoryCarFilter['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
-    }
-
-    if (blFilter) {
-      inventoryCarFilter['extra.N° BL'] = blFilter;
-    }
-
-    if (Object.keys(inventoryCarFilter).length > 0) {
-      let pipeline: any[] = [
-        {$match:  {
-            ...inventoryCarFilter,
-            car: {$in: cars.map((c: any) => c._id)},
-        }},
-      ]
-      if (Object.keys(inventoryCarDamageFilter).length > 0) {
-        pipeline.concat([{
-          $lookup: {
-            from: 'participants',
-            localField: 'participant',
-            foreignField: '_id',
-            as: 'participant'
-          }
-        },{
-          $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }
-        },{
-          $match: inventoryCarDamageFilter
+          handlerCompany: { $exists: true },
         }
-        ])
       }
-      pipeline.push({
-        $project: {
-          car: 1
+      if (unitFilter) {
+        filterCompanies['vin'] = { $regex: unitFilter.toString(), $options: 'i' };
+      }
+
+      let cars = await Car.aggregate([
+        { $match: filterCompanies },
+        { $project: { _id: 1 } }
+      ]);
+      let inventoryCars: any[] | null = null
+
+      let statusFiletr: any = {}
+      let damageFilter: any = {}
+
+      let inventoryCarFilter: any = {}
+      let inventoryCarDamageFilter: any = {}
+
+      if (statusFilter) {
+        statusFiletr['status'] = statusFilter.toString()
+      } else {
+        statusFiletr['status'] = {
+          $in: ['inTransit', 'readyToClient']
         }
-      });
-      inventoryCars = await InventoryCar.aggregate(pipeline);
-    }
-
-    let paginateResult = null;
-
-    // --- Ordenamiento ---
-   let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
-    if (sortColumn) {
-      let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
-
-      if (sortColumn.trim() === 'F. Descarga') {
-        sortOptionAggregation = {'readyToClientHistories.executedAt': direction};
-      } else if (sortColumn.trim() === 'F. Despacho') {
-        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
-      } else if (sortColumn.trim() === 'Estado') {
-        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
       }
-    }
 
-    if (filterCompanies) {
-      const options: PaginateOptions = {
-        select: {
-          name: true,
-          updatedAt: true,
-          createdAt: true
-        },
-        customLabels: {
-          totalDocs: 'total',
-          docs: 'docs',
-          limit: 'perPage',
-          page: 'currentPage',
-          nextPage: 'next',
-          prevPage: 'prev',
-          totalPages: 'pages',
-          pagingCounter: 'si'
-        },
-        // allowDiskUse: true, //TODO: revisar si es necesario para los volumenes de datos
-        lean: true,
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10)
-      };
+      if (filterHasDamage?.toString() === "true") {
+        inventoryCarDamageFilter['participant.hasDamage'] = true;
+        damageFilter['participant.hasDamage'] = true;
+      }
 
-      logger.info(`Paginating with options: ${JSON.stringify(options)}`);
+      if (tripFilter) {
+        inventoryCarFilter['extra.N° Viaje'] = { $regex: tripFilter.toString(), $options: 'i' };
+      }
 
-      let pipeline : any[] = [];
-      if (Object.keys(damageFilter).length > 0){
-        pipeline = [
-          {$match:{
-              ...filterCompanies,
-              ...statusFiletr,
+      if (shipFilter) {
+        inventoryCarFilter['extra.Nave'] = { $regex: shipFilter.toString(), $options: 'i' };
+      }
+
+      if (containerFilter) {
+        inventoryCarFilter['extra.BIC'] = { $regex: containerFilter.toString(), $options: 'i' };
+      }
+
+      if (blFilter) {
+        inventoryCarFilter['extra.N° BL'] = { $regex: blFilter.toString(), $options: 'i' };
+      }
+
+      if (venueFilter) {
+        const venueNames = venueFilter.toString().split(',').map(name => name.trim());
+        const venues = await Venue.find({ name: { $in: venueNames } }, { _id: 1 });
+        const venueIds = venues.map(v => v._id);
+        inventoryCarFilter['venue'] = { $in: venueIds };
+      }
+
+      if (Object.keys(inventoryCarFilter).length > 0) {
+        let pipeline: any[] = [
+          {
+            $match: {
+              ...inventoryCarFilter,
+              car: { $in: cars.map((c: any) => c._id) },
             }
           },
-          {
+        ]
+        if (Object.keys(inventoryCarDamageFilter).length > 0) {
+          pipeline.concat([{
             $lookup: {
               from: 'participants',
               localField: 'participant',
               foreignField: '_id',
-              as: 'participant',
-              pipeline: [
-                {$project: {hasDamages: 1}}
-              ]
+              as: 'participant'
             }
-          },
-          { $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }},
-          {$match: {
-              $or: [
-                {"participant.hasDamages": true},
-                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}}
-              ]
-            }
+          }, {
+            $unwind: { path: "$participant", preserveNullAndEmptyArrays: true }
+          }, {
+            $match: inventoryCarDamageFilter
           }
-        ]
-      } else {
-        pipeline = [
-          {$match: inventoryCars ?
-              {
-                car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []},
-                ...statusFiletr,
-              } :
-              {
-                ...filterCompanies,
-                ...statusFiletr
-              }
-          }
-        ]
-      }
-      pipeline = pipeline.concat([
-        {
-          $group: {
-            _id: '$car',
-            lastCreatedAt: {
-              $max: '$createdAt'
-            },
-          }
-        }, {
-          $sort: {
-            lastCreatedAt: -1 // Sort by the latest createdAt date
-          }
+          ])
         }
-      ])
-
-      let histories = await History.aggregate(pipeline);
-
-      let dateFilter: any = {};
-      if (startDate && endDate) {
-        let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
-        let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
-        dateFilter = {
-          $or: [
-        {
-          'inTransitHistories.executedAt': {
-            $gte: sDate,
-            $lte: eDate
-          }
-        },
-        {
-          'readyToClientHistories.executedAt': {
-            $gte: sDate,
-            $lte: eDate
-          }
-        }
-          ]
-        };
-      }
-      logger.info(`Found ${histories.length} histories for the given filters.`);
-      logger.info(`Paginating results with options: ${JSON.stringify(options)}`);
-
-      let cars = histories.map((h: any) => h._id);
-
-      // Inicia el pipeline de agregación de Car
-      const carAggregationPipeline: any[] = [
-        { $match: { ...filterCompanies, _id: { $in: cars } } },
-        {
-          $lookup: {
-            from: 'histories',
-            let: { carId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$carId'] },
-                      { $eq: ['$status', 'inTransit'] }, // Specific status filter
-                    ]
-                  }
-                }
-              },
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar',
-                  foreignField: '_id',
-                  as: 'inventoryCar'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.containerFound for inTransit histories
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar.containerFound',
-                  foreignField: '_id',
-                  as: 'inventoryCar.containerFound'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.containerFound',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.venue for inTransit histories
-              {
-                $lookup: {
-                  from: 'venues',
-                  localField: 'inventoryCar.venue',
-                  foreignField: '_id',
-                  as: 'inventoryCar.venue'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.venue',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate history.participant for inTransit histories
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'participant',
-                  foreignField: '_id',
-                  as: 'participant'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$participant',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.participant for inTransit histories
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'inventoryCar.participant',
-                  foreignField: '_id',
-                  as: 'inventoryCar.participant'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.participant',
-                  preserveNullAndEmptyArrays: true
-                }
-              }
-            ],
-            as: 'inTransitHistories' // Store as a separate array for inTransit histories
-          }
-        },
-        { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
-        {
-          $lookup: {
-            from: 'histories',
-            let: { carId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$carId'] },
-                      { $eq: ['$status', 'readyToClient'] }, // Specific status filter
-                    ]
-                  }
-                }
-              },
-              // Populate inventoryCar for readyToClient histories
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar',
-                  foreignField: '_id',
-                  as: 'inventoryCar'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.containerFound for readyToClient histories
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar.containerFound',
-                  foreignField: '_id',
-                  as: 'inventoryCar.containerFound'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.containerFound',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.venue for readyToClient histories
-              {
-                $lookup: {
-                  from: 'venues',
-                  localField: 'inventoryCar.venue',
-                  foreignField: '_id',
-                  as: 'inventoryCar.venue'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.venue',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate history.participant for readyToClient histories
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'participant',
-                  foreignField: '_id',
-                  as: 'participant'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$participant',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              // Populate inventoryCar.participant for readyToClient histories
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'inventoryCar.participant',
-                  foreignField: '_id',
-                  as: 'inventoryCar.participant'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.participant',
-                  preserveNullAndEmptyArrays: true
-                }
-              }
-            ],
-            as: 'readyToClientHistories' // Store as a separate array for readyToClient histories
-          }
-        },
-        {
-          $unwind: { 'path': '$readyToClientHistories' }
-        },
-        {
-          $match: dateFilter
-        },
-        {
-          $addFields: {
-            // Concatenate the two history arrays
-            histories: ['$inTransitHistories', '$readyToClientHistories']
-          }
-        },
-        {$sort: sortOptionAggregation},
-      ];
-
-      paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
-
-      /*paginateResult.total = histories.length;
-      paginateResult.pages = Math.ceil(paginateResult.total / options.limit!);
-      paginateResult.hasPrevious = paginateResult.currentPage! > 1;
-      paginateResult.hasNextPage = paginateResult.currentPage! < paginateResult.pages;
-      */
-    }
-
-    return res.status(200).json({
-      cars: paginateResult?.docs,
-      count: paginateResult?.total,
-      pages: paginateResult?.pages,
-      hasPrevious: paginateResult?.hasPrevious,
-      hasNextPage: paginateResult?.hasNextPage,
-    });
-
-  } catch (e) {
-    logger.error(`InventoryController.currentCompanyStock: Error.`);
-    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-    logger.error(e);
-    return res.status(500).json({
-      message: JSON.stringify(e),
-      status: 500
-    });
-  }
-}
-
-public async currentCompanyStockExport(req: IRequest, res: Response): Promise<any> {
-  try {
-    const { company } = req.user; // user request company
-    let { companyId } = req.params; //filter param company
-    const { sortColumn, sortDirection } = req.query as Record<string, string>;
-    const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
-
-    let filterCompanies: any = null;
-    let userCompany = await Company.findById(company._id);
-
-    if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
-      // for handler Companies
-      filterCompanies = {
-        $and: [{
-          company: new Types.ObjectId(companyId),
-          handlerCompany: new Types.ObjectId(company._id),
-        }]
-      }
-    } else {
-      //for clients
-      if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
-        return res.status(403).json({
-          message: 'No tienes acceso a este inventario',
-          status: 403
-        });
-      }
-      filterCompanies = {
-        company: new Types.ObjectId(companyId),
-        handlerCompany: { $exists: true },
-      }
-    }
-
-    let cars = await Car.aggregate([
-      {$match: filterCompanies},
-      {$project: {_id: 1}}
-    ]);
-    let inventoryCars : any[] | null = null
-
-    let statusFiletr : any = {}
-    let damageFilter: any = {}
-
-    let inventoryCarFilter: any = {}
-    let inventoryCarDamageFilter: any = {}
-
-    if (statusFilter) {
-      statusFiletr['status'] = statusFilter.toString()
-    } else {
-      statusFiletr['status'] = {
-        $in: ['inTransit', 'readyToClient']
-      }
-    }
-
-    if (filterHasDamage?.toString() === "true") {
-      inventoryCarDamageFilter['participant.hasDamage'] = true;
-      damageFilter['participant.hasDamage'] = true;
-    }
-
-    if (tripFilter) {
-      inventoryCarFilter['extra.N° Viaje'] = {$regex: tripFilter.toString(), $options: 'i'};
-    }
-
-    if (shipFilter) {
-      inventoryCarFilter['extra.Nave'] = {$regex: shipFilter.toString(), $options: 'i'};
-    }
-
-    if (containerFilter) {
-      inventoryCarFilter['extra.BIC'] = {$regex: containerFilter.toString(), $options: 'i'};
-    }
-
-    if (blFilter) {
-      inventoryCarFilter['extra.N° BL'] = blFilter;
-    }
-
-    if (Object.keys(inventoryCarFilter).length > 0) {
-      let pipeline: any[] = [
-        {$match:  {
-            ...inventoryCarFilter,
-            car: {$in: cars.map((c: any) => c._id)},
-        }},
-      ]
-      if (Object.keys(inventoryCarDamageFilter).length > 0) {
-        pipeline = pipeline.concat([{
-          $lookup: {
-            from: 'participants',
-            localField: 'participant',
-            foreignField: '_id',
-            as: 'participant'
-          }
-        },{
-          $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }
-        },{
-          $match: inventoryCarDamageFilter
-        }
-        ])
-      }
-      pipeline.push({
-        $project: {
-          car: 1
-        }
-      });
-      inventoryCars = await InventoryCar.aggregate(pipeline);
-    }
-
-    // --- Ordenamiento ---
-    let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
-    if (sortColumn) {
-      let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
-
-      if (sortColumn.trim() === 'F. Descarga') {
-        sortOptionAggregation = {'readyToClientHistories.executedAt': direction};
-      } else if (sortColumn.trim() === 'F. Despacho') {
-        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
-      } else if (sortColumn.trim() === 'Estado') {
-        sortOptionAggregation = {'inTransitHistories.executedAt': direction};
-      }
-    }
-
-    if (filterCompanies) {
-      let pipeline : any[] = [];
-      if (Object.keys(damageFilter).length > 0){
-        pipeline = [
-          {$match:{
-              ...filterCompanies,
-              ...statusFiletr,
-            }
-          },
-          {
-            $lookup: {
-              from: 'participants',
-              localField: 'participant',
-              foreignField: '_id',
-              as: 'participant',
-              pipeline: [
-                {$project: {hasDamages: 1}}
-              ]
-            }
-          },
-          { $unwind: {path: "$participant", preserveNullAndEmptyArrays: true }},
-          {$match: {
-              $or: [
-                {"participant.hasDamages": true},
-                {car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []}}
-              ]
-            }
-          }
-        ]
-      } else {
-        pipeline = [
-          {$match: inventoryCars ?
-              {
-                car: {$in: inventoryCars ? inventoryCars.map(ic => ic.car) : []},
-                ...statusFiletr,
-              } :
-              {
-                ...filterCompanies,
-                ...statusFiletr
-              }
-          }
-        ]
-      }
-      pipeline = pipeline.concat([
-        {
-          $group: {
-            _id: '$car',
-            lastCreatedAt: {
-              $max: '$createdAt'
-            },
-          }
-        }, {
-          $sort: {
-            lastCreatedAt: -1 // Sort by the latest createdAt date
-          }
-        }
-      ])
-
-      let histories = await History.aggregate(pipeline);
-
-      let dateFilter: any = {};
-      if (startDate && endDate) {
-        let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
-        let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
-        dateFilter = {
-          $or: [
-        {
-          'inTransitHistories.executedAt': {
-            $gte: sDate,
-            $lte: eDate
-          }
-        },
-        {
-          'readyToClientHistories.executedAt': {
-            $gte: sDate,
-            $lte: eDate
-          }
-        }
-          ]
-        };
-      }
-
-      let cars = histories.map((h: any) => h._id);
-
-      // Configurar headers para el Excel stream
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=inventario-unidades.xlsx');
-      res.setHeader('Transfer-Encoding', 'chunked');
-
-      const workbook = new excel.stream.xlsx.WorkbookWriter({
-        stream: res,
-        useStyles: false,
-        useSharedStrings: false
-      });
-
-      const worksheet = workbook.addWorksheet('Inventario');
-
-      // Definir headers del Excel
-      worksheet.columns = [
-        { header: 'Código de unidad', key: 'vin', width: 20 },
-        { header: 'Marca', key: 'brand', width: 15 },
-        { header: 'Modelo', key: 'model', width: 20 },
-        { header: 'Daños', key: 'hasDamage', width: 10 },
-        { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
-        { header: 'Cantidad Asistencia', key: 'qty-accesories', width: 30 },
-        { header: 'Contenedor', key: 'container', width: 25 },
-        { header: 'BL', key: 'bl', width: 20 },
-        { header: 'Nave', key: 'ship', width: 20 },
-        { header: 'Sucursal', key: 'venue', width: 20 },
-        { header: 'Nave', key: 'ship', width: 20 },
-        { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
-        { header: 'F. Despacho', key: 'inTransitDate', width: 20 },
-        { header: 'Estado', key: 'status', width: 15 },
-      ];
-
-      // Pipeline de agregación para obtener los datos con cursor
-      const carAggregationPipeline: any[] = [
-        { $match: { ...filterCompanies, _id: { $in: cars } } },
-        {
-          $lookup: {
-            from: 'histories',
-            let: { carId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$carId'] },
-                      { $eq: ['$status', 'inTransit'] },
-                    ]
-                  }
-                }
-              },
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'participant',
-                  foreignField: '_id',
-                  as: 'participant'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$participant',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'venues',
-                  localField: 'participant.venue',
-                  foreignField: '_id',
-                  as: 'participant.venue'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$participant.venue',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'cars',
-                  localField: 'inventoryCar.containerFound.car',
-                  foreignField: '_id',
-                  as: 'containerCar'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$containerCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              }
-            ],
-            as: 'inTransitHistories'
-          }
-        },
-        { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
-        {
-          $lookup: {
-            from: 'histories',
-            let: { carId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$carId'] },
-                      { $eq: ['$status', 'readyToClient'] },
-                    ]
-                  }
-                }
-              },
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar',
-                  foreignField: '_id',
-                  as: 'inventoryCar'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'participants',
-                  localField: 'inventoryCar.participant',
-                  foreignField: '_id',
-                  as: 'inventoryCar.participant'
-                }
-              },
-              { $unwind: { path: '$inventoryCar.participant', preserveNullAndEmptyArrays: true } },
-              {
-                $lookup: {
-                  from: 'inventorycars',
-                  localField: 'inventoryCar.containerFound',
-                  foreignField: '_id',
-                  as: 'inventoryCar.containerFound'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.containerFound',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'venues',
-                  localField: 'inventoryCar.venueFound',
-                  foreignField: '_id',
-                  as: 'inventoryCar.venueFound'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$inventoryCar.venueFound',
-                  preserveNullAndEmptyArrays: true
-                }
-              },
-              {
-                $lookup: {
-                  from: 'cars',
-                  localField: 'inventoryCar.containerFound.car',
-                  foreignField: '_id',
-                  as: 'containerCar'
-                }
-              },
-              {
-                $unwind: {
-                  path: '$containerCar',
-                  preserveNullAndEmptyArrays: true
-                }
-              }
-            ],
-            as: 'readyToClientHistories'
-          }
-        },
-        {
-          $unwind: { 'path': '$readyToClientHistories', 'preserveNullAndEmptyArrays': true }
-        },
-        {
-          $match: dateFilter
-        },
-        {$sort: sortOptionAggregation},
-        {
+        pipeline.push({
           $project: {
-            _id: 1,
-            vin: 1,
-            brand: 1,
-            denomination: 1,
-            model: 1,
-            inTransitHistory: '$inTransitHistories',
-            readyToClientHistory: '$readyToClientHistories'
+            car: 1
           }
-        }
-      ];
+        });
+        inventoryCars = await InventoryCar.aggregate(pipeline);
+      }
 
-      // Usar cursor para procesar los datos de forma streaming
-      const carCursor = Car.aggregate(carAggregationPipeline).cursor();
+      let paginateResult = null;
 
-      logger.info(`Starting Excel export for company ${companyId}`);
+      // --- Ordenamiento ---
+      let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
+      if (sortColumn) {
+        let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
 
-      let processedCount = 0;
-      for (let car = await carCursor.next(); car != null; car = await carCursor.next()) {
-        try {
-          const getStatus = (inTransitHistory: any, readyToClientHistory: any) => {
-            if (readyToClientHistory && readyToClientHistory.executedAt) {
-              return 'Listo para cliente';
-            } else if (inTransitHistory && inTransitHistory.executedAt) {
-              return 'En tránsito';
-            }
-            return 'Desconocido';
-          };
-
-          // Formatear fechas
-          const formatDate = (date: any) => {
-            if (!date) return '';
-            return new Date(date).toLocaleDateString('es-ES');
-          };
-
-          // Obtener datos del contenedor y BL
-          const getContainerInfo = (history: any) => {
-            if (history && history.inventoryCar && history.inventoryCar.containerFound) {
-              return {
-                container: history.containerCar ? history.containerCar.vin : '',
-                bl: history.inventoryCar.extra ? history.inventoryCar.extra['N° BL'] || '' : ''
-              };
-            }
-            return { container: '', bl: '' };
-          };
-
-          const containerInfo = getContainerInfo(car.inTransitHistory || car.readyToClientHistory);
-          const venue = car.inTransitHistory?.participant?.venue.name ||
-            car.readyToClientHistory?.inventoryCar?.venueFound.name ||
-            '';
-
-          const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
-            this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
-            null;
-
-          // Crear fila del Excel
-          const row = {
-            vin: car.vin || '',
-            brand: car.brand || '',
-            model: car.denomination || car.model || '',
-            container: containerInfo.container,
-            bl: containerInfo.bl,
-            venue: venue,
-            hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
-            accesories: accessories?.accessoriesText || '',
-            'qty-accesories': accessories?.accessoriesTotal || '',
-            ship: car.inTransitHistory?.inventoryCar?.extra ?
-              car.inTransitHistory.inventoryCar.extra['Nave'] || '' :
-              car.readyToClientHistory?.inventoryCar?.extra ?
-                car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
-                '',
-            readyToClientDate: formatDate(car.readyToClientHistory?.executedAt),
-            inTransitDate: formatDate(car.inTransitHistory?.executedAt),
-            status: getStatus(car.inTransitHistory, car.readyToClientHistory)
-          };
-
-          worksheet.addRow(row).commit();
-          processedCount++;
-
-          // Log de progreso cada 1000 registros
-          if (processedCount % 1000 === 0) {
-            logger.info(`Processed ${processedCount} cars for export`);
-          }
-
-        } catch (error) {
-          logger.error(`Error processing car ${car._id}: ${error}`);
-          // Continuar con el siguiente registro en caso de error
-          continue;
+        if (sortColumn.trim() === 'F. Descarga') {
+          sortOptionAggregation = { 'readyToClientHistories.executedAt': direction };
+        } else if (sortColumn.trim() === 'F. Despacho') {
+          sortOptionAggregation = { 'inTransitHistories.executedAt': direction };
+        } else if (sortColumn.trim() === 'Estado') {
+          sortOptionAggregation = { 'inTransitHistories.executedAt': direction };
         }
       }
 
-      // Finalizar el archivo Excel
-      worksheet.commit();
-      await workbook.commit();
+      if (filterCompanies) {
+        const options: PaginateOptions = {
+          select: {
+            name: true,
+            updatedAt: true,
+            createdAt: true
+          },
+          customLabels: {
+            totalDocs: 'total',
+            docs: 'docs',
+            limit: 'perPage',
+            page: 'currentPage',
+            nextPage: 'next',
+            prevPage: 'prev',
+            totalPages: 'pages',
+            pagingCounter: 'si'
+          },
+          // allowDiskUse: true, //TODO: revisar si es necesario para los volumenes de datos
+          lean: true,
+          page: parseInt(page ? page : '1', 10),
+          limit: parseInt(pageSize ? pageSize : '10', 10)
+        };
 
-      logger.info(`Excel export completed. Total cars processed: ${processedCount}`);
-      return;
-    }
+        logger.info(`Paginating with options: ${JSON.stringify(options)}`);
 
-    // Si no hay filterCompanies, devolver error
-    return res.status(400).json({
-      message: 'No se pudieron aplicar los filtros de empresas',
-      status: 400
-    });
+        let pipeline: any[] = [];
+        if (Object.keys(damageFilter).length > 0) {
+          pipeline = [
+            {
+              $match: {
+                car: { $in: cars.map((c: any) => c._id) },
+                ...statusFiletr,
+              }
+            },
+            {
+              $lookup: {
+                from: 'participants',
+                localField: 'participant',
+                foreignField: '_id',
+                as: 'participant',
+                pipeline: [
+                  { $project: { hasDamages: 1 } }
+                ]
+              }
+            },
+            { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
+            {
+              $match: {
+                $or: [
+                  { "participant.hasDamages": true },
+                  { car: { $in: inventoryCars ? inventoryCars.map(ic => ic.car) : [] } }
+                ]
+              }
+            }
+          ]
+        } else {
+          pipeline = [
+            {
+              $match: inventoryCars ?
+                {
+                  car: { $in: inventoryCars ? inventoryCars.map(ic => ic.car) : [] },
+                  ...statusFiletr,
+                } :
+                {
+                  car: { $in: cars.map((c: any) => c._id) },
+                  ...statusFiletr
+                }
+            }
+          ]
+        }
+        pipeline = pipeline.concat([
+          {
+            $group: {
+              _id: '$car',
+              lastCreatedAt: {
+                $max: '$createdAt'
+              },
+            }
+          }, {
+            $sort: {
+              lastCreatedAt: -1 // Sort by the latest createdAt date
+            }
+          }
+        ])
 
-  } catch (e) {
-    logger.error(`InventoryController.currentCompanyStockExport: Error.`);
-    logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
-    logger.error(e);
+        let histories = await History.aggregate(pipeline);
 
-    // Solo enviar respuesta de error si aún no se han enviado headers
-    if (!res.headersSent) {
+        let dateFilter: any = {};
+        if (startDate && endDate) {
+          let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+          let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
+          dateFilter = {
+            $or: [
+              {
+                'inTransitHistories.executedAt': {
+                  $gte: sDate,
+                  $lte: eDate
+                }
+              },
+              {
+                'readyToClientHistories.executedAt': {
+                  $gte: sDate,
+                  $lte: eDate
+                }
+              }
+            ]
+          };
+        }
+        logger.info(`Found ${histories.length} histories for the given filters.`);
+        logger.info(`Paginating results with options: ${JSON.stringify(options)}`);
+
+        let carsHistories = histories.map((h: any) => h._id);
+
+        // Inicia el pipeline de agregación de Car
+        const carAggregationPipeline: any[] = [
+          { $match: { ...filterCompanies, _id: { $in: carsHistories } } },
+          {
+            $lookup: {
+              from: 'histories',
+              let: { carId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'inTransit'] }, // Specific status filter
+                      ]
+                    }
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar',
+                    foreignField: '_id',
+                    as: 'inventoryCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.containerFound for inTransit histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar.containerFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.containerFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.containerFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.venue for inTransit histories
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'inventoryCar.venue',
+                    foreignField: '_id',
+                    as: 'inventoryCar.venue'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.venue',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate history.participant for inTransit histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'participant',
+                    foreignField: '_id',
+                    as: 'participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.participant for inTransit histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'inventoryCar.participant',
+                    foreignField: '_id',
+                    as: 'inventoryCar.participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                }
+              ],
+              as: 'inTransitHistories' // Store as a separate array for inTransit histories
+            }
+          },
+          { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
+          {
+            $lookup: {
+              from: 'histories',
+              let: { carId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'readyToClient'] }, // Specific status filter
+                      ]
+                    }
+                  }
+                },
+                // Populate inventoryCar for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar',
+                    foreignField: '_id',
+                    as: 'inventoryCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.containerFound for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar.containerFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.containerFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.containerFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.venue for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'inventoryCar.venue',
+                    foreignField: '_id',
+                    as: 'inventoryCar.venue'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.venue',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate history.participant for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'participant',
+                    foreignField: '_id',
+                    as: 'participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                // Populate inventoryCar.participant for readyToClient histories
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'inventoryCar.participant',
+                    foreignField: '_id',
+                    as: 'inventoryCar.participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                }
+              ],
+              as: 'readyToClientHistories' // Store as a separate array for readyToClient histories
+            }
+          },
+          {
+            $unwind: { 'path': '$readyToClientHistories' }
+          },
+          {
+            $match: dateFilter
+          },
+          {
+            $addFields: {
+              // Concatenate the two history arrays
+              histories: ['$inTransitHistories', '$readyToClientHistories']
+            }
+          },
+          { $sort: sortOptionAggregation },
+        ];
+
+        paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
+
+        /*paginateResult.total = histories.length;
+        paginateResult.pages = Math.ceil(paginateResult.total / options.limit!);
+        paginateResult.hasPrevious = paginateResult.currentPage! > 1;
+        paginateResult.hasNextPage = paginateResult.currentPage! < paginateResult.pages;
+        */
+      }
+
+      return res.status(200).json({
+        cars: paginateResult?.docs,
+        count: paginateResult?.total,
+        pages: paginateResult?.pages,
+        hasPrevious: paginateResult?.hasPrevious,
+        hasNextPage: paginateResult?.hasNextPage,
+      });
+
+    } catch (e) {
+      logger.error(`InventoryController.currentCompanyStock: Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
       return res.status(500).json({
-        message: 'Error al generar el archivo Excel',
+        message: JSON.stringify(e),
         status: 500
       });
     }
-    return res.end();
   }
-}
+
+  public async currentCompanyStockSummary(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { company } = req.user;
+      let { companyId } = req.params;
+
+      // Verificar permisos de acceso a la compañía
+      let filterCompanies: any = null;
+      let userCompany = await Company.findById(company._id);
+
+      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+        filterCompanies = {
+          company: new Types.ObjectId(companyId),
+          handlerCompany: new Types.ObjectId(company._id),
+        }
+      } else {
+        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+          return res.status(403).json({
+            message: 'No tienes acceso a este inventario',
+            status: 403
+          });
+        }
+        filterCompanies = {
+          company: new Types.ObjectId(companyId),
+          handlerCompany: { $exists: true },
+        }
+      }
+
+      // Obtener cars de la compañía
+      let cars = await Car.aggregate([
+        { $match: filterCompanies },
+        { $project: { _id: 1 } }
+      ]);
+
+      let carIds = cars.map((c: any) => c._id);
+
+      // Obtener ships únicos
+      let ships = await InventoryCar.aggregate([
+        { $match: { car: { $in: carIds } } },
+        { $group: { _id: '$extra.Nave' } },
+        { $match: { _id: { $ne: null } } },
+        { $sort: { _id: 1 } }
+      ]);
+
+      // Obtener trips únicos
+      let trips = await InventoryCar.aggregate([
+        { $match: { car: { $in: carIds } } },
+        { $group: { _id: '$extra.N° Viaje' } },
+        { $match: { _id: { $ne: null } } },
+        { $sort: { _id: 1 } }
+      ]);
+
+      // Obtener venues únicos (venue o venueFound)
+      let venues = await InventoryCar.aggregate([
+        { $match: { car: { $in: carIds } } },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'venue',
+            foreignField: '_id',
+            as: 'venue'
+          }
+        },
+        { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'venues',
+            localField: 'venueFound',
+            foreignField: '_id',
+            as: 'venueFound'
+          }
+        },
+        { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            venue: {
+              $cond: {
+                if: { $ne: ['$venueFound', null] },
+                then: '$venueFound',
+                else: '$venue'
+              }
+            }
+          }
+        },
+        { $match: { 'venue._id': { $ne: null } } },
+        { $group: { _id: '$venue._id', name: { $first: '$venue.name' } } },
+        { $sort: { name: 1 } }
+      ]);
+
+      // Obtener información de la compañía
+      let companyInfo = await Company.findById(companyId, {
+        _id: 1,
+        name: 1,
+        rut: 1
+      });
+
+      return res.status(200).json({
+        ships: ships.map(s => s._id),
+        trips: trips.map(t => t._id),
+        venues: venues.map(v => v.name),
+        company: companyInfo,
+        status: 200
+      });
+
+    } catch (e) {
+      logger.error(`InventoryController.currentCompanyStockSummary: Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+      return res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
+  public async currentCompanyStockExport(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { company } = req.user; // user request company
+      let { companyId } = req.params; //filter param company
+      const { sortColumn, sortDirection } = req.query as Record<string, string>;
+      const { shipFilter, tripFilter, containerFilter, blFilter, statusFilter, filterHasDamage, startDate, endDate } = req.query;
+
+      let filterCompanies: any = null;
+      let userCompany = await Company.findById(company._id);
+
+      if (userCompany?.handler && userCompany.clientCompanies?.includes(companyId)) {
+        // for handler Companies
+        filterCompanies = {
+          $and: [{
+            company: new Types.ObjectId(companyId),
+            handlerCompany: new Types.ObjectId(company._id),
+          }]
+        }
+      } else {
+        //for clients
+        if (company._id != companyId && !req.user.companiesAccess.map(c => c._id).includes(companyId)) {
+          return res.status(403).json({
+            message: 'No tienes acceso a este inventario',
+            status: 403
+          });
+        }
+        filterCompanies = {
+          company: new Types.ObjectId(companyId),
+          handlerCompany: { $exists: true },
+        }
+      }
+
+      let cars = await Car.aggregate([
+        { $match: filterCompanies },
+        { $project: { _id: 1 } }
+      ]);
+      let inventoryCars: any[] | null = null
+
+      let statusFiletr: any = {}
+      let damageFilter: any = {}
+
+      let inventoryCarFilter: any = {}
+      let inventoryCarDamageFilter: any = {}
+
+      if (statusFilter) {
+        statusFiletr['status'] = statusFilter.toString()
+      } else {
+        statusFiletr['status'] = {
+          $in: ['inTransit', 'readyToClient']
+        }
+      }
+
+      if (filterHasDamage?.toString() === "true") {
+        inventoryCarDamageFilter['participant.hasDamage'] = true;
+        damageFilter['participant.hasDamage'] = true;
+      }
+
+      if (tripFilter) {
+        inventoryCarFilter['extra.N° Viaje'] = { $regex: tripFilter.toString(), $options: 'i' };
+      }
+
+      if (shipFilter) {
+        inventoryCarFilter['extra.Nave'] = { $regex: shipFilter.toString(), $options: 'i' };
+      }
+
+      if (containerFilter) {
+        inventoryCarFilter['extra.BIC'] = { $regex: containerFilter.toString(), $options: 'i' };
+      }
+
+      if (blFilter) {
+        inventoryCarFilter['extra.N° BL'] = blFilter;
+      }
+
+      if (Object.keys(inventoryCarFilter).length > 0) {
+        let pipeline: any[] = [
+          {
+            $match: {
+              ...inventoryCarFilter,
+              car: { $in: cars.map((c: any) => c._id) },
+            }
+          },
+        ]
+        if (Object.keys(inventoryCarDamageFilter).length > 0) {
+          pipeline = pipeline.concat([{
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant'
+            }
+          }, {
+            $unwind: { path: "$participant", preserveNullAndEmptyArrays: true }
+          }, {
+            $match: inventoryCarDamageFilter
+          }
+          ])
+        }
+        pipeline.push({
+          $project: {
+            car: 1
+          }
+        });
+        inventoryCars = await InventoryCar.aggregate(pipeline);
+      }
+
+      // --- Ordenamiento ---
+      let sortOptionAggregation: any = { createdAt: -1 }; // Ordenamiento por defecto
+      if (sortColumn) {
+        let direction = sortDirection === 'asc' ? 1 : -1; // Convertir a número para Mongoose
+
+        if (sortColumn.trim() === 'F. Descarga') {
+          sortOptionAggregation = { 'readyToClientHistories.executedAt': direction };
+        } else if (sortColumn.trim() === 'F. Despacho') {
+          sortOptionAggregation = { 'inTransitHistories.executedAt': direction };
+        } else if (sortColumn.trim() === 'Estado') {
+          sortOptionAggregation = { 'inTransitHistories.executedAt': direction };
+        }
+      }
+
+      if (filterCompanies) {
+        let pipeline: any[] = [];
+        if (Object.keys(damageFilter).length > 0) {
+          pipeline = [
+            {
+              $match: {
+                ...filterCompanies,
+                ...statusFiletr,
+              }
+            },
+            {
+              $lookup: {
+                from: 'participants',
+                localField: 'participant',
+                foreignField: '_id',
+                as: 'participant',
+                pipeline: [
+                  { $project: { hasDamages: 1 } }
+                ]
+              }
+            },
+            { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
+            {
+              $match: {
+                $or: [
+                  { "participant.hasDamages": true },
+                  { car: { $in: inventoryCars ? inventoryCars.map(ic => ic.car) : [] } }
+                ]
+              }
+            }
+          ]
+        } else {
+          pipeline = [
+            {
+              $match: inventoryCars ?
+                {
+                  car: { $in: inventoryCars ? inventoryCars.map(ic => ic.car) : [] },
+                  ...statusFiletr,
+                } :
+                {
+                  ...filterCompanies,
+                  ...statusFiletr
+                }
+            }
+          ]
+        }
+        pipeline = pipeline.concat([
+          {
+            $group: {
+              _id: '$car',
+              lastCreatedAt: {
+                $max: '$createdAt'
+              },
+            }
+          }, {
+            $sort: {
+              lastCreatedAt: -1 // Sort by the latest createdAt date
+            }
+          }
+        ])
+
+        let histories = await History.aggregate(pipeline);
+
+        let dateFilter: any = {};
+        if (startDate && endDate) {
+          let sDate = moment(req.query.startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
+          let eDate = moment(req.query.endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
+          dateFilter = {
+            $or: [
+              {
+                'inTransitHistories.executedAt': {
+                  $gte: sDate,
+                  $lte: eDate
+                }
+              },
+              {
+                'readyToClientHistories.executedAt': {
+                  $gte: sDate,
+                  $lte: eDate
+                }
+              }
+            ]
+          };
+        }
+
+        let cars = histories.map((h: any) => h._id);
+
+        // Configurar headers para el Excel stream
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=inventario-unidades.xlsx');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        const workbook = new excel.stream.xlsx.WorkbookWriter({
+          stream: res,
+          useStyles: false,
+          useSharedStrings: false
+        });
+
+        const worksheet = workbook.addWorksheet('Inventario');
+
+        // Definir headers del Excel
+        worksheet.columns = [
+          { header: 'Código de unidad', key: 'vin', width: 20 },
+          { header: 'Marca', key: 'brand', width: 15 },
+          { header: 'Modelo', key: 'model', width: 20 },
+          { header: 'Daños', key: 'hasDamage', width: 10 },
+          { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
+          { header: 'Cantidad Asistencia', key: 'qty-accesories', width: 30 },
+          { header: 'Contenedor', key: 'container', width: 25 },
+          { header: 'BL', key: 'bl', width: 20 },
+          { header: 'Nave', key: 'ship', width: 20 },
+          { header: 'Sucursal', key: 'venue', width: 20 },
+          { header: 'Nave', key: 'ship', width: 20 },
+          { header: 'F. Descarga', key: 'readyToClientDate', width: 20 },
+          { header: 'F. Despacho', key: 'inTransitDate', width: 20 },
+          { header: 'Estado', key: 'status', width: 15 },
+        ];
+
+        // Pipeline de agregación para obtener los datos con cursor
+        const carAggregationPipeline: any[] = [
+          { $match: { ...filterCompanies, _id: { $in: cars } } },
+          {
+            $lookup: {
+              from: 'histories',
+              let: { carId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'inTransit'] },
+                      ]
+                    }
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'participant',
+                    foreignField: '_id',
+                    as: 'participant'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'participant.venue',
+                    foreignField: '_id',
+                    as: 'participant.venue'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$participant.venue',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'cars',
+                    localField: 'inventoryCar.containerFound.car',
+                    foreignField: '_id',
+                    as: 'containerCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$containerCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                }
+              ],
+              as: 'inTransitHistories'
+            }
+          },
+          { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
+          {
+            $lookup: {
+              from: 'histories',
+              let: { carId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$car', '$$carId'] },
+                        { $eq: ['$status', 'readyToClient'] },
+                      ]
+                    }
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar',
+                    foreignField: '_id',
+                    as: 'inventoryCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'participants',
+                    localField: 'inventoryCar.participant',
+                    foreignField: '_id',
+                    as: 'inventoryCar.participant'
+                  }
+                },
+                { $unwind: { path: '$inventoryCar.participant', preserveNullAndEmptyArrays: true } },
+                {
+                  $lookup: {
+                    from: 'inventorycars',
+                    localField: 'inventoryCar.containerFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.containerFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.containerFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'venues',
+                    localField: 'inventoryCar.venueFound',
+                    foreignField: '_id',
+                    as: 'inventoryCar.venueFound'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$inventoryCar.venueFound',
+                    preserveNullAndEmptyArrays: true
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'cars',
+                    localField: 'inventoryCar.containerFound.car',
+                    foreignField: '_id',
+                    as: 'containerCar'
+                  }
+                },
+                {
+                  $unwind: {
+                    path: '$containerCar',
+                    preserveNullAndEmptyArrays: true
+                  }
+                }
+              ],
+              as: 'readyToClientHistories'
+            }
+          },
+          {
+            $unwind: { 'path': '$readyToClientHistories', 'preserveNullAndEmptyArrays': true }
+          },
+          {
+            $match: dateFilter
+          },
+          { $sort: sortOptionAggregation },
+          {
+            $project: {
+              _id: 1,
+              vin: 1,
+              brand: 1,
+              denomination: 1,
+              model: 1,
+              inTransitHistory: '$inTransitHistories',
+              readyToClientHistory: '$readyToClientHistories'
+            }
+          }
+        ];
+
+        // Usar cursor para procesar los datos de forma streaming
+        const carCursor = Car.aggregate(carAggregationPipeline).cursor();
+
+        logger.info(`Starting Excel export for company ${companyId}`);
+
+        let processedCount = 0;
+        for (let car = await carCursor.next(); car != null; car = await carCursor.next()) {
+          try {
+            const getStatus = (inTransitHistory: any, readyToClientHistory: any) => {
+              if (readyToClientHistory && readyToClientHistory.executedAt) {
+                return 'Listo para cliente';
+              } else if (inTransitHistory && inTransitHistory.executedAt) {
+                return 'En tránsito';
+              }
+              return 'Desconocido';
+            };
+
+            // Formatear fechas
+            const formatDate = (date: any) => {
+              if (!date) return '';
+              return new Date(date).toLocaleDateString('es-ES');
+            };
+
+            // Obtener datos del contenedor y BL
+            const getContainerInfo = (history: any) => {
+              if (history && history.inventoryCar && history.inventoryCar.containerFound) {
+                return {
+                  container: history.containerCar ? history.containerCar.vin : '',
+                  bl: history.inventoryCar.extra ? history.inventoryCar.extra['N° BL'] || '' : ''
+                };
+              }
+              return { container: '', bl: '' };
+            };
+
+            const containerInfo = getContainerInfo(car.inTransitHistory || car.readyToClientHistory);
+            const venue = car.inTransitHistory?.participant?.venue.name ||
+              car.readyToClientHistory?.inventoryCar?.venueFound.name ||
+              '';
+
+            const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
+              this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
+              null;
+
+            // Crear fila del Excel
+            const row = {
+              vin: car.vin || '',
+              brand: car.brand || '',
+              model: car.denomination || car.model || '',
+              container: containerInfo.container,
+              bl: containerInfo.bl,
+              venue: venue,
+              hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
+              accesories: accessories?.accessoriesText || '',
+              'qty-accesories': accessories?.accessoriesTotal || '',
+              ship: car.inTransitHistory?.inventoryCar?.extra ?
+                car.inTransitHistory.inventoryCar.extra['Nave'] || '' :
+                car.readyToClientHistory?.inventoryCar?.extra ?
+                  car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
+                  '',
+              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar.participant.createdAt),
+              inTransitDate: formatDate(car.inTransitHistory?.executedAt),
+              status: getStatus(car.inTransitHistory, car.readyToClientHistory)
+            };
+
+            worksheet.addRow(row).commit();
+            processedCount++;
+
+            // Log de progreso cada 1000 registros
+            if (processedCount % 1000 === 0) {
+              logger.info(`Processed ${processedCount} cars for export`);
+            }
+
+          } catch (error) {
+            logger.error(`Error processing car ${car._id}: ${error}`);
+            // Continuar con el siguiente registro en caso de error
+            continue;
+          }
+        }
+
+        // Finalizar el archivo Excel
+        worksheet.commit();
+        await workbook.commit();
+
+        logger.info(`Excel export completed. Total cars processed: ${processedCount}`);
+        return;
+      }
+
+      // Si no hay filterCompanies, devolver error
+      return res.status(400).json({
+        message: 'No se pudieron aplicar los filtros de empresas',
+        status: 400
+      });
+
+    } catch (e) {
+      logger.error(`InventoryController.currentCompanyStockExport: Error.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}`);
+      logger.error(e);
+
+      // Solo enviar respuesta de error si aún no se han enviado headers
+      if (!res.headersSent) {
+        return res.status(500).json({
+          message: 'Error al generar el archivo Excel',
+          status: 500
+        });
+      }
+      return res.end();
+    }
+  }
 
 
 
@@ -5531,18 +5695,19 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
     try {
       const { team } = req.user;
 
-      let handOutForm = await Form.find({team: team._id, kind: KindForm.final})
+      let handOutForm = await Form.find({ team: team._id, kind: KindForm.final })
 
       let pipeline: any = [
-        {$match: {
+        {
+          $match: {
             team: new mongoose.Types.ObjectId(team._id),
-            lastForm: {$nin: handOutForm.map(f => f._id)},
-            vin: {"$exists" : true, "$ne" : ""},
+            lastForm: { $nin: handOutForm.map(f => f._id) },
+            vin: { "$exists": true, "$ne": "" },
             createdAt: {
               $gte: moment().subtract(12, 'months').toDate()
             },
-            event: {"$exists" : true, $ne: {type: null}},
-            "meta.location.venue" : {"$exists" : true, "$ne" : null},
+            event: { "$exists": true, $ne: { type: null } },
+            "meta.location.venue": { "$exists": true, "$ne": null },
           }
         },
         // {$project: {
@@ -5599,8 +5764,8 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
       }
 
       const user = req.user;
-      let filter : any = {vin}
-      if (user.company.handlerCompany){
+      let filter: any = { vin }
+      if (user.company.handlerCompany) {
         filter['handlerCompany'] = user.company._id;
       } else {
         filter['company'] = user.company._id;
@@ -5621,7 +5786,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         });
       }
 
-      let inventoryCar = await InventoryCar.findOne({car: car._id, inventory: inventory._id});
+      let inventoryCar = await InventoryCar.findOne({ car: car._id, inventory: inventory._id });
       if (!inventoryCar) {
         return res.status(404).json({
           message: 'El vehículo no se encuentra en el inventario.',
@@ -5642,7 +5807,8 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
         evidenceStatus = evidenceStatus.concat({
           status,
           date: new Date(),
-          images: images.map((img: string) => new mongoose.Types.ObjectId(img))})
+          images: images.map((img: string) => new mongoose.Types.ObjectId(img))
+        })
       }
       inventoryCar.containerStatus = status;
       inventoryCar.evidenceStatus = evidenceStatus
@@ -5664,7 +5830,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
       }
       */
 
-      if(car.isContainer) {
+      if (car.isContainer) {
 
         const { user } = req;
         const venueId = user.venue._id;
@@ -5679,7 +5845,7 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
           { path: 'images' }
         ]);
 
-        if (status === ChoicesStatusContainer.empty && inventoryCar.inventory){
+        if (status === ChoicesStatusContainer.empty && inventoryCar.inventory) {
           await this.addHistoryToCarOfEmptyContainer(inventoryCar);
         }
 
@@ -5709,14 +5875,14 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
     }
   }
 
-  private async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
+  public async addHistoryToCarOfEmptyContainer(container: IInventoryCar): Promise<void> {
 
     const inventoryCarList = await InventoryCar.find({
       containerFound: container,
       status: ChoicesStatusCarInventory.found
-    }).populate([{path: 'car'}]);
+    }).populate([{ path: 'car' }]);
 
-    let carsId : any[] = [];
+    let carsId: any[] = [];
 
     const histories: any[] = [];
     inventoryCarList.forEach(inventoryCar => {
@@ -5741,8 +5907,8 @@ public async currentCompanyStockExport(req: IRequest, res: Response): Promise<an
     });
 
     await History.updateMany(
-      { _id: {$in: carsId} },
-      { $set: {current: false}}
+      { _id: { $in: carsId } },
+      { $set: { current: false } }
     );
 
     await History.insertMany(histories);

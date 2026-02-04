@@ -10,6 +10,7 @@ export interface IDraft {
   keys: string[],
   user: IUser | string,
   answers: any,
+  startedAt?: Date;
   createdAt: Date,
   updatedAt: Date
 }

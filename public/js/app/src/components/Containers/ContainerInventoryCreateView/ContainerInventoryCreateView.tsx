@@ -222,7 +222,7 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
             message: `BIC incorrecto, debe tener 11 caracteres (4 letras y 7 números) sin espacios ni guiones`
           }
         }
-      }else {
+      } else {
         if (!data[header]) {
           console.log("Error", header, data)
           return { error: true, message: `Falta el campo ${header}` }

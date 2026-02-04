@@ -383,7 +383,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             );
           } else if (row.cars && row.cars.length > 0) {
             let damagedCars = row.cars.filter((car: any) => car.participant && car.participant.hasDamages);
-            let damagedCarsEvidence = damagedCars.map((car: any) => car.participant.deliveryInfo.damageImages || []).flat();
+            let damagedCarsEvidence = damagedCars.map((car: any) => car.participant.deliveryInfo?.damageImages || []).flat();
             if (damagedCarsEvidence.length){
               row.damageImages = damagedCarsEvidence;
               return (
@@ -425,7 +425,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         maxWidth: '5%',
         cell: (row: any) => {
           if (row.openParticipant && row.openParticipant.deliveryInfo.seal &&
-            row.extra['Sello IN'].toUpperCase() !== row.openParticipant.deliveryInfo.seal.toUpperCase()
+            row.extra['Sello IN'].toUpperCase().trim() !== row.openParticipant.deliveryInfo.seal.toUpperCase().trim()
           ) {
             return <div
               className={'col-md-12 images-25 text-center'}>
@@ -1125,7 +1125,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       });
 
 
-      if (data.closeParticipant) {
+      if (datum.length === 0 && data.closeParticipant) {
         datum.push({
           _id: data.closeParticipant._id,
           vin: '-',
@@ -1517,7 +1517,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                                   <a href='#'
                                   onClick={() => this.create("coded")}>
                                     <i className="fa fa-fw fa-icon-units-coded" />
-                                    Anuncio Autos
+                                    Anuncio Vehículos
                                   </a>
                                 </li>
                                 <li>
