@@ -1938,7 +1938,6 @@ class CarController {
 
         participantFilter = {
           ...participantFilter,
-          team: new mongoose.Types.ObjectId(req.user.team._id),
           venue: {
             $in: [
               ...handlerVenues.map((venue) => new Types.ObjectId(venue._id)),
@@ -2312,7 +2311,7 @@ class CarController {
       ).lean();
       console.log(osaCode)
       if (!osaCode) return res.status(404).json({mesagge: "Este código no es válido", error: true, status: 404});
-      
+
       const eventsData = await History.find(
         { code: osaCode._id }, // <— clave: que History tenga el ref al auto
         { /* acá pones los campos que quieras del History */ }
@@ -2513,7 +2512,7 @@ class CarController {
       }
       let eventsArray = (car.events || []).filter(e => e.participant || e.status == "created" )
       const cleanEvents = eventsArray?.map((event: any) => {
-        const texts:Record<string, Record<string, string>> = { 
+        const texts:Record<string, Record<string, string>> = {
           'created-undefined':{
             title: `Unidad importada`,
             text: `Esta unidad ha sido ingresada al sistema por <strong> ${event.createdBy?.firstName?event.createdBy?.firstName:""} ${event.createdBy?.lastName? event.createdBy?.lastName : ""}</strong>`,
@@ -2521,49 +2520,49 @@ class CarController {
             color: "bg-green",
             step: "first"
           },
-          'available-reception':{ 
+          'available-reception':{
             title: `Recepción`,
             text: `Unidad disponible en <strong>${event.to?.name}</strong>`,
             icon: "reception",
             color: "bg-green",
             step: "six"
           },
-          'intransit-shipping': { 
+          'intransit-shipping': {
             title:`En transporte`,
             text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
             icon: "truck",
             color: "bg-sky-blue-ligth",
             step: "five"
           },
-          'intransit-delivery': { 
+          'intransit-delivery': {
             title:`En transporte`,
             text:`Esta unidad salió rumbo a su destino desde  <strong>${event.from?.name}</strong>`,
             icon: "truck",
             color: "bg-sky-blue-ligth",
             step: "five"
           },
-          'intransit-pol': { 
+          'intransit-pol': {
             title:`En transporte internacional`,
             text:`Esta unidad está en tránsito internacional rumbo a <strong>${event.to?.name}</strong>`,
             icon: "ship-load",
             color: "bg-sky-blue",
             step: "third"
           },
-          'available-pod': { 
+          'available-pod': {
             title:`Checklist POD`,
             text:`Unidad disponible en <strong>${event.to?.name}</strong>`,
             icon: "ship-download",
             color: "bg-sky-blue",
             step: "four"
           },
-          'readytoclient-delivery': { 
+          'readytoclient-delivery': {
             title:`Unidad disponible`,
             text:`Esta unidad ha llegado a su destino en <strong>${event.to?.name}</strong>`,
             icon: "check",
             color: "bg-sky-blue",
             step: "four"
           },
-          'sale-shipping': { 
+          'sale-shipping': {
             title:`Entrega a cliente`,
             text:`Esta unidad se ha entregado a su usuario final`,
             icon: "check",
@@ -2617,16 +2616,16 @@ class CarController {
         events: events,
         status: 200
       });
-      
+
     } catch (error) {
       logger.error(error);
       return (error);
     }
   }
 
-  
 
-  public groupEventsByMonth = (events: EventItem[]) => { 
+
+  public groupEventsByMonth = (events: EventItem[]) => {
     const formatter = new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' });
 
     const grouped: GroupedEvents = {};
