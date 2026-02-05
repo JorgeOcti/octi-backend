@@ -1,0 +1,40 @@
+doctype transitional
+html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="background:linear-gradient(to left,#A34E69,#90354D)")
+  head
+    meta(http-equiv="Content-Type" content="text/html; charset=utf-8")
+    meta(name="viewport" content="width=device-width")
+    title Admin creado
+  body(style="Margin:0;background:#f5f5f5;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.4")
+    table(width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:24px 0")
+      tr
+        td(align="center")
+          table(width="680" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:6px;padding:24px")
+            tr
+              td
+                h3(style="Margin:0 0 12px 0") Hola Soporte
+                p(style="Margin:0 0 16px 0") Se creó un usuario admin para una Company Client.
+                p(style="Margin:0 0 8px 0")
+                  strong Handler:
+                  |  #{handlerCompany.name}
+                p(style="Margin:0 0 8px 0")
+                  strong Client:
+                  |  #{clientCompany.name}
+                p(style="Margin:0 0 8px 0")
+                  strong Email:
+                  |  #{email}
+                p(style="Margin:0 0 8px 0")
+                  strong Team ID:
+                  |  #{teamId}
+                p(style="Margin:0 0 8px 0")
+                  strong Venue ID:
+                  |  #{venueId}
+                p(style="Margin:0 0 8px 0")
+                  strong User ID:
+                  |  #{userId}
+                p(style="Margin:0 0 8px 0")
+                  strong Creado por:
+                  |  #{createdBy.firstName} #{createdBy.lastName}
+                p(style="Margin:0 0 8px 0")
+                  strong ENV:
+                  |  #{env}
+                p(style="Margin:16px 0 0 0") Saludos.

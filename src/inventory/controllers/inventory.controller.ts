@@ -265,6 +265,31 @@ class InventoryController {
     let inventoryForms: any = await this.getInventoryForms(contentType, req.user);
     try {
       const { company, team, venue } = req.user;
+      const rutsByCompany = new Map<string, string>();
+      Object.keys(carsByContainer).forEach((BIC: string) => {
+        const container = carsByContainer[BIC]?.container;
+        const rut = container?.extra?.['RUT Cliente']?.trim();
+        const name = container?.extra?.['Cliente Razón Social']?.trim();
+        if (rut && !rutsByCompany.has(rut)) {
+          rutsByCompany.set(rut, name || '');
+        }
+      });
+
+      const ruts = Array.from(rutsByCompany.keys());
+      const existingCompanies = ruts.length
+        ? await Company.find({ rut: { $in: ruts } }, { rut: 1, name: 1 }).lean()
+        : [];
+      const existingRuts = new Set(
+        existingCompanies
+          .map((c: any) => (c.rut ? c.rut.trim() : ''))
+          .filter((rut: string) => rut.length)
+      );
+      const newCompanies = ruts
+        .filter((rut) => !existingRuts.has(rut))
+        .map((rut) => ({
+          rut,
+          name: rutsByCompany.get(rut) || ''
+        }));
       const inventory = new Inventory({
         ...inventoryForms,
         name,
@@ -309,6 +334,8 @@ class InventoryController {
 
       return res.json({
         message: 'Inventario de contenedores creado satisfactoriamente',
+        inventoryId: inventory._id,
+        newCompanies,
         status: 200
       });
 
