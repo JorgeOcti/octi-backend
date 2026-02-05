@@ -823,7 +823,7 @@ class InventoryQueue {
     emailQueue.queue.add(
       'email',
       {
-        from: '',
+        from: 'no-reply@osacontrol.com',
         title: 'Nuevo usuario admin para Company Client',
         to: '"Soporte"<soporte@osacotrol.com>',
         subject: `Admin creado para ${clientCompany.name}`,
