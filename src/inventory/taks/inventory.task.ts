@@ -824,12 +824,12 @@ class InventoryQueue {
       logger.info(
         `ensureClientCompanyAdminUser: enqueue email {to: soporte@osacotrol.com, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
       );
-      await emailQueue.queue.add(
+      emailQueue.queue.add(
         'email',
         {
           from: 'no-reply@osacontrol.com',
           title: 'Nuevo usuario admin para Company Client',
-          to: '"Soporte"<soporte@osacotrol.com>',
+          to: '"Soporte"<soporte@osacontrol.com>',
           subject: `Admin creado para ${clientCompany.name}`,
           text: `Hola Soporte\n\nSe creó un usuario admin para una Company Client.\n\nHandler: ${companyHandler.name}\nClient: ${clientCompany.name}\nEmail: ${generatedEmail}\nTeam: ${teamId}\nVenue: ${venueId}\nUserID: ${userResult.insertedId}\nCreado por: ${createdBy.firstName} ${createdBy.lastName}\nENV: ${process.env.ENV}\n\nSaludos.`,
           view: 'alerts/clientCompanyAdminCreated',
