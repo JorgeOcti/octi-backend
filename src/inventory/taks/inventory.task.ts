@@ -717,11 +717,14 @@ class InventoryQueue {
   ): Promise<void> {
     const now = new Date();
     let teamId = clientCompany.team as any;
+    let teamName = '';
 
     if (teamId) {
       const existingTeam = await Team.findById(teamId);
       if (!existingTeam) {
         teamId = null;
+      } else {
+        teamName = existingTeam.name;
       }
     }
 
@@ -734,11 +737,13 @@ class InventoryQueue {
         active: true
       }).save();
       teamId = newTeam._id;
+      teamName = newTeam.name;
       clientCompany.team = teamId;
       await clientCompany.save();
     }
 
     let venueId = null;
+    let venueName = '';
     const existingVenue = await Venue.findOne({
       team: teamId,
       company: clientCompany._id,
@@ -747,6 +752,7 @@ class InventoryQueue {
 
     if (existingVenue) {
       venueId = existingVenue._id;
+      venueName = existingVenue.name;
     } else {
       const clientNameClean = this.normalizeCompanyName(clientCompany.name || '');
       const newVenue = await new Venue({
@@ -769,6 +775,7 @@ class InventoryQueue {
         active: true
       }).save();
       venueId = newVenue._id;
+      venueName = newVenue.name;
     }
 
     const handlerNameClean = this.normalizeCompanyName(companyHandler.name || '');
@@ -822,7 +829,7 @@ class InventoryQueue {
 
     try {
       logger.info(
-        `ensureClientCompanyAdminUser: enqueue email {to: soporte@osacotrol.com, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: enqueue email {to: soporte@osacontrol.com, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
       );
       emailQueue.queue.add(
         'email',
@@ -831,15 +838,18 @@ class InventoryQueue {
           title: 'Nuevo usuario admin para Company Client',
           to: '"Soporte"<soporte@osacontrol.com>',
           subject: `Admin creado para ${clientCompany.name}`,
-          text: `Hola Soporte\n\nSe creó un usuario admin para una Company Client.\n\nHandler: ${companyHandler.name}\nClient: ${clientCompany.name}\nEmail: ${generatedEmail}\nTeam: ${teamId}\nVenue: ${venueId}\nUserID: ${userResult.insertedId}\nCreado por: ${createdBy.firstName} ${createdBy.lastName}\nENV: ${process.env.ENV}\n\nSaludos.`,
+          text: `Hola humanos\n\nSe creó un usuario admin para una Company Client. (Prometemos que fue con amor y café.)\n\nHandler: ${companyHandler.name} (${companyHandler._id})\nClient: ${clientCompany.name} (${clientCompany._id})\nEmail: ${generatedEmail}\nTeam: ${teamName} (${teamId})\nVenue: ${venueName} (${venueId})\nUsuario: ${handlerFirstName} USUARIO (${userResult.insertedId})\nCreado por: ${createdBy.firstName} ${createdBy.lastName}\nENV: ${process.env.ENV}\n\nSaludos.`,
           view: 'alerts/clientCompanyAdminCreated',
           context: {
             handlerCompany: companyHandler,
             clientCompany,
             teamId,
+            teamName,
             venueId,
+            venueName,
             email: generatedEmail,
             userId: userResult.insertedId,
+            userName: `${handlerFirstName} USUARIO`,
             createdBy,
             env: process.env.ENV
           }
@@ -847,11 +857,11 @@ class InventoryQueue {
         { attempts: 3, backoff: 1000, removeOnComplete: true }
       );
       logger.info(
-        `ensureClientCompanyAdminUser: email enqueued {to: soporte@osacotrol.com, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: email enqueued {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
       );
     } catch (error) {
       logger.error(
-        `ensureClientCompanyAdminUser: email enqueue failed {to: soporte@osacotrol.com, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: email enqueue failed {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
       );
       logger.error(error);
     }

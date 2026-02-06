@@ -11,26 +11,26 @@ html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="backgro
           table(width="680" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:6px;padding:24px")
             tr
               td
-                h3(style="Margin:0 0 12px 0") Hola Soporte
-                p(style="Margin:0 0 16px 0") Se creó un usuario admin para una Company Client.
+                h3(style="Margin:0 0 12px 0") Hola humanos
+                p(style="Margin:0 0 16px 0") Se creó un usuario admin para una Company Client. (fue hecho con bytes, amor y café.)
                 p(style="Margin:0 0 8px 0")
                   strong Handler:
-                  |  #{handlerCompany.name}
+                  |  #{handlerCompany.name} (#{handlerCompany._id})
                 p(style="Margin:0 0 8px 0")
                   strong Client:
-                  |  #{clientCompany.name}
+                  |  #{clientCompany.name} (#{clientCompany._id})
                 p(style="Margin:0 0 8px 0")
                   strong Email:
                   |  #{email}
                 p(style="Margin:0 0 8px 0")
                   strong Team ID:
-                  |  #{teamId}
+                  |  #{teamName} (#{teamId})
                 p(style="Margin:0 0 8px 0")
                   strong Venue ID:
-                  |  #{venueId}
+                  |  #{venueName} (#{venueId})
                 p(style="Margin:0 0 8px 0")
-                  strong User ID:
-                  |  #{userId}
+                  strong Usuario:
+                  |  #{userName} (#{userId})
                 p(style="Margin:0 0 8px 0")
                   strong Creado por:
                   |  #{createdBy.firstName} #{createdBy.lastName}
