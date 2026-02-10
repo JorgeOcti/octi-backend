@@ -19,12 +19,14 @@ import * as console from "console";
 import Inventory from "../../inventory/models/inventory.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
 import Car from '../../app/models/car.model';
+import Form from '../../form/models/form.model';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
 
   constructor() {
     this.processBilling = this.processBilling.bind(this);
+    this.processBillingNew = this.processBillingNew.bind(this);
     this.calculateCarsInChecklist = this.calculateCarsInChecklist.bind(this);
     this.calculateCarsInInventory = this.calculateCarsInInventory.bind(this);
     this.calculateCarsInRequest = this.calculateCarsInRequest.bind(this);
@@ -510,6 +512,270 @@ class BillingQueue {
     }
     console.log(sum)
     return sum;
+  }
+
+  public async processBillingNew(team?: any): Promise<void> {
+    try {
+      console.log('========================================');
+      console.log('START NEW BILLING PROCESS');
+      console.log('========================================');
+
+      // Obtener el precio del dólar
+      // const valueDolar = await this.getDolarPrice();
+      const valueDolar = 865.10; // Fijo para pruebas
+      console.log(`Dólar price: ${valueDolar}`);
+
+
+
+      // Definir precios en USD
+      const GENERAL_CONTAINER_PRICE_USD = 0.95 // Precio por contenedor en general-items
+      const CODED_CONTAINER_PRICE_USD = 0.95; // Precio por contenedor en coded-items
+      const CODED_CAR_PRICE_USD = 1.69; // Precio por auto dentro de contenedor en coded-items
+      const GENERAL_CAR_PRICE_USD = 0; // Precio por auto suelto en general-items
+      const AFORO_PRICE_USD = 0.95; // Precio por aforo
+
+      // Configurar filtro para empresas con billing activo
+      const filter: any = {
+        'billing.active': true
+      };
+      if (team) {
+        filter.team = team;
+      }
+
+      // Calcular período: mes anterior (restando 15 días y tomando inicio del mes)
+      const start_date = moment().subtract(15, 'days').startOf('month');
+      const end_date = moment().subtract(15, 'days').endOf('month');
+      const period = start_date.format('YYYYMM');
+
+      console.log(`Period: ${period}`);
+      console.log(`Date range: ${start_date.format('YYYY-MM-DD')} to ${end_date.format('YYYY-MM-DD')}`);
+
+      // Obtener empresas con facturación activa
+      const companies = await Company.find(filter);
+      console.log(`Found ${companies.length} companies with active billing`);
+
+      for (const company of companies) {
+        console.log('----------------------------------------');
+        console.log(`Processing company: ${company.name} (${company._id})`);
+
+        // Obtener todos los inventarios del período
+        const allInventories = await Inventory.find({
+          company: company._id,
+          createdAt: {
+            $gte: start_date.toDate(),
+            $lte: end_date.toDate()
+          }
+        });
+
+        console.log(`Found ${allInventories.length} total inventories for the period`);
+
+        if (allInventories.length === 0) {
+          console.log(`No inventories found for ${company.name}, skipping...`);
+          continue;
+        }
+
+        // ==================================================
+        // SEPARAR INVENTARIOS POR CONTENT TYPE
+        // ==================================================
+        const generalItemsInventories = allInventories.filter(i => (i as any).contentType === 'general-items');
+        const codedItemsInventories = allInventories.filter(i => (i as any).contentType === 'coded-items');
+
+        console.log(`  General-items inventories: ${generalItemsInventories.length}`);
+        console.log(`  Coded-items inventories: ${codedItemsInventories.length}`);
+
+        const generalInventoryIds = generalItemsInventories.map(i => i._id);
+        const codedInventoryIds = codedItemsInventories.map(i => i._id);
+
+        // ==================================================
+        // GENERAL-ITEMS INVENTORY
+        // ==================================================
+        console.log('');
+        console.log('>>> GENERAL-ITEMS INVENTORIES <<<');
+
+        let generalContainerCount = 0;
+        let generalCarCount = 0;
+
+        if (generalInventoryIds.length > 0) {
+          // Contenedores en general-items (container = null y car.isContainer = true)
+          const generalContainerInventoryCars = await InventoryCar.find({
+            inventory: { $in: generalInventoryIds },
+            container: null
+          }).populate('car');
+
+          const generalContainers = generalContainerInventoryCars.filter(ic => 
+            ic.car && (ic.car as any).isContainer === true
+          );
+          generalContainerCount = generalContainers.length;
+          const generalContainerIds = generalContainers.map(c => c._id);
+
+          console.log(`  Containers: ${generalContainerCount}`);
+
+          // Verificar si los contenedores en general-items tienen autos dentro (NO deberían)
+          if (generalContainerIds.length > 0) {
+            const carsInsideGeneralContainers = await InventoryCar.find({
+              inventory: { $in: generalInventoryIds },
+              container: { $in: generalContainerIds }
+            }).populate('car');
+
+            if (carsInsideGeneralContainers.length > 0) {
+              console.log(`  ⚠️  WARNING: Found ${carsInsideGeneralContainers.length} cars INSIDE general-items containers (should be 0)`);
+              for (const ic of carsInsideGeneralContainers) {
+                console.log(`      - Car: ${(ic.car as any)?.vin || 'N/A'} in container ${ic.container}`);
+              }
+            } else {
+              console.log(`  ✓ No cars inside general containers (correct)`);
+            }
+          }
+
+          // Autos sueltos en general-items (container = null y car.isContainer = false)
+          const generalCars = generalContainerInventoryCars.filter(ic => 
+            ic.car && (ic.car as any).isContainer !== true
+          );
+          generalCarCount = generalCars.length;
+
+          console.log(`  General cars (loose): ${generalCarCount}`);
+        } else {
+          console.log(`  No general-items inventories found`);
+        }
+
+        // ==================================================
+        // CODED-ITEMS INVENTORY
+        // ==================================================
+        console.log('');
+        console.log('>>> CODED-ITEMS INVENTORIES <<<');
+
+        let codedContainerCount = 0;
+        let codedCarCount = 0;
+
+        if (codedInventoryIds.length > 0) {
+          // Contenedores en coded-items (container = null y car.isContainer = true)
+          const codedContainerInventoryCars = await InventoryCar.find({
+            inventory: { $in: codedInventoryIds },
+            container: null
+          }).populate('car');
+
+          const codedContainers = codedContainerInventoryCars.filter(ic => 
+            ic.car && (ic.car as any).isContainer === true
+          );
+          codedContainerCount = codedContainers.length;
+          const codedContainerIds = codedContainers.map(c => c._id);
+
+          console.log(`  Containers: ${codedContainerCount}`);
+
+          // Autos dentro de contenedores en coded-items
+          if (codedContainerIds.length > 0) {
+            const carsInsideCodedContainers = await InventoryCar.find({
+              inventory: { $in: codedInventoryIds },
+              container: { $in: codedContainerIds }
+            });
+            codedCarCount = carsInsideCodedContainers.length;
+          }
+
+          console.log(`  Cars inside containers: ${codedCarCount}`);
+        } else {
+          console.log(`  No coded-items inventories found`);
+        }
+
+
+        // ==================================================
+        // AFORO FORMS
+        // ==================================================
+        console.log('');
+        console.log('>>> AFORO FORMS <<<');
+
+        let aforoCount = 0;
+
+        // Buscar formularios con kind 'aforo' o 'aforoSAG' para esta company/team
+        const aforoForms = await Form.find({
+          company: company._id,
+          team: company.team,
+          kind: { $in: ['aforo', 'aforoSAG'] }
+        });
+
+        const aforoFormIds = aforoForms.map(f => f._id);
+        console.log(`  Found ${aforoForms.length} aforo forms (aforo/aforoSAG)`);
+
+        if (aforoFormIds.length > 0) {
+          // Buscar participants asociados a esos formularios en el rango de fechas
+          aforoCount = await Participant.countDocuments({
+            form: { $in: aforoFormIds },
+            company: company._id,
+            createdAt: {
+              $gte: start_date.toDate(),
+              $lte: end_date.toDate()
+            }
+          });
+          console.log(`  Aforo participants in period: ${aforoCount}`);
+        } else {
+          console.log(`  No aforo forms found for this company`);
+        }
+
+        // ==================================================
+        // CÁLCULO DE TOTALES
+        // ==================================================
+        const totalContainers = generalContainerCount + codedContainerCount + aforoCount;
+        const totalCars = generalCarCount + codedCarCount; // general cars suele ser 0
+
+        const generalContainerTotalUSD = generalContainerCount * GENERAL_CONTAINER_PRICE_USD;
+        const generalCarTotalUSD = generalCarCount * GENERAL_CAR_PRICE_USD;
+        const codedContainerTotalUSD = codedContainerCount * CODED_CONTAINER_PRICE_USD;
+        const codedCarTotalUSD = codedCarCount * CODED_CAR_PRICE_USD;
+        const aforoTotalUSD = aforoCount * AFORO_PRICE_USD;
+
+        const totalUSD = generalContainerTotalUSD + generalCarTotalUSD + codedContainerTotalUSD + codedCarTotalUSD + aforoTotalUSD;
+        const totalCLP = totalUSD * valueDolar;
+
+        console.log('');
+        console.log('========== BILLING SUMMARY ==========');
+        console.log('GENERAL-ITEMS:');
+        console.log(`  Containers: ${generalContainerCount} x $${GENERAL_CONTAINER_PRICE_USD} = $${generalContainerTotalUSD.toFixed(2)} USD`);
+        console.log(`  Cars (loose): ${generalCarCount} x $${GENERAL_CAR_PRICE_USD} = $${generalCarTotalUSD.toFixed(2)} USD`);
+        console.log('CODED-ITEMS:');
+        console.log(`  Containers: ${codedContainerCount} x $${CODED_CONTAINER_PRICE_USD} = $${codedContainerTotalUSD.toFixed(2)} USD`);
+        console.log(`  Cars (inside containers): ${codedCarCount} x $${CODED_CAR_PRICE_USD} = $${codedCarTotalUSD.toFixed(2)} USD`);
+        console.log('AFOROS:');
+        console.log(`  Aforo participants: ${aforoCount} x $${AFORO_PRICE_USD} = $${aforoTotalUSD.toFixed(2)} USD`);
+        console.log('---');
+        console.log(`  TOTAL CONTAINERS (general + coded + aforos): ${totalContainers}`);
+        console.log(`  TOTAL CARS (general loose + coded inside): ${totalCars}`);
+        console.log(`  TOTAL: $${totalUSD.toFixed(2)} USD`);
+        console.log(`  TOTAL: $${totalCLP.toFixed(2)} CLP (rate: ${valueDolar})`);
+        console.log('=====================================');
+
+        // ==================================================
+        // GUARDAR INVOICE
+        // ==================================================
+        const invoice = new Invoice({
+          team: company.team,
+          company: company._id,
+          period,
+          // Containers incluye: general + coded + aforos
+          containers: totalContainers,
+          // Cars incluye: general sueltos + coded dentro de containers
+          inventoryCars: totalCars,
+          // Totals
+          valueDolar,
+          totalDolar: totalUSD,
+          totalPeso: totalCLP
+        });
+
+        if (!(await Invoice.find({ company: company._id, period }).countDocuments())) {
+          await invoice.save();
+          console.log(`Invoice created for ${company.name}`);
+        } else {
+          console.log(`Invoice for ${period} ${company.name} already exists!`);
+        }
+
+        console.log(`[COMMENTED] Invoice creation skipped (uncomment to activate)`);
+      }
+
+      console.log('========================================');
+      console.log('NEW BILLING PROCESS COMPLETED');
+      console.log('========================================');
+    } catch (e) {
+      console.log('ERROR in processBillingNew:');
+      console.log(e);
+    }
   }
 
   public async processBilling(team?: any): Promise<void> {

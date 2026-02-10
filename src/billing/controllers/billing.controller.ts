@@ -30,6 +30,7 @@ class BillingController {
     this.apiDetail = this.apiDetail.bind(this);
     this.pdf = this.pdf.bind(this);
     this.run = this.run.bind(this);
+    this.runNew = this.runNew.bind(this);
     this.getInvoiceCorporative = this.getInvoiceCorporative.bind(this);
     this.getOldestInvoiceCorporative = this.getOldestInvoiceCorporative.bind(this);
     this.getLastInvoiceCorporative = this.getLastInvoiceCorporative.bind(this);
@@ -608,6 +609,22 @@ class BillingController {
       await new BillingQueue().processBilling(team);
       res.json({
         status: 'ok'
+      });
+    } catch (e) {
+      /* istanbul ignore next  */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
+  public async runNew(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    try {
+      await new BillingQueue().processBillingNew(team);
+      res.json({
+        status: 'ok',
+        message: 'New billing process completed successfully. Check console for details.'
       });
     } catch (e) {
       /* istanbul ignore next  */
