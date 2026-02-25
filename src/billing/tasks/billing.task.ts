@@ -93,71 +93,6 @@ class BillingQueue {
     });
   }
 
-  private async calculateContainers(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
-    const inventories = await Inventory.find({
-      company: company._id,
-      createdAt: {
-        $gte: start_date
-          .toDate(),
-        $lte: end_date
-          .toDate()
-      }
-    }, { _id: 1, unitForm: 1,  contentForm: 1 });
-
-    // get the ids of the forms without duplicates
-    let formIds: string[] = [];
-    inventories.forEach(i => {
-      if (i.unitForm && !formIds.includes(i.unitForm.toString())) {
-        formIds.push(i.unitForm.toString());
-      }
-      if (i.contentForm && !formIds.includes(i.contentForm.toString())) {
-        formIds.push(i.contentForm.toString());
-      }
-    });
-
-
-    const iCars = await InventoryCar.find({
-      inventory: {$in: inventories.map((i: {_id: any}) => i._id)},
-      container: {$eq: null},
-    });
-
-    const participantCars = await Participant.find({
-      form: {$nin: formIds},
-      company: company._id,
-      createdAt: {
-        $gte: start_date
-          .toDate(),
-        $lte: end_date
-          .toDate()
-      }
-    }, { car: 1, _id: 0 });
-
-    let totalIds: string[] = participantCars.map((pc: {car: any}) => pc.car).concat(
-      iCars.map((ic: {car: any}) => ic.car)
-    )
-
-    console.log(`Total cars inventory for company ${company.name} (${company._id}): ${iCars.length}`);
-    console.log(`Total unique cars inventory for company ${company.name} (${company._id}): ${new Set(totalIds).size}`);
-    console.log(`Total cars participant for company ${company.name} (${company._id}): ${participantCars.length}`);
-    console.log(`Total unique cars participant for company ${company.name} (${company._id}): ${new Set(participantCars.map(pc => pc.car)).size}`);
-    console.log(`Total cars for company ${company.name} (${company._id}): ${totalIds.length}`);
-    // remove duplicates
-    totalIds = Array.from(new Set(totalIds));
-    console.log(`Total unique cars for company ${company.name} (${company._id}): ${totalIds.length}`);
-
-    const countCars = await Car.find({
-      isContainer: true,
-      _id: { $in: totalIds },
-      // vin dont start with OSA
-      vin: {$regex: /^(?!OSA)/},
-      company: company._id,
-    });
-
-    console.log(`Total containers for company ${company.name} (${company._id}): ${countCars.length}`);
-
-    return countCars.length;
-  }
-
   private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
     const countCarChecklist = await Participant.count({
       company: company._id,
@@ -483,34 +418,6 @@ class BillingQueue {
         }
       },  { attempts: 3, backoff: 1000, removeOnComplete: true });
     }
-  }
-
-  private calculateContainerTotal(containers: number){
-    // Calculate the total price for a scale based price
-    // 0 - 699 -> 1 Dollar
-    // 700 - 1399 -> 0.95
-    // 1400 - 1799 -> 0.93
-    // 1800 - 5000 -> 0.92
-    let sum = 0;
-    let rest = containers;
-    let prices = [
-      {from: 0, to: 699, unitPrice: 1},
-      {from: 700, to: 1399, unitPrice: 0.95},
-      {from: 1400, to: 1999, unitPrice: 0.9},
-    ]
-    for (let price of prices) {
-      let range = price.to - price.from;
-      if (rest >= range ) {
-        sum += (rest - price.from) * price.unitPrice;
-      } else if ( rest > 0 && rest < range) {
-        sum += rest * price.unitPrice;
-        break;
-      } else {
-        break;
-      }
-    }
-    console.log(sum)
-    return sum;
   }
 
   public async processBilling(team?: any): Promise<void> {
