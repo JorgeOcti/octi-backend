@@ -18,7 +18,6 @@ import * as console from "console";
 // import History from "../../app/models/history.model";
 import Inventory from "../../inventory/models/inventory.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
-import Car from '../../app/models/car.model';
 import Form from '../../form/models/form.model';
 
 class BillingQueue {
