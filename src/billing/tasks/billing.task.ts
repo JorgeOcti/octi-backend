@@ -427,8 +427,7 @@ class BillingQueue {
       console.log('========================================');
 
       // Obtener el precio del dólar
-      const valueDolar = 871.41;
-      // const valueDolar = await this.getDolarPrice();
+      const valueDolar = await this.getDolarPrice();
       console.log(`Dólar price: ${valueDolar}`);
 
 
