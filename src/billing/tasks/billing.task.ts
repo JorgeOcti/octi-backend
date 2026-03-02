@@ -19,6 +19,7 @@ import * as console from "console";
 import Inventory from "../../inventory/models/inventory.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
 import Form from '../../form/models/form.model';
+import User from '../../app/models/user.model';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -426,7 +427,8 @@ class BillingQueue {
       console.log('========================================');
 
       // Obtener el precio del dólar
-      const valueDolar = await this.getDolarPrice();
+      const valueDolar = 871.41;
+      // const valueDolar = await this.getDolarPrice();
       console.log(`Dólar price: ${valueDolar}`);
 
 
@@ -461,6 +463,12 @@ class BillingQueue {
       for (const company of companies) {
         console.log('----------------------------------------');
         console.log(`Processing company: ${company.name} (${company._id})`);
+
+        const osaUsers = await User.find({
+          team: company.team,
+          company: company._id,
+          email: /@osacontrol.com$/
+        });
 
         // Obtener todos los inventarios del período
         const allInventories = await Inventory.find({
@@ -503,7 +511,8 @@ class BillingQueue {
           // Contenedores en general-items (container = null y car.isContainer = true)
           const generalContainerInventoryCars = await InventoryCar.find({
             inventory: { $in: generalInventoryIds },
-            container: null
+            container: null,
+            inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
           const generalContainers = generalContainerInventoryCars.filter(ic => 
@@ -518,7 +527,8 @@ class BillingQueue {
           if (generalContainerIds.length > 0) {
             const carsInsideGeneralContainers = await InventoryCar.find({
               inventory: { $in: generalInventoryIds },
-              container: { $in: generalContainerIds }
+              container: { $in: generalContainerIds },
+            inventoriedBy: { $nin: osaUsers.map(u => u._id) }
             }).populate('car');
 
             if (carsInsideGeneralContainers.length > 0) {
@@ -555,7 +565,8 @@ class BillingQueue {
           // Contenedores en coded-items (container = null y car.isContainer = true)
           const codedContainerInventoryCars = await InventoryCar.find({
             inventory: { $in: codedInventoryIds },
-            container: null
+            container: null,
+            inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
           const codedContainers = codedContainerInventoryCars.filter(ic => 
@@ -570,7 +581,8 @@ class BillingQueue {
           if (codedContainerIds.length > 0) {
             const carsInsideCodedContainers = await InventoryCar.find({
               inventory: { $in: codedInventoryIds },
-              container: { $in: codedContainerIds }
+              container: { $in: codedContainerIds },
+              inventoriedBy: { $nin: osaUsers.map(u => u._id) }
             });
             codedCarCount = carsInsideCodedContainers.length;
           }
@@ -604,6 +616,7 @@ class BillingQueue {
           aforoCount = await Participant.countDocuments({
             form: { $in: aforoFormIds },
             company: company._id,
+            user: { $nin: osaUsers.map(u => u._id) },
             createdAt: {
               $gte: start_date.toDate(),
               $lte: end_date.toDate()
