@@ -14,10 +14,10 @@ import Participant from '../../form/models/participant.model';
 import { RequestItem } from '../../request/models/requestItem.model';
 import emailQueue from '../../app/tasks/email.task';
 import puppeteer from 'puppeteer';
-import * as console from "console";
+import * as console from 'console';
 // import History from "../../app/models/history.model";
-import Inventory from "../../inventory/models/inventory.model";
-import InventoryCar from "../../inventory/models/inventoryCar.model";
+import Inventory from '../../inventory/models/inventory.model';
+import InventoryCar from '../../inventory/models/inventoryCar.model';
 import Form from '../../form/models/form.model';
 import User from '../../app/models/user.model';
 
@@ -137,7 +137,7 @@ class BillingQueue {
     //     }
     //   }
     // ]);
-    return countCarChecklist //vinInChecklist.length ? vinInChecklist[0].count : 0;
+    return countCarChecklist; //vinInChecklist.length ? vinInChecklist[0].count : 0;
   }
 
   private async calculateCarsInDelivery(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -150,7 +150,7 @@ class BillingQueue {
         $lte: end_date
           .toDate()
       }
-    })
+    });
     // const vinInDelivery = await Participant.aggregate([
     //   {
     //     $match: {
@@ -184,7 +184,7 @@ class BillingQueue {
     //     }
     //   }
     // ]);
-    return countCarDelivery //vinInDelivery.length ? vinInDelivery[0].count : 0;
+    return countCarDelivery; //vinInDelivery.length ? vinInDelivery[0].count : 0;
   }
 
   private async calculateCarsInInventory(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -199,7 +199,7 @@ class BillingQueue {
     });
 
     const countInventoryCars = await InventoryCar.count({
-      inventory: {$in: inventories.map(i => i._id)}
+      inventory: { $in: inventories.map(i => i._id) }
     });
 
     // const countInventoryCars = await History.count({
@@ -251,7 +251,7 @@ class BillingQueue {
     //     }
     //   }
     // ]);
-    return countInventoryCars //vinInInventories.length ? vinInInventories[0].count : 0;
+    return countInventoryCars; //vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
   private async calculateCarsInRequest(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -263,7 +263,7 @@ class BillingQueue {
         $lte: end_date
           .toDate()
       }
-    })
+    });
 
     // const vinInInventories = await RequestItem.aggregate([
     //   {
@@ -297,7 +297,7 @@ class BillingQueue {
     //     }
     //   }
     // ]);
-    return countRequestsCars // vinInInventories.length ? vinInInventories[0].count : 0;
+    return countRequestsCars; // vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
   public generateHTML(invoice: IInvoiceModel): string {
@@ -416,7 +416,7 @@ class BillingQueue {
           name: notification.name,
           company: invoice.company.name
         }
-      },  { attempts: 3, backoff: 1000, removeOnComplete: true });
+      }, { attempts: 3, backoff: 1000, removeOnComplete: true });
     }
   }
 
@@ -431,13 +431,28 @@ class BillingQueue {
       console.log(`Dólar price: ${valueDolar}`);
 
 
-
       // Definir precios en USD
-      const GENERAL_CONTAINER_PRICE_USD = 0.95 // Precio por contenedor en general-items
-      const CODED_CONTAINER_PRICE_USD = 0.95; // Precio por contenedor en coded-items
-      const CODED_CAR_PRICE_USD = 1.69; // Precio por auto dentro de contenedor en coded-items
-      const GENERAL_CAR_PRICE_USD = 0; // Precio por auto suelto en general-items
-      const AFORO_PRICE_USD = 0.95; // Precio por aforo
+      let GENERAL_CONTAINER_PRICE_USD = 0;
+      let CODED_CONTAINER_PRICE_USD = 0;
+      let CODED_CAR_PRICE_USD = 0;
+      let GENERAL_CAR_PRICE_USD = 0;
+      let AFORO_PRICE_USD = 0;
+      console.log("TEAM:", team);
+
+      if (team === "67aac5f594ed0a1f9da3478a") { // MEDLOG
+        GENERAL_CONTAINER_PRICE_USD = 1;
+        CODED_CONTAINER_PRICE_USD = 1;
+        CODED_CAR_PRICE_USD = 1.69;
+        GENERAL_CAR_PRICE_USD = 0;
+        AFORO_PRICE_USD = 1;
+      } else if (team === "695e913f69b679429eb335f7") { // CIS
+        GENERAL_CONTAINER_PRICE_USD = 0.95;
+        CODED_CONTAINER_PRICE_USD = 0.95;
+        CODED_CAR_PRICE_USD = 1.27;
+        GENERAL_CAR_PRICE_USD = 0;
+        AFORO_PRICE_USD = 0.95;
+      }
+
 
       // Configurar filtro para empresas con billing activo
       const filter: any = {
@@ -514,7 +529,7 @@ class BillingQueue {
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
-          const generalContainers = generalContainerInventoryCars.filter(ic => 
+          const generalContainers = generalContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer === true
           );
           generalContainerCount = generalContainers.length;
@@ -527,7 +542,7 @@ class BillingQueue {
             const carsInsideGeneralContainers = await InventoryCar.find({
               inventory: { $in: generalInventoryIds },
               container: { $in: generalContainerIds },
-            inventoriedBy: { $nin: osaUsers.map(u => u._id) }
+              inventoriedBy: { $nin: osaUsers.map(u => u._id) }
             }).populate('car');
 
             if (carsInsideGeneralContainers.length > 0) {
@@ -541,7 +556,7 @@ class BillingQueue {
           }
 
           // Autos sueltos en general-items (container = null y car.isContainer = false)
-          const generalCars = generalContainerInventoryCars.filter(ic => 
+          const generalCars = generalContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer !== true
           );
           generalCarCount = generalCars.length;
@@ -568,7 +583,7 @@ class BillingQueue {
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
-          const codedContainers = codedContainerInventoryCars.filter(ic => 
+          const codedContainers = codedContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer === true
           );
           codedContainerCount = codedContainers.length;
@@ -600,31 +615,51 @@ class BillingQueue {
 
         let aforoCount = 0;
 
+        let detail: any = {
+          desconsolidado: {
+            containers: { count: generalContainerCount + codedContainerCount, price: (generalContainerCount + codedContainerCount) * GENERAL_CONTAINER_PRICE_USD },
+            codedUnits: { count: generalCarCount + codedCarCount, price: (generalCarCount + codedCarCount) * CODED_CAR_PRICE_USD }
+          }
+        };
+        let aforoDetail: any = {};
+
         // Buscar formularios con kind 'aforo' o 'aforoSAG' para esta company/team
-        const aforoForms = await Form.find({
-          company: company._id,
-          team: company.team,
-          kind: { $in: ['aforo', 'aforoSAG'] }
-        });
-
-        const aforoFormIds = aforoForms.map(f => f._id);
-        console.log(`  Found ${aforoForms.length} aforo forms (aforo/aforoSAG)`);
-
-        if (aforoFormIds.length > 0) {
-          // Buscar participants asociados a esos formularios en el rango de fechas
-          aforoCount = await Participant.countDocuments({
-            form: { $in: aforoFormIds },
+        for (const aforoKind of ['aforo', 'aforoSAG']) {
+          const aforoForms = await Form.find({
             company: company._id,
-            user: { $nin: osaUsers.map(u => u._id) },
-            createdAt: {
-              $gte: start_date.toDate(),
-              $lte: end_date.toDate()
-            }
+            team: company.team,
+            kind: aforoKind
           });
-          console.log(`  Aforo participants in period: ${aforoCount}`);
-        } else {
-          console.log(`  No aforo forms found for this company`);
+          const aforoFormIds = aforoForms.map(f => f._id);
+
+          console.log(`  Found ${aforoForms.length} aforo forms (aforo/aforoSAG)`);
+
+          if (aforoFormIds.length > 0) {
+            // Buscar participants asociados a esos formularios en el rango de fechas
+            const count = await Participant.countDocuments({
+              form: { $in: aforoFormIds },
+              company: company._id,
+              user: { $nin: osaUsers.map(u => u._id) },
+              createdAt: {
+                $gte: start_date.toDate(),
+                $lte: end_date.toDate()
+              }
+            });
+            aforoCount += count;
+            console.log(`  Aforo participants in period: ${count} for ${aforoKind}`);
+            if (count > 0) {
+              aforoDetail[aforoKind] = { count, price: AFORO_PRICE_USD * count };
+            }
+          } else {
+            console.log(`  No aforo forms found for this company`);
+          }
         }
+
+        if (Object.keys(aforoDetail).length > 0) {
+          console.log(`  Aforo participants in period: ${JSON.stringify(aforoDetail)}`);
+          detail.aforo = aforoDetail;
+        }
+
 
         // ==================================================
         // CÁLCULO DE TOTALES
@@ -672,7 +707,8 @@ class BillingQueue {
           // Totals
           valueDolar,
           totalDolar: totalUSD,
-          totalPeso: totalCLP
+          totalPeso: totalCLP,
+          detail
         });
 
         if (!(await Invoice.find({ company: company._id, period }).countDocuments())) {
