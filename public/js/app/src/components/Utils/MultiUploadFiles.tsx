@@ -17,6 +17,7 @@ interface IPropsType {
   files: any[];
   url: string;
   listMode?: boolean;
+  accept?: string;
 }
 
 interface IStateType {
@@ -217,7 +218,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
           ref={this.inputFile}
           style={{ display: 'none' }}
           onChange={(e) => this.handleChangeInputFile(e)}
-          accept='.jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf'
+          accept={this.props.accept ?? '.jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf'}
           multiple={true}
         />
       </div>
