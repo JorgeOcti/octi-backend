@@ -29,6 +29,7 @@ export interface IInvoice {
   valueUF: number;
   valueDolar: number;
   file: IIFile;
+  detail: any;
   updatedAt?: Date;
   createdAt?: Date;
 }

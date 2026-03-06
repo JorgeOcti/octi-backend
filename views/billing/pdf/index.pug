@@ -13,125 +13,257 @@ body
       td.text-right
         h1
           | Billing #{moment(invoice.period, "YYYYMM").format("MMMM YYYY")}
-  h2
+  h2(style="font-size: 12px")
     | Resumen
   table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;width:50%")
     tbody
       tr
-        td
+        td(style="font-size: 11px")
           strong
             | Razón social
-        td
+        td(style="font-size: 11px")
           | #{invoice.company.businessName}
       tr
-        td
+        td(style="font-size: 11px")
           strong
             | RUT
-        td
+        td(style="font-size: 11px")
           | #{invoice.company.rut}
       tr
-        td
+        td(style="font-size: 11px")
           if invoice.company.handler
             strong
-              | Valor USD
+              | TOTAL SERVICIO (USD)
           else
             strong
               | Valor UF
-        td
-          | #{new Intl.NumberFormat("de-DE").format(invoice.valueDolar)} CLP
-
-  h2
-    | Detalle
-  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0", class="border")
-    thead
-      tr.heading
-        th
-          strong
-            | Producto
-        th.text-right
-          strong
-            | Cantidad de vehículos
-        th.text-right
-          strong
-            | Cantidad de contenedores
-        th.text-right
+        td(style="font-size: 11px")
           if invoice.company.handler
             strong
-              | Valor minimo (USD)
+              | $ #{new Intl.NumberFormat("de-DE").format(invoice.totalDolar.toFixed(2))} USD
           else
-            strong
-              | Valor por Vehículo (UF)
-        th.text-right
-          strong
-            | Total por Producto (USD)
-        th.text-right
-          strong
-            | Total por Producto (CLP)
-    if invoice.company.handler
-      tbody
-        tr.item
-          td(width="16%")
-            | 1 Desconsolidados
-          td(width="16%").text-right=invoice.inventoryCars
-          td(width="16%").text-right=invoice.containers
-          td(width="16%").text-right
-            | 665 USD
-          td(width="16%").text-right
-            | #{(invoice.totalDolar).toFixed(2)} USD
-          td(width="16%").text-right
-            | #{new Intl.NumberFormat("de-DE").format(invoice.totalPeso.toFixed(2))} CLP
-    else
-      tbody
-        tr.item
-          td(width="20%")
-            | 1 Control de Inventarios
-          td(width="20%").text-right=invoice.inventoryCars
-          td(width="20%").text-right
-            | #{invoice.inventoryPrice} UF
-          td(width="20%").text-right
-            | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
-          td(width="20%").text-right
-            | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
-        tr.item
-          td(width="20%")
-            | 2 Gestión de Entregas
-          td(width="20%").text-right=invoice.deliveryCars
-          td(width="20%").text-right
-            | #{invoice.deliveryPrice} UF
-          td(width="20%").text-right
-            | #{(invoice.deliveryPrice * invoice.deliveryCars).toFixed(2)} UF
-          td(width="20%").text-right
-            | #{new Intl.NumberFormat("de-DE").format(((invoice.deliveryPrice * invoice.deliveryCars) * invoice.valueUF).toFixed(2))} CLP
-        tr.item
-          td(width="20%")
-            | 3 Gestión de Checklist
-          td(width="20%").text-right=invoice.checklistCars
-          td(width="20%").text-right
-            | #{invoice.checklistPrice} UF
-          td(width="20%").text-right
-            | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
-          td(width="20%").text-right
-            | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
-        tr.item
-          td(width="20%")
-            | 4 Control de Solicitudes
-          td(width="20%").text-right=invoice.requestCars
-          td(width="20%").text-right
-            | #{invoice.requestPrice} UF
-          td(width="20%").text-right
-            | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
-          td(width="20%").text-right
-            | #{new Intl.NumberFormat("de-DE").format(((invoice.requestPrice * invoice.requestCars) * invoice.valueUF).toFixed(2))} CLP
+            | #{new Intl.NumberFormat("de-DE").format(Math.round(invoice.valueDolar))} CLP
+      if invoice.company.handler
         tr
-          td(colspan=3).text-right
+          td(style="font-size: 11px")
             strong
-              |
-          td.text-right
+              | TOTAL SERVICIO (CLP)
+          td(style="font-size: 11px")
             strong
-              | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
-          td.text-right
-            strong
-              | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
+              | $ #{new Intl.NumberFormat("de-DE").format(Math.round(invoice.totalPeso))} CLP
+
+  h2(style="font-size: 14px")
+    strong
+      | DETALLE SERVICIO
+  if invoice.detail && invoice.detail.desconsolidado
+    table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0", class="border")
+      if invoice.company.handler
+        thead
+          tr.heading
+            th(width="40%", style="font-size: 8px")
+              strong
+                | 1. DESCONSOLIDADO
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Cantidad
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Valor USD
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Valor CLP
+        tbody
+          - let desconContainersPriceCLP = 0;
+          - let desconCarsPriceCLP = 0;
+          - let totalDesconCLP = 0;
+          if invoice.detail && invoice.detail.desconsolidado
+            - desconContainersPriceCLP = Math.round(invoice.detail.desconsolidado.containers.price * invoice.valueDolar)
+            - desconCarsPriceCLP = Math.round(invoice.detail.desconsolidado.codedUnits.price * invoice.valueDolar)
+            - totalDesconCLP = desconContainersPriceCLP + desconCarsPriceCLP
+
+            if invoice.detail.desconsolidado.containers.count > 0
+              tr.item
+                td(style="font-size: 8px")
+                  | Contenedores
+                td(style="font-size: 8px")=invoice.detail.desconsolidado.containers.count
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(invoice.detail.desconsolidado.containers.price.toFixed(2))}
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(desconContainersPriceCLP.toFixed(0))}
+            if invoice.detail.desconsolidado.codedUnits.count > 0
+              tr.item
+                td(style="font-size: 8px")
+                  | Unidades con código
+                td(style="font-size: 8px")=invoice.detail.desconsolidado.codedUnits.count
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(invoice.detail.desconsolidado.codedUnits.price.toFixed(2))}
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(desconCarsPriceCLP.toFixed(0))}
+    if invoice.detail && invoice.detail.aforo
+      table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;margin-top:20px;", class="border")
+        thead
+          tr.heading
+            th(width="40%", style="font-size: 8px")
+              strong
+                | 2. AFORO
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Cantidad
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Valor USD
+            th(width="20%", style="font-size: 8px")
+              strong
+                | Valor CLP
+        tbody
+          - let aforoPriceCLP = 0;
+          - let aforoSAGPriceCLP = 0;
+          - let totalAforoCLP = 0;
+          if invoice.detail && invoice.detail.aforo
+            - aforoPriceCLP = Math.round(((invoice.detail.aforo.aforo && invoice.detail.aforo.aforo.price) || 0) * invoice.valueDolar)
+            - aforoSAGPriceCLP = Math.round(((invoice.detail.aforo.aforoSAG && invoice.detail.aforo.aforoSAG.price) || 0) * invoice.valueDolar)
+            - totalAforoCLP = aforoPriceCLP + aforoSAGPriceCLP
+
+            if (invoice.detail.aforo.aforo && invoice.detail.aforo.aforo.count) > 0
+              tr.item
+                td(style="font-size: 8px")
+                  | Aforo Físico
+                td(style="font-size: 8px")=invoice.detail.aforo.aforo.count
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(invoice.detail.aforo.aforo.price.toFixed(2))}
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(aforoPriceCLP.toFixed(0))}
+            if (invoice.detail.aforo.aforoSAG && invoice.detail.aforo.aforoSAG.count) > 0
+              tr.item
+                td(style="font-size: 8px")
+                  | Aforo SAG
+                td(style="font-size: 8px")=invoice.detail.aforo.aforoSAG.count
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(invoice.detail.aforo.aforoSAG.price.toFixed(2))}
+                td(style="font-size: 8px")
+                  | $ #{new Intl.NumberFormat("de-DE").format(aforoSAGPriceCLP.toFixed(0))}
+        
+    div(style="margin-top: 15px; font-size: 10px; color: #666;")
+      | Precio calculado del dólar al día de hoy #{moment(invoice.createdAt || undefined).format("DD [de] MMMM [de] YYYY")}: $ #{new Intl.NumberFormat("de-DE").format(invoice.valueDolar)} CLP.
+      br
+      | Precios expresados en valor neto, no incluye IVA.
+  else
+    table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0", class="border")
+      if invoice.company.handler
+        thead
+          tr.heading
+            th
+              strong
+                | Servicio
+            th.text-right
+              strong
+                | Cantidad de vehículos
+            th.text-right
+              strong
+                | Cantidad de contenedores
+            th.text-right
+              if invoice.company.handler
+                strong
+                  | Valor minimo (USD)
+              else
+                strong
+                  | Valor por Vehículo (UF)
+            th.text-right
+              strong
+                | Total por Producto (USD)
+            th.text-right
+              strong
+                | Total por Producto (CLP)
+      else 
+        thead
+          tr.heading
+            th
+              strong
+                | Servicio
+            th.text-right
+              strong
+                | Unidades
+            th.text-right
+              strong
+                | Cantidad de contenedores
+            th.text-right
+              if invoice.company.handler
+                strong
+                  | Valor minimo (USD)
+              else
+                strong
+                  | Valor por Vehículo (UF)
+            th.text-right
+              strong
+                | Total por Producto (USD)
+            th.text-right
+              strong
+                | Total por Producto (CLP)
+      if invoice.company.handler
+        tbody
+          tr.item
+            td(width="16%")
+              | 1 Desconsolidados
+            td(width="16%").text-right=invoice.inventoryCars
+            td(width="16%").text-right=invoice.containers
+            td(width="16%").text-right
+              | 665 USD
+            td(width="16%").text-right
+              | #{(invoice.totalDolar).toFixed(2)} USD
+            td(width="16%").text-right
+              | #{new Intl.NumberFormat("de-DE").format(invoice.totalPeso.toFixed(2))} CLP
+      else
+        tbody
+          tr.item
+            td(width="20%")
+              | 1 Control de Inventarios
+            td(width="20%").text-right=invoice.inventoryCars
+            td(width="20%").text-right
+              | #{invoice.inventoryPrice} UF
+            td(width="20%").text-right
+              | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
+            td(width="20%").text-right
+              | #{new Intl.NumberFormat("de-DE").format(((invoice.inventoryPrice * invoice.inventoryCars) * invoice.valueUF).toFixed(2))} CLP
+          tr.item
+            td(width="20%")
+              | 2 Gestión de Entregas
+            td(width="20%").text-right=invoice.deliveryCars
+            td(width="20%").text-right
+              | #{invoice.deliveryPrice} UF
+            td(width="20%").text-right
+              | #{(invoice.deliveryPrice * invoice.deliveryCars).toFixed(2)} UF
+            td(width="20%").text-right
+              | #{new Intl.NumberFormat("de-DE").format(((invoice.deliveryPrice * invoice.deliveryCars) * invoice.valueUF).toFixed(2))} CLP
+          tr.item
+            td(width="20%")
+              | 3 Gestión de Checklist
+            td(width="20%").text-right=invoice.checklistCars
+            td(width="20%").text-right
+              | #{invoice.checklistPrice} UF
+            td(width="20%").text-right
+              | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
+            td(width="20%").text-right
+              | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) * invoice.valueUF).toFixed(2))} CLP
+          tr.item
+            td(width="20%")
+              | 4 Control de Solicitudes
+            td(width="20%").text-right=invoice.requestCars
+            td(width="20%").text-right
+              | #{invoice.requestPrice} UF
+            td(width="20%").text-right
+              | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
+            td(width="20%").text-right
+              | #{new Intl.NumberFormat("de-DE").format(((invoice.requestPrice * invoice.requestCars) * invoice.valueUF).toFixed(2))} CLP
+          tr
+            td(colspan=3).text-right
+              strong
+                |
+            td.text-right
+              strong
+                | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
+            td.text-right
+              strong
+                | #{new Intl.NumberFormat("de-DE").format((((invoice.checklistPrice * invoice.checklistCars) + (invoice.deliveryPrice * invoice.deliveryCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)) * invoice.valueUF).toFixed(2))} CLP
 
 
 
