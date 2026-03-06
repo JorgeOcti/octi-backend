@@ -2700,6 +2700,7 @@ class InventoryController {
               units: { $push: "$units" },
               openParticipant: { $first: "$openParticipant" },
               closeParticipant: { $first: "$closeParticipant" },// Push the modified units back into an array
+              files: { $first: "$files" },
               // To include other root fields, you'd list them here, e.g.,
               // otherField: { $first: "$otherField" }
             }
@@ -2855,6 +2856,7 @@ class InventoryController {
               inventory: 1,
               units: 1,
               contentDescription: 1,
+              files: 1,
             }
           }
         ]),

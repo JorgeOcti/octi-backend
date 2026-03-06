@@ -19,7 +19,7 @@ import { FilterSummryDetail } from "./FilterSummaryDetailComponent";
 import { Dispatch } from 'redux';
 import * as React from "react";
 import DataTable from 'react-data-table-component';
-import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
+import { loadContainerFiles, deleteContainerFile, ContainerFilesModal, ContainerFilesCell } from './containerFiles.utils';
 
 declare let window: IWindow;
 
@@ -404,49 +404,18 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       },
       {
         name: 'Archivos',
-        cell: (row: any) => (
-          <button
-            className="btn btn-sm btn-default"
-            data-toggle="modal"
-            data-target="#modalContainerFiles"
-            onClick={() => {
-              this.setState({
-                containerFilesModalId: row._id,
-                containerFilesInventoryId: row.inventory,
-              });
-              this.loadContainerFiles(row._id);
-            }}
-          >
-            <i className="fa fa-fw fa-paperclip" /> Archivos
-          </button>
-        )
-      },
+        cell: (row: any) => {
+          const onclick = () => {
+            this.setState({
+              containerFilesModalId: row._id,
+              containerFilesInventoryId: row.inventory,
+            });
+            loadContainerFiles(row._id, this.setState.bind(this));
+          };
+          return <ContainerFilesCell row={row} onClick={onclick} />;
+        }
+      }
     ];
-    this.loadContainerFiles = this.loadContainerFiles.bind(this);
-    this.deleteContainerFile = this.deleteContainerFile.bind(this);
-  }
-
-  private loadContainerFiles(inventoryCarId: string) {
-    const api = new ApiService();
-    this.setState({ containerFilesLoading: true, containerFiles: [] });
-    api.getInventoryCarFiles(inventoryCarId).then((response: any) => {
-      const files = (response.data.files || []).map((file: any) => ({
-        ...file.file,
-        _id: file._id,
-        url: decodeURIComponent(file.file.url),
-        isImage: ['image/jpg', 'image/jpeg'].includes(file.file.type),
-        status: imageStatus.complete,
-      }));
-      this.setState({ containerFiles: files, containerFilesLoading: false });
-    }).catch(() => this.setState({ containerFilesLoading: false }));
-  }
-
-  private deleteContainerFile(fileId: string) {
-    const api = new ApiService();
-    api.deleteInventoryCarFile(fileId);
-    this.setState(prev => ({
-      containerFiles: prev.containerFiles.filter(f => f._id !== fileId)
-    }));
   }
 
   private getDropDownLabels(row: { isContainer: boolean, containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
@@ -1584,41 +1553,13 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-                  <div className="modal fade" id="modalContainerFiles" role="dialog" aria-labelledby="modalContainerFilesLabel">
-                    <div className="modal-dialog modal-lg" role="document">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                          <h4 className="modal-title" id="modalContainerFilesLabel">Archivos del contenedor</h4>
-                        </div>
-                        <div className="modal-body">
-                          {this.state.containerFilesModalId && (
-                            <>
-                              <MultiUploadFiles
-                                url={`/api/v1/inventory-car/${this.state.containerFilesModalId}/upload-file/`}
-                                accept=".jpeg,.jpg,.pdf,.mp4"
-                                listMode={true}
-                                body={{ inventoryCardId: this.state.containerFilesModalId }}
-                                deleteCalback={(id) => this.deleteContainerFile(id)}
-                                onChange={(files) => this.setState({ containerFiles: files })}
-                                files={this.state.containerFiles}
-                              />
-                              {this.state.containerFilesLoading && (
-                                <div className="text-center">
-                                  <i className="fa fa-spinner fa-spin" />
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <div className="modal-footer">
-                          <button type="button" className="btn btn-default" data-dismiss="modal">Cerrar</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <ContainerFilesModal
+                    modalId={this.state.containerFilesModalId}
+                    files={this.state.containerFiles}
+                    loading={this.state.containerFilesLoading}
+                    onDelete={(id) => deleteContainerFile(id, this.setState.bind(this))}
+                    onChange={(files) => this.setState({ containerFiles: files })}
+                  />
                 </div>
               </>
             }
