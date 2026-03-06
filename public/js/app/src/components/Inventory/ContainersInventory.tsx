@@ -1721,8 +1721,37 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                     modalId={this.state.containerFilesModalId}
                     files={this.state.containerFiles}
                     loading={this.state.containerFilesLoading}
-                    onDelete={(id) => deleteContainerFile(id, this.setState.bind(this))}
-                    onChange={(files) => this.setState({ containerFiles: files })}
+                    onDelete={(id) => {
+                      const api = new ApiService();
+                      api.deleteInventoryCarFile(id);
+                      this.setState((prev: any) => {
+                        const modalId = prev.containerFilesModalId;
+                        const newFiles = prev.containerFiles.filter((f: any) => f._id !== id);
+                        const fileIds = newFiles.map((f: any) => f._id);
+                        const updateRow = (list: any[]) =>
+                          list.map((c: any) => c._id === modalId ? { ...c, files: fileIds } : c);
+                        return {
+                          containerFiles: newFiles,
+                          containers: updateRow(prev.containers),
+                          originalContainers: updateRow(prev.originalContainers),
+                        };
+                      });
+                    }}
+                    onChange={(files) => {
+                      this.setState((prev: any) => {
+                        const modalId = prev.containerFilesModalId;
+                        const fileIds = files
+                          .filter((f: any) => f._id)
+                          .map((f: any) => f._id);
+                        const updateRow = (list: any[]) =>
+                          list.map((c: any) => c._id === modalId ? { ...c, files: fileIds } : c);
+                        return {
+                          containerFiles: files,
+                          containers: updateRow(prev.containers),
+                          originalContainers: updateRow(prev.originalContainers),
+                        };
+                      });
+                    }}
                   />
                 </div>
               </>

@@ -1344,6 +1344,10 @@ class InventoryController {
       const { id } = req.params;
       const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
       if (inventoryFile) {
+        await InventoryCar.updateOne(
+          { files: inventoryFile._id },
+          { $pull: { files: inventoryFile._id } }
+        );
         socket()
           .to(`inventory-detail-${inventoryFile.inventory}`)
           .emit('REFRESH', {
