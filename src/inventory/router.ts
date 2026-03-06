@@ -59,6 +59,10 @@ inventoryRouter.post('/api/v1/inventory/:id/upload-file/', Middlewares.isJWTAuth
 inventoryRouter.post('/api/v1/inventory/:id/report-car/', Middlewares.isJWTAuthenticated, InventoryController.reportCar);
 inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, InventoryController.apiFoundCar);
 
+// Inventory Car files API (Mobile/JWT)
+inventoryRouter.post('/api/v1/inventory-car/:id/upload-file/', Middlewares.isJWTAuthenticated, InventoryController.uploadInventoryCarFile);
+inventoryRouter.get('/api/v1/inventory-car/:id/files/', Middlewares.isJWTAuthenticated, InventoryController.apiListInventoryCarFiles);
+
 // Stock
 inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);
 inventoryRouter.get('/stock/import/', Middlewares.isLoggedIn, InventoryController.stock);

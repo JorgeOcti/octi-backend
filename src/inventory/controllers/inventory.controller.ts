@@ -120,6 +120,8 @@ class InventoryController {
     this.currentCompanyStockExport = this.currentCompanyStockExport.bind(this);
     this.createContainerInventory = this.createContainerInventory.bind(this);
     this.getInventoryForms = this.getInventoryForms.bind(this);
+    this.uploadInventoryCarFile = this.uploadInventoryCarFile.bind(this);
+    this.apiListInventoryCarFiles = this.apiListInventoryCarFiles.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -5989,6 +5991,74 @@ class InventoryController {
         resolve(true);
       }
     });
+  }
+
+  public async uploadInventoryCarFile(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { company, venue, team } = req.user;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    if (!file) {
+      return res.status(400).json({ message: 'El archivo es obligatorio.', status: 400 });
+    }
+    const allowedMimetypes = ['image/jpeg', 'video/mp4', 'application/pdf'];
+    if (!allowedMimetypes.includes(file.mimetype)) {
+      return res.status(400).json({ message: 'Tipo de archivo no permitido.', status: 400 });
+    }
+    try {
+      const inventoryCar = await InventoryCar.findById(id).populate('car');
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      file.headers = { 'Content-Type': file.mimetype };
+      file.team = team._id;
+      file.venue = venue._id;
+      file.inventory = inventoryCar.inventory;
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = company._id;
+      if (file.mimetype === 'image/jpeg') {
+        await this.autoRotate(file.path);
+      }
+      await inventoryFile.attach('file', file);
+      if (file.mimetype === 'image/jpeg') {
+        await this.resizeImage(file.path);
+        await inventoryFile.attach('thumbnail', file);
+      }
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, file: inventoryFile.file }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`uploadInventoryCarFile: Error.`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
+    }
+  }
+
+  public async apiListInventoryCarFiles(req: IRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const inventoryCar = await InventoryCar.findById(id).populate('car').populate({ path: 'files' });
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      return res.status(200).json({ data: inventoryCar.files, status: 200 });
+    } catch (e) {
+      /* istanbul ignore next */
+      return res.status(500).send(e);
+    }
   }
 
 }
