@@ -1,6 +1,7 @@
 import * as React from 'react';
 import ApiService from '../../utils/axios';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
+import MixpanelTracker from '../Utils/MixpanelTracker';
 
 export function loadContainerFiles(inventoryCarId: string, setState: Function) {
   const api = new ApiService();
@@ -54,6 +55,12 @@ export function ContainerFilesModal({ modalId, files, loading, onDelete, onChang
                   body={{ inventoryCardId: modalId }}
                   deleteCalback={(id) => onDelete(id)}
                   onChange={(f) => onChange(f)}
+                  onSuccess={(file) => {
+                    MixpanelTracker.getInstance().trackAction('Upload Container File', {
+                      inventory_car_id: modalId,
+                      file_type: file?.type,
+                    });
+                  }}
                   files={files}
                 />
                 {loading && (

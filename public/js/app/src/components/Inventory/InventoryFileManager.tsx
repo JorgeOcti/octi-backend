@@ -7,6 +7,7 @@ import ShowIf from '../Utils/ShowIf';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ApiService from '../../utils/axios';
 import { Socket } from 'socket.io-client/build/esm/socket';
+import MixpanelTracker from '../Utils/MixpanelTracker';
 
 interface IPropsType {
   inventoryCardId: string;
@@ -103,6 +104,12 @@ class InventoryFileManager extends React.Component<IPropsType, IStateType> {
               }}
               onChange={(files) => {
                 this.setState({ files });
+              }}
+              onSuccess={(file) => {
+                MixpanelTracker.getInstance().trackAction('Upload Inventory File', {
+                  inventory_id: inventories.detail._id,
+                  file_type: file?.type,
+                });
               }}
               files={files}
             />
