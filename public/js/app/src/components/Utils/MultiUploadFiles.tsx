@@ -11,6 +11,7 @@ import * as swal from 'sweetalert';
 
 interface IPropsType {
   onChange: (e: any) => void;
+  onSuccess?: (file: any) => void;
   deleteCalback?: (e: any) => void;
   className?: string;
   body?: any;
@@ -334,6 +335,9 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
             }
             return file;
           }));
+          if (this.props.onSuccess) {
+            this.props.onSuccess(imageToUpload);
+          }
           // dispatch(updateImage(imageToUpload.tempID, 100, statusImages.completed, response.data.id, 1));
           // dispatch(uploadImages());
           this.uploadImages();

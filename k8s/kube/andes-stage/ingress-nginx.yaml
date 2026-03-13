@@ -12,6 +12,7 @@ metadata:
     ingress.kubernetes.io/send-timeout: '600'
     kubernetes.io/tls-acme: 'true'
     nginx.org/websocket-services: osa-andes-service
+    nginx.ingress.kubernetes.io/proxy-body-size: '50m'
   labels:
     app: osa-andes
 spec:

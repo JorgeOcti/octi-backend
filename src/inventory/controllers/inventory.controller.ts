@@ -1243,8 +1243,10 @@ class InventoryController {
     if (file) {
       try {
         logger.info(
-          `InventoryController.uploadFile email: ${req.user.email
-          } inventory: ${id} file: ${JSON.stringify(file)}`
+          `InventoryController.uploadFile email: ${req.user.email} inventory: ${id} ` +
+          `company: ${company._id} venue: ${venue._id} team: ${team._id} ` +
+          `mimetype: ${file.mimetype} size: ${file.size} damage: ${damage} ` +
+          `hasComment: ${!!comment} inventoryCardId: ${inventoryCardId ?? 'none'}`
         );
         const inventoryFile = new InventoryFileModel();
         /*
@@ -1284,6 +1286,10 @@ class InventoryController {
           await inventoryFile.attach('thumbnail', file);
         }
         await inventoryFile.save();
+        logger.info(
+          `InventoryController.uploadFile SUCCESS inventoryFile: ${inventoryFile._id} ` +
+          `inventory: ${id} email: ${req.user.email}`
+        );
         if (inventoryCardId) {
           const inventoryCar = await InventoryCar.findById(inventoryCardId);
           if (inventoryCar) {
@@ -6010,6 +6016,11 @@ class InventoryController {
     if (!allowedMimetypes.includes(file.mimetype)) {
       return res.status(400).json({ message: 'Tipo de archivo no permitido.', status: 400 });
     }
+    logger.info(
+      `InventoryController.uploadInventoryCarFile email: ${req.user.email} inventoryCarId: ${id} ` +
+      `company: ${company._id} venue: ${venue._id} team: ${team._id} ` +
+      `mimetype: ${file.mimetype} size: ${file.size}`
+    );
     try {
       const inventoryCar = await InventoryCar.findById(id).populate('car');
       if (!inventoryCar) {
@@ -6036,13 +6047,19 @@ class InventoryController {
       }
       await inventoryFile.save();
       await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      logger.info(
+        `InventoryController.uploadInventoryCarFile SUCCESS inventoryFile: ${inventoryFile._id} ` +
+        `inventoryCarId: ${id} inventory: ${inventoryCar.inventory} email: ${req.user.email}`
+      );
       socket()
         .to(`inventory-detail-${inventoryCar.inventory}`)
         .emit('REFRESH', { update: true, venue: venue._id });
       return res.status(201).json({ data: { _id: inventoryFile._id, file: inventoryFile.file }, status: 201 });
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`uploadInventoryCarFile: Error.`);
+      logger.error(`uploadInventoryCarFile: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
