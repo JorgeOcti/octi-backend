@@ -81,7 +81,7 @@ interface ContainerFilesCellProps {
 export function ContainerFilesCell({ row, onClick }: ContainerFilesCellProps) {
   if (row.files && row.files.length) {
     return (
-      <div className="btn-group" style={{ width: '100px', display: 'flex', justifyContent: 'space-between' }}>
+      <div className="btn-group" style={{ width: '100%', minWidth: '80px', maxWidth: '90px', display: 'flex', justifyContent: 'space-between' }}>
         <button
           className="btn btn-xs btn-primary"
           data-toggle="modal"
@@ -104,6 +104,7 @@ export function ContainerFilesCell({ row, onClick }: ContainerFilesCellProps) {
   return (
     <button
       className="btn btn-sm btn-primary"
+      style={{minWidth: "80px", width: "100%", maxWidth: "90px"}}
       data-toggle="modal"
       data-target="#modalContainerFiles"
       onClick={onClick}
