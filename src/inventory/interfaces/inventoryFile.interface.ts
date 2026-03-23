@@ -11,4 +11,10 @@ export interface IInventoryFile {
   file: IIFile;
   comment?: string;
   showDamage?: boolean;
+  isLink?: boolean;
+  link?: {
+    url: string;
+    name: string;
+    type?: string;
+  };
 }

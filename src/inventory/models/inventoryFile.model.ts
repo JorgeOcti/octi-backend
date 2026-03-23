@@ -47,6 +47,15 @@ export const inventoryFileSchema = new mongoose.Schema({
   showDamage: {
     type: Boolean,
     default: false
+  },
+  isLink: {
+    type: Boolean,
+    default: false
+  },
+  link: {
+    url: { type: String },
+    name: { type: String },
+    type: { type: String }
   }
 }, {
   timestamps: true

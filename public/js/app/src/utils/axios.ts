@@ -1222,6 +1222,10 @@ export default class ApiService {
     return this.instance.delete(`/api/inventory-car/files/${inventoryFileId}/`);
   }
 
+  public addInventoryCarLink(inventoryCarId: string, data: { url: string; name: string; linkType?: string }): AxiosPromise {
+    return this.instance.post(`/api/inventory-car/${inventoryCarId}/add-link/`, data);
+  }
+
   public validateContectaID(conectaID: string): AxiosPromise {
     return this.instance.post(`/requests/vehicles/validate-conecta/`, {
       conectaID
