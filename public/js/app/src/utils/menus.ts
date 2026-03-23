@@ -327,7 +327,7 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
  *****************/
 const AdminLoadControl: any[] = [];
 
-if (hasPermission(window.user, 'viewContainerInventory') ) {
+if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
     id: '6.3',
     icon: 'fa-circle-o',
@@ -354,7 +354,16 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
-if (hasPermission(window.user, 'viewClient') ) {
+if (hasPermission(window.user, 'viewContainerInventory')) {
+  AdminLoadControl.push({
+    id: '6.5',
+    icon: 'fa-circle-o',
+    text: 'Aforo SAG',
+    url: '/containers/aforo-sag/'
+  });
+}
+
+if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.2',
     icon: 'fa-circle-o',

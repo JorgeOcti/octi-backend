@@ -13,7 +13,7 @@ import ApiService from '../../utils/axios';
 import AppContainer from '../../container/AppContainer';
 
 // Hardcoded kindForm - the only hardcoded value as per requirements
-const KIND_FORM_AFORO = 'aforo';
+const KIND_FORM_AFORO_SAG = 'aforoSAG';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -26,7 +26,7 @@ interface IStateType {
   loading: boolean;
 }
 
-class AforoContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
+class AforoSAGContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
   private api: ApiService;
 
@@ -38,7 +38,7 @@ class AforoContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Buscador de aforos';
+    this.title = 'Buscador de aforos SAG';
     this.api = new ApiService();
   }
 
@@ -48,8 +48,8 @@ class AforoContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
 
   private async fetchFormsByKind(): Promise<void> {
     try {
-      const response = await this.api.getFormsByKind(KIND_FORM_AFORO);
-      const formIds = response.data.results?.map((form: any) => form._id) || [];
+      const response = await this.api.getFormsByKind(KIND_FORM_AFORO_SAG);
+      const formIds = response.data.results?.map((form: any) => form._id) || undefined;
       this.setState({ forms: formIds, loading: false });
     } catch (error) {
       console.error('Error fetching forms by kind:', error);
@@ -76,7 +76,7 @@ class AforoContainerDashboard extends TrackingBasePage<IPropsType, IStateType> {
         dispatch={this.props.dispatch}
         dashboard={this.props.dashboard}
         menu={'6'}
-        subMenu={'6.4'}
+        subMenu={'6.5'}
         getRevisionsThunkAction={function (page: number, loading: boolean, search?: string | undefined, forms?: string[] | undefined): void {
           throw new Error('Function not implemented.');
         }}
@@ -112,5 +112,5 @@ const mapDispatchToProps = (dispatch: Dispatch<DashboardReduxAction>): Partial<I
 export default connect<{}, {}, IPropsType>(
   mapStateToProps,
   mapDispatchToProps
-)(AforoContainerDashboard);
+)(AforoSAGContainerDashboard);
 

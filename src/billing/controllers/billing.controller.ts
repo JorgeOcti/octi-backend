@@ -607,7 +607,8 @@ class BillingController {
     try {
       await new BillingQueue().processBilling(team);
       res.json({
-        status: 'ok'
+        status: 'ok',
+        message: 'Billing process completed successfully.'
       });
     } catch (e) {
       /* istanbul ignore next  */
