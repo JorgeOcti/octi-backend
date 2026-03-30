@@ -122,6 +122,8 @@ class InventoryController {
     this.getInventoryForms = this.getInventoryForms.bind(this);
     this.uploadInventoryCarFile = this.uploadInventoryCarFile.bind(this);
     this.apiListInventoryCarFiles = this.apiListInventoryCarFiles.bind(this);
+    this.addInventoryCarLink = this.addInventoryCarLink.bind(this);
+    this.addInventoryCarLinkWeb = this.addInventoryCarLinkWeb.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -6081,6 +6083,98 @@ class InventoryController {
     } catch (e) {
       /* istanbul ignore next */
       return res.status(500).send(e);
+    }
+  }
+
+  public async addInventoryCarLink(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { company, venue, team } = req.user;
+    const { url, name, linkType } = req.body;
+    if (!url || !name) {
+      return res.status(400).json({ message: 'El URL y el nombre son obligatorios.', status: 400 });
+    }
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({ message: 'El URL no es válido.', status: 400 });
+    }
+    logger.info(
+      `InventoryController.addInventoryCarLink email: ${req.user.email} inventoryCarId: ${id} ` +
+      `company: ${company._id} venue: ${venue._id} team: ${team._id} url: ${url}`
+    );
+    try {
+      const inventoryCar = await InventoryCar.findById(id).populate('car');
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = company._id;
+      inventoryFile.isLink = true;
+      inventoryFile.link = { url, name, type: linkType };
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      logger.info(
+        `InventoryController.addInventoryCarLink SUCCESS inventoryFile: ${inventoryFile._id} ` +
+        `inventoryCarId: ${id} inventory: ${inventoryCar.inventory} email: ${req.user.email}`
+      );
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, link: inventoryFile.link }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addInventoryCarLink: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
+    }
+  }
+
+  public async addInventoryCarLinkWeb(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { url, name, linkType } = req.body;
+    if (!url || !name) {
+      return res.status(400).json({ message: 'El URL y el nombre son obligatorios.', status: 400 });
+    }
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({ message: 'El URL no es válido.', status: 400 });
+    }
+    try {
+      const inventoryCar = await InventoryCar.findById(id);
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = req.user.company._id;
+      inventoryFile.isLink = true;
+      inventoryFile.link = { url, name, type: linkType };
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: req.user.venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, link: inventoryFile.link }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addInventoryCarLinkWeb: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
     }
   }
 

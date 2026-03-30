@@ -61,7 +61,11 @@ inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, I
 
 // Inventory Car files API (Mobile/JWT)
 inventoryRouter.post('/api/v1/inventory-car/:id/upload-file/', Middlewares.isJWTAuthenticated, InventoryController.uploadInventoryCarFile);
+inventoryRouter.post('/api/v1/inventory-car/:id/add-link/', Middlewares.isJWTAuthenticated, InventoryController.addInventoryCarLink);
 inventoryRouter.get('/api/v1/inventory-car/:id/files/', Middlewares.isJWTAuthenticated, InventoryController.apiListInventoryCarFiles);
+
+// Inventory Car link API (Web)
+inventoryRouter.post('/api/inventory-car/:id/add-link/', Middlewares.isLoggedIn, InventoryController.addInventoryCarLinkWeb);
 
 // Stock
 inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);

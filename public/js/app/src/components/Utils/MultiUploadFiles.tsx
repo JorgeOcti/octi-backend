@@ -150,13 +150,13 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
               files.map((file) => (
                 <React.Fragment key={file._id || file?._id ||file.tmpID}>
                   <div className='row border' style={{margin: 0}}>
-                    {/*<div*/}
-                    {/*  className='delete-button pointer'*/}
-                    {/*  onClick={() => this.deleteFile(file.tmpID)}*/}
-                    {/*>*/}
-                    {/*  <i className='fa fa-minus-circle' />*/}
-                    {/*</div>*/}
                     {
+                      file.isLink ?
+                        <div className='col-md-2'>
+                          <div className='item' style={{ paddingTop: '10px' }}>
+                            <i className='fa fa-link' style={{ fontSize: '32px', color: '#5b9bd5' }} />
+                          </div>
+                        </div> :
                       file.isImage ?
                         <div className='col-md-2'>
                           <img
@@ -176,13 +176,18 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
                     }
                     <div className='col-md-8' style={{ paddingTop: '20px' }}>
                       {file.name} <br />
-                      <span className={'text-muted text-sm'}>{this.getSizeText(file.size)}</span>
+                      {file.isLink
+                        ? <span className='text-muted text-sm' style={{ wordBreak: 'break-all' }}>{file.url}</span>
+                        : <span className='text-muted text-sm'>{this.getSizeText(file.size)}</span>
+                      }
                     </div>
                     <div
                       className='col-md-1 text-right pointer'
-                      onClick={()=> this.downloadFile(file)}
                       style={{paddingTop: "25px"}}>
-                      <i className='fa fa-download text-primary pointer' />
+                      {file.isLink
+                        ? <a href={file.url} target='_blank' rel='noopener noreferrer'><i className='fa fa-external-link text-primary' /></a>
+                        : <i className='fa fa-download text-primary pointer' onClick={() => this.downloadFile(file)} />
+                      }
                     </div>
                     <div className='col-md-1 text-right pointer' style={{paddingTop: "25px"}}  onClick={() => this.deleteFile(file?._id ||file.tmpID)}>
                       <i className='fa fa-minus-circle text-red' />
