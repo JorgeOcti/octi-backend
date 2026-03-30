@@ -195,6 +195,27 @@ export default class ApiService {
     return this.instance.delete(`/api/admin/companies/${id}/`);
   }
 
+  public getClientCompanies(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/handler/client-companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public updateClientCompany(company: IBaseCompany): AxiosPromise {
+    const formData = new FormData();
+    formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
+    if (company.image) {
+      formData.append('image', company.image);
+    }
+    this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
+    return this.instance.patch(
+      `/api/admin/handler/client-companies/${company._id}/`,
+      formData
+    );
+  }
+
   public createVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.post(`/api/admin/venues/`, venue);
   }

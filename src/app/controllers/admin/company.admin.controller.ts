@@ -13,6 +13,8 @@ class AdminCompaniesController {
     this.apiCreateCompany = this.apiCreateCompany.bind(this);
     this.apiUpdateCompany = this.apiUpdateCompany.bind(this);
     this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
+    this.apiListClientCompanies = this.apiListClientCompanies.bind(this);
+    this.apiUpdateClientCompany = this.apiUpdateClientCompany.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -305,6 +307,111 @@ class AdminCompaniesController {
         return res.status(200).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next  */
+      return res.status(500).json(e);
+    }
+  }
+
+  public async apiListClientCompanies(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewCompany') && !req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
+    const companyId = req.user.company._id;
+    const { page, pageSize } = req.query as { page: string; pageSize: string };
+    const handlerCompany = await Company.findOne({ _id: companyId }).select('clientCompanies').lean();
+    if (!handlerCompany || !handlerCompany.clientCompanies || !handlerCompany.clientCompanies.length) {
+      return res.json({ count: 0, pages: 1, results: [], status: 200 });
+    }
+    const options: PaginateOptions = {
+      sort: { name: 1 },
+      customLabels: {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        pagingCounter: 'si'
+      },
+      lean: true,
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    const companies = await this.getCompanies({
+      _id: { $in: handlerCompany.clientCompanies },
+      deleted: false
+    }, options);
+    if (options.page && companies.pages && companies.pages < options.page) {
+      return res.status(400).json({
+        error: 'La página solicitada no existe.',
+        status: 400
+      });
+    }
+    return res.json({
+      count: companies.total,
+      pages: companies.pages,
+      hasPrevious: companies.hasPrevious,
+      hasNextPage: companies.hasNextPage,
+      results: companies.docs,
+      status: 200
+    });
+  }
+
+  public async apiUpdateClientCompany(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('changeCompany')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
+    const { id } = req.params;
+    const companyId = req.user.company._id;
+    const { name, businessName, rut } = req.body;
+    const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
+    if (!name || !name.length) {
+      return res.status(400).json({
+        message: 'El nombre es requerido',
+        status: 400
+      });
+    }
+    try {
+      const handlerCompany = await Company.findOne({ _id: companyId }).select('clientCompanies').lean();
+      if (!handlerCompany || !handlerCompany.clientCompanies || !handlerCompany.clientCompanies.map(String).includes(String(id))) {
+        return res.status(400).json({
+          id,
+          message: 'Empresa no encontrada'
+        });
+      }
+      const company = await Company.findOne({
+        _id: id,
+        deleted: false
+      });
+      if (!company) {
+        return res.status(400).json({
+          id,
+          message: 'Empresa no encontrada'
+        });
+      }
+      company.name = name;
+      company.businessName = businessName;
+      company.rut = rut;
+      if (image) {
+        image.headers = { 'Content-Type': image.mimetype };
+        image.team = req.user.team._id;
+        await company.attach('image', image);
+        company.markModified('image');
+        await company.save();
+      }
+      await company.save();
+      return res.status(200).json({
+        message: 'Empresa editada satisfactoriamente.',
+        company
+      });
+    } catch (e) {
+      /* istanbul ignore next  */
+      console.log(e);
       /* istanbul ignore next  */
       return res.status(500).json(e);
     }

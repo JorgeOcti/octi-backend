@@ -3886,7 +3886,7 @@ class InventoryController {
         { path: 'images' },
         { path: 'inventory', select: ['name', 'contentType'] },
         { path: 'venueFound' },
-        { path: 'car' },
+        { path: 'car', populate: [{ path: 'company', select: ['name', 'image'] }] },
         { path: 'participant' },
         { path: 'evidenceStatus.images' },
         { path: 'evidenceStatus.images.comment' },

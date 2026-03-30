@@ -403,6 +403,15 @@ if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
   });
 }
 
+if (hasPermission(window.user, 'viewCompany') && window.user.company && (window.user.company as any).handler) {
+  settingItems.push({
+    id: '10.12',
+    icon: 'fa-circle-o text-blue',
+    text: 'Empresas Cliente',
+    url: '/settings/client-companies/'
+  });
+}
+
 
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({

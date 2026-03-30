@@ -13,6 +13,7 @@ import RequestChannelListView from './components/RequestSettings/RequestChannelL
 import PaymentMethodListView from './components/RequestSettings/PaymentMethodlListView';
 import RequestStatusListView from './components/RequestSettings/RequestStatusListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
+import ClientCompaniesListView from './components/ClientCompanies/ClientCompaniesListView';
 import DashboardDamagesView from './components/DashboardGeneral/DashboardDamagesView';
 import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
@@ -136,6 +137,7 @@ const App = () => (
         <Route exact path='/settings/colors/' component={ColorListView} />
         <Route exact path='/settings/carriers/' component={CarriersListView} />
         <Route exact path='/settings/companies/' component={CompaniesListView} />
+        <Route exact path='/settings/client-companies/' component={ClientCompaniesListView} />
         <Route exact path='/settings/alerts/' component={AlertsViews} />
         <Route exact path='/settings/versions/' component={VersionListView} />
         <Route exact path='/settings/billing-settings/' component={BillingSettingsListView} />
