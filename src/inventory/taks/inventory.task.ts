@@ -136,7 +136,7 @@ class InventoryQueue {
             name: container.extra["Cliente Razón Social"],
             businessName: container.extra["Cliente Razón Social"],
             rut: rutCompany.trim(),
-            team: existCompanyTeam,
+            team: existCompanyTeam._id,
             createdBy: user._id,
             active: true,
             deleted: false,
