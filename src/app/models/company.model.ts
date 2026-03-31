@@ -172,7 +172,8 @@ companySchema.plugin<any>(mongooseCrate, {
       size:966
       type:"image/svg"
       * */
-      return `/company/files/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
+      const safeName = attachment.originalname.replace(/\s+/g, '_');
+      return `/company/files/${attachment.team}/${uuid.v1()}-${safeName}`;
     }
   }),
   fields: {

@@ -4081,7 +4081,7 @@ class InventoryController {
           });
           const urlObj = new URL(clientCompany.image.url);
           const bucket = process.env.S3_BUCKET || s3Cfg.bucket;
-          const key = decodeURIComponent(urlObj.pathname.replace(/^\//, ''));
+          const key = urlObj.pathname.replace(/^\//, '');
           const s3Obj = await s3.getObject({ Bucket: bucket, Key: key }).promise();
           const mimeType = clientCompany.image.type || 'image/jpeg';
           const dataUri = `data:${mimeType};base64,${(s3Obj.Body as Buffer).toString('base64')}`;
