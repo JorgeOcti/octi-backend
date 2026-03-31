@@ -400,9 +400,13 @@ class AdminCompaniesController {
       if (image) {
         image.headers = { 'Content-Type': image.mimetype };
         image.team = req.user.team._id;
-        await company.attach('image', image);
+        await new Promise<void>((resolve, reject) => {
+          company.attach('image', image, (err: any) => {
+            if (err) return reject(err);
+            resolve();
+          });
+        });
         company.markModified('image');
-        await company.save();
       }
       await company.save();
       return res.status(200).json({
