@@ -1,4 +1,5 @@
 import * as GraphicsMagick from 'gm';
+import { signS3Url } from '../../utils/s3.utils';
 import * as Joi from 'joi';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
@@ -4067,6 +4068,13 @@ class InventoryController {
           clientCompany = clientCompanies[0];
         }
         console.log('Determined client company:', clientCompany ? clientCompany.name : 'None');
+      }
+
+      if (clientCompany && clientCompany.image && clientCompany.image.url) {
+        clientCompany = {
+          ...clientCompany,
+          image: { ...clientCompany.image, url: signS3Url(clientCompany.image.url) }
+        };
       }
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
