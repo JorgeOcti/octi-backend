@@ -3999,7 +3999,7 @@ class InventoryController {
             }
           ]
         },
-        { path: 'car' },
+        { path: 'car', populate: [{ path: 'company', select: ['name', 'image'] }] },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]).lean();
@@ -4047,7 +4047,27 @@ class InventoryController {
         'utf8'
       );
 
-      req.user.company = await Company.findById(req.user.company._id);
+      req.user.company = await Company.findById(req.user.company._id).populate({ path: 'clientCompanies', select: ['name', 'rut', 'image'] });
+
+      // Determine client company: first try from non-container cars, then match by RUT from extra field
+      let clientCompany: any = null;
+      const clientCarWithCompany = cars.find((c: any) => c.car && !c.car.isContainer && c.car.company);
+      if (clientCarWithCompany) {
+        clientCompany = clientCarWithCompany.car.company;
+      } else {
+        const clientCompanies = (req.user.company.clientCompanies as any[]) || [];
+        console.log('container extra fields:', container.extra);
+        const rutCliente = ((container as any).extra?.['RUT Cliente'] || '').trim().toLowerCase();
+        if (rutCliente) {
+          clientCompany = clientCompanies.find(
+            (c: any) => (c.rut || '').trim().toLowerCase() === rutCliente
+          ) || null;
+        }
+        if (!clientCompany && clientCompanies.length === 1) {
+          clientCompany = clientCompanies[0];
+        }
+        console.log('Determined client company:', clientCompany ? clientCompany.name : 'None');
+      }
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
@@ -4060,6 +4080,7 @@ class InventoryController {
         lastEmptyComment,
         userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
         user: req.user,
+        clientCompany,
       })
       if (0) {
         return res.send(html);

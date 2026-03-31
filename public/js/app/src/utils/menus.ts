@@ -393,21 +393,23 @@ const settingItems = [
   url: '/settings/alerts/'
 }*/
 ];
-
+// viewCompany permission is a legacy name of Empresas menu
+// Empresas now is Servicios and next menu called Empresas is for
+// cliente companies to change their info and upload logos
 if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
   settingItems.push({
     id: '10.1',
     icon: 'fa-circle-o text-yellow',
-    text: 'Empresas',
+    text: 'Servicios',
     url: '/settings/companies/'
   });
 }
 
-if (hasPermission(window.user, 'viewCompany') && window.user.company && (window.user.company as any).handler) {
+if (hasPermission(window.user, 'viewClientCompanies') && window.user.company && (window.user.company as any).handler) {
   settingItems.push({
     id: '10.12',
     icon: 'fa-circle-o text-blue',
-    text: 'Empresas Cliente',
+    text: 'Empresas',
     url: '/settings/client-companies/'
   });
 }
