@@ -18,7 +18,7 @@ const s3 = new AWS.S3({
 function signS3Url(url: string): string {
   if (!url) return url;
   try {
-    const key = new URL(url).pathname.replace(/^\//, '');
+    const key = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
     const bucket = process.env.S3_BUCKET || s3Cfg.bucket;
     return s3.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
   } catch (_) { return url; }
