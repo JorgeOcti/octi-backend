@@ -1,9 +1,28 @@
 import { Response } from 'express';
 import { PaginateOptions, PaginateResult } from 'mongoose';
+import * as AWS from 'aws-sdk';
 import { IRequest } from '../../../interfaces/global.interface';
 import GeneralUtils from '../../../utils/general.utils';
 import Company, { ICompanyModel } from '../../models/company.model';
-import { signS3Url } from '../../../utils/s3.utils';
+
+let s3Cfg: any = {};
+try { s3Cfg = require('../../../../s3-config.json'); } catch (_) { /* */ }
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.S3_KEY || s3Cfg.accessKeyId,
+  secretAccessKey: process.env.S3_SECRET || s3Cfg.secretAccessKey,
+  region: process.env.S3_REGION || s3Cfg.region,
+  signatureVersion: 'v4',
+});
+
+function signS3Url(url: string): string {
+  if (!url) return url;
+  try {
+    const key = new URL(url).pathname.replace(/^\//, '');
+    const bucket = process.env.S3_BUCKET || s3Cfg.bucket;
+    return s3.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
+  } catch (_) { return url; }
+}
 
 class AdminCompaniesController {
   constructor() {

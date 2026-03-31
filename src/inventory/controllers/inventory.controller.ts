@@ -1,5 +1,4 @@
 import * as GraphicsMagick from 'gm';
-import { signS3Url } from '../../utils/s3.utils';
 import * as Joi from 'joi';
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
@@ -4070,11 +4069,26 @@ class InventoryController {
         console.log('Determined client company:', clientCompany ? clientCompany.name : 'None');
       }
 
+      // Convert client company logo to base64 so Puppeteer doesn't need S3 access
       if (clientCompany && clientCompany.image && clientCompany.image.url) {
-        clientCompany = {
-          ...clientCompany,
-          image: { ...clientCompany.image, url: signS3Url(clientCompany.image.url) }
-        };
+        try {
+          let s3Cfg: any = {};
+          try { s3Cfg = require('../../../s3-config.json'); } catch (_) { /* */ }
+          const s3 = new (require('aws-sdk').S3)({
+            accessKeyId: process.env.S3_KEY || s3Cfg.accessKeyId,
+            secretAccessKey: process.env.S3_SECRET || s3Cfg.secretAccessKey,
+            region: process.env.S3_REGION || s3Cfg.region,
+          });
+          const urlObj = new URL(clientCompany.image.url);
+          const bucket = process.env.S3_BUCKET || s3Cfg.bucket;
+          const key = urlObj.pathname.replace(/^\//, '');
+          const s3Obj = await s3.getObject({ Bucket: bucket, Key: key }).promise();
+          const mimeType = clientCompany.image.type || 'image/jpeg';
+          const dataUri = `data:${mimeType};base64,${(s3Obj.Body as Buffer).toString('base64')}`;
+          clientCompany = { ...clientCompany, image: { ...clientCompany.image, url: dataUri } };
+        } catch (e) {
+          console.log('Could not fetch client company logo for PDF:', e.message);
+        }
       }
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
