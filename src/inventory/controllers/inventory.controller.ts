@@ -4080,7 +4080,8 @@ class InventoryController {
             region: process.env.S3_REGION || s3Cfg.region,
           });
           const urlObj = new URL(clientCompany.image.url);
-          const bucket = process.env.S3_BUCKET || s3Cfg.bucket;
+          // Virtual-hosted URL: https://{bucket}.s3[-{region}].amazonaws.com/{key}
+          const bucket = urlObj.hostname.split('.s3')[0];
           const key = urlObj.pathname.replace(/^\//, '');
           const s3Obj = await s3.getObject({ Bucket: bucket, Key: key }).promise();
           const mimeType = clientCompany.image.type || 'image/jpeg';
