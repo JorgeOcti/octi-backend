@@ -4072,20 +4072,10 @@ class InventoryController {
       // Convert client company logo to base64 so Puppeteer doesn't need S3 access
       if (clientCompany && clientCompany.image && clientCompany.image.url) {
         try {
-          let s3Cfg: any = {};
-          try { s3Cfg = require('../../../s3-config.json'); } catch (_) { /* */ }
-          const s3 = new (require('aws-sdk').S3)({
-            accessKeyId: process.env.S3_KEY || s3Cfg.accessKeyId,
-            secretAccessKey: process.env.S3_SECRET || s3Cfg.secretAccessKey,
-            region: process.env.S3_REGION || s3Cfg.region,
-          });
-          const urlObj = new URL(clientCompany.image.url);
-          // Virtual-hosted URL: https://{bucket}.s3[-{region}].amazonaws.com/{key}
-          const bucket = urlObj.hostname.split('.s3')[0];
-          const key = urlObj.pathname.replace(/^\//, '');
-          const s3Obj = await s3.getObject({ Bucket: bucket, Key: key }).promise();
+          const axios = require('axios');
+          const response = await axios.get(clientCompany.image.url, { responseType: 'arraybuffer' });
           const mimeType = clientCompany.image.type || 'image/jpeg';
-          const dataUri = `data:${mimeType};base64,${(s3Obj.Body as Buffer).toString('base64')}`;
+          const dataUri = `data:${mimeType};base64,${Buffer.from(response.data).toString('base64')}`;
           clientCompany = { ...clientCompany, image: { ...clientCompany.image, url: dataUri } };
         } catch (e) {
           console.log('Could not fetch client company logo for PDF:', e.message);
