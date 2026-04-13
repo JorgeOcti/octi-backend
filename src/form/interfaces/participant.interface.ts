@@ -218,7 +218,7 @@ export interface IParticipant {
 
   active: boolean;
   reliability: boolean;
-  aiExtraction?: {
+  carryResume?: {
     elements: number;
     has_damage: boolean;
     notes: string;

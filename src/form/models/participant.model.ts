@@ -620,7 +620,7 @@ const participantSchema = new mongoose.Schema(
       default: null
     },
     reliability: Boolean,
-    aiExtraction: {
+    carryResume: {
       type: {
         elements: Number,
         has_damage: Boolean,

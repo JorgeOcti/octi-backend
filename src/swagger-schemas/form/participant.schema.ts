@@ -64,7 +64,7 @@ export const ParticipantSchema = {
       format: 'date-time',
       description: 'Fecha de creación del control'
     },
-    aiExtraction: {
+    carryResume: {
       type: 'object',
       nullable: true,
       description: 'AI-extracted cargo summary from Gemini',
