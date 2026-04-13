@@ -10,7 +10,8 @@ export const kindsTrigger = [
   KindTrigger.email,
   KindTrigger.request,
   KindTrigger.integration,
-  KindTrigger.transmittal
+  KindTrigger.transmittal,
+  KindTrigger.aiExtraction
 ];
 
 export enum IntegrationType {
@@ -77,6 +78,10 @@ export const triggerConfigSchema = new mongoose.Schema({
 
   transmittalTypes: {
     type: [mongoose.Schema.Types.ObjectId]
+  },
+
+  questionName: {
+    type: String
   }
 });
 
