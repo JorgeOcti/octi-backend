@@ -218,6 +218,11 @@ export interface IParticipant {
 
   active: boolean;
   reliability: boolean;
+  aiExtraction?: {
+    elements: number;
+    has_damage: boolean;
+    notes: string;
+  } | null;
   updatedAt: Date;
   createdAt: Date;
 }

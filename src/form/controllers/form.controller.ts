@@ -3689,7 +3689,8 @@ class FormController {
           receiveFrom: true,
           sendTo: true,
           number: true,
-          createdAt: true
+          createdAt: true,
+          aiExtraction: true
         },
         populate: [
           {
@@ -3839,7 +3840,8 @@ class FormController {
           receiveFrom: true,
           sendTo: true,
           number: true,
-          createdAt: true
+          createdAt: true,
+          aiExtraction: true
         },
         populate: [
           {

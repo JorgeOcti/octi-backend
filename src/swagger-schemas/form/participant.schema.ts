@@ -63,6 +63,16 @@ export const ParticipantSchema = {
       type: 'string',
       format: 'date-time',
       description: 'Fecha de creación del control'
+    },
+    aiExtraction: {
+      type: 'object',
+      nullable: true,
+      description: 'AI-extracted cargo summary from Gemini',
+      properties: {
+        elements: { type: 'integer', description: 'Number of cargo elements (pallets, vehicles, etc.)' },
+        has_damage: { type: 'boolean', description: 'Whether damage was reported' },
+        notes: { type: 'string', description: 'Additional details extracted from text' }
+      }
     }
   }
 };
