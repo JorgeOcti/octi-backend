@@ -347,6 +347,15 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
 
 if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
+    id: '6.6',
+    icon: 'fa-circle-o',
+    text: 'Carga General',
+    url: '/inventory/containers/general-items/'
+  });
+}
+
+if (hasPermission(window.user, 'viewContainerInventory')) {
+  AdminLoadControl.push({
     id: '6.4',
     icon: 'fa-circle-o',
     text: 'Aforo',

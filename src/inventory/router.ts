@@ -13,6 +13,7 @@ inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/excel/', Middlewares.isLoggedIn, InventoryController.inventoryByCars);
 inventoryRouter.get('/inventory/containers/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/containers/general-items/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/containers/aforo/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/containers/aforo-sag/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/desconsolidated/unit/', Middlewares.isLoggedIn, InventoryController.index);

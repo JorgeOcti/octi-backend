@@ -2521,7 +2521,7 @@ class InventoryController {
   public async containerInventoryDetail(req: IRequest, res: Response) {
     try {
       const { page, pageSize, sort, sortOption } = req.query;
-      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage, startDate, endDate } = req.query;
+      const { shipFilter, tripFilter, containerFilter, blFilter, clientFilter, statusFilterSelected, filterHasDamage, startDate, endDate, contentType, venueFilter } = req.query;
 
       const venuesPermissions = req.user.venuesPermissions();
 
@@ -2540,11 +2540,16 @@ class InventoryController {
         ],
       }
 
-      let inventories = await Inventory.find({
+      let inventoryQuery: any = {
         team: req.user.team._id,
         containerInventory: true,
         venues: { $in: venuesPermissions }
-      }, {
+      };
+      if (contentType) {
+        inventoryQuery.contentType = contentType.toString();
+      }
+
+      let inventories = await Inventory.find(inventoryQuery, {
         _id: true,
         unitForm: true,
       })
@@ -2588,11 +2593,11 @@ class InventoryController {
       }
 
       if (tripFilter) {
-        containerMatch['extra.N° Viaje'] = { $in: tripFilter.toString().split(',').map((t: string) => t.trim()) };
+        containerMatch['extra.N° Viaje'] = { $regex: tripFilter.toString(), $options: 'i' };
       }
 
       if (shipFilter) {
-        containerMatch['extra.Nave'] = { $in: shipFilter.toString().split(',').map((s: string) => s.trim()) };
+        containerMatch['extra.Nave'] = { $regex: shipFilter.toString(), $options: 'i' };
       }
 
       if (containerFilter) {
@@ -2600,7 +2605,7 @@ class InventoryController {
       }
 
       if (blFilter) {
-        containerMatch['extra.N° BL'] = blFilter;
+        containerMatch['extra.N° BL'] = { $regex: blFilter.toString(), $options: 'i' };
       }
 
       if (clientFilter) {
@@ -2625,6 +2630,13 @@ class InventoryController {
         ]
 
         carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+      }
+
+      if (venueFilter) {
+        const venueNames = venueFilter.toString().split(',').map((n: string) => n.trim());
+        const venues = await Venue.find({ name: { $regex: venueNames[0], $options: 'i' } }, { _id: 1 });
+        const venueIds = venues.map((v: any) => v._id);
+        containerMatch['venue'] = { $in: venueIds };
       }
 
       let sortField: string = sort ? sort.toString() : 'createdAt';

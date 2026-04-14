@@ -257,6 +257,10 @@ class AdminCompaniesController {
         company.billing = JSON.parse(billing);
         company.notifications = JSON.parse(notifications);
         if (image) {
+          const allowedImageTypes = ['image/jpeg', 'image/png'];
+          if (!allowedImageTypes.includes(image.mimetype)) {
+            return res.status(400).json({ message: 'Formato de imagen no permitido. Use JPG o PNG.' });
+          }
           image.headers = {
             'Content-Type': image.mimetype
           };
@@ -424,6 +428,10 @@ class AdminCompaniesController {
       company.businessName = businessName;
       company.rut = rut;
       if (image) {
+        const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedImageTypes.includes(image.mimetype)) {
+          return res.status(400).json({ message: 'Formato de imagen no permitido. Use JPG, PNG, GIF o WEBP.' });
+        }
         image.headers = { 'Content-Type': image.mimetype };
         image.team = req.user.team._id;
         await new Promise<void>((resolve, reject) => {
