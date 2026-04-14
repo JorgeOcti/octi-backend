@@ -82,6 +82,10 @@ export const triggerConfigSchema = new mongoose.Schema({
 
   questionName: {
     type: String
+  },
+
+  prompt: {
+    type: String
   }
 });
 

@@ -92,6 +92,7 @@ export interface ITriggerConfig {
   requestItemStatus: IRequestItemStatus | IRequestItemStatusModel;
 
   questionName?: string;
+  prompt?: string;
 }
 
 export interface IFormTrigger {
