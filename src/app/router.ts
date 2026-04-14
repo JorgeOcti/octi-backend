@@ -178,6 +178,7 @@ appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesCon
 
 // companies
 appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
+appRouter.get('/settings/client-companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
 
 // api companies
 appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListCompanies);
@@ -221,6 +222,10 @@ appRouter.get('/api/v1/core/companies/', Middlewares.isJWTAuthenticated, Middlew
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
 appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);
+
+// handler client companies
+appRouter.get('/api/admin/handler/client-companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListClientCompanies);
+appRouter.patch('/api/admin/handler/client-companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateClientCompany);
 
 // api team
 appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);

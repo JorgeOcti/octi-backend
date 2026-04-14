@@ -120,6 +120,10 @@ class InventoryController {
     this.currentCompanyStockExport = this.currentCompanyStockExport.bind(this);
     this.createContainerInventory = this.createContainerInventory.bind(this);
     this.getInventoryForms = this.getInventoryForms.bind(this);
+    this.uploadInventoryCarFile = this.uploadInventoryCarFile.bind(this);
+    this.apiListInventoryCarFiles = this.apiListInventoryCarFiles.bind(this);
+    this.addInventoryCarLink = this.addInventoryCarLink.bind(this);
+    this.addInventoryCarLinkWeb = this.addInventoryCarLinkWeb.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -265,6 +269,31 @@ class InventoryController {
     let inventoryForms: any = await this.getInventoryForms(contentType, req.user);
     try {
       const { company, team, venue } = req.user;
+      const rutsByCompany = new Map<string, string>();
+      Object.keys(carsByContainer).forEach((BIC: string) => {
+        const container = carsByContainer[BIC]?.container;
+        const rut = container?.extra?.['RUT Cliente']?.trim();
+        const name = container?.extra?.['Cliente Razón Social']?.trim();
+        if (rut && !rutsByCompany.has(rut)) {
+          rutsByCompany.set(rut, name || '');
+        }
+      });
+
+      const ruts = Array.from(rutsByCompany.keys());
+      const existingCompanies = ruts.length
+        ? await Company.find({ rut: { $in: ruts } }, { rut: 1, name: 1 }).lean()
+        : [];
+      const existingRuts = new Set(
+        existingCompanies
+          .map((c: any) => (c.rut ? c.rut.trim() : ''))
+          .filter((rut: string) => rut.length)
+      );
+      const newCompanies = ruts
+        .filter((rut) => !existingRuts.has(rut))
+        .map((rut) => ({
+          rut,
+          name: rutsByCompany.get(rut) || ''
+        }));
       const inventory = new Inventory({
         ...inventoryForms,
         name,
@@ -309,6 +338,8 @@ class InventoryController {
 
       return res.json({
         message: 'Inventario de contenedores creado satisfactoriamente',
+        inventoryId: inventory._id,
+        newCompanies,
         status: 200
       });
 
@@ -1214,8 +1245,10 @@ class InventoryController {
     if (file) {
       try {
         logger.info(
-          `InventoryController.uploadFile email: ${req.user.email
-          } inventory: ${id} file: ${JSON.stringify(file)}`
+          `InventoryController.uploadFile email: ${req.user.email} inventory: ${id} ` +
+          `company: ${company._id} venue: ${venue._id} team: ${team._id} ` +
+          `mimetype: ${file.mimetype} size: ${file.size} damage: ${damage} ` +
+          `hasComment: ${!!comment} inventoryCardId: ${inventoryCardId ?? 'none'}`
         );
         const inventoryFile = new InventoryFileModel();
         /*
@@ -1255,6 +1288,10 @@ class InventoryController {
           await inventoryFile.attach('thumbnail', file);
         }
         await inventoryFile.save();
+        logger.info(
+          `InventoryController.uploadFile SUCCESS inventoryFile: ${inventoryFile._id} ` +
+          `inventory: ${id} email: ${req.user.email}`
+        );
         if (inventoryCardId) {
           const inventoryCar = await InventoryCar.findById(inventoryCardId);
           if (inventoryCar) {
@@ -1315,6 +1352,10 @@ class InventoryController {
       const { id } = req.params;
       const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
       if (inventoryFile) {
+        await InventoryCar.updateOne(
+          { files: inventoryFile._id },
+          { $pull: { files: inventoryFile._id } }
+        );
         socket()
           .to(`inventory-detail-${inventoryFile.inventory}`)
           .emit('REFRESH', {
@@ -2671,6 +2712,7 @@ class InventoryController {
               units: { $push: "$units" },
               openParticipant: { $first: "$openParticipant" },
               closeParticipant: { $first: "$closeParticipant" },// Push the modified units back into an array
+              files: { $first: "$files" },
               // To include other root fields, you'd list them here, e.g.,
               // otherField: { $first: "$otherField" }
             }
@@ -2826,6 +2868,7 @@ class InventoryController {
               inventory: 1,
               units: 1,
               contentDescription: 1,
+              files: 1,
             }
           }
         ]),
@@ -3015,6 +3058,7 @@ class InventoryController {
         { header: 'F. Finalización', key: 'finishDate', width: 20 },
         { header: 'Contenedor', key: 'container', width: 25 },
         { header: 'Carga', key: 'vin', width: 15 },
+        { header: 'Estado de carga', key: 'carStatus', width: 15 },
         { header: 'Descripción carga', key: 'description', width: 30 },
         { header: 'Daños', key: 'hasDamages', width: 30 },
         { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
@@ -3252,6 +3296,7 @@ class InventoryController {
         finishDate: finishDate,
         container: container ? container.car.vin : '',
         vin: car.car.vin,
+        carStatus: statusMap[car.status] || '',
         description: `${car.car.brand} ${car.car.model || ''}`,
         hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
         accesories: accessories?.accessoriesText || '',
@@ -3843,7 +3888,7 @@ class InventoryController {
         { path: 'images' },
         { path: 'inventory', select: ['name', 'contentType'] },
         { path: 'venueFound' },
-        { path: 'car' },
+        { path: 'car', populate: [{ path: 'company', select: ['name', 'image'] }] },
         { path: 'participant' },
         { path: 'evidenceStatus.images' },
         { path: 'evidenceStatus.images.comment' },
@@ -3926,7 +3971,7 @@ class InventoryController {
 
 
       let cars = await InventoryCar.find({
-        container: container._id
+        containerFound: container._id
       }).populate([
         { path: 'inventoriedBy' },
         { path: 'images' },
@@ -3954,7 +3999,7 @@ class InventoryController {
             }
           ]
         },
-        { path: 'car' },
+        { path: 'car', populate: [{ path: 'company', select: ['name', 'image'] }] },
         { path: 'evidenceStatus.images' },
         { path: 'files' }
       ]).lean();
@@ -4002,7 +4047,40 @@ class InventoryController {
         'utf8'
       );
 
-      req.user.company = await Company.findById(req.user.company._id);
+      req.user.company = await Company.findById(req.user.company._id).populate({ path: 'clientCompanies', select: ['name', 'rut', 'image'] });
+
+      // Determine client company: first try from non-container cars, then match by RUT from extra field
+      let clientCompany: any = null;
+      const clientCarWithCompany = cars.find((c: any) => c.car && !c.car.isContainer && c.car.company);
+      if (clientCarWithCompany) {
+        clientCompany = clientCarWithCompany.car.company;
+      } else {
+        const clientCompanies = (req.user.company.clientCompanies as any[]) || [];
+        console.log('container extra fields:', container.extra);
+        const rutCliente = ((container as any).extra?.['RUT Cliente'] || '').trim().toLowerCase();
+        if (rutCliente) {
+          clientCompany = clientCompanies.find(
+            (c: any) => (c.rut || '').trim().toLowerCase() === rutCliente
+          ) || null;
+        }
+        if (!clientCompany && clientCompanies.length === 1) {
+          clientCompany = clientCompanies[0];
+        }
+        console.log('Determined client company:', clientCompany ? clientCompany.name : 'None');
+      }
+
+      // Convert client company logo to base64 so Puppeteer doesn't need S3 access
+      if (clientCompany && clientCompany.image && clientCompany.image.url) {
+        try {
+          const axios = require('axios');
+          const response = await axios.get(clientCompany.image.url, { responseType: 'arraybuffer' });
+          const mimeType = clientCompany.image.type || 'image/jpeg';
+          const dataUri = `data:${mimeType};base64,${Buffer.from(response.data).toString('base64')}`;
+          clientCompany = { ...clientCompany, image: { ...clientCompany.image, url: dataUri } };
+        } catch (e) {
+          console.log('Could not fetch client company logo for PDF:', e.message);
+        }
+      }
 
       const html = GeneralUtils.generateHtmlFromPugFile(template, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
@@ -4015,6 +4093,7 @@ class InventoryController {
         lastEmptyComment,
         userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
         user: req.user,
+        clientCompany,
       })
       if (0) {
         return res.send(html);
@@ -5960,6 +6039,177 @@ class InventoryController {
         resolve(true);
       }
     });
+  }
+
+  public async uploadInventoryCarFile(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { company, venue, team } = req.user;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    if (!file) {
+      return res.status(400).json({ message: 'El archivo es obligatorio.', status: 400 });
+    }
+    const allowedMimetypes = ['image/jpeg', 'video/mp4', 'application/pdf'];
+    if (!allowedMimetypes.includes(file.mimetype)) {
+      return res.status(400).json({ message: 'Tipo de archivo no permitido.', status: 400 });
+    }
+    logger.info(
+      `InventoryController.uploadInventoryCarFile email: ${req.user.email} inventoryCarId: ${id} ` +
+      `company: ${company._id} venue: ${venue._id} team: ${team._id} ` +
+      `mimetype: ${file.mimetype} size: ${file.size}`
+    );
+    try {
+      const inventoryCar = await InventoryCar.findById(id).populate('car');
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      file.headers = { 'Content-Type': file.mimetype };
+      file.team = team._id;
+      file.venue = venue._id;
+      file.inventory = inventoryCar.inventory;
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = company._id;
+      if (file.mimetype === 'image/jpeg') {
+        await this.autoRotate(file.path);
+      }
+      await inventoryFile.attach('file', file);
+      if (file.mimetype === 'image/jpeg') {
+        await this.resizeImage(file.path);
+        await inventoryFile.attach('thumbnail', file);
+      }
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      logger.info(
+        `InventoryController.uploadInventoryCarFile SUCCESS inventoryFile: ${inventoryFile._id} ` +
+        `inventoryCarId: ${id} inventory: ${inventoryCar.inventory} email: ${req.user.email}`
+      );
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, file: inventoryFile.file }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`uploadInventoryCarFile: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
+    }
+  }
+
+  public async apiListInventoryCarFiles(req: IRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const inventoryCar = await InventoryCar.findById(id).populate('car').populate({ path: 'files' });
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      return res.status(200).json({ data: inventoryCar.files, status: 200 });
+    } catch (e) {
+      /* istanbul ignore next */
+      return res.status(500).send(e);
+    }
+  }
+
+  public async addInventoryCarLink(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { company, venue, team } = req.user;
+    const { url, name, linkType } = req.body;
+    if (!url || !name) {
+      return res.status(400).json({ message: 'El URL y el nombre son obligatorios.', status: 400 });
+    }
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({ message: 'El URL no es válido.', status: 400 });
+    }
+    logger.info(
+      `InventoryController.addInventoryCarLink email: ${req.user.email} inventoryCarId: ${id} ` +
+      `company: ${company._id} venue: ${venue._id} team: ${team._id} url: ${url}`
+    );
+    try {
+      const inventoryCar = await InventoryCar.findById(id).populate('car');
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      if (!(inventoryCar.car as ICarModel).isContainer) {
+        return res.status(403).json({ message: 'El vehículo no es un contenedor.', status: 403 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = company._id;
+      inventoryFile.isLink = true;
+      inventoryFile.link = { url, name, type: linkType };
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      logger.info(
+        `InventoryController.addInventoryCarLink SUCCESS inventoryFile: ${inventoryFile._id} ` +
+        `inventoryCarId: ${id} inventory: ${inventoryCar.inventory} email: ${req.user.email}`
+      );
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, link: inventoryFile.link }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addInventoryCarLink: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
+    }
+  }
+
+  public async addInventoryCarLinkWeb(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { url, name, linkType } = req.body;
+    if (!url || !name) {
+      return res.status(400).json({ message: 'El URL y el nombre son obligatorios.', status: 400 });
+    }
+    try {
+      new URL(url);
+    } catch {
+      return res.status(400).json({ message: 'El URL no es válido.', status: 400 });
+    }
+    try {
+      const inventoryCar = await InventoryCar.findById(id);
+      if (!inventoryCar) {
+        return res.status(404).json({ message: 'InventoryCar no encontrado.', status: 404 });
+      }
+      const inventoryFile = new InventoryFileModel();
+      inventoryFile.inventory = inventoryCar.inventory as any;
+      inventoryFile.user = req.user._id;
+      inventoryFile.company = req.user.company._id;
+      inventoryFile.isLink = true;
+      inventoryFile.link = { url, name, type: linkType };
+      await inventoryFile.save();
+      await InventoryCar.updateOne({ _id: id }, { $push: { files: inventoryFile._id } });
+      socket()
+        .to(`inventory-detail-${inventoryCar.inventory}`)
+        .emit('REFRESH', { update: true, venue: req.user.venue._id });
+      return res.status(201).json({ data: { _id: inventoryFile._id, link: inventoryFile.link }, status: 201 });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`addInventoryCarLinkWeb: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventoryCarId: ${id}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      return res.status(400).json(e);
+    }
   }
 
 }

@@ -25,24 +25,27 @@ html(lang="es")
 
       .header-grid {
         display: grid;
-        grid-template-columns: 120px 1fr auto;
-        gap: 16px;
-        align-items: start;
+        grid-template-columns: 160px 1fr 160px;
+        gap: 32px;
+        align-items: center;
       }
 
       .logo-placeholder {
-        height: 64px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #999;
-        font-size: 12px;
       }
 
-      .company h2 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; }
-      .company .meta { font-size: 12px; color: #666; line-height: 1.5; }
+      .logo-placeholder img {
+        max-height: 60px;
+        max-width: 150px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .company h2 { margin: 0 0 6px 0; font-size: 22px; font-weight: 700; }
+      .company .meta { font-size: 13px; color: #555; line-height: 1.8; }
 
       .doc-meta { text-align: right; font-size: 12px; }
 
@@ -111,7 +114,7 @@ html(lang="es")
       section.header
         .header-grid
           .logo-placeholder
-                      img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`, height="30px")
+            img(src=`https://mediaosa.s3.sa-east-1.amazonaws.com/medlog_logo.png`)
           .company
             h2= container.openParticipant.company.name.toUpperCase()
             .meta
@@ -120,6 +123,9 @@ html(lang="es")
               | Dirección: !{container.venueFound.code || 'Dirección no disponible'}
               br
               | Email: CHL-info@medlog.com · Tel: +562 2763 9500
+          .logo-placeholder(style="justify-content: flex-end;")
+            if clientCompany && clientCompany.image && clientCompany.image.url
+              img(src=clientCompany.image.url)
       .doc-title DESCONSOLIDADO DE CONTENEDOR
 
       section.primary

@@ -409,11 +409,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div> */}
               </div>
-              {formsId && formsId.length === 0 ? (
-                <p style={{ padding: '10px' }}>
-                  <strong>No hay formularios configurados para esta empresa.</strong>
-                </p>
-              ) : participants.length ? (
+              {participants.length ? (
                 <div className="table-responsive" style={{ border: 0 }}>
                   <table className="table table-andes table-striped table-hover">
                     <thead>
@@ -742,7 +738,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                 </p>
               ) : null}
             </div>
-            {pagination.pages > 1 && formsId && formsId.length > 0 && (
+            {pagination.pages > 1 && (
               <div className="box-footer">
                 <div className="row">
                   <div className="col-md-6" style={{ padding: '20px 15px' }}>

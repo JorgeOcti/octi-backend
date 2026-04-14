@@ -19,6 +19,7 @@ import { FilterSummryDetail } from "./FilterSummaryDetailComponent";
 import { Dispatch } from 'redux';
 import * as React from "react";
 import DataTable from 'react-data-table-component';
+import { loadContainerFiles, deleteContainerFile, ContainerFilesModal, ContainerFilesCell } from './containerFiles.utils';
 
 declare let window: IWindow;
 
@@ -54,6 +55,10 @@ interface IStateType {
   inventorySettings: any;
   loading: boolean;
   filterHasDamage: boolean;
+  containerFilesModalId: string | null;
+  containerFilesInventoryId: string | null;
+  containerFiles: any[];
+  containerFilesLoading: boolean;
 }
 
 const dataTableStyle = {
@@ -261,6 +266,10 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
       statusFilterSelected: [],
       selectedContainer: -1,
       filterHasDamage: false,
+      containerFilesModalId: null,
+      containerFilesInventoryId: null,
+      containerFiles: [],
+      containerFilesLoading: false,
       inventorySettings: {
         "leftoverDifferentVenue": true,
         "_id": "5e68fb3e0f7cfc00245e4954",
@@ -393,8 +402,20 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
           </button>
         }
       },
+      {
+        name: 'Archivos',
+        cell: (row: any) => {
+          const onclick = () => {
+            this.setState({
+              containerFilesModalId: row._id,
+              containerFilesInventoryId: row.inventory,
+            });
+            loadContainerFiles(row._id, this.setState.bind(this));
+          };
+          return <ContainerFilesCell row={row} onClick={onclick} />;
+        }
+      }
     ];
-
   }
 
   private getDropDownLabels(row: { isContainer: boolean, containerStatus: any; status: any; inventory: string; _id: string; car: { _id: string; }; labelText: {} | null | undefined; }) {
@@ -1532,6 +1553,13 @@ class InventoryDetail extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
+                  <ContainerFilesModal
+                    modalId={this.state.containerFilesModalId}
+                    files={this.state.containerFiles}
+                    loading={this.state.containerFilesLoading}
+                    onDelete={(id) => deleteContainerFile(id, this.setState.bind(this))}
+                    onChange={(files) => this.setState({ containerFiles: files })}
+                  />
                 </div>
               </>
             }

@@ -1,4 +1,5 @@
 import * as Queue from 'bull';
+import * as mongoose from 'mongoose';
 
 import CarModel, { ChoicesStatusCar } from '../../app/models/car.model';
 import Inventory, {
@@ -22,7 +23,7 @@ import pushService from '../../services/push.service';
 import { socket } from '../../services/socket.service';
 import moment = require('moment');
 import VirtualInventory from '../models/virtualInventory.model';
-import Company from '../../app/models/company.model';
+import Company, { ICompanyModel } from '../../app/models/company.model';
 import { ModuleHistory, StatusHistory } from '../../app/models/history.types';
 import History from '../../app/models/history.model';
 
@@ -61,8 +62,10 @@ class InventoryQueue {
 
     this.processUpdateCar = this.processUpdateCar.bind(this);
     this.processCreateInventory = this.processCreateInventory.bind(this);
+    this.processCreateContainerInventory = this.processCreateContainerInventory.bind(this);
     this.checkExistVenue = this.checkExistVenue.bind(this);
     this.sendNotification = this.sendNotification.bind(this);
+    this.ensureClientCompanyAdminUser = this.ensureClientCompanyAdminUser.bind(this);
   }
 
   public run() {
@@ -133,7 +136,7 @@ class InventoryQueue {
             name: container.extra["Cliente Razón Social"],
             businessName: container.extra["Cliente Razón Social"],
             rut: rutCompany.trim(),
-            team: existCompanyTeam,
+            team: existCompanyTeam._id,
             createdBy: user._id,
             active: true,
             deleted: false,
@@ -143,6 +146,8 @@ class InventoryQueue {
           clientCompany = await clientCompany.save();
 
           clientCompanyId = clientCompany._id
+
+          await this.ensureClientCompanyAdminUser(company, clientCompany, user);
         }
 
         if (!company.clientCompanies.includes(clientCompany._id)) {
@@ -696,6 +701,170 @@ class InventoryQueue {
       await venue.save();
     }
     return venue;
+  }
+
+  private normalizeCompanyName(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  private async ensureClientCompanyAdminUser(
+    companyHandler: ICompanyModel,
+    clientCompany: ICompanyModel,
+    createdBy: IUserModel
+  ): Promise<void> {
+    const now = new Date();
+    let teamId = clientCompany.team as any;
+    let teamName = '';
+
+    if (teamId) {
+      const existingTeam = await Team.findById(teamId);
+      if (!existingTeam) {
+        teamId = null;
+      } else {
+        teamName = existingTeam.name;
+      }
+    }
+
+    if (!teamId) {
+      const newTeam = await new Team({
+        name: clientCompany.name,
+        formsNumber: 0,
+        requestNumber: 0,
+        transmittalNumber: 0,
+        active: true
+      }).save();
+      teamId = newTeam._id;
+      teamName = newTeam.name;
+      clientCompany.team = teamId;
+      await clientCompany.save();
+    }
+
+    let venueId = null;
+    let venueName = '';
+    const existingVenue = await Venue.findOne({
+      team: teamId,
+      company: clientCompany._id,
+      deleted: { $ne: true }
+    });
+
+    if (existingVenue) {
+      venueId = existingVenue._id;
+      venueName = existingVenue.name;
+    } else {
+      const clientNameClean = this.normalizeCompanyName(clientCompany.name || '');
+      const newVenue = await new Venue({
+        name: `${clientCompany.name} - PRINCIPAL`,
+        team: teamId,
+        company: clientCompany._id,
+        code: clientNameClean.toUpperCase().substring(0, 10),
+        abbreviation: clientNameClean.toUpperCase().substring(0, 5),
+        lat: 0,
+        lng: 0,
+        shippingMaxDays: 5,
+        type: 'receiver',
+        sendToDays: [],
+        sendTo: [],
+        receiveFrom: [],
+        receptionCarriers: [],
+        shippingCarriers: [],
+        responsible: [],
+        deleted: false,
+        active: true
+      }).save();
+      venueId = newVenue._id;
+      venueName = newVenue.name;
+    }
+
+    const handlerNameClean = this.normalizeCompanyName(companyHandler.name || '');
+    const clientNameClean = this.normalizeCompanyName(clientCompany.name || '');
+    const generatedEmail = `${handlerNameClean}+${clientNameClean}@osacontrol.com`;
+
+    const existingUser = await User.findOne({ email: generatedEmail });
+    if (existingUser) {
+      logger.info(
+        `ensureClientCompanyAdminUser: user already exists {email: ${generatedEmail}, userId: ${existingUser._id}}`
+      );
+      return;
+    }
+
+    const handlerFirstName = companyHandler.name?.split(' ')[0] || 'ADMIN';
+
+    const userResult = await User.collection.insertOne({
+      active: true,
+      companiesAccess: [clientCompany._id],
+      createdAt: now,
+      updatedAt: now,
+      company: clientCompany._id,
+      team: teamId,
+      email: generatedEmail,
+      username: generatedEmail,
+      venue: venueId,
+      venuesAccess: [],
+      firstName: handlerFirstName,
+      lastName: 'USUARIO',
+      isAdmin: true,
+      isDriver: false,
+      password: '$2b$10$DGoFYGrdkmLLid/9.UPFze2MURDI4bL3wQfABwPQm6j/m8/L2bO8e',
+      preferred: new mongoose.Types.ObjectId('6058f9e53039dbadeeb7a559'),
+      settings: {
+        _id: new mongoose.Types.ObjectId()
+      },
+      type: 'common',
+      userBrands: [],
+      userForms: [],
+      userPermissions: [
+        new mongoose.Types.ObjectId('5b6356d61a3bd4c3827ce53f'),
+        new mongoose.Types.ObjectId('5b6356d61a3bd4c3827ce540'),
+        new mongoose.Types.ObjectId('67d3544208488f3472e6b388'),
+        new mongoose.Types.ObjectId('5b636f53a9683b19d446e021')
+      ]
+    });
+
+    logger.info(
+      `ensureClientCompanyAdminUser: user created {email: ${generatedEmail}, userId: ${userResult.insertedId}}`
+    );
+
+    try {
+      logger.info(
+        `ensureClientCompanyAdminUser: enqueue email {to: soporte@osacontrol.com, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
+      );
+      emailQueue.queue.add(
+        'email',
+        {
+          from: 'no-reply@osacontrol.com',
+          title: 'Nuevo usuario admin para Company Client',
+          to: '"Soporte"<soporte@osacontrol.com>',
+          subject: `Admin creado para ${clientCompany.name}`,
+          text: `Hola humanos\n\nSe creó un usuario admin para una Company Client. (Prometemos que fue con amor y café.)\n\nHandler: ${companyHandler.name} (${companyHandler._id})\nClient: ${clientCompany.name} (${clientCompany._id})\nEmail: ${generatedEmail}\nTeam: ${teamName} (${teamId})\nVenue: ${venueName} (${venueId})\nUsuario: ${handlerFirstName} USUARIO (${userResult.insertedId})\nCreado por: ${createdBy.firstName} ${createdBy.lastName}\nENV: ${process.env.ENV}\n\nSaludos.`,
+          view: 'alerts/clientCompanyAdminCreated',
+          context: {
+            handlerCompany: companyHandler,
+            clientCompany,
+            teamId,
+            teamName,
+            venueId,
+            venueName,
+            email: generatedEmail,
+            userId: userResult.insertedId,
+            userName: `${handlerFirstName} USUARIO`,
+            createdBy,
+            env: process.env.ENV
+          }
+        },
+        { attempts: 3, backoff: 1000, removeOnComplete: true }
+      );
+      logger.info(
+        `ensureClientCompanyAdminUser: email enqueued {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
+      );
+    } catch (error) {
+      logger.error(
+        `ensureClientCompanyAdminUser: email enqueue failed {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
+      );
+      logger.error(error);
+    }
   }
 
   private async processUpdateCar(
