@@ -80,7 +80,7 @@ export const triggerConfigSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId]
   },
 
-  questionName: {
+  questionId: {
     type: String
   },
 

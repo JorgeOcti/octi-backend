@@ -5,28 +5,9 @@ import ParticipantModel from '../../../models/participant.model';
 import logger from '../../../../services/logger.service';
 import { IAnyObject } from '../../../../interfaces/global.interface';
 
-const GEMINI_MODEL = 'gemini-3.0-flash';
+const GEMINI_MODEL = 'gemini-3-flash-preview';
 
 export default class GeminiCargoExtractionTriggerDelegate extends NullTriggerDelegate {
-
-  /**
-   * Finds the comment text of the first text-kind answer matching the given question name.
-   * @param sections - Participant sections containing answers
-   * @param questionName - The question or shortName to match
-   * @returns The trimmed comment string, or null if not found
-   */
-  private findTextAnswer(sections: IAnyObject[], questionName: string): string | null {
-    for (const section of sections) {
-      for (const answer of (section.answers ?? [])) {
-        if (answer.kind !== 'text') continue;
-        const matchesName = answer.question === questionName || answer.shortName === questionName;
-        if (matchesName && answer.comment && answer.comment.trim().length > 0) {
-          return answer.comment.trim();
-        }
-      }
-    }
-    return null;
-  }
 
   /**
    * Calls the Gemini API with the given text and prompt, returning parsed extraction JSON.
@@ -48,10 +29,10 @@ export default class GeminiCargoExtractionTriggerDelegate extends NullTriggerDel
   }
 
   /**
-   * Executes the Gemini cargo extraction trigger: reads a text answer from the participant,
+   * Executes the Gemini cargo extraction trigger: reads the answer for the configured question ID,
    * calls Gemini using the prompt stored in config, and saves the result to participant.carryResume.
-   * @param trigger - The trigger definition including config.questionName and config.prompt
-   * @param answers - Map of answer IDs to values
+   * @param trigger - The trigger definition including config.questionId and config.prompt
+   * @param answers - Map of answer IDs to values (unused directly; answer is resolved from participant sections)
    * @param payload - Accumulated trigger payload including participant data
    * @returns Updated payload with carryResume field
    */
@@ -59,12 +40,11 @@ export default class GeminiCargoExtractionTriggerDelegate extends NullTriggerDel
     try {
       logger.info(`GeminiCargoExtractionTriggerDelegate.trigger: performing`);
 
-      const context = this.processTrigerConfig(trigger, { ...answers, ...payload });
-      const questionName: string = context.questionName;
-      const prompt: string = context.prompt;
+      const questionId: string = trigger.config.questionId;
+      const prompt: string = trigger.config.prompt;
 
-      if (!questionName) {
-        logger.error(`GeminiCargoExtractionTriggerDelegate.trigger: config.questionName is required`);
+      if (!questionId) {
+        logger.error(`GeminiCargoExtractionTriggerDelegate.trigger: config.questionId is required`);
         return payload;
       }
 
@@ -79,14 +59,18 @@ export default class GeminiCargoExtractionTriggerDelegate extends NullTriggerDel
         return payload;
       }
 
-      const commentText = this.findTextAnswer(participant.sections ?? [], questionName);
+      const answer = participant.sections
+        .flatMap((section: IAnyObject) => section.answers)
+        .find((a: IAnyObject) => a._id.toString() === questionId);
+
+      const commentText: string = answer?.comment?.trim();
       if (!commentText) {
-        logger.info(`GeminiCargoExtractionTriggerDelegate.trigger: no matching text answer found for question "${questionName}", skipping`);
+        logger.info(`GeminiCargoExtractionTriggerDelegate.trigger: no answer found for questionId "${questionId}", skipping`);
         return payload;
       }
 
       logger.debug(`GeminiCargoExtractionTriggerDelegate.trigger: calling Gemini for participant ${participant._id}`);
-      const extraction = await this.callGemini(commentText, prompt);
+      const extraction = await this.callGemini(commentText.trim(), prompt);
       logger.debug(`GeminiCargoExtractionTriggerDelegate.trigger: extraction => ${JSON.stringify(extraction)}`);
 
       await ParticipantModel.updateOne(

@@ -91,7 +91,7 @@ export interface ITriggerConfig {
 
   requestItemStatus: IRequestItemStatus | IRequestItemStatusModel;
 
-  questionName?: string;
+  questionId?: string;
   prompt?: string;
 }
 
