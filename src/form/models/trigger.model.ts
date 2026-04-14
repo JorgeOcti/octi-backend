@@ -11,7 +11,7 @@ export const kindsTrigger = [
   KindTrigger.request,
   KindTrigger.integration,
   KindTrigger.transmittal,
-  KindTrigger.aiExtraction
+  KindTrigger.geminiCargoExtraction
 ];
 
 export enum IntegrationType {

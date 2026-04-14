@@ -4,4 +4,5 @@ export enum KindTrigger {
   request = 'request',
   integration = 'integration',
   transmittal = 'transmittal',
+  geminiCargoExtraction = 'geminiCargoExtraction',
 }

@@ -13,7 +13,7 @@ import RequestDelegate from './delegates/requestTrigger.delegate';
 import IntegrationDelegate from './delegates/integrationTrigger.delegate';
 import { KindTrigger } from '../../models/trigger.types';
 import TransmittalTriggerDelegate from "./delegates/transmittalTrigger.delegate";
-import AiExtractionTriggerDelegate from "./delegates/aiExtractionTrigger.delegate";
+import GeminiCargoExtractionTriggerDelegate from "./delegates/geminiCargoExtractionTrigger.delegate";
 
 export default class TriggerHandler {
   private form: IForm;
@@ -54,7 +54,7 @@ export default class TriggerHandler {
       [KindTrigger.request]: new RequestDelegate(),
       [KindTrigger.integration]: new IntegrationDelegate(),
       [KindTrigger.transmittal]: new TransmittalTriggerDelegate(),
-      [KindTrigger.aiExtraction]: new AiExtractionTriggerDelegate()
+      [KindTrigger.geminiCargoExtraction]: new GeminiCargoExtractionTriggerDelegate()
     };
     return delegates[trigger.kind] ?? new NullTriggerDelegate();
   }
