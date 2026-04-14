@@ -619,7 +619,15 @@ const participantSchema = new mongoose.Schema(
       type: String,
       default: null
     },
-    reliability: Boolean
+    reliability: Boolean,
+    carryResume: {
+      type: {
+        elements: Number,
+        has_damage: Boolean,
+        notes: String
+      },
+      default: null
+    }
   },
   {
     timestamps: true

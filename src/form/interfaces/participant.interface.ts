@@ -218,6 +218,11 @@ export interface IParticipant {
 
   active: boolean;
   reliability: boolean;
+  carryResume?: {
+    elements: number;
+    has_damage: boolean;
+    notes: string;
+  } | null;
   updatedAt: Date;
   createdAt: Date;
 }

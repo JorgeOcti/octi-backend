@@ -13,6 +13,7 @@ import RequestDelegate from './delegates/requestTrigger.delegate';
 import IntegrationDelegate from './delegates/integrationTrigger.delegate';
 import { KindTrigger } from '../../models/trigger.types';
 import TransmittalTriggerDelegate from "./delegates/transmittalTrigger.delegate";
+import GeminiCargoExtractionTriggerDelegate from "./delegates/geminiCargoExtractionTrigger.delegate";
 
 export default class TriggerHandler {
   private form: IForm;
@@ -52,7 +53,8 @@ export default class TriggerHandler {
       [KindTrigger.file]: new FileTriggerDelegate(),
       [KindTrigger.request]: new RequestDelegate(),
       [KindTrigger.integration]: new IntegrationDelegate(),
-      [KindTrigger.transmittal]: new TransmittalTriggerDelegate()
+      [KindTrigger.transmittal]: new TransmittalTriggerDelegate(),
+      [KindTrigger.geminiCargoExtraction]: new GeminiCargoExtractionTriggerDelegate()
     };
     return delegates[trigger.kind] ?? new NullTriggerDelegate();
   }
