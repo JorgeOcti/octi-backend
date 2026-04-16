@@ -349,7 +349,7 @@ if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.6',
     icon: 'fa-circle-o',
-    text: 'Carga General',
+    text: 'Vista Cliente Carga',
     url: '/inventory/containers/general-items/'
   });
 }
@@ -376,7 +376,7 @@ if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.2',
     icon: 'fa-circle-o',
-    text: 'Vista Cliente',
+    text: 'Vista Cliente Vehículo',
     url: '/desconsolidated/unit/'
   });
 }
