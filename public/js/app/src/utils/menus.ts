@@ -345,7 +345,7 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
-if (hasPermission(window.user, 'viewContainerInventory')) {
+if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.6',
     icon: 'fa-circle-o',

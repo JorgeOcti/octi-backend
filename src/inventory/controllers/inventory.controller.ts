@@ -2525,26 +2525,41 @@ class InventoryController {
 
       const venuesPermissions = req.user.venuesPermissions();
 
-      let containerMatch: any = {
-        $or: [
-          {
-            'venue': {
-              $in: venuesPermissions
-            }
-          },
-          {
-            'venueFound': {
-              $in: venuesPermissions
-            }
-          }
-        ],
-      }
+      let containerMatch: any = {};
 
       let inventoryQuery: any = {
-        team: req.user.team._id,
         containerInventory: true,
-        venues: { $in: venuesPermissions }
       };
+
+      if (req.user.company.handler) {
+        // handlerCompany: filtra por su propio equipo y venues
+        containerMatch = {
+          $or: [
+            { 'venue': { $in: venuesPermissions } },
+            { 'venueFound': { $in: venuesPermissions } }
+          ],
+        };
+        inventoryQuery.team = req.user.team._id;
+        inventoryQuery.venues = { $in: venuesPermissions };
+      } else {
+        // clientCompany: busca inventarios en el equipo de su(s) handler(s)
+        // La seguridad de los datos está garantizada por el filtro de RUT en clientFilter
+        const handlerCompanyIds = (req.user.company.handlerCompanies || []).map(
+          (c: any) => c._id ?? c
+        );
+        if (handlerCompanyIds.length > 0) {
+          const handlerDocs = await Company.find(
+            { _id: { $in: handlerCompanyIds } },
+            { team: 1 }
+          );
+          const handlerTeams = handlerDocs.map((c: any) => c.team);
+          inventoryQuery.team = { $in: handlerTeams };
+        } else {
+          inventoryQuery.team = req.user.team._id;
+          inventoryQuery.venues = { $in: venuesPermissions };
+        }
+      }
+
       if (contentType) {
         inventoryQuery.contentType = contentType.toString();
       }
@@ -2554,6 +2569,8 @@ class InventoryController {
         unitForm: true,
       })
 
+      logger.info(`[containerInventoryDetail] inventoryQuery: ${JSON.stringify(inventoryQuery)}`);
+      logger.info(`[containerInventoryDetail] inventories found: ${inventories.length} → ${inventories.map((i: any) => i._id).join(', ')}`);
 
       let carFilter: any = {}
 
@@ -2613,23 +2630,27 @@ class InventoryController {
           _id: new mongoose.Types.ObjectId(clientFilter.toString()),
         }).populate('team');
 
-        let clientCars = await Car.find({
-          company: new mongoose.Types.ObjectId(clientFilter.toString()),
-        }, { _id: 1 });
+        if (contentType === 'general-items') {
+          containerMatch['extra.RUT Cliente'] = company?.rut;
+        } else {
+          let clientCars = await Car.find({
+            company: new mongoose.Types.ObjectId(clientFilter.toString()),
+          }, { _id: 1 });
 
-        let inventoryCars = await InventoryCar.find({
-          car: { $in: clientCars.map((p: any) => p._id) },
-        }, { containerFound: 1, container: 1 });
+          let inventoryCars = await InventoryCar.find({
+            car: { $in: clientCars.map((p: any) => p._id) },
+          }, { containerFound: 1, container: 1 });
 
-        containerMatch["$or"] = [{
-          '_id': {
-            $in: inventoryCars.map((c: any) => c.container || c.containerFound)
-          }
-        },
-        { "extra.RUT Cliente": company?.rut }
-        ]
+          containerMatch["$or"] = [{
+            '_id': {
+              $in: inventoryCars.map((c: any) => c.container || c.containerFound)
+            }
+          },
+          { "extra.RUT Cliente": company?.rut }
+          ]
 
-        carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+          carFilter['car.company'] = new mongoose.Types.ObjectId(clientFilter.toString());
+        }
       }
 
       if (venueFilter) {
@@ -2643,7 +2664,9 @@ class InventoryController {
       let sortDirection: -1 | 1 = sortOption === 'asc' ? 1 : -1;
       let sortObject: Record<string, 1 | -1> = {};
       sortObject[sortField] = sortDirection;
+      sortObject['_id'] = sortDirection; // secondary key for stable pagination
 
+      logger.info(`[containerInventoryDetail] containerMatch: ${JSON.stringify(containerMatch)}`);
       logger.info(
         `InventoryController.containerInventoryDetail {email: ${req.user.email}, body: ${JSON.stringify(req.body)}}`
       );
@@ -2680,7 +2703,7 @@ class InventoryController {
           },
           { $unwind: { path: '$car' } },
 
-          { $match: { 'car.isContainer': true } }, // Filter for container cars
+          ...(contentType !== 'general-items' ? [{ $match: { 'car.isContainer': true } }] : []),
           { $match: containerMatch },
           { $unwind: { path: "$units", preserveNullAndEmptyArrays: true } },
           {
@@ -2723,7 +2746,8 @@ class InventoryController {
               updatedAt: { $first: "$updatedAt" },
               units: { $push: "$units" },
               openParticipant: { $first: "$openParticipant" },
-              closeParticipant: { $first: "$closeParticipant" },// Push the modified units back into an array
+              closeParticipant: { $first: "$closeParticipant" },
+              participant: { $first: "$participant" },
               files: { $first: "$files" },
               // To include other root fields, you'd list them here, e.g.,
               // otherField: { $first: "$otherField" }
@@ -2760,7 +2784,7 @@ class InventoryController {
               foreignField: '_id',
               as: 'closeParticipant',
               pipeline: [
-                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
+                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1, carryResume: 1 } },
                 {
                   $lookup: {
                     from: 'users',
@@ -2777,6 +2801,18 @@ class InventoryController {
             }
           },
           { $unwind: { path: "$closeParticipant", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: 'participants',
+              localField: 'participant',
+              foreignField: '_id',
+              as: 'participant',
+              pipeline: [
+                { $project: { carryResume: 1 } }
+              ]
+            }
+          },
+          { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
           {
             $lookup: {
               from: 'inventoryfiles',
@@ -2876,6 +2912,7 @@ class InventoryController {
               openDate: 1,
               openParticipant: 1,
               closeParticipant: 1,
+              participant: 1,
               emptyDate: 1,
               inventory: 1,
               units: 1,
@@ -2952,7 +2989,7 @@ class InventoryController {
 
       return res.json({
         data: containers.docs,
-        total: containers.totalDocs,
+        totalDocs: containers.totalDocs,
         page: containers.page,
         pageSize: containers.limit,
         totalPages: containers.totalPages,

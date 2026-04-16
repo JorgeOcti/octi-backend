@@ -2,6 +2,7 @@ import AppContainer from '../../container/AppContainer';
 import TrackingBasePage from "../Utils/TrackingBasePage";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
+import { ContainerFilesModal, loadContainerFiles, deleteContainerFile } from './containerFiles.utils';
 
 import * as React from "react";
 import ApiService from "../../utils/axios";
@@ -40,6 +41,12 @@ interface IStateType {
     sortDirection?: 'asc' | 'desc';
   };
   totalContainers: number;
+  clientFilter: string;
+  clientSelector: any[];
+  multiCompany: boolean;
+  filesModalId: string | null;
+  containerFiles: any[];
+  containerFilesLoading: boolean;
 }
 
 const dataTableStyle = {
@@ -99,22 +106,29 @@ const statusMap: Record<string, string> = {
 };
 
 const mapContainersToRows = (containers: any[]): any[] => {
-  return containers.map((c: any) => ({
-    _rowId: c._id,
-    totalBultos: 10, // placeholder
-    resumenCarga: c.closeParticipant?.deliveryInfo?.comment || '',
-    containerVin: c.car?.vin || '-',
-    bl: c.extra?.['N° BL'] || '-',
-    nave: c.extra?.['Nave'] || '-',
-    viaje: c.extra?.['N° Viaje'] || '-',
-    client: c.extra?.['Cliente Razón Social'] || '-',
-    sucursal: c.venue?.name || '-',
-    fDescarga: c.openDate || null,
-    fDespacho: c.emptyDate || null,
-    estado: c.containerStatus || '-',
-    inventoryId: c.inventory,
-    carId: c.car?._id,
-  }));
+  return containers.map((c: any) => {
+    const blParts = [
+      c.extra?.['N° BL'],
+      c.extra?.['Nave'],
+      c.extra?.['N° Viaje'],
+    ].filter(Boolean);
+
+    return {
+      _rowId: c._id,
+      containerVin: c.car?.vin || '-',
+      totalBultos: c.closeParticipant?.carryResume?.elements ?? c.participant?.carryResume?.elements ?? '-',
+      resumenCarga: c.closeParticipant?.deliveryInfo?.comment || '',
+      comentario: c.contentDetails?.[0]?.item || '-',
+      blNaveViaje: blParts.length > 0 ? blParts.join(' ') : '-',
+      sucursal: c.venue?.name || '-',
+      fDescarga: c.openDate || null,
+      fDespacho: c.emptyDate || null,
+      filesCount: c.files?.length ?? 0,
+      estado: c.containerStatus || '-',
+      inventoryId: c.inventory,
+      carId: c.car?._id,
+    };
+  });
 };
 
 class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
@@ -124,6 +138,17 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
   private timer: any | null = null;
 
   private readonly columns: any[] = [
+    {
+      name: 'Contenedor',
+      selector: (row: any) => row.containerVin,
+      maxWidth: '10%',
+    },
+    {
+      name: 'Comentario',
+      selector: (row: any) => row.comentario,
+      wrap: true,
+      grow: 2,
+    },
     {
       name: 'Total bultos',
       selector: (row: any) => row.totalBultos,
@@ -136,29 +161,10 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
       grow: 2,
     },
     {
-      name: 'Contenedor',
-      selector: (row: any) => row.containerVin,
-      maxWidth: '10%',
-    },
-    {
-      name: 'BL',
-      selector: (row: any) => row.bl,
-      maxWidth: '10%',
-    },
-    {
-      name: 'Nave',
-      selector: (row: any) => row.nave,
-      maxWidth: '12%',
-    },
-    {
-      name: 'Viaje',
-      selector: (row: any) => row.viaje,
-      maxWidth: '8%',
-    },
-    {
-      name: 'Cliente',
-      selector: (row: any) => row.client,
-      maxWidth: '14%',
+      name: 'BL/Nave/Viaje',
+      selector: (row: any) => row.blNaveViaje,
+      maxWidth: '15%',
+      wrap: true,
     },
     {
       name: 'Sucursal',
@@ -176,9 +182,33 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
       maxWidth: '10%',
     },
     {
+      name: 'Adjuntos',
+      maxWidth: '8%',
+      cell: (row: any) => (
+        <button
+          className="btn btn-sm btn-default"
+          data-toggle="modal"
+          data-target="#modalContainerFilesGeneral"
+          onClick={() => {
+            this.setState({ filesModalId: row._rowId, containerFiles: [] });
+            loadContainerFiles(row._rowId, (s: any) => this.setState(s));
+          }}
+        >
+          <i className="fa fa-fw fa-paperclip" /> {row.filesCount}
+        </button>
+      ),
+    },
+    {
       name: 'Estado',
-      selector: (row: any) => statusMap[row.estado] || row.estado,
       maxWidth: '10%',
+      cell: (row: any) => (
+        <span
+          className={`label-container label-container-${row.estado}`}
+          style={{ padding: '5px 10px' }}
+        >
+          {statusMap[row.estado] || row.estado}
+        </span>
+      ),
     },
     {
       name: 'Tarja',
@@ -207,10 +237,16 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
         pageSize: 50,
         hasNext: false,
         totalPages: 0,
-        filters: {},
+        filters: { statusFilterSelected: 'empty' },
         sort: 'createdAt',
         sortDirection: 'desc'
-      }
+      },
+      clientFilter: '',
+      clientSelector: [],
+      multiCompany: false,
+      filesModalId: null,
+      containerFiles: [],
+      containerFilesLoading: false,
     };
 
     this.fetchData = this.fetchData.bind(this);
@@ -256,7 +292,7 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
   private cleanFilters = () => {
     this.setState({
       loadingTable: true,
-      pagination: { ...this.state.pagination, page: 1, filters: {} }
+      pagination: { ...this.state.pagination, page: 1, filters: { clientFilter: this.state.clientFilter } }
     }, () => { this.fetchData(); });
   }
 
@@ -304,7 +340,25 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
 
   componentDidMount() {
     super.componentDidMount();
-    this.fetchData();
+    const { company } = window.user;
+    if (company?.handler) {
+      this.setState({
+        multiCompany: true,
+        clientFilter: company.clientCompanies[0]._id,
+        clientSelector: company.clientCompanies,
+        pagination: { ...this.state.pagination, filters: { ...this.state.pagination.filters, clientFilter: company.clientCompanies[0]._id } }
+      }, () => { this.fetchData(); });
+    } else {
+      const companyList = window.user.companiesAccess?.length > 1
+        ? window.user.companiesAccess
+        : [{ _id: company._id, name: company.name }];
+      this.setState({
+        multiCompany: companyList.length > 1,
+        clientFilter: companyList[0]._id,
+        clientSelector: companyList,
+        pagination: { ...this.state.pagination, filters: { ...this.state.pagination.filters, clientFilter: companyList[0]._id } }
+      }, () => { this.fetchData(); });
+    }
   }
 
   componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>) {
@@ -347,6 +401,33 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
               ? <div className="overlay"><i className="fa fa-refresh fa-spin" /></div>
               : <div className="box-body">
                   <div className="row" style={{ margin: '10px 0' }}>
+                    {this.state.multiCompany && (
+                      <div className="col-md-3">
+                        <div className="form-group">
+                          <label className="text-black">Filtrar por Cliente</label>
+                          <select
+                            className="form-control"
+                            value={this.state.clientFilter}
+                            onChange={(e) => {
+                              const companyId = e.target.value;
+                              this.setState({
+                                clientFilter: companyId,
+                                loadingTable: true,
+                                pagination: {
+                                  ...this.state.pagination,
+                                  page: 1,
+                                  filters: { ...this.state.pagination.filters, clientFilter: companyId }
+                                }
+                              }, () => { this.fetchData(); });
+                            }}
+                          >
+                            {this.state.clientSelector.map((client: any, index: number) => (
+                              <option key={index} value={client._id}>{client.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className="text-black">¿Qué contenedor buscas?</label>
@@ -457,6 +538,7 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
                         paginationComponentOptions={paginationComponentOptions}
                         progressPending={loadingTable}
                         paginationServer
+                        paginationPerPage={pagination.pageSize}
                         paginationRowsPerPageOptions={[pagination.pageSize, 100, 200]}
                         paginationTotalRows={totalContainers}
                         progressComponent={<div className="text-center"><i className="fa fa-spinner fa-spin fa-3x" /></div>}
@@ -472,6 +554,15 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
             }
           </div>
         </section>
+        <ContainerFilesModal
+          modalId={this.state.filesModalId}
+          htmlModalId="modalContainerFilesGeneral"
+          files={this.state.containerFiles}
+          loading={this.state.containerFilesLoading}
+          readOnly={!this.state.multiCompany}
+          onDelete={(id) => deleteContainerFile(id, (s: any) => this.setState(s))}
+          onChange={(files) => this.setState({ containerFiles: files })}
+        />
       </AppContainer>
     );
   }
