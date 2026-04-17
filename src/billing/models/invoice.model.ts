@@ -104,7 +104,7 @@ const invoiceSchema = new mongoose.Schema({
     default: {}
   },
   detail: {
-    type: Object,
+    type: mongoose.Schema.Types.Mixed,
     default: {}
   }
 }, {

@@ -16,6 +16,7 @@ billingRouter.get('/settings/billing-settings/', Middlewares.isLoggedIn, Billing
 billingRouter.get('/settings/billing-settings/invoices/', Middlewares.isLoggedIn, BillingController.apiInvoiceCorporative);
 billingRouter.get('/settings/billing/run/', Middlewares.isLoggedIn, BillingController.run);
 billingRouter.get('/settings/billing/export/', Middlewares.isLoggedIn, BillingController.exportDetail);
+billingRouter.get('/settings/billing/invoice/:id/export/', Middlewares.isLoggedIn, BillingController.exportInvoiceDetail);
 billingRouter.get('/api/admin/billing/', Middlewares.isLoggedIn, BillingController.apiList);
 billingRouter.get('/api/admin/billing/detail/', Middlewares.isLoggedIn, BillingController.apiDetail);
 

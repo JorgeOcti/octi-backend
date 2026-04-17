@@ -11,6 +11,7 @@ import BillingQueue from '../tasks/billing.task';
 import BillingTeamQueue from "../tasks/billingTeam.task";
 import { ChoicesTypeActivity } from '../models/activiHistory.types';
 import Company from '../../app/models/company.model';
+import Form from '../../form/models/form.model';
 import History from '../../app/models/history.model';
 import { IRequest } from '../../interfaces/global.interface';
 import InvoiceTeamBilling from "../models/invoiceTeamBilling.module";
@@ -41,6 +42,7 @@ class BillingController {
     this.getModules = this.getModules.bind(this);
     this.apiListModules = this.apiListModules.bind(this);
     this.exportDetail = this.exportDetail.bind(this);
+    this.exportInvoiceDetail = this.exportInvoiceDetail.bind(this);
     this.submodule = new Submodule()
   }
 
@@ -599,6 +601,310 @@ class BillingController {
       }
     } catch (e) {
       logger.error(e);
+    }
+  }
+
+  public async exportInvoiceDetail(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { id } = req.params;
+      logger.info(`BillingController.exportInvoiceDetail id: ${id} user: ${req.user.email}`);
+
+      const invoice = await Invoice.findById(id).populate([
+        { path: 'company', select: ['_id', 'name', 'businessName', 'rut'] }
+      ]);
+      if (!invoice) {
+        return res.status(404).json({ message: 'Invoice no encontrado.' });
+      }
+
+      const company: any = invoice.company || {};
+      const companyName = company.name || '';
+      const safeCompany = companyName.replace(/[^a-zA-Z0-9-_]+/g, '_') || 'company';
+      const periodLabel = invoice.period
+        ? moment(invoice.period, 'YYYYMM').format('MMMM YYYY')
+        : String(invoice._id);
+      const filename = `billing-detail-${safeCompany}-${invoice.period || invoice._id}.xlsx`;
+
+      const detail: any = invoice.detail || {};
+      const containersGroup = detail?.desconsolidado?.containers;
+      const unitsGroup = detail?.desconsolidado?.codedUnits;
+      const aforoGroup = detail?.aforo?.aforo;
+      const aforoSagGroup = detail?.aforo?.aforoSAG;
+
+      // Human-readable label for the content type (aka Tipo de desconsolidado)
+      const desconsolidadoLabel = (contentType?: string): string => {
+        switch (contentType) {
+          case 'coded-items': return 'Anuncio Vehículos';
+          case 'general-items': return 'Anuncio Carga';
+          default: return '';
+        }
+      };
+
+      // Map InventoryCar id -> container BIC, so we can show the parent BIC on each unit row.
+      const bicByInventoryCarId: Record<string, string> = {};
+      if (Array.isArray(containersGroup?.items)) {
+        for (const c of containersGroup.items) {
+          if (c?.inventoryCarId && c?.bic) {
+            bicByInventoryCarId[String(c.inventoryCarId)] = String(c.bic);
+          }
+        }
+      }
+
+      // Resolve form names for the aforo sheets (single query).
+      const formNamesById: Record<string, string> = {};
+      const formIds: any[] = [];
+      for (const g of [aforoGroup, aforoSagGroup]) {
+        if (Array.isArray(g?.items)) {
+          for (const it of g.items) if (it?.formId) formIds.push(it.formId);
+        }
+      }
+      if (formIds.length) {
+        const forms = await Form.find({ _id: { $in: formIds } }, { name: 1 }).lean();
+        for (const f of forms as any[]) {
+          formNamesById[String(f._id)] = f.name || '';
+        }
+      }
+
+      const workbook = new excel.Workbook();
+      workbook.creator = 'OSA Control';
+      workbook.created = new Date();
+
+      // ------------------------------------------------------------------
+      // 1) Resumen sheet
+      // ------------------------------------------------------------------
+      const resumen = workbook.addWorksheet('Resumen', {
+        pageSetup: { fitToPage: true, fitToHeight: 100, fitToWidth: 1 }
+      });
+      resumen.columns = [
+        { key: 'a', width: 28 },
+        { key: 'b', width: 20 },
+        { key: 'c', width: 20 },
+        { key: 'd', width: 20 }
+      ];
+
+      resumen.mergeCells('A1:D1');
+      const titleCell = resumen.getCell('A1');
+      titleCell.value = 'Detalle de Facturación';
+      titleCell.font = { size: 16, bold: true };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      const headerPairs: Array<[string, any]> = [
+        ['Empresa', companyName],
+        ['Razón Social / RUT', `${company.businessName || ''} / ${company.rut || ''}`],
+        ['Período', `${periodLabel} (${invoice.period || ''})`],
+        ['Tipo de cambio', invoice.valueDolar ? `${invoice.valueDolar} CLP/USD` : '']
+      ];
+      let rowIdx = 3;
+      for (const [label, value] of headerPairs) {
+        const row = resumen.getRow(rowIdx++);
+        row.getCell(1).value = label;
+        row.getCell(1).font = { bold: true };
+        resumen.mergeCells(`B${row.number}:D${row.number}`);
+        row.getCell(2).value = value;
+      }
+
+      rowIdx++; // blank row
+
+      // Concepts table header
+      const conceptHeaderRow = resumen.getRow(rowIdx++);
+      conceptHeaderRow.values = ['Concepto', 'Unidades', 'Precio unit. USD', 'Subtotal USD'];
+      conceptHeaderRow.font = { bold: true };
+      conceptHeaderRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
+        cell.border = { bottom: { style: 'thin' } };
+      });
+
+      const conceptRows: Array<{ label: string; group: any; sheet?: string }> = [
+        { label: 'Contenedores (desconsolidado)', group: containersGroup, sheet: 'Contenedores' },
+        { label: 'Unidades (desconsolidado)', group: unitsGroup, sheet: 'Unidades' },
+        { label: 'Aforo', group: aforoGroup, sheet: 'Aforo' },
+        { label: 'Aforo SAG', group: aforoSagGroup, sheet: 'Aforo SAG' }
+      ];
+
+      let grandTotalUsd = 0;
+      for (const c of conceptRows) {
+        if (!c.group) continue;
+        const count = c.group.count || 0;
+        const subtotal = c.group.price || 0;
+        const unitPrice = count > 0 ? subtotal / count : 0;
+        grandTotalUsd += subtotal;
+        const row = resumen.getRow(rowIdx++);
+        row.values = [c.label, count, unitPrice, subtotal];
+        row.getCell(3).numFmt = '#,##0.00';
+        row.getCell(4).numFmt = '#,##0.00';
+      }
+
+      rowIdx++; // blank
+      const totalUsdRow = resumen.getRow(rowIdx++);
+      totalUsdRow.values = ['TOTAL USD', '', '', invoice.totalDolar || grandTotalUsd];
+      totalUsdRow.font = { bold: true };
+      totalUsdRow.getCell(4).numFmt = '#,##0.00';
+
+      if (invoice.totalPeso) {
+        const totalClpRow = resumen.getRow(rowIdx++);
+        totalClpRow.values = ['TOTAL CLP', '', '', invoice.totalPeso];
+        totalClpRow.font = { bold: true };
+        totalClpRow.getCell(4).numFmt = '#,##0';
+      }
+
+      rowIdx++;
+      const hintRow = resumen.getRow(rowIdx++);
+      hintRow.getCell(1).value = 'Ver las otras hojas para el detalle por BIC / VIN.';
+      hintRow.getCell(1).font = { italic: true, color: { argb: 'FF666666' } };
+
+      resumen.views = [{ state: 'frozen', ySplit: 2 }];
+
+      // Helper to build a detail sheet with a totals row and autoFilter.
+      const addDetailSheet = (
+        name: string,
+        columns: Array<{ header: string; key: string; width: number; numFmt?: string }>,
+        items: any[],
+        mapRow: (it: any) => any,
+        totalsConfig: { labelCol: string; valueCol: string; count: number; subtotal: number; numFmt?: string }
+      ) => {
+        const ws = workbook.addWorksheet(name, {
+          pageSetup: { fitToPage: true, fitToHeight: 100, fitToWidth: 1 }
+        });
+        ws.columns = columns.map((c) => ({
+          header: c.header,
+          key: c.key,
+          width: c.width,
+          style: c.numFmt ? { numFmt: c.numFmt } : undefined
+        }));
+
+        // Header styling
+        const headerRow = ws.getRow(1);
+        headerRow.font = { bold: true };
+        headerRow.eachCell((cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
+          cell.border = { bottom: { style: 'thin' } };
+        });
+
+        // Data rows
+        for (const it of items) ws.addRow(mapRow(it));
+
+        // Totals row
+        const totalsRow = ws.addRow({});
+        totalsRow.getCell(totalsConfig.labelCol).value = `TOTAL (${totalsConfig.count})`;
+        totalsRow.getCell(totalsConfig.labelCol).font = { bold: true };
+        totalsRow.getCell(totalsConfig.valueCol).value = totalsConfig.subtotal;
+        totalsRow.getCell(totalsConfig.valueCol).font = { bold: true };
+        totalsRow.getCell(totalsConfig.valueCol).numFmt = totalsConfig.numFmt || '#,##0.00';
+
+        // Freeze header + filter
+        ws.views = [{ state: 'frozen', ySplit: 1 }];
+        ws.autoFilter = {
+          from: { row: 1, column: 1 },
+          to: { row: 1, column: columns.length }
+        };
+        return ws;
+      };
+
+      // ------------------------------------------------------------------
+      // 2) Contenedores sheet
+      // ------------------------------------------------------------------
+      if (Array.isArray(containersGroup?.items) && containersGroup.items.length) {
+        addDetailSheet(
+          'Contenedores',
+          [
+            { header: 'BIC', key: 'bic', width: 22 },
+            { header: 'Tipo de desconsolidado', key: 'contentType', width: 22 },
+            { header: 'Fecha de carga', key: 'datetime', width: 22, numFmt: 'dd/mm/yyyy hh:mm' },
+            { header: 'Precio USD', key: 'price', width: 14, numFmt: '#,##0.00' }
+          ],
+          containersGroup.items,
+          (it: any) => ({
+            bic: it.bic || '',
+            contentType: desconsolidadoLabel(it.contentType),
+            datetime: it.datetime ? new Date(it.datetime) : null,
+            price: typeof it.price === 'number' ? it.price : null
+          }),
+          { labelCol: 'C', valueCol: 'D', count: containersGroup.count || 0, subtotal: containersGroup.price || 0 }
+        );
+      }
+
+      // ------------------------------------------------------------------
+      // 3) Unidades sheet
+      // ------------------------------------------------------------------
+      if (Array.isArray(unitsGroup?.items) && unitsGroup.items.length) {
+        addDetailSheet(
+          'Unidades',
+          [
+            { header: 'VIN', key: 'vin', width: 24 },
+            { header: 'BIC Contenedor', key: 'containerBic', width: 22 },
+            { header: 'Tipo de desconsolidado', key: 'contentType', width: 22 },
+            { header: 'Fecha de carga', key: 'datetime', width: 22, numFmt: 'dd/mm/yyyy hh:mm' },
+            { header: 'Precio USD', key: 'price', width: 14, numFmt: '#,##0.00' }
+          ],
+          unitsGroup.items,
+          (it: any) => ({
+            vin: it.vin || '',
+            containerBic: it.containerCarId ? bicByInventoryCarId[String(it.containerCarId)] || '' : '',
+            contentType: desconsolidadoLabel(it.contentType),
+            datetime: it.datetime ? new Date(it.datetime) : null,
+            price: typeof it.price === 'number' ? it.price : null
+          }),
+          { labelCol: 'D', valueCol: 'E', count: unitsGroup.count || 0, subtotal: unitsGroup.price || 0 }
+        );
+      }
+
+      // ------------------------------------------------------------------
+      // 4) Aforo sheet
+      // ------------------------------------------------------------------
+      const buildAforoSheet = (sheetName: string, group: any) => {
+        if (!Array.isArray(group?.items) || !group.items.length) return;
+        addDetailSheet(
+          sheetName,
+          [
+            { header: 'VIN', key: 'vin', width: 24 },
+            { header: 'Formulario', key: 'form', width: 32 },
+            { header: 'Fecha de revisión', key: 'datetime', width: 22, numFmt: 'dd/mm/yyyy hh:mm' },
+            { header: 'Precio USD', key: 'price', width: 14, numFmt: '#,##0.00' }
+          ],
+          group.items,
+          (it: any) => ({
+            vin: it.vin || '',
+            form: it.formId ? formNamesById[String(it.formId)] || String(it.formId) : '',
+            datetime: it.datetime ? new Date(it.datetime) : null,
+            price: typeof it.price === 'number' ? it.price : null
+          }),
+          { labelCol: 'C', valueCol: 'D', count: group.count || 0, subtotal: group.price || 0 }
+        );
+      };
+      buildAforoSheet('Aforo', aforoGroup);
+      buildAforoSheet('Aforo SAG', aforoSagGroup);
+
+      // ------------------------------------------------------------------
+      // Fallback for old invoices without items[]
+      // ------------------------------------------------------------------
+      const hasAnyItems =
+        (Array.isArray(containersGroup?.items) && containersGroup.items.length) ||
+        (Array.isArray(unitsGroup?.items) && unitsGroup.items.length) ||
+        (Array.isArray(aforoGroup?.items) && aforoGroup.items.length) ||
+        (Array.isArray(aforoSagGroup?.items) && aforoSagGroup.items.length);
+
+      if (!hasAnyItems) {
+        const ws = workbook.addWorksheet('Detalle no disponible');
+        ws.columns = [{ header: 'Mensaje', key: 'msg', width: 100 }];
+        ws.getRow(1).font = { bold: true };
+        ws.addRow({
+          msg: 'Este invoice fue generado antes de capturar el detalle por BIC / VIN. Re-ejecute el proceso de billing para poblar el detalle.'
+        });
+      }
+
+      // ------------------------------------------------------------------
+      // Write out via tempfile (matches the pattern in apiDetail)
+      // ------------------------------------------------------------------
+      const tempFilePath = tempfile('.xlsx');
+      await workbook.xlsx.writeFile(tempFilePath);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+      return res.sendFile(tempFilePath);
+    } catch (e) {
+      logger.error(e);
+      if (!res.headersSent) {
+        return res.status(500).json({ message: 'Ha ocurrido un error generando el detalle.' });
+      }
+      return;
     }
   }
 

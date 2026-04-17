@@ -463,8 +463,8 @@ class BillingQueue {
       }
 
       // Calcular período: mes anterior (restando 15 días y tomando inicio del mes)
-      const start_date = moment().subtract(15, 'days').startOf('month');
-      const end_date = moment().subtract(15, 'days').endOf('month');
+      const start_date = moment().subtract(25, 'days').startOf('month');
+      const end_date = moment().subtract(25, 'days').endOf('month');
       const period = start_date.format('YYYYMM');
 
       console.log(`Period: ${period}`);
@@ -520,6 +520,8 @@ class BillingQueue {
 
         let generalContainerCount = 0;
         let generalCarCount = 0;
+        const containerItems: any[] = [];
+        const unitItems: any[] = [];
 
         if (generalInventoryIds.length > 0) {
           // Contenedores en general-items (container = null y car.isContainer = true)
@@ -536,6 +538,20 @@ class BillingQueue {
           const generalContainerIds = generalContainers.map(c => c._id);
 
           console.log(`  Containers: ${generalContainerCount}`);
+
+          for (const ic of generalContainers) {
+            containerItems.push({
+              action: 'desconsolidado',
+              kind: 'container',
+              bic: (ic.car as any)?.vin,
+              carId: (ic.car as any)?._id,
+              inventoryCarId: ic._id,
+              inventoryId: ic.inventory,
+              contentType: 'general-items',
+              datetime: (ic as any).createdAt,
+              price: GENERAL_CONTAINER_PRICE_USD
+            });
+          }
 
           // Verificar si los contenedores en general-items tienen autos dentro (NO deberían)
           if (generalContainerIds.length > 0) {
@@ -560,6 +576,20 @@ class BillingQueue {
             ic.car && (ic.car as any).isContainer !== true
           );
           generalCarCount = generalCars.length;
+
+          for (const ic of generalCars) {
+            unitItems.push({
+              action: 'desconsolidado',
+              kind: 'generalUnit',
+              vin: (ic.car as any)?.vin,
+              carId: (ic.car as any)?._id,
+              inventoryCarId: ic._id,
+              inventoryId: ic.inventory,
+              contentType: 'general-items',
+              datetime: (ic as any).createdAt,
+              price: GENERAL_CAR_PRICE_USD
+            });
+          }
 
           console.log(`  General cars (loose): ${generalCarCount}`);
         } else {
@@ -591,14 +621,43 @@ class BillingQueue {
 
           console.log(`  Containers: ${codedContainerCount}`);
 
+          for (const ic of codedContainers) {
+            containerItems.push({
+              action: 'desconsolidado',
+              kind: 'container',
+              bic: (ic.car as any)?.vin,
+              carId: (ic.car as any)?._id,
+              inventoryCarId: ic._id,
+              inventoryId: ic.inventory,
+              contentType: 'coded-items',
+              datetime: (ic as any).createdAt,
+              price: CODED_CONTAINER_PRICE_USD
+            });
+          }
+
           // Autos dentro de contenedores en coded-items
           if (codedContainerIds.length > 0) {
             const carsInsideCodedContainers = await InventoryCar.find({
               inventory: { $in: codedInventoryIds },
               container: { $in: codedContainerIds },
               inventoriedBy: { $nin: osaUsers.map(u => u._id) }
-            });
+            }).populate('car');
             codedCarCount = carsInsideCodedContainers.length;
+
+            for (const ic of carsInsideCodedContainers) {
+              unitItems.push({
+                action: 'desconsolidado',
+                kind: 'codedUnit',
+                vin: (ic.car as any)?.vin,
+                carId: (ic.car as any)?._id,
+                inventoryCarId: ic._id,
+                inventoryId: ic.inventory,
+                containerCarId: ic.container,
+                contentType: 'coded-items',
+                datetime: (ic as any).createdAt,
+                price: CODED_CAR_PRICE_USD
+              });
+            }
           }
 
           console.log(`  Cars inside containers: ${codedCarCount}`);
@@ -615,13 +674,21 @@ class BillingQueue {
 
         let aforoCount = 0;
 
-        let detail: any = {
+        const detail: any = {
           desconsolidado: {
-            containers: { count: generalContainerCount + codedContainerCount, price: (generalContainerCount + codedContainerCount) * GENERAL_CONTAINER_PRICE_USD },
-            codedUnits: { count: generalCarCount + codedCarCount, price: (generalCarCount + codedCarCount) * CODED_CAR_PRICE_USD }
+            containers: {
+              count: generalContainerCount + codedContainerCount,
+              price: (generalContainerCount + codedContainerCount) * GENERAL_CONTAINER_PRICE_USD,
+              items: containerItems
+            },
+            codedUnits: {
+              count: generalCarCount + codedCarCount,
+              price: (generalCarCount + codedCarCount) * CODED_CAR_PRICE_USD,
+              items: unitItems
+            }
           }
         };
-        let aforoDetail: any = {};
+        const aforoDetail: any = {};
 
         // Buscar formularios con kind 'aforo' o 'aforoSAG' para esta company/team
         for (const aforoKind of ['aforo', 'aforoSAG']) {
@@ -636,7 +703,7 @@ class BillingQueue {
 
           if (aforoFormIds.length > 0) {
             // Buscar participants asociados a esos formularios en el rango de fechas
-            const count = await Participant.countDocuments({
+            const participants = await Participant.find({
               form: { $in: aforoFormIds },
               company: company._id,
               user: { $nin: osaUsers.map(u => u._id) },
@@ -644,11 +711,27 @@ class BillingQueue {
                 $gte: start_date.toDate(),
                 $lte: end_date.toDate()
               }
-            });
+            }).populate('car');
+            const count = participants.length;
             aforoCount += count;
             console.log(`  Aforo participants in period: ${count} for ${aforoKind}`);
             if (count > 0) {
-              aforoDetail[aforoKind] = { count, price: AFORO_PRICE_USD * count };
+              const aforoItems = participants.map((p: any) => ({
+                action: aforoKind,
+                kind: aforoKind,
+                vin: p.car?.vin,
+                carId: p.car?._id,
+                participantId: p._id,
+                formId: p.form,
+                // Aforo revision time: when the participant/review was submitted
+                datetime: p.createdAt,
+                price: AFORO_PRICE_USD
+              }));
+              aforoDetail[aforoKind] = {
+                count,
+                price: AFORO_PRICE_USD * count,
+                items: aforoItems
+              };
             }
           } else {
             console.log(`  No aforo forms found for this company`);
@@ -656,7 +739,7 @@ class BillingQueue {
         }
 
         if (Object.keys(aforoDetail).length > 0) {
-          console.log(`  Aforo participants in period: ${JSON.stringify(aforoDetail)}`);
+          console.log(`  Aforo participants in period: ${Object.keys(aforoDetail).join(', ')}`);
           detail.aforo = aforoDetail;
         }
 

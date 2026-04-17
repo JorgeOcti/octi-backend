@@ -136,9 +136,17 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                                 <td className="middle">
                                   <button
                                     className="btn btn-sm btn-primary"
+                                    style={{ marginRight: '8px' }}
                                     onClick={() => window.open(`/settings/billing/pdf/${invoice._id}`, '_blank')}
                                   >
                                     <i className="fa fa-fw fa-download" /> Ver detalle
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-success"
+                                    title="Descargar Excel con el detalle"
+                                    onClick={() => window.open(`/settings/billing/invoice/${invoice._id}/export/`, '_blank')}
+                                  >
+                                    <i className="fa fa-fw fa-file-excel-o" /> Excel
                                   </button>
                                 </td>
                               </tr>
@@ -167,9 +175,17 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="middle">
                                 <button
                                   className="btn btn-sm btn-primary"
+                                  style={{ marginRight: '8px' }}
                                   onClick={() => window.open(`/settings/billing/pdf/${invoice._id}`, '_blank')}
                                 >
                                   <i className="fa fa-fw fa-download" /> Ver detalle
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-success"
+                                  title="Descargar Excel con el detalle"
+                                  onClick={() => window.open(`/settings/billing/invoice/${invoice._id}/export/`, '_blank')}
+                                >
+                                  <i className="fa fa-fw fa-file-excel-o" /> Excel
                                 </button>
                               </td>
                             </tr>
