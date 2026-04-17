@@ -262,8 +262,7 @@ class AdminCompaniesController {
           };
           image.team = team._id;
           await company.attach('image', image);
-          image.company = company.image;
-          await company.save();
+          company.markModified('image');
         }
         if (marker) {
           marker.headers = {
@@ -271,8 +270,7 @@ class AdminCompaniesController {
           };
           marker.team = team._id;
           await company.attach('marker', marker);
-          image.marker = company.marker;
-          await company.save();
+          company.markModified('marker');
         }
         await company.save();
 
