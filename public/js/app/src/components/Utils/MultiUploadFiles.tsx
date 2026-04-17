@@ -19,6 +19,7 @@ interface IPropsType {
   url: string;
   listMode?: boolean;
   accept?: string;
+  readOnly?: boolean;
 }
 
 interface IStateType {
@@ -189,9 +190,11 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
                         : <i className='fa fa-download text-primary pointer' onClick={() => this.downloadFile(file)} />
                       }
                     </div>
-                    <div className='col-md-1 text-right pointer' style={{paddingTop: "25px"}}  onClick={() => this.deleteFile(file?._id ||file.tmpID)}>
-                      <i className='fa fa-minus-circle text-red' />
-                    </div>
+                    {!this.props.readOnly && (
+                      <div className='col-md-1 text-right pointer' style={{paddingTop: "25px"}} onClick={() => this.deleteFile(file?._id || file.tmpID)}>
+                        <i className='fa fa-minus-circle text-red' />
+                      </div>
+                    )}
                     <div className='row'>
                       <div className='col-md-12'>
                         {
@@ -208,25 +211,29 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
             }
           </div>
         </ShowIf>
-        <div
-          className='add-item pointer multi-upload-item'
-          onClick={this.clickUploadFile}
-          onDrop={this.handleDrop}
-          onDragOver={this.dragOverHandler}
-          onDragEnd={this.dragEndHandler}
-          onDragLeave={this.dragLeaveHandler}
-        >
-          <i className='fa fa-2x fa-cloud-upload' /><br />
-          AÑADIR ARCHIVOS
-        </div>
-        <input
-          type='file'
-          ref={this.inputFile}
-          style={{ display: 'none' }}
-          onChange={(e) => this.handleChangeInputFile(e)}
-          accept={this.props.accept ?? '.jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf'}
-          multiple={true}
-        />
+        {!this.props.readOnly && (
+          <>
+            <div
+              className='add-item pointer multi-upload-item'
+              onClick={this.clickUploadFile}
+              onDrop={this.handleDrop}
+              onDragOver={this.dragOverHandler}
+              onDragEnd={this.dragEndHandler}
+              onDragLeave={this.dragLeaveHandler}
+            >
+              <i className='fa fa-2x fa-cloud-upload' /><br />
+              AÑADIR ARCHIVOS
+            </div>
+            <input
+              type='file'
+              ref={this.inputFile}
+              style={{ display: 'none' }}
+              onChange={(e) => this.handleChangeInputFile(e)}
+              accept={this.props.accept ?? '.jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf'}
+              multiple={true}
+            />
+          </>
+        )}
       </div>
     );
   }

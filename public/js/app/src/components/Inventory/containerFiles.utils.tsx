@@ -45,9 +45,10 @@ interface ContainerFilesModalProps {
   loading: boolean;
   onDelete: (id: string) => void;
   onChange: (files: any[]) => void;
+  readOnly?: boolean;
 }
 
-export function ContainerFilesModal({ modalId, files, loading, onDelete, onChange }: ContainerFilesModalProps) {
+export function ContainerFilesModal({ modalId, files, loading, onDelete, onChange, readOnly }: ContainerFilesModalProps) {
   const [showLinkForm, setShowLinkForm] = React.useState(false);
   const [linkUrl, setLinkUrl] = React.useState('');
   const [linkName, setLinkName] = React.useState('');
@@ -87,7 +88,7 @@ export function ContainerFilesModal({ modalId, files, loading, onDelete, onChang
   };
 
   return (
-    <div className="modal fade" id="modalContainerFiles" role="dialog" aria-labelledby="modalContainerFilesLabel">
+    <div className="modal fade" id={'modalContainerFiles'} role="dialog" aria-labelledby="modalContainerFilesLabel">
       <div className="modal-dialog modal-lg" role="document">
         <div className="modal-content">
           <div className="modal-header">
@@ -99,12 +100,17 @@ export function ContainerFilesModal({ modalId, files, loading, onDelete, onChang
           <div className="modal-body">
             {modalId && (
               <>
+                {files.length === 0 && !loading && (
+                  <p className="text-muted text-center" style={{ padding: '20px 0' }}>
+                    No se han agregado archivos
+                  </p>
+                )}
                 <MultiUploadFiles
                   url={`/api/v1/inventory-car/${modalId}/upload-file/`}
                   accept=".jpeg,.jpg,.pdf,.mp4"
                   listMode={true}
                   body={{ inventoryCardId: modalId }}
-                  deleteCalback={(id) => onDelete(id)}
+                  deleteCalback={readOnly ? undefined : (id) => onDelete(id)}
                   onChange={(f) => onChange(f)}
                   onSuccess={(file) => {
                     MixpanelTracker.getInstance().trackAction('Upload Container File', {
@@ -113,9 +119,10 @@ export function ContainerFilesModal({ modalId, files, loading, onDelete, onChang
                     });
                   }}
                   files={files}
+                  readOnly={readOnly}
                 />
 
-                {showLinkForm ? (
+                {!readOnly && (showLinkForm ? (
                   <div style={{ padding: '12px 0 4px' }}>
                     <div className="form-group">
                       <input
@@ -157,7 +164,7 @@ export function ContainerFilesModal({ modalId, files, loading, onDelete, onChang
                   >
                     <i className="fa fa-link" /> Agregar link externo
                   </button>
-                )}
+                ))}
 
                 {loading && (
                   <div className="text-center" style={{ marginTop: '10px' }}>

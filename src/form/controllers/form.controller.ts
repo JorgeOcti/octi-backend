@@ -1697,7 +1697,7 @@ class FormController {
               logger.info(`Container found: ${containerFound}`);
               logger.debug(`InventoryCar before update: ${JSON.stringify(inventoryCar)}`);
               logger.debug(`Car: ${JSON.stringify(car)}`);
-              if (car.isContainer && inventoryItem.openForm.toString() === form._id.toString()){
+              if (car.isContainer && inventoryItem.openForm?.toString() === form._id.toString()){
                 logger.info(`Opening container inventory form`);
                 let openEvidences : any = {
                   status: ChoicesStatusContainer.open,
