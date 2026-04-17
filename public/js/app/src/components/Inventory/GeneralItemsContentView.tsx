@@ -188,7 +188,7 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
         <button
           className="btn btn-sm btn-default"
           data-toggle="modal"
-          data-target="#modalContainerFilesGeneral"
+          data-target="#modalContainerFiles"
           onClick={() => {
             this.setState({ filesModalId: row._rowId, containerFiles: [] });
             loadContainerFiles(row._rowId, (s: any) => this.setState(s));
@@ -556,7 +556,6 @@ class GeneralItemsContentView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
         <ContainerFilesModal
           modalId={this.state.filesModalId}
-          htmlModalId="modalContainerFilesGeneral"
           files={this.state.containerFiles}
           loading={this.state.containerFilesLoading}
           readOnly={!this.state.multiCompany}

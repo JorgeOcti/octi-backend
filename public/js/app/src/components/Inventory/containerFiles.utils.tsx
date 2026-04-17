@@ -41,7 +41,6 @@ export function deleteContainerFile(fileId: string, setState: Function) {
 
 interface ContainerFilesModalProps {
   modalId: string | null;
-  htmlModalId?: string;
   files: any[];
   loading: boolean;
   onDelete: (id: string) => void;
@@ -49,7 +48,7 @@ interface ContainerFilesModalProps {
   readOnly?: boolean;
 }
 
-export function ContainerFilesModal({ modalId, htmlModalId, files, loading, onDelete, onChange, readOnly }: ContainerFilesModalProps) {
+export function ContainerFilesModal({ modalId, files, loading, onDelete, onChange, readOnly }: ContainerFilesModalProps) {
   const [showLinkForm, setShowLinkForm] = React.useState(false);
   const [linkUrl, setLinkUrl] = React.useState('');
   const [linkName, setLinkName] = React.useState('');
@@ -89,7 +88,7 @@ export function ContainerFilesModal({ modalId, htmlModalId, files, loading, onDe
   };
 
   return (
-    <div className="modal fade" id={htmlModalId ?? 'modalContainerFiles'} role="dialog" aria-labelledby="modalContainerFilesLabel">
+    <div className="modal fade" id={'modalContainerFiles'} role="dialog" aria-labelledby="modalContainerFilesLabel">
       <div className="modal-dialog modal-lg" role="document">
         <div className="modal-content">
           <div className="modal-header">
