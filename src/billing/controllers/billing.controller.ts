@@ -808,6 +808,8 @@ class BillingController {
           [
             { header: 'BIC', key: 'bic', width: 22 },
             { header: 'Tipo de desconsolidado', key: 'contentType', width: 22 },
+            { header: 'Nave', key: 'nave', width: 22 },
+            { header: 'N° Viaje', key: 'viaje', width: 14 },
             { header: 'Fecha de carga', key: 'datetime', width: 22, numFmt: 'dd/mm/yyyy hh:mm' },
             { header: 'Precio USD', key: 'price', width: 14, numFmt: '#,##0.00' }
           ],
@@ -815,10 +817,12 @@ class BillingController {
           (it: any) => ({
             bic: it.bic || '',
             contentType: desconsolidadoLabel(it.contentType),
+            nave: it.nave || '',
+            viaje: it.viaje || '',
             datetime: it.datetime ? new Date(it.datetime) : null,
             price: typeof it.price === 'number' ? it.price : null
           }),
-          { labelCol: 'C', valueCol: 'D', count: containersGroup.count || 0, subtotal: containersGroup.price || 0 }
+          { labelCol: 'E', valueCol: 'F', count: containersGroup.count || 0, subtotal: containersGroup.price || 0 }
         );
       }
 
@@ -832,6 +836,8 @@ class BillingController {
             { header: 'VIN', key: 'vin', width: 24 },
             { header: 'BIC Contenedor', key: 'containerBic', width: 22 },
             { header: 'Tipo de desconsolidado', key: 'contentType', width: 22 },
+            { header: 'Nave', key: 'nave', width: 22 },
+            { header: 'N° Viaje', key: 'viaje', width: 14 },
             { header: 'Fecha de carga', key: 'datetime', width: 22, numFmt: 'dd/mm/yyyy hh:mm' },
             { header: 'Precio USD', key: 'price', width: 14, numFmt: '#,##0.00' }
           ],
@@ -840,10 +846,12 @@ class BillingController {
             vin: it.vin || '',
             containerBic: it.containerCarId ? bicByInventoryCarId[String(it.containerCarId)] || '' : '',
             contentType: desconsolidadoLabel(it.contentType),
+            nave: it.nave || '',
+            viaje: it.viaje || '',
             datetime: it.datetime ? new Date(it.datetime) : null,
             price: typeof it.price === 'number' ? it.price : null
           }),
-          { labelCol: 'D', valueCol: 'E', count: unitsGroup.count || 0, subtotal: unitsGroup.price || 0 }
+          { labelCol: 'F', valueCol: 'G', count: unitsGroup.count || 0, subtotal: unitsGroup.price || 0 }
         );
       }
 

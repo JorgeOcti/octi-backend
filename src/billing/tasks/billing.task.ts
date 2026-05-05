@@ -540,6 +540,7 @@ class BillingQueue {
           console.log(`  Containers: ${generalContainerCount}`);
 
           for (const ic of generalContainers) {
+            const extra = (ic as any).extra || {};
             containerItems.push({
               action: 'desconsolidado',
               kind: 'container',
@@ -548,6 +549,8 @@ class BillingQueue {
               inventoryCarId: ic._id,
               inventoryId: ic.inventory,
               contentType: 'general-items',
+              nave: extra['Nave'] || '',
+              viaje: extra['N° Viaje'] || '',
               datetime: (ic as any).createdAt,
               price: GENERAL_CONTAINER_PRICE_USD
             });
@@ -578,6 +581,7 @@ class BillingQueue {
           generalCarCount = generalCars.length;
 
           for (const ic of generalCars) {
+            const extra = (ic as any).extra || {};
             unitItems.push({
               action: 'desconsolidado',
               kind: 'generalUnit',
@@ -586,6 +590,8 @@ class BillingQueue {
               inventoryCarId: ic._id,
               inventoryId: ic.inventory,
               contentType: 'general-items',
+              nave: extra['Nave'] || '',
+              viaje: extra['N° Viaje'] || '',
               datetime: (ic as any).createdAt,
               price: GENERAL_CAR_PRICE_USD
             });
@@ -622,6 +628,7 @@ class BillingQueue {
           console.log(`  Containers: ${codedContainerCount}`);
 
           for (const ic of codedContainers) {
+            const extra = (ic as any).extra || {};
             containerItems.push({
               action: 'desconsolidado',
               kind: 'container',
@@ -630,6 +637,8 @@ class BillingQueue {
               inventoryCarId: ic._id,
               inventoryId: ic.inventory,
               contentType: 'coded-items',
+              nave: extra['Nave'] || '',
+              viaje: extra['N° Viaje'] || '',
               datetime: (ic as any).createdAt,
               price: CODED_CONTAINER_PRICE_USD
             });
@@ -645,6 +654,7 @@ class BillingQueue {
             codedCarCount = carsInsideCodedContainers.length;
 
             for (const ic of carsInsideCodedContainers) {
+              const extra = (ic as any).extra || {};
               unitItems.push({
                 action: 'desconsolidado',
                 kind: 'codedUnit',
@@ -654,6 +664,8 @@ class BillingQueue {
                 inventoryId: ic.inventory,
                 containerCarId: ic.container,
                 contentType: 'coded-items',
+                nave: extra['Nave'] || '',
+                viaje: extra['N° Viaje'] || '',
                 datetime: (ic as any).createdAt,
                 price: CODED_CAR_PRICE_USD
               });

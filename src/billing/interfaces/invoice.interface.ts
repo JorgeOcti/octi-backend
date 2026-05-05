@@ -36,6 +36,9 @@ export interface IInvoiceDetailItem {
   participantId?: any;
   formId?: any;
   contentType?: 'coded-items' | 'general-items';
+  // Extra fields from InventoryCar.extra
+  nave?: string;
+  viaje?: string;
   // Load date/time for inventory & desconsolidado, revision time for aforo
   datetime?: Date;
   // Unit price in USD applied for this line
