@@ -345,14 +345,6 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
-if (hasPermission(window.user, 'viewClient')) {
-  AdminLoadControl.push({
-    id: '6.6',
-    icon: 'fa-circle-o',
-    text: 'Vista Cliente Carga',
-    url: '/inventory/containers/general-items/'
-  });
-}
 
 if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
@@ -378,6 +370,13 @@ if (hasPermission(window.user, 'viewClient')) {
     icon: 'fa-circle-o',
     text: 'Vista Cliente Vehículo',
     url: '/desconsolidated/unit/'
+  });
+
+  AdminLoadControl.push({
+    id: '6.6',
+    icon: 'fa-circle-o',
+    text: 'Vista Cliente Carga',
+    url: '/inventory/containers/general-items/'
   });
 }
 
