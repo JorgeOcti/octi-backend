@@ -34,7 +34,7 @@ class CodeController {
                 const context =  {
                     codes: await Promise.all(codes.map(async (code: string) => ({
                         code: code,
-                        qr: await QRCode.toDataURL("https://code.osacontrol.cl/" + code + "/", {
+                        qr: await QRCode.toDataURL("https://code.octimize.cl/" + code + "/", {
                             errorCorrectionLevel: 'H',
                             margin: 0,
                             rendererOpts: {

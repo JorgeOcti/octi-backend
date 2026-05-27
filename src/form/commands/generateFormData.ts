@@ -57,7 +57,7 @@ async function generateFormData() {
 
   const team = await Team.findOne({name: 'Derco'});
   const company = await Company.findOne({name: 'Derco'});
-  const user = await User.findOne({email: 'richard@osacontrol.com'});
+  const user = await User.findOne({email: 'richard@octimize.cl'});
   const distributor = await Venue.findById('5c3605307eb40314d3c46e75');
 
   const receivers = await Venue.find({team, type: 'receiver'});

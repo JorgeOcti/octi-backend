@@ -1,5 +1,5 @@
 {
-  "name": "osa-andes-server",
+  "name": "octimize-server",
   "script": "src/server.ts",
   "instances": "1",
   "exec_mode": "cluster",

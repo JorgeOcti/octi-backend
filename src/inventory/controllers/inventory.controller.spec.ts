@@ -62,7 +62,7 @@ describe('inventories', () => {
     chai.request(server)
       .post('/api/v1/login/')
       .send({
-        username: 'gmunoz@osacontrol.com',
+        username: 'gmunoz@octimize.cl',
         password: '123'
       })
       .end((err, res) => {
@@ -77,7 +77,7 @@ describe('inventories', () => {
               .post('/account/login/')
               .set('cookie', res.header['set-cookie'][0])
               .send({
-                username: 'gmunoz@osacontrol.com',
+                username: 'gmunoz@octimize.cl',
                 password: '123',
                 _csrf: csrf
               })

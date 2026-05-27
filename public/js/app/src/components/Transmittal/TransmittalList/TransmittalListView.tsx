@@ -324,7 +324,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='row'>
                     <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>
                       <ImageLazyLoad
-                        url='/images/not_found.png'
+                        url='/images/no_hay_resultados.png'
                         height={'200px'}
                         style={{
                           opacity: 0.5,

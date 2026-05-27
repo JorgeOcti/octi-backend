@@ -669,7 +669,7 @@ class FormController {
               <div style="color: #999; display: flex; align-items: baseline;">
               Powered by
               ${OSA_LOGO_SVG}
-              www.osacontrol.com
+              octimize.cl
               </div>
             </div>`,
           margin: {

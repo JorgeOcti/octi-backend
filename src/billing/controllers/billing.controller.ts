@@ -665,7 +665,7 @@ class BillingController {
       }
 
       const workbook = new excel.Workbook();
-      workbook.creator = 'OSA Control';
+      workbook.creator = 'Octimize';
       workbook.created = new Date();
 
       // ------------------------------------------------------------------

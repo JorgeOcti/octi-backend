@@ -12,7 +12,7 @@ export const ImageSchema = {
       properties: {
         url: {
           type: 'string',
-          example: 'https://www.osacontrol.com/osa_control_logo.svg',
+          example: 'https://octi.octimize.cl/static/images/octimize_logo.svg',
           description: 'URL de la imagen'
         },
         name: {

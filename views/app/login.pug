@@ -3,22 +3,21 @@ html
   head
     meta(charset='utf-8')
     meta(name='viewport' content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0')
-    link(rel='shortcut icon', href=`/static/images/${process.env.ENV === 'production'?'favicon-osa.ico': 'favicon-dev.ico'}`)
+    link(rel='shortcut icon', href='/static/images/favicon-octimize.ico')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
-    meta(name='author' property='og:author' content='OSA S.A')
-    meta(name='image' property='og:image' content='https://s3-sa-east-1.amazonaws.com/mediaosa/osa_andes_share.jpg')
-    title Iniciar sesión ‧ OSA Andes
+    meta(name='author' property='og:author' content='Octimize SpA')
+    title Iniciar sesión ‧ Octimize
     meta(name='robots' content='index,follow')
     meta(name='description' content='¿Dónde y cómo se producen tus daños? ¿Cuán disponible está tu stock?  No sólo visibilizamos los datos con velocidad. Los entregamos de manera sencilla para que puedas gestionar y resolver.')
     meta(name='twitter:card' content='summary_large_image')
-    meta(name='twitter:site' content='@osacontrol')
-    meta(name='twitter:creator' content='@handle')
-    meta(property='og:title' content='Iniciar sesión ‧ OSA Andes')
+    meta(name='twitter:site' content='@octimize')
+    meta(name='twitter:creator' content='@octimize')
+    meta(property='og:title' content='Iniciar sesión ‧ Octimize')
     meta(property='og:description' content='¿Dónde y cómo se producen tus daños? ¿Cuán disponible está tu stock?  No sólo visibilizamos los datos con velocidad. Los entregamos de manera sencilla para que puedas gestionar y resolver')
-    meta(property='og:url' content='https://andes.osacontrol.com/account/login/')
+    meta(property='og:url' content='https://octi.octimize.cl/account/login/')
     meta(property='og:type' content='page')
-    meta(property='og:site_name' content='OsaControl')
-    link(rel='canonical' href='https://andes.osacontrol.com/')
+    meta(property='og:site_name' content='Octimize')
+    link(rel='canonical' href='https://octi.octimize.cl/')
 
 
     //- Tell the browser to be responsive to screen width
@@ -34,10 +33,9 @@ html
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
-    title OSA Andes | Iniciar sesión
-    //- html,body{overflow-y:hidden;overflow-x:hidden}body{background:linear-gradient(to left, #A34E69, #90354D);color:#FFF;}
+    title Octimize | Iniciar sesión
     style
-      | html,body{background:linear-gradient(to left, #a1214c, #8c1d42);overflow-y:hidden;overflow-x:hidden}body{color:#FFF;overflow-y:hidden;}
+      | html,body{background:url('/static/images/bg_login_purple.svg') center/cover no-repeat, #342040;overflow-y:hidden;overflow-x:hidden}body{color:#FFF;overflow-y:hidden;}
 
   body
     #login-container
@@ -46,7 +44,7 @@ html
         .col-md-4
           .login
             p.text-center
-              img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
+              img(src=`/static${getVersionedPath('/images/octimize_logo.svg')}`, class='text-center logo')
             if error
               p.text-center.text-red=error
             form(role='form', action=`/account/login/`, method="post")
@@ -67,7 +65,7 @@ html
                 button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Iniciar sesión'
         .col-md-4
     #login-footer.text-center
-      | Copyright (c) #{moment().format('YYYY')} OSA SPA. Todos los derechos reservados.
+      | Copyright (c) #{moment().format('YYYY')} Octimize SpA. Todos los derechos reservados.
     .js
       //- polyfill.io
       //- script(src='https://cdn.polyfill.io/v2/polyfill.min.js')

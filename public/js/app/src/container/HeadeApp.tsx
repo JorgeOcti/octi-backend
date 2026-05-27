@@ -34,10 +34,8 @@ class HeaderApp extends React.Component<{}, {}> {
     return (
       <header className="main-header">
         <a className="logo" href="/" style={{padding: '5px 15px'}}>
-          <span className="logo-mini">&nbsp;</span>
-          <span className="logo-lg"><img src={
-            process.env.NODE_ENV === 'development'?"/static/images/osa-andes-dev-logo.png":"/static/images/OSA_andes_logo_horizontal.svg"}
-           style={{maxHeight: '40px', verticalAlign: 'baseline'}}/></span>
+          <span className="logo-mini"><img src="/static/images/octi_icon.svg" style={{maxHeight: '30px'}}/></span>
+          <span className="logo-lg"><img src="/static/images/octimize_logo.svg" style={{maxHeight: '40px', verticalAlign: 'baseline'}}/></span>
         </a>
         <nav className="navbar navbar-static-top">
           <a className="sidebar-toggle hidden-sm hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
@@ -88,13 +86,13 @@ class HeaderApp extends React.Component<{}, {}> {
               {/*</li>*/}
               <li className="dropdown user user-menu">
                 <a className="dropdown-toggle" href="#" data-toggle="dropdown">
-                  <img className="user-image" src="/static/images/icon_circular.png" alt="User Image"/>
+                  <img className="user-image" src="/static/images/user_icon_topbar.svg" alt="User Image"/>
                   <span
                     className="hidden-xs">{`${window.user.firstName || ''} ${window.user.lastName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}</span>
                 </a>
                 <ul className="dropdown-menu">
                   <li className="user-header">
-                    <img className="img-circle" src="/static/images/icon_circular.png" alt="User Image"/>
+                    <img className="img-circle" src="/static/images/user_icon_topbar.svg" alt="User Image"/>
                     <p>{`${window.user.firstName || ''} ${window.user.lastName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}
                       <small>{window.user.email || ''}</small>
                     </p>

@@ -38,7 +38,7 @@ describe('admin cars', () => {
           .post('/account/login/')
           .set('cookie', response.header['set-cookie'][0])
           .send({
-            username: 'gmunoz@osacontrol.com',
+            username: 'gmunoz@octimize.cl',
             password: '123',
             _csrf: csrf
           })

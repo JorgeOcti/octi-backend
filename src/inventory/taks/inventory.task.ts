@@ -626,7 +626,7 @@ class InventoryQueue {
           {
             from: '',
             title: `Inventory Notification`,
-            to: `"Soporte"<soporte@osacontrol.com>`,
+            to: `"Soporte"<soporte@octimize.cl>`,
             subject: `${user.firstName} ha creado un inventario en ${
               currentTeam!.name
             }`,
@@ -638,7 +638,7 @@ class InventoryQueue {
           Usuario: ${user.firstName} ${user.lastName}
           ENV: ${process.env.ENV}
 
-          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
+          En caso de dudas o consultas puedes contactarte a soporte@octimize.cl o a nuestro twitter@octimize.`,
             view: 'alerts/inventoryNotification',
             context: {
               team: currentTeam,
@@ -780,7 +780,7 @@ class InventoryQueue {
 
     const handlerNameClean = this.normalizeCompanyName(companyHandler.name || '');
     const clientNameClean = this.normalizeCompanyName(clientCompany.name || '');
-    const generatedEmail = `${handlerNameClean}+${clientNameClean}@osacontrol.com`;
+    const generatedEmail = `${handlerNameClean}+${clientNameClean}@octimize.cl`;
 
     const existingUser = await User.findOne({ email: generatedEmail });
     if (existingUser) {
@@ -829,14 +829,14 @@ class InventoryQueue {
 
     try {
       logger.info(
-        `ensureClientCompanyAdminUser: enqueue email {to: soporte@osacontrol.com, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: enqueue email {to: soporte@octimize.cl, email: ${generatedEmail}, userId: ${userResult.insertedId}}`
       );
       emailQueue.queue.add(
         'email',
         {
-          from: 'no-reply@osacontrol.com',
+          from: 'no-reply@octimize.cl',
           title: 'Nuevo usuario admin para Company Client',
-          to: '"Soporte"<soporte@osacontrol.com>',
+          to: '"Soporte"<soporte@octimize.cl>',
           subject: `Admin creado para ${clientCompany.name}`,
           text: `Hola humanos\n\nSe creó un usuario admin para una Company Client. (Prometemos que fue con amor y café.)\n\nHandler: ${companyHandler.name} (${companyHandler._id})\nClient: ${clientCompany.name} (${clientCompany._id})\nEmail: ${generatedEmail}\nTeam: ${teamName} (${teamId})\nVenue: ${venueName} (${venueId})\nUsuario: ${handlerFirstName} USUARIO (${userResult.insertedId})\nCreado por: ${createdBy.firstName} ${createdBy.lastName}\nENV: ${process.env.ENV}\n\nSaludos.`,
           view: 'alerts/clientCompanyAdminCreated',
@@ -857,11 +857,11 @@ class InventoryQueue {
         { attempts: 3, backoff: 1000, removeOnComplete: true }
       );
       logger.info(
-        `ensureClientCompanyAdminUser: email enqueued {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: email enqueued {to: soporte@octimize.cl, userId: ${userResult.insertedId}}`
       );
     } catch (error) {
       logger.error(
-        `ensureClientCompanyAdminUser: email enqueue failed {to: soporte@osacontrol.com, userId: ${userResult.insertedId}}`
+        `ensureClientCompanyAdminUser: email enqueue failed {to: soporte@octimize.cl, userId: ${userResult.insertedId}}`
       );
       logger.error(error);
     }

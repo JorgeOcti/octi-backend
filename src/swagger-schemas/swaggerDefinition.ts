@@ -33,10 +33,10 @@ import { SectionSchema } from './form/section.schema';
 export const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'OSA Developers',
+    title: 'Octimize Developers',
     version: '1.1.0',
-    description: `<h3>Documentación de la API, para desarrolladores de integraciones con OSA Andes.</h3>
-    <p>Aquí encontrará las instrucciones para poder utilizar los servicios web RESTful de OSA Andes, es importante recalcar que el uso de estos requiere la habilitación de una token de acceso (JWT_TOKEN). Que debe ser aprobado tanto por nuestras áreas comerciales y técnicas.</p>
+    description: `<h3>Documentación de la API, para desarrolladores de integraciones con Octimize.</h3>
+    <p>Aquí encontrará las instrucciones para poder utilizar los servicios web RESTful de Octimize, es importante recalcar que el uso de estos requiere la habilitación de una token de acceso (JWT_TOKEN). Que debe ser aprobado tanto por nuestras áreas comerciales y técnicas.</p>
     <h3><strong>¿Cómo autenticarte?</strong></h3>
     <p>Se utiliza la autenticación basada en una API KEY, que debe estar en el <strong>header</strong> de la solicitud de la siguiente manera:</p>
      <table>
@@ -57,7 +57,7 @@ export const swaggerDefinition = {
     contact: {
       name: 'support',
       // url: 'https://www.osacontrol.com',
-      email: 'soporte@osacontrol.com'
+      email: 'soporte@octimize.cl'
     }
   },
   components: {
@@ -106,15 +106,15 @@ export const swaggerDefinition = {
   servers: [
     {
       url: process.env.SITE_URL,
-      description: 'OSA server Production'
+      description: 'Octimize server Production'
     },
     {
-      url: 'https://andes-stage.osacontrol.com/',
-      description: 'OSA server Stage'
+      url: 'https://octi.octimize.cl/',
+      description: 'Octimize server Stage'
     }
   ],
   externalDocs: {
-    url: 'https://sites.google.com/osacontrol.com/doc-osa-api/inicio',
+    url: 'https://octimize.cl/',
     description: 'Find more info here'
   }
 };
