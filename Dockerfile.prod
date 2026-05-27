@@ -33,10 +33,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt
 
 # # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-ENV SENTRY_RELEASE "1.0.0"
+ENV SENTRY_RELEASE="1.0.0"
 
 WORKDIR /srv
 

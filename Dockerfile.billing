@@ -1,6 +1,6 @@
 FROM node:18.17.1-bullseye-slim
 
-LABEL maintainer = "gmunoz@osacontrol.com"
+LABEL maintainer="gmunoz@osacontrol.com"
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -33,14 +33,14 @@ RUN apt-get update && \
     rm -rf /var/lib/apt
 
 # # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /scripts
 
 RUN rm -rf /scripts/node_modules
 
-RUN npm install -g npm@latest
+RUN npm install -g npm@10.9.2
 
 RUN npm i -g typescript@4.9.4 ts-node ts-node-dev ts-migrate-mongoose
 
