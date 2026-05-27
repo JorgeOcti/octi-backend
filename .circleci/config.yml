@@ -23,7 +23,10 @@ executors:
   docker-builder:
     machine:
       image: ubuntu-2204:current
-      docker_layer_caching: true
+      # docker_layer_caching disabled — re-enable once the build is stable.
+      # CircleCI's DLC occasionally corrupts its content store and causes
+      # "failed to extract layer ... not found" errors.
+      docker_layer_caching: false
     resource_class: medium
 
 jobs:
@@ -60,7 +63,7 @@ jobs:
           name: Build & push andes-${ENV}/web
           command: |
             REPO="${ECR_REGISTRY}/andes-${ENV}/web"
-            docker build -f Dockerfile.prod \
+            docker build --pull -f Dockerfile.prod \
               -t "${REPO}:${CIRCLE_SHA1}" \
               -t "${REPO}:${ENV}" \
               -t "${REPO}:latest" \
@@ -71,7 +74,7 @@ jobs:
           name: Build & push andes-${ENV}/billing
           command: |
             REPO="${ECR_REGISTRY}/andes-${ENV}/billing"
-            docker build -f Dockerfile.billing \
+            docker build --pull -f Dockerfile.billing \
               -t "${REPO}:${CIRCLE_SHA1}" \
               -t "${REPO}:${ENV}" \
               -t "${REPO}:latest" \
