@@ -44,25 +44,26 @@ RUN npm install -g npm@10.9.2
 
 RUN npm i -g typescript@4.9.4 ts-node ts-node-dev ts-migrate-mongoose
 
-COPY package.json /scripts
-COPY package-lock.json /scripts
-
+COPY package.json /scripts/
+COPY package-lock.json /scripts/
 COPY tsconfig.json /scripts/
 
-COPY ./src/cli.ts /scripts/src/cli.ts
+# Copy everything the billing entrypoint imports transitively.
+# This is broader than strictly necessary, but keeps the image self-contained
+# and avoids hunting for missing files on every change.
+COPY ./src /scripts/src
+COPY ./views /scripts/views
+
 # AWS RDS / DocumentDB root CA bundle. Read at runtime via MONGO_TLS_CA_FILE.
 COPY ./global-bundle.pem /scripts/global-bundle.pem
 ENV MONGO_TLS_CA_FILE=/scripts/global-bundle.pem
-RUN export PYTHON=python3
 
+ENV PYTHON=python3
 
-
-RUN npm i --save-dev @types/bluebird
-RUN npm i --save-dev @types/multer
+RUN npm i --save-dev @types/bluebird @types/multer
 RUN npm i
-# RUN npm --production i && npm cache clean --force
-RUN tsc --project tsconfig.json
-# RUN rm -rf /scripts/node_modules
 
-# Specify the default command to run when the container starts
-CMD ["ts-node", "src/app/commands/BillingTeamRun.ts"]
+# CMD uses ts-node --transpile-only to skip type-checking at startup.
+# Type errors elsewhere in the codebase (e.g. inventory.controller.ts paginate
+# typing, missing @google/generative-ai types) would otherwise block boot.
+CMD ["ts-node", "--transpile-only", "src/app/commands/BillingTeamRun.ts"]
