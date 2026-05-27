@@ -40,6 +40,32 @@ jobs:
     steps:
       - checkout
 
+      # TEMPORARY: dump OIDC token claims + the role we're trying to assume.
+      # Remove once the pipeline is working.
+      - run:
+          name: Debug — OIDC token claims and target role
+          command: |
+            echo "== AWS_ROLE_ARN =="
+            echo "${AWS_ROLE_ARN}"
+            echo ""
+            echo "== CIRCLE_OIDC_TOKEN_V2 present? =="
+            if [ -n "$CIRCLE_OIDC_TOKEN_V2" ]; then echo "yes (V2)"; else echo "no"; fi
+            echo "== CIRCLE_OIDC_TOKEN present? =="
+            if [ -n "$CIRCLE_OIDC_TOKEN" ]; then echo "yes (V1)"; else echo "no"; fi
+            echo ""
+            echo "== Decoded token payload (V2 if available, else V1) =="
+            TOK="${CIRCLE_OIDC_TOKEN_V2:-$CIRCLE_OIDC_TOKEN}"
+            if [ -z "$TOK" ]; then
+              echo "NO TOKEN — context not attached OR OIDC not enabled for this org"
+              exit 0
+            fi
+            # base64url decode the middle JWT segment
+            PAYLOAD=$(echo "$TOK" | cut -d. -f2)
+            # Pad with = to be a multiple of 4
+            PADDING=$(( (4 - ${#PAYLOAD} % 4) % 4 ))
+            for i in $(seq 1 $PADDING); do PAYLOAD="${PAYLOAD}="; done
+            echo "$PAYLOAD" | tr '_-' '/+' | base64 -d 2>/dev/null | (jq . 2>/dev/null || cat)
+
       # OIDC auth: the orb exchanges the CircleCI OIDC token for short-lived
       # STS credentials by calling AssumeRoleWithWebIdentity. No static keys.
       - aws-cli/setup:
