@@ -43,10 +43,6 @@ RUN rm -rf /scripts/node_modules
 RUN npm install -g npm@latest
 
 RUN npm i -g typescript@4.9.4 ts-node ts-node-dev ts-migrate-mongoose
-RUN touch /scripts/s3-config.json
-RUN echo "{}" >> /scripts/s3-config.json
-RUN touch /scripts/ses-config.json
-RUN echo "{}" >> /scripts/ses-config.json
 
 COPY package.json /scripts
 COPY package-lock.json /scripts
@@ -54,6 +50,9 @@ COPY package-lock.json /scripts
 COPY tsconfig.json /scripts/
 
 COPY ./src/cli.ts /scripts/src/cli.ts
+# AWS RDS / DocumentDB root CA bundle. Read at runtime via MONGO_TLS_CA_FILE.
+COPY ./global-bundle.pem /scripts/global-bundle.pem
+ENV MONGO_TLS_CA_FILE=/scripts/global-bundle.pem
 RUN export PYTHON=python3
 
 

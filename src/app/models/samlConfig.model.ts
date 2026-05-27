@@ -2,7 +2,6 @@ import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as mongoosePaginate from 'mongoose-paginate-v2';
-import * as s3Config from '../../../s3-config.json';
 import * as uuid from 'uuid';
 
 import type { ISamlConfig } from '../interfaces/samlConfig.interface';
@@ -65,11 +64,11 @@ samlConfigSchema.plugin(mongoosePaginate);
 
 samlConfigSchema.plugin<any>(mongooseCrate, {
   storage: new MongooseCrateS3({
-    key: process.env.S3_KEY || s3Config.accessKeyId,
-    secret: process.env.S3_SECRET || s3Config.secretAccessKey,
-    bucket: process.env.S3_BUCKET || s3Config.bucket,
+    key: process.env.AWS_ACCESS_KEY_ID as string,
+    secret: process.env.AWS_SECRET_ACCESS_KEY as string,
+    bucket: process.env.S3_BUCKET as string,
     acl: 'public-read', // defaults to public-read
-    region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
+    region: (process.env.S3_REGION || process.env.AWS_REGION) as string, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
     path: (attachment: any) => {
       return `/saml/cert/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;

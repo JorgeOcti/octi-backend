@@ -5,6 +5,7 @@ import * as path from 'path';
 // import BillingTeamQueue from '../../billing/tasks/billingTeam.task';
 import BillingTeamProcessor from '../../billing/tasks/billingTeamProcessor.task';
 import BillingTeamPDF from '../../billing/tasks/billingTeamPDF.task';
+import { connectMongo } from '../../services/mongo.service';
 import Company from '../models/company.model';
 import Team from '../models/team.model';
 
@@ -12,9 +13,8 @@ async function BillingTeamRun() {
   dotenv.config({
     path: path.join(__dirname, '../../../.env')
   });
-  const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
-  await mongoose.connect(MONGODB_URI);
+  await connectMongo();
   mongoose.set('debug', true);
   new Team()
   new Company()

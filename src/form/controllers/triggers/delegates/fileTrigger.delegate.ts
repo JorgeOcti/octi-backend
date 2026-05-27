@@ -1,6 +1,5 @@
 import NullTriggerDelegate from './nullTrigger.delegate';
 import * as AWS from 'aws-sdk';
-import * as s3Config from '../../../../../s3-config.json';
 import * as fs from 'fs';
 import logger from '../../../../services/logger.service';
 import { IFormTriggerModel } from '../../../models/trigger.model';
@@ -144,22 +143,27 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
 
   private async uploadFile(filePath: string, filename: string): Promise<any> {
     try {
-      AWS.config.update({
-        accessKeyId: process.env.S3_KEY || s3Config.accessKeyId,
-        secretAccessKey: process.env.S3_SECRET || s3Config.secretAccessKey,
-        region: process.env.S3_REGION || s3Config.region // defaults to us-standard
-      });
+      // Credentials are resolved by the AWS SDK provider chain:
+      //   1. AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (set in .env for local dev), or
+      //   2. the ECS task role (in production via the container metadata endpoint).
+      // No global AWS.config.update — that would leak credentials into every
+      // other SDK client in the process.
+      const explicitCredentials = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+        ? { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY }
+        : undefined;
 
-      let s3 = new AWS.S3({
-        bucket: process.env.S3_BUCKET || s3Config.bucket,
-        acl: 'public-read', // defaults to public-read
-        region: process.env.S3_REGION || s3Config.region // defaults to us-standard
-      } as any);
+      const region = process.env.S3_REGION || process.env.AWS_REGION;
+      const bucket = process.env.S3_BUCKET as string;
+
+      const s3 = new AWS.S3({
+        credentials: explicitCredentials,
+        region,
+      });
 
       let data: Buffer = await fs.readFileSync(filePath);
       let s3FileOptions: AWS.S3.Types.PutObjectRequest = {
         Key: `/tmp/${filename}`,
-        Bucket: process.env.S3_BUCKET || s3Config.bucket,
+        Bucket: bucket,
         ACL: 'public-read',
         Body: data
       };

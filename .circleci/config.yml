@@ -1,252 +1,98 @@
-version: 2
+version: 2.1
+
+# ---------------------------------------------------------------------------
+# Pipeline: build Docker images and push to env-specific ECR repos.
+#
+# Auth: CircleCI OIDC → AWS IAM role (no static keys).
+#   The role is provisioned by terraform/ci/. Its ARN must be in the
+#   `aws-ecs` context as AWS_ROLE_ARN.
+#
+# Branches:
+#   develop  → build + push for dev  (tags: <sha>, dev, latest)
+#   master   → build + push for prod (tags: <sha>, prod, latest)
+#
+# Deploy (ecs update-service) is intentionally NOT triggered from this
+# pipeline yet — do it manually until the new infra is verified, then add a
+# deploy job (see docs/DEPLOY.md §5.1).
+# ---------------------------------------------------------------------------
+
+orbs:
+  aws-cli: circleci/aws-cli@4.1
+
+executors:
+  docker-builder:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: medium
+
 jobs:
-  build-GCP: &build-GCP
-    docker:
-      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
-        user: root
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - run:
-          name: Build and push Docker OSA-Andes image
-          command: |
-            curl https://sdk.cloud.google.com > install.sh
-            bash install.sh --disable-prompts
-            source /root/google-cloud-sdk/path.bash.inc
-            
-            echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone southamerica-east1
-            
-            gcloud auth configure-docker southamerica-east1-docker.pkg.dev
-
-            CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
-
-            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest -f Dockerfile.prod  --build-arg S3_KEY=${S3_KEY} --build-arg S3_SECRET=${S3_SECRET} --build-arg S3_BUCKET=${S3_BUCKET} --build-arg S3_REGION=${S3_REGION} . 
-            docker push $REGISTRY -a
-
-  build-AWS: &build-AWS
-    docker:
-      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
-        user: root
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - run:
-          name: Build and push Docker OSA-Andes image
-          command: |
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
-            export AWS_REGION=sa-east-1
-            aws configure set aws_access_key_id default_access_key
-
-            aws ecr get-login-password --region sa-east-1 | docker login --username AWS --password-stdin 169428622952.dkr.ecr.sa-east-1.amazonaws.com
-
-            CIRCLE_SHA1="${CIRCLE_SHA1:-latest}"
-
-            # docker build -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:$CIRCLE_SHA1 -t 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes:latest .
-            # docker push 169428622952.dkr.ecr.sa-east-1.amazonaws.com/osa/andes
-
-            # docker buildx build --platform linux/amd64 -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest --push .
-            
-            docker build -t $REGISTRY:$CIRCLE_SHA1 -t $REGISTRY:latest .
-            docker push $REGISTRY -a
-  deploy-GCP: &deploy-GCP
-    docker:
-      - image: google/cloud-sdk
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: /tmp
-      - checkout
-      - run:
-          name: Deploying Andes
-          command: |
-            apt-get update
-            apt-get install -y gettext-base
-            
-            echo $GCLOUD_SERVICE_KEY | base64 --decode | cat > /tmp/gcloud-service-key.json
-            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcloud-service-key.json
-            
-            gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json --project=${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone southamerica-east1
-            
-            # install kops
-            curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-            chmod +x kops
-            mv kops /usr/local/bin/kops
-            
-            # install kubectl
-            curl -LO "https://dl.k8s.io/release/v1.32.2/bin/linux/amd64/kubectl"
-            chmod +x kubectl
-            mv kubectl /usr/local/bin/kubectl
-            
-            export KOPS_CLUSTER_NAME=kops-gcp.bwg.cl
-            export KOPS_STATE_STORE=gs://osa-kubernetes-clusters/
-            
-            if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
-              echo "Cluster exists, loading configuration into kubectl"
-              kops export kubecfg --name ${KOPS_CLUSTER_NAME} --admin
-            else
-              exit 1
-            fi
-
-            kops validate cluster --wait 15m
-
-            if kubectl --namespace=$NAMESPACE describe deployment/osa-andes ;then
-              echo "Updating image on existing deployment"
-            else
-              echo "There's no deployments deployed in cluster"
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
-              kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
-
-              envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
-              kubectl apply -f ${HOME}/patched-redis-cluster.yml
-
-              kubectl rollout status statefulset/redis
-
-              echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
-            fi
-
-            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-
-            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-            kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
-
-            envsubst < ~/repo/k8s/kube/andes-worker-deployment.yaml > ${HOME}/patched-andes-worker-deployment.yaml
-            kubectl apply -f ${HOME}/patched-andes-worker-deployment.yaml
-
-            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
-            kubectl apply -f ${HOME}/patched-andes-service.yaml
-
-            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
-
-            # block until deployment is running
-            kubectl rollout status deployment/osa-andes
-
-  deploy-AWS: &deploy-AWS
-    docker:
-      - image: public.ecr.aws/l7o6h1s4/osa/andes-circle
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: /tmp
-      - checkout
-      - run:
-          name: Deploying Andes
-          command: |
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
-            export AWS_REGION=sa-east-1
-            aws configure set aws_access_key_id default_access_key
-
-            export KOPS_CLUSTER_NAME=${KOPS_CLUSTER_NAME}
-            export KOPS_STATE_STORE=s3://${KOPS_STATE_STORE}
-
-            if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
-              echo "Cluster exists, loading configuration into kubectl"
-              kops export kubecfg --name ${KOPS_CLUSTER_NAME} --admin
-            else
-              exit 1
-            fi
-
-            kops validate cluster --wait 15m
-
-            if kubectl --namespace=$NAMESPACE describe deployment/osa-andes ;then
-              echo "Updating image on existing deployment"
-            else
-              echo "There's no deployments deployed in cluster"
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
-              kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
-
-              envsubst < ~/repo/k8s/kube/redis-cluster.yml > ${HOME}/patched-redis-cluster.yml
-              kubectl apply -f ${HOME}/patched-redis-cluster.yml
-
-              kubectl rollout status statefulset/redis
-
-              echo "yes" | kubectl exec -it redis-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis -o jsonpath='{range.items[*]}{.status.podIP}:6379{" "}{end}')
-            fi
-
-            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-
-            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-            kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
-
-            envsubst < ~/repo/k8s/kube/andes-worker-deployment.yaml > ${HOME}/patched-andes-worker-deployment.yaml
-            kubectl apply -f ${HOME}/patched-andes-worker-deployment.yaml
-
-            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-service.yaml
-            kubectl apply -f ${HOME}/patched-andes-service.yaml
-
-            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
-
-            # block until deployment is running
-            kubectl rollout status deployment/osa-andes
-
-  build-production:
-    <<: *build-GCP
+  build-and-push:
+    executor: docker-builder
+    parameters:
+      env:
+        type: enum
+        enum: ["dev", "prod"]
+        description: Environment to tag the image for (dev or prod).
     environment:
-      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-prod
+      AWS_REGION: sa-east-1
+      ENV: << parameters.env >>
+    steps:
+      - checkout
 
-  deploy-production:
-    <<: *deploy-GCP
-    environment:
-      NAMESPACE: andes-prod
-      KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
-      KOPS_STATE_STORE: osa-kubernetes-clusters
-      INSTANCE_NUMBER: 4
-      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-prod
+      # OIDC auth: the orb exchanges the CircleCI OIDC token for short-lived
+      # STS credentials by calling AssumeRoleWithWebIdentity. No static keys.
+      - aws-cli/setup:
+          role_arn: ${AWS_ROLE_ARN}
+          region: ${AWS_REGION}
+          profile_name: default
 
-  build-staging:
-    <<: *build-GCP
-    environment:
-      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
+      - run:
+          name: Login to ECR
+          command: |
+            ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+            ECR_REGISTRY=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+            echo "export ECR_REGISTRY=${ECR_REGISTRY}" >> "$BASH_ENV"
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-  deploy-staging:
-    <<: *deploy-GCP
-    environment:
-      NAMESPACE: andes-stage
-      KOPS_CLUSTER_NAME: kops-gcp.bwg.cl
-      KOPS_STATE_STORE: osa-kubernetes-clusters
-      INSTANCE_NUMBER: 1
-      REGISTRY: southamerica-east1-docker.pkg.dev/osa-arch/osa-andes/andes-stage
+      - run:
+          name: Build & push andes-${ENV}/web
+          command: |
+            REPO="${ECR_REGISTRY}/andes-${ENV}/web"
+            docker build -f Dockerfile.prod \
+              -t "${REPO}:${CIRCLE_SHA1}" \
+              -t "${REPO}:${ENV}" \
+              -t "${REPO}:latest" \
+              .
+            docker push --all-tags "${REPO}"
 
+      - run:
+          name: Build & push andes-${ENV}/billing
+          command: |
+            REPO="${ECR_REGISTRY}/andes-${ENV}/billing"
+            docker build -f Dockerfile.billing \
+              -t "${REPO}:${CIRCLE_SHA1}" \
+              -t "${REPO}:${ENV}" \
+              -t "${REPO}:latest" \
+              .
+            docker push --all-tags "${REPO}"
 
 workflows:
-  version: 2
-  deploy:
+  build:
     jobs:
-      - build-production:
-          context: build-gcp
+      - build-and-push:
+          name: build-dev
+          env: dev
+          context: aws-ecs
           filters:
             branches:
-              only:
-                - master
-      - build-staging:
-          context: build-gcp
+              only: develop
+
+      - build-and-push:
+          name: build-prod
+          env: prod
+          context: aws-ecs
           filters:
             branches:
-              only:
-                - develop
-      - deploy-production:
-          requires:
-              - build-production
-          filters:
-            branches:
-              only:
-                - master
-          context: deploy-gcp
-      - deploy-staging:
-          requires:
-              - build-staging
-          filters:
-            branches:
-              only:
-                - develop
-          context: deploy-gcp
+              only: master

@@ -2,12 +2,12 @@ import * as bluebird from 'bluebird';
 import * as mongoose from 'mongoose';
 import app from './app';
 import logger from './services/logger.service';
+import { connectMongo } from './services/mongo.service';
 import { socket } from './services/socket.service';
 import GeneralUtils from './utils/general.utils';
 const mongooseRedisCache = require('mongoose-redis-cache');
 
 async function main() {
-  const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   mongoose.set('strictQuery', true);
   mongoose.set('debug', true);
@@ -18,8 +18,7 @@ async function main() {
     ),
     port: 6379
   });
-  await mongoose.connect(MONGODB_URI, { autoIndex: false });
-  console.log('Mongoose Successfully connected');
+  await connectMongo();
 }
 
 main().catch((err) => console.log(err));
