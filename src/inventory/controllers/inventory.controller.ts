@@ -5652,9 +5652,43 @@ class InventoryController {
               car.readyToClientHistory?.inventoryCar?.venueFound.name ||
               '';
 
+            await Participant.populate(car, [
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.part', model: 'Part' },
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.position', model: 'Position' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.part', model: 'Part' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.position', model: 'Position' }
+            ]);
+
             const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
               this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
               null;
+
+            let damagesText = 'No';
+            let participant = car.readyToClientHistory?.inventoryCar?.participant || car.inTransitHistory?.participant;
+            if (participant && participant.hasDamages) {
+              const damagesList: string[] = [];
+              if (participant.sections) {
+                for (const section of participant.sections) {
+                  for (const answer of section.answers) {
+                    if (answer.damagesSelected && answer.damagesSelected.length > 0) {
+                      for (const damage of answer.damagesSelected) {
+                        const part = damage.part?.name || '';
+                        const position = damage.position?.name || '';
+                        const kind = damage.kind?.name || '';
+
+                        const damageStr = [part, position, kind].filter(Boolean).join('-');
+                        if (damageStr) {
+                          damagesList.push(damageStr);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              damagesText = damagesList.length > 0 ? damagesList.join(';') : 'Sí';
+            }
 
             // Crear fila del Excel
             const row = {
@@ -5664,7 +5698,7 @@ class InventoryController {
               container: containerInfo.container,
               bl: containerInfo.bl,
               venue: venue,
-              hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
+              hasDamage: damagesText,
               accesories: accessories?.accessoriesText || '',
               'qty-accesories': accessories?.accessoriesTotal || '',
               ship: car.inTransitHistory?.inventoryCar?.extra ?
@@ -5672,7 +5706,7 @@ class InventoryController {
                 car.readyToClientHistory?.inventoryCar?.extra ?
                   car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
                   '',
-              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar.participant.createdAt),
+              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar?.participant?.createdAt),
               inTransitDate: formatDate(car.inTransitHistory?.executedAt),
               status: getStatus(car.inTransitHistory, car.readyToClientHistory)
             };
