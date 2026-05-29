@@ -11,11 +11,12 @@ const CONFIG = {
   // Cambiar esta URL por tu conexión a MongoDB
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://osacontrol:osacontrol@localhost:27017/osaAndesDev?authSource=admin',
   DRY_RUN: true, // Cambiar a false para ejecución real
-  
+
   // Filtros (opcional) - IMPORTANTE: Los IDs aquí serán MANTENIDOS (no eliminados)
   // Se eliminarán TODAS las demás companies que NO estén en esta lista
-//   COMPANY_FILTER: ['5b590abca9683b0413293aa1', '67aac64a94ed0a1f9da3478c', '5bc88d87a9683ba58c197c24'], // IDs a MANTENER
-  COMPANY_FILTER: ['5b590abca9683b0413293aa1', '67aac64a94ed0a1f9da3478c', '5bc88d87a9683ba58c197c24'], // IDs a MANTENER
+  //   COMPANY_FILTER: ['5b590abca9683b0413293aa1', '67aac64a94ed0a1f9da3478c', '5bc88d87a9683ba58c197c24'], // IDs a MANTENER
+
+  COMPANY_FILTER: ['5b590abca9683b0413293aa1', '67aac64a94ed0a1f9da3478c', '695e91e069b679429eb335f8'], // IDs a MANTENER
   TEAM_FILTER: []     // IDs a MANTENER (opcional)
 };
 
@@ -163,16 +164,16 @@ class StandaloneDataCleanup {
 
   setupFilters() {
     if (CONFIG.COMPANY_FILTER.length > 0) {
-      this.companyFilter = { 
-        company: { $nin: CONFIG.COMPANY_FILTER.map(id => new mongoose.Types.ObjectId(id)) } 
+      this.companyFilter = {
+        company: { $nin: CONFIG.COMPANY_FILTER.map(id => new mongoose.Types.ObjectId(id)) }
       };
       console.log(`🔍 Filtro: MANTENER SOLO companies: ${CONFIG.COMPANY_FILTER.join(', ')}`);
       console.log(`🔍 Filtro: ELIMINAR todas las demás companies`);
     }
 
     if (CONFIG.TEAM_FILTER.length > 0) {
-      this.teamFilter = { 
-        team: { $nin: CONFIG.TEAM_FILTER.map(id => new mongoose.Types.ObjectId(id)) } 
+      this.teamFilter = {
+        team: { $nin: CONFIG.TEAM_FILTER.map(id => new mongoose.Types.ObjectId(id)) }
       };
       console.log(`🔍 Filtro: MANTENER SOLO teams: ${CONFIG.TEAM_FILTER.join(', ')}`);
       console.log(`🔍 Filtro: ELIMINAR todos los demás teams`);
@@ -240,7 +241,7 @@ class StandaloneDataCleanup {
       // Mostrar todas las companies primero
       const allCompanies = await Company.find({});
       console.log(`Total de companies en la BD: ${allCompanies.length}`);
-      
+
       if (CONFIG.COMPANY_FILTER.length > 0) {
         // Usar la lista expandida (base + clientCompanies + handlerCompanies) si está disponible
         const keepCompanyIds = (this.keepCompanyIds && this.keepCompanyIds.length)
@@ -249,13 +250,13 @@ class StandaloneDataCleanup {
 
         const companiesToKeep = await Company.find({ _id: { $in: keepCompanyIds } });
         console.log(`\n🛡️  COMPANIES QUE SE MANTENDRÁN (${companiesToKeep.length}):`);
-        
+
         for (const company of companiesToKeep) {
           const users = await User.countDocuments({ company: company._id });
           const cars = await Car.countDocuments({ company: company._id });
           const inventories = await Inventory.countDocuments({ company: company._id });
           const participants = await Participant.countDocuments({ company: company._id });
-          
+
           console.log(`📁 ${company.name || 'Sin nombre'} (${company._id})${company.team ? ` - team: ${company.team}` : ''}:`);
           console.log(`   - Usuarios: ${users}`);
           console.log(`   - Vehículos: ${cars}`);
@@ -280,7 +281,7 @@ class StandaloneDataCleanup {
             console.log(`🏷️  ${t.name || 'Sin nombre'} (${t._id})`);
           }
         }
-        
+
         console.log(`\n⚠️  Se eliminarán ${allCompanies.length - companiesToKeep.length} companies y todos sus datos relacionados`);
       } else {
         // Sin filtro de companies, pero puede haber filtro de teams para referencia
@@ -303,7 +304,7 @@ class StandaloneDataCleanup {
 
   async askConfirmation(question) {
     if (CONFIG.DRY_RUN) return false;
-    
+
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -319,16 +320,16 @@ class StandaloneDataCleanup {
 
   async cleanupModel(model, modelName, filter = {}) {
     console.log(`\n🧹 Procesando modelo: ${modelName}`);
-    
+
     const mergedFilter = { ...filter, ...this.companyFilter, ...this.teamFilter };
-    
+
     try {
       const totalDocuments = await model.countDocuments({});
       const documentsToDelete = await model.countDocuments(mergedFilter);
-      
+
       console.log(`   📄 Total documentos: ${totalDocuments}`);
       console.log(`   🎯 Documentos a eliminar: ${documentsToDelete}`);
-      
+
       let deletedDocuments = 0;
       let errors = 0;
 
@@ -340,7 +341,7 @@ class StandaloneDataCleanup {
           const confirmation = await this.askConfirmation(
             `¿Eliminar ${documentsToDelete} documentos de ${modelName}? (y/N): `
           );
-          
+
           if (confirmation) {
             try {
               const result = await model.deleteMany(mergedFilter);
@@ -380,7 +381,7 @@ class StandaloneDataCleanup {
 
   async cleanupDirectCompanyRelations() {
     console.log('\n🎯 LIMPIEZA DE MODELOS CON RELACIÓN DIRECTA A COMPANY:');
-    
+
     await this.cleanupModel(User, 'Users');
     await this.cleanupModel(Car, 'Cars');
     await this.cleanupModel(Venue, 'Venues');
@@ -388,7 +389,7 @@ class StandaloneDataCleanup {
     await this.cleanupModel(Alert, 'Alerts');
     await this.cleanupModel(Border, 'Borders');
     await this.cleanupModel(RecoverFile, 'RecoverFiles');
-    
+
     await this.cleanupModel(History, 'History');
     await this.cleanupModel(Participant, 'Participants');
     await this.cleanupModel(ParticipantFile, 'ParticipantFiles');
@@ -409,7 +410,7 @@ class StandaloneDataCleanup {
 
     // Nuevos modelos con relación directa
     await this.cleanupModel(VirtualInventory, 'VirtualInventories');
-    
+
     await this.cleanupModel(Stock, 'Stock');
     await this.cleanupModel(Request, 'Requests');
     await this.cleanupModel(RequestItem, 'RequestItems');
@@ -423,7 +424,7 @@ class StandaloneDataCleanup {
 
   async cleanupIndirectRelations() {
     console.log('\n🔗 LIMPIEZA DE MODELOS CON RELACIÓN INDIRECTA:');
-    
+
     try {
       // Cars relacionados
       const carIds = await Car.find(this.companyFilter).distinct('_id');
@@ -484,29 +485,29 @@ class StandaloneDataCleanup {
 
   async cleanupOrphanedDocuments() {
     console.log('\n🧽 LIMPIEZA DE DOCUMENTOS HUÉRFANOS:');
-    
+
     try {
       // Participant files huérfanos
       const validParticipantIds = await Participant.find({}).distinct('_id');
       await this.cleanupModel(
-        ParticipantFile, 
-        'Orphaned ParticipantFiles', 
+        ParticipantFile,
+        'Orphaned ParticipantFiles',
         { participant: { $nin: validParticipantIds } }
       );
 
       // Inventory cars huérfanos
       const validCarIds = await Car.find({}).distinct('_id');
       await this.cleanupModel(
-        InventoryCar, 
-        'Orphaned InventoryCars', 
+        InventoryCar,
+        'Orphaned InventoryCars',
         { car: { $nin: validCarIds } }
       );
 
       // Inventory files huérfanos
       const validInventoryIds = await Inventory.find({}).distinct('_id');
       await this.cleanupModel(
-        InventoryFile, 
-        'Orphaned InventoryFiles', 
+        InventoryFile,
+        'Orphaned InventoryFiles',
         { inventory: { $nin: validInventoryIds } }
       );
     } catch (error) {
@@ -519,7 +520,7 @@ class StandaloneDataCleanup {
     console.log('═'.repeat(80));
     console.log('📊 Modelo'.padEnd(25) + '📄 Total'.padEnd(10) + '🎯 A Eliminar'.padEnd(15) + '✅ Eliminados'.padEnd(15) + '❌ Errores');
     console.log('─'.repeat(80));
-    
+
     let totalDocuments = 0;
     let totalToDelete = 0;
     let totalDeleted = 0;
@@ -529,19 +530,19 @@ class StandaloneDataCleanup {
       console.log(
         `${stat.modelName.padEnd(25)}${stat.totalDocuments.toString().padEnd(10)}${stat.documentsToDelete.toString().padEnd(15)}${stat.deletedDocuments.toString().padEnd(15)}${stat.errors.toString()}`
       );
-      
+
       totalDocuments += stat.totalDocuments;
       totalToDelete += stat.documentsToDelete;
       totalDeleted += stat.deletedDocuments;
       totalErrors += stat.errors;
     }
-    
+
     console.log('─'.repeat(80));
     console.log(
       `${'TOTAL'.padEnd(25)}${totalDocuments.toString().padEnd(10)}${totalToDelete.toString().padEnd(15)}${totalDeleted.toString().padEnd(15)}${totalErrors.toString()}`
     );
     console.log('═'.repeat(80));
-    
+
     if (CONFIG.DRY_RUN) {
       console.log('\n⚠️  MODO DRY RUN - No se eliminaron documentos realmente');
       console.log('💡 Para ejecutar la limpieza real, cambiar DRY_RUN: false en la configuración');
@@ -558,21 +559,21 @@ async function main() {
   console.log('═'.repeat(60));
 
   const cleanup = new StandaloneDataCleanup();
-  
+
   try {
     await cleanup.connect();
-    
+
     // Mostrar estadísticas iniciales
     await cleanup.getCompanyStats();
-    
+
     // Ejecutar limpieza
     await cleanup.cleanupDirectCompanyRelations();
     await cleanup.cleanupIndirectRelations();
     await cleanup.cleanupOrphanedDocuments();
-    
+
     // Mostrar resumen
     cleanup.printSummary();
-    
+
   } catch (error) {
     console.error('❌ Error en el proceso de limpieza:', error.message);
     process.exit(1);
