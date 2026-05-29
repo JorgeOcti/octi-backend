@@ -102,6 +102,10 @@ const invoiceSchema = new mongoose.Schema({
   file: {
     type: fileSchema,
     default: {}
+  },
+  detail: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   }
 }, {
   timestamps: true

@@ -180,13 +180,39 @@ class ContainerInventoryCreateView extends TrackingBasePage<IPropsType, IStateTy
           contentType: this.props.contentType
         })
         .then((response: any) => {
-          const { message } = response.data;
-          swal!('Importación de Datos', message, 'success');
+          const { message, newCompanies } = response.data || {};
+          if (Array.isArray(newCompanies) && newCompanies.length) {
+            const companiesList = newCompanies
+              .map((company: any) => company?.name || company?.rut)
+              .filter(Boolean);
+            const modalContent = document.createElement('div');
+            modalContent.className = 'inventory-success-content';
+            modalContent.innerHTML = `
+              <p class="inventory-success-text">Se han creado accesos para los siguientes clientes nuevos:</p>
+              <div class="inventory-success-list">
+                ${companiesList.map((name: string) => `<div>${name}</div>`).join('')}
+              </div>
+              <p class="inventory-success-footer">Para enviar los accesos a tus clientes, por favor solicítalo a través de
+                <a href="mailto:soporte@osacontrol.com">soporte@osacontrol.com</a>
+              </p>
+            `;
+            swal!({
+              title: 'El anuncio se ha cargado exitosamente',
+              content: modalContent,
+              icon: 'success',
+              className: 'inventory-success-modal',
+              button: {
+                text: 'OK',
+                className: 'inventory-success-button'
+              }
+            });
+          } else {
+            swal!('Importación de Datos', message, 'success');
+          }
           setTimeout(() => {
             this.setState({
               sending: false
             });
-            swal.close();
             history.push('/inventory/containers/');
           }, 2000);
         })

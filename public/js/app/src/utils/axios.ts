@@ -136,8 +136,7 @@ export default class ApiService {
 
   public getParticipantsPerDate(onlyControls: Boolean, companies?: string) {
     return this.instance.get(
-      `/api/participants-per-date${
-        onlyControls ? `?only_controls=1` : `?only_controls=0`
+      `/api/participants-per-date${onlyControls ? `?only_controls=1` : `?only_controls=0`
       }${companies ? `&companies=${companies}` : ''}`
     );
   }
@@ -148,8 +147,7 @@ export default class ApiService {
 
   public getCompanies(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/companies/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
@@ -197,6 +195,27 @@ export default class ApiService {
     return this.instance.delete(`/api/admin/companies/${id}/`);
   }
 
+  public getClientCompanies(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/handler/client-companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public updateClientCompany(company: IBaseCompany): AxiosPromise {
+    const formData = new FormData();
+    formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
+    if (company.image) {
+      formData.append('image', company.image);
+    }
+    this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
+    return this.instance.patch(
+      `/api/admin/handler/client-companies/${company._id}/`,
+      formData
+    );
+  }
+
   public createVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.post(`/api/admin/venues/`, venue);
   }
@@ -225,21 +244,19 @@ export default class ApiService {
     search?: string;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${company ? `&company=${company}` : ''}${
-        noPopulate ? `&noPopulate=${noPopulate}` : ''
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${company ? `&company=${company}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''
       }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
 
   public getBrands({
-                     page,
-                     pageSize,
-                     noPopulate,
-                     filted,
-                     search
-                   }: {
+    page,
+    pageSize,
+    noPopulate,
+    filted,
+    search
+  }: {
     page: number;
     pageSize?: number;
     noPopulate?: boolean;
@@ -247,10 +264,8 @@ export default class ApiService {
     search?: string;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/brands/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${
-        noPopulate ? `&noPopulate=${noPopulate}` : ''
+      `/api/admin/brands/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${noPopulate ? `&noPopulate=${noPopulate}` : ''
       }${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
@@ -282,8 +297,7 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
-        orderBy ? `&orderBy=${orderBy}` : ''
+      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''
       }${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
@@ -315,10 +329,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/sales-channel/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${orderBy ? `&orderBy=${orderBy}` : ''}${
-        orderType ? `&orderType=${orderType}` : ''
+      `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''
       }`
     );
   }
@@ -350,10 +362,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/payment-method?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${orderBy ? `&orderBy=${orderBy}` : ''}${
-        orderType ? `&orderType=${orderType}` : ''
+      `/api/v1/payment-method?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''
       }`
     );
   }
@@ -372,16 +382,14 @@ export default class ApiService {
 
   public getCarriers(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/carriers/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/carriers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
 
   public getDrivers(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/v1/users/drivers?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/v1/users/drivers?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
@@ -400,16 +408,14 @@ export default class ApiService {
 
   public getRegions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/regions/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/regions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
 
   public getPermissions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/permissions/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/permissions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
@@ -444,9 +450,8 @@ export default class ApiService {
     forms?: String[];
     brands?: String[];
   }): AxiosPromise {
-    let query = `?page=${page}&only_controls=${
-      onlyControls ? '1' : '0'
-    }&deliveries=${deliveries ? '1' : '0'}`;
+    let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'
+      }&deliveries=${deliveries ? '1' : '0'}`;
     if (search) query += `&search=${search}`;
     if (delivery) query += `&delivery=${delivery}`;
 
@@ -524,6 +529,27 @@ export default class ApiService {
     });
   }
 
+  public getGeneralItemsContainersInventory(page: number, pageSize?: number, filters?: any, sortField?: string, sortOption?: 'asc' | 'desc'): AxiosPromise {
+    let url = `/api/inventory/container/?page=${page}&contentType=general-items`
+    if (pageSize) {
+      url += `&pageSize=${pageSize}`
+    }
+    if (filters) {
+      for (const key in filters) {
+        if (filters[key]) {
+          url += `&${key}=${filters[key]}`
+        }
+      }
+    }
+    if (sortField) {
+      url += `&sort=${sortField}`
+      url += `&sortOption=${sortOption || 'desc'}`
+    }
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
   public getContainersInventorySummary(filters?: any): AxiosPromise {
     let url = `/api/summary/inventory/container/`
     if (filters) {
@@ -544,7 +570,7 @@ export default class ApiService {
     });
   }
 
-    public getSummaryByCompany(companyId: string,filters?: any): AxiosPromise {
+  public getSummaryByCompany(companyId: string, filters?: any): AxiosPromise {
     let url = `/api/company/stock/${companyId}/summary`;
     if (filters) {
       url += '?'
@@ -622,7 +648,7 @@ export default class ApiService {
     file,
     backupFile,
     contentType
-    }: {
+  }: {
     carsByContainer: any;
     name: string;
     file: File | null;
@@ -744,14 +770,15 @@ export default class ApiService {
     return this.source;
   }
 
-  public setLabel(args : {
-                    inventory: string,
-                    car: string,
-                    carID: string,
-                    label: string,
-                    isUnit?: boolean,
-                    custom?: string}
-): AxiosPromise {
+  public setLabel(args: {
+    inventory: string,
+    car: string,
+    carID: string,
+    label: string,
+    isUnit?: boolean,
+    custom?: string
+  }
+  ): AxiosPromise {
     return this.instance.post(`/api/inventory/${args.inventory}/set-label/`, {
       car: args.car,
       label: args.label,
@@ -828,16 +855,14 @@ export default class ApiService {
 
   public getPlanning(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/planning?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/planning?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
 
   public getBilling(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/billing?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/billing?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }`
     );
   }
@@ -946,10 +971,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/request-item-status/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${orderBy ? `&orderBy=${orderBy}` : ''}${
-        orderType ? `&orderType=${orderType}` : ''
+      `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''
       }`
     );
   }
@@ -983,10 +1006,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/operation-types?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${orderBy ? `&orderBy=${orderBy}` : ''}${
-        orderType ? `&orderType=${orderType}` : ''
+      `/api/v1/operation-types?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''
       }`
     );
   }
@@ -1036,11 +1057,9 @@ export default class ApiService {
     from: number;
     to: number;
   }): AxiosPromise {
-    let url = `/api/v1/transmittals?page=${page}${
-      pageSize ? `&pageSize=${pageSize}` : ''
-    }${orderBy ? `&orderBy=${orderBy}` : ''}${
-      orderType ? `&orderType=${orderType}` : '?'
-    }${from && to ? `&from=${from}&to=${to}` : '?'}`;
+    let url = `/api/v1/transmittals?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : '?'
+      }${from && to ? `&from=${from}&to=${to}` : '?'}`;
     if (number) {
       url = `${url}&number=${number}`;
     }
@@ -1131,10 +1150,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/milestones/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${milestoneType ? `&milestoneType=${milestoneType}` : ''}${
-        orderBy ? `&orderBy=${orderBy}` : ''
+      `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${milestoneType ? `&milestoneType=${milestoneType}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''
       }${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
@@ -1168,10 +1185,8 @@ export default class ApiService {
     pageSize?: number;
   }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/milestone-types/?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
-      }${orderBy ? `&orderBy=${orderBy}` : ''}${
-        orderType ? `&orderType=${orderType}` : ''
+      `/api/v1/milestone-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
+      }${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''
       }`
     );
   }
@@ -1212,9 +1227,20 @@ export default class ApiService {
     activated?: boolean
   ): AxiosPromise {
     return this.instance.get(
-      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${
-        activated ? `&activated=1` : ''
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${activated ? `&activated=1` : ''
       }`
+    );
+  }
+
+  /**
+   * Fetches forms filtered by kindForm. The backend securely filters
+   * by the user's team and company from the session.
+   * @param kindForm - The kind of form to fetch (e.g., 'aforo', 'aforoSAG')
+   * @returns Promise with forms matching the specified kind
+   */
+  public getFormsByKind(kindForm: string): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/forms/?page=1&pageSize=10&activated=1&kind=${kindForm}`
     );
   }
 
@@ -1236,6 +1262,10 @@ export default class ApiService {
 
   public deleteInventoryCarFile(inventoryFileId: string): AxiosPromise {
     return this.instance.delete(`/api/inventory-car/files/${inventoryFileId}/`);
+  }
+
+  public addInventoryCarLink(inventoryCarId: string, data: { url: string; name: string; linkType?: string }): AxiosPromise {
+    return this.instance.post(`/api/inventory-car/${inventoryCarId}/add-link/`, data);
   }
 
   public validateContectaID(conectaID: string): AxiosPromise {
@@ -1296,8 +1326,7 @@ export default class ApiService {
     search?: string
   ): AxiosPromise {
     return this.instance.get(
-      `/api/admin/border?page=${page}${
-        pageSize ? `&pageSize=${pageSize}` : ''
+      `/api/admin/border?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''
       }${search ? `&search=${search}` : ''}`
     );
   }
@@ -1330,7 +1359,7 @@ export default class ApiService {
     return this.instance.get(`/api/settings/billing/modules/`);
   }
 
-  public getOSACars(search? :String): AxiosPromise {
+  public getOSACars(search?: String): AxiosPromise {
     return this.instance.get(`/api/osa-cars/${search ? `?search=${search}` : ''}`);
   }
 }

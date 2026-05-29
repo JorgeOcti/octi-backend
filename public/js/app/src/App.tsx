@@ -13,6 +13,7 @@ import RequestChannelListView from './components/RequestSettings/RequestChannelL
 import PaymentMethodListView from './components/RequestSettings/PaymentMethodlListView';
 import RequestStatusListView from './components/RequestSettings/RequestStatusListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
+import ClientCompaniesListView from './components/ClientCompanies/ClientCompaniesListView';
 import DashboardDamagesView from './components/DashboardGeneral/DashboardDamagesView';
 import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
@@ -68,10 +69,11 @@ import BillingSettingsListView from './components/Billing/BillingSettings/Billin
 import BillingCoporateListView from './components/Billing/BillingSettings/BillingCorporateDetailView';
 import DeliveriesView from './components/Deliveries/DeliveriesView';
 import ReactGA from "react-ga4";
-import {TraceabilityView} from "./components/Traceability/TraceabilityView";
+import { TraceabilityView } from "./components/Traceability/TraceabilityView";
 import OSAView from "./components/OSA/OSAView";
-import {LBZView} from "./components/LBZ/LBZ";
+import { LBZView } from "./components/LBZ/LBZ";
 import ContainersInventory from "./components/Inventory/ContainersInventory";
+import GeneralItemsContentView from "./components/Inventory/GeneralItemsContentView";
 import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView/ContainerInventoryCreateView";
 import GeneralItemsCreateView from './components/Containers/ContainerInventoryCreateView/GeneralItemsCreateView';
 import CodedItemsCreateView from './components/Containers/ContainerInventoryCreateView/CodedItemsCreateView';
@@ -79,6 +81,7 @@ import DesconsolidatedUnitsView from './components/DeconsolidatedUnits/Desconsol
 import InventoryManagement from './components/Inventory/InventoryManagement';
 import InventoryDetail from './components/Inventory/InventoryDetail';
 import AforoContainerDashboard from './components/Containers/ContainerChecklistsView';
+import AforoSAGContainerDashboard from './components/Containers/AforoSAGContainerDashboard';
 
 declare let window: IWindow;
 
@@ -93,7 +96,7 @@ const App = () => (
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <Switch>
-        <Route exact path="/settings/integrations/" component={IntegrationListView}/>
+        <Route exact path="/settings/integrations/" component={IntegrationListView} />
         <Route exact path='/' component={DashboardGeneralView} />
         <Route exact path='/cars/' component={DashboardVinView} />
         <Route exact path='/deliveries/' component={DeliveriesView} />
@@ -103,7 +106,7 @@ const App = () => (
         <Route exact path='/dashboard/damages/' component={DashboardDamagesView} />
         <Route exact path='/dashboard/timing/' component={DashboardTimingView} />
         <Route exact path='/dashboard/derco/' component={DashboardDercoView} />
-        <Route exact path='/dashboard/studio/' component={VUnitControlDashboardStatsView}  />
+        <Route exact path='/dashboard/studio/' component={VUnitControlDashboardStatsView} />
         <Route exact path='/dashboard/custom-dashboard/' component={CustomDashboardComponent} />
         <Route exact path='/forms/settings/forms/' component={FormsSettingsListView} />
         <Route exact path='/stock/' component={StockView} />
@@ -113,7 +116,9 @@ const App = () => (
         <Route exact path='/desconsolidated/unit/' component={DesconsolidatedUnitsView} />
         <Route exact path='/inventory/' component={InventoryListView} />
         <Route exact path='/containers/aforo/' component={AforoContainerDashboard} />
+        <Route exact path='/containers/aforo-sag/' component={AforoSAGContainerDashboard} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
+        <Route exact path='/inventory/containers/general-items/' component={GeneralItemsContentView} />
         <Route exact path='/inventory/management/' component={InventoryManagement} />
         <Route exact path='/inventory/management/:id' component={InventoryDetail} />
         <Route exact path='/inventory/container/create/' component={ContainerInventoryCreateView} />
@@ -134,6 +139,7 @@ const App = () => (
         <Route exact path='/settings/colors/' component={ColorListView} />
         <Route exact path='/settings/carriers/' component={CarriersListView} />
         <Route exact path='/settings/companies/' component={CompaniesListView} />
+        <Route exact path='/settings/client-companies/' component={ClientCompaniesListView} />
         <Route exact path='/settings/alerts/' component={AlertsViews} />
         <Route exact path='/settings/versions/' component={VersionListView} />
         <Route exact path='/settings/billing-settings/' component={BillingSettingsListView} />
@@ -209,7 +215,7 @@ $(() => {
     $body.removeClass('sidebar-open');
   });
   // ekk-lightbox
-  $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+  $(document).on('click', '[data-toggle="lightbox"]', function (event) {
     event.preventDefault();
     ($(this) as any).ekkoLightbox();
   });
@@ -220,11 +226,11 @@ $(() => {
     }
   });
 
-  $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function(event) {
+  $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function (event) {
     event.stopPropagation();
   });
   // prevenet show modal addons when is open and user change page
-  window.addEventListener('popstate', function() {
+  window.addEventListener('popstate', function () {
     $('.modal-backdrop').remove();
     $body.removeClass('modal-open');
     // ($('#andesModal') as any).modal('hide');
@@ -239,15 +245,15 @@ $(() => {
     //Removes the transition after page reload.
   };
 
-  $(function() {
+  $(function () {
     'use strict';
-    $body.on('collapsed.pushMenu', function() {
+    $body.on('collapsed.pushMenu', function () {
       if (($ as any).AdminLTESidebarTweak.options.EnableRemember) {
         localStorage.setItem('toggleState', 'closed');
       }
     });
 
-    $body.on('expanded.pushMenu', function() {
+    $body.on('expanded.pushMenu', function () {
       if (($ as any).AdminLTESidebarTweak.options.EnableRemember) {
         localStorage.setItem('toggleState', 'opened');
       }
@@ -265,7 +271,7 @@ $(() => {
       const toggleState = localStorage.getItem('toggleState');
       if (toggleState === 'closed') {
         if (($ as any).AdminLTESidebarTweak.options.NoTransitionAfterReload) {
-          $body.addClass('sidebar-collapse hold-transition').delay(100).queue(function() {
+          $body.addClass('sidebar-collapse hold-transition').delay(100).queue(function () {
             $(this).removeClass('hold-transition');
           });
         } else {

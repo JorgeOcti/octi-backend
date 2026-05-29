@@ -327,7 +327,7 @@ if (process.env.NODE_ENV !== 'development' && planningItems.length) {
  *****************/
 const AdminLoadControl: any[] = [];
 
-if (hasPermission(window.user, 'viewContainerInventory') ) {
+if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
     id: '6.3',
     icon: 'fa-circle-o',
@@ -345,6 +345,7 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
+
 if (hasPermission(window.user, 'viewContainerInventory')) {
   AdminLoadControl.push({
     id: '6.4',
@@ -354,12 +355,28 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
-if (hasPermission(window.user, 'viewClient') ) {
+if (hasPermission(window.user, 'viewContainerInventory')) {
+  AdminLoadControl.push({
+    id: '6.5',
+    icon: 'fa-circle-o',
+    text: 'Aforo SAG',
+    url: '/containers/aforo-sag/'
+  });
+}
+
+if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.2',
     icon: 'fa-circle-o',
-    text: 'Vista Cliente',
+    text: 'Vista Cliente Vehículo',
     url: '/desconsolidated/unit/'
+  });
+
+  AdminLoadControl.push({
+    id: '6.6',
+    icon: 'fa-circle-o',
+    text: 'Vista Cliente Carga',
+    url: '/inventory/containers/general-items/'
   });
 }
 
@@ -384,13 +401,24 @@ const settingItems = [
   url: '/settings/alerts/'
 }*/
 ];
-
+// viewCompany permission is a legacy name of Empresas menu
+// Empresas now is Servicios and next menu called Empresas is for
+// cliente companies to change their info and upload logos
 if (hasPermission(window.user, 'viewCompany') && window.user.isAdmin) {
   settingItems.push({
     id: '10.1',
     icon: 'fa-circle-o text-yellow',
-    text: 'Empresas',
+    text: 'Servicios',
     url: '/settings/companies/'
+  });
+}
+
+if (hasPermission(window.user, 'viewClientCompanies') && window.user.company && (window.user.company as any).handler) {
+  settingItems.push({
+    id: '10.12',
+    icon: 'fa-circle-o text-blue',
+    text: 'Empresas',
+    url: '/settings/client-companies/'
   });
 }
 

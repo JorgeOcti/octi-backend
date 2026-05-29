@@ -739,14 +739,16 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const team = req.user.team._id;
-    const { forContainer, forUnit } = req.query as {
+    const { forContainer, forUnit, showHidden } = req.query as {
       forContainer: string;
       forUnit: string;
+      showHidden: string;
     };
+
     try {
       const filter: any = {
         team: team,
-        hidden: false,
+        hidden: showHidden === '1' ? { $in: [true, false] } : false,
         $and: [
           {
             _id: {
@@ -1695,7 +1697,7 @@ class FormController {
               logger.info(`Container found: ${containerFound}`);
               logger.debug(`InventoryCar before update: ${JSON.stringify(inventoryCar)}`);
               logger.debug(`Car: ${JSON.stringify(car)}`);
-              if (car.isContainer && inventoryItem.openForm.toString() === form._id.toString()){
+              if (car.isContainer && inventoryItem.openForm?.toString() === form._id.toString()){
                 logger.info(`Opening container inventory form`);
                 let openEvidences : any = {
                   status: ChoicesStatusContainer.open,
@@ -1712,6 +1714,17 @@ class FormController {
                 inventoryCar.status = ChoicesStatusCarInventory.found;
                 inventoryCar.openParticipant = newParticipant._id;
                 await inventoryCar.save();
+
+                // Emitir notificación de socket para apertura de contenedor
+                const populatedInventoryCarOpen = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_OPENED", updatedUser.venue._id, team._id, populatedInventoryCarOpen, ChoicesStatusContainer.open, updatedUser);
+
 
               } else if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()) {
                 logger.info(`Finishing container inventory form`);
@@ -1749,6 +1762,16 @@ class FormController {
                 inventoryCar.closeParticipant = newParticipant._id;
                 await inventoryCar.save();
                 await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
+
+                // Emitir notificación de socket para cierre de contenedor
+                const populatedInventoryCarClose = await inventoryCar.populate([
+                  { path: 'car' },
+                  { path: 'venue' },
+                  { path: 'venueFound' },
+                  { path: 'evidenceStatus.images' },
+                  { path: 'images' }
+                ]);
+                InventoryController.sendUpdateNotification("CONTAINER_CLOSED", updatedUser.venue._id, team._id, populatedInventoryCarClose, ChoicesStatusContainer.empty, updatedUser);
               } else {
                 inventoryCar.participant = newParticipant._id;
                 await inventoryCar.save();
@@ -3666,7 +3689,8 @@ class FormController {
           receiveFrom: true,
           sendTo: true,
           number: true,
-          createdAt: true
+          createdAt: true,
+          carryResume: true
         },
         populate: [
           {
@@ -3816,7 +3840,8 @@ class FormController {
           receiveFrom: true,
           sendTo: true,
           number: true,
-          createdAt: true
+          createdAt: true,
+          carryResume: true
         },
         populate: [
           {
@@ -3945,7 +3970,8 @@ class FormController {
     return new Promise(async (resolve, reject) => {
       const forms = await Form.find(filter, {
         _id: 1,
-        name: 1
+        name: 1,
+        hidden: 1,
       }).lean();
       return resolve(forms);
     });

@@ -30,6 +30,7 @@ import ModalView from '../Modal/ModalView';
 import { InventoryTable } from './TableDetailComponent';
 import { Filters } from './FilterDetailComponent';
 import DataTable from 'react-data-table-component';
+import { loadContainerFiles, deleteContainerFile, ContainerFilesModal, ContainerFilesCell } from './containerFiles.utils';
 
 declare let window: IWindow;
 
@@ -73,6 +74,10 @@ interface IStateType {
   endDate: Date;
   startDate: Date;
   isFilteringByDate: boolean;
+  containerFilesModalId: string | null;
+  containerFilesInventoryId: string | null;
+  containerFiles: any[];
+  containerFilesLoading: boolean;
   pagination: {
     page: number;
     pageSize: number;
@@ -269,6 +274,10 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
       endDate: moment().toDate(),
       startDate: moment().subtract(1, 'month').startOf('month').toDate(),
       isFilteringByDate: true,
+      containerFilesModalId: null,
+      containerFilesInventoryId: null,
+      containerFiles: [],
+      containerFilesLoading: false,
       inventorySettings: {
           "leftoverDifferentVenue": true,
           "_id": "5e68fb3e0f7cfc00245e4954",
@@ -453,6 +462,19 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
             ).flat();
           }
           return imagesFormatter(row);
+        }
+      },
+      {
+        name: 'Archivos',
+        cell: (row: any) => {
+          const onclick = () => {
+            this.setState({
+              containerFilesModalId: row._id,
+              containerFilesInventoryId: row.inventory,
+            });
+            loadContainerFiles(row._id, this.setState.bind(this));
+          };
+          return <ContainerFilesCell row={row} onClick={onclick} />;
         }
       },
       {
@@ -1695,6 +1717,42 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
+                  <ContainerFilesModal
+                    modalId={this.state.containerFilesModalId}
+                    files={this.state.containerFiles}
+                    loading={this.state.containerFilesLoading}
+                    onDelete={(id) => {
+                      const api = new ApiService();
+                      api.deleteInventoryCarFile(id);
+                      this.setState((prev: any) => {
+                        const modalId = prev.containerFilesModalId;
+                        const newFiles = prev.containerFiles.filter((f: any) => f._id !== id);
+                        const fileIds = newFiles.map((f: any) => f._id);
+                        const updateRow = (list: any[]) =>
+                          list.map((c: any) => c._id === modalId ? { ...c, files: fileIds } : c);
+                        return {
+                          containerFiles: newFiles,
+                          containers: updateRow(prev.containers),
+                          originalContainers: updateRow(prev.originalContainers),
+                        };
+                      });
+                    }}
+                    onChange={(files) => {
+                      this.setState((prev: any) => {
+                        const modalId = prev.containerFilesModalId;
+                        const fileIds = files
+                          .filter((f: any) => f._id)
+                          .map((f: any) => f._id);
+                        const updateRow = (list: any[]) =>
+                          list.map((c: any) => c._id === modalId ? { ...c, files: fileIds } : c);
+                        return {
+                          containerFiles: files,
+                          containers: updateRow(prev.containers),
+                          originalContainers: updateRow(prev.originalContainers),
+                        };
+                      });
+                    }}
+                  />
                 </div>
               </>
             }

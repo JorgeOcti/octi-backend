@@ -71,6 +71,9 @@ html
           p Giro: SERVICIOS EXTRAPORTUARIOS
           p Dirección: !{container.venueFound && container.venueFound.code || ''}
           p Emitido por: !{userName} el !{moment().format('DD/MM/YYYY - HH:mm')}
+        if clientCompany && clientCompany.image && clientCompany.image.url
+          .logo(style="text-align: right;")
+            img(src=clientCompany.image.url, height="30px")
       .section-wrapper
         .section
           .title CONTAINER
@@ -103,7 +106,7 @@ html
               span !{container.extra["N° Viaje"]}
             .item
               span.label Emplazamiento:
-              span !{container.extra["Emplazamiento"]}
+              span !{container.extra["Emplazamiento"] || "Sin información"}
       .section-wrapper
         .section
           .info-grid

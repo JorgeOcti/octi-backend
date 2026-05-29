@@ -13,7 +13,9 @@ inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/excel/', Middlewares.isLoggedIn, InventoryController.inventoryByCars);
 inventoryRouter.get('/inventory/containers/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/containers/general-items/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/containers/aforo/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/containers/aforo-sag/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/desconsolidated/unit/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/management/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/management/:id/', Middlewares.isLoggedIn, InventoryController.index);
@@ -43,7 +45,7 @@ inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryCont
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
 inventoryRouter.get('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.listInventoryCarFiles);
 inventoryRouter.delete('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.removeInventoryCarFile);
-inventoryRouter.get('/api/inventory/:inventoryId/container/tarja/:carId', InventoryController.pdf);
+inventoryRouter.get('/api/inventory/:inventoryId/container/tarja/:carId', Middlewares.isJWTAuthenticated, InventoryController.pdf);
 
 // Labels API Web
 inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiList);
@@ -57,6 +59,14 @@ inventoryRouter.get('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, In
 inventoryRouter.post('/api/v1/inventory/:id/upload-file/', Middlewares.isJWTAuthenticated, InventoryController.uploadFile);
 inventoryRouter.post('/api/v1/inventory/:id/report-car/', Middlewares.isJWTAuthenticated, InventoryController.reportCar);
 inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, InventoryController.apiFoundCar);
+
+// Inventory Car files API (Mobile/JWT)
+inventoryRouter.post('/api/v1/inventory-car/:id/upload-file/', Middlewares.isJWTAuthenticated, InventoryController.uploadInventoryCarFile);
+inventoryRouter.post('/api/v1/inventory-car/:id/add-link/', Middlewares.isJWTAuthenticated, InventoryController.addInventoryCarLink);
+inventoryRouter.get('/api/v1/inventory-car/:id/files/', Middlewares.isJWTAuthenticated, InventoryController.apiListInventoryCarFiles);
+
+// Inventory Car link API (Web)
+inventoryRouter.post('/api/inventory-car/:id/add-link/', Middlewares.isLoggedIn, InventoryController.addInventoryCarLinkWeb);
 
 // Stock
 inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);

@@ -6,6 +6,7 @@ import { billingReducer } from './billing.reducers';
 import { carriersReducer } from './carriers.reducer';
 import { carsReducer } from './cars.reducer';
 import { companiesReducer } from './companies.reducer';
+import { clientCompaniesReducer } from './clientCompanies.reducer';
 import { dashboardReducer } from './dashboard.reducer';
 import { dashboardDamagesReducer } from './dashboardDamages.reducer';
 import { dashboardDercoReducer } from './dashboardDerco.reducer';
@@ -61,6 +62,7 @@ export default (history: any) => combineReducers({
   deliveries: deliveriesReducer,
   venues: venuesReducer,
   companies: companiesReducer,
+  clientCompanies: clientCompaniesReducer,
   labels: labelsReducer,
   requests: requestsReducers,
   requestItems: requestItemsReducers,

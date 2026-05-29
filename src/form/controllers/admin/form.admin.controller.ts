@@ -87,8 +87,9 @@ class AdminFormsController {
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
-    const { page, pageSize, activated } = req.query as { page: string, pageSize: string, activated?: string };
+    const { page, pageSize, activated, kind } = req.query as { page: string, pageSize: string, activated?: string, kind?: string };
     const team = req.user.team._id;
+    const company = req.user.company._id;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -116,9 +117,13 @@ class AdminFormsController {
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
 
-    let filter: any = { team };
+    // Security: always filter by user's team AND company from session
+    let filter: any = { team, company };
     if (activated) {
       filter = { ...filter, active: activated === '1' };
+    }
+    if (kind) {
+      filter = { ...filter, kind };
     }
 
     try {
