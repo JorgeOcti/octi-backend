@@ -3112,6 +3112,7 @@ class InventoryController {
         { header: 'Daños', key: 'hasDamages', width: 30 },
         { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
         { header: 'Cantidad asistencia mecánica', key: 'qty-accesories', width: 30 },
+        { header: 'Estacionamiento', key: 'parking', width: 20 },
         { header: 'BL', key: 'bl', width: 20 },
         { header: 'Puerto', key: 'port', width: 20 },
         { header: 'Nave', key: 'ship', width: 20 },
@@ -3305,7 +3306,7 @@ class InventoryController {
           localField: 'participant',
           foreignField: '_id',
           as: 'participant',
-          pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1, 'sections.answers.damagesSelected': 1 } }]
+          pipeline: [{ $project: { name: 1, hasDamages: 1, sections: 1, deliveryInfo: 1 } }]
         }
       },
       {
@@ -3380,6 +3381,7 @@ class InventoryController {
         hasDamages: damagesText,
         accesories: accessories?.accessoriesText || '',
         'qty-accesories': accessories?.accessoriesTotal || '',
+        parking: this.getParking(car.participant),
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
@@ -3399,26 +3401,69 @@ class InventoryController {
       return response;
     }
 
+    let chosenAnswer: any = null;
+
     for (const section of participant.sections) {
       for (const answer of section.answers) {
         if (answer.kind === KindQuestion.accessory) {
-          let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
-          response.accessoriesText = answer.accesoriesAnswered
-            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount : ""}`)
-            .join(';')
-          response.accessoriesTotal = answer.accesoriesAnswered.reduce((sum, item) => sum + (item.amount || 1), 0);
+          if (answer.kindUpdate === 'participant.assistance') {
+            chosenAnswer = answer;
+            break; // Found the specific Asistencia mecánica question!
+          } else if (!chosenAnswer) {
+            // Keep the first accessory question as a fallback
+            chosenAnswer = answer;
+          }
         }
       }
+      if (chosenAnswer && chosenAnswer.kindUpdate === 'participant.assistance') {
+        break; // Stop outer loop if we found the prioritized one
+      }
     }
+
+    if (chosenAnswer) {
+      let itemsDict = this.createObjectFromItems(chosenAnswer.accessories?.items || []);
+      response.accessoriesText = (chosenAnswer.accesoriesAnswered || [])
+        .map((item: any) => `${itemsDict[item.item?.toString()] || ''} ${item.amount > 0 ? item.amount : ""}`.trim())
+        .filter(Boolean)
+        .join(';');
+      response.accessoriesTotal = (chosenAnswer.accesoriesAnswered || []).reduce((sum: number, item: any) => sum + (item.amount || 1), 0);
+    }
+
     return response;
   }
 
   private createObjectFromItems(items: any[]) {
     let dict: any = {};
-    items.map((item) => {
-      return (dict[item._id.toString()] = item.item);
+    (items || []).forEach((item) => {
+      if (item && item._id) {
+        dict[item._id.toString()] = item.item;
+      }
     });
     return dict;
+  }
+
+  private getParking(participant: IParticipant) {
+    if (!participant) {
+      return '';
+    }
+
+    if (participant.sections) {
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          if (answer.kind === KindQuestion.accessory && answer.kindUpdate === 'participant.parking') {
+            let itemsDict = this.createObjectFromItems(answer.accessories?.items || []);
+            const parkingFromAccessories = (answer.accesoriesAnswered || [])
+              .map((item: any) => itemsDict[item.item?.toString()] || '')
+              .filter(Boolean)
+              .join(';');
+            if (parkingFromAccessories) {
+              return parkingFromAccessories;
+            }
+          }
+        }
+      }
+    }
+    return participant.deliveryInfo?.parking || '';
   }
 
   public async detaill(req: IRequest, res: Response) {
