@@ -1,19 +1,15 @@
 version: 2.1
 
 # ---------------------------------------------------------------------------
-# Pipeline: build Docker images and push to env-specific ECR repos.
+# Pipeline: build → push to ECR → roll ECS services → wait for stable.
 #
 # Auth: CircleCI OIDC → AWS IAM role (no static keys).
 #   The role is provisioned by terraform/ci/. Its ARN must be in the
 #   `aws-ecs` context as AWS_ROLE_ARN.
 #
 # Branches:
-#   develop  → build + push for dev  (tags: <sha>, dev, latest)
-#   master   → build + push for prod (tags: <sha>, prod, latest)
-#
-# Deploy (ecs update-service) is intentionally NOT triggered from this
-# pipeline yet — do it manually until the new infra is verified, then add a
-# deploy job (see docs/DEPLOY.md §5.1).
+#   develop  → build → push → deploy dev   (auto)
+#   master   → build → push → deploy prod  (auto)
 # ---------------------------------------------------------------------------
 
 orbs:
@@ -81,9 +77,60 @@ jobs:
               .
             docker push --all-tags "${REPO}"
 
+  deploy:
+    docker:
+      - image: cimg/aws:2024.03
+    parameters:
+      env:
+        type: enum
+        enum: ["dev", "prod"]
+        description: Environment to roll (dev or prod).
+    environment:
+      AWS_REGION: sa-east-1
+      ENV: << parameters.env >>
+    steps:
+      - aws-cli/setup:
+          role_arn: ${AWS_ROLE_ARN}
+          region: ${AWS_REGION}
+          profile_name: default
+
+      - run:
+          name: Force new deployment of web + worker
+          command: |
+            CLUSTER="andes-${ENV}-cluster"
+            for SVC in web worker; do
+              echo "Rolling andes-${ENV}-${SVC}..."
+              aws ecs update-service \
+                --cluster "${CLUSTER}" \
+                --service "andes-${ENV}-${SVC}" \
+                --force-new-deployment \
+                --no-cli-pager \
+                --query 'service.deployments[0].{status:status,desiredCount:desiredCount}' \
+                --output table
+            done
+
+      - run:
+          name: Wait for services to stabilize
+          # Each task drains the old + boots the new. For our health-check
+          # interval (15s) this typically settles in 2–5 min.
+          no_output_timeout: 15m
+          command: |
+            CLUSTER="andes-${ENV}-cluster"
+            echo "Waiting for services-stable on ${CLUSTER}..."
+            aws ecs wait services-stable \
+              --cluster "${CLUSTER}" \
+              --services "andes-${ENV}-web" "andes-${ENV}-worker"
+            echo "Both services stable. Final state:"
+            aws ecs describe-services \
+              --cluster "${CLUSTER}" \
+              --services "andes-${ENV}-web" "andes-${ENV}-worker" \
+              --query 'services[].{service:serviceName,running:runningCount,desired:desiredCount,deployments:length(deployments)}' \
+              --output table
+
 workflows:
-  build:
+  build-deploy:
     jobs:
+      # ----- dev: auto-deploy on push to develop -----
       - build-and-push:
           name: build-dev
           env: dev
@@ -92,10 +139,31 @@ workflows:
             branches:
               only: develop
 
+      - deploy:
+          name: deploy-dev
+          env: dev
+          context: aws-ecs
+          requires:
+            - build-dev
+          filters:
+            branches:
+              only: develop
+
+      # ----- prod: auto-deploy on push to master -----
       - build-and-push:
           name: build-prod
           env: prod
           context: aws-ecs
+          filters:
+            branches:
+              only: master
+
+      - deploy:
+          name: deploy-prod
+          env: prod
+          context: aws-ecs
+          requires:
+            - build-prod
           filters:
             branches:
               only: master
