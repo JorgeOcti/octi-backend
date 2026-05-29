@@ -3202,7 +3202,7 @@ class InventoryController {
           localField: 'participant',
           foreignField: '_id',
           as: 'participant',
-          pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1 } }]
+          pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1, 'sections.answers.damagesSelected': 1 } }]
         }
       },
       {
@@ -3211,6 +3211,12 @@ class InventoryController {
       {
         $match: carFilter
       }
+    ]);
+
+    await Participant.populate(cars, [
+      { path: 'participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+      { path: 'participant.sections.answers.damagesSelected.part', model: 'Part' },
+      { path: 'participant.sections.answers.damagesSelected.position', model: 'Position' }
     ]);
 
     for (const car of cars) {
@@ -3237,13 +3243,37 @@ class InventoryController {
         this.getAccessories(car?.participant) :
         null;
 
+      let damagesText = 'No';
+      if (car.participant && car.participant.hasDamages) {
+        const damagesList: string[] = [];
+        if (car.participant.sections) {
+          for (const section of car.participant.sections) {
+            for (const answer of section.answers) {
+              if (answer.damagesSelected && answer.damagesSelected.length > 0) {
+                for (const damage of answer.damagesSelected) {
+                  const part = damage.part?.name || '';
+                  const position = damage.position?.name || '';
+                  const kind = damage.kind?.name || '';
+
+                  const damageStr = [part, position, kind].filter(Boolean).join('-');
+                  if (damageStr) {
+                    damagesList.push(damageStr);
+                  }
+                }
+              }
+            }
+          }
+        }
+        damagesText = damagesList.length > 0 ? damagesList.join(';') : 'Sí';
+      }
+
       worksheet.addRow({
         openDate: openDate,
         finishDate: finishDate,
         container: container ? container.car.vin : '',
         vin: car.car.vin,
         description: `${car.car.brand} ${car.car.model || ''}`,
-        hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
+        hasDamages: damagesText,
         accesories: accessories?.accessoriesText || '',
         'qty-accesories': accessories?.accessoriesTotal || '',
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
