@@ -1,8 +1,7 @@
 const cors = require ('cors')
 
 const whiteList = [
-  "https://code.osacontrol.cl",
-  "https://code.osacontrol.com",
+  "https://code.octimize.cl",
   "http://localhost:5173"
 ];
 

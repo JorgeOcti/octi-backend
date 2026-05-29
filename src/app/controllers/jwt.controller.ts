@@ -351,7 +351,7 @@ class JWTController {
             from: '',
             title: `Recovery password for ${fullname}`,
             to: `"${fullname}"<${user.email}>`,
-            subject: `Recuperación de tu cuenta en OSA Andes`,
+            subject: `Recuperación de tu cuenta en Octimize`,
             text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
@@ -360,9 +360,9 @@ class JWTController {
             ${process.env.SITE_URL}account/recovery/${token}/
 
             ¿No solicitaste este cambio?
-            Puedes contactarte con nosotros a través de soporte@osacontrol.com.
+            Puedes contactarte con nosotros a través de soporte@octimize.cl.
 
-            © 2021 OSA SpA. Todos los derechos reservados.`,
+            © 2021 Octimize SpA. Todos los derechos reservados.`,
             view: 'account/forgotPassword',
             context: {
               fullname,

@@ -712,16 +712,16 @@ class AdminUsersController {
             from: '',
             title: `Welcome email for ${fullname}`,
             to: `"${fullname}"<${newUser.email}>`,
-            subject: `${fullname} bienvenido(a) a OSA Andes`,
-            text: `${fullname} bienvenido(a) a OSA Andes
-          {Empresa} te da la bienvenida a usar OSA Andes.
+            subject: `${fullname} bienvenido(a) a Octimize`,
+            text: `${fullname} bienvenido(a) a Octimize
+          {Empresa} te da la bienvenida a usar Octimize.
 
           Tus Datos para acceder a la aplicación son:
           Usuario: ${newUser.email}
           Contraseña ${password}
-          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
+          En caso de dudas o consultas puedes contactarte a soporte@octimize.cl o a nuestro twitter @octimize.
 
-          © 2021 OSA SpA. All rights reserved.`,
+          © 2021 Octimize SpA. All rights reserved.`,
             view: 'account/welcome',
             context: {
               fullname,

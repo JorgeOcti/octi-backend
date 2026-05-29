@@ -481,7 +481,7 @@ class BillingQueue {
         const osaUsers = await User.find({
           team: company.team,
           company: company._id,
-          email: /@osacontrol.com$/
+          email: /@octimize.cl$/
         });
 
         // Obtener todos los inventarios del período

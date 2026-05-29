@@ -9,7 +9,7 @@ export const CompanySchema = {
     },
     name: {
       type: 'string',
-      example: 'OSA SPA',
+      example: 'Octimize SpA',
       description: 'Nombre de la empresa'
     }
   }

@@ -1443,7 +1443,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                       ) : !loadingDetail ? (
                         <p className="text-center text-muted">
                           <ImageLazyLoad
-                            url="/images/not_found.png"
+                            url="/images/no_hay_resultados.png"
                             height={'200px'}
                             style={{
                               opacity: 0.5,

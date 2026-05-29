@@ -584,7 +584,7 @@ class InventoryController {
       //       {
       //         from: '',
       //         title: `Inventory Notification`,
-      //         to: `"Soporte"<soporte@osacontrol.com>`,
+      //         to: `"Soporte"<soporte@octimize.cl>`,
       //         subject: `${req.user.firstName} ha creado un inventario en ${
       //           currentTeam!.name
       //         }`,
@@ -596,7 +596,7 @@ class InventoryController {
       //         Usuario: ${req.user.firstName} ${req.user.lastName}
       //         ENV: ${process.env.ENV}
 
-      //         En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
+      //         En caso de dudas o consultas puedes contactarte a soporte@octimize.cl o a nuestro twitter@octimize.`,
       //         view: 'alerts/inventoryNotification',
       //         context: {
       //           team: currentTeam,
@@ -4177,7 +4177,7 @@ class InventoryController {
               <div style="color: #999; display: flex; align-items: baseline;">
               Powered by
               ${OSA_LOGO_SVG}
-              www.osacontrol.com
+              octimize.cl
               </div>
             </div>`,
           // this is needed to prevent content from being placed over the footer

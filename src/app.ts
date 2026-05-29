@@ -210,7 +210,7 @@ app.use(
   '/api-docs/',
   swaggerUi.serve,
   swaggerUi.setup(swaggerDocs, {
-    customSiteTitle: 'Documentación API OSA Andes'
+    customSiteTitle: 'Documentación API Octimize'
   })
 );
 

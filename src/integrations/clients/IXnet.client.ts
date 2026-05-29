@@ -18,7 +18,7 @@ export default class IXnetClient {
       timeout: 20000,
       headers: {
         Accept: 'application/json',
-        'User-Agent': 'OSA Andes Client',
+        'User-Agent': 'Octimize Client',
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });

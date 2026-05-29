@@ -297,7 +297,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
               <ShowIf condition={message.length > 1}>
                 <p className='text-center text-muted' style={{ paddingBottom: '10px' }}>
                   <ImageLazyLoad
-                    url='/images/not_found.png'
+                    url='/images/no_hay_resultados.png'
                     height={'200px'}
                     style={{
                       opacity: 0.5,
@@ -488,7 +488,7 @@ class StockView extends TrackingBasePage<IPropsType, IStateType> {
               <ShowIf condition={searching && carsTable.length < 1 && !loading}>
                 <p className='text-center text-muted'>
                   <ImageLazyLoad
-                    url='/images/not_found.png'
+                    url='/images/no_hay_resultados.png'
                     height={'200px'}
                     style={{
                       opacity: 0.5,

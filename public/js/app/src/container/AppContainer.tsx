@@ -40,7 +40,7 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
       $body
         .removeClass('skin-purple')
         .css({ 'background-color': '#ecf0f5' });
-      $body.append( `<div class="text-muted text-center" style="position: absolute; height: 30px; width: 100%;">Copyright (c) ${moment().format('YYYY')} <a href="http://www.osacontrol.com" target="_blank">OSA SPA</a>. All rights reserved.</div>` );
+      $body.append( `<div class="text-muted text-center" style="position: absolute; height: 30px; width: 100%;">Copyright (c) ${moment().format('YYYY')} <a href="https://octimize.cl" target="_blank">Octimize SpA</a>. All rights reserved.</div>` );
 
     }
   }

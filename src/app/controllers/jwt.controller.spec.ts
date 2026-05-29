@@ -12,7 +12,7 @@ describe('login', () => {
     chai.request(server)
       .post('/api/v1/login/')
       .send({
-        username: 'gmunoz@osacontrol.com',
+        username: 'gmunoz@octimize.cl',
         password: '123'
       })
       .end((err, res) => {
@@ -80,7 +80,7 @@ describe('login', () => {
     chai.request(server)
       .post('/api/v1//forgot-password/')
       .send({
-        username: 'gmunoz@osacontrol.com'
+        username: 'gmunoz@octimize.cl'
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -92,7 +92,7 @@ describe('login', () => {
     chai.request(server)
       .post('/api/v1//forgot-password/')
       .send({
-        username: 'gmunoz+fake@osacontrol.com'
+        username: 'gmunoz+fake@octimize.cl'
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
