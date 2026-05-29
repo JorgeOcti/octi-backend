@@ -1,0 +1,20 @@
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Secret values must never be committed. Example files are ok.
+secrets/envs/*.tfvars
+!secrets/envs/*.tfvars.example
+# Optional terraform.tfvars in any stack (used for local-only overrides)
+**/terraform.tfvars
+# Per-env local overrides containing creds (e.g. mongodb_uri_override)
+envs/*.local.tfvars
