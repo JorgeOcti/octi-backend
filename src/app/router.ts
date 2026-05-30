@@ -327,6 +327,10 @@ appRouter.post('/account/forgot-password/', appController.processForgotPassword)
 appRouter.get('/account/recovery/:token', doubleCsrfProtection, appController.recovery);
 appRouter.post('/account/recovery/:token', doubleCsrfProtection, appController.processRecovery);
 
+// Public legal pages (no auth required)
+appRouter.get('/terms/', appController.terms);
+appRouter.get('/terminos-y-condiciones/', appController.terms);
+
 appRouter.get('/account/logout/', Middlewares.isLoggedIn, appController.logout);
 
 // recover files

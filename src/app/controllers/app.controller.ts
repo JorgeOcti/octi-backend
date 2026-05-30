@@ -38,6 +38,8 @@ class AppController {
     this.logout = this.logout.bind(this);
     this.recoverFile = this.recoverFile.bind(this);
 
+    this.terms = this.terms.bind(this);
+
     this.csrfTools = doubleCsrf({
       getSecret: () => process.env.SECRET_KEY || 'secretKey', // A function that optionally takes the request and returns a secret
       getSessionIdentifier: (req) => req.session.id,
@@ -65,6 +67,10 @@ class AppController {
   public robots(req: Request, res: Response): void {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
     res.send(`User-agent: *\nAllow: /`);
+  }
+
+  public terms(req: Request, res: Response): void {
+    res.render('app/terms');
   }
 
   public login(req: Request, res: Response): void {
