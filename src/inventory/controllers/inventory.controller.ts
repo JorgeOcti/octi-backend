@@ -3112,6 +3112,7 @@ class InventoryController {
         { header: 'Daños', key: 'hasDamages', width: 30 },
         { header: 'Asistencia mecánica', key: 'accesories', width: 30 },
         { header: 'Cantidad asistencia mecánica', key: 'qty-accesories', width: 30 },
+        { header: 'Estacionamiento', key: 'parking', width: 20 },
         { header: 'BL', key: 'bl', width: 20 },
         { header: 'Puerto', key: 'port', width: 20 },
         { header: 'Nave', key: 'ship', width: 20 },
@@ -3305,7 +3306,7 @@ class InventoryController {
           localField: 'participant',
           foreignField: '_id',
           as: 'participant',
-          pipeline: [{ $project: { name: 1, hasDamages: 1, 'sections.answers.kind': 1, 'sections.answers.accesoriesAnswered': 1, 'sections.answers.accessories': 1 } }]
+          pipeline: [{ $project: { name: 1, hasDamages: 1, sections: 1, deliveryInfo: 1 } }]
         }
       },
       {
@@ -3314,6 +3315,12 @@ class InventoryController {
       {
         $match: carFilter
       }
+    ]);
+
+    await Participant.populate(cars, [
+      { path: 'participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+      { path: 'participant.sections.answers.damagesSelected.part', model: 'Part' },
+      { path: 'participant.sections.answers.damagesSelected.position', model: 'Position' }
     ]);
 
     for (const car of cars) {
@@ -3340,6 +3347,30 @@ class InventoryController {
         this.getAccessories(car?.participant) :
         null;
 
+      let damagesText = 'No';
+      if (car.participant && car.participant.hasDamages) {
+        const damagesList: string[] = [];
+        if (car.participant.sections) {
+          for (const section of car.participant.sections) {
+            for (const answer of section.answers) {
+              if (answer.damagesSelected && answer.damagesSelected.length > 0) {
+                for (const damage of answer.damagesSelected) {
+                  const part = damage.part?.name || '';
+                  const position = damage.position?.name || '';
+                  const kind = damage.kind?.name || '';
+
+                  const damageStr = [part, position, kind].filter(Boolean).join('-');
+                  if (damageStr) {
+                    damagesList.push(damageStr);
+                  }
+                }
+              }
+            }
+          }
+        }
+        damagesText = damagesList.length > 0 ? damagesList.join(';') : 'Sí';
+      }
+
       worksheet.addRow({
         openDate: openDate,
         finishDate: finishDate,
@@ -3347,9 +3378,10 @@ class InventoryController {
         vin: car.car.vin,
         carStatus: statusMap[car.status] || '',
         description: `${car.car.brand} ${car.car.model || ''}`,
-        hasDamages: car.participant && car.participant.hasDamages ? 'Sí' : 'No',
+        hasDamages: damagesText,
         accesories: accessories?.accessoriesText || '',
         'qty-accesories': accessories?.accessoriesTotal || '',
+        parking: this.getParking(car.participant),
         bl: container && container.extra ? container.extra['N° BL'] || '' : '',
         port: container && container.venue ? container.extra['Emplazamiento'] : '',
         ship: container && container.extra ? container.extra.Nave || '' : '',
@@ -3369,26 +3401,69 @@ class InventoryController {
       return response;
     }
 
+    let chosenAnswer: any = null;
+
     for (const section of participant.sections) {
       for (const answer of section.answers) {
         if (answer.kind === KindQuestion.accessory) {
-          let itemsDict = this.createObjectFromItems(answer.accessories.items || []);
-          response.accessoriesText = answer.accesoriesAnswered
-            .map((item) => `${itemsDict[item.item]} ${item.amount > 0 ? item.amount : ""}`)
-            .join(';')
-          response.accessoriesTotal = answer.accesoriesAnswered.reduce((sum, item) => sum + (item.amount || 1), 0);
+          if (answer.kindUpdate === 'participant.assistance') {
+            chosenAnswer = answer;
+            break; // Found the specific Asistencia mecánica question!
+          } else if (!chosenAnswer) {
+            // Keep the first accessory question as a fallback
+            chosenAnswer = answer;
+          }
         }
       }
+      if (chosenAnswer && chosenAnswer.kindUpdate === 'participant.assistance') {
+        break; // Stop outer loop if we found the prioritized one
+      }
     }
+
+    if (chosenAnswer) {
+      let itemsDict = this.createObjectFromItems(chosenAnswer.accessories?.items || []);
+      response.accessoriesText = (chosenAnswer.accesoriesAnswered || [])
+        .map((item: any) => `${itemsDict[item.item?.toString()] || ''} ${item.amount > 0 ? item.amount : ""}`.trim())
+        .filter(Boolean)
+        .join(';');
+      response.accessoriesTotal = (chosenAnswer.accesoriesAnswered || []).reduce((sum: number, item: any) => sum + (item.amount || 1), 0);
+    }
+
     return response;
   }
 
   private createObjectFromItems(items: any[]) {
     let dict: any = {};
-    items.map((item) => {
-      return (dict[item._id.toString()] = item.item);
+    (items || []).forEach((item) => {
+      if (item && item._id) {
+        dict[item._id.toString()] = item.item;
+      }
     });
     return dict;
+  }
+
+  private getParking(participant: IParticipant) {
+    if (!participant) {
+      return '';
+    }
+
+    if (participant.sections) {
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          if (answer.kind === KindQuestion.accessory && answer.kindUpdate === 'participant.parking') {
+            let itemsDict = this.createObjectFromItems(answer.accessories?.items || []);
+            const parkingFromAccessories = (answer.accesoriesAnswered || [])
+              .map((item: any) => itemsDict[item.item?.toString()] || '')
+              .filter(Boolean)
+              .join(';');
+            if (parkingFromAccessories) {
+              return parkingFromAccessories;
+            }
+          }
+        }
+      }
+    }
+    return participant.deliveryInfo?.parking || '';
   }
 
   public async detaill(req: IRequest, res: Response) {
@@ -5622,9 +5697,43 @@ class InventoryController {
               car.readyToClientHistory?.inventoryCar?.venueFound.name ||
               '';
 
+            await Participant.populate(car, [
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.part', model: 'Part' },
+              { path: 'inTransitHistory.participant.sections.answers.damagesSelected.position', model: 'Position' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.kind', model: 'Kind' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.part', model: 'Part' },
+              { path: 'readyToClientHistory.inventoryCar.participant.sections.answers.damagesSelected.position', model: 'Position' }
+            ]);
+
             const accessories = car.readyToClientHistory?.inventoryCar?.participant ?
               this.getAccessories(car.readyToClientHistory.inventoryCar.participant) :
               null;
+
+            let damagesText = 'No';
+            let participant = car.readyToClientHistory?.inventoryCar?.participant || car.inTransitHistory?.participant;
+            if (participant && participant.hasDamages) {
+              const damagesList: string[] = [];
+              if (participant.sections) {
+                for (const section of participant.sections) {
+                  for (const answer of section.answers) {
+                    if (answer.damagesSelected && answer.damagesSelected.length > 0) {
+                      for (const damage of answer.damagesSelected) {
+                        const part = damage.part?.name || '';
+                        const position = damage.position?.name || '';
+                        const kind = damage.kind?.name || '';
+
+                        const damageStr = [part, position, kind].filter(Boolean).join('-');
+                        if (damageStr) {
+                          damagesList.push(damageStr);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              damagesText = damagesList.length > 0 ? damagesList.join(';') : 'Sí';
+            }
 
             // Crear fila del Excel
             const row = {
@@ -5634,7 +5743,7 @@ class InventoryController {
               container: containerInfo.container,
               bl: containerInfo.bl,
               venue: venue,
-              hasDamage: car.readyToClientHistory?.inventoryCar?.participant?.hasDamages ? 'Sí' : 'No',
+              hasDamage: damagesText,
               accesories: accessories?.accessoriesText || '',
               'qty-accesories': accessories?.accessoriesTotal || '',
               ship: car.inTransitHistory?.inventoryCar?.extra ?
@@ -5642,7 +5751,7 @@ class InventoryController {
                 car.readyToClientHistory?.inventoryCar?.extra ?
                   car.readyToClientHistory.inventoryCar.extra['Nave'] || '' :
                   '',
-              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar.participant.createdAt),
+              readyToClientDate: formatDate(car.readyToClientHistory?.inventoryCar?.participant?.createdAt),
               inTransitDate: formatDate(car.inTransitHistory?.executedAt),
               status: getStatus(car.inTransitHistory, car.readyToClientHistory)
             };
