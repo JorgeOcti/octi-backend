@@ -23,7 +23,7 @@ describe('app', () => {
           .post('/account/login/')
           .set('cookie', res.header['set-cookie'][0])
           .send({
-            username: 'gmunoz@osacontrol.com',
+            username: 'gmunoz@octimize.cl',
             password: '123',
             _csrf: csrf
           })
@@ -72,7 +72,7 @@ describe('app', () => {
           .post('/account/forgot-password/')
           .set('cookie', res.header['set-cookie'][0])
           .send({
-            username: 'gmunoz@osacontrol.com',
+            username: 'gmunoz@octimize.cl',
             _csrf: csrf
           })
           .end((err, res) => {
@@ -83,7 +83,7 @@ describe('app', () => {
   });
 
   it('it should enter in recovery page and process recovery', (done) => {
-    User.findOne({email: 'gmunoz@osacontrol.com'}).exec((err, user) => {
+    User.findOne({email: 'gmunoz@octimize.cl'}).exec((err, user) => {
       if (err) {
         console.log(err);
       }

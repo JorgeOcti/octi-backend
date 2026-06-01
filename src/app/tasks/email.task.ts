@@ -39,7 +39,7 @@ class EmailQueue {
       logger.info('start EmailQueue.process');
       // generate email
       const mail: Mail.Options = {
-        from: `"${job.data.from?.length ? job.data.from : 'OSA Andes'}"<no-reply@osacontrol.com>`,
+        from: `"${job.data.from?.length ? job.data.from : 'Octimize'}"<no-reply@octimize.cl>`,
         to: job.data.to,
         bcc: job.data.bcc,
         subject: job.data.subject,
@@ -48,10 +48,10 @@ class EmailQueue {
         attachments: job.data.attachments || [],
         headers: {
           // 'Content-Type:': 'text/html; charset="UTF-8"',
-          'Reply-To': 'OSA Andes<no-reply@osacontrol.com>',
-          'List-Unsubscribe': '<mailto:no-reply@osacontrol.com?subject=Unsubscribe>',
-          'List-ID': 'mail.osacontrol.com',
-          'X-Report-Abuse-To': 'abuse@osacontrol.com'
+          'Reply-To': 'Octimize<no-reply@octimize.cl>',
+          'List-Unsubscribe': '<mailto:no-reply@octimize.cl?subject=Unsubscribe>',
+          'List-ID': 'mail.octimize.cl',
+          'X-Report-Abuse-To': 'abuse@octimize.cl'
         }
       };
       logger.info(`EmailQueue.processEmailTXT: ${JSON.stringify({
