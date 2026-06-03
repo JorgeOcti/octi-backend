@@ -161,9 +161,10 @@ if (app.get('env') !== 'testing') {
     );
   });
   if (process.env.ENV === 'production') {
+    // No ANSI colors in production: CloudWatch does not render escape codes
     app.use(
       morgan(
-        '\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m'
+        '[INFO] :remote-addr :method :url :status :response-time ms - :res[content-length]'
       )
     );
   } else {

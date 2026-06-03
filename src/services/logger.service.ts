@@ -26,28 +26,32 @@ class LoggerService {
   public colors: Icolors;
   protected message: string;
   protected env: string;
+  protected useColors: boolean;
 
   constructor() {
     this.message = '';
     this.env = GeneralUtils.getFromEnviroment('ENV', 'development');
+    // Disable ANSI colors in production: CloudWatch does not render escape
+    // codes and they make the logs unreadable.
+    this.useColors = this.env !== 'production';
     // https://github.com/shiena/ansicolor/blob/master/README.md
     this.colors = {
-      black: '\x1b[30m',
-      brightBlack: '\x1b[90m',
-      reset: '\x1b[0m',
-      magenta: '\x1b[35m',
-      green: '\x1b[32m',
-      brighGreen: '\x1b[92m',
-      yellow: '\x1b[33m',
-      brighYellow: '\x1b[93m',
-      blue: '\x1b[34m',
-      brighBlue: '\x1b[94m',
-      cyan: '\x1b[36m',
-      brighCyan: '\x1b[96m',
-      red: '\x1b[31m',
-      brighRed: '\x1b[91m',
-      white: '\x1b[37m',
-      brighwhite: '\x1b[97m'
+      black: this.useColors ? '\x1b[30m' : '',
+      brightBlack: this.useColors ? '\x1b[90m' : '',
+      reset: this.useColors ? '\x1b[0m' : '',
+      magenta: this.useColors ? '\x1b[35m' : '',
+      green: this.useColors ? '\x1b[32m' : '',
+      brighGreen: this.useColors ? '\x1b[92m' : '',
+      yellow: this.useColors ? '\x1b[33m' : '',
+      brighYellow: this.useColors ? '\x1b[93m' : '',
+      blue: this.useColors ? '\x1b[34m' : '',
+      brighBlue: this.useColors ? '\x1b[94m' : '',
+      cyan: this.useColors ? '\x1b[36m' : '',
+      brighCyan: this.useColors ? '\x1b[96m' : '',
+      red: this.useColors ? '\x1b[31m' : '',
+      brighRed: this.useColors ? '\x1b[91m' : '',
+      white: this.useColors ? '\x1b[37m' : '',
+      brighwhite: this.useColors ? '\x1b[97m' : ''
     };
   }
 
@@ -89,11 +93,9 @@ class LoggerService {
 
   /* istanbul ignore next */
   private now(): string {
-    // return moment();
-    // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
     if (process.env.ENV === 'production') {
-      // return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
-      return moment().format('x');
+      // Human readable timestamp for CloudWatch
+      return moment().utc().format('YYYY-MM-DD HH:mm:ss.SSS [UTC]');
     } else {
       return moment().format('x');
     }
@@ -108,24 +110,20 @@ class LoggerService {
     textColor?: string
   ) {
     if (this.env === env) {
-      this.message = message;
+      // Strip any ANSI escape codes embedded in the message itself when
+      // colors are disabled (e.g. callers passing '\x1b[90m' inline).
+      this.message = this.useColors
+        ? message
+        : // eslint-disable-next-line no-control-regex
+          message.replace(/\x1b\[\d+m/g, '');
       if (!textColor) {
         textColor = this.colors.reset;
       }
-      if (process.env.ENV === 'production') {
-        // console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
-        console.log(
-          `${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${
-            this.colors.reset
-          }`
-        );
-      } else {
-        console.log(
-          `${color}[${type}] ${textColor}${this.message} \x1b[90m${this.now()}${
-            this.colors.reset
-          }`
-        );
-      }
+      console.log(
+        `${color}[${type}] ${textColor}${this.message} ${
+          this.colors.brightBlack
+        }${this.now()}${this.colors.reset}`
+      );
       // this.writeLog(type);
     }
   }
