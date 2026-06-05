@@ -5,7 +5,7 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = module.vpc.public_subnets
 
-  idle_timeout               = 60
+  idle_timeout               = 600
   drop_invalid_header_fields = true
   enable_http2               = true
 }
@@ -27,6 +27,12 @@ resource "aws_lb_target_group" "web" {
     timeout             = 5
     interval            = 15
     matcher             = "200-399"
+  }
+
+  stickiness {
+    type            = "lb_cookie"
+    cookie_duration = 86400
+    enabled         = true
   }
 
   deregistration_delay = 30

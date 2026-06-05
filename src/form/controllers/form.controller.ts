@@ -2182,6 +2182,7 @@ class FormController {
           participantFile.attach('file', file, async (error: any) => {
             if (error) {
               /* istanbul ignore next */
+              logger.error(`S3 attach error: ${JSON.stringify(error)}`);
               return res.status(400).json(error);
             } else {
               await participantFile.save();
