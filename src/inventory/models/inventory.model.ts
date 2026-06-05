@@ -176,7 +176,7 @@ inventorySchema.plugin<any>(mongooseCrate, {
     key: process.env.AWS_ACCESS_KEY_ID as string,
     secret: process.env.AWS_SECRET_ACCESS_KEY as string,
     bucket: process.env.S3_BUCKET as string,
-    acl: 'public-read', // defaults to public-read
+    acl: 'bucket-owner-full-control', // defaults to public-read
     region: (process.env.S3_REGION || process.env.AWS_REGION) as string, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
     path: (attachment: any) => {

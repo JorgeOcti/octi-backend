@@ -164,7 +164,7 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
       let s3FileOptions: AWS.S3.Types.PutObjectRequest = {
         Key: `/tmp/${filename}`,
         Bucket: bucket,
-        ACL: 'public-read',
+        ACL: 'bucket-owner-full-control',
         Body: data
       };
 
