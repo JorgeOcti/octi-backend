@@ -272,8 +272,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         // Sorting histories by createdAt in descending order
         let status = histories[0].status;
         let car = { ...datum };
-        let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
-        car.venue = venue.name ?? ""
+        let venue = histories[0]?.inventoryCar?.venue ?? histories[0]?.participant?.venue ?? null;
+        car.venue = venue?.name ?? ""
         car.lastDate = histories[0].createdAt;
 
         return {
@@ -405,24 +405,24 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       },
       {
         name: 'Contenedor',
-        selector: (row: any) => row.inventoryCar.extra["BIC"],
+        selector: (row: any) => row.inventoryCar?.extra?.["BIC"] ?? "-",
       }, {
         name: 'BL',
-        selector: (row: any) => row.inventoryCar.extra["N° BL"],
+        selector: (row: any) => row.inventoryCar?.extra?.["N° BL"] ?? "-",
       },
       {
         name: 'Nave',
-        selector: (row: any) => row.inventoryCar.extra["Nave"],
+        selector: (row: any) => row.inventoryCar?.extra?.["Nave"] ?? "-",
       },
       {
         name: 'Viaje',
-        selector: (row: any) => row.inventoryCar.extra["N° Viaje"],
+        selector: (row: any) => row.inventoryCar?.extra?.["N° Viaje"] ?? "-",
       },{
         name: 'Cliente',
-        selector: (row: any) => row.inventoryCar.extra["Cliente Razón Social"],
+        selector: (row: any) => row.inventoryCar?.extra?.["Cliente Razón Social"] ?? "-",
       },{
         name: 'Sucursal',
-        selector: (row: any) => row.inventoryCar.venue.name,
+        selector: (row: any) => row.inventoryCar?.venue?.name ?? "-",
       },{
         id: "date",
         name: 'F. Descarga',
@@ -430,20 +430,21 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           return row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "readyToClient")?.createdAt) : "-";
         },
         cell: (row: any) => {
-          const data = row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? row.histories.find((history:any) => history.status === "readyToClient") : "-";
+          const data = row.histories.find((history:any) => history.status === "readyToClient")?.createdAt ? row.histories.find((history:any) => history.status === "readyToClient") : null;
+          const hasParticipant = data?.inventoryCar?.participant;
           return <div
                     key={row._id}
-                    className={data.inventoryCar.participant ? "div-date date-checklist" : "div-date"}
-                    onClick={data.inventoryCar.participant ? () => getParticipant(data.inventoryCar.participant._id) : () => {}}
+                    className={hasParticipant ? "div-date date-checklist" : "div-date"}
+                    onClick={hasParticipant ? () => getParticipant(data.inventoryCar.participant._id) : () => {}}
                     >
-                      <span className='text-center center text-date' style={{ display: data.inventoryCar.participant ? 'none' : ''}}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
+                      <span className='text-center center text-date' style={{ display: hasParticipant ? 'none' : ''}}>{data?.createdAt ? formaDate(data.createdAt) : "-"}</span>
                       <div
                         className="btn btn-xs btn-transparent text-date"
-                        style={{ display: data.inventoryCar.participant ? '' : 'none' }}
+                        style={{ display: hasParticipant ? '' : 'none' }}
 
                       >
-                        {data.createdAt ? formaDate(data.createdAt) : "-"}
-                          <ShowIf condition={data.inventoryCar.participant?.hasDamages}>
+                        {data?.createdAt ? formaDate(data.createdAt) : "-"}
+                          <ShowIf condition={data?.inventoryCar?.participant?.hasDamages}>
                             <React.Fragment>
                               {' '}
                               <i
@@ -454,7 +455,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                               />
                             </React.Fragment>
                           </ShowIf>
-                          <ShowIf condition={!data.inventoryCar.participant?.hasDamages}>
+                          <ShowIf condition={!data?.inventoryCar?.participant?.hasDamages}>
                             <React.Fragment>
                               {' '}
                               <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
@@ -472,20 +473,21 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
           return row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? formaDate(row.histories.find((history:any) => history.status === "inTransit")?.createdAt) : "-";
         },
         cell: (row: any) => {
-          const data = row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? row.histories.find((history:any) => history.status === "inTransit") : "-";
+          const data = row.histories.find((history:any) => history.status === "inTransit")?.createdAt ? row.histories.find((history:any) => history.status === "inTransit") : null;
+          const hasParticipant = data?.participant;
           return <div
                     key={row._id}
-                    className={data.participant ? "div-date date-checklist" : "div-date"}
-                    onClick={data.participant ? () => getParticipant(data.participant._id) : () => {}}
+                    className={hasParticipant ? "div-date date-checklist" : "div-date"}
+                    onClick={hasParticipant ? () => getParticipant(data.participant._id) : () => {}}
                     >
-                      <span className='text-center center text-date' style={{ display: data.participant ? 'none' : '' }}>{data.createdAt ? formaDate(data.createdAt) : "-"}</span>
+                      <span className='text-center center text-date' style={{ display: hasParticipant ? 'none' : '' }}>{data?.createdAt ? formaDate(data.createdAt) : "-"}</span>
                       <div
                         className="btn btn-xs btn-transparent text-date"
-                        style={{ display: data.participant ? '' : 'none'}}
+                        style={{ display: hasParticipant ? '' : 'none'}}
 
                       >
-                        {data.createdAt ? formaDate(data.createdAt) : "-"}
-                        <ShowIf condition={data.participant?.hasDamages}>
+                        {data?.createdAt ? formaDate(data.createdAt) : "-"}
+                        <ShowIf condition={data?.participant?.hasDamages}>
                           <React.Fragment>
                             {' '}
                             <i
@@ -496,7 +498,7 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
                             />
                           </React.Fragment>
                         </ShowIf>
-                        <ShowIf condition={!data.participant?.hasDamages}>
+                        <ShowIf condition={!data?.participant?.hasDamages}>
                           <React.Fragment>
                             {' '}
                             <i className="fa fw fa-checklist-blue" style={{marginLeft: "5px"}}/>
@@ -537,14 +539,18 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
       {
         name: 'Tarja',
         selector: (row: any) => {
-          return row.inventoryCar.containerFound;
+          return row.inventoryCar?.containerFound;
         },
         cell: (row: any) => {
-          return row.histories.filter((history: any) => history.status === "readyToClient" ) && <button className="btn btn-m btn-default" onClick={() => {
-            window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
-          }}>
-          <i className="fa fa-fw fa-print" /> Tarja
-        </button>
+          const hasReadyToClient = row.histories.some((history: any) => history.status === "readyToClient");
+          const hasContainerInfo = row.inventoryCar?.inventory && row.inventoryCar?.containerFound?.car;
+          return hasReadyToClient && hasContainerInfo ? (
+            <button className="btn btn-m btn-default" onClick={() => {
+              window.open(`/api/inventory/${row.inventoryCar.inventory}/container/tarja/${row.inventoryCar.containerFound.car}`, '_blank')
+            }}>
+              <i className="fa fa-fw fa-print" /> Tarja
+            </button>
+          ) : "-";
         }
       },
     ];
