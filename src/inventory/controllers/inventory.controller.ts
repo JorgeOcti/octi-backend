@@ -78,6 +78,16 @@ const statusMap: Record<string, string> = {
   missing: 'Faltante'
 };
 
+// The uploads S3 bucket only serves objects when the request's Referer matches
+// an allow-listed front-end domain (terraform/s3_uploads.tf -> aws:Referer
+// condition, e.g. https://andes.osacontrol.com/*). PDFs are rendered
+// server-side by Puppeteer via page.setContent, so the image requests Chromium
+// makes carry no such Referer and S3 answers 403 -> photos render blank.
+// Forge an allow-listed Referer so the car/evidence images load. Must be one of
+// var.allowed_referer_domains; SITE_URL is unsuitable since it is localhost in
+// dev. Override via env if the allow-list changes.
+const PDF_S3_REFERER = process.env.PDF_S3_REFERER || 'https://andes.osacontrol.com/';
+
 
 class InventoryController {
   constructor() {
@@ -4197,7 +4207,12 @@ class InventoryController {
       if (clientCompany && clientCompany.image && clientCompany.image.url) {
         try {
           const axios = require('axios');
-          const response = await axios.get(clientCompany.image.url, { responseType: 'arraybuffer' });
+          // Same aws:Referer policy applies to this server-side fetch, so send
+          // an allow-listed Referer or S3 returns 403 and the logo goes blank.
+          const response = await axios.get(clientCompany.image.url, {
+            responseType: 'arraybuffer',
+            headers: { Referer: PDF_S3_REFERER }
+          });
           const mimeType = clientCompany.image.type || 'image/jpeg';
           const dataUri = `data:${mimeType};base64,${Buffer.from(response.data).toString('base64')}`;
           clientCompany = { ...clientCompany, image: { ...clientCompany.image, url: dataUri } };
@@ -4234,6 +4249,10 @@ class InventoryController {
         });
         // create a new page
         const page = await browser.newPage();
+
+        // Send an allow-listed Referer on every request the page makes so the
+        // S3-hosted car/evidence images pass the bucket's aws:Referer policy.
+        await page.setExtraHTTPHeaders({ referer: PDF_S3_REFERER });
 
         await page.setContent(html, {
           waitUntil: 'networkidle0'

@@ -99,6 +99,23 @@ variable "s3_bucket" {
   type        = string
 }
 
+variable "allowed_referer_domains" {
+  description = <<-EOT
+    Hostnames allowed to load objects from the uploads bucket. Each becomes an
+    `aws:Referer` match (`https://<domain>/*`) in a public-read bucket policy:
+    objects become publicly readable, but only when the browser sends a Referer
+    header matching one of these domains (so images render on our own sites but
+    not when hotlinked elsewhere or opened directly). Leave empty to keep the
+    bucket private (no public policy is attached).
+
+    NOTE: Referer is set by the client and can be forged — this is hotlink
+    protection, not strong access control. For hard guarantees, front the bucket
+    with CloudFront + signed URLs / OAC instead.
+  EOT
+  type        = list(string)
+  default     = []
+}
+
 # ---------------------------------------------------------------------------
 # ECS sizing
 # ---------------------------------------------------------------------------
