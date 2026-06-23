@@ -86,7 +86,9 @@ const statusMap: Record<string, string> = {
 // Forge an allow-listed Referer so the car/evidence images load. Must be one of
 // var.allowed_referer_domains; SITE_URL is unsuitable since it is localhost in
 // dev. Override via env if the allow-list changes.
-const PDF_S3_REFERER = process.env.PDF_S3_REFERER || 'https://andes.osacontrol.com/';
+// Exported so other server-side PDF renderers (e.g. FormController.pdfForm for
+// the aforo/forms reports) forge the same allow-listed Referer.
+export const PDF_S3_REFERER = process.env.PDF_S3_REFERER || 'https://andes.osacontrol.com/';
 
 
 class InventoryController {

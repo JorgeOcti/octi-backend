@@ -63,11 +63,11 @@ import { KindTrigger } from '../models/trigger.types';
 import TriggerHandler from './triggers/triggerHandler';
 import axios from 'axios';
 import Inventory from '../../inventory/models/inventory.model';
-import InventoryController from '../../inventory/controllers/inventory.controller';
+import InventoryController, { PDF_S3_REFERER } from '../../inventory/controllers/inventory.controller';
 import InventoryFileModel from '../../inventory/models/inventoryFile.model';
 import { IInventoryFile } from '../../inventory/interfaces/inventoryFile.interface';
 import DraftModel from '../models/draft.model';
-import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile} from '../interfaces/pdfContext.interface';
+import { IPDFContext, IParticipantSection, IParticipantChoices, IParticipantAnswerTypes, IDamageSelected, IParticipantCompany, IParticipantFile } from '../interfaces/pdfContext.interface';
 import InventoryCar, {
   ChoicesStatusContainer
 } from '../../inventory/models/inventoryCar.model';
@@ -160,10 +160,10 @@ class FormController {
         name: participant.user.venue.company.name || '',
         image: participant.user.venue.company.image && participant.user.venue.company.image.hasOwnProperty('url')
           ? {
-              url: decodeURI(participant.user.venue.company.image.url),
-              filename: participant.user.venue.company.image.filename || '',
-              mimetype: participant.user.venue.company.image.mimetype || ''
-          }: undefined
+            url: decodeURI(participant.user.venue.company.image.url),
+            filename: participant.user.venue.company.image.filename || '',
+            mimetype: participant.user.venue.company.image.mimetype || ''
+          } : undefined
       }
     }
 
@@ -280,7 +280,7 @@ class FormController {
       let damagesSelected: IDamageSelected[] | undefined = undefined;
       let answerChoice: IParticipantChoices | undefined = undefined;
 
-      for(const damage of answer.damagesSelected || []) {
+      for (const damage of answer.damagesSelected || []) {
         let part: string | undefined = undefined;
         let position: string | undefined = undefined;
         let kind: string | undefined = undefined;
@@ -353,7 +353,7 @@ class FormController {
               (choice: any) =>
                 choice._id.toString() === answer.answer.toString()
             );
-            answerChoice = choice ? choice: undefined;
+            answerChoice = choice ? choice : undefined;
           }
           return {
             ...baseAnswer,
@@ -400,7 +400,7 @@ class FormController {
               (choice: any) =>
                 choice._id.toString() === answer.answer.toString()
             );
-            answerChoice = choice ? choice: undefined;
+            answerChoice = choice ? choice : undefined;
           }
           return {
             ...baseAnswer,
@@ -654,11 +654,18 @@ class FormController {
           // create a new page
           const page = await browser.newPage();
 
+          // Send an allow-listed Referer on every request the page makes so the
+          // S3-hosted answer/evidence images and company logo pass the uploads
+          // bucket's aws:Referer policy (see inventory.controller PDF_S3_REFERER).
+          // Without it Chromium fetches them with no Referer, S3 returns 403, and
+          // the photos render blank.
+          await page.setExtraHTTPHeaders({ referer: PDF_S3_REFERER });
+
           await page.setContent(html, {
             waitUntil: 'networkidle0'
           });
 
-            const pdfBuffer = await page.pdf({
+          const pdfBuffer = await page.pdf({
             format: 'Letter',
             printBackground: true,
             displayHeaderFooter: true,
@@ -672,13 +679,13 @@ class FormController {
               octimize.cl
               </div>
             </div>`,
-          margin: {
-            top: '70px',
-            left: '30px',
-            right: '30px',
-            bottom: '70px'
-          },
-            });
+            margin: {
+              top: '70px',
+              left: '30px',
+              right: '30px',
+              bottom: '70px'
+            },
+          });
           await browser.close();
 
           // Return Buffer
@@ -703,8 +710,7 @@ class FormController {
       const team = req.user.team._id;
       const { deliveries } = req.query as Record<string, string>;
       logger.info(
-        `FormController.userForms: email: ${
-          req.user.email
+        `FormController.userForms: email: ${req.user.email
         } query: ${JSON.stringify(req.query)}`
       );
       const forms = await Form.find(
@@ -1037,7 +1043,7 @@ class FormController {
       });
 
       let hasExtraSection = extraSection.questions.length > 0;
-      scales =  hasExtraSection ? [...scales, ...extraScales] : scales;
+      scales = hasExtraSection ? [...scales, ...extraScales] : scales;
       if (extraSection.questions.length) {
         (form as any).sections = [...form.sections, extraSection];
       }
@@ -1199,8 +1205,7 @@ class FormController {
       });
     }
     logger.info(
-      `FormController.complete email: ${
-        req.user.email
+      `FormController.complete email: ${req.user.email
       }, answers: ${JSON.stringify(answers)}`
     );
     // validate vin in body
@@ -1227,15 +1232,15 @@ class FormController {
         vin = vin.replace(/[\W_]+/g, '');
         let carFilter = req.user.company.handler
           ? {
-              $and: [
-                { $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }] },
-                { $or: [{ company: company }, { handlerCompany: company }] }
-              ]
-            }
+            $and: [
+              { $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }] },
+              { $or: [{ company: company }, { handlerCompany: company }] }
+            ]
+          }
           : {
-              $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-              team
-            };
+            $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
+            team
+          };
         car = await Car.findOne(carFilter);
       } else if (carId) {
         car = await Car.findOne({ _id: carId });
@@ -1465,17 +1470,17 @@ class FormController {
                 answer && answer.images && answer.images.length
               ) {
                 allImages = [...allImages, ...answer.images];
-                if (question.kindUpdate !== 'participant.damageImages'){
+                if (question.kindUpdate !== 'participant.damageImages') {
                   images = [...images, ...answer.images];
                 }
               }
               // find choice selected
               const choice = question.scale
                 ? question.scale.choices.find((choice) => {
-                    return answer
-                      ? choice._id.toString() === answer.value
-                      : false;
-                  })
+                  return answer
+                    ? choice._id.toString() === answer.value
+                    : false;
+                })
                 : null;
               // calculate qualification
               let qualification = 0;
@@ -1522,7 +1527,7 @@ class FormController {
 
               const matrixValues: any[] =
                 (question.kind === KindQuestion.matrix) &&
-                answer && answer.matrix ? answer.matrix : [];
+                  answer && answer.matrix ? answer.matrix : [];
               if (matrixValues.length > 0) {
                 matrixValues.map((items: any[]) => {
                   items.filter((item: any) => item.type === "photo").map((item: any) => {
@@ -1536,8 +1541,8 @@ class FormController {
               const comment =
                 (question.kind === KindQuestion.text ||
                   (choice && choice.requireComment)) &&
-                answer &&
-                answer.comment
+                  answer &&
+                  answer.comment
                   ? answer.comment
                   : '';
               logger.debug(`complete: question.kindUpdate: ${question.kindUpdate} comment: ${comment}`);
@@ -1549,7 +1554,7 @@ class FormController {
                 newParticipant.deliveryInfo.damageComment = comment;
                 newParticipant.hasDamages = true;
               } else if (question?.kindUpdate === 'participant.comment') {
-              newParticipant.deliveryInfo.comment = comment;
+                newParticipant.deliveryInfo.comment = comment;
               } else if (question?.kindUpdate === 'participant.clientRut') {
                 newParticipant.deliveryInfo.rut = comment;
               } else if (question?.kindUpdate === 'participant.seal') {
@@ -1559,19 +1564,19 @@ class FormController {
               } else if (question?.kindUpdate === 'participant.parking') {
                 newParticipant.deliveryInfo.parking = comment;
               } else if (question.kindUpdate === 'participant.damageImages') {
-                if (answer && answer.images && answer.images.length > 0){
+                if (answer && answer.images && answer.images.length > 0) {
                   newParticipant.deliveryInfo.damageImages = answer.images;
                   newParticipant.hasDamages = true;
                 }
               } else if (question.kindUpdate === 'participant.assistance' && question.accessories && question.accessories.items && answer && answer.accesories) {
-                newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items , answer.accesories);
-              }  else if (
+                newParticipant.deliveryInfo.assistance = this.createAccessoriesObject(question.accessories.items, answer.accesories);
+              } else if (
                 question?.kindUpdate === 'participant.clientSignature'
               ) {
                 newParticipant.deliveryInfo.signature = answer?.images?.length
                   ? answer.images.map(
-                      (image: string) => new mongoose.Types.ObjectId(image)
-                    )
+                    (image: string) => new mongoose.Types.ObjectId(image)
+                  )
                   : [];
               } else if (
                 question?.kindUpdate === 'participant.clientIdentifyCard'
@@ -1579,15 +1584,15 @@ class FormController {
                 newParticipant.deliveryInfo.identifyCard = answer?.images
                   ?.length
                   ? answer.images.map(
-                      (image: string) => new mongoose.Types.ObjectId(image)
-                    )
+                    (image: string) => new mongoose.Types.ObjectId(image)
+                  )
                   : [];
               } else if (question?.kindUpdate === 'participant.plateEvidence')
                 newParticipant.deliveryInfo.plateEvidence = answer?.images
                   ?.length
                   ? answer.images.map(
-                      (image: string) => new mongoose.Types.ObjectId(image)
-                    )
+                    (image: string) => new mongoose.Types.ObjectId(image)
+                  )
                   : [];
 
               newAnswers.push({
@@ -1603,8 +1608,8 @@ class FormController {
                 accesoriesAnswered:
                   (question.kind === KindQuestion.accessory ||
                     (choice && choice.requireAccesories)) &&
-                  answer &&
-                  answer.accesories
+                    answer &&
+                    answer.accesories
                     ? await this.processAccesoryItems(answer.accesories)
                     : [],
                 risk: question.risk,
@@ -1615,8 +1620,8 @@ class FormController {
                   : null,
                 images: answer?.images?.length
                   ? answer.images.map(
-                      (image: string) => new mongoose.Types.ObjectId(image)
-                    )
+                    (image: string) => new mongoose.Types.ObjectId(image)
+                  )
                   : [],
                 qualification,
                 na,
@@ -1678,9 +1683,9 @@ class FormController {
             await newParticipant.save();
             req.user.company.handler
               ? await carTracker.fromParticipant({
-                  id: newParticipant._id,
-                  handlerCompany: req.user.company
-                })
+                id: newParticipant._id,
+                handlerCompany: req.user.company
+              })
               : await carTracker.fromParticipant({ id: newParticipant._id });
 
             if (inventoryCar) {
@@ -1697,9 +1702,9 @@ class FormController {
               logger.info(`Container found: ${containerFound}`);
               logger.debug(`InventoryCar before update: ${JSON.stringify(inventoryCar)}`);
               logger.debug(`Car: ${JSON.stringify(car)}`);
-              if (car.isContainer && inventoryItem.openForm?.toString() === form._id.toString()){
+              if (car.isContainer && inventoryItem.openForm?.toString() === form._id.toString()) {
                 logger.info(`Opening container inventory form`);
-                let openEvidences : any = {
+                let openEvidences: any = {
                   status: ChoicesStatusContainer.open,
                   date: new Date(),
                   images: []
@@ -1739,7 +1744,7 @@ class FormController {
 
                 if (newParticipant.deliveryInfo.comment) {
                   await InventoryFileModel.updateMany({
-                    _id: {$in: files.map((file) => file._id)}
+                    _id: { $in: files.map((file) => file._id) }
                   }, {
                     $set: {
                       comment: newParticipant.deliveryInfo.comment
@@ -1803,7 +1808,7 @@ class FormController {
                   req.user as IUserModel
                 );
               }
-              if (container){
+              if (container) {
                 container.units = container.units || [];
                 container.units.push({
                   description: description,
@@ -1823,8 +1828,8 @@ class FormController {
                 });
                 await container.save();
                 container = await container.populate([
-                  {path:'units.images'},
-                  {path:'units.participant'}
+                  { path: 'units.images' },
+                  { path: 'units.participant' }
                 ]);
                 InventoryController.sendUpdateNotification("UNIT_ADDED", updatedUser.venue._id, team._id, container, ChoicesStatusCarInventory.pending, updatedUser);
               }
@@ -2149,8 +2154,7 @@ class FormController {
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
       if (file) {
         logger.info(
-          `FormController.uploadFile email: ${
-            req.user.email
+          `FormController.uploadFile email: ${req.user.email
           } form: ${id} file: ${JSON.stringify(file)}`
         );
         try {
@@ -2231,8 +2235,7 @@ class FormController {
     const team = req.user.team._id;
     try {
       logger.info(
-        `FormController.changePreferred email: ${
-          req.user.email
+        `FormController.changePreferred email: ${req.user.email
         } body: ${JSON.stringify(req.body)}`
       );
       const user = await UserModel.findOne({
@@ -2850,12 +2853,12 @@ class FormController {
 
     const daysLimit =
       distributorTable[sendingVenue._id.toString()] &&
-      distributorTable[sendingVenue._id.toString()][
+        distributorTable[sendingVenue._id.toString()][
         reception.venue._id.toString()
-      ]
+        ]
         ? distributorTable[sendingVenue._id.toString()][
-            reception.venue._id.toString()
-          ]
+        reception.venue._id.toString()
+        ]
         : 5;
     const threshold = daysLimit * 60 * 24;
     const t0 = moment(recivedparticipant.createdAt);
@@ -2886,7 +2889,7 @@ class FormController {
 
     const daysLimit =
       distributorTable[sendingVenue._id.toString()] &&
-      distributorTable[sendingVenue._id.toString()][venue._id.toString()]
+        distributorTable[sendingVenue._id.toString()][venue._id.toString()]
         ? distributorTable[sendingVenue._id.toString()][venue._id.toString()]
         : 5;
     const threshold = daysLimit * 60 * 24;
@@ -2961,23 +2964,23 @@ class FormController {
       const isDercoUser: boolean = FormController.isDercoUser(userObject!);
       const receptions: IParticipant[] = isDercoUser
         ? await FormController.getDercoDeliveryParticipants(
-            team,
-            startDate.toDate(),
-            toDate.toDate()
-          )
+          team,
+          startDate.toDate(),
+          toDate.toDate()
+        )
         : await this.getDeliveryParticipants(
-            team,
-            startDate.toDate(),
-            toDate.toDate()
-          );
+          team,
+          startDate.toDate(),
+          toDate.toDate()
+        );
 
       for (const reception of receptions) {
         const value: any = isDercoUser
           ? FormController.parseDercoReception(
-              reception,
-              distributorTable,
-              distributors[0]
-            )
+            reception,
+            distributorTable,
+            distributors[0]
+          )
           : FormController.parseReception(reception, distributorTable);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
@@ -3463,8 +3466,7 @@ class FormController {
     try {
       logger.info(`FormController.allControls email: ${req.user.email}`);
       logger.info(
-        `FormController.allControls email: ${
-          req.user.email
+        `FormController.allControls email: ${req.user.email
         } query: ${JSON.stringify(req.query)}`
       );
       // const { page, pageSize } = req.query as Record<string, string>;
@@ -3789,8 +3791,7 @@ class FormController {
     try {
       logger.info(`FormController.allControlsByVIN email: ${req.user.email}`);
       logger.info(
-        `FormController.allControlsByVIN email: ${
-          req.user.email
+        `FormController.allControlsByVIN email: ${req.user.email
         } params: ${JSON.stringify(req.params)} query: ${JSON.stringify(
           req.query
         )}`
@@ -4075,8 +4076,8 @@ class FormController {
     });
   }
 
-  private createAccessoriesObject(accessories: {_id?: string, item: string, amount: boolean}[],  selectedAccessories: {item: string, amount: number}[]){
-    let datum : any[] = [];
+  private createAccessoriesObject(accessories: { _id?: string, item: string, amount: boolean }[], selectedAccessories: { item: string, amount: number }[]) {
+    let datum: any[] = [];
 
     selectedAccessories.forEach((selectedAccessory) => {
       let accessory = accessories.find((acc) => acc._id?.toString() === selectedAccessory.item)
@@ -4183,8 +4184,7 @@ class FormController {
   public async createPosition(req: IRequest, res: Response): Promise<any> {
     try {
       logger.info(
-        `FormController.createPosition: email: ${
-          req.user.email
+        `FormController.createPosition: email: ${req.user.email
         } body: ${JSON.stringify(req.body)}`
       );
       const { company, venue } = req.user;
