@@ -271,7 +271,7 @@ class AppController {
             Recibimos una solicitud para restablecer tu contraseña.
 
             Haz clic aquí para cambiar tu contraseña.
-            ${process.env.SITE_URL}account/recovery/${token}/
+            ${(process.env.SITE_URL || '').replace(/\/$/, '')}/account/recovery/${token}/
 
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@octimize.cl.
@@ -280,7 +280,7 @@ class AppController {
             view: 'account/forgotPassword',
             context: {
               fullname,
-              url: `${process.env.SITE_URL}account/recovery/${token}/`
+              url: `${(process.env.SITE_URL || '').replace(/\/$/, '')}/account/recovery/${token}/`
             }
           },
           { attempts: 3, backoff: 1000, removeOnComplete: true }

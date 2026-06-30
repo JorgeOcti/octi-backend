@@ -72,11 +72,10 @@ class EmailQueue {
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
         if (error) {
-          console.log(error);
-          done(error);
+          logger.error(`EmailQueue.process failed sending "${mail.subject}" to ${mail.to}: ${error.message}`);
+          return done(error);
         }
         logger.info(`Message ${info.messageId} sent: ${info.response}`);
-
         done(null, {});
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
