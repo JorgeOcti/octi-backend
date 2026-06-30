@@ -67,9 +67,9 @@ variable "node_env" {
 }
 
 variable "ses_region" {
-  description = "Region used for SES (kept separate from var.region)."
+  description = "Region used for SES. Must match the region where the octimize.cl SES identity is verified."
   type        = string
-  default     = "us-west-2"
+  default     = "sa-east-1"
 }
 
 variable "site_url" {
