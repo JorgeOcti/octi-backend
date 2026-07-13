@@ -2708,9 +2708,37 @@ class InventoryController {
         }
       }
 
+      // PHASE 1 — thin: filter + sort + paginate base container _ids only (no per-unit joins).
+      // The heavy hydration runs in PHASE 2 over just this page, so DocDB's aggregation memory
+      // stays bounded to the page size instead of the full matched set (that full-set hydrate
+      // was what exceeded the instance memory and 500'd with "low available memory").
+      const thinPipeline: any[] = [
+        { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
+        { $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' } },
+        { $unwind: { path: '$car' } },
+        ...(contentType !== 'general-items' ? [{ $match: { 'car.isContainer': true } }] : []),
+        { $match: containerMatch },
+        // openDate/emptyDate are computed from evidenceStatus (no lookup) so the date filter
+        // and a sort by open/empty date still work in the thin phase.
+        { $addFields: { openEvidence: { $filter: { input: '$evidenceStatus', as: 'evidence', cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.open] } } } } },
+        { $addFields: { openDate: { $arrayElemAt: ['$openEvidence.date', 0] } } },
+        { $addFields: { emptyEvidence: { $filter: { input: '$evidenceStatus', as: 'evidence', cond: { $eq: ['$$evidence.status', ChoicesStatusContainer.empty] } } } } },
+        { $addFields: { emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] } } },
+        { $match: containerDateFilter },
+        { $sort: sortObject },
+        { $project: { _id: 1 } }
+      ];
+
       let containers = await InventoryCar.aggregatePaginate(
-        InventoryCar.aggregate([
-          { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
+        InventoryCar.aggregate(thinPipeline),
+        options
+      );
+
+      // PHASE 2 — hydrate ONLY the containers on the current page. Same stages as before, but
+      // matched by the page's _ids so the joins/unwind/group run over <= pageSize docs.
+      const pageIds = containers.docs.map((c: any) => c._id);
+      containers.docs = pageIds.length === 0 ? [] : await InventoryCar.aggregate([
+          { $match: { _id: { $in: pageIds } } },
           {
             $lookup: {
               from: 'cars', // The collection name for the 'cars' field
@@ -2914,9 +2942,7 @@ class InventoryController {
               files: 1,
             }
           }
-        ]),
-        options
-      )
+        ])
 
       for (const container of containers.docs) {
         if (container.evidenceStatus && container.evidenceStatus.length > 0) {
