@@ -2921,8 +2921,15 @@ class CarController {
       // search text in participant
       let searchParticipantText: any = {};
       if (delivery?.length > 2) {
+        // DocDB has no $text; match participant delivery fields via $regex.
+        const deliveryRegex = { $regex: delivery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
         searchParticipantText = {
-          $text: { $search: `"${delivery.split(' ').join('" ')}"` }
+          $or: [
+            { 'deliveryInfo.name': deliveryRegex },
+            { 'deliveryInfo.rut': deliveryRegex },
+            { 'deliveryInfo.order': deliveryRegex },
+            { 'deliveryInfo.email': deliveryRegex }
+          ]
         };
       }
 
@@ -3048,6 +3055,22 @@ class CarController {
           const escapedSearchUser = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const searchRegexUser = new RegExp(escapedSearchUser, 'i');
 
+          // DocDB has no $regexMatch/$expr regex. Match "First Last" by splitting the term
+          // and AND-ing field-level $regex (DocDB-safe; the $or arms cover single tokens).
+          const searchOrUser: any[] = [
+            { firstName: searchRegexUser },
+            { lastName: searchRegexUser },
+            { email: searchRegexUser }
+          ];
+          const nameTokensUser = search.trim().split(/\s+/).filter(Boolean);
+          if (nameTokensUser.length > 1) {
+            const firstTokUser = nameTokensUser[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const lastTokUser = nameTokensUser.slice(1).join(' ').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            searchOrUser.push({
+              $and: [{ firstName: new RegExp(firstTokUser, 'i') }, { lastName: new RegExp(lastTokUser, 'i') }]
+            });
+          }
+
           const users = await User.aggregate([
             {
               $match: {
@@ -3056,20 +3079,7 @@ class CarController {
                   $in: keys[0].users
                 },
                 active: true,
-                $or: [
-                  { firstName: searchRegexUser },
-                  { lastName: searchRegexUser },
-                  { email: searchRegexUser },
-                  {
-                    $expr: {
-                      $regexMatch: {
-                        input: { $concat: ['$firstName', ' ', '$lastName'] },
-                        regex: escapedSearchUser,
-                        options: 'i'
-                      }
-                    }
-                  }
-                ]
+                $or: searchOrUser
               }
             },
             {
@@ -3101,19 +3111,20 @@ class CarController {
                 _id: {
                   $in: keys[0].venues
                 },
-                // $text: { $search: search }
-                $text: { $search: `"${search.split(' ').join('" "')}"` }
+                $or: [
+                  { name: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } },
+                  { code: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } },
+                  { abbreviation: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }
+                ]
               }
             },
             {
               $project: {
                 _id: 1,
-                name: 1,
-                score: { $meta: 'textScore' }
+                name: 1
               }
             },
-            // { $match: { score: { $gte: 8 } } }
-            { $sort: { score: { $meta: 'textScore' } } },
+            { $sort: { name: 1 } },
             { $limit: 1 }
           ]);
           if (venues.length) {
@@ -3189,7 +3200,9 @@ class CarController {
 
       // sort if search text in participant
       if (delivery?.length > 2) {
-        options.sort = { score: { $meta: 'textScore' } };
+        // DocDB has no $text/$meta:'textScore'; delivery is matched via $regex above, so there
+        // is no relevance score to sort by. Kept as an explicit branch so the venues else-if
+        // below still only runs when there is no delivery search (preserves prior control flow).
       }
       else if (ponderations?.venues?.length) {
         aggregate = [
@@ -3291,9 +3304,7 @@ class CarController {
         venue: true,
         company: true
       };
-      if (delivery?.length) {
-        projects['score'] = { $meta: 'textScore' };
-      }
+      // (DocDB has no $meta:'textScore' — the relevance-score projection field was removed.)
       // project only needed fields
       aggregate.push({
         $project: projects

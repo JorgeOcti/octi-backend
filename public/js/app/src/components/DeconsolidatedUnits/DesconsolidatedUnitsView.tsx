@@ -272,8 +272,8 @@ class DesconsolidatedUnits extends TrackingBasePage<IPropsType, IStateType> {
         // Sorting histories by createdAt in descending order
         let status = histories[0].status;
         let car = { ...datum };
-        let venue = histories[0].inventoryCar.venue ?? histories[0].participant.venue ?? null;
-        car.venue = venue.name ?? ""
+        let venue = histories[0].inventoryCar?.venue ?? histories[0].participant?.venue ?? null;
+        car.venue = venue?.name ?? ""
         car.lastDate = histories[0].createdAt;
 
         return {

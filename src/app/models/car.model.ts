@@ -228,29 +228,8 @@ export const carSchema = new mongoose.Schema(
 carSchema.set<any>('redisCache', process.env.ENV === 'production');
 carSchema.set<any>('expires', 30);
 
-// text search
-carSchema.index(
-  {
-    vin: 'text',
-    vin2: 'text',
-    patent: 'text',
-    brand: 'text',
-    denomination: 'text',
-    color: 'text'
-  },
-  {
-    default_language: 'spanish',
-    weights: {
-      vin: 10,
-      vin2: 10,
-      patent: 10,
-      brand: 10,
-      denomination: 10,
-      color: 10
-    },
-    name: 'CarTextIndex'
-  }
-);
+// Text index removed for DocumentDB (no text-index support). Search now uses
+// $regex over vin/vin2/patent/brand/denomination/color in the car controllers.
 
 
 carSchema.index({ team: 1, vin: 1 });
@@ -259,6 +238,10 @@ carSchema.index({ team: 1, patent: 1 });
 carSchema.index({ team: 1, createdAt: -1 });
 carSchema.index({ team: 1, status: 1, createdAt: -1 });
 carSchema.index({ team: 1, lastForm: -1 });
+// Handler/admin car queries filter by company/handlerCompany (not team) — index them so
+// those paths don't full-scan on DocDB (see /api/admin/cars/, /api/company/stock/:id).
+carSchema.index({ company: 1 });
+carSchema.index({ handlerCompany: 1 });
 
 carSchema.virtual('participants', {
   ref: 'Participant', // The model to use

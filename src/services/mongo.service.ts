@@ -66,6 +66,11 @@ export async function connectMongo(
     opts.tls = true;
     opts.tlsCAFile = caFile;
     opts.retryWrites = false;
+    // For local end-to-end testing through an SSM tunnel (localhost:27018) the
+    // DocDB cert won't match "localhost"; opt in via env. NEVER set in prod.
+    if (process.env.MONGO_TLS_ALLOW_INVALID_HOSTNAMES === 'true') {
+      (opts as any).tlsAllowInvalidHostnames = true;
+    }
   }
 
   await mongoose.connect(uri, opts);

@@ -1671,20 +1671,16 @@ class TransmittalController {
         {
           $lookup: {
             from: 'participants',
-            let: { car_id: '$car', created: '$arrivalDate' },
-            as: 'revisionsArrival',
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$car_id'] },
-                      { $eq: ['$reception', true] }
-                    ]
-                  }
-                }
-              }
-            ]
+            localField: 'car',
+            foreignField: 'car',
+            as: 'revisionsArrival'
+          }
+        },
+        {
+          $addFields: {
+            revisionsArrival: {
+              $filter: { input: '$revisionsArrival', as: 'p', cond: { $eq: ['$$p.reception', true] } }
+            }
           }
         },
         {
@@ -1925,20 +1921,16 @@ class TransmittalController {
         {
           $lookup: {
             from: 'participants',
-            let: { car_id: '$car', created: '$arrivalDate' },
-            as: 'participants',
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$car', '$$car_id'] },
-                      { $eq: ['$reception', true] }
-                    ]
-                  }
-                }
-              }
-            ]
+            localField: 'car',
+            foreignField: 'car',
+            as: 'participants'
+          }
+        },
+        {
+          $addFields: {
+            participants: {
+              $filter: { input: '$participants', as: 'p', cond: { $eq: ['$$p.reception', true] } }
+            }
           }
         },
         {

@@ -1056,22 +1056,25 @@ class AdminUsersController {
       
       const searchRegex = new RegExp(escapedSearch, 'i');
       
+      // DocDB has no $regexMatch/$expr regex. Match "First Last" by splitting the term
+      // and AND-ing field-level $regex (DocDB-safe; the $or arms cover single tokens).
+      const searchOr: any[] = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex }
+      ];
+      const nameTokens = search.trim().split(/\s+/).filter(Boolean);
+      if (nameTokens.length > 1) {
+        const firstTok = nameTokens[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const lastTok = nameTokens.slice(1).join(' ').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        searchOr.push({
+          $and: [{ firstName: new RegExp(firstTok, 'i') }, { lastName: new RegExp(lastTok, 'i') }]
+        });
+      }
+
       filter = {
         ...filter,
-        $or: [
-          { firstName: searchRegex },
-          { lastName: searchRegex },
-          { email: searchRegex },
-          {
-            $expr: {
-              $regexMatch: {
-                input: { $concat: ['$firstName', ' ', '$lastName'] },
-                regex: escapedSearch,
-                options: 'i'
-              }
-            }
-          }
-        ]
+        $or: searchOr
       };
     }
     return new Promise((resolve, reject) => {

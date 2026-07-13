@@ -8,6 +8,12 @@ import Participant from '../models/participant.model';
 
 // ts-node src/form/commands/asignClient.ts
 // node dist/form/commands/asignClient.js
+//
+// WARNING — DocumentDB-INCOMPATIBLE one-off script.
+// This uses arrayFilters (filtered positional `$[identifier]` updates), which
+// AWS DocumentDB does not support. Do NOT run it against a DocumentDB
+// MONGODB_URI — it will error. If it must be re-run after the migration,
+// rewrite the updates to read the docs, mutate in app code, and save.
 async function asignClient() {
   dotenv.config({
     path: path.join(__dirname, '../../../.env')

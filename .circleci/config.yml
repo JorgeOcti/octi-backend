@@ -95,10 +95,10 @@ jobs:
           profile_name: default
 
       - run:
-          name: Force new deployment of web + worker
+          name: Force new deployment of web
           command: |
             CLUSTER="andes-${ENV}-cluster"
-            for SVC in web worker; do
+            for SVC in web; do
               echo "Rolling andes-${ENV}-${SVC}..."
               aws ecs update-service \
                 --cluster "${CLUSTER}" \
@@ -119,22 +119,49 @@ jobs:
             echo "Waiting for services-stable on ${CLUSTER}..."
             aws ecs wait services-stable \
               --cluster "${CLUSTER}" \
-              --services "andes-${ENV}-web" "andes-${ENV}-worker"
-            echo "Both services stable. Final state:"
+              --services "andes-${ENV}-web"
+            echo "Web service stable. Final state:"
             aws ecs describe-services \
               --cluster "${CLUSTER}" \
-              --services "andes-${ENV}-web" "andes-${ENV}-worker" \
+              --services "andes-${ENV}-web" \
               --query 'services[].{service:serviceName,running:runningCount,desired:desiredCount,deployments:length(deployments)}' \
               --output table
+
+  # Static DocumentDB-compatibility gate. Fails the build on any known
+  # DocDB-incompatible pattern (see scripts/docdb-audit.js). Runs on every
+  # branch so PRs are gated before they can merge and deploy.
+  docdb-audit:
+    docker:
+      - image: cimg/node:18.17
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies
+          command: npm ci --prefer-offline --no-audit
+      - save_cache:
+          key: npm-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - run:
+          name: DocumentDB compatibility gate
+          command: npm run audit:docdb
 
 workflows:
   build-deploy:
     jobs:
+      # Compatibility gate — runs on every branch, gates all builds/deploys.
+      - docdb-audit
+
       # ----- dev: auto-deploy on push to develop -----
       - build-and-push:
           name: build-dev
           env: dev
           context: aws-ecs
+          requires:
+            - docdb-audit
           filters:
             branches:
               only: develop
@@ -154,6 +181,8 @@ workflows:
           name: build-prod
           env: prod
           context: aws-ecs
+          requires:
+            - docdb-audit
           filters:
             branches:
               only: master

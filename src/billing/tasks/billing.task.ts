@@ -82,9 +82,7 @@ class BillingQueue {
             console.log(body);
             resolve(
               parseFloat(
-                JSON.parse(body)
-                  .Dolares[0].Valor.replace('.', '')
-                  .replace(',', '.')
+                JSON.parse(body).Dolares[0].Valor.replace('.', '').replace(',', '.')
               )
             );
           }
@@ -440,11 +438,11 @@ class BillingQueue {
       console.log("TEAM:", team);
 
       if (team === "67aac5f594ed0a1f9da3478a") { // MEDLOG
-        GENERAL_CONTAINER_PRICE_USD = 1;
-        CODED_CONTAINER_PRICE_USD = 1;
-        CODED_CAR_PRICE_USD = 1.69;
+        GENERAL_CONTAINER_PRICE_USD = 0.95;
+        CODED_CONTAINER_PRICE_USD = 0.95;
+        CODED_CAR_PRICE_USD = 1.27;
         GENERAL_CAR_PRICE_USD = 0;
-        AFORO_PRICE_USD = 1;
+        AFORO_PRICE_USD = 0.95;
       } else if (team === "695e913f69b679429eb335f7") { // CIS
         GENERAL_CONTAINER_PRICE_USD = 0.95;
         CODED_CONTAINER_PRICE_USD = 0.95;

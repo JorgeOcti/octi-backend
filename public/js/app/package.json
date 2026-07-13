@@ -53,6 +53,7 @@
     "rxjs": "~6.6.2",
     "slugify": "~1.4.5",
     "socket.io-client": "~4.4.1",
+    "styled-components": "~5.3.11",
     "throttle-debounce": "~2.2.1",
     "tsconfig-paths-webpack-plugin": "~3.3.0",
     "unorm": "~1.6.0",

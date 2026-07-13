@@ -433,7 +433,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         name: 'Reportes',
         maxWidth: '5%',
         cell: (row: any) => {
-          if (row.openParticipant && row.openParticipant.deliveryInfo.seal &&
+          if (row.openParticipant?.deliveryInfo?.seal && row.extra?.['Sello IN'] &&
             row.extra['Sello IN'].toUpperCase().trim() !== row.openParticipant.deliveryInfo.seal.toUpperCase().trim()
           ) {
             return <div
@@ -1151,7 +1151,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
         datum.push({
           _id: data.closeParticipant._id,
           vin: '-',
-          description: data.closeParticipant.deliveryInfo.comment || '',
+          description: data.closeParticipant.deliveryInfo?.comment || '',
           images: [],
           updatedAt: data.closeParticipant.createdAt,
           status: ContainerStatus.FOUND,
@@ -1373,7 +1373,7 @@ class ContainersInventory extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                     <strong className="text-black">{
-                      car.openForm && car.openForm.deliveryInfo.assistance.length > 0 ?
+                      car.openForm?.deliveryInfo?.assistance?.length > 0 ?
                         car.openForm.deliveryInfo.assistance.map((service: any) => service.name).join('<br>')
                         : '-'
                     }</strong>

@@ -2128,14 +2128,19 @@ class RequestController {
     const team = req.user.team._id;
     const { search } = req.query;
     try {
+      const searchRegex = { $regex: (search as string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
       const cars = await Car.aggregate([
         {
           $match: {
             team,
-            $text: {
-              $search: search as string,
-              $diacriticSensitive: false
-            }
+            $or: [
+              { vin: searchRegex },
+              { vin2: searchRegex },
+              { patent: searchRegex },
+              { brand: searchRegex },
+              { denomination: searchRegex },
+              { color: searchRegex }
+            ]
           }
         },
         {
@@ -2143,17 +2148,7 @@ class RequestController {
             vin: 1,
             brand: 1,
             denomination: 1,
-            material: 1,
-            score: {
-              $meta: 'textScore'
-            }
-          }
-        },
-        {
-          $match: {
-            score: {
-              $gt: 0.5
-            }
+            material: 1
           }
         },
         {
@@ -2161,14 +2156,14 @@ class RequestController {
             _id: {
               brand: '$brand',
               denomination: '$denomination',
-              material: '$material',
-              score: '$score'
+              material: '$material'
             }
           }
         },
         {
           $sort: {
-            '_id.score': -1
+            '_id.brand': 1,
+            '_id.denomination': 1
           }
         },
         {
@@ -2179,7 +2174,6 @@ class RequestController {
             brand: '$_id.brand',
             denomination: '$_id.denomination',
             material: '$_id.material',
-            score: '$_id.score',
             _id: false
           }
         }

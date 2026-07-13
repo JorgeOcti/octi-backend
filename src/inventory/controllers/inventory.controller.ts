@@ -2667,7 +2667,13 @@ class InventoryController {
 
       if (venueFilter) {
         const venueNames = venueFilter.toString().split(',').map((n: string) => n.trim());
-        const venues = await Venue.find({ name: { $regex: venueNames[0], $options: 'i' } }, { _id: 1 });
+        // Bound the venue name search to the same team(s) as the inventory query so it can use
+        // the { team, name } index instead of scanning all venues on DocDB (case-insensitive
+        // $regex is unindexable, but the team equality bounds the scan).
+        const venues = await Venue.find(
+          { ...(inventoryQuery.team ? { team: inventoryQuery.team } : {}), name: { $regex: venueNames[0], $options: 'i' } },
+          { _id: 1 }
+        );
         const venueIds = venues.map((v: any) => v._id);
         containerMatch['venue'] = { $in: venueIds };
       }
@@ -2723,10 +2729,7 @@ class InventoryController {
               from: "participants",
               localField: "units.participant",
               foreignField: "_id",
-              as: "units.participant",
-              pipeline: [
-                { $project: { name: 1, hasDamages: 1, deliveryInfo: 1, createdAt: 1 } }
-              ]
+              as: "units.participant"
             }
           },
           { $unwind: { path: "$units.participant", preserveNullAndEmptyArrays: true } },
@@ -2770,58 +2773,43 @@ class InventoryController {
               from: 'participants',
               localField: 'openParticipant',
               foreignField: '_id',
-              as: 'openParticipant',
-              pipeline: [
-                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1 } },
-                {
-                  $lookup: {
-                    from: 'users',
-                    localField: 'user',
-                    foreignField: '_id',
-                    as: 'user',
-                    pipeline: [
-                      { $project: { firstName: 1, lastName: 1, email: 1 } }
-                    ]
-                  }
-                },
-                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
-              ]
+              as: 'openParticipant'
             }
           },
           { $unwind: { path: "$openParticipant", preserveNullAndEmptyArrays: true } },
           {
             $lookup: {
+              from: 'users',
+              localField: 'openParticipant.user',
+              foreignField: '_id',
+              as: 'openParticipant.user'
+            }
+          },
+          { $unwind: { path: "$openParticipant.user", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
               from: 'participants',
               localField: 'closeParticipant',
               foreignField: '_id',
-              as: 'closeParticipant',
-              pipeline: [
-                { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1, user: 1, carryResume: 1 } },
-                {
-                  $lookup: {
-                    from: 'users',
-                    localField: 'user',
-                    foreignField: '_id',
-                    as: 'user',
-                    pipeline: [
-                      { $project: { firstName: 1, lastName: 1, email: 1 } }
-                    ]
-                  }
-                },
-                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
-              ]
+              as: 'closeParticipant'
             }
           },
           { $unwind: { path: "$closeParticipant", preserveNullAndEmptyArrays: true } },
           {
             $lookup: {
+              from: 'users',
+              localField: 'closeParticipant.user',
+              foreignField: '_id',
+              as: 'closeParticipant.user'
+            }
+          },
+          { $unwind: { path: "$closeParticipant.user", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
               from: 'participants',
               localField: 'participant',
               foreignField: '_id',
-              as: 'participant',
-              pipeline: [
-                { $project: { carryResume: 1 } }
-              ]
+              as: 'participant'
             }
           },
           { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
@@ -2838,10 +2826,7 @@ class InventoryController {
               from: "venues",
               localField: "venue",
               foreignField: "_id",
-              as: "venue",
-              pipeline: [
-                { $project: { name: 1 } },
-              ]
+              as: "venue"
             }
           },
           { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
@@ -2850,10 +2835,7 @@ class InventoryController {
               from: "venues",
               localField: "venueFound",
               foreignField: "_id",
-              as: "venueFound",
-              pipeline: [
-                { $project: { name: 1 } },
-              ]
+              as: "venueFound"
             }
           },
           {
@@ -2978,10 +2960,7 @@ class InventoryController {
             from: 'participants',
             localField: 'participant',
             foreignField: '_id',
-            as: 'participant',
-            pipeline: [
-              { $project: { name: 1, hasDamages: 1, createdAt: 1, deliveryInfo: 1 } }
-            ]
+            as: 'participant'
           }
         }, {
           $unwind: { path: '$participant', preserveNullAndEmptyArrays: true }
@@ -3173,8 +3152,7 @@ class InventoryController {
             from: "venues",
             localField: "venue",
             foreignField: "_id",
-            as: "venue",
-            pipeline: [{ $project: { name: 1 } }]
+            as: "venue"
           }
         },
         { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
@@ -3183,8 +3161,7 @@ class InventoryController {
             from: "venues",
             localField: "venueFound",
             foreignField: "_id",
-            as: "venueFound",
-            pipeline: [{ $project: { name: 1 } }]
+            as: "venueFound"
           }
         },
         {
@@ -3317,8 +3294,7 @@ class InventoryController {
           from: 'participants',
           localField: 'participant',
           foreignField: '_id',
-          as: 'participant',
-          pipeline: [{ $project: { name: 1, hasDamages: 1, sections: 1, deliveryInfo: 1 } }]
+          as: 'participant'
         }
       },
       {
@@ -4851,10 +4827,7 @@ class InventoryController {
                 from: 'participants',
                 localField: 'participant',
                 foreignField: '_id',
-                as: 'participant',
-                pipeline: [
-                  { $project: { hasDamages: 1 } }
-                ]
+                as: 'participant'
               }
             },
             { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
@@ -4928,197 +4901,53 @@ class InventoryController {
         // Inicia el pipeline de agregación de Car
         const carAggregationPipeline: any[] = [
           { $match: { ...filterCompanies, _id: { $in: carsHistories } } },
+          // --- DocDB-safe rewrite of the two correlated histories lookups ---
+          // DocDB rejects correlated let/pipeline $lookup, so join all histories
+          // for the car once (basic $lookup) and split by status with $filter,
+          // preserving the original per-status arrays and unwind semantics.
           {
             $lookup: {
               from: 'histories',
-              let: { carId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$car', '$$carId'] },
-                        { $eq: ['$status', 'inTransit'] }, // Specific status filter
-                      ]
-                    }
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar',
-                    foreignField: '_id',
-                    as: 'inventoryCar'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.containerFound for inTransit histories
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar.containerFound',
-                    foreignField: '_id',
-                    as: 'inventoryCar.containerFound'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.containerFound',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.venue for inTransit histories
-                {
-                  $lookup: {
-                    from: 'venues',
-                    localField: 'inventoryCar.venue',
-                    foreignField: '_id',
-                    as: 'inventoryCar.venue'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.venue',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate history.participant for inTransit histories
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'participant',
-                    foreignField: '_id',
-                    as: 'participant'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$participant',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.participant for inTransit histories
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'inventoryCar.participant',
-                    foreignField: '_id',
-                    as: 'inventoryCar.participant'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.participant',
-                    preserveNullAndEmptyArrays: true
-                  }
-                }
-              ],
-              as: 'inTransitHistories' // Store as a separate array for inTransit histories
-            }
-          },
-          { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
-          {
-            $lookup: {
-              from: 'histories',
-              let: { carId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$car', '$$carId'] },
-                        { $eq: ['$status', 'readyToClient'] }, // Specific status filter
-                      ]
-                    }
-                  }
-                },
-                // Populate inventoryCar for readyToClient histories
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar',
-                    foreignField: '_id',
-                    as: 'inventoryCar'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.containerFound for readyToClient histories
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar.containerFound',
-                    foreignField: '_id',
-                    as: 'inventoryCar.containerFound'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.containerFound',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.venue for readyToClient histories
-                {
-                  $lookup: {
-                    from: 'venues',
-                    localField: 'inventoryCar.venue',
-                    foreignField: '_id',
-                    as: 'inventoryCar.venue'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.venue',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate history.participant for readyToClient histories
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'participant',
-                    foreignField: '_id',
-                    as: 'participant'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$participant',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                // Populate inventoryCar.participant for readyToClient histories
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'inventoryCar.participant',
-                    foreignField: '_id',
-                    as: 'inventoryCar.participant'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.participant',
-                    preserveNullAndEmptyArrays: true
-                  }
-                }
-              ],
-              as: 'readyToClientHistories' // Store as a separate array for readyToClient histories
+              localField: '_id',
+              foreignField: 'car',
+              as: 'allHistories'
             }
           },
           {
-            $unwind: { 'path': '$readyToClientHistories' }
+            $addFields: {
+              inTransitHistories: {
+                $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'inTransit'] } }
+              },
+              readyToClientHistories: {
+                $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'readyToClient'] } }
+              }
+            }
           },
+          { $project: { allHistories: 0 } },
+          // inTransit: preserve cars with none (matches original preserveNull unwind)
+          { $unwind: { path: '$inTransitHistories', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'inventorycars', localField: 'inTransitHistories.inventoryCar', foreignField: '_id', as: 'inTransitHistories.inventoryCar' } },
+          { $unwind: { path: '$inTransitHistories.inventoryCar', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'inventorycars', localField: 'inTransitHistories.inventoryCar.containerFound', foreignField: '_id', as: 'inTransitHistories.inventoryCar.containerFound' } },
+          { $unwind: { path: '$inTransitHistories.inventoryCar.containerFound', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'venues', localField: 'inTransitHistories.inventoryCar.venue', foreignField: '_id', as: 'inTransitHistories.inventoryCar.venue' } },
+          { $unwind: { path: '$inTransitHistories.inventoryCar.venue', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'inTransitHistories.participant', foreignField: '_id', as: 'inTransitHistories.participant' } },
+          { $unwind: { path: '$inTransitHistories.participant', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'inTransitHistories.inventoryCar.participant', foreignField: '_id', as: 'inTransitHistories.inventoryCar.participant' } },
+          { $unwind: { path: '$inTransitHistories.inventoryCar.participant', preserveNullAndEmptyArrays: true } },
+          // readyToClient: WITHOUT preserveNull (matches original plain unwind)
+          { $unwind: { path: '$readyToClientHistories' } },
+          { $lookup: { from: 'inventorycars', localField: 'readyToClientHistories.inventoryCar', foreignField: '_id', as: 'readyToClientHistories.inventoryCar' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'inventorycars', localField: 'readyToClientHistories.inventoryCar.containerFound', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.containerFound' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.containerFound', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'venues', localField: 'readyToClientHistories.inventoryCar.venue', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.venue' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.venue', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'readyToClientHistories.participant', foreignField: '_id', as: 'readyToClientHistories.participant' } },
+          { $unwind: { path: '$readyToClientHistories.participant', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'readyToClientHistories.inventoryCar.participant', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.participant' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.participant', preserveNullAndEmptyArrays: true } },
           {
             $match: dateFilter
           },
@@ -5407,10 +5236,7 @@ class InventoryController {
                 from: 'participants',
                 localField: 'participant',
                 foreignField: '_id',
-                as: 'participant',
-                pipeline: [
-                  { $project: { hasDamages: 1 } }
-                ]
+                as: 'participant'
               }
             },
             { $unwind: { path: "$participant", preserveNullAndEmptyArrays: true } },
@@ -5513,155 +5339,46 @@ class InventoryController {
         // Pipeline de agregación para obtener los datos con cursor
         const carAggregationPipeline: any[] = [
           { $match: { ...filterCompanies, _id: { $in: cars } } },
+          // --- DocDB-safe rewrite of the two correlated histories lookups ---
           {
             $lookup: {
               from: 'histories',
-              let: { carId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$car', '$$carId'] },
-                        { $eq: ['$status', 'inTransit'] },
-                      ]
-                    }
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'participant',
-                    foreignField: '_id',
-                    as: 'participant'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$participant',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'venues',
-                    localField: 'participant.venue',
-                    foreignField: '_id',
-                    as: 'participant.venue'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$participant.venue',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'cars',
-                    localField: 'inventoryCar.containerFound.car',
-                    foreignField: '_id',
-                    as: 'containerCar'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$containerCar',
-                    preserveNullAndEmptyArrays: true
-                  }
-                }
-              ],
-              as: 'inTransitHistories'
-            }
-          },
-          { '$unwind': { 'path': '$inTransitHistories', 'preserveNullAndEmptyArrays': true } },
-          {
-            $lookup: {
-              from: 'histories',
-              let: { carId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $eq: ['$car', '$$carId'] },
-                        { $eq: ['$status', 'readyToClient'] },
-                      ]
-                    }
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar',
-                    foreignField: '_id',
-                    as: 'inventoryCar'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'participants',
-                    localField: 'inventoryCar.participant',
-                    foreignField: '_id',
-                    as: 'inventoryCar.participant'
-                  }
-                },
-                { $unwind: { path: '$inventoryCar.participant', preserveNullAndEmptyArrays: true } },
-                {
-                  $lookup: {
-                    from: 'inventorycars',
-                    localField: 'inventoryCar.containerFound',
-                    foreignField: '_id',
-                    as: 'inventoryCar.containerFound'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.containerFound',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'venues',
-                    localField: 'inventoryCar.venueFound',
-                    foreignField: '_id',
-                    as: 'inventoryCar.venueFound'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$inventoryCar.venueFound',
-                    preserveNullAndEmptyArrays: true
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'cars',
-                    localField: 'inventoryCar.containerFound.car',
-                    foreignField: '_id',
-                    as: 'containerCar'
-                  }
-                },
-                {
-                  $unwind: {
-                    path: '$containerCar',
-                    preserveNullAndEmptyArrays: true
-                  }
-                }
-              ],
-              as: 'readyToClientHistories'
+              localField: '_id',
+              foreignField: 'car',
+              as: 'allHistories'
             }
           },
           {
-            $unwind: { 'path': '$readyToClientHistories', 'preserveNullAndEmptyArrays': true }
+            $addFields: {
+              inTransitHistories: {
+                $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'inTransit'] } }
+              },
+              readyToClientHistories: {
+                $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'readyToClient'] } }
+              }
+            }
           },
+          { $project: { allHistories: 0 } },
+          // inTransit histories enrichment (basic sequential lookups)
+          { $unwind: { path: '$inTransitHistories', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'inTransitHistories.participant', foreignField: '_id', as: 'inTransitHistories.participant' } },
+          { $unwind: { path: '$inTransitHistories.participant', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'venues', localField: 'inTransitHistories.participant.venue', foreignField: '_id', as: 'inTransitHistories.participant.venue' } },
+          { $unwind: { path: '$inTransitHistories.participant.venue', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'cars', localField: 'inTransitHistories.inventoryCar.containerFound.car', foreignField: '_id', as: 'inTransitHistories.containerCar' } },
+          { $unwind: { path: '$inTransitHistories.containerCar', preserveNullAndEmptyArrays: true } },
+          // readyToClient histories enrichment (basic sequential lookups)
+          { $unwind: { path: '$readyToClientHistories', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'inventorycars', localField: 'readyToClientHistories.inventoryCar', foreignField: '_id', as: 'readyToClientHistories.inventoryCar' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'participants', localField: 'readyToClientHistories.inventoryCar.participant', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.participant' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.participant', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'inventorycars', localField: 'readyToClientHistories.inventoryCar.containerFound', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.containerFound' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.containerFound', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'venues', localField: 'readyToClientHistories.inventoryCar.venueFound', foreignField: '_id', as: 'readyToClientHistories.inventoryCar.venueFound' } },
+          { $unwind: { path: '$readyToClientHistories.inventoryCar.venueFound', preserveNullAndEmptyArrays: true } },
+          { $lookup: { from: 'cars', localField: 'readyToClientHistories.inventoryCar.containerFound.car', foreignField: '_id', as: 'readyToClientHistories.containerCar' } },
+          { $unwind: { path: '$readyToClientHistories.containerCar', preserveNullAndEmptyArrays: true } },
           {
             $match: dateFilter
           },

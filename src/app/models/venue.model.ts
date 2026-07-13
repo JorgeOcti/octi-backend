@@ -133,18 +133,8 @@ venueSchema.index({ responsible: 1 });
 venueSchema.index({ team: 1, name: 1 });
 venueSchema.index({ team: 1, deleted: 1 });
 
-venueSchema.index(
-  { team: 1, name: 'text', code: 'text', abbreviation: 'text' },
-  {
-    default_language: 'spanish',
-    weights: {
-      name: 10,
-      code: 10,
-      abbreviation: 10,
-    },
-    name: 'VenueTextIndex'
-  }
-);
+// Text index removed for DocumentDB (no text-index support). Search now uses
+// $regex over name/code/abbreviation in the venue/car controllers.
 
 mongoose.plugin(mongoosePaginate);
 

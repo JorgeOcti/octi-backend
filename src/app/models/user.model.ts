@@ -15,18 +15,7 @@ userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ venue: 1 });
 
 
-userSchema.index(
-  { team: 1, firstName: 'text', lastName: 'text', email: 'text' },
-  {
-    default_language: 'spanish',
-    weights: {
-      firstName: 10,
-      lastName: 10,
-      email: 10
-    },
-    name: 'UserTextIndex'
-  }
-);
+// Text index removed for DocumentDB (no text-index support); it was unused by queries.
 
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate

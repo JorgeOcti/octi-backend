@@ -302,16 +302,20 @@ class AdminCarController {
     search?: string
   ): Promise<PaginateResult<ICarModel>> {
     if (search && search.length) {
-      if (search && search.length) {
-        filter = {
-          ...filter,
-          $text: { $search: search }
-        };
-        options = {
-          ...options,
-          sort: { score: { $meta: 'textScore' } }
-        };
-      }
+      // DocDB has no $text search; match the same indexed fields via $regex.
+      const searchRegex = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+      const searchOr = [
+        { vin: searchRegex },
+        { vin2: searchRegex },
+        { patent: searchRegex },
+        { brand: searchRegex },
+        { denomination: searchRegex },
+        { color: searchRegex }
+      ];
+      filter = {
+        ...filter,
+        $and: [...(Array.isArray(filter.$and) ? filter.$and : []), { $or: searchOr }]
+      };
     }
 
     return new Promise((resolve, reject) => {

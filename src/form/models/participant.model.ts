@@ -654,24 +654,8 @@ participantSchema.index({ team: 1, active: 1, createdAt: -1 });
 
 participantSchema.index({ team: 1, active: 1, createdAt: 1 });
 
-participantSchema.index(
-  {
-    'deliveryInfo.name': 'text',
-    'deliveryInfo.rut': 'text',
-    'deliveryInfo.order': 'text',
-    'deliveryInfo.email': 'text'
-  },
-  {
-    default_language: 'spanish',
-    weights: {
-      'deliveryInfo.rut': 10,
-      'deliveryInfo.name': 10,
-      'deliveryInfo.order': 10,
-      'deliveryInfo.email': 10
-    },
-    name: 'ParticipantTextIndex'
-  }
-);
+// Text index removed for DocumentDB (no text-index support). Delivery search
+// now uses $regex over deliveryInfo.name/rut/order/email in the car controller.
 
 participantSchema.index({
   car: 1,

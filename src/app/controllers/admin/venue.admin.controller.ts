@@ -769,13 +769,14 @@ class AdminVenueController {
     search?: string
   ): Promise<PaginateResult<IVenueModel>> {
     if (search && search.length) {
+      // DocDB has no $text search; match the same indexed fields via $regex.
+      const searchRegex = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
       filter = {
         ...filter,
-        $text: { $search: search },
-      };
-      options = {
-        ...options,
-        sort: { score: { $meta: 'textScore' } }
+        $and: [
+          ...(Array.isArray(filter.$and) ? filter.$and : []),
+          { $or: [{ name: searchRegex }, { code: searchRegex }, { abbreviation: searchRegex }] }
+        ]
       };
     }
     return new Promise((resolve, reject) => {
