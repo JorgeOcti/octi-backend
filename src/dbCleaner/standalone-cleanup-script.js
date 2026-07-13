@@ -10,7 +10,10 @@ const readline = require('readline');
 const CONFIG = {
   // Cambiar esta URL por tu conexión a MongoDB
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://osacontrol:osacontrol@localhost:27017/osaAndesDev?authSource=admin',
-  DRY_RUN: true, // Cambiar a false para ejecución real
+  DRY_RUN: false, // Cambiar a false para ejecución real
+  // AUTO_CONFIRM=true responde "sí" a todas las confirmaciones (ejecución
+  // desatendida). Sólo tiene efecto cuando DRY_RUN es false.
+  AUTO_CONFIRM: process.env.AUTO_CONFIRM === 'true',
 
   // Filtros (opcional) - IMPORTANTE: Los IDs aquí serán MANTENIDOS (no eliminados)
   // Se eliminarán TODAS las demás companies que NO estén en esta lista
@@ -305,6 +308,11 @@ class StandaloneDataCleanup {
   async askConfirmation(question) {
     if (CONFIG.DRY_RUN) return false;
 
+    if (CONFIG.AUTO_CONFIRM) {
+      console.log(`${question}→ AUTO_CONFIRM=true → sí`);
+      return true;
+    }
+
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
@@ -422,62 +430,68 @@ class StandaloneDataCleanup {
     await this.cleanupModel(Scale, 'Scales');
   }
 
+  // Lista de companies protegidas (base + client/handler expandidas).
+  keepCompanyIdList() {
+    return (this.keepCompanyIds && this.keepCompanyIds.length)
+      ? this.keepCompanyIds
+      : CONFIG.COMPANY_FILTER.map(id => new mongoose.Types.ObjectId(id));
+  }
+
+  // Elimina los documentos de `model` cuyo `field` NO esté en `keepIds`.
+  // Trabaja con el conjunto "a mantener" (pequeño) en lugar del "a eliminar"
+  // (millones), para no exceder el tope de 16MB del comando distinct.
+  // GUARDA: si keepIds viene vacío se OMITE, para que un $nin:[] no borre la
+  // colección completa por accidente.
+  async cleanupChildrenNotIn(model, modelName, field, keepIds) {
+    if (!keepIds || keepIds.length === 0) {
+      console.log(`\n🧹 ${modelName}: sin padres a mantener → se OMITE por seguridad (evita borrar toda la colección)`);
+      this.stats.push({
+        modelName,
+        totalDocuments: await model.countDocuments({}),
+        documentsToDelete: 0,
+        deletedDocuments: 0,
+        errors: 0
+      });
+      return;
+    }
+    await this.cleanupModel(model, modelName, { [field]: { $nin: keepIds } });
+  }
+
   async cleanupIndirectRelations() {
     console.log('\n🔗 LIMPIEZA DE MODELOS CON RELACIÓN INDIRECTA:');
 
     try {
-      // Cars relacionados
-      const carIds = await Car.find(this.companyFilter).distinct('_id');
-      if (carIds.length > 0) {
-        await this.cleanupModel(InventoryCar, 'InventoryCars (by car)', { car: { $in: carIds } });
-        await this.cleanupModel(StockCar, 'StockCars (by car)', { car: { $in: carIds } });
-      }
+      const keepCompanyIn = { $in: this.keepCompanyIdList() };
 
-      // Participants relacionados
-      const participantIds = await Participant.find(this.companyFilter).distinct('_id');
-      if (participantIds.length > 0) {
-        await this.cleanupModel(ParticipantFile, 'ParticipantFiles (by participant)', { participant: { $in: participantIds } });
-      }
+      // Padres A MANTENER (conjuntos pequeños). Se eliminan los hijos cuyo
+      // padre NO esté aquí: cubre tanto los hijos de padres eliminados como los
+      // huérfanos (padre inexistente), sin materializar millones de _id.
+      const keptCarIds = await Car.find({ company: keepCompanyIn }).distinct('_id');
+      const keptParticipantIds = await Participant.find({ company: keepCompanyIn }).distinct('_id');
+      const keptInventoryIds = await Inventory.find({ company: keepCompanyIn }).distinct('_id');
+      const keptRequestIds = await Request.find({ company: keepCompanyIn }).distinct('_id');
+      const keptUserIds = await User.find({ company: keepCompanyIn }).distinct('_id');
 
-      // Inventories relacionados
-      const inventoryIds = await Inventory.find(this.companyFilter).distinct('_id');
-      if (inventoryIds.length > 0) {
-        await this.cleanupModel(InventoryCar, 'InventoryCars (by inventory)', { inventory: { $in: inventoryIds } });
-        await this.cleanupModel(InventoryFile, 'InventoryFiles (by inventory)', { inventory: { $in: inventoryIds } });
-      }
+      console.log(`   ℹ️  Padres a mantener → cars:${keptCarIds.length} participants:${keptParticipantIds.length} inventories:${keptInventoryIds.length} requests:${keptRequestIds.length} users:${keptUserIds.length}`);
 
-      // Requests relacionados
-      const requestIds = await Request.find(this.companyFilter).distinct('_id');
-      if (requestIds.length > 0) {
-        await this.cleanupModel(RequestFile, 'RequestFiles', { request: { $in: requestIds } });
-      }
+      await this.cleanupChildrenNotIn(InventoryCar, 'InventoryCars (by car)', 'car', keptCarIds);
+      await this.cleanupChildrenNotIn(StockCar, 'StockCars (by car)', 'car', keptCarIds);
+      await this.cleanupChildrenNotIn(ParticipantFile, 'ParticipantFiles (by participant)', 'participant', keptParticipantIds);
+      await this.cleanupChildrenNotIn(InventoryCar, 'InventoryCars (by inventory)', 'inventory', keptInventoryIds);
+      await this.cleanupChildrenNotIn(InventoryFile, 'InventoryFiles (by inventory)', 'inventory', keptInventoryIds);
+      await this.cleanupChildrenNotIn(RequestFile, 'RequestFiles (by request)', 'request', keptRequestIds);
+      await this.cleanupChildrenNotIn(Draft, 'Drafts (by user)', 'user', keptUserIds);
 
-      // Nuevos: Transmittals relacionados a Requests y Cars
-      if ((carIds && carIds.length) || (requestIds && requestIds.length)) {
-        const transmittalItemsFilter = {
-          $or: [
-            ...(requestIds && requestIds.length ? [{ request: { $in: requestIds } }] : []),
-            ...(carIds && carIds.length ? [{ car: { $in: carIds } }] : [])
-          ]
-        };
+      // Transmittals: mantener sólo los relacionados a requests/cars mantenidos.
+      const keptTransmittalFilter = {
+        $or: [{ request: { $in: keptRequestIds } }, { car: { $in: keptCarIds } }]
+      };
+      const keptTransmittalItemIds = await TransmittalItem.find(keptTransmittalFilter).distinct('_id');
+      const keptTransmittalIds = await TransmittalItem.find(keptTransmittalFilter).distinct('transmittal');
 
-        const transmittalItemIds = await TransmittalItem.find(transmittalItemsFilter).distinct('_id');
-        const transmittalIds = await TransmittalItem.find(transmittalItemsFilter).distinct('transmittal');
-
-        if (transmittalItemIds.length > 0) {
-          await this.cleanupModel(TransmittalItem, 'TransmittalItems (by request/car)', { _id: { $in: transmittalItemIds } });
-        }
-        if (transmittalIds.length > 0) {
-          await this.cleanupModel(TransmittalFile, 'TransmittalFiles (by transmittal)', { transmittal: { $in: transmittalIds } });
-          await this.cleanupModel(Transmittal, 'Transmittals (by items)', { _id: { $in: transmittalIds } });
-        }
-      }
-
-      // Users relacionados
-      const userIds = await User.find(this.companyFilter).distinct('_id');
-      if (userIds.length > 0) {
-        await this.cleanupModel(Draft, 'Drafts', { user: { $in: userIds } });
-      }
+      await this.cleanupChildrenNotIn(TransmittalItem, 'TransmittalItems (by request/car)', '_id', keptTransmittalItemIds);
+      await this.cleanupChildrenNotIn(TransmittalFile, 'TransmittalFiles (by transmittal)', 'transmittal', keptTransmittalIds);
+      await this.cleanupChildrenNotIn(Transmittal, 'Transmittals (by items)', '_id', keptTransmittalIds);
     } catch (error) {
       console.error('❌ Error en limpieza indirecta:', error.message);
     }
@@ -487,29 +501,14 @@ class StandaloneDataCleanup {
     console.log('\n🧽 LIMPIEZA DE DOCUMENTOS HUÉRFANOS:');
 
     try {
-      // Participant files huérfanos
-      const validParticipantIds = await Participant.find({}).distinct('_id');
-      await this.cleanupModel(
-        ParticipantFile,
-        'Orphaned ParticipantFiles',
-        { participant: { $nin: validParticipantIds } }
-      );
+      const keepCompanyIn = { $in: this.keepCompanyIdList() };
+      const keptParticipantIds = await Participant.find({ company: keepCompanyIn }).distinct('_id');
+      const keptCarIds = await Car.find({ company: keepCompanyIn }).distinct('_id');
+      const keptInventoryIds = await Inventory.find({ company: keepCompanyIn }).distinct('_id');
 
-      // Inventory cars huérfanos
-      const validCarIds = await Car.find({}).distinct('_id');
-      await this.cleanupModel(
-        InventoryCar,
-        'Orphaned InventoryCars',
-        { car: { $nin: validCarIds } }
-      );
-
-      // Inventory files huérfanos
-      const validInventoryIds = await Inventory.find({}).distinct('_id');
-      await this.cleanupModel(
-        InventoryFile,
-        'Orphaned InventoryFiles',
-        { inventory: { $nin: validInventoryIds } }
-      );
+      await this.cleanupChildrenNotIn(ParticipantFile, 'Orphaned ParticipantFiles', 'participant', keptParticipantIds);
+      await this.cleanupChildrenNotIn(InventoryCar, 'Orphaned InventoryCars', 'car', keptCarIds);
+      await this.cleanupChildrenNotIn(InventoryFile, 'Orphaned InventoryFiles', 'inventory', keptInventoryIds);
     } catch (error) {
       console.error('❌ Error en limpieza de huérfanos:', error.message);
     }

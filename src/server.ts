@@ -2,7 +2,7 @@ import * as bluebird from 'bluebird';
 import * as mongoose from 'mongoose';
 import app from './app';
 import logger from './services/logger.service';
-import { connectMongo } from './services/mongo.service';
+import { connectMongo, ensureIndexes } from './services/mongo.service';
 import { socket } from './services/socket.service';
 import GeneralUtils from './utils/general.utils';
 const mongooseRedisCache = require('mongoose-redis-cache');
@@ -19,6 +19,9 @@ async function main() {
     port: 6379
   });
   await connectMongo();
+  // Build any missing schema indexes on the cluster (create-only, idempotent).
+  // Critical for AWS DocumentDB, whose migration doesn't carry indexes across.
+  await ensureIndexes();
 }
 
 main().catch((err) => console.log(err));
