@@ -12,4 +12,4 @@ COPY ./src/ /srv/src/
 WORKDIR /srv/public/js/app/
 
 RUN npm install
-RUN npm install -D webpack webpack-cli  webpack-dev-server
+RUN npm install -D webpack-dev-server@^5.2.2

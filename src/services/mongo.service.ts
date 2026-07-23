@@ -25,8 +25,51 @@ export function buildMongoUri(): string {
     return uri;
   }
   const sep = uri.includes('?') ? '&' : '?';
-  const params = `tls=true&tlsCAFile=${encodeURIComponent(caFile)}&retryWrites=false`;
+  const params = `tls=true&tlsCAFile=${encodeURIComponent(
+    caFile
+  )}&retryWrites=false`;
   return `${uri}${sep}${params}`;
+}
+
+/**
+ * DocumentDB does NOT implement the `allowDiskUse` option — for aggregations OR
+ * find/paginate queries. It rejects the field outright with
+ * "Field 'allowDiskUse' is currently not supported". MongoDB/Atlas silently
+ * accept it, so many call sites across the codebase (and mongoose-paginate-v2,
+ * which calls `query.allowDiskUse()`) set it. Rather than hunt down every site,
+ * neutralize it centrally at the driver layer:
+ *   1. wrap `exec` on Query + Aggregate to strip `options.allowDiskUse` before
+ *      it reaches the server (catches the options-object / paginate path), and
+ *   2. make the fluent `.allowDiskUse()` setter a no-op (catches chained calls).
+ *
+ * Applied ONLY for DocDB (not Atlas), so Atlas deployments keep their disk-spill
+ * behavior. Prototype-level and idempotent, so it applies regardless of when
+ * models were compiled. Aggregations that genuinely needed disk will now surface
+ * a "low available memory" error instead — fix those with indexes / pipeline
+ * shape (see DOCDB-MIGRATION.md), not by re-enabling allowDiskUse.
+ */
+function disableAllowDiskUseForDocDB(): void {
+  const patch = (proto: any, label: string): void => {
+    if (!proto || proto.__docdbNoAllowDiskUse) return;
+    const origExec = proto.exec;
+    proto.exec = function (...args: any[]) {
+      if (this.options && this.options.allowDiskUse !== undefined) {
+        delete this.options.allowDiskUse;
+      }
+      return origExec.apply(this, args);
+    };
+    // No-op the fluent setter so nothing (incl. mongoose-paginate-v2) re-adds it.
+    proto.allowDiskUse = function () {
+      return this;
+    };
+    proto.__docdbNoAllowDiskUse = true;
+    logger.info(`allowDiskUse: stripped for DocDB (${label})`);
+  };
+  patch((mongoose as any).Query && (mongoose as any).Query.prototype, 'Query');
+  patch(
+    (mongoose as any).Aggregate && (mongoose as any).Aggregate.prototype,
+    'Aggregate'
+  );
 }
 
 /**
@@ -45,6 +88,11 @@ export async function connectMongo(
   const uri = process.env.MONGODB_URI || '';
   if (!uri) {
     throw new Error('MONGODB_URI is not set');
+  }
+
+  // DocDB (non-Atlas) rejects `allowDiskUse`; strip it at the driver layer.
+  if (!isAtlasUri(uri)) {
+    disableAllowDiskUseForDocDB();
   }
 
   const opts: MongoConnectOptions = { autoIndex: false, ...extra };

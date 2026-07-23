@@ -130,6 +130,12 @@ function scanFile(file, findings) {
     /* setParentNodes */ true
   );
   const rel = path.relative(path.join(__dirname, '..'), file);
+  // allowDiskUse is scanned everywhere EXCEPT the central strip that neutralizes
+  // it (services/mongo.service.ts) and .spec.ts test harnesses that set it on
+  // purpose to probe DocDB behavior.
+  const skipAllowDiskUse =
+    file.endsWith(path.join('src', 'services', 'mongo.service.ts')) ||
+    file.endsWith('.spec.ts');
   const lineOf = (node) =>
     src.getLineAndCharacterOfPosition(node.getStart(src)).line + 1;
 
@@ -166,6 +172,26 @@ function scanFile(file, findings) {
       const n = propName(node);
       if (n && UNSUPPORTED_OPERATORS.has(n)) {
         add(node, `unsupported-operator ${n}`, 'HIGH', `${n} is not supported by DocDB 5.0`);
+      }
+    }
+
+    // allowDiskUse — DocDB rejects it outright (aggregate AND find/paginate):
+    // "Field 'allowDiskUse' is currently not supported". It's neutralized at
+    // runtime by the central strip in services/mongo.service.ts, so this is
+    // MEDIUM (visibility / cleanup), not a HIGH CI gate. Catches both the
+    // options form ({ allowDiskUse: true }) and the fluent .allowDiskUse(...).
+    if (!skipAllowDiskUse) {
+      if (ts.isPropertyAssignment(node) && propName(node) === 'allowDiskUse') {
+        add(node, 'allowDiskUse-option', 'MEDIUM',
+          'allowDiskUse is not supported by DocDB (neutralized by the central strip; remove it)');
+      }
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === 'allowDiskUse'
+      ) {
+        add(node, 'allowDiskUse-call', 'MEDIUM',
+          'allowDiskUse() is not supported by DocDB (neutralized by the central strip; remove it)');
       }
     }
 
