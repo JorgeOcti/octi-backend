@@ -26,10 +26,6 @@ output "ecs_web_service_name" {
   value = module.web.service_name
 }
 
-output "ecs_worker_service_name" {
-  value = module.worker.service_name
-}
-
 output "docdb_endpoint" {
   description = "DocumentDB writer endpoint."
   value       = aws_docdb_cluster.main.endpoint

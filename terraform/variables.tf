@@ -137,20 +137,6 @@ variable "web" {
   }
 }
 
-variable "worker" {
-  description = "Sizing for the worker ECS service."
-  type = object({
-    cpu           = number
-    memory        = number
-    desired_count = number
-  })
-  default = {
-    cpu           = 1024
-    memory        = 2048
-    desired_count = 1
-  }
-}
-
 variable "billing" {
   description = "Sizing for the scheduled billing task."
   type = object({

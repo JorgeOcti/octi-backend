@@ -8,6 +8,10 @@ subdomain         = "octi"
 # S3 bucket the app uploads to. Must exist (Terraform doesn't create it).
 s3_bucket = "andes-uploads-dev"
 
+# Domains whose browsers may load uploaded images (matched via aws:Referer).
+# Empty list = bucket stays private.
+allowed_referer_domains = ["octi.octimize.cl", "andes.osacontrol.com"]
+
 # Cost-tuned for dev.
 single_nat_gateway       = true
 availability_zones_count = 2
@@ -18,12 +22,6 @@ web = {
   desired_count = 1
   min_count     = 1
   max_count     = 2
-}
-
-worker = {
-  cpu           = 512
-  memory        = 1024
-  desired_count = 1
 }
 
 billing = {
@@ -49,4 +47,4 @@ redis = {
   transit_encryption   = false
 }
 
-mongodb_uri_override = "mongodb+srv://osacontrol:ENu5FyOjyTzScmmr@clusterandes.uln1t.mongodb.net/osaAndesProduction?authSource=admin&readPreference=secondary"
+# mongodb_uri_override = "mongodb+srv://osacontrol:ENu5FyOjyTzScmmr@clusterandes.uln1t.mongodb.net/osaAndesProduction?authSource=admin&readPreference=secondary"

@@ -8,6 +8,10 @@ subdomain         = "andes"
 # S3 bucket the app uploads to. Must exist (Terraform doesn't create it).
 s3_bucket = "andes-uploads-prod"
 
+# Domains whose browsers may load uploaded images (matched via aws:Referer).
+# Empty list = bucket stays private.
+allowed_referer_domains = ["andes.osacontrol.com", "octi.octimize.cl"]
+
 # HA for prod.
 single_nat_gateway       = false
 availability_zones_count = 3
@@ -18,12 +22,6 @@ web = {
   desired_count = 2
   min_count     = 2
   max_count     = 8
-}
-
-worker = {
-  cpu           = 1024
-  memory        = 2048
-  desired_count = 2
 }
 
 billing = {

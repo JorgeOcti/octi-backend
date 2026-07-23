@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "main" {
 
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 }
 
@@ -25,9 +25,10 @@ locals {
   billing_image = "${aws_ecr_repository.billing.repository_url}:${var.image_tag}"
 
   # Plain (non-secret) env vars. Match the variable names the app already reads.
-  # When mongodb_uri_override is set (using a non-DocDB Mongo), MONGO_TLS_CA_FILE
-  # is cleared so connectMongo skips the DocDB TLS bundle. Otherwise the image's
-  # default ENV MONGO_TLS_CA_FILE=/srv/global-bundle.pem takes effect.
+  # DocDB mode (no mongodb_uri_override): set MONGO_TLS_CA_FILE explicitly so the task def
+  # always carries the DocDB CA path — do NOT rely on the image's default ENV surviving, since
+  # a stale/Atlas-era task def can leave it cleared (URI=DocDB + CA="" => TLS cert failure).
+  # Atlas mode (override set): clear it so connectMongo skips the DocDB bundle (Atlas uses public CAs).
   app_environment = merge(
     {
       ENV                        = var.node_env
@@ -42,7 +43,7 @@ locals {
       S3_REGION                  = var.region
       SENTRY_RELEASE             = var.image_tag
     },
-    var.mongodb_uri_override != "" ? { MONGO_TLS_CA_FILE = "" } : {},
+    var.mongodb_uri_override != "" ? { MONGO_TLS_CA_FILE = "" } : { MONGO_TLS_CA_FILE = "/srv/global-bundle.pem" },
   )
 
   # Map of container env var name → Secrets Manager ARN.
@@ -91,38 +92,6 @@ module "web" {
 
   target_group_arn  = aws_lb_target_group.web.arn
   health_check_path = "/health-check/"
-
-  tags = local.common_tags
-}
-
-# --- Worker service (Bull queues / integrations) ----------------------------
-
-module "worker" {
-  source = "./modules/ecs-service"
-
-  name        = "worker"
-  name_prefix = local.name
-
-  cluster_id = aws_ecs_cluster.main.id
-
-  image   = local.web_image
-  command = ["pm2-runtime", "start", "pm2-worker.json"]
-
-  cpu           = var.worker.cpu
-  memory        = var.worker.memory
-  desired_count = var.worker.desired_count
-
-  environment = local.app_environment
-  secrets     = local.app_secrets
-
-  execution_role_arn = aws_iam_role.task_execution.arn
-  task_role_arn      = aws_iam_role.task.arn
-
-  subnet_ids         = module.vpc.private_subnets
-  security_group_ids = [aws_security_group.ecs_tasks.id]
-
-  log_group_name = aws_cloudwatch_log_group.worker.name
-  log_region     = data.aws_region.current.name
 
   tags = local.common_tags
 }

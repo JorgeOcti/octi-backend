@@ -13,7 +13,6 @@ locals {
   ecs_service_arns = flatten([
     for env in var.environments : [
       "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-${env}-cluster/${var.project}-${env}-web",
-      "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-${env}-cluster/${var.project}-${env}-worker",
     ]
   ])
 
