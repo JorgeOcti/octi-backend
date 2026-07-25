@@ -212,6 +212,11 @@ inventoryCarSchema.index({ status: 1 });
 inventoryCarSchema.index({ inventory: 1, car: 1 });
 inventoryCarSchema.index({ inventory: 1, status: 1, venue: 1, venueFound: 1 });
 inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });
+// Cars inside a given container. Queried directly by the tarja PDF endpoint
+// (find({ containerFound })) and other container views. Without this, DocDB
+// full-scans the whole inventorycars collection per request (the tarja endpoint
+// was averaging ~50s, up to ~190s, post-migration).
+inventoryCarSchema.index({ containerFound: 1 });
 
 inventoryCarSchema.plugin(mongoosePaginate);
 inventoryCarSchema.plugin(mongooseAggregatePaginate)
