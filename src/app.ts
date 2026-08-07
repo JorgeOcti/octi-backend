@@ -38,6 +38,7 @@ import logger from './services/logger.service';
 import redisClient, { createRedisClient } from './services/redis.service';
 import { statsRouter } from './stats/router';
 import { swaggerDefinition } from './swagger-schemas/swaggerDefinition';
+import { uploadRouter } from './upload/router';
 
 
 const metricsMiddleware = promBundle({
@@ -87,6 +88,49 @@ app.disable('x-powered-by');
 app.set('strict routing', true);
 
 app.use(cookieParser());
+
+// Request logging.
+//
+// IMPORTANT: morgan is mounted here, BEFORE the body parsers and multer below.
+// `:response-time` starts its clock when this middleware runs, so anything
+// mounted earlier spends its time outside the measurement. When morgan sat
+// after `upload.any()`, the whole body-receive + spool-to-disk phase was
+// invisible: the ALB reported p90 target latency of ~300s on photo uploads
+// while morgan logged ~290ms for the very same requests. Keep it above the
+// parsers so logged durations match what the client actually experiences.
+/* istanbul ignore if */
+if (app.get('env') !== 'testing') {
+  morgan.token('remote-addr', (req: express.Request): string => {
+    return (
+      (req.headers['x-real-ip'] as string) ||
+      (req.headers['x-forwarded-for'] as string) ||
+      req.connection.remoteAddress ||
+      ''
+    );
+  });
+  // Health checks and static assets are mounted after morgan now, so they
+  // would start showing up in the logs. Skip them to keep volume where it was.
+  const skipNoise = (req: express.Request): boolean =>
+    req.path === '/health-check/' ||
+    req.path === '/robots.txt' ||
+    req.path === '/favicon.ico' ||
+    req.path.startsWith('/static/');
+  if (process.env.ENV === 'production') {
+    app.use(
+      morgan<express.Request, express.Response>(
+        '\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m',
+        { skip: skipNoise }
+      )
+    );
+  } else {
+    app.use(
+      morgan<express.Request, express.Response>(
+        '\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m',
+        { skip: skipNoise }
+      )
+    );
+  }
+}
 
 // For parsing application/json
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -150,31 +194,6 @@ app.use(passport.session());
 app.use('/robots.txt', AppController.robots);
 app.use('/health-check/', AppController.healthCheck);
 
-/* istanbul ignore if */
-if (app.get('env') !== 'testing') {
-  morgan.token('remote-addr', (req: express.Request): string => {
-    return (
-      (req.headers['x-real-ip'] as string) ||
-      (req.headers['x-forwarded-for'] as string) ||
-      req.connection.remoteAddress ||
-      ''
-    );
-  });
-  if (process.env.ENV === 'production') {
-    app.use(
-      morgan(
-        '\x1b[0m[INFO]\x1b[36m :remote-addr :method :url :status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m'
-      )
-    );
-  } else {
-    app.use(
-      morgan(
-        '\x1b[0m[INFO]\x1b[90m\x1b[36m :method \x1b[94m:url \x1b[0m:status \x1b[32m:response-time ms\x1b[0m - :res[content-length]\x1b[0m'
-      )
-    );
-  }
-}
-
 // The request handler must be the first middleware on the app
 app.use(
   Sentry.Handlers.requestHandler({
@@ -195,6 +214,7 @@ app.use('/', distributionRouter);
 app.use('/', billingRouter);
 app.use('/', statsRouter);
 app.use('/', codeRouter);
+app.use('/', uploadRouter);
 app.use('/api/v1', jwtRouter);
 
 const options: swaggerJSDoc.Options = {
