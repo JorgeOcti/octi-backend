@@ -33,6 +33,9 @@ inventoryRouter.post('/api/inventory/container/', Middlewares.isLoggedIn, Invent
 inventoryRouter.post('/api/external/inventory/', Middlewares.isJWTAuthenticated, InventoryController.test);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', Middlewares.isLoggedIn, InventoryController.addComment);
+// Batched form of the route below. Must stay above `/api/inventory/:id/` or
+// Express matches "summaries" as an :id.
+inventoryRouter.get('/api/inventory/summaries/', Middlewares.isJWTAuthenticated, InventoryController.summary);
 inventoryRouter.get('/api/inventory/:inventory/summary/', Middlewares.isJWTAuthenticated, InventoryController.summary);
 inventoryRouter.post('/api/inventory/:id/download-images/', Middlewares.isJWTAuthenticated, InventoryController.downloadImages);
 inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, InventoryController.finishInventory);

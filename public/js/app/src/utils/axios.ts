@@ -629,6 +629,16 @@ export default class ApiService {
     });
   }
 
+  /**
+   * Summaries for many inventories in one request. Same response shape as
+   * getSummaryInventory — `data.summary` is keyed by inventory id.
+   */
+  public getSummaryInventories(ids: string[]): AxiosPromise {
+    return this.instance.get(`/api/inventory/summaries/?ids=${ids.join(',')}`, {
+      cancelToken: this.source.token
+    });
+  }
+
   public addComment(id: string, carId: string, comment: string): AxiosPromise {
     return this.instance.post(`/api/inventory/${id}/comment/`, {
       _id: carId,

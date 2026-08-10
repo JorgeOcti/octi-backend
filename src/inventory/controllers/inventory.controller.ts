@@ -640,17 +640,42 @@ class InventoryController {
   }
 
 
+  /**
+   * Per-inventory container/unit breakdown.
+   *
+   * Serves one inventory (`/api/inventory/:inventory/summary/`) or many
+   * (`/api/inventory/summaries/?ids=a,b,c`). The response shape is identical
+   * either way — `summary` has always been a map keyed by inventory id, so a
+   * batched call just returns more keys.
+   *
+   * The batch form exists because /inventory/management/ lists 50 inventories
+   * and used to request one summary each: 50 HTTP round trips, every one paying
+   * auth + session lookup, queued ~6 at a time by the browser.
+   */
   public async summary(req: IRequest, res: Response) {
 
     const { inventory } = req.params;
+    const { ids } = req.query as { ids?: string };
+
+    // `ids` wins when present; otherwise fall back to the single-id route.
+    const requested = (ids != null ? String(ids).split(',') : [inventory])
+      .map(id => id.trim())
+      .filter(id => id.length > 0 && mongoose.Types.ObjectId.isValid(id));
+
+    if (!requested.length) {
+      return res.status(400).json({ message: 'Inventario no válido', status: 400 });
+    }
 
     try {
 
       const inventoryResult = await InventoryCar.find({
-        inventory
+        inventory: { $in: requested }
       }).populate([
         {
-          path: 'car'
+          // Only `isContainer` is read below. Without this select every row
+          // drags in a full car document to answer one boolean.
+          path: 'car',
+          select: ['isContainer']
         },
         {
           path: 'virtualInventory',
@@ -660,7 +685,7 @@ class InventoryController {
           path: 'participant',
           select: ['hasDamages']
         }
-      ]);
+      ]).lean();
 
 
       const inventoryMap: any = {};
@@ -768,6 +793,30 @@ class InventoryController {
         }
       });
 
+
+      // An inventory with no cars yet produces no key above. Callers destructure
+      // `summary[id]` directly, so a missing key throws — and in a batched call
+      // one empty inventory would take down the whole page, not just its row.
+      requested.forEach(id => {
+        if (!inventoryMap[id]) {
+          inventoryMap[id] = {
+            names: '',
+            nave: undefined,
+            trip: undefined,
+            location: undefined,
+            client: undefined,
+            units: { pending: 0, found: 0, hasDamages: 0 },
+            containers: {
+              pending: 0,
+              found: 0,
+              open: 0,
+              check: 0,
+              empty: 0,
+              'empty(*)': 0
+            }
+          };
+        }
+      });
 
       return res.status(200).json({
         units: unitsByContainer,

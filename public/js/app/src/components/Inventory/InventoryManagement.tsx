@@ -503,20 +503,36 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
       .then(async (response: any) => {
 
         let inventories: any[] = response.data.inventories;
-        let filters = new Set();
 
-        const summary = inventories.map(async (inventory: any) => {
+        // No rows: skip the batch call entirely. Asking for zero ids is a 400,
+        // which would reject this promise and leave the page spinning instead of
+        // rendering the empty state.
+        if (!inventories.length) {
+          this.setState({
+            summaryInventory: [],
+            originalSummary: [],
+            shipSelector: [],
+            loading: false
+          });
+          return;
+        }
 
-          const inventoryResponse = await api.getSummaryInventory((inventory as any)._id);
-          const { metadata, summary } = inventoryResponse.data;
-          const { containers, units , nave, client, names } = summary[`${inventory._id}`];
+        // One request for every row's summary instead of one per row. This used
+        // to fan out to 50 calls that the browser could only run ~6 at a time.
+        const inventoryResponse = await api.getSummaryInventories(
+          inventories.map((inventory: any) => inventory._id)
+        );
+        const { metadata, summary } = inventoryResponse.data;
 
-          metadata.filters.clients.forEach((cli: any)=>{
-            filters.add(cli)
-          })
-          metadata.filters.ships.forEach((ship: any)=>{
-            filters.add(ship)
-          })
+        // Set only to dedupe; Array.from rather than spread because this build
+        // targets ES5 without downlevelIteration.
+        const filters: any[] = Array.from(
+          new Set(metadata.filters.clients.concat(metadata.filters.ships))
+        );
+
+        const resolvedSummary = inventories.map((inventory: any) => {
+
+          const { containers, units, nave, client, names } = summary[`${inventory._id}`];
 
           return {
             _id: inventory._id,
@@ -534,12 +550,10 @@ class InventoryManagement extends TrackingBasePage<IPropsType, IStateType> {
 
         });
 
-        const resolvedSummary =  await Promise.all(summary);
-
         this.setState({
           summaryInventory: resolvedSummary,
           originalSummary: resolvedSummary,
-          shipSelector: [...await Promise.all(filters)],
+          shipSelector: filters,
           loading: false
         });
 
