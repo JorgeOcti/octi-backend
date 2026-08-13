@@ -1112,6 +1112,80 @@ class FormController {
     }
   }
 
+  /**
+   * Records container evidence with atomic operators instead of
+   * load-mutate-`save()`.
+   *
+   * Why: the app flushes queued forms concurrently, so the open form and the
+   * desconsolidado for one container arrive in the same instant. Both handlers
+   * loaded the same InventoryCar at `__v = 0`; whichever saved second hit
+   * Mongoose's version guard and threw
+   *   `VersionError: No matching document found for id "…" version 0
+   *    modifiedPaths "evidenceStatus, inventoriedBy, venueFound,
+   *    containerStatus, status, openParticipant"`
+   * discarding the whole write. The participant is saved earlier in `complete()`
+   * so it survived, and the retry short-circuits on the `keyRawAnswers` dedupe —
+   * leaving the container permanently missing its evidence while the copied
+   * InventoryFiles dangled unreferenced. A sweep found 65 containers on dev and
+   * 64 in the prod snapshot in exactly that state.
+   *
+   * Targeting a single array element by status also stops the two branches from
+   * overwriting each other: the old open path assigned
+   * `evidenceStatus = [openEvidence]`, wiping any `empty` entry outright.
+   *
+   * `mode`:
+   *   'replace' — this status carries one entry; overwrite its images and date
+   *               (what the open path did by rebuilding the array).
+   *   'append'  — merge into the existing entry's images, keeping its original
+   *               date (what the finish path did by concatenating).
+   *
+   * Positional `$` rather than `arrayFilters`, which DocumentDB does not support.
+   */
+  private static async writeContainerEvidence(
+    inventoryCarId: any,
+    status: string,
+    imageIds: any[],
+    scalars: Record<string, any>,
+    mode: 'replace' | 'append'
+  ): Promise<void> {
+    // Two attempts: the entry can appear or vanish between the update and the
+    // push when another submit for the same container interleaves.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const update: any = { $set: { ...scalars } };
+      if (mode === 'replace') {
+        update.$set['evidenceStatus.$.images'] = imageIds;
+        update.$set['evidenceStatus.$.date'] = new Date();
+      } else {
+        update.$push = { 'evidenceStatus.$.images': { $each: imageIds } };
+      }
+
+      const merged = await InventoryCar.updateOne(
+        { _id: inventoryCarId, 'evidenceStatus.status': status },
+        update
+      );
+      if (merged.matchedCount) {
+        return;
+      }
+
+      // No entry for this status yet — add one, but only if it is still absent.
+      const created = await InventoryCar.updateOne(
+        { _id: inventoryCarId, 'evidenceStatus.status': { $ne: status } },
+        {
+          $push: { evidenceStatus: { status, date: new Date(), images: imageIds } },
+          $set: { ...scalars }
+        }
+      );
+      if (created.matchedCount) {
+        return;
+      }
+    }
+
+    logger.error(
+      `FormController.writeContainerEvidence: could not record ${status} evidence ` +
+      `for inventoryCar ${inventoryCarId} after 2 attempts`
+    );
+  }
+
   private async copyFormFileToInventoryFile(
     ids: string[],
     inventory: string,
@@ -1704,24 +1778,26 @@ class FormController {
               logger.debug(`Car: ${JSON.stringify(car)}`);
               if (car.isContainer && inventoryItem.openForm?.toString() === form._id.toString()) {
                 logger.info(`Opening container inventory form`);
-                let openEvidences: any = {
-                  status: ChoicesStatusContainer.open,
-                  date: new Date(),
-                  images: []
-                };
+                await FormController.writeContainerEvidence(
+                  inventoryCar._id,
+                  ChoicesStatusContainer.open,
+                  files.map((file) => file._id),
+                  {
+                    inventoriedBy: newParticipant.user,
+                    venueFound: newParticipant.venue,
+                    containerStatus: ChoicesStatusContainer.open,
+                    status: ChoicesStatusCarInventory.found,
+                    openParticipant: newParticipant._id
+                  },
+                  'replace'
+                );
 
-                openEvidences.images = files.map((file) => file._id);
-                inventoryCar.evidenceStatus = [openEvidences];
-                inventoryCar.inventoriedBy = newParticipant.user;
-                inventoryCar.venueFound = newParticipant.venue;
-
-                inventoryCar.containerStatus = ChoicesStatusContainer.open;
-                inventoryCar.status = ChoicesStatusCarInventory.found;
-                inventoryCar.openParticipant = newParticipant._id;
-                await inventoryCar.save();
-
-                // Emitir notificación de socket para apertura de contenedor
-                const populatedInventoryCarOpen = await inventoryCar.populate([
+                // Emitir notificación de socket para apertura de contenedor.
+                // Re-read: the atomic update above bypassed this in-memory doc,
+                // so it no longer reflects what is stored.
+                const populatedInventoryCarOpen = await InventoryCar.findById(
+                  inventoryCar._id
+                ).populate([
                   { path: 'car' },
                   { path: 'venue' },
                   { path: 'venueFound' },
@@ -1733,15 +1809,6 @@ class FormController {
 
               } else if (car.isContainer && inventoryItem.finishForm.toString() === form._id.toString()) {
                 logger.info(`Finishing container inventory form`);
-                let emptyEvideces = inventoryCar.evidenceStatus.find((evidence: any) => evidence.status === ChoicesStatusContainer.empty);
-                if (!emptyEvideces) {
-                  emptyEvideces = {
-                    status: ChoicesStatusContainer.empty,
-                    date: new Date(),
-                    images: []
-                  }
-                }
-
                 if (newParticipant.deliveryInfo.comment) {
                   await InventoryFileModel.updateMany({
                     _id: { $in: files.map((file) => file._id) }
@@ -1752,30 +1819,31 @@ class FormController {
                   })
                 }
 
-                emptyEvideces.images = [
-                  ...emptyEvideces.images,
-                  ...files.map((file) => file._id)
-                ];
+                await FormController.writeContainerEvidence(
+                  inventoryCar._id,
+                  ChoicesStatusContainer.empty,
+                  files.map((file) => file._id),
+                  {
+                    containerStatus: ChoicesStatusContainer.empty,
+                    closeParticipant: newParticipant._id
+                  },
+                  'append'
+                );
 
-                inventoryCar.evidenceStatus = [
-                  ...inventoryCar.evidenceStatus.filter((evidence: any) => evidence.status !== ChoicesStatusContainer.empty),
-                  emptyEvideces
-                ];
-
-                inventoryCar.containerStatus = ChoicesStatusContainer.empty;
-
-                inventoryCar.closeParticipant = newParticipant._id;
-                await inventoryCar.save();
-                await InventoryController.addHistoryToCarOfEmptyContainer(inventoryCar);
-
-                // Emitir notificación de socket para cierre de contenedor
-                const populatedInventoryCarClose = await inventoryCar.populate([
+                // Re-read before the history + notification: both read fields the
+                // atomic update just changed.
+                const populatedInventoryCarClose = await InventoryCar.findById(
+                  inventoryCar._id
+                ).populate([
                   { path: 'car' },
                   { path: 'venue' },
                   { path: 'venueFound' },
                   { path: 'evidenceStatus.images' },
                   { path: 'images' }
                 ]);
+                await InventoryController.addHistoryToCarOfEmptyContainer(
+                  populatedInventoryCarClose || inventoryCar
+                );
                 InventoryController.sendUpdateNotification("CONTAINER_CLOSED", updatedUser.venue._id, team._id, populatedInventoryCarClose, ChoicesStatusContainer.empty, updatedUser);
               } else {
                 inventoryCar.participant = newParticipant._id;
