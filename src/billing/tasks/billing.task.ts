@@ -17,9 +17,13 @@ import puppeteer from 'puppeteer';
 import * as console from 'console';
 // import History from "../../app/models/history.model";
 import Inventory from '../../inventory/models/inventory.model';
-import InventoryCar from '../../inventory/models/inventoryCar.model';
+import InventoryCar, { ChoicesStatusContainer } from '../../inventory/models/inventoryCar.model';
+import { ChoicesStatusCarInventory } from '../../app/models/inventoryCar.types';
 import Form from '../../form/models/form.model';
 import User from '../../app/models/user.model';
+
+const MEDLOG_TEAM_ID = '67aac5f594ed0a1f9da3478a';
+const CIS_TEAM_ID = '695e913f69b679429eb335f7';
 
 class BillingQueue {
   private apiKey: string = '6d9b28d228cd00669f37484223d876daad754636';
@@ -66,7 +70,7 @@ class BillingQueue {
 
   private getDolarPrice(): Promise<number> {
     return new Promise((resolve, reject) => {
-      const now = moment().subtract(1, 'day');
+      const now = moment(); // .subtract(1, 'day')
       const [year, month, day] = [
         now.format('YYYY'),
         now.format('MM'),
@@ -89,6 +93,28 @@ class BillingQueue {
         }
       );
     });
+  }
+
+  /**
+   * CIS no factura los contenedores que nunca se trabajaron, es decir los que
+   * siguen con `status` pending Y `containerStatus` pending (ambos son el valor
+   * por defecto del modelo). Un contenedor así se factura recién en el período
+   * en que se abre, porque el período se acota por `updatedAt`.
+   *
+   * Los autos dentro de un contenedor excluido tampoco se facturan: la misma
+   * regla se evalúa sobre el contenedor padre de cada unidad.
+   *
+   * Para el resto de los teams (MEDLOG, etc.) se factura todo contenedor
+   * inventariado, sin mirar el status.
+   */
+  private isBillableContainer(inventoryCar: any, isCIS: boolean): boolean {
+    if (!isCIS) {
+      return true;
+    }
+    return !(
+      inventoryCar.status === ChoicesStatusCarInventory.pending &&
+      inventoryCar.containerStatus === ChoicesStatusContainer.pending
+    );
   }
 
   private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -418,10 +444,24 @@ class BillingQueue {
     }
   }
 
-  public async processBilling(team?: any): Promise<void> {
+  /**
+   * @param team    Team a facturar. Si no se pasa, no hay tarifas configuradas
+   *                y todo queda en 0 (ver el WARNING más abajo).
+   * @param options dryRun: calcula y loguea todo pero NO guarda el invoice.
+   *                period: fuerza el período en formato YYYYMM. Sin esto el
+   *                período se deriva de la fecha de corrida, que depende del día
+   *                en que se ejecuta (`subtract(25, 'days')`): el 26 de agosto
+   *                apunta a agosto, el 15 de agosto apunta a julio.
+   */
+  public async processBilling(
+    team?: any,
+    options: { dryRun?: boolean; period?: string } = {}
+  ): Promise<void> {
     try {
+      const dryRun = options.dryRun === true;
+
       console.log('========================================');
-      console.log('START BILLING PROCESS');
+      console.log(`START BILLING PROCESS${dryRun ? ' (DRY-RUN: no se guarda nada)' : ''}`);
       console.log('========================================');
 
       // Obtener el precio del dólar
@@ -435,20 +475,31 @@ class BillingQueue {
       let CODED_CAR_PRICE_USD = 0;
       let GENERAL_CAR_PRICE_USD = 0;
       let AFORO_PRICE_USD = 0;
-      console.log("TEAM:", team);
 
-      if (team === "67aac5f594ed0a1f9da3478a") { // MEDLOG
+      // `team` llega como ObjectId cuando se invoca desde el controller
+      // (req.user.team._id), por lo que comparar con === contra un string
+      // siempre daba false y todos los precios quedaban en 0.
+      const teamId = team ? String(team) : '';
+      const isCIS = teamId === CIS_TEAM_ID;
+      console.log("TEAM:", teamId || '(sin team)');
+
+      if (teamId === MEDLOG_TEAM_ID) { // MEDLOG
         GENERAL_CONTAINER_PRICE_USD = 0.95;
         CODED_CONTAINER_PRICE_USD = 0.95;
         CODED_CAR_PRICE_USD = 1.27;
         GENERAL_CAR_PRICE_USD = 0;
         AFORO_PRICE_USD = 0.95;
-      } else if (team === "695e913f69b679429eb335f7") { // CIS
+      } else if (teamId === CIS_TEAM_ID) { // CIS
         GENERAL_CONTAINER_PRICE_USD = 0.95;
         CODED_CONTAINER_PRICE_USD = 0.95;
         CODED_CAR_PRICE_USD = 1.27;
         GENERAL_CAR_PRICE_USD = 0;
         AFORO_PRICE_USD = 0.95;
+      } else {
+        console.log(
+          `WARNING: no hay tarifas configuradas para el team "${teamId || '(sin team)'}". ` +
+          `Todos los precios quedan en 0 y el invoice se generará con total 0.`
+        );
       }
 
 
@@ -460,9 +511,20 @@ class BillingQueue {
         filter.team = team;
       }
 
-      // Calcular período: mes anterior (restando 15 días y tomando inicio del mes)
-      const start_date = moment().subtract(25, 'days').startOf('month');
-      const end_date = moment().subtract(25, 'days').endOf('month');
+      // Calcular período. Por defecto se deriva de la fecha de corrida
+      // (restando 25 días y tomando el mes de esa fecha), que es lo que hace el
+      // cron del día 1. OJO: corrido a mano a fin de mes apunta al mes EN CURSO,
+      // no al anterior. `options.period` (YYYYMM) permite fijarlo explícitamente.
+      const periodBase = options.period
+        ? moment(options.period, 'YYYYMM', true)
+        : moment().subtract(25, 'days');
+
+      if (options.period && !periodBase.isValid()) {
+        throw new Error(`Período inválido: "${options.period}". Formato esperado YYYYMM (ej: 202607).`);
+      }
+
+      const start_date = periodBase.clone().startOf('month');
+      const end_date = periodBase.clone().endOf('month');
       const period = start_date.format('YYYYMM');
 
       console.log(`Period: ${period}`);
@@ -471,6 +533,10 @@ class BillingQueue {
       // Obtener empresas con facturación activa
       const companies = await Company.find(filter);
       console.log(`Found ${companies.length} companies with active billing`);
+
+      // Solo se llena en dry-run: se vuelca a un JSON al final para poder
+      // revisar el detalle (BIC / VIN) sin escribir nada en la base.
+      const dryRunSummary: any[] = [];
 
       for (const company of companies) {
         console.log('----------------------------------------');
@@ -482,16 +548,28 @@ class BillingQueue {
           email: /@octimize.cl$/
         });
 
-        // Obtener todos los inventarios del período
+        // Rango del período aplicado sobre el `updatedAt` de cada inventoryCar.
+        //
+        // Antes el período se filtraba por la fecha de creación del INVENTARIO,
+        // lo que dejaba dos huecos: un inventario creado en un mes anterior no
+        // facturaba nada de lo trabajado este mes, y un inventario creado este
+        // mes facturaba también lo que se trabajara en los meses siguientes.
+        //
+        // Se usa `updatedAt` (no `createdAt`) porque un contenedor se carga con
+        // el manifiesto y puede abrirse recién en un período posterior: se
+        // factura en el período en que efectivamente se trabajó.
+        const periodRange = {
+          $gte: start_date.toDate(),
+          $lte: end_date.toDate()
+        };
+
+        // Todos los inventarios de la company, sin filtro de fecha: el período
+        // se acota por inventoryCar, no por el inventario.
         const allInventories = await Inventory.find({
-          company: company._id,
-          createdAt: {
-            $gte: start_date.toDate(),
-            $lte: end_date.toDate()
-          }
+          company: company._id
         });
 
-        console.log(`Found ${allInventories.length} total inventories for the period`);
+        console.log(`Found ${allInventories.length} total inventories for the company`);
 
         if (allInventories.length === 0) {
           console.log(`No inventories found for ${company.name}, skipping...`);
@@ -523,19 +601,29 @@ class BillingQueue {
 
         if (generalInventoryIds.length > 0) {
           // Contenedores en general-items (container = null y car.isContainer = true)
+          // trabajados dentro del período (updatedAt)
           const generalContainerInventoryCars = await InventoryCar.find({
             inventory: { $in: generalInventoryIds },
             container: null,
+            updatedAt: periodRange,
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
-          const generalContainers = generalContainerInventoryCars.filter(ic =>
+          const allGeneralContainers = generalContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer === true
           );
+          // CIS: se descartan los contenedores pending/pending (nunca trabajados)
+          const generalContainers = allGeneralContainers.filter(ic =>
+            this.isBillableContainer(ic, isCIS)
+          );
           generalContainerCount = generalContainers.length;
-          const generalContainerIds = generalContainers.map(c => c._id);
+          const generalContainerIds = allGeneralContainers.map(c => c._id);
 
+          const generalSkippedByStatus = allGeneralContainers.length - generalContainers.length;
           console.log(`  Containers: ${generalContainerCount}`);
+          if (generalSkippedByStatus > 0) {
+            console.log(`    (${generalSkippedByStatus} contenedores excluidos por status pending/pending - regla CIS)`);
+          }
 
           for (const ic of generalContainers) {
             const extra = (ic as any).extra || {};
@@ -549,7 +637,7 @@ class BillingQueue {
               contentType: 'general-items',
               nave: extra['Nave'] || '',
               viaje: extra['N° Viaje'] || '',
-              datetime: (ic as any).createdAt,
+              datetime: (ic as any).updatedAt,
               price: GENERAL_CONTAINER_PRICE_USD
             });
           }
@@ -590,7 +678,7 @@ class BillingQueue {
               contentType: 'general-items',
               nave: extra['Nave'] || '',
               viaje: extra['N° Viaje'] || '',
-              datetime: (ic as any).createdAt,
+              datetime: (ic as any).updatedAt,
               price: GENERAL_CAR_PRICE_USD
             });
           }
@@ -611,19 +699,30 @@ class BillingQueue {
 
         if (codedInventoryIds.length > 0) {
           // Contenedores en coded-items (container = null y car.isContainer = true)
+          // trabajados dentro del período (updatedAt)
           const codedContainerInventoryCars = await InventoryCar.find({
             inventory: { $in: codedInventoryIds },
             container: null,
+            updatedAt: periodRange,
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
-          const codedContainers = codedContainerInventoryCars.filter(ic =>
+          const allCodedContainers = codedContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer === true
           );
+          // CIS: se descartan los contenedores pending/pending (nunca trabajados).
+          // Los autos dentro de esos contenedores tampoco se cuentan: la regla se
+          // vuelve a aplicar más abajo sobre el contenedor padre de cada unidad.
+          const codedContainers = allCodedContainers.filter(ic =>
+            this.isBillableContainer(ic, isCIS)
+          );
           codedContainerCount = codedContainers.length;
-          const codedContainerIds = codedContainers.map(c => c._id);
 
+          const codedSkippedByStatus = allCodedContainers.length - codedContainers.length;
           console.log(`  Containers: ${codedContainerCount}`);
+          if (codedSkippedByStatus > 0) {
+            console.log(`    (${codedSkippedByStatus} contenedores excluidos por status pending/pending - regla CIS, sus autos tampoco se cuentan)`);
+          }
 
           for (const ic of codedContainers) {
             const extra = (ic as any).extra || {};
@@ -637,19 +736,46 @@ class BillingQueue {
               contentType: 'coded-items',
               nave: extra['Nave'] || '',
               viaje: extra['N° Viaje'] || '',
-              datetime: (ic as any).createdAt,
+              datetime: (ic as any).updatedAt,
               price: CODED_CONTAINER_PRICE_USD
             });
           }
 
-          // Autos dentro de contenedores en coded-items
-          if (codedContainerIds.length > 0) {
-            const carsInsideCodedContainers = await InventoryCar.find({
-              inventory: { $in: codedInventoryIds },
-              container: { $in: codedContainerIds },
-              inventoriedBy: { $nin: osaUsers.map(u => u._id) }
-            }).populate('car');
+          // Autos dentro de contenedores en coded-items, trabajados dentro del
+          // período (updatedAt). A propósito NO se acotan a los contenedores
+          // facturados arriba: el contenedor padre pudo haberse trabajado en otro
+          // período (se abre un mes y se termina de desconsolidar el siguiente),
+          // y si se acotaran, esas unidades no se facturarían nunca.
+          const unitsInPeriod = await InventoryCar.find({
+            inventory: { $in: codedInventoryIds },
+            container: { $ne: null },
+            updatedAt: periodRange,
+            inventoriedBy: { $nin: osaUsers.map(u => u._id) }
+          }).populate('car');
+
+          if (unitsInPeriod.length > 0) {
+            // Resolver el contenedor padre de cada unidad para aplicar la regla
+            // CIS: las unidades de un contenedor excluido no se facturan.
+            const parentIds = [...new Set(unitsInPeriod.map(u => String(u.container)))];
+            const parentContainers = await InventoryCar.find({
+              _id: { $in: parentIds }
+            }, { status: 1, containerStatus: 1 });
+
+            const billableParentIds = new Set(
+              parentContainers
+                .filter(p => this.isBillableContainer(p, isCIS))
+                .map(p => String(p._id))
+            );
+
+            const carsInsideCodedContainers = unitsInPeriod.filter(u =>
+              billableParentIds.has(String(u.container))
+            );
             codedCarCount = carsInsideCodedContainers.length;
+
+            const unitsSkippedByParent = unitsInPeriod.length - carsInsideCodedContainers.length;
+            if (unitsSkippedByParent > 0) {
+              console.log(`    (${unitsSkippedByParent} autos excluidos porque su contenedor no es facturable - regla CIS)`);
+            }
 
             for (const ic of carsInsideCodedContainers) {
               const extra = (ic as any).extra || {};
@@ -664,7 +790,7 @@ class BillingQueue {
                 contentType: 'coded-items',
                 nave: extra['Nave'] || '',
                 viaje: extra['N° Viaje'] || '',
-                datetime: (ic as any).createdAt,
+                datetime: (ic as any).updatedAt,
                 price: CODED_CAR_PRICE_USD
               });
             }
@@ -804,18 +930,43 @@ class BillingQueue {
           detail
         });
 
-        if (!(await Invoice.find({ company: company._id, period }).countDocuments())) {
+        const existing = await Invoice.find({ company: company._id, period }).countDocuments();
+
+        if (dryRun) {
+          console.log(
+            `DRY-RUN: NO se guarda el invoice de ${company.name} (período ${period}). ` +
+            `${existing ? `Ya existe un invoice para este período.` : `No existe invoice para este período.`}`
+          );
+          dryRunSummary.push({
+            company: company.name,
+            companyId: String(company._id),
+            period,
+            containers: totalContainers,
+            inventoryCars: totalCars,
+            valueDolar,
+            totalDolar: totalUSD,
+            totalPeso: totalCLP,
+            invoiceAlreadyExists: existing > 0,
+            detail
+          });
+        } else if (!existing) {
           await invoice.save();
           console.log(`Invoice created for ${company.name}`);
         } else {
           console.log(`Invoice for ${period} ${company.name} already exists!`);
         }
+      }
 
-        console.log(`[COMMENTED] Invoice creation skipped (uncomment to activate)`);
+      if (dryRun) {
+        const outPath = `/tmp/billing-dryrun-${teamId || 'no-team'}-${period}.json`;
+        fs.writeFileSync(outPath, JSON.stringify(dryRunSummary, null, 2));
+        console.log('');
+        console.log(`DRY-RUN: detalle completo escrito en ${outPath}`);
+        console.log(`DRY-RUN: ${dryRunSummary.length} companies procesadas, 0 invoices guardados`);
       }
 
       console.log('========================================');
-      console.log('BILLING PROCESS COMPLETED');
+      console.log(`BILLING PROCESS COMPLETED${dryRun ? ' (DRY-RUN)' : ''}`);
       console.log('========================================');
     } catch (e) {
       console.log('ERROR in processBilling:');

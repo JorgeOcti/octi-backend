@@ -50,5 +50,8 @@ export interface IUser {
   userPermissions: IPermission[];
   userForms: IForm[];
   isAdmin: boolean;
+  // Ver el comentario en user.schema.ts: se otorga solo por CLI y se valida
+  // releyendo desde la base (middleware isSuperAdmin), nunca desde req.user.
+  isSuperAdmin: boolean;
   isDriver: boolean;
 }

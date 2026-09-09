@@ -2,6 +2,7 @@ import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import AdminDamagesController from './controllers/admin/damages.admin.controller';
 import AdminFormsController from './controllers/admin/form.admin.controller';
+import FormSuperAdminController from './controllers/admin/formSuperAdmin.controller';
 import FormController from './controllers/form.controller';
 import { FormListControls } from './inputsSchema';
 import DraftController from './controllers/draft.controller';
@@ -129,6 +130,26 @@ router.post('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.ap
 router.patch('/api/admin/forms/:id', Middlewares.isLoggedIn, AdminFormsController.apiUpdate);
 router.delete('/api/admin/forms/:id', Middlewares.isLoggedIn, AdminFormsController.apiDelete);
 router.get('/api/admin/damages/', Middlewares.isLoggedIn, AdminDamagesController.apiListDamages);
+
+// ---------------------------------------------------------------------------
+// Administración de formularios para SUPERADMIN
+//
+// Aparte de /api/admin/forms/ porque estas rutas reciben team/company de forma
+// explícita en vez de tomarlos de la sesión: es lo que permite cruzar de un
+// team a otro, y por eso van detrás de isSuperAdmin (que relee el flag desde la
+// base en cada request) y no de isLoggedIn.
+// ---------------------------------------------------------------------------
+const superAdmin = [Middlewares.isLoggedIn, Middlewares.isSuperAdmin];
+
+router.get('/settings/forms/admin/', superAdmin, FormSuperAdminController.page);
+router.get('/api/superadmin/teams/', superAdmin, FormSuperAdminController.apiTeams);
+router.get('/api/superadmin/companies/', superAdmin, FormSuperAdminController.apiCompanies);
+router.get('/api/superadmin/forms/', superAdmin, FormSuperAdminController.apiList);
+router.get('/api/superadmin/forms/:id', superAdmin, FormSuperAdminController.apiDetail);
+router.post('/api/superadmin/forms/', superAdmin, FormSuperAdminController.apiCreate);
+router.put('/api/superadmin/forms/:id', superAdmin, FormSuperAdminController.apiUpdate);
+router.patch('/api/superadmin/forms/:id/active', superAdmin, FormSuperAdminController.apiSetActive);
+router.post('/api/superadmin/forms/:id/copy', superAdmin, FormSuperAdminController.apiCopy);
 
 router.post('/api/v1/positions/', Middlewares.isJWTAuthenticated, FormController.createPosition);
 

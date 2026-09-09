@@ -217,6 +217,12 @@ inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });
 // full-scans the whole inventorycars collection per request (the tarja endpoint
 // was averaging ~50s, up to ~190s, post-migration).
 inventoryCarSchema.index({ containerFound: 1 });
+// Billing scopes the period by the inventoryCar's own updatedAt over every
+// inventory of a company (not just the ones created in the period), so the
+// `inventory` $in is broad and needs the date as a second key. Without this,
+// the monthly billing job filters updatedAt in memory over every inventoryCar
+// the company ever had.
+inventoryCarSchema.index({ inventory: 1, updatedAt: 1 });
 
 inventoryCarSchema.plugin(mongoosePaginate);
 inventoryCarSchema.plugin(mongooseAggregatePaginate)

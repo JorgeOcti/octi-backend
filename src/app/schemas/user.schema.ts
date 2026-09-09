@@ -109,6 +109,24 @@ export const userSchema = new mongoose.Schema<IUser>({
     type: Boolean,
     default: false
   },
+  /**
+   * Acceso a herramientas que cruzan la frontera de team/company (por ejemplo
+   * copiar un formulario de un team a otro). NO es parte de `userPermissions`
+   * a propósito: no aparece en el admin de permisos y no se puede otorgar por
+   * error desde la UI.
+   *
+   * NUNCA agregar este campo a un endpoint HTTP. Se otorga solo por CLI:
+   *   npm run superadmin:grant -- --email=<email> --confirm=<email>
+   *
+   * Al leerlo para autorizar, NO usar `req.user`: la sesión es un snapshot JSON
+   * del login (passportConfig.ts hace `done(null, user)` sin releer la base),
+   * así que revocar el flag no tendría efecto hasta que expire la sesión.
+   * Usar el middleware `isSuperAdmin`, que relee desde la base.
+   */
+  isSuperAdmin: {
+    type: Boolean,
+    default: false
+  },
   settings: {
     type: userSettingsSchema,
     default: {}

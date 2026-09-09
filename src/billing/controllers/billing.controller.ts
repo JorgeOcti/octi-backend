@@ -918,11 +918,28 @@ class BillingController {
 
   public async run(req: IRequest, res: Response) {
     const team = req.user.team._id;
+    // Para probar sin escribir nada:
+    //   /settings/billing/run/?dryRun=true&period=202607
+    //
+    // `period` (YYYYMM) es importante al correr a mano: sin él el período se
+    // deriva del día de la corrida y a fin de mes apunta al mes EN CURSO. Si
+    // además se guarda, ese invoice bloquea la corrida real del cron para el
+    // mismo período (ver el chequeo de duplicados en billing.task.ts).
+    const { dryRun, period } = req.query as { dryRun?: string; period?: string };
+    const isDryRun = String(dryRun) === 'true';
+
     try {
-      await new BillingQueue().processBilling(team);
+      await new BillingQueue().processBilling(team, {
+        dryRun: isDryRun,
+        period: period || undefined
+      });
       res.json({
         status: 'ok',
-        message: 'Billing process completed successfully.'
+        dryRun: isDryRun,
+        period: period || null,
+        message: isDryRun
+          ? 'Billing dry-run completed: no invoices were saved. Ver el log del servidor y /tmp/billing-dryrun-<team>-<period>.json'
+          : 'Billing process completed successfully.'
       });
     } catch (e) {
       /* istanbul ignore next  */

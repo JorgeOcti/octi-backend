@@ -1,0 +1,491 @@
+doctype html
+html(lang='es')
+  head
+    meta(charset='utf-8')
+    meta(content='width=device-width, initial-scale=1', name='viewport')
+    title Formularios · Superadmin
+    style.
+      :root {
+        --bg: #f5f6f8; --panel: #fff; --border: #dfe3e8; --text: #1f2933;
+        --muted: #6b7280; --accent: #2563eb; --danger: #b42318; --ok: #067647;
+        --warn: #b54708; --warnbg: #fffaeb; --code: #f8fafc;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+             background: var(--bg); color: var(--text); }
+      header { background: #1f2933; color: #fff; padding: 12px 20px; display: flex;
+               justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+      header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+      header .who { font-size: 12px; color: #9aa5b1; }
+      main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+      .tabs { display: flex; gap: 4px; margin-bottom: -1px; flex-wrap: wrap; }
+      .tab { padding: 8px 16px; background: #e4e7eb; border: 1px solid var(--border);
+             border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: 500; }
+      .tab.on { background: var(--panel); color: var(--accent); }
+      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 0 6px 6px 6px;
+               padding: 16px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+      .field { display: flex; flex-direction: column; gap: 4px; }
+      .field label { font-size: 12px; color: var(--muted); font-weight: 600; }
+      input[type=text], select, textarea {
+        padding: 7px 9px; border: 1px solid var(--border); border-radius: 5px;
+        font: inherit; background: #fff; color: var(--text); min-width: 170px; }
+      textarea { width: 100%; min-height: 380px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                 font-size: 12px; background: var(--code); }
+      button { padding: 7px 14px; border: 1px solid var(--border); border-radius: 5px;
+               background: #fff; cursor: pointer; font: inherit; font-weight: 500; }
+      button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+      button.danger { background: #fff; color: var(--danger); border-color: #f0c2bc; }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border);
+               vertical-align: middle; }
+      th { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: .04em; }
+      .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+      .pill.on { background: #e7f6ec; color: var(--ok); }
+      .pill.off { background: #f2f4f7; color: var(--muted); }
+      .msg { padding: 10px 12px; border-radius: 5px; margin-bottom: 12px; display: none; font-size: 13px; }
+      .msg.err { background: #fef3f2; color: var(--danger); border: 1px solid #f0c2bc; display: block; }
+      .msg.ok { background: #e7f6ec; color: var(--ok); border: 1px solid #a9dfbf; display: block; }
+      .msg.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; display: block; }
+      .warn { background: var(--warnbg); border: 1px solid #fedf89; color: var(--warn);
+              padding: 10px 12px; border-radius: 5px; margin: 10px 0; font-size: 13px; }
+      .warn ul { margin: 6px 0 0; padding-left: 18px; }
+      pre { background: var(--code); border: 1px solid var(--border); border-radius: 5px;
+            padding: 10px; overflow-x: auto; font-size: 12px; margin: 0; }
+      .hint { font-size: 12px; color: var(--muted); margin: 4px 0 12px; }
+      .hide { display: none !important; }
+      .plan-create { color: var(--ok); font-weight: 600; }
+      .plan-missing { color: var(--danger); font-weight: 600; }
+  body
+    header
+      h1 Formularios · Superadmin
+      span.who= actorEmail
+    main
+      .tabs
+        .tab.on(data-tab='list') Buscar / Editar
+        .tab(data-tab='create') Crear
+        .tab(data-tab='copy') Copiar a otro team
+
+      //- ------------------------------------------------ LIST / EDIT
+      .panel#panel-list
+        #list-msg.msg
+        .row
+          .field
+            label Team
+            select#f-team
+          .field
+            label Company
+            select#f-company
+          .field
+            label Tipo
+            select#f-kind
+          .field
+            label Estado
+            select#f-active
+              option(value='') Todos
+              option(value='1') Activos
+              option(value='0') Inactivos
+          .field
+            label Nombre contiene
+            input#f-q(type='text', placeholder='buscar...')
+          button.primary#btn-search Buscar
+        p.hint Máximo 300 resultados, ordenados por última modificación.
+        table
+          thead
+            tr
+              th Nombre
+              th Tipo
+              th Team
+              th Company
+              th Secciones
+              th Estado
+              th Acciones
+          tbody#list-body
+            tr
+              td(colspan='7') Elegí filtros y apretá Buscar.
+
+        #edit-box.hide
+          hr
+          h3#edit-title(style='font-size:15px;margin:12px 0 4px')
+          p.hint
+            | Editás el documento completo como JSON. <code>team</code> y <code>company</code> se ignoran:
+            |  para mover un formulario de team hay que copiarlo, si no sus escalas y catálogos de daños
+            |  quedarían apuntando al team anterior.
+          textarea#edit-json(spellcheck='false')
+          .row(style='margin-top:10px')
+            button.primary#btn-save Guardar cambios
+            button#btn-cancel-edit Cancelar
+
+      //- ------------------------------------------------ CREATE
+      .panel.hide#panel-create
+        #create-msg.msg
+        .row
+          .field
+            label Team
+            select#c-team
+          .field
+            label Company
+            select#c-company
+          .field
+            label Nombre
+            input#c-name(type='text', placeholder='Nombre del formulario')
+          .field
+            label Tipo
+            select#c-kind
+          button#btn-skeleton Cargar plantilla
+        p.hint
+          | La plantilla trae una sección con una pregunta de texto para arrancar. Las preguntas de tipo
+          |  <code>scale</code> o <code>damage</code> necesitan el id de una Scale / Damages que ya exista
+          |  en ese team.
+        textarea#create-json(spellcheck='false')
+        .row(style='margin-top:10px')
+          button.primary#btn-create Crear formulario
+
+      //- ------------------------------------------------ COPY
+      .panel.hide#panel-copy
+        #copy-msg.msg
+        p.hint#copy-source Elegí un formulario en "Buscar / Editar" y apretá Copiar.
+        .row
+          .field
+            label Team destino
+            select#p-team
+          .field
+            label Company destino
+            select#p-company
+          .field
+            label Nombre en el destino
+            input#p-name(type='text', placeholder='(igual que el origen)')
+          button.primary#btn-preview Ver preview
+        #copy-result
+
+    script.
+      var state = { teams: [], companies: [], formId: null, formName: null };
+
+      var KINDS = ['init','control','final','transmittal','openContainer',
+        'closeGeneralContainer','closeCodedContainer','unitType','codedUnitType',
+        'aforoSAG','aforo'];
+
+      function el(id) { return document.getElementById(id); }
+
+      function show(box, kind, text) {
+        var n = el(box);
+        n.className = 'msg ' + kind;
+        n.innerHTML = text;
+      }
+      function clearMsg(box) { el(box).className = 'msg'; el(box).innerHTML = ''; }
+
+      function api(method, url, body) {
+        return fetch(url, {
+          method: method,
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: body ? JSON.stringify(body) : undefined
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            if (!r.ok) throw new Error(data.message || ('HTTP ' + r.status));
+            return data;
+          });
+        });
+      }
+
+      function fillSelect(node, items, valueKey, labelKey, placeholder) {
+        node.innerHTML = '';
+        var opt = document.createElement('option');
+        opt.value = ''; opt.textContent = placeholder;
+        node.appendChild(opt);
+        items.forEach(function (it) {
+          var o = document.createElement('option');
+          o.value = it[valueKey]; o.textContent = it[labelKey];
+          node.appendChild(o);
+        });
+      }
+
+      function companiesForTeam(teamId) {
+        if (!teamId) return state.companies;
+        return state.companies.filter(function (c) { return String(c.team) === String(teamId); });
+      }
+
+      function wireTeamCompany(teamSel, companySel) {
+        fillSelect(el(teamSel), state.teams, '_id', 'name', '— todos —');
+        fillSelect(el(companySel), [], '_id', 'name', '— todas —');
+        el(teamSel).addEventListener('change', function () {
+          fillSelect(el(companySel), companiesForTeam(this.value), '_id', 'name', '— todas —');
+        });
+      }
+
+      // ---------------------------------------------------------------- tabs
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (tab) {
+        tab.addEventListener('click', function () {
+          Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) {
+            t.classList.remove('on');
+          });
+          tab.classList.add('on');
+          ['list', 'create', 'copy'].forEach(function (name) {
+            el('panel-' + name).classList.toggle('hide', name !== tab.dataset.tab);
+          });
+        });
+      });
+
+      // ---------------------------------------------------------------- boot
+      Promise.all([api('GET', '/api/superadmin/teams/'), api('GET', '/api/superadmin/companies/')])
+        .then(function (res) {
+          state.teams = res[0].results || [];
+          state.companies = res[1].results || [];
+          wireTeamCompany('f-team', 'f-company');
+          wireTeamCompany('c-team', 'c-company');
+          wireTeamCompany('p-team', 'p-company');
+          fillSelect(el('f-kind'), KINDS.map(function (k) { return { v: k, n: k }; }), 'v', 'n', '— todos —');
+          fillSelect(el('c-kind'), KINDS.map(function (k) { return { v: k, n: k }; }), 'v', 'n', 'control (default)');
+        })
+        .catch(function (e) { show('list-msg', 'err', 'No se pudieron cargar teams/companies: ' + e.message); });
+
+      // ---------------------------------------------------------------- list
+      function search() {
+        clearMsg('list-msg');
+        var qs = [];
+        [['team', 'f-team'], ['company', 'f-company'], ['kind', 'f-kind'], ['active', 'f-active'], ['q', 'f-q']]
+          .forEach(function (pair) {
+            var v = el(pair[1]).value;
+            if (v) qs.push(pair[0] + '=' + encodeURIComponent(v));
+          });
+        el('list-body').innerHTML = '<tr><td colspan="7">Buscando…</td></tr>';
+        api('GET', '/api/superadmin/forms/?' + qs.join('&'))
+          .then(function (data) { renderList(data.results || []); })
+          .catch(function (e) {
+            el('list-body').innerHTML = '';
+            show('list-msg', 'err', e.message);
+          });
+      }
+
+      function renderList(rows) {
+        var body = el('list-body');
+        body.innerHTML = '';
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="7">Sin resultados.</td></tr>';
+          return;
+        }
+        rows.forEach(function (f) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + escapeHtml(f.name) + '</td>' +
+            '<td>' + escapeHtml(f.kind || '') + '</td>' +
+            '<td>' + escapeHtml(f.teamName || '') + '</td>' +
+            '<td>' + escapeHtml(f.companyName || '') + '</td>' +
+            '<td>' + f.sections + ' / ' + f.questions + ' preg.</td>' +
+            '<td><span class="pill ' + (f.active ? 'on">activo' : 'off">inactivo') + '</span></td>' +
+            '<td></td>';
+          var actions = tr.lastChild;
+
+          var edit = document.createElement('button');
+          edit.textContent = 'Editar';
+          edit.addEventListener('click', function () { loadForEdit(f); });
+          actions.appendChild(edit);
+
+          var toggle = document.createElement('button');
+          toggle.textContent = f.active ? 'Desactivar' : 'Activar';
+          if (f.active) toggle.className = 'danger';
+          toggle.addEventListener('click', function () { setActive(f, !f.active); });
+          actions.appendChild(toggle);
+
+          var copy = document.createElement('button');
+          copy.textContent = 'Copiar';
+          copy.addEventListener('click', function () { startCopy(f); });
+          actions.appendChild(copy);
+
+          body.appendChild(tr);
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      function setActive(f, active) {
+        var verb = active ? 'ACTIVAR' : 'DESACTIVAR';
+        if (!confirm(verb + ' el formulario "' + f.name + '" del team ' + (f.teamName || '') + '?')) return;
+        api('PATCH', '/api/superadmin/forms/' + f._id + '/active', { active: active })
+          .then(function (data) { show('list-msg', 'ok', data.message); search(); })
+          .catch(function (e) { show('list-msg', 'err', e.message); });
+      }
+
+      // ---------------------------------------------------------------- edit
+      function loadForEdit(f) {
+        clearMsg('list-msg');
+        api('GET', '/api/superadmin/forms/' + f._id)
+          .then(function (data) {
+            state.formId = f._id;
+            el('edit-title').textContent = 'Editando: ' + f.name + '  (' + (f.teamName || '') + ' / ' + (f.companyName || '') + ')';
+            el('edit-json').value = JSON.stringify(data.form, null, 2);
+            el('edit-box').classList.remove('hide');
+            el('edit-box').scrollIntoView({ behavior: 'smooth' });
+          })
+          .catch(function (e) { show('list-msg', 'err', e.message); });
+      }
+
+      el('btn-cancel-edit').addEventListener('click', function () {
+        el('edit-box').classList.add('hide');
+        state.formId = null;
+      });
+
+      el('btn-save').addEventListener('click', function () {
+        var parsed;
+        try {
+          parsed = JSON.parse(el('edit-json').value);
+        } catch (e) {
+          show('list-msg', 'err', 'El JSON no es válido: ' + e.message);
+          return;
+        }
+        if (!confirm('Guardar cambios en "' + (parsed.name || '') + '"?')) return;
+        api('PUT', '/api/superadmin/forms/' + state.formId, parsed)
+          .then(function (data) {
+            show('list-msg', 'ok', data.message);
+            el('edit-box').classList.add('hide');
+            search();
+          })
+          .catch(function (e) { show('list-msg', 'err', e.message); });
+      });
+
+      // ---------------------------------------------------------------- create
+      el('btn-skeleton').addEventListener('click', function () {
+        var team = el('c-team').value;
+        var company = el('c-company').value;
+        if (!team || !company) {
+          show('create-msg', 'err', 'Elegí team y company antes de cargar la plantilla.');
+          return;
+        }
+        clearMsg('create-msg');
+        el('create-json').value = JSON.stringify({
+          name: el('c-name').value || 'Nuevo formulario',
+          team: team,
+          company: company,
+          kind: el('c-kind').value || 'control',
+          description: '',
+          active: true,
+          sections: [{
+            name: 'Sección 1',
+            shortName: 'S1',
+            order: 1,
+            weight: 1,
+            questions: [{
+              question: '¿Pregunta de ejemplo?',
+              shortName: 'P1',
+              kind: 'text',
+              keyboardType: 'text',
+              order: 1,
+              weight: 1,
+              optional: false
+            }]
+          }],
+          triggers: []
+        }, null, 2);
+      });
+
+      el('btn-create').addEventListener('click', function () {
+        var parsed;
+        try {
+          parsed = JSON.parse(el('create-json').value);
+        } catch (e) {
+          show('create-msg', 'err', 'El JSON no es válido: ' + e.message);
+          return;
+        }
+        if (!confirm('Crear el formulario "' + (parsed.name || '') + '"?')) return;
+        api('POST', '/api/superadmin/forms/', parsed)
+          .then(function (data) {
+            show('create-msg', 'ok', data.message + ' id: ' + data.form._id);
+          })
+          .catch(function (e) {
+            show('create-msg', 'err', e.message);
+          });
+      });
+
+      // ---------------------------------------------------------------- copy
+      function startCopy(f) {
+        state.formId = f._id;
+        state.formName = f.name;
+        el('copy-source').innerHTML = 'Origen: <strong>' + escapeHtml(f.name) + '</strong> · team ' +
+          escapeHtml(f.teamName || '') + ' · company ' + escapeHtml(f.companyName || '');
+        el('copy-result').innerHTML = '';
+        clearMsg('copy-msg');
+        document.querySelector('.tab[data-tab="copy"]').click();
+      }
+
+      el('btn-preview').addEventListener('click', function () { doCopy(true); });
+
+      function doCopy(preview) {
+        if (!state.formId) {
+          show('copy-msg', 'err', 'Elegí un formulario en "Buscar / Editar" y apretá Copiar.');
+          return;
+        }
+        var targetTeam = el('p-team').value;
+        var targetCompany = el('p-company').value;
+        if (!targetTeam || !targetCompany) {
+          show('copy-msg', 'err', 'Elegí team y company destino.');
+          return;
+        }
+        clearMsg('copy-msg');
+        el('copy-result').innerHTML = '<p class="hint">Procesando…</p>';
+        api('POST', '/api/superadmin/forms/' + state.formId + '/copy', {
+          targetTeam: targetTeam,
+          targetCompany: targetCompany,
+          name: el('p-name').value || undefined,
+          preview: preview
+        })
+          .then(function (data) { renderCopy(data.result, preview); })
+          .catch(function (e) {
+            el('copy-result').innerHTML = '';
+            show('copy-msg', 'err', e.message);
+          });
+      }
+
+      function renderCopy(r, wasPreview) {
+        var html = '';
+        html += '<h3 style="font-size:15px;margin:14px 0 6px">' +
+          (wasPreview ? 'Preview — no se escribió nada' : 'Copia creada') + '</h3>';
+        html += '<pre>' + escapeHtml(
+          'origen : ' + r.source.name + '  [' + r.source.kind + ']\n' +
+          '         team ' + (r.source.teamName || r.source.team) + ' / company ' + (r.source.companyName || r.source.company) + '\n' +
+          '         ' + r.source.sections + ' secciones, ' + r.source.questions + ' preguntas, ' + r.source.triggers + ' triggers\n' +
+          'destino: ' + r.target.name + '\n' +
+          '         team ' + (r.target.teamName || r.target.team) + ' / company ' + (r.target.companyName || r.target.company)
+        ) + '</pre>';
+
+        if (r.plan.length) {
+          html += '<h4 style="font-size:13px;margin:14px 0 4px">Referencias a crear en el team destino (' + r.plan.length + ')</h4>';
+          html += '<table><thead><tr><th>Colección</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>';
+          r.plan.forEach(function (p) {
+            var cls = p.action === 'missing-source' ? 'plan-missing' : 'plan-create';
+            html += '<tr><td>' + escapeHtml(p.collection) + '</td><td>' + escapeHtml(p.name) +
+              '</td><td class="' + cls + '">' + escapeHtml(p.action) + '</td></tr>';
+          });
+          html += '</tbody></table>';
+        } else {
+          html += '<p class="hint">El formulario no referencia escalas ni catálogos de daños: se copia solo el documento.</p>';
+        }
+
+        if (r.warnings.length) {
+          html += '<div class="warn"><strong>Revisar a mano en el destino:</strong><ul>';
+          r.warnings.forEach(function (w) { html += '<li>' + escapeHtml(w) + '</li>'; });
+          html += '</ul></div>';
+        }
+
+        el('copy-result').innerHTML = html;
+
+        if (wasPreview) {
+          var btn = document.createElement('button');
+          btn.className = 'primary';
+          btn.textContent = 'Confirmar y copiar';
+          btn.addEventListener('click', function () {
+            if (!confirm('Copiar "' + r.source.name + '" al team ' + (r.target.teamName || '') + '?')) return;
+            doCopy(false);
+          });
+          el('copy-result').appendChild(btn);
+        } else {
+          show('copy-msg', 'ok', 'Formulario copiado. Nuevo id: ' + r.createdFormId);
+        }
+      }
+
+      el('btn-search').addEventListener('click', search);
+      el('f-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') search(); });

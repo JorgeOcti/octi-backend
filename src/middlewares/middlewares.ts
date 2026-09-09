@@ -13,6 +13,7 @@ class Middlewares {
 
   constructor() {
     this.isLoggedIn = this.isLoggedIn.bind(this);
+    this.isSuperAdmin = this.isSuperAdmin.bind(this);
     this.context = this.context.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.addUserToRequest = this.addUserToRequest.bind(this);
@@ -49,6 +50,57 @@ class Middlewares {
       logger.error(`Middlewares.checkIsLoggedIn: oops an error occurred in your code!. URL made safe, user was sent at login!`);
       console.error(e);
       return res.redirect(`/account/login/`);
+    }
+  }
+
+  /**
+   * Gate para herramientas que cruzan la frontera de team/company (por ejemplo
+   * copiar un formulario de un team a otro). Usar SIEMPRE después de isLoggedIn.
+   *
+   * Relee `isSuperAdmin` desde la base a propósito, en vez de confiar en
+   * `req.user`, por tres razones:
+   *   1. la sesión de passport es un snapshot JSON del login
+   *      (passportConfig.ts hace `done(null, user)` sin releer la base),
+   *   2. addUserToRequest sirve el usuario desde un cache de Redis de 60s, y
+   *   3. la proyección de esa query es una whitelist que NO incluye
+   *      `isSuperAdmin`, así que en `req.user` el campo viene undefined.
+   * Con la lectura fresca, revocar el flag tiene efecto inmediato.
+   */
+  public async isSuperAdmin(req: IRequest, res: Response, next: NextFunction) {
+    const deny = () => {
+      logger.error(
+        `Middlewares.isSuperAdmin: DENEGADO ${req.user?.email ?? '(sin sesión)'} -> ${req.method} ${req.originalUrl}`
+      );
+      if (req.accepts(['html', 'json']) === 'html') {
+        return res.status(403).render('403');
+      }
+      return res.status(403).json({
+        message: 'Esta herramienta requiere permisos de superadmin.',
+        status: 403
+      });
+    };
+
+    try {
+      if (!req.user?._id) {
+        return deny();
+      }
+      // Lectura fresca y acotada: no usar req.user (ver comentario arriba).
+      const fresh: any = await User
+        .findById(req.user._id, { isSuperAdmin: true, email: true })
+        .lean();
+
+      if (!fresh || fresh.isSuperAdmin !== true) {
+        return deny();
+      }
+
+      logger.info(
+        `Middlewares.isSuperAdmin: OK ${fresh.email} -> ${req.method} ${req.originalUrl}`
+      );
+      return next();
+    } catch (e) {
+      logger.error(`Middlewares.isSuperAdmin: error validando superadmin`);
+      console.error(e);
+      return deny();
     }
   }
 
