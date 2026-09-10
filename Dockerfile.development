@@ -1,4 +1,7 @@
-FROM node:18.17.1-bullseye-slim
+# Debian 12. Antes: node:18.17.1-bullseye-slim, pero bullseye quedó EOL y
+# deb.debian.org dejó de servir los .deb de bullseye-security (404 en todo el
+# pool), así que `apt-get upgrade` rompía el build con exit 100.
+FROM node:18.17.1-bookworm-slim
 
 LABEL maintainer = "gmunoz@osacontrol.com"
 
@@ -23,7 +26,7 @@ RUN apt-get update && \
         python3 \
         graphicsmagick \
         gettext \
-        git-core \
+        git \
         imagemagick && \
     # install windows fonts
     wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
