@@ -29,10 +29,20 @@ import logger from '../../services/logger.service';
  * catálogos de daños del team ORIGEN: se ve bien en el listado y falla recién
  * cuando alguien lo llena.
  *
- * Estrategia: deep-copy. Se crean Scale/Damages/Part/Kind/Position nuevos en el
- * team destino en cada copia. Siempre funciona y queda aislado, al costo de
- * duplicar catálogos si se copia el mismo formulario dos veces al mismo team.
- * Para cambiar a "reusar por nombre" basta con tocar los resolvers de acá.
+ * Estrategia: REUSAR primero, crear solo lo que falta.
+ *
+ * Para cada referencia se busca en el team destino (y company, en el caso de
+ * Scale) una con el mismo nombre. Si existe se apunta a esa; si no, se crea.
+ *
+ * Antes esto siempre creaba copias nuevas, lo que duplicaba catálogos enteros:
+ * un formulario con una pregunta `damage` podía generar más de 100 documentos
+ * (p.ej. "Daños Derco Despacho" = 1 Damages + 81 parts + 6 kinds + 16 positions)
+ * en CADA copia. Un Damages reusado se toma tal cual: no se recorre su árbol,
+ * porque el catálogo del destino ya es el bueno.
+ *
+ * La comparación es por nombre normalizado (trim + minúsculas). Los catálogos
+ * del destino se cargan una sola vez al principio y se indexan en memoria, así
+ * que esto no agrega una query por referencia.
  *
  * Dos detalles que importan:
  *  - Se preservan los `_id` de los subdocumentos embebidos. `triggerConfig.
@@ -56,8 +66,14 @@ export interface IFormCopyRequest {
 export interface IFormCopyPlanEntry {
   collection: 'Scale' | 'Damages' | 'Part' | 'Kind' | 'Position';
   name: string;
+  /**
+   * reuse          — ya existe una con ese nombre en el destino, se apunta a esa
+   * create         — no existe, se crea
+   * missing-source — la referencia del origen apunta a algo que ya no existe
+   */
   action: 'create' | 'reuse' | 'missing-source';
   sourceId?: string;
+  targetId?: string;
   note?: string;
 }
 
@@ -139,14 +155,45 @@ class FormCopyService {
     const warnings: string[] = [];
 
     // Caches por id de origen: si dos questions comparten la misma Scale o el
-    // mismo Damages, se crea una sola copia.
+    // mismo Damages, se resuelve una sola vez.
     const scaleMap = new Map<string, mongoose.Types.ObjectId | null>();
     const damagesMap = new Map<string, mongoose.Types.ObjectId | null>();
     const partMap = new Map<string, mongoose.Types.ObjectId | null>();
     const kindMap = new Map<string, mongoose.Types.ObjectId | null>();
     const positionMap = new Map<string, mongoose.Types.ObjectId | null>();
 
-    const copySimpleCatalog = async (
+    const norm = (name: any): string => String(name == null ? '' : name).trim().toLowerCase();
+
+    // Catálogos que YA existen en el destino, indexados por nombre normalizado.
+    // Se cargan una sola vez: sin esto haría falta una query por referencia.
+    const indexByName = (docs: any[]): Map<string, any> => {
+      const m = new Map<string, any>();
+      for (const d of docs) {
+        const k = norm(d.name);
+        // El primero gana: si el destino ya tiene duplicados, se reusa el más
+        // viejo en vez de agregar otro.
+        if (!m.has(k)) m.set(k, d);
+      }
+      return m;
+    };
+
+    const [targetScales, targetDamages, targetParts, targetKinds, targetPositions] = await Promise.all([
+      Scale.find({ team: targetTeam, company: targetCompany }, { name: true }).lean(),
+      Damages.find({ team: targetTeam }, { name: true }).lean(),
+      Part.find({ team: targetTeam }, { name: true }).lean(),
+      Kind.find({ team: targetTeam }, { name: true }).lean(),
+      Position.find({ team: targetTeam }, { name: true }).lean()
+    ]);
+
+    const existing = {
+      Scale: indexByName(targetScales),
+      Damages: indexByName(targetDamages),
+      Part: indexByName(targetParts),
+      Kind: indexByName(targetKinds),
+      Position: indexByName(targetPositions)
+    };
+
+    const resolveSimpleCatalog = async (
       model: any,
       collection: 'Part' | 'Kind' | 'Position',
       cache: Map<string, mongoose.Types.ObjectId | null>,
@@ -164,6 +211,16 @@ class FormCopyService {
         return null;
       }
 
+      const match = existing[collection].get(norm(doc.name));
+      if (match) {
+        plan.push({
+          collection, name: doc.name, action: 'reuse',
+          sourceId: key, targetId: String(match._id)
+        });
+        cache.set(key, match._id);
+        return match._id;
+      }
+
       plan.push({ collection, name: doc.name, action: 'create', sourceId: key });
       if (preview) {
         // En preview no se escribe: se devuelve el id de origen solo para poder
@@ -173,6 +230,8 @@ class FormCopyService {
       }
 
       const created = await new model({ name: doc.name, team: targetTeam }).save();
+      // Queda disponible para las próximas referencias de esta misma copia.
+      existing[collection].set(norm(doc.name), created);
       cache.set(key, created._id);
       return created._id;
     };
@@ -188,6 +247,16 @@ class FormCopyService {
         warnings.push(`Scale ${key} referenciada no existe en el origen; la question queda sin escala.`);
         scaleMap.set(key, null);
         return null;
+      }
+
+      const match = existing.Scale.get(norm(doc.name));
+      if (match) {
+        plan.push({
+          collection: 'Scale', name: doc.name, action: 'reuse',
+          sourceId: key, targetId: String(match._id)
+        });
+        scaleMap.set(key, match._id);
+        return match._id;
       }
 
       plan.push({ collection: 'Scale', name: doc.name, action: 'create', sourceId: key });
@@ -206,6 +275,7 @@ class FormCopyService {
         choices: doc.choices,
         active: doc.active
       }).save();
+      existing.Scale.set(norm(doc.name), created);
       scaleMap.set(key, created._id);
       return created._id;
     };
@@ -223,27 +293,41 @@ class FormCopyService {
         return null;
       }
 
+      // Si el destino ya tiene un catálogo con ese nombre, se usa tal cual y NO
+      // se recorre su árbol: sus parts/kinds/positions ya son los del destino.
+      // Esto es lo que evita clonar más de 100 documentos por copia.
+      const matchDamages = existing.Damages.get(norm(doc.name));
+      if (matchDamages) {
+        plan.push({
+          collection: 'Damages', name: doc.name, action: 'reuse',
+          sourceId: key, targetId: String(matchDamages._id),
+          note: 'se reusa el catálogo del destino con sus partes, tipos y posiciones'
+        });
+        damagesMap.set(key, matchDamages._id);
+        return matchDamages._id;
+      }
+
       plan.push({ collection: 'Damages', name: doc.name, action: 'create', sourceId: key });
 
-      // Los catálogos hijos se resuelven siempre, para que el plan del preview
-      // muestre el árbol completo.
+      // Hay que crear el catálogo: sus hijos se resuelven uno a uno, reusando
+      // los que ya existan en el destino.
       const parts = [];
       for (const p of (doc.parts || [])) {
-        const mapped = await copySimpleCatalog(Part, 'Part', partMap, p);
+        const mapped = await resolveSimpleCatalog(Part, 'Part', partMap, p);
         if (mapped) parts.push(mapped);
       }
       const kinds = [];
       for (const k of (doc.kinds || [])) {
-        const mapped = await copySimpleCatalog(Kind, 'Kind', kindMap, k);
+        const mapped = await resolveSimpleCatalog(Kind, 'Kind', kindMap, k);
         if (mapped) kinds.push(mapped);
       }
       const positions = [];
       for (const p of (doc.positions || [])) {
-        const mapped = await copySimpleCatalog(Position, 'Position', positionMap, p);
+        const mapped = await resolveSimpleCatalog(Position, 'Position', positionMap, p);
         if (mapped) positions.push(mapped);
       }
-      const partFallback = await copySimpleCatalog(Part, 'Part', partMap, doc.partFallback);
-      const kindFallback = await copySimpleCatalog(Kind, 'Kind', kindMap, doc.kindFallback);
+      const partFallback = await resolveSimpleCatalog(Part, 'Part', partMap, doc.partFallback);
+      const kindFallback = await resolveSimpleCatalog(Kind, 'Kind', kindMap, doc.kindFallback);
 
       if (preview) {
         damagesMap.set(key, doc._id);
@@ -260,6 +344,7 @@ class FormCopyService {
         kindFallback,
         severityOptions: doc.severityOptions
       }).save();
+      existing.Damages.set(norm(doc.name), created);
       damagesMap.set(key, created._id);
       return created._id;
     };

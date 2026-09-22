@@ -144,6 +144,8 @@ const superAdmin = [Middlewares.isLoggedIn, Middlewares.isSuperAdmin];
 router.get('/settings/forms/admin/', superAdmin, FormSuperAdminController.page);
 router.get('/api/superadmin/teams/', superAdmin, FormSuperAdminController.apiTeams);
 router.get('/api/superadmin/companies/', superAdmin, FormSuperAdminController.apiCompanies);
+router.get('/api/superadmin/scales/', superAdmin, FormSuperAdminController.apiScales);
+router.get('/api/superadmin/damages/', superAdmin, FormSuperAdminController.apiDamages);
 router.get('/api/superadmin/forms/', superAdmin, FormSuperAdminController.apiList);
 router.get('/api/superadmin/forms/:id', superAdmin, FormSuperAdminController.apiDetail);
 router.post('/api/superadmin/forms/', superAdmin, FormSuperAdminController.apiCreate);

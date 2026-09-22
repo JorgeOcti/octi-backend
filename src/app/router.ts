@@ -12,6 +12,7 @@ import adminRegionController from './controllers/admin/region.admin.controller';
 import adminSamlCongigController from './controllers/admin/samlConfig.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
+import UserSuperAdminController from './controllers/admin/userSuperAdmin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AdminVersionsController from './controllers/admin/version.admin.controller';
 import CarController from './controllers/car.controller';
@@ -350,6 +351,19 @@ jwtRouter.post('/token/', JWTController.token);
 jwtRouter.post('/forgot-password/', JWTController.forgotPassword);
 jwtRouter.post('/test/', Middlewares.isJWTAuthenticated, JWTController.test);
 // jwtRouter.post('/create/', JWTController.createUser);
+
+// ---------------------------------------------------------------------------
+// Usuarios de TODO el sistema, para SUPERADMIN
+//
+// Sin scope de sesión: lista usuarios de cualquier team y permite resetear
+// contraseñas. Por eso va detrás de isSuperAdmin (que relee el flag desde la
+// base en cada request) y no de isLoggedIn.
+// ---------------------------------------------------------------------------
+const superAdminOnly = [Middlewares.isLoggedIn, Middlewares.isSuperAdmin];
+
+appRouter.get('/settings/users/admin/', superAdminOnly, UserSuperAdminController.page);
+appRouter.get('/api/superadmin/users/', superAdminOnly, UserSuperAdminController.apiList);
+appRouter.post('/api/superadmin/users/:id/password', superAdminOnly, UserSuperAdminController.apiSetPassword);
 
 export {
   appRouter,

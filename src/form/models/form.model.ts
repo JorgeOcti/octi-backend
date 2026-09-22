@@ -38,7 +38,14 @@ const accessorySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  multi: Boolean,
+  // La app (andes-offline) deserializa esto como `json['multi'] as bool? ?? true`
+  // (question.g.dart), así que un accesorio sin `multi` se comporta como
+  // multi-selección. El default explícito acá evita que el documento diga una
+  // cosa y la app haga otra.
+  multi: {
+    type: Boolean,
+    default: true
+  },
   items: [itemSchema]
 });
 

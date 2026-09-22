@@ -1,0 +1,287 @@
+doctype html
+html(lang='es')
+  head
+    meta(charset='utf-8')
+    meta(content='width=device-width, initial-scale=1', name='viewport')
+    title Usuarios · Superadmin
+    style.
+      :root {
+        --bg: #f5f6f8; --panel: #fff; --border: #dfe3e8; --text: #1f2933;
+        --muted: #6b7280; --accent: #2563eb; --danger: #b42318; --ok: #067647;
+        --warn: #b54708; --warnbg: #fffaeb;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+             background: var(--bg); color: var(--text); }
+      header { background: #1f2933; color: #fff; padding: 12px 20px; display: flex;
+               justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+      header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+      header .right { display: flex; align-items: center; gap: 14px; }
+      header a { color: #9aa5b1; font-size: 13px; text-decoration: none; }
+      header a:hover { color: #fff; }
+      header .who { font-size: 12px; color: #9aa5b1; }
+      main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+      .field { display: flex; flex-direction: column; gap: 4px; }
+      .field label { font-size: 12px; color: var(--muted); font-weight: 600; }
+      input[type=text], input[type=password], select {
+        padding: 7px 9px; border: 1px solid var(--border); border-radius: 5px;
+        font: inherit; background: #fff; color: var(--text); min-width: 170px; }
+      button { padding: 7px 14px; border: 1px solid var(--border); border-radius: 5px;
+               background: #fff; cursor: pointer; font: inherit; font-weight: 500; }
+      button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+      button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+      button.mini { padding: 2px 8px; font-size: 12px; }
+      button:disabled { opacity: .5; cursor: not-allowed; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+      th { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: .04em; }
+      .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+      .pill.on { background: #e7f6ec; color: var(--ok); }
+      .pill.off { background: #f2f4f7; color: var(--muted); }
+      .pill.sa { background: #fef3f2; color: var(--danger); }
+      .pill.adm { background: #eff6ff; color: #1e40af; }
+      .msg { padding: 10px 12px; border-radius: 5px; margin-bottom: 12px; display: none; font-size: 13px; }
+      .msg.err { background: #fef3f2; color: var(--danger); border: 1px solid #f0c2bc; display: block; }
+      .msg.ok { background: #e7f6ec; color: var(--ok); border: 1px solid #a9dfbf; display: block; }
+      .hint { font-size: 12px; color: var(--muted); margin: 4px 0 12px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+      .hide { display: none !important; }
+      /* modal */
+      .backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: flex;
+                  align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+      .modal { background: #fff; border-radius: 8px; max-width: 460px; width: 100%;
+               box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+      .modal .mhead { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 600; }
+      .modal .mbody { padding: 16px; }
+      .modal .mfoot { padding: 12px 16px; border-top: 1px solid var(--border);
+                      display: flex; justify-content: flex-end; gap: 8px; }
+      .modal .field { margin-bottom: 10px; }
+      .modal input { width: 100%; }
+      .danger-box { background: var(--warnbg); border: 1px solid #fedf89; color: var(--warn);
+                    padding: 10px 12px; border-radius: 5px; font-size: 13px; margin-bottom: 12px; }
+  body
+    header
+      h1 Usuarios · Superadmin
+      .right
+        a(href='/settings/forms/admin/') → Formularios
+        span.who= actorEmail
+    main
+      .panel
+        #msg.msg
+        .row
+          .field
+            label Team
+            select#f-team
+          .field
+            label Company
+            select#f-company
+          .field
+            label Estado
+            select#f-active
+              option(value='') Todos
+              option(value='1') Activos
+              option(value='0') Inactivos
+          .field
+            label Solo superadmins
+            select#f-sa
+              option(value='') No
+              option(value='1') Sí
+          .field
+            label Buscar
+            input#f-q(type='text', placeholder='email, usuario o nombre')
+          button.primary#btn-search Buscar
+        p.hint
+          | Máximo 300 resultados. El login usa el <strong>usuario</strong>, no el email.
+        table
+          thead
+            tr
+              th Nombre
+              th Email
+              th Usuario
+              th Team
+              th Company
+              th Sucursal
+              th Último ingreso
+              th Estado
+              th
+          tbody#body
+            tr
+              td(colspan='9') Elegí filtros y apretá Buscar.
+
+    #modal-host
+
+    script.
+      var state = { teams: [], companies: [], target: null };
+
+      function el(id) { return document.getElementById(id); }
+      function show(kind, text) { var m = el('msg'); m.className = 'msg ' + kind; m.innerHTML = text; }
+      function clearMsg() { el('msg').className = 'msg'; el('msg').innerHTML = ''; }
+      function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function n(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function api(method, url, body) {
+        return fetch(url, {
+          method: method, credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: body ? JSON.stringify(body) : undefined
+        }).then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (d) {
+            if (!r.ok) throw new Error(d.message || ('HTTP ' + r.status));
+            return d;
+          });
+        });
+      }
+      function fillSelect(node, items, valueKey, labelKey, placeholder) {
+        node.innerHTML = '';
+        var o = n('option'); o.value = ''; o.textContent = placeholder; node.appendChild(o);
+        items.forEach(function (it) {
+          var x = n('option'); x.value = it[valueKey]; x.textContent = it[labelKey]; node.appendChild(x);
+        });
+      }
+
+      Promise.all([api('GET', '/api/superadmin/teams/'), api('GET', '/api/superadmin/companies/')])
+        .then(function (res) {
+          state.teams = res[0].results || [];
+          state.companies = res[1].results || [];
+          fillSelect(el('f-team'), state.teams, '_id', 'name', '— todos —');
+          fillSelect(el('f-company'), [], '_id', 'name', '— todas —');
+          el('f-team').addEventListener('change', function () {
+            var t = this.value;
+            var list = t ? state.companies.filter(function (c) { return String(c.team) === String(t); }) : state.companies;
+            fillSelect(el('f-company'), list, '_id', 'name', '— todas —');
+          });
+        })
+        .catch(function (e) { show('err', 'No se pudieron cargar teams/companies: ' + e.message); });
+
+      function search() {
+        clearMsg();
+        var qs = [];
+        [['team', 'f-team'], ['company', 'f-company'], ['active', 'f-active'], ['superadmin', 'f-sa'], ['q', 'f-q']]
+          .forEach(function (p) { var v = el(p[1]).value; if (v) qs.push(p[0] + '=' + encodeURIComponent(v)); });
+        el('body').innerHTML = '<tr><td colspan="9">Buscando…</td></tr>';
+        api('GET', '/api/superadmin/users/?' + qs.join('&'))
+          .then(function (d) { render(d.results || []); })
+          .catch(function (e) { el('body').innerHTML = ''; show('err', e.message); });
+      }
+
+      function render(rows) {
+        var body = el('body');
+        body.innerHTML = '';
+        if (!rows.length) { body.innerHTML = '<tr><td colspan="9">Sin resultados.</td></tr>'; return; }
+        rows.forEach(function (u) {
+          var tr = n('tr');
+          var badges = '<span class="pill ' + (u.active ? 'on">activo' : 'off">inactivo') + '</span>';
+          if (u.isSuperAdmin) badges += ' <span class="pill sa">superadmin</span>';
+          else if (u.isAdmin) badges += ' <span class="pill adm">admin</span>';
+
+          tr.innerHTML =
+            '<td>' + escapeHtml(((u.firstName || '') + ' ' + (u.lastName || '')).trim()) + '</td>' +
+            '<td>' + escapeHtml(u.email || '') + '</td>' +
+            '<td class="mono">' + escapeHtml(u.username || '') + '</td>' +
+            '<td>' + escapeHtml(u.teamName || '') + '</td>' +
+            '<td>' + escapeHtml(u.companyName || '') + '</td>' +
+            '<td>' + escapeHtml(u.venueName || '') + '</td>' +
+            '<td>' + (u.lastLogin ? escapeHtml(String(u.lastLogin).slice(0, 10)) : '—') + '</td>' +
+            '<td>' + badges + '</td>' +
+            '<td></td>';
+          var cell = tr.lastChild;
+          var b = n('button', 'mini', 'Cambiar contraseña');
+          b.addEventListener('click', function () { openModal(u); });
+          cell.appendChild(b);
+          body.appendChild(tr);
+        });
+      }
+
+      function openModal(u) {
+        state.target = u;
+        var host = el('modal-host');
+        host.innerHTML = '';
+
+        var backdrop = n('div', 'backdrop');
+        var modal = n('div', 'modal');
+        modal.appendChild(n('div', 'mhead', 'Cambiar contraseña'));
+
+        var mbody = n('div', 'mbody');
+
+        var who = n('p');
+        who.innerHTML = '<strong>' + escapeHtml(((u.firstName || '') + ' ' + (u.lastName || '')).trim()) +
+          '</strong><br>' + escapeHtml(u.email || '') +
+          '<br>usuario de login: <span class="mono">' + escapeHtml(u.username || '') + '</span>';
+        mbody.appendChild(who);
+
+        if (u.isSuperAdmin) {
+          var warn = n('div', 'danger-box');
+          warn.innerHTML = '<strong>Este usuario es superadmin.</strong> Cambiarle la contraseña ' +
+            'te da acceso a su cuenta, que puede administrar cualquier team.';
+          mbody.appendChild(warn);
+        }
+
+        var f1 = n('div', 'field');
+        f1.appendChild(n('label', null, 'Nueva contraseña (mínimo 8 caracteres)'));
+        var p1 = n('input'); p1.type = 'password'; p1.autocomplete = 'new-password';
+        f1.appendChild(p1);
+        mbody.appendChild(f1);
+
+        var f2 = n('div', 'field');
+        f2.appendChild(n('label', null, 'Repetir contraseña'));
+        var p2 = n('input'); p2.type = 'password'; p2.autocomplete = 'new-password';
+        f2.appendChild(p2);
+        mbody.appendChild(f2);
+
+        var showWrap = n('label', 'hint');
+        var showChk = n('input'); showChk.type = 'checkbox';
+        showChk.style.width = 'auto'; showChk.style.minWidth = '0';
+        showChk.addEventListener('change', function () {
+          p1.type = p2.type = showChk.checked ? 'text' : 'password';
+        });
+        showWrap.appendChild(showChk);
+        showWrap.appendChild(document.createTextNode(' Ver contraseñas'));
+        mbody.appendChild(showWrap);
+
+        var err = n('div', 'msg');
+        mbody.appendChild(err);
+        modal.appendChild(mbody);
+
+        var foot = n('div', 'mfoot');
+        var cancel = n('button', null, 'Cancelar');
+        cancel.addEventListener('click', function () { host.innerHTML = ''; });
+        var save = n('button', 'danger', 'Cambiar contraseña');
+        save.addEventListener('click', function () {
+          err.className = 'msg';
+          if (p1.value !== p2.value) { err.className = 'msg err'; err.textContent = 'Las contraseñas no coinciden.'; return; }
+          if (p1.value.trim().length < 8) { err.className = 'msg err'; err.textContent = 'Mínimo 8 caracteres.'; return; }
+          if (!confirm('Cambiar la contraseña de ' + (u.email || u.username) + '?\n\nLa contraseña anterior deja de servir.')) return;
+          save.disabled = true;
+          api('POST', '/api/superadmin/users/' + u._id + '/password', { password: p1.value, confirm: p2.value })
+            .then(function (d) {
+              host.innerHTML = '';
+              show('ok', d.message + ' El login de esa persona es con el usuario <span class="mono">' +
+                escapeHtml(d.username || '') + '</span>.');
+            })
+            .catch(function (e) {
+              save.disabled = false;
+              err.className = 'msg err'; err.textContent = e.message;
+            });
+        });
+        foot.appendChild(cancel);
+        foot.appendChild(save);
+        modal.appendChild(foot);
+
+        backdrop.appendChild(modal);
+        backdrop.addEventListener('click', function (ev) { if (ev.target === backdrop) host.innerHTML = ''; });
+        host.appendChild(backdrop);
+        p1.focus();
+      }
+
+      el('btn-search').addEventListener('click', search);
+      el('f-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') search(); });

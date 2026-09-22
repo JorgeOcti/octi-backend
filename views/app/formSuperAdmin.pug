@@ -8,7 +8,7 @@ html(lang='es')
       :root {
         --bg: #f5f6f8; --panel: #fff; --border: #dfe3e8; --text: #1f2933;
         --muted: #6b7280; --accent: #2563eb; --danger: #b42318; --ok: #067647;
-        --warn: #b54708; --warnbg: #fffaeb; --code: #f8fafc;
+        --warn: #b54708; --warnbg: #fffaeb; --code: #f8fafc; --nest: #fafbfc;
       }
       * { box-sizing: border-box; }
       body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -16,8 +16,11 @@ html(lang='es')
       header { background: #1f2933; color: #fff; padding: 12px 20px; display: flex;
                justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
       header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+      header .right { display: flex; align-items: center; gap: 14px; }
+      header a { color: #9aa5b1; font-size: 13px; text-decoration: none; }
+      header a:hover { color: #fff; }
       header .who { font-size: 12px; color: #9aa5b1; }
-      main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+      main { padding: 20px; max-width: 1180px; margin: 0 auto; }
       .tabs { display: flex; gap: 4px; margin-bottom: -1px; flex-wrap: wrap; }
       .tab { padding: 8px 16px; background: #e4e7eb; border: 1px solid var(--border);
              border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: 500; }
@@ -25,21 +28,23 @@ html(lang='es')
       .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 0 6px 6px 6px;
                padding: 16px; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+      .row.tight { margin-bottom: 8px; }
       .field { display: flex; flex-direction: column; gap: 4px; }
+      .field.grow { flex: 1; min-width: 220px; }
       .field label { font-size: 12px; color: var(--muted); font-weight: 600; }
-      input[type=text], select, textarea {
+      input[type=text], input[type=number], select, textarea {
         padding: 7px 9px; border: 1px solid var(--border); border-radius: 5px;
-        font: inherit; background: #fff; color: var(--text); min-width: 170px; }
-      textarea { width: 100%; min-height: 380px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font: inherit; background: #fff; color: var(--text); min-width: 150px; width: 100%; }
+      textarea#json-area { min-height: 420px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
                  font-size: 12px; background: var(--code); }
       button { padding: 7px 14px; border: 1px solid var(--border); border-radius: 5px;
                background: #fff; cursor: pointer; font: inherit; font-weight: 500; }
       button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
       button.danger { background: #fff; color: var(--danger); border-color: #f0c2bc; }
+      button.mini { padding: 2px 8px; font-size: 12px; }
       button:disabled { opacity: .5; cursor: not-allowed; }
       table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border);
-               vertical-align: middle; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
       th { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: .04em; }
       .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
       .pill.on { background: #e7f6ec; color: var(--ok); }
@@ -55,19 +60,40 @@ html(lang='es')
             padding: 10px; overflow-x: auto; font-size: 12px; margin: 0; }
       .hint { font-size: 12px; color: var(--muted); margin: 4px 0 12px; }
       .hide { display: none !important; }
-      .plan-create { color: var(--ok); font-weight: 600; }
+      .plan-create { color: var(--warn); font-weight: 600; }
+      .plan-reuse { color: var(--ok); font-weight: 600; }
       .plan-missing { color: var(--danger); font-weight: 600; }
+      /* editor */
+      .card { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px; background: var(--panel); }
+      .card > .head { display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+                      background: #eef1f4; border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; }
+      .card > .head .title { font-weight: 600; flex: 1; font-size: 13px; }
+      .card > .body { padding: 12px; }
+      .card.q { background: var(--nest); }
+      .card.q > .head { background: #f3f5f7; }
+      .checks { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0 10px; }
+      .check { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+      .check input { width: auto; min-width: 0; }
+      .sub { border-left: 3px solid var(--border); padding-left: 12px; margin: 10px 0; }
+      .sub h5 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .04em; }
+      .modebar { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+      .modebar button { border: none; border-radius: 0; background: #fff; }
+      .modebar button.on { background: var(--accent); color: #fff; }
+      .kindnote { font-size: 12px; color: var(--muted); margin-top: 6px; }
+      .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
   body
     header
       h1 Formularios · Superadmin
-      span.who= actorEmail
+      .right
+        a(href='/settings/users/admin/') → Usuarios
+        span.who= actorEmail
     main
       .tabs
-        .tab.on(data-tab='list') Buscar / Editar
-        .tab(data-tab='create') Crear
+        .tab.on(data-tab='list') Buscar
+        .tab(data-tab='editor') Editor
         .tab(data-tab='copy') Copiar a otro team
 
-      //- ------------------------------------------------ LIST / EDIT
+      //- ------------------------------------------------ LIST
       .panel#panel-list
         #list-msg.msg
         .row
@@ -90,6 +116,7 @@ html(lang='es')
             label Nombre contiene
             input#f-q(type='text', placeholder='buscar...')
           button.primary#btn-search Buscar
+          button#btn-new + Nuevo formulario
         p.hint Máximo 300 resultados, ordenados por última modificación.
         table
           thead
@@ -105,47 +132,33 @@ html(lang='es')
             tr
               td(colspan='7') Elegí filtros y apretá Buscar.
 
-        #edit-box.hide
-          hr
-          h3#edit-title(style='font-size:15px;margin:12px 0 4px')
+      //- ------------------------------------------------ EDITOR
+      .panel.hide#panel-editor
+        #editor-msg.msg
+        .row
+          .field.grow
+            label Editando
+            div#editor-title(style='font-weight:600;padding-top:6px') —
+          .field
+            label Modo
+            .modebar
+              button.on#mode-editor Editor
+              button#mode-json JSON
+          button.primary#btn-save Guardar
+          button#btn-discard Descartar
+        #editor-meta
+        #editor-ui
+        #editor-json-wrap.hide
           p.hint
-            | Editás el documento completo como JSON. <code>team</code> y <code>company</code> se ignoran:
+            | El JSON es el documento completo. <code>team</code> y <code>company</code> se ignoran al guardar:
             |  para mover un formulario de team hay que copiarlo, si no sus escalas y catálogos de daños
             |  quedarían apuntando al team anterior.
-          textarea#edit-json(spellcheck='false')
-          .row(style='margin-top:10px')
-            button.primary#btn-save Guardar cambios
-            button#btn-cancel-edit Cancelar
-
-      //- ------------------------------------------------ CREATE
-      .panel.hide#panel-create
-        #create-msg.msg
-        .row
-          .field
-            label Team
-            select#c-team
-          .field
-            label Company
-            select#c-company
-          .field
-            label Nombre
-            input#c-name(type='text', placeholder='Nombre del formulario')
-          .field
-            label Tipo
-            select#c-kind
-          button#btn-skeleton Cargar plantilla
-        p.hint
-          | La plantilla trae una sección con una pregunta de texto para arrancar. Las preguntas de tipo
-          |  <code>scale</code> o <code>damage</code> necesitan el id de una Scale / Damages que ya exista
-          |  en ese team.
-        textarea#create-json(spellcheck='false')
-        .row(style='margin-top:10px')
-          button.primary#btn-create Crear formulario
+          textarea#json-area(spellcheck='false')
 
       //- ------------------------------------------------ COPY
       .panel.hide#panel-copy
         #copy-msg.msg
-        p.hint#copy-source Elegí un formulario en "Buscar / Editar" y apretá Copiar.
+        p.hint#copy-source Elegí un formulario en "Buscar" y apretá Copiar.
         .row
           .field
             label Team destino
@@ -160,25 +173,45 @@ html(lang='es')
         #copy-result
 
     script.
-      var state = { teams: [], companies: [], formId: null, formName: null };
+      //- ---------------------------------------------------------------- state
+      var state = {
+        teams: [], companies: [], scales: [], damages: [],
+        form: null, formId: null, mode: 'editor',
+        copyFormId: null, copyFormName: null
+      };
 
-      var KINDS = ['init','control','final','transmittal','openContainer',
-        'closeGeneralContainer','closeCodedContainer','unitType','codedUnitType',
-        'aforoSAG','aforo'];
+      var KIND_FORM = ['init','control','final','transmittal','openContainer',
+        'closeGeneralContainer','closeCodedContainer','unitType','codedUnitType','aforoSAG','aforo'];
+      var KIND_QUESTION = ['scale','numeric-scale','accessory','text','venue','damage','carrier','image','matrix'];
+      var KEYBOARD = ['text','numeric','email'];
+      var IMAGE_TYPE = ['photo','signature','picture'];
+      var ACTION_FORM = ['', 'delivery','shipping','reception'];
+      var MATRIX_ITEM_TYPE = ['text','photo'];
+
+      var KIND_HELP = {
+        'scale': 'Usa una Escala del team/company. Elegila abajo.',
+        'numeric-scale': 'Valor numérico entre un mínimo y un máximo.',
+        'accessory': 'Checklist de accesorios: una pregunta y una lista de ítems.',
+        'text': 'Respuesta libre. El teclado define qué se le muestra al operador.',
+        'venue': 'El operador elige una sucursal. No necesita configuración extra.',
+        'damage': 'Registro de daños. Usa un catálogo de daños del team.',
+        'carrier': 'El operador elige un transportista. Sin configuración extra.',
+        'image': 'Captura de imagen: foto, firma o imagen de galería.',
+        'matrix': 'Tabla de campos con nombre propio (texto o foto por campo).'
+      };
 
       function el(id) { return document.getElementById(id); }
-
-      function show(box, kind, text) {
-        var n = el(box);
-        n.className = 'msg ' + kind;
-        n.innerHTML = text;
-      }
+      function show(box, kind, text) { var n = el(box); n.className = 'msg ' + kind; n.innerHTML = text; }
       function clearMsg(box) { el(box).className = 'msg'; el(box).innerHTML = ''; }
+      function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
 
       function api(method, url, body) {
         return fetch(url, {
-          method: method,
-          credentials: 'same-origin',
+          method: method, credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: body ? JSON.stringify(body) : undefined
         }).then(function (r) {
@@ -189,23 +222,108 @@ html(lang='es')
         });
       }
 
-      function fillSelect(node, items, valueKey, labelKey, placeholder) {
-        node.innerHTML = '';
-        var opt = document.createElement('option');
-        opt.value = ''; opt.textContent = placeholder;
-        node.appendChild(opt);
-        items.forEach(function (it) {
-          var o = document.createElement('option');
-          o.value = it[valueKey]; o.textContent = it[labelKey];
-          node.appendChild(o);
+      //- ---------------------------------------------------------------- dom helpers
+      function n(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+      function field(labelText, control, grow) {
+        var f = n('div', 'field' + (grow ? ' grow' : ''));
+        f.appendChild(n('label', null, labelText));
+        f.appendChild(control);
+        return f;
+      }
+      function textInput(obj, key, placeholder) {
+        var i = n('input'); i.type = 'text'; i.value = obj[key] == null ? '' : obj[key];
+        if (placeholder) i.placeholder = placeholder;
+        i.addEventListener('input', function () { obj[key] = i.value; });
+        return i;
+      }
+      function numberInput(obj, key) {
+        var i = n('input'); i.type = 'number'; i.value = obj[key] == null ? '' : obj[key];
+        i.addEventListener('input', function () {
+          obj[key] = i.value === '' ? undefined : Number(i.value);
+        });
+        return i;
+      }
+      function selectInput(obj, key, options, labels, onChange) {
+        var s = n('select');
+        options.forEach(function (o, idx) {
+          var op = n('option'); op.value = o;
+          op.textContent = labels ? labels[idx] : (o === '' ? '— ninguno —' : o);
+          s.appendChild(op);
+        });
+        s.value = obj[key] == null ? '' : String(obj[key]);
+        s.addEventListener('change', function () {
+          obj[key] = s.value === '' ? undefined : s.value;
+          if (onChange) onChange();
+        });
+        return s;
+      }
+      function checkbox(obj, key, labelText, onChange) {
+        var wrap = n('label', 'check');
+        var i = n('input'); i.type = 'checkbox'; i.checked = !!obj[key];
+        i.addEventListener('change', function () {
+          obj[key] = i.checked;
+          if (onChange) onChange();
+        });
+        wrap.appendChild(i);
+        wrap.appendChild(n('span', null, labelText));
+        return wrap;
+      }
+      function iconBtn(text, cls, onClick) {
+        var b = n('button', 'mini' + (cls ? ' ' + cls : ''), text);
+        b.type = 'button';
+        b.addEventListener('click', onClick);
+        return b;
+      }
+      function move(arr, from, to) {
+        if (to < 0 || to >= arr.length) return false;
+        var x = arr.splice(from, 1)[0];
+        arr.splice(to, 0, x);
+        return true;
+      }
+      // `order` y `weight` son required en el schema de sections y questions:
+      // se renumeran en cada cambio estructural para no guardar un form inválido.
+      function renumber() {
+        (state.form.sections || []).forEach(function (s, si) {
+          s.order = si + 1;
+          if (s.weight == null) s.weight = 1;
+          (s.questions || []).forEach(function (q, qi) {
+            q.order = qi + 1;
+            if (q.weight == null) q.weight = 1;
+          });
         });
       }
 
+      //- ---------------------------------------------------------------- tabs
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (tab) {
+        tab.addEventListener('click', function () {
+          Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.classList.remove('on'); });
+          tab.classList.add('on');
+          ['list', 'editor', 'copy'].forEach(function (name) {
+            el('panel-' + name).classList.toggle('hide', name !== tab.dataset.tab);
+          });
+        });
+      });
+      function goTab(name) { document.querySelector('.tab[data-tab="' + name + '"]').click(); }
+
+      //- ---------------------------------------------------------------- boot
+      function fillSelect(node, items, valueKey, labelKey, placeholder) {
+        node.innerHTML = '';
+        var opt = n('option'); opt.value = ''; opt.textContent = placeholder;
+        node.appendChild(opt);
+        items.forEach(function (it) {
+          var o = n('option'); o.value = it[valueKey]; o.textContent = it[labelKey];
+          node.appendChild(o);
+        });
+      }
       function companiesForTeam(teamId) {
         if (!teamId) return state.companies;
         return state.companies.filter(function (c) { return String(c.team) === String(teamId); });
       }
-
       function wireTeamCompany(teamSel, companySel) {
         fillSelect(el(teamSel), state.teams, '_id', 'name', '— todos —');
         fillSelect(el(companySel), [], '_id', 'name', '— todas —');
@@ -214,33 +332,31 @@ html(lang='es')
         });
       }
 
-      // ---------------------------------------------------------------- tabs
-      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (tab) {
-        tab.addEventListener('click', function () {
-          Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) {
-            t.classList.remove('on');
-          });
-          tab.classList.add('on');
-          ['list', 'create', 'copy'].forEach(function (name) {
-            el('panel-' + name).classList.toggle('hide', name !== tab.dataset.tab);
-          });
-        });
-      });
-
-      // ---------------------------------------------------------------- boot
       Promise.all([api('GET', '/api/superadmin/teams/'), api('GET', '/api/superadmin/companies/')])
         .then(function (res) {
           state.teams = res[0].results || [];
           state.companies = res[1].results || [];
           wireTeamCompany('f-team', 'f-company');
-          wireTeamCompany('c-team', 'c-company');
           wireTeamCompany('p-team', 'p-company');
-          fillSelect(el('f-kind'), KINDS.map(function (k) { return { v: k, n: k }; }), 'v', 'n', '— todos —');
-          fillSelect(el('c-kind'), KINDS.map(function (k) { return { v: k, n: k }; }), 'v', 'n', 'control (default)');
+          fillSelect(el('f-kind'), KIND_FORM.map(function (k) { return { v: k, n: k }; }), 'v', 'n', '— todos —');
         })
         .catch(function (e) { show('list-msg', 'err', 'No se pudieron cargar teams/companies: ' + e.message); });
 
-      // ---------------------------------------------------------------- list
+      //- Escalas y catálogos de daños del team del formulario abierto, para los
+      //- selectores de las preguntas scale / damage.
+      function loadRefs(team, company) {
+        if (!team) { state.scales = []; state.damages = []; return Promise.resolve(); }
+        var qs = 'team=' + encodeURIComponent(team) + (company ? '&company=' + encodeURIComponent(company) : '');
+        return Promise.all([
+          api('GET', '/api/superadmin/scales/?' + qs).catch(function () { return { results: [] }; }),
+          api('GET', '/api/superadmin/damages/?team=' + encodeURIComponent(team)).catch(function () { return { results: [] }; })
+        ]).then(function (r) {
+          state.scales = r[0].results || [];
+          state.damages = r[1].results || [];
+        });
+      }
+
+      //- ---------------------------------------------------------------- list
       function search() {
         clearMsg('list-msg');
         var qs = [];
@@ -252,21 +368,15 @@ html(lang='es')
         el('list-body').innerHTML = '<tr><td colspan="7">Buscando…</td></tr>';
         api('GET', '/api/superadmin/forms/?' + qs.join('&'))
           .then(function (data) { renderList(data.results || []); })
-          .catch(function (e) {
-            el('list-body').innerHTML = '';
-            show('list-msg', 'err', e.message);
-          });
+          .catch(function (e) { el('list-body').innerHTML = ''; show('list-msg', 'err', e.message); });
       }
 
       function renderList(rows) {
         var body = el('list-body');
         body.innerHTML = '';
-        if (!rows.length) {
-          body.innerHTML = '<tr><td colspan="7">Sin resultados.</td></tr>';
-          return;
-        }
+        if (!rows.length) { body.innerHTML = '<tr><td colspan="7">Sin resultados.</td></tr>'; return; }
         rows.forEach(function (f) {
-          var tr = document.createElement('tr');
+          var tr = n('tr');
           tr.innerHTML =
             '<td>' + escapeHtml(f.name) + '</td>' +
             '<td>' + escapeHtml(f.kind || '') + '</td>' +
@@ -276,173 +386,513 @@ html(lang='es')
             '<td><span class="pill ' + (f.active ? 'on">activo' : 'off">inactivo') + '</span></td>' +
             '<td></td>';
           var actions = tr.lastChild;
-
-          var edit = document.createElement('button');
-          edit.textContent = 'Editar';
-          edit.addEventListener('click', function () { loadForEdit(f); });
-          actions.appendChild(edit);
-
-          var toggle = document.createElement('button');
-          toggle.textContent = f.active ? 'Desactivar' : 'Activar';
-          if (f.active) toggle.className = 'danger';
-          toggle.addEventListener('click', function () { setActive(f, !f.active); });
-          actions.appendChild(toggle);
-
-          var copy = document.createElement('button');
-          copy.textContent = 'Copiar';
-          copy.addEventListener('click', function () { startCopy(f); });
-          actions.appendChild(copy);
-
+          actions.appendChild(iconBtn('Editar', null, function () { loadForEdit(f); }));
+          actions.appendChild(iconBtn(f.active ? 'Desactivar' : 'Activar', f.active ? 'danger' : null,
+            function () { setActive(f, !f.active); }));
+          actions.appendChild(iconBtn('Copiar', null, function () { startCopy(f); }));
           body.appendChild(tr);
         });
       }
 
-      function escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-      }
-
       function setActive(f, active) {
-        var verb = active ? 'ACTIVAR' : 'DESACTIVAR';
-        if (!confirm(verb + ' el formulario "' + f.name + '" del team ' + (f.teamName || '') + '?')) return;
+        if (!confirm((active ? 'ACTIVAR' : 'DESACTIVAR') + ' "' + f.name + '" del team ' + (f.teamName || '') + '?')) return;
         api('PATCH', '/api/superadmin/forms/' + f._id + '/active', { active: active })
-          .then(function (data) { show('list-msg', 'ok', data.message); search(); })
+          .then(function (d) { show('list-msg', 'ok', d.message); search(); })
           .catch(function (e) { show('list-msg', 'err', e.message); });
       }
 
-      // ---------------------------------------------------------------- edit
+      //- ---------------------------------------------------------------- editor: load
       function loadForEdit(f) {
-        clearMsg('list-msg');
+        clearMsg('editor-msg');
         api('GET', '/api/superadmin/forms/' + f._id)
           .then(function (data) {
+            state.form = data.form;
             state.formId = f._id;
-            el('edit-title').textContent = 'Editando: ' + f.name + '  (' + (f.teamName || '') + ' / ' + (f.companyName || '') + ')';
-            el('edit-json').value = JSON.stringify(data.form, null, 2);
-            el('edit-box').classList.remove('hide');
-            el('edit-box').scrollIntoView({ behavior: 'smooth' });
+            el('editor-title').textContent = f.name + '  ·  ' + (f.teamName || '') + ' / ' + (f.companyName || '');
+            return loadRefs(state.form.team, state.form.company);
           })
-          .catch(function (e) { show('list-msg', 'err', e.message); });
+          .then(function () { setMode('editor'); renderEditor(); goTab('editor'); })
+          .catch(function (e) { show('editor-msg', 'err', e.message); });
       }
 
-      el('btn-cancel-edit').addEventListener('click', function () {
-        el('edit-box').classList.add('hide');
+      el('btn-new').addEventListener('click', function () {
+        state.form = {
+          name: '', team: '', company: '', kind: 'control', description: '',
+          active: true, hidden: false, autosave: false, deliveryToCustomer: false,
+          unitsToUse: { container: false, units: true },
+          sections: [], triggers: []
+        };
         state.formId = null;
+        state.scales = []; state.damages = [];
+        el('editor-title').textContent = 'Nuevo formulario';
+        clearMsg('editor-msg');
+        setMode('editor');
+        renderEditor();
+        goTab('editor');
       });
 
-      el('btn-save').addEventListener('click', function () {
-        var parsed;
-        try {
-          parsed = JSON.parse(el('edit-json').value);
-        } catch (e) {
-          show('list-msg', 'err', 'El JSON no es válido: ' + e.message);
-          return;
-        }
-        if (!confirm('Guardar cambios en "' + (parsed.name || '') + '"?')) return;
-        api('PUT', '/api/superadmin/forms/' + state.formId, parsed)
-          .then(function (data) {
-            show('list-msg', 'ok', data.message);
-            el('edit-box').classList.add('hide');
-            search();
-          })
-          .catch(function (e) { show('list-msg', 'err', e.message); });
+      el('btn-discard').addEventListener('click', function () {
+        if (!confirm('Descartar los cambios sin guardar?')) return;
+        state.form = null; state.formId = null;
+        el('editor-ui').innerHTML = ''; el('editor-meta').innerHTML = '';
+        el('editor-title').textContent = '—';
+        goTab('list');
       });
 
-      // ---------------------------------------------------------------- create
-      el('btn-skeleton').addEventListener('click', function () {
-        var team = el('c-team').value;
-        var company = el('c-company').value;
-        if (!team || !company) {
-          show('create-msg', 'err', 'Elegí team y company antes de cargar la plantilla.');
-          return;
+      //- ---------------------------------------------------------------- editor: mode
+      function setMode(mode) {
+        if (mode === 'json' && state.mode === 'editor') {
+          el('json-area').value = JSON.stringify(state.form, null, 2);
         }
-        clearMsg('create-msg');
-        el('create-json').value = JSON.stringify({
-          name: el('c-name').value || 'Nuevo formulario',
-          team: team,
-          company: company,
-          kind: el('c-kind').value || 'control',
-          description: '',
-          active: true,
-          sections: [{
-            name: 'Sección 1',
-            shortName: 'S1',
-            order: 1,
-            weight: 1,
-            questions: [{
-              question: '¿Pregunta de ejemplo?',
-              shortName: 'P1',
-              kind: 'text',
-              keyboardType: 'text',
-              order: 1,
-              weight: 1,
-              optional: false
-            }]
-          }],
-          triggers: []
-        }, null, 2);
-      });
+        if (mode === 'editor' && state.mode === 'json') {
+          try {
+            state.form = JSON.parse(el('json-area').value);
+          } catch (e) {
+            show('editor-msg', 'err', 'El JSON no es válido, no se puede volver al editor: ' + e.message);
+            return;
+          }
+          clearMsg('editor-msg');
+          renderEditor();
+        }
+        state.mode = mode;
+        el('mode-editor').classList.toggle('on', mode === 'editor');
+        el('mode-json').classList.toggle('on', mode === 'json');
+        el('editor-ui').classList.toggle('hide', mode !== 'editor');
+        el('editor-meta').classList.toggle('hide', mode !== 'editor');
+        el('editor-json-wrap').classList.toggle('hide', mode !== 'json');
+      }
+      el('mode-editor').addEventListener('click', function () { if (state.form) setMode('editor'); });
+      el('mode-json').addEventListener('click', function () { if (state.form) setMode('json'); });
 
-      el('btn-create').addEventListener('click', function () {
-        var parsed;
-        try {
-          parsed = JSON.parse(el('create-json').value);
-        } catch (e) {
-          show('create-msg', 'err', 'El JSON no es válido: ' + e.message);
+      //- ---------------------------------------------------------------- editor: render
+      function renderEditor() {
+        if (!state.form) return;
+        if (!state.form.sections) state.form.sections = [];
+        renumber();
+        renderMeta();
+        renderSettings();
+      }
+
+      function renderMeta() {
+        var host = el('editor-meta');
+        host.innerHTML = '';
+        if (state.formId) {
+          // Editar: team/company son inmutables (mover de team rompe las refs).
+          var p = n('p', 'hint');
+          p.innerHTML = 'El team y la company no se pueden cambiar acá: moverlo dejaría sus escalas y ' +
+            'catálogos de daños apuntando al team anterior. Para eso está <strong>Copiar a otro team</strong>.';
+          host.appendChild(p);
           return;
         }
-        if (!confirm('Crear el formulario "' + (parsed.name || '') + '"?')) return;
-        api('POST', '/api/superadmin/forms/', parsed)
-          .then(function (data) {
-            show('create-msg', 'ok', data.message + ' id: ' + data.form._id);
-          })
-          .catch(function (e) {
-            show('create-msg', 'err', e.message);
+        var row = n('div', 'row');
+        var teamSel = n('select');
+        fillSelect(teamSel, state.teams, '_id', 'name', '— elegir team —');
+        teamSel.value = state.form.team || '';
+        var compSel = n('select');
+        fillSelect(compSel, companiesForTeam(state.form.team), '_id', 'name', '— elegir company —');
+        compSel.value = state.form.company || '';
+
+        teamSel.addEventListener('change', function () {
+          state.form.team = teamSel.value;
+          state.form.company = '';
+          fillSelect(compSel, companiesForTeam(teamSel.value), '_id', 'name', '— elegir company —');
+          loadRefs(state.form.team, state.form.company).then(renderSettings);
+        });
+        compSel.addEventListener('change', function () {
+          state.form.company = compSel.value;
+          loadRefs(state.form.team, state.form.company).then(renderSettings);
+        });
+
+        row.appendChild(field('Team *', teamSel));
+        row.appendChild(field('Company *', compSel));
+        host.appendChild(row);
+      }
+
+      function renderSettings() {
+        var host = el('editor-ui');
+        host.innerHTML = '';
+        var f = state.form;
+
+        var card = n('div', 'card');
+        var head = n('div', 'head');
+        head.appendChild(n('span', 'title', 'Datos del formulario'));
+        card.appendChild(head);
+        var body = n('div', 'body');
+
+        var r1 = n('div', 'row tight');
+        r1.appendChild(field('Nombre *', textInput(f, 'name', 'Nombre del formulario'), true));
+        r1.appendChild(field('Tipo', selectInput(f, 'kind', KIND_FORM)));
+        r1.appendChild(field('Acción', selectInput(f, 'action', ACTION_FORM)));
+        body.appendChild(r1);
+
+        var r2 = n('div', 'row tight');
+        r2.appendChild(field('Descripción', textInput(f, 'description', ''), true));
+        body.appendChild(r2);
+
+        var checks = n('div', 'checks');
+        checks.appendChild(checkbox(f, 'active', 'Activo'));
+        checks.appendChild(checkbox(f, 'hidden', 'Oculto'));
+        checks.appendChild(checkbox(f, 'autosave', 'Autoguardado'));
+        checks.appendChild(checkbox(f, 'deliveryToCustomer', 'Entrega a cliente'));
+        checks.appendChild(checkbox(f, 'conciliation', 'Conciliación'));
+        checks.appendChild(checkbox(f, 'carrier', 'Pide transportista'));
+        body.appendChild(checks);
+
+        if (!f.unitsToUse) f.unitsToUse = { container: false, units: true };
+        var uChecks = n('div', 'checks');
+        uChecks.appendChild(checkbox(f.unitsToUse, 'container', 'Aplica a contenedores'));
+        uChecks.appendChild(checkbox(f.unitsToUse, 'units', 'Aplica a unidades'));
+        body.appendChild(uChecks);
+
+        card.appendChild(body);
+        host.appendChild(card);
+
+        renderSections(host);
+      }
+
+      function renderSections(host) {
+        var wrap = n('div');
+        var bar = n('div', 'row tight');
+        var h = n('span', null, 'Secciones (' + state.form.sections.length + ')');
+        h.style.fontWeight = '600';
+        h.style.flex = '1';
+        bar.appendChild(h);
+        bar.appendChild(iconBtn('+ Agregar sección', 'primary', function () {
+          state.form.sections.push({ name: 'Nueva sección', shortName: '', order: 0, weight: 1, questions: [] });
+          renumber(); renderSettings();
+        }));
+        wrap.appendChild(bar);
+
+        if (!state.form.sections.length) {
+          wrap.appendChild(n('p', 'empty', 'Sin secciones todavía. Agregá una para empezar.'));
+        }
+
+        state.form.sections.forEach(function (section, si) {
+          wrap.appendChild(renderSection(section, si));
+        });
+        host.appendChild(wrap);
+      }
+
+      function renderSection(section, si) {
+        var card = n('div', 'card');
+        var head = n('div', 'head');
+        head.appendChild(n('span', 'title', (si + 1) + '. ' + (section.name || '(sin nombre)')));
+        head.appendChild(iconBtn('↑', null, function () {
+          if (move(state.form.sections, si, si - 1)) { renumber(); renderSettings(); }
+        }));
+        head.appendChild(iconBtn('↓', null, function () {
+          if (move(state.form.sections, si, si + 1)) { renumber(); renderSettings(); }
+        }));
+        head.appendChild(iconBtn('Eliminar', 'danger', function () {
+          if (!confirm('Eliminar la sección "' + (section.name || '') + '" y sus ' +
+              (section.questions || []).length + ' pregunta(s)?')) return;
+          state.form.sections.splice(si, 1); renumber(); renderSettings();
+        }));
+        card.appendChild(head);
+
+        var body = n('div', 'body');
+        var r = n('div', 'row tight');
+        r.appendChild(field('Nombre *', textInput(section, 'name'), true));
+        r.appendChild(field('Nombre corto', textInput(section, 'shortName')));
+        r.appendChild(field('Peso', numberInput(section, 'weight')));
+        body.appendChild(r);
+
+        if (!section.questions) section.questions = [];
+        var qbar = n('div', 'row tight');
+        var qh = n('span', null, 'Preguntas (' + section.questions.length + ')');
+        qh.style.fontWeight = '600'; qh.style.flex = '1';
+        qbar.appendChild(qh);
+        qbar.appendChild(iconBtn('+ Agregar pregunta', null, function () {
+          section.questions.push({
+            question: 'Nueva pregunta', shortName: '', kind: 'text',
+            keyboardType: 'text', order: 0, weight: 1, optional: false
           });
+          renumber(); renderSettings();
+        }));
+        body.appendChild(qbar);
+
+        if (!section.questions.length) {
+          body.appendChild(n('p', 'empty', 'Sin preguntas en esta sección.'));
+        }
+        section.questions.forEach(function (q, qi) {
+          body.appendChild(renderQuestion(section, q, qi));
+        });
+
+        card.appendChild(body);
+        return card;
+      }
+
+      function renderQuestion(section, q, qi) {
+        var card = n('div', 'card q');
+        var head = n('div', 'head');
+        head.appendChild(n('span', 'title', (qi + 1) + '. ' + (q.question || '(sin texto)') + '  [' + (q.kind || '') + ']'));
+        head.appendChild(iconBtn('↑', null, function () {
+          if (move(section.questions, qi, qi - 1)) { renumber(); renderSettings(); }
+        }));
+        head.appendChild(iconBtn('↓', null, function () {
+          if (move(section.questions, qi, qi + 1)) { renumber(); renderSettings(); }
+        }));
+        head.appendChild(iconBtn('Eliminar', 'danger', function () {
+          if (!confirm('Eliminar la pregunta "' + (q.question || '') + '"?')) return;
+          section.questions.splice(qi, 1); renumber(); renderSettings();
+        }));
+        card.appendChild(head);
+
+        var body = n('div', 'body');
+        var r1 = n('div', 'row tight');
+        r1.appendChild(field('Pregunta *', textInput(q, 'question'), true));
+        r1.appendChild(field('Nombre corto', textInput(q, 'shortName')));
+        body.appendChild(r1);
+
+        var r2 = n('div', 'row tight');
+        r2.appendChild(field('Tipo', selectInput(q, 'kind', KIND_QUESTION, null, function () {
+          // Defaults para que el sub-editor del nuevo tipo tenga con qué trabajar.
+          if (q.kind === 'accessory' && !q.accessories) q.accessories = { question: '', multi: true, items: [] };
+          if (q.kind === 'matrix' && !q.matrix) q.matrix = { name: '', questions: [] };
+          if (q.kind === 'text' && !q.keyboardType) q.keyboardType = 'text';
+          if (q.kind === 'image' && !q.imageType) q.imageType = 'picture';
+          renderSettings();
+        })));
+        r2.appendChild(field('Peso', numberInput(q, 'weight')));
+        r2.appendChild(field('Pista (hint)', textInput(q, 'hint'), true));
+        body.appendChild(r2);
+
+        var checks = n('div', 'checks');
+        checks.appendChild(checkbox(q, 'optional', 'Opcional'));
+        checks.appendChild(checkbox(q, 'conciliation', 'Conciliación'));
+        body.appendChild(checks);
+
+        body.appendChild(renderKindFields(q));
+
+        var note = n('p', 'kindnote', KIND_HELP[q.kind] || '');
+        body.appendChild(note);
+
+        card.appendChild(body);
+        return card;
+      }
+
+      function renderKindFields(q) {
+        var box = n('div');
+
+        if (q.kind === 'scale') {
+          var opts = [''].concat(state.scales.map(function (s) { return s._id; }));
+          var labels = ['— elegir escala —'].concat(state.scales.map(function (s) {
+            return s.name + ' (' + s.choices + ' opciones)';
+          }));
+          var r = n('div', 'row tight');
+          r.appendChild(field('Escala *', selectInput(q, 'scale', opts, labels), true));
+          box.appendChild(r);
+          if (!state.scales.length) {
+            box.appendChild(n('p', 'kindnote', 'No hay escalas cargadas para este team/company.'));
+          }
+        }
+
+        if (q.kind === 'damage') {
+          var dopts = [''].concat(state.damages.map(function (d) { return d._id; }));
+          var dlabels = ['— elegir catálogo —'].concat(state.damages.map(function (d) {
+            return d.name + ' (' + d.parts + ' partes, ' + d.kinds + ' tipos)';
+          }));
+          var rd = n('div', 'row tight');
+          rd.appendChild(field('Catálogo de daños *', selectInput(q, 'damages', dopts, dlabels), true));
+          box.appendChild(rd);
+          var dchecks = n('div', 'checks');
+          dchecks.appendChild(checkbox(q, 'requireSeverity', 'Pide severidad'));
+          dchecks.appendChild(checkbox(q, 'requirePicture', 'Pide foto'));
+          box.appendChild(dchecks);
+          if (!state.damages.length) {
+            box.appendChild(n('p', 'kindnote', 'No hay catálogos de daños cargados para este team.'));
+          }
+        }
+
+        if (q.kind === 'text') {
+          var rt = n('div', 'row tight');
+          rt.appendChild(field('Teclado', selectInput(q, 'keyboardType', KEYBOARD)));
+          box.appendChild(rt);
+        }
+
+        if (q.kind === 'image') {
+          var ri = n('div', 'row tight');
+          ri.appendChild(field('Tipo de imagen', selectInput(q, 'imageType', IMAGE_TYPE)));
+          box.appendChild(ri);
+        }
+
+        if (q.kind === 'numeric-scale') {
+          var rn = n('div', 'row tight');
+          rn.appendChild(field('Mínimo', numberInput(q, 'minValue')));
+          rn.appendChild(field('Máximo', numberInput(q, 'maxValue')));
+          box.appendChild(rn);
+        }
+
+        if (q.kind === 'accessory') {
+          if (!q.accessories) q.accessories = { question: '', multi: true, items: [] };
+          var acc = q.accessories;
+          if (!acc.items) acc.items = [];
+          // La app trata `multi` ausente como true (question.g.dart:
+          // `json['multi'] as bool? ?? true`). Se normaliza al abrir para que el
+          // checkbox muestre el comportamiento real y se guarde explícito.
+          if (acc.multi === undefined || acc.multi === null) acc.multi = true;
+
+          var sub = n('div', 'sub');
+          sub.appendChild(n('h5', null, 'Accesorios'));
+          var ra = n('div', 'row tight');
+          ra.appendChild(field('Pregunta *', textInput(acc, 'question'), true));
+          sub.appendChild(ra);
+          var ac = n('div', 'checks');
+          ac.appendChild(checkbox(acc, 'multi', 'Permite elegir varios accesorios', renderSettings));
+          sub.appendChild(ac);
+          sub.appendChild(n('p', 'kindnote',
+            acc.multi
+              ? 'El operador puede marcar varios ítems de la lista.'
+              : 'El operador solo puede marcar un ítem: al elegir otro se reemplaza el anterior.'));
+
+          acc.items.forEach(function (item, ii) {
+            var ri2 = n('div', 'row tight');
+            ri2.appendChild(field('Ítem *', textInput(item, 'item'), true));
+            var cwrap = n('div', 'field');
+            cwrap.appendChild(n('label', null, ' '));
+            var cw = n('div', 'checks');
+            cw.appendChild(checkbox(item, 'amount', 'Pide cantidad'));
+            cwrap.appendChild(cw);
+            ri2.appendChild(cwrap);
+            ri2.appendChild(iconBtn('Eliminar', 'danger', function () {
+              acc.items.splice(ii, 1); renderSettings();
+            }));
+            sub.appendChild(ri2);
+          });
+          sub.appendChild(iconBtn('+ Agregar ítem', null, function () {
+            acc.items.push({ item: '', amount: false }); renderSettings();
+          }));
+          box.appendChild(sub);
+        }
+
+        if (q.kind === 'matrix') {
+          if (!q.matrix) q.matrix = { name: '', questions: [] };
+          var mx = q.matrix;
+          if (!mx.questions) mx.questions = [];
+          var msub = n('div', 'sub');
+          msub.appendChild(n('h5', null, 'Matriz'));
+          var rm = n('div', 'row tight');
+          rm.appendChild(field('Nombre de la matriz *', textInput(mx, 'name'), true));
+          msub.appendChild(rm);
+
+          mx.questions.forEach(function (mq, mi) {
+            var rmq = n('div', 'row tight');
+            rmq.appendChild(field('Pregunta *', textInput(mq, 'question'), true));
+            rmq.appendChild(field('Campo *', textInput(mq, 'name')));
+            rmq.appendChild(field('Tipo', selectInput(mq, 'type', MATRIX_ITEM_TYPE)));
+            rmq.appendChild(iconBtn('Eliminar', 'danger', function () {
+              mx.questions.splice(mi, 1); renderSettings();
+            }));
+            msub.appendChild(rmq);
+          });
+          msub.appendChild(iconBtn('+ Agregar campo', null, function () {
+            mx.questions.push({ question: '', name: '', type: 'text' }); renderSettings();
+          }));
+          box.appendChild(msub);
+        }
+
+        return box;
+      }
+
+      //- ---------------------------------------------------------------- editor: save
+      el('btn-save').addEventListener('click', function () {
+        if (!state.form) { show('editor-msg', 'err', 'No hay nada abierto.'); return; }
+        var payload;
+        if (state.mode === 'json') {
+          try { payload = JSON.parse(el('json-area').value); }
+          catch (e) { show('editor-msg', 'err', 'El JSON no es válido: ' + e.message); return; }
+        } else {
+          renumber();
+          payload = state.form;
+        }
+
+        var problems = validate(payload);
+        if (problems.length) {
+          show('editor-msg', 'err', 'Faltan datos:<ul><li>' + problems.map(escapeHtml).join('</li><li>') + '</li></ul>');
+          return;
+        }
+
+        var isNew = !state.formId;
+        if (!confirm(isNew ? ('Crear el formulario "' + payload.name + '"?')
+                           : ('Guardar cambios en "' + payload.name + '"?'))) return;
+
+        var req = isNew
+          ? api('POST', '/api/superadmin/forms/', payload)
+          : api('PUT', '/api/superadmin/forms/' + state.formId, payload);
+
+        req.then(function (data) {
+          show('editor-msg', 'ok', data.message + (data.form && data.form._id ? ' id: ' + data.form._id : ''));
+          if (isNew && data.form) {
+            state.formId = data.form._id;
+            state.form = data.form;
+            el('editor-title').textContent = data.form.name;
+            if (state.mode === 'editor') renderEditor();
+          }
+          search();
+        }).catch(function (e) { show('editor-msg', 'err', e.message); });
       });
 
-      // ---------------------------------------------------------------- copy
+      // Chequeos de los `required` del schema, para dar un error claro acá en vez
+      // de un ValidationError de Mongoose.
+      function validate(f) {
+        var out = [];
+        if (!f.name || !String(f.name).trim()) out.push('El formulario necesita un nombre.');
+        if (!f.team) out.push('Falta elegir el team.');
+        if (!f.company) out.push('Falta elegir la company.');
+        (f.sections || []).forEach(function (s, si) {
+          var sl = 'Sección ' + (si + 1);
+          if (!s.name || !String(s.name).trim()) out.push(sl + ': falta el nombre.');
+          (s.questions || []).forEach(function (q, qi) {
+            var ql = sl + ' / pregunta ' + (qi + 1);
+            if (!q.question || !String(q.question).trim()) out.push(ql + ': falta el texto.');
+            if (q.kind === 'scale' && !q.scale) out.push(ql + ': falta elegir la escala.');
+            if (q.kind === 'damage' && !q.damages) out.push(ql + ': falta elegir el catálogo de daños.');
+            if (q.kind === 'accessory') {
+              if (!q.accessories || !q.accessories.question) out.push(ql + ': falta la pregunta de accesorios.');
+              ((q.accessories && q.accessories.items) || []).forEach(function (it, ii) {
+                if (!it.item || !String(it.item).trim()) out.push(ql + ': ítem ' + (ii + 1) + ' sin nombre.');
+              });
+            }
+            if (q.kind === 'matrix') {
+              if (!q.matrix || !q.matrix.name) out.push(ql + ': falta el nombre de la matriz.');
+              ((q.matrix && q.matrix.questions) || []).forEach(function (mq, mi) {
+                if (!mq.question || !mq.name) out.push(ql + ': campo ' + (mi + 1) + ' incompleto.');
+              });
+            }
+          });
+        });
+        return out;
+      }
+
+      //- ---------------------------------------------------------------- copy
       function startCopy(f) {
-        state.formId = f._id;
-        state.formName = f.name;
+        state.copyFormId = f._id;
+        state.copyFormName = f.name;
         el('copy-source').innerHTML = 'Origen: <strong>' + escapeHtml(f.name) + '</strong> · team ' +
           escapeHtml(f.teamName || '') + ' · company ' + escapeHtml(f.companyName || '');
         el('copy-result').innerHTML = '';
         clearMsg('copy-msg');
-        document.querySelector('.tab[data-tab="copy"]').click();
+        goTab('copy');
       }
 
       el('btn-preview').addEventListener('click', function () { doCopy(true); });
 
       function doCopy(preview) {
-        if (!state.formId) {
-          show('copy-msg', 'err', 'Elegí un formulario en "Buscar / Editar" y apretá Copiar.');
-          return;
-        }
-        var targetTeam = el('p-team').value;
-        var targetCompany = el('p-company').value;
-        if (!targetTeam || !targetCompany) {
-          show('copy-msg', 'err', 'Elegí team y company destino.');
-          return;
-        }
+        if (!state.copyFormId) { show('copy-msg', 'err', 'Elegí un formulario en "Buscar" y apretá Copiar.'); return; }
+        var targetTeam = el('p-team').value, targetCompany = el('p-company').value;
+        if (!targetTeam || !targetCompany) { show('copy-msg', 'err', 'Elegí team y company destino.'); return; }
         clearMsg('copy-msg');
         el('copy-result').innerHTML = '<p class="hint">Procesando…</p>';
-        api('POST', '/api/superadmin/forms/' + state.formId + '/copy', {
-          targetTeam: targetTeam,
-          targetCompany: targetCompany,
-          name: el('p-name').value || undefined,
-          preview: preview
+        api('POST', '/api/superadmin/forms/' + state.copyFormId + '/copy', {
+          targetTeam: targetTeam, targetCompany: targetCompany,
+          name: el('p-name').value || undefined, preview: preview
         })
           .then(function (data) { renderCopy(data.result, preview); })
-          .catch(function (e) {
-            el('copy-result').innerHTML = '';
-            show('copy-msg', 'err', e.message);
-          });
+          .catch(function (e) { el('copy-result').innerHTML = ''; show('copy-msg', 'err', e.message); });
       }
 
       function renderCopy(r, wasPreview) {
-        var html = '';
-        html += '<h3 style="font-size:15px;margin:14px 0 6px">' +
+        var html = '<h3 style="font-size:15px;margin:14px 0 6px">' +
           (wasPreview ? 'Preview — no se escribió nada' : 'Copia creada') + '</h3>';
         html += '<pre>' + escapeHtml(
           'origen : ' + r.source.name + '  [' + r.source.kind + ']\n' +
@@ -453,12 +903,24 @@ html(lang='es')
         ) + '</pre>';
 
         if (r.plan.length) {
-          html += '<h4 style="font-size:13px;margin:14px 0 4px">Referencias a crear en el team destino (' + r.plan.length + ')</h4>';
-          html += '<table><thead><tr><th>Colección</th><th>Nombre</th><th>Acción</th></tr></thead><tbody>';
+          var reused = r.plan.filter(function (p) { return p.action === 'reuse'; }).length;
+          var created = r.plan.filter(function (p) { return p.action === 'create'; }).length;
+          var missing = r.plan.filter(function (p) { return p.action === 'missing-source'; }).length;
+
+          html += '<h4 style="font-size:13px;margin:14px 0 4px">Referencias (' + r.plan.length + ')</h4>';
+          html += '<p class="hint">' +
+            '<span class="plan-reuse">' + reused + ' se reusan</span> del team destino · ' +
+            '<span class="plan-create">' + created + ' se crean</span>' +
+            (missing ? ' · <span class="plan-missing">' + missing + ' rotas en el origen</span>' : '') +
+            '</p>';
+          html += '<table><thead><tr><th>Colección</th><th>Nombre</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>';
           r.plan.forEach(function (p) {
-            var cls = p.action === 'missing-source' ? 'plan-missing' : 'plan-create';
+            var cls = p.action === 'missing-source' ? 'plan-missing'
+              : (p.action === 'reuse' ? 'plan-reuse' : 'plan-create');
+            var detail = p.note ? p.note : (p.action === 'reuse' ? 'ya existía en el destino' : '');
             html += '<tr><td>' + escapeHtml(p.collection) + '</td><td>' + escapeHtml(p.name) +
-              '</td><td class="' + cls + '">' + escapeHtml(p.action) + '</td></tr>';
+              '</td><td class="' + cls + '">' + escapeHtml(p.action) +
+              '</td><td class="hint" style="margin:0">' + escapeHtml(detail) + '</td></tr>';
           });
           html += '</tbody></table>';
         } else {
@@ -474,9 +936,7 @@ html(lang='es')
         el('copy-result').innerHTML = html;
 
         if (wasPreview) {
-          var btn = document.createElement('button');
-          btn.className = 'primary';
-          btn.textContent = 'Confirmar y copiar';
+          var btn = n('button', 'primary', 'Confirmar y copiar');
           btn.addEventListener('click', function () {
             if (!confirm('Copiar "' + r.source.name + '" al team ' + (r.target.teamName || '') + '?')) return;
             doCopy(false);

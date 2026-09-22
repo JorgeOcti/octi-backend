@@ -1,7 +1,9 @@
 import { Response } from 'express';
 
 import Company from '../../../app/models/company.model';
+import Damages from '../../models/damages.model';
 import Form from '../../models/form.model';
+import Scale from '../../models/scale.model';
 import Team from '../../../app/models/team.model';
 import formCopyService from '../../services/formCopy.service';
 import { IRequest } from '../../../interfaces/global.interface';
@@ -23,6 +25,8 @@ class FormSuperAdminController {
     this.page = this.page.bind(this);
     this.apiTeams = this.apiTeams.bind(this);
     this.apiCompanies = this.apiCompanies.bind(this);
+    this.apiScales = this.apiScales.bind(this);
+    this.apiDamages = this.apiDamages.bind(this);
     this.apiList = this.apiList.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
@@ -65,6 +69,64 @@ class FormSuperAdminController {
       logger.error('FormSuperAdminController.apiCompanies error');
       console.error(e);
       return res.status(500).json({ message: 'Error listando companies.', status: 500 });
+    }
+  }
+
+  /**
+   * Escalas del team/company destino, para el selector de las preguntas de tipo
+   * `scale`. Scale está scopeada por team + company, así que una escala de otro
+   * team no sirve: el editor solo debe ofrecer las del formulario que se edita.
+   */
+  public async apiScales(req: IRequest, res: Response) {
+    const { team, company } = req.query as { team?: string; company?: string };
+    try {
+      if (!team) {
+        return res.status(400).json({ message: 'team es obligatorio.', status: 400 });
+      }
+      const filter: any = { team, active: { $ne: false } };
+      if (company) filter.company = company;
+      const scales = await Scale
+        .find(filter, { name: true, minValue: true, maxValue: true, choices: true })
+        .sort({ name: 1 })
+        .lean();
+      const results = scales.map((s: any) => ({
+        _id: s._id,
+        name: s.name,
+        minValue: s.minValue,
+        maxValue: s.maxValue,
+        choices: (s.choices || []).length
+      }));
+      return res.json({ results, status: 200 });
+    } catch (e) {
+      logger.error('FormSuperAdminController.apiScales error');
+      console.error(e);
+      return res.status(500).json({ message: 'Error listando escalas.', status: 500 });
+    }
+  }
+
+  /** Catálogos de daños del team, para las preguntas de tipo `damage`. */
+  public async apiDamages(req: IRequest, res: Response) {
+    const { team } = req.query as { team?: string };
+    try {
+      if (!team) {
+        return res.status(400).json({ message: 'team es obligatorio.', status: 400 });
+      }
+      const damages = await Damages
+        .find({ team }, { name: true, parts: true, kinds: true, positions: true })
+        .sort({ name: 1 })
+        .lean();
+      const results = damages.map((d: any) => ({
+        _id: d._id,
+        name: d.name,
+        parts: (d.parts || []).length,
+        kinds: (d.kinds || []).length,
+        positions: (d.positions || []).length
+      }));
+      return res.json({ results, status: 200 });
+    } catch (e) {
+      logger.error('FormSuperAdminController.apiDamages error');
+      console.error(e);
+      return res.status(500).json({ message: 'Error listando catálogos de daños.', status: 500 });
     }
   }
 
