@@ -877,6 +877,11 @@ export default class ApiService {
     );
   }
 
+  /** Estimación del período en curso (dry-run, no cierra nada). */
+  public getBillingCurrentPeriod(): AxiosPromise {
+    return this.instance.get('/api/settings/billing/current/');
+  }
+
   public createVersion(version: any): AxiosPromise {
     return this.instance.post(`/api/admin/versions/`, version);
   }

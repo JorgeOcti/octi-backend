@@ -31,6 +31,7 @@ class BillingController {
     this.apiDetail = this.apiDetail.bind(this);
     this.pdf = this.pdf.bind(this);
     this.run = this.run.bind(this);
+    this.apiCurrentPeriod = this.apiCurrentPeriod.bind(this);
     this.getInvoiceCorporative = this.getInvoiceCorporative.bind(this);
     this.getOldestInvoiceCorporative = this.getOldestInvoiceCorporative.bind(this);
     this.getLastInvoiceCorporative = this.getLastInvoiceCorporative.bind(this);
@@ -913,6 +914,88 @@ class BillingController {
         return res.status(500).json({ message: 'Ha ocurrido un error generando el detalle.' });
       }
       return;
+    }
+  }
+
+  /**
+   * Estimación del período EN CURSO (el mes de hoy), sin cerrar nada.
+   *
+   * Corre el mismo cálculo que el billing real en modo dry-run: no escribe
+   * invoice ni toca la base. El período es `moment().format('YYYYMM')`, no el
+   * que usaría el cron — la idea es ver cómo viene el mes, no recalcular el
+   * anterior.
+   *
+   * El `detail` del dry-run trae miles de ítems (uno por contenedor y unidad),
+   * así que acá se resume y NUNCA se manda entero al browser.
+   */
+  public async apiCurrentPeriod(req: IRequest, res: Response) {
+    const team = req.user.team._id;
+    const companyId = String(req.user.company._id);
+    const period = moment().format('YYYYMM');
+    const start = moment(period, 'YYYYMM').startOf('month');
+
+    try {
+      logger.info(`BillingController.apiCurrentPeriod: ${req.user.email} period: ${period}`);
+
+      const summary = await new BillingQueue().processBilling(team, {
+        dryRun: true,
+        period,
+        rethrow: true
+      });
+
+      // Mismo criterio de alcance que apiList: admin ve todo el team, el resto
+      // solo su propia company.
+      const rows = (summary || [])
+        .filter((r: any) => req.user.isAdmin || String(r.companyId) === companyId)
+        .map((r: any) => {
+          const desc = r.detail?.desconsolidado ?? {};
+          const aforo = r.detail?.aforo ?? {};
+          const aforoCount = Object.keys(aforo)
+            .reduce((n: number, k: string) => n + (aforo[k]?.count ?? 0), 0);
+          const aforoPrice = Object.keys(aforo)
+            .reduce((n: number, k: string) => n + (aforo[k]?.price ?? 0), 0);
+
+          return {
+            company: r.company,
+            companyId: r.companyId,
+            containers: r.containers,
+            inventoryCars: r.inventoryCars,
+            valueDolar: r.valueDolar,
+            totalDolar: r.totalDolar,
+            totalPeso: r.totalPeso,
+            invoiceAlreadyExists: r.invoiceAlreadyExists,
+            breakdown: {
+              containers: {
+                count: desc.containers?.count ?? 0,
+                price: desc.containers?.price ?? 0
+              },
+              units: {
+                count: desc.codedUnits?.count ?? 0,
+                price: desc.codedUnits?.price ?? 0
+              },
+              aforo: { count: aforoCount, price: aforoPrice }
+            }
+          };
+        });
+
+      const now = moment();
+      return res.json({
+        period,
+        periodLabel: start.format('MMMM YYYY'),
+        // Para que la pantalla pueda decir "parcial, al día X de Y".
+        dayOfMonth: now.date(),
+        daysInMonth: start.daysInMonth(),
+        generatedAt: now.toDate(),
+        results: rows,
+        status: 200
+      });
+    } catch (e: any) {
+      logger.error(`BillingController.apiCurrentPeriod error: ${e?.message}`);
+      console.error(e);
+      return res.status(500).json({
+        message: 'No se pudo calcular el período en curso.',
+        status: 500
+      });
     }
   }
 

@@ -104,7 +104,15 @@ async function BillingRun(): Promise<void> {
   new Company();
 
   try {
-    await new BillingQueue().processBilling(team, { dryRun, period });
+    const summary = await new BillingQueue().processBilling(team, { dryRun, period });
+    // El volcado a archivo vive acá y no en la task: el endpoint web usa el
+    // mismo dry-run y no tiene por qué escribir nada en disco.
+    if (dryRun && summary) {
+      const fs = require('fs');
+      const outPath = `/tmp/billing-dryrun-${team}-${period || 'auto'}.json`;
+      fs.writeFileSync(outPath, JSON.stringify(summary, null, 2));
+      console.log(`DRY-RUN: detalle completo escrito en ${outPath}`);
+    }
   } catch (e) {
     console.log('Ha ocurrido un error en BillingQueue.processBilling');
     console.log('error:', e);

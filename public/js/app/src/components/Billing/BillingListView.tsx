@@ -11,6 +11,7 @@ import {
   IBillingState
 } from '../../actions/billing.actions';
 import AppContainer from '../../container/AppContainer';
+import CurrentPeriodCard from './CurrentPeriodCard';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
@@ -77,6 +78,9 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
     return (
       <AppContainer title="" cMenu="200" cSubMenu="200.2" cAction="Detalle">
         <section className="content">
+          {/* Estimacion del mes abierto. Solo para companies handler: el
+              calculo de contenedores/unidades es el de ese modelo de cobro. */}
+          {window.user.company.handler ? <CurrentPeriodCard /> : null}
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">Billing <small>{pagination.count}</small></h3>

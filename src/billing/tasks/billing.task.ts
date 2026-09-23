@@ -452,11 +452,15 @@ class BillingQueue {
    *                período se deriva de la fecha de corrida, que depende del día
    *                en que se ejecuta (`subtract(25, 'days')`): el 26 de agosto
    *                apunta a agosto, el 15 de agosto apunta a julio.
+   *                rethrow: propaga el error en vez de tragárselo. Lo usa el
+   *                endpoint del período en curso para poder devolver un 500 con
+   *                sentido; el cron sigue con el comportamiento de siempre.
+   * @returns       En dry-run, el detalle por company. Si no, undefined.
    */
   public async processBilling(
     team?: any,
-    options: { dryRun?: boolean; period?: string } = {}
-  ): Promise<void> {
+    options: { dryRun?: boolean; period?: string; rethrow?: boolean } = {}
+  ): Promise<any[] | undefined> {
     try {
       const dryRun = options.dryRun === true;
 
@@ -814,12 +818,19 @@ class BillingQueue {
           desconsolidado: {
             containers: {
               count: generalContainerCount + codedContainerCount,
-              price: (generalContainerCount + codedContainerCount) * GENERAL_CONTAINER_PRICE_USD,
+              // Cada tipo a su propia tarifa. Antes se multiplicaba todo por
+              // GENERAL_CONTAINER_PRICE_USD y todas las unidades por
+              // CODED_CAR_PRICE_USD: coincide solo mientras las tarifas sean
+              // iguales entre sí, y los autos sueltos de general-items (que
+              // valen 0) quedaban cobrados a precio de unidad coded.
+              price: (generalContainerCount * GENERAL_CONTAINER_PRICE_USD) +
+                     (codedContainerCount * CODED_CONTAINER_PRICE_USD),
               items: containerItems
             },
             codedUnits: {
               count: generalCarCount + codedCarCount,
-              price: (generalCarCount + codedCarCount) * CODED_CAR_PRICE_USD,
+              price: (generalCarCount * GENERAL_CAR_PRICE_USD) +
+                     (codedCarCount * CODED_CAR_PRICE_USD),
               items: unitItems
             }
           }
@@ -958,19 +969,25 @@ class BillingQueue {
       }
 
       if (dryRun) {
-        const outPath = `/tmp/billing-dryrun-${teamId || 'no-team'}-${period}.json`;
-        fs.writeFileSync(outPath, JSON.stringify(dryRunSummary, null, 2));
         console.log('');
-        console.log(`DRY-RUN: detalle completo escrito en ${outPath}`);
         console.log(`DRY-RUN: ${dryRunSummary.length} companies procesadas, 0 invoices guardados`);
       }
 
       console.log('========================================');
       console.log(`BILLING PROCESS COMPLETED${dryRun ? ' (DRY-RUN)' : ''}`);
       console.log('========================================');
+
+      // En dry-run se devuelve el detalle para que lo consuma quien llamó: el
+      // comando de CLI lo vuelca a un archivo y el endpoint de "período en
+      // curso" lo sirve a la pantalla de billing.
+      return dryRun ? dryRunSummary : undefined;
     } catch (e) {
       console.log('ERROR in processBilling:');
       console.log(e);
+      if (options.rethrow) {
+        throw e;
+      }
+      return undefined;
     }
   }
 }

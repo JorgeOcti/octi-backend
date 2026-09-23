@@ -14,6 +14,8 @@ billingRouter.get('/settings/billing/corporate/', Middlewares.isLoggedIn, Billin
 billingRouter.patch('/api/settings/billing/corporate/', Middlewares.isLoggedIn, BillingController.apiPatchCorporateBilling);
 billingRouter.get('/settings/billing-settings/', Middlewares.isLoggedIn, BillingController.index);
 billingRouter.get('/settings/billing-settings/invoices/', Middlewares.isLoggedIn, BillingController.apiInvoiceCorporative);
+// Estimación del mes en curso para la pantalla de billing. Solo lee.
+billingRouter.get('/api/settings/billing/current/', Middlewares.isLoggedIn, BillingController.apiCurrentPeriod);
 billingRouter.get('/settings/billing/run/', Middlewares.isLoggedIn, BillingController.run);
 billingRouter.get('/settings/billing/export/', Middlewares.isLoggedIn, BillingController.exportDetail);
 billingRouter.get('/settings/billing/invoice/:id/export/', Middlewares.isLoggedIn, BillingController.exportInvoiceDetail);
