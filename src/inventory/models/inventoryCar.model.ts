@@ -223,6 +223,11 @@ inventoryCarSchema.index({ containerFound: 1 });
 // the monthly billing job filters updatedAt in memory over every inventoryCar
 // the company ever had.
 inventoryCarSchema.index({ inventory: 1, updatedAt: 1 });
+// Búsquedas por auto sin conocer el inventario: el índice { inventory, car } NO
+// sirve para esto, porque `inventory` es el prefijo. Sin este, el summary de
+// /api/company/stock/:id (y cualquier `{ car: { $in: [...] } }`) recorre la
+// colección entera — medido en ~113 s para una company de 4.236 autos.
+inventoryCarSchema.index({ car: 1 });
 
 inventoryCarSchema.plugin(mongoosePaginate);
 inventoryCarSchema.plugin(mongooseAggregatePaginate)

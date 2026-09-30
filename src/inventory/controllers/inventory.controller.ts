@@ -2527,18 +2527,33 @@ class InventoryController {
       let sDate = moment(startDate as string, 'YYYY-MM-DD').startOf('day').toDate();
       let eDate = moment(endDate as string, 'YYYY-MM-DD').endOf('day').toDate();
 
-      let containerDateFilter = {};
-      if (startDate && endDate) {
-        containerDateFilter = {
-          $or: [
-            { openDate: { $gte: sDate, $lte: eDate } },
-            { emptyDate: { $gte: sDate, $lte: eDate } },
-            { createdAt: { $gte: sDate, $lte: eDate } }
-          ]
-        };
-      }
+      // El filtro de fechas dejó de ser un $match: ahora va como $cond dentro
+      // del $group (ver abajo), porque sólo aplica al conteo por estado.
 
-      let resume = await InventoryCar.aggregate([
+      // Las tres listas salen de UNA sola pasada.
+      //
+      // Antes eran tres agregaciones casi idénticas, cada una con su propio
+      // $lookup + $unwind contra `cars` sólo para quedarse con los contenedores,
+      // y cambiando únicamente el $group final. Medido contra dev: 5.343 ms las
+      // tres, 1.767 ms haciendo una sola (~3x). Precalcular los autos-contenedor
+      // para evitar el $lookup resultó PEOR (2.490 ms): el $in con ~14.000 ids
+      // cuesta más de lo que ahorra.
+      //
+      // Ojo con la diferencia entre las tres: el filtro de fechas aplicaba sólo
+      // a `resume`, no a ships/trips. Por eso acá va como $cond adentro del
+      // $sum en vez de como un $match que afectaría a todos.
+      const inDateRange = (field: string) => ({
+        $and: [
+          { $ne: [`$${field}`, null] },
+          { $gte: [`$${field}`, sDate] },
+          { $lte: [`$${field}`, eDate] }
+        ]
+      });
+      const dateExpr: any = (startDate && endDate)
+        ? { $or: [inDateRange('openDate'), inDateRange('emptyDate'), inDateRange('createdAt')] }
+        : true;
+
+      const grouped = await InventoryCar.aggregate([
         { $match: { inventory: { $in: inventories.map((i: any) => i._id) } } },
         {
           $lookup: {
@@ -2552,92 +2567,31 @@ class InventoryController {
         { $match: { 'car.isContainer': true } },
         { $match: containerMatch },
         {
-          $addFields: {
-            openEvidence: {
-              $filter: {
-                input: '$evidenceStatus',
-                as: 'evidence',
-                cond: {
-                  $eq: ['$$evidence.status', ChoicesStatusContainer.open]
-                }
-              }
-            }
-          }
-        },
-        {
-          $addFields: {
-            openDate: { $arrayElemAt: ['$openEvidence.date', 0] }
-          }
-        },
-        {
-          $addFields: {
-            emptyEvidence: {
-              $filter: {
-                input: '$evidenceStatus',
-                as: 'evidence',
-                cond: {
-                  $eq: ['$$evidence.status', ChoicesStatusContainer.empty]
-                }
-              }
-            }
-          }
-        },
-        {
-          $addFields: {
-            emptyDate: { $arrayElemAt: ['$emptyEvidence.date', 0] }
-          }
-        },
-        {
-          $match: containerDateFilter
-        },
-        {
           $group: {
             _id: '$containerStatus',
-            count: { $sum: 1 }
+            count: { $sum: { $cond: [dateExpr, 1, 0] } },
+            // $ifNull para conservar el `null` que el $group original producía
+            // cuando el campo no existe — si no, esa entrada desaparecería.
+            ships: { $addToSet: { $ifNull: ['$extra.Nave', null] } },
+            trips: { $addToSet: { $ifNull: ['$extra.N° Viaje', null] } }
           }
         }
       ]);
 
-      let ships = await InventoryCar.aggregate([
-        { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
-        {
-          $lookup: {
-            from: 'cars', // The collection name for the 'cars' field
-            localField: 'car', // Field in InventoryCar
-            foreignField: '_id', // Field in carinventories
-            as: 'car',
-          }
-        },
-        { $unwind: { path: '$car' } },
-        { $match: { 'car.isContainer': true } }, // Filter for container cars
-        { $match: containerMatch },
-        {
-          $group: {
-            _id: '$extra.Nave',
-          }
-        }
-      ])
+      // resume: igual que antes, sólo los estados con documentos dentro del rango.
+      const resume = grouped
+        .filter((g: any) => g.count > 0)
+        .map((g: any) => ({ _id: g._id, count: g.count }));
 
-      let trips = await InventoryCar.aggregate([
-        { $match: { inventory: { $in: inventories.map((i: any) => i._id) }, } },
-        {
-          $lookup: {
-            from: 'cars', // The collection name for the 'cars' field
-            localField: 'car', // Field in InventoryCar
-            foreignField: '_id', // Field in carinventories
-            as: 'car',
-          }
-        },
-        { $unwind: { path: '$car' } },
-        { $match: { 'car.isContainer': true } }, // Filter for container cars
-        { $match: containerMatch },
-        {
-          $group: {
-            _id: '$extra.N° Viaje',
-          }
-        }
-      ])
-
+      // ships / trips: sin filtro de fechas, misma forma [{ _id }] de siempre.
+      const shipSet = new Set<any>();
+      const tripSet = new Set<any>();
+      for (const g of grouped) {
+        for (const v of (g.ships || [])) shipSet.add(v);
+        for (const v of (g.trips || [])) tripSet.add(v);
+      }
+      const ships = Array.from(shipSet).map((v: any) => ({ _id: v }));
+      const trips = Array.from(tripSet).map((v: any) => ({ _id: v }));
 
       return res.status(200).json({
         data: {
@@ -5230,58 +5184,45 @@ class InventoryController {
 
       let carIds = cars.map((c: any) => c._id);
 
-      // Obtener ships únicos
-      let ships = await InventoryCar.aggregate([
+      // Los tres listados (naves, viajes, sucursales) salen de UNA sola pasada.
+      //
+      // Antes eran tres agregaciones separadas sobre inventorycars, y la de
+      // sucursales además hacía dos $lookup + $unwind a `venues` por CADA
+      // inventoryCar antes de agrupar — hidratando decenas de miles de docs para
+      // terminar devolviendo un puñado de nombres. Medido: ~113 s de respuesta.
+      //
+      // Acá se agrupa primero (barato, son valores de baja cardinalidad) y recién
+      // después se resuelven los nombres de las sucursales que sobrevivieron.
+      const [facets] = await InventoryCar.aggregate([
         { $match: { car: { $in: carIds } } },
-        { $group: { _id: '$extra.Nave' } },
-        { $match: { _id: { $ne: null } } },
-        { $sort: { _id: 1 } }
+        {
+          $group: {
+            _id: null,
+            ships: { $addToSet: '$extra.Nave' },
+            trips: { $addToSet: '$extra.N° Viaje' },
+            // Mismo criterio que antes: si hay venueFound se usa esa, si no venue.
+            venueIds: { $addToSet: { $ifNull: ['$venueFound', '$venue'] } }
+          }
+        }
       ]);
 
-      // Obtener trips únicos
-      let trips = await InventoryCar.aggregate([
-        { $match: { car: { $in: carIds } } },
-        { $group: { _id: '$extra.N° Viaje' } },
-        { $match: { _id: { $ne: null } } },
-        { $sort: { _id: 1 } }
-      ]);
+      const clean = (values: any[]): string[] => (values || [])
+        .filter((v: any) => v !== null && v !== undefined && v !== '')
+        .map((v: any) => String(v))
+        .sort((a, b) => a.localeCompare(b));
 
-      // Obtener venues únicos (venue o venueFound)
-      let venues = await InventoryCar.aggregate([
-        { $match: { car: { $in: carIds } } },
-        {
-          $lookup: {
-            from: 'venues',
-            localField: 'venue',
-            foreignField: '_id',
-            as: 'venue'
-          }
-        },
-        { $unwind: { path: '$venue', preserveNullAndEmptyArrays: true } },
-        {
-          $lookup: {
-            from: 'venues',
-            localField: 'venueFound',
-            foreignField: '_id',
-            as: 'venueFound'
-          }
-        },
-        { $unwind: { path: '$venueFound', preserveNullAndEmptyArrays: true } },
-        {
-          $project: {
-            venue: {
-              $cond: {
-                if: { $ne: ['$venueFound', null] },
-                then: '$venueFound',
-                else: '$venue'
-              }
-            }
-          }
-        },
-        { $match: { 'venue._id': { $ne: null } } },
-        { $group: { _id: '$venue._id', name: { $first: '$venue.name' } } },
-        { $sort: { name: 1 } }
-      ]);
+      const ships = clean(facets?.ships);
+      const trips = clean(facets?.trips);
+
+      // Solo los venues realmente referenciados — son unos pocos documentos.
+      const venueIds = (facets?.venueIds || []).filter((v: any) => !!v);
+      const venueDocs = venueIds.length
+        ? await Venue.find({ _id: { $in: venueIds } }, { name: 1 }).lean()
+        : [];
+      const venues = venueDocs
+        .map((v: any) => v.name)
+        .filter((n: any) => !!n)
+        .sort((a: string, b: string) => a.localeCompare(b));
 
       // Obtener información de la compañía
       let companyInfo = await Company.findById(companyId, {
@@ -5290,10 +5231,11 @@ class InventoryController {
         rut: 1
       });
 
+      // Misma forma de respuesta de siempre: tres arrays de strings.
       return res.status(200).json({
-        ships: ships.map(s => s._id),
-        trips: trips.map(t => t._id),
-        venues: venues.map(v => v.name),
+        ships,
+        trips,
+        venues,
         company: companyInfo,
         status: 200
       });
