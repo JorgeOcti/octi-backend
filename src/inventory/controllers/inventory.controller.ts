@@ -4732,6 +4732,86 @@ class InventoryController {
 
 
 
+  /**
+   * "Esqueleto" del stock: las MISMAS filas (car × inTransitHistory ×
+   * readyToClientHistory), con el mismo filtro de fechas y el mismo orden que el
+   * pipeline completo, pero sin ninguno de los $lookup caros.
+   *
+   * Por qué existe: el pipeline completo hidrata 8 colecciones por fila (cuatro
+   * de ellas `participants`, que promedian 7 KB) y recién al final ordena y
+   * pagina. DocDB tiene que sostener TODO el resultado hidratado en memoria para
+   * ese $sort — con `allowDiskUse` deshabilitado — y en una db.t3.medium eso
+   * termina en `Operation terminated due to low available memory` (código 39).
+   * Medido: ~3.349 filas × ~9,4 KB para una company de 4.236 autos.
+   *
+   * Ninguno de esos $lookup afecta el filtrado, el orden ni la cantidad de
+   * filas: son pura hidratación. Así que se resuelve primero qué filas entran y
+   * en qué orden (filas de ~150 bytes), y solo después se hidrata la página.
+   *
+   * @param preserveReadyToClient replica el $unwind del endpoint que lo use: el
+   *        paginado NO preserva (descarta autos sin historia readyToClient), el
+   *        export SÍ. Cambiarlo altera el set de filas.
+   */
+  private stockSkeletonPipeline(opts: {
+    match: any;
+    carIds: any[];
+    dateFilter: any;
+    sort: any;
+    preserveReadyToClient: boolean;
+  }): any[] {
+    const pipeline: any[] = [
+      { $match: { ...opts.match, _id: { $in: opts.carIds } } },
+      { $lookup: { from: 'histories', localField: '_id', foreignField: 'car', as: 'allHistories' } },
+      {
+        $addFields: {
+          inTransitHistories: {
+            $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'inTransit'] } }
+          },
+          readyToClientHistories: {
+            $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'readyToClient'] } }
+          }
+        }
+      },
+      { $project: { allHistories: 0 } },
+      { $unwind: { path: '$inTransitHistories', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: opts.preserveReadyToClient
+          ? { path: '$readyToClientHistories', preserveNullAndEmptyArrays: true }
+          : { path: '$readyToClientHistories' }
+      },
+      // Recortar ANTES de filtrar y ordenar: esto es lo que mantiene el $sort
+      // dentro de la memoria de DocDB.
+      {
+        $project: {
+          _id: 1,
+          createdAt: 1,
+          'inTransitHistories._id': 1,
+          'inTransitHistories.executedAt': 1,
+          'readyToClientHistories._id': 1,
+          'readyToClientHistories.executedAt': 1
+        }
+      }
+    ];
+
+    if (opts.dateFilter && Object.keys(opts.dateFilter).length > 0) {
+      pipeline.push({ $match: opts.dateFilter });
+    }
+    pipeline.push({ $sort: opts.sort });
+    return pipeline;
+  }
+
+  /**
+   * Identidad de una fila del stock. Sirve para volver a alinear las filas
+   * hidratadas con el orden exacto que fijó el esqueleto.
+   */
+  private stockRowKey(row: any): string {
+    return [
+      String(row?._id ?? ''),
+      String(row?.inTransitHistories?._id ?? ''),
+      String(row?.readyToClientHistories?._id ?? '')
+    ].join('|');
+  }
+
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     try {
       const { company } = req.user; // user request company
@@ -4974,8 +5054,34 @@ class InventoryController {
         let carsHistories = histories.map((h: any) => h._id);
 
         // Inicia el pipeline de agregación de Car
+        // Paso 1 — resolver qué filas entran y en qué orden, sin hidratar nada.
+        // Ver stockSkeletonPipeline(): hidratar primero y ordenar después es lo
+        // que hacía que DocDB se quedara sin memoria en companies grandes.
+        const skeletonRows = await Car.aggregate(this.stockSkeletonPipeline({
+          match: filterCompanies,
+          carIds: carsHistories,
+          dateFilter,
+          sort: sortOptionAggregation,
+          preserveReadyToClient: false
+        }));
+
+        const pageNumber = options.page as number;
+        const pageLimit = options.limit as number;
+        const totalRows = skeletonRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalRows / pageLimit));
+        const pageRows = skeletonRows.slice((pageNumber - 1) * pageLimit, pageNumber * pageLimit);
+
+        // Solo los autos de esta página llegan a los $lookup caros.
+        const pageCarIds = Array.from(new Set(pageRows.map((r: any) => String(r._id))))
+          .map((id: string) => new Types.ObjectId(id));
+
+        logger.info(
+          `currentCompanyStock: ${totalRows} filas totales, hidratando ${pageCarIds.length} autos ` +
+          `para la página ${pageNumber}/${totalPages}`
+        );
+
         const carAggregationPipeline: any[] = [
-          { $match: { ...filterCompanies, _id: { $in: carsHistories } } },
+          { $match: { ...filterCompanies, _id: { $in: pageCarIds } } },
           // --- DocDB-safe rewrite of the two correlated histories lookups ---
           // DocDB rejects correlated let/pipeline $lookup, so join all histories
           // for the car once (basic $lookup) and split by status with $filter,
@@ -5035,13 +5141,39 @@ class InventoryController {
           { $sort: sortOptionAggregation },
         ];
 
-        paginateResult = await Car.aggregatePaginate(Car.aggregate(carAggregationPipeline), options);
+        // Paso 2 — hidratar solo esta página y volver a alinearla con el orden
+        // del esqueleto. No se usa aggregatePaginate porque su $skip/$limit va
+        // DESPUÉS del $sort, es decir después de toda la hidratación: es
+        // justamente lo que hacía que paginar no sirviera de nada.
+        const hydrated = pageCarIds.length
+          ? await Car.aggregate(carAggregationPipeline)
+          : [];
 
-        /*paginateResult.total = histories.length;
-        paginateResult.pages = Math.ceil(paginateResult.total / options.limit!);
-        paginateResult.hasPrevious = paginateResult.currentPage! > 1;
-        paginateResult.hasNextPage = paginateResult.currentPage! < paginateResult.pages;
-        */
+        const hydratedByRow = new Map<string, any>();
+        for (const doc of hydrated) {
+          hydratedByRow.set(this.stockRowKey(doc), doc);
+        }
+
+        const docs = pageRows
+          .map((row: any) => hydratedByRow.get(this.stockRowKey(row)))
+          .filter((doc: any) => !!doc);
+
+        if (docs.length !== pageRows.length) {
+          // No debería pasar: el esqueleto y el pipeline completo filtran igual.
+          logger.error(
+            `currentCompanyStock: la página quedó con ${docs.length} de ${pageRows.length} filas ` +
+            `esperadas (company ${companyId}) — revisar que el esqueleto siga espejando el pipeline.`
+          );
+        }
+
+        paginateResult = {
+          docs,
+          total: totalRows,
+          pages: totalPages,
+          currentPage: pageNumber,
+          hasPrevious: pageNumber > 1,
+          hasNextPage: pageNumber < totalPages
+        } as any;
       }
 
       return res.status(200).json({
@@ -5471,14 +5603,70 @@ class InventoryController {
           }
         ];
 
-        // Usar cursor para procesar los datos de forma streaming
-        const carCursor = Car.aggregate(carAggregationPipeline).cursor();
+        // El cursor no servía de nada acá: el $sort del final es bloqueante, así
+        // que DocDB tenía que materializar TODO el resultado hidratado antes de
+        // entregar el primer documento — y en companies grandes se quedaba sin
+        // memoria, por eso el export no bajaba nada.
+        //
+        // En su lugar: se resuelve el orden con el esqueleto (barato) y se
+        // hidrata de a tandas de autos, escribiendo cada fila apenas está lista.
+        const skeletonRows = await Car.aggregate(this.stockSkeletonPipeline({
+          match: filterCompanies,
+          carIds: cars,
+          dateFilter,
+          sort: sortOptionAggregation,
+          preserveReadyToClient: true
+        }));
 
-        logger.info(`Starting Excel export for company ${companyId}`);
+        logger.info(
+          `Starting Excel export for company ${companyId}: ${skeletonRows.length} filas a exportar`
+        );
+
+        // Tandas por AUTO (no por fila) para no cortar un auto a la mitad.
+        const HYDRATION_BATCH_CARS = 200;
+        const batches: any[][] = [];
+        let currentBatch: any[] = [];
+        let currentCarIds = new Set<string>();
+        for (const row of skeletonRows) {
+          const carId = String(row._id);
+          if (!currentCarIds.has(carId) && currentCarIds.size >= HYDRATION_BATCH_CARS) {
+            batches.push(currentBatch);
+            currentBatch = [];
+            currentCarIds = new Set<string>();
+          }
+          currentCarIds.add(carId);
+          currentBatch.push(row);
+        }
+        if (currentBatch.length) {
+          batches.push(currentBatch);
+        }
 
         let processedCount = 0;
-        for (let car = await carCursor.next(); car != null; car = await carCursor.next()) {
-          try {
+        for (const batch of batches) {
+          const batchCarIds = Array.from(new Set(batch.map((r: any) => String(r._id))))
+            .map((id: string) => new Types.ObjectId(id));
+
+          // Mismo pipeline de siempre, acotado a los autos de la tanda.
+          const batchPipeline = carAggregationPipeline.slice();
+          batchPipeline[0] = { $match: { ...filterCompanies, _id: { $in: batchCarIds } } };
+          const hydrated = await Car.aggregate(batchPipeline);
+
+          const hydratedByRow = new Map<string, any>();
+          for (const doc of hydrated) {
+            // El $project del export renombra las historias en singular.
+            hydratedByRow.set([
+              String(doc?._id ?? ''),
+              String(doc?.inTransitHistory?._id ?? ''),
+              String(doc?.readyToClientHistory?._id ?? '')
+            ].join('|'), doc);
+          }
+
+          for (const skeletonRow of batch) {
+            const car = hydratedByRow.get(this.stockRowKey(skeletonRow));
+            if (!car) {
+              continue;
+            }
+            try {
             const getStatus = (inTransitHistory: any, readyToClientHistory: any) => {
               if (readyToClientHistory && readyToClientHistory.executedAt) {
                 return 'Listo para cliente';
@@ -5577,10 +5765,11 @@ class InventoryController {
               logger.info(`Processed ${processedCount} cars for export`);
             }
 
-          } catch (error) {
-            logger.error(`Error processing car ${car._id}: ${error}`);
-            // Continuar con el siguiente registro en caso de error
-            continue;
+            } catch (error) {
+              logger.error(`Error processing car ${car._id}: ${error}`);
+              // Continuar con el siguiente registro en caso de error
+              continue;
+            }
           }
         }
 
