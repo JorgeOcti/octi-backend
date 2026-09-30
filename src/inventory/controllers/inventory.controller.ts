@@ -91,6 +91,86 @@ const statusMap: Record<string, string> = {
 export const PDF_S3_REFERER = process.env.PDF_S3_REFERER || 'https://andes.osacontrol.com/';
 
 
+/**
+ * "Esqueleto" del stock: las MISMAS filas (car × inTransitHistory ×
+ * readyToClientHistory), con el mismo filtro de fechas y el mismo orden que el
+ * pipeline completo, pero sin ninguno de los $lookup caros.
+ *
+ * Por qué existe: el pipeline completo hidrata 8 colecciones por fila (cuatro
+ * de ellas `participants`, que promedian 7 KB) y recién al final ordena y
+ * pagina. DocDB tiene que sostener TODO el resultado hidratado en memoria para
+ * ese $sort — con `allowDiskUse` deshabilitado — y en una db.t3.medium eso
+ * termina en `Operation terminated due to low available memory` (código 39).
+ * Medido: ~3.349 filas × ~9,4 KB para una company de 4.236 autos.
+ *
+ * Ninguno de esos $lookup afecta el filtrado, el orden ni la cantidad de
+ * filas: son pura hidratación. Así que se resuelve primero qué filas entran y
+ * en qué orden (filas de ~150 bytes), y solo después se hidrata la página.
+ *
+ * @param preserveReadyToClient replica el $unwind del endpoint que lo use: el
+ *        paginado NO preserva (descarta autos sin historia readyToClient), el
+ *        export SÍ. Cambiarlo altera el set de filas.
+ */
+function stockSkeletonPipeline(opts: {
+  match: any;
+  carIds: any[];
+  dateFilter: any;
+  sort: any;
+  preserveReadyToClient: boolean;
+}): any[] {
+  const pipeline: any[] = [
+    { $match: { ...opts.match, _id: { $in: opts.carIds } } },
+    { $lookup: { from: 'histories', localField: '_id', foreignField: 'car', as: 'allHistories' } },
+    {
+      $addFields: {
+        inTransitHistories: {
+          $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'inTransit'] } }
+        },
+        readyToClientHistories: {
+          $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'readyToClient'] } }
+        }
+      }
+    },
+    { $project: { allHistories: 0 } },
+    { $unwind: { path: '$inTransitHistories', preserveNullAndEmptyArrays: true } },
+    {
+      $unwind: opts.preserveReadyToClient
+        ? { path: '$readyToClientHistories', preserveNullAndEmptyArrays: true }
+        : { path: '$readyToClientHistories' }
+    },
+    // Recortar ANTES de filtrar y ordenar: esto es lo que mantiene el $sort
+    // dentro de la memoria de DocDB.
+    {
+      $project: {
+        _id: 1,
+        createdAt: 1,
+        'inTransitHistories._id': 1,
+        'inTransitHistories.executedAt': 1,
+        'readyToClientHistories._id': 1,
+        'readyToClientHistories.executedAt': 1
+      }
+    }
+  ];
+
+  if (opts.dateFilter && Object.keys(opts.dateFilter).length > 0) {
+    pipeline.push({ $match: opts.dateFilter });
+  }
+  pipeline.push({ $sort: opts.sort });
+  return pipeline;
+}
+
+/**
+ * Identidad de una fila del stock. Sirve para volver a alinear las filas
+ * hidratadas con el orden exacto que fijó el esqueleto.
+ */
+function stockRowKey(row: any): string {
+  return [
+    String(row?._id ?? ''),
+    String(row?.inTransitHistories?._id ?? ''),
+    String(row?.readyToClientHistories?._id ?? '')
+  ].join('|');
+}
+
 class InventoryController {
   constructor() {
     this.index = this.index.bind(this);
@@ -4732,86 +4812,6 @@ class InventoryController {
 
 
 
-  /**
-   * "Esqueleto" del stock: las MISMAS filas (car × inTransitHistory ×
-   * readyToClientHistory), con el mismo filtro de fechas y el mismo orden que el
-   * pipeline completo, pero sin ninguno de los $lookup caros.
-   *
-   * Por qué existe: el pipeline completo hidrata 8 colecciones por fila (cuatro
-   * de ellas `participants`, que promedian 7 KB) y recién al final ordena y
-   * pagina. DocDB tiene que sostener TODO el resultado hidratado en memoria para
-   * ese $sort — con `allowDiskUse` deshabilitado — y en una db.t3.medium eso
-   * termina en `Operation terminated due to low available memory` (código 39).
-   * Medido: ~3.349 filas × ~9,4 KB para una company de 4.236 autos.
-   *
-   * Ninguno de esos $lookup afecta el filtrado, el orden ni la cantidad de
-   * filas: son pura hidratación. Así que se resuelve primero qué filas entran y
-   * en qué orden (filas de ~150 bytes), y solo después se hidrata la página.
-   *
-   * @param preserveReadyToClient replica el $unwind del endpoint que lo use: el
-   *        paginado NO preserva (descarta autos sin historia readyToClient), el
-   *        export SÍ. Cambiarlo altera el set de filas.
-   */
-  private stockSkeletonPipeline(opts: {
-    match: any;
-    carIds: any[];
-    dateFilter: any;
-    sort: any;
-    preserveReadyToClient: boolean;
-  }): any[] {
-    const pipeline: any[] = [
-      { $match: { ...opts.match, _id: { $in: opts.carIds } } },
-      { $lookup: { from: 'histories', localField: '_id', foreignField: 'car', as: 'allHistories' } },
-      {
-        $addFields: {
-          inTransitHistories: {
-            $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'inTransit'] } }
-          },
-          readyToClientHistories: {
-            $filter: { input: '$allHistories', as: 'h', cond: { $eq: ['$$h.status', 'readyToClient'] } }
-          }
-        }
-      },
-      { $project: { allHistories: 0 } },
-      { $unwind: { path: '$inTransitHistories', preserveNullAndEmptyArrays: true } },
-      {
-        $unwind: opts.preserveReadyToClient
-          ? { path: '$readyToClientHistories', preserveNullAndEmptyArrays: true }
-          : { path: '$readyToClientHistories' }
-      },
-      // Recortar ANTES de filtrar y ordenar: esto es lo que mantiene el $sort
-      // dentro de la memoria de DocDB.
-      {
-        $project: {
-          _id: 1,
-          createdAt: 1,
-          'inTransitHistories._id': 1,
-          'inTransitHistories.executedAt': 1,
-          'readyToClientHistories._id': 1,
-          'readyToClientHistories.executedAt': 1
-        }
-      }
-    ];
-
-    if (opts.dateFilter && Object.keys(opts.dateFilter).length > 0) {
-      pipeline.push({ $match: opts.dateFilter });
-    }
-    pipeline.push({ $sort: opts.sort });
-    return pipeline;
-  }
-
-  /**
-   * Identidad de una fila del stock. Sirve para volver a alinear las filas
-   * hidratadas con el orden exacto que fijó el esqueleto.
-   */
-  private stockRowKey(row: any): string {
-    return [
-      String(row?._id ?? ''),
-      String(row?.inTransitHistories?._id ?? ''),
-      String(row?.readyToClientHistories?._id ?? '')
-    ].join('|');
-  }
-
   public async currentCompanyStock(req: IRequest, res: Response): Promise<any> {
     try {
       const { company } = req.user; // user request company
@@ -5057,7 +5057,7 @@ class InventoryController {
         // Paso 1 — resolver qué filas entran y en qué orden, sin hidratar nada.
         // Ver stockSkeletonPipeline(): hidratar primero y ordenar después es lo
         // que hacía que DocDB se quedara sin memoria en companies grandes.
-        const skeletonRows = await Car.aggregate(this.stockSkeletonPipeline({
+        const skeletonRows = await Car.aggregate(stockSkeletonPipeline({
           match: filterCompanies,
           carIds: carsHistories,
           dateFilter,
@@ -5151,11 +5151,11 @@ class InventoryController {
 
         const hydratedByRow = new Map<string, any>();
         for (const doc of hydrated) {
-          hydratedByRow.set(this.stockRowKey(doc), doc);
+          hydratedByRow.set(stockRowKey(doc), doc);
         }
 
         const docs = pageRows
-          .map((row: any) => hydratedByRow.get(this.stockRowKey(row)))
+          .map((row: any) => hydratedByRow.get(stockRowKey(row)))
           .filter((doc: any) => !!doc);
 
         if (docs.length !== pageRows.length) {
@@ -5610,7 +5610,7 @@ class InventoryController {
         //
         // En su lugar: se resuelve el orden con el esqueleto (barato) y se
         // hidrata de a tandas de autos, escribiendo cada fila apenas está lista.
-        const skeletonRows = await Car.aggregate(this.stockSkeletonPipeline({
+        const skeletonRows = await Car.aggregate(stockSkeletonPipeline({
           match: filterCompanies,
           carIds: cars,
           dateFilter,
@@ -5662,7 +5662,7 @@ class InventoryController {
           }
 
           for (const skeletonRow of batch) {
-            const car = hydratedByRow.get(this.stockRowKey(skeletonRow));
+            const car = hydratedByRow.get(stockRowKey(skeletonRow));
             if (!car) {
               continue;
             }
@@ -5694,8 +5694,12 @@ class InventoryController {
             };
 
             const containerInfo = getContainerInfo(car.inTransitHistory || car.readyToClientHistory);
-            const venue = car.inTransitHistory?.participant?.venue.name ||
-              car.readyToClientHistory?.inventoryCar?.venueFound.name ||
+            // El optional chaining cortaba en `participant?.` y `inventoryCar?.`:
+            // si existían pero sin venue/venueFound, `.name` tiraba TypeError y el
+            // catch de abajo se comía la fila entera. No se notaba porque antes
+            // ninguna fila llegaba hasta acá (el pipeline moría por memoria).
+            const venue = car.inTransitHistory?.participant?.venue?.name ||
+              car.readyToClientHistory?.inventoryCar?.venueFound?.name ||
               '';
 
             await Participant.populate(car, [
