@@ -36,6 +36,8 @@ import Milestone, {
 import { ChoicesStatusTransmittal } from '../../distribution/models/transmitall.types';
 import Transmittal from '../../distribution/models/transmittal.model';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
+import Shipment from '../../distribution/models/shipment.model';
+import ShipmentItem from '../../distribution/models/shipmentItem.model';
 import type { IAnyObject, IRequest } from '../../interfaces/global.interface';
 import RequestController from '../../request/controllers/request.controller';
 import type { IOperationTypeModel } from '../../request/models/operationType.model';
@@ -1262,6 +1264,9 @@ class FormController {
       answers,
       transmittalItem,
       transmittal,
+      // Envío de unidades (§3.b): unidad cargada / salida del camión.
+      shipmentItem,
+      shipment,
       reliability,
       inventory,
       containerFound,
@@ -1345,7 +1350,9 @@ class FormController {
         inventoryItem = check.inventory;
       }
 
-      if (car || transmittal) {
+      // El formulario de salida del Envío de unidades es a nivel camión: no
+      // lleva auto ni transmittal, así que entra por `shipment`.
+      if (car || transmittal || shipment) {
         const form = await this.getFormWithScale({
           _id: id,
           team
@@ -1381,6 +1388,10 @@ class FormController {
             });
           }
 
+          if (shipment) {
+            query['$and'].push({ shipment: new Types.ObjectId(shipment) });
+          }
+
           const existControl = await Participant.findOne(query);
           if (existControl && !description) {
             const today = moment().startOf('day');
@@ -1405,12 +1416,14 @@ class FormController {
           // initialize participant
           const participantObject: any = {
             name: form.name,
-            team: car.team,
-            company: car.company,
+            team: car ? car.team : team._id,
+            company: car ? car.company : company._id,
             form: form._id,
             deliveryToCustomer: form.deliveryToCustomer,
             car,
             transmittal: transmittal,
+            shipment,
+            shipmentItem,
             description: form.description,
             user: req.user._id,
             venue: updatedUser.venue,
@@ -1427,11 +1440,11 @@ class FormController {
             participantObject.webQuestion = form.webQuestion;
           }
 
-          let draft = await DraftModel.findOne({
+          let draft = car ? await DraftModel.findOne({
             car: car._id,
             venue: updatedUser.venue,
             form: id
-          });
+          }) : null;
 
           if (startedAt) {
             participantObject.startedAt = new Date(startedAt);
@@ -2065,6 +2078,36 @@ class FormController {
               // end update request when finish transmittal
             }
 
+            // Envío de unidades: mismo patrón que transmittalItem/transmittal,
+            // un formulario por unidad cargada y uno al registrar la salida.
+            // El participant se asocia del lado del envío; no hay ruta nueva.
+            // Ver docs/envio-de-unidades/02-technical-plan.md §3.b.
+            if (shipmentItem) {
+              const updated = await ShipmentItem.findOneAndUpdate(
+                { _id: shipmentItem, team: team._id },
+                { $set: { participant: newParticipant._id } },
+                { new: true }
+              );
+              if (!updated) {
+                logger.error(
+                  `FormController.complete: shipmentItem ${shipmentItem} no existe en el team ${team._id}`
+                );
+              }
+            }
+
+            if (shipment) {
+              const updated = await Shipment.findOneAndUpdate(
+                { _id: shipment, team: team._id },
+                { $set: { participant: newParticipant._id } },
+                { new: true }
+              );
+              if (!updated) {
+                logger.error(
+                  `FormController.complete: shipment ${shipment} no existe en el team ${team._id}`
+                );
+              }
+            }
+
             // associate file to participant
             if (allImages.length) {
               await ParticipantFile.updateOne(
@@ -2164,11 +2207,15 @@ class FormController {
                 vin
               })}`
             );
-            await DraftModel.deleteMany({
-              car: car._id,
-              venue: updatedUser.venue,
-              form: id
-            });
+            // Los borradores son por auto; el formulario de salida del camión
+            // no tiene uno.
+            if (car) {
+              await DraftModel.deleteMany({
+                car: car._id,
+                venue: updatedUser.venue,
+                form: id
+              });
+            }
 
             return res.json({
               data: {

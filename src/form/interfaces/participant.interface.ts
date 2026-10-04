@@ -198,6 +198,11 @@ export interface IParticipant {
   transmittalItem?: ITransmittalItem | ITransmittalItemModel;
 
   transmittal?: ITransmittal | ITransmittalModel;
+
+  /** Envío de unidades. Ver participant.model.ts. */
+  shipmentItem?: any;
+  shipment?: any;
+
   milestone?: IMilestone | IMilestoneModel;
 
   deliveryToCustomer: boolean;

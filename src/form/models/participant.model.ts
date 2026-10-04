@@ -564,6 +564,19 @@ const participantSchema = new mongoose.Schema(
       ref: 'Transmittal'
     },
 
+    // Envío de unidades: mismo par que transmittalItem/transmittal — uno por
+    // unidad cargada y uno por camión al registrar la salida. El de camión es
+    // además lo que distingue dos respuestas idénticas del mismo día (ver el
+    // deduplicado por keyRawAnswers en FormController.complete).
+    shipmentItem: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ShipmentItem'
+    },
+    shipment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Shipment'
+    },
+
     milestone: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Milestone'
