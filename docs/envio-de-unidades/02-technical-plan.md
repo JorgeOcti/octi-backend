@@ -47,10 +47,9 @@ car                 ObjectId → Car
 participant         ObjectId → Participant   (respuesta del formulario) [R4]
 loadedBy            ObjectId → User
 loadedAt            Date
+status              'loaded' | 'removed' | 'shipped'   (controla el índice único) [R3]
 removedAt           Date                     (baja lógica, nunca se borra)
 removedBy           ObjectId → User          (queda el registro de quién la bajó)
-activeCar           ObjectId → Car           (= car mientras está cargada; se
-                                              libera al bajarla o al cerrar) [R3]
 timestamps
 ```
 
@@ -63,7 +62,8 @@ shipmentSchema.index({ plate: 1, status: 1 });                 // buscar el env�
 shipmentSchema.index({ clientCompany: 1, venue: 1, status: 1 }); // trucks del cliente en la sucursal
 shipmentItemSchema.index({ shipment: 1 });                     // detalle / expandible
 shipmentItemSchema.index({ car: 1 });                          // historial de la unidad
-shipmentItemSchema.index({ activeCar: 1 }, { unique: true, sparse: true }); // [R3]
+shipmentItemSchema.index({ car: 1 }, { unique: true,
+  partialFilterExpression: { status: 'loaded' } });            // [R3] verificado en DocDB 5.0.0
 ```
 
 > Lección de la vista de stock: `{ inventory: 1, car: 1 }` no servía para buscar
@@ -77,20 +77,38 @@ dos requests simultáneas pasan ambas la validación.
 
 ### R3 — una unidad en un solo envío abierto
 
-La forma natural sería un índice único parcial sobre
-`{ car, status: 'open' }`, pero **`partialFilterExpression` no está soportado en
-DocumentDB**. Alternativas, en orden de preferencia:
+**Verificado contra DocDB 5.0.0 (cluster `andes-dev-docdb`, 2026-10-04).**
+`partialFilterExpression` **sí está soportado y sí se respeta** — no solo se
+acepta la opción, el motor la honra. Probado: con
+`{ car: 1 } unique partialFilterExpression: { status: 'loaded' }`, insertar el
+mismo `car` con otro status pasa, y un segundo `loaded` con el mismo `car` se
+bloquea con `code=11000`.
 
-1. **Campo centinela + índice único sparse.** `ShipmentItem.activeCar` se setea
-   igual a `car` mientras la unidad está cargada, y se hace `$unset` en **tres**
-   casos: al bajar la unidad (R7), al cerrar el envío y al cancelarlo. El motor
-   garantiza la exclusión; liberar el centinela deja la unidad disponible otra vez.
-   - A verificar contra DocDB real antes de adoptarlo (ver §7).
-2. **`findOneAndUpdate` con upsert condicional** sobre una colección
-   `ActiveLoad { car (unique), shipment, loadedAt }`. El upsert atómico hace de
-   candado; se borra la fila al cerrar.
-3. Validación optimista + reintento, aceptando una ventana de carrera. Última
-   opción: con operarios en paralelo la ventana es real.
+Entonces **no hace falta campo centinela**. Se resuelve con el índice directo:
+
+```js
+shipmentItemSchema.index(
+  { car: 1 },
+  { unique: true, partialFilterExpression: { status: 'loaded' } }
+);
+```
+
+Con `ShipmentItem.status`:
+
+| status | Cuándo | ¿Bloquea la unidad? |
+|---|---|---|
+| `loaded` | cargada en un camión abierto | **sí** |
+| `removed` | la bajaron del camión (R7) | no — queda libre otra vez |
+| `shipped` | el camión salió (R5) | no — el re-envío lo impide `handlerCompany` (§3.c) |
+
+El lock se libera en las dos transiciones, así que una unidad bajada vuelve a
+estar disponible al instante y una despachada no queda trabada por este índice.
+
+> **Cuidado con `null`.** También se probó un índice `unique + sparse` sobre un
+> campo centinela: funciona, **pero dos documentos con el campo en `null`
+> chocan** (`sparse` solo ignora el campo *ausente*, no el `null`). Si alguna vez
+> se vuelve a esa variante, liberar siempre con `$unset`, nunca asignando `null`
+> — el segundo registro que se libere fallaría con duplicate key.
 
 ### R2 — una patente, una company cliente
 
@@ -173,7 +191,7 @@ dispatches: [{
 
 | Qué impide | Mecanismo | Tipo |
 |---|---|---|
-| Que dos operarios carguen la misma unidad **ahora** | índice único sparse `activeCar` | carrera real, la resuelve el motor |
+| Que dos operarios carguen la misma unidad **ahora** | índice único parcial sobre `car` con `status: 'loaded'` | carrera real, la resuelve el motor |
 | Que se vuelva a cargar una unidad **ya despachada** | filtro de elegibilidad (handlerCompany limpio) | no hay carrera: el despacho fue hace meses |
 
 ### Lo que hay que cambiar al limpiar `handlerCompany`
@@ -228,7 +246,7 @@ Fase 2 — así se pueden probar con curl/Postman antes de tocar Flutter.
 | `GET` | `/api/v1/shipments/:id` | Estado actual del envío y sus unidades. |
 | `POST` | `/api/v1/shipments/:id/items` | **Solo reclama** la unidad por VIN (payload chico, online). Aplica R2 y R3. Devuelve el item + el auto. |
 | `DELETE` | `/api/v1/shipments/:id/items/:itemId` | Quita una unidad de un envío **abierto** (sujeto a pregunta abierta 6). |
-| `DELETE` | `/api/v1/shipments/:id/items/:itemId` | **Baja lógica** de la unidad: setea `removedAt`/`removedBy`, libera `activeCar`. Si era la última, cancela el envío. [R7][R8] |
+| `DELETE` | `/api/v1/shipments/:id/items/:itemId` | **Baja lógica**: `status: 'removed'` + `removedAt`/`removedBy`. Eso libera el índice único y la unidad queda disponible. Si era la última, cancela el envío. [R7][R8] |
 | `POST` | `/api/v1/shipments/:id/depart` | Registra la salida → cierra, escribe los `History`. Cualquier usuario del handler puede hacerlo. [R5][R6] |
 
 Las **respuestas de los formularios no tienen endpoint propio**: van por el
@@ -347,8 +365,8 @@ feature:
    `arrayFilters`** — no soportados.
 4. **`allowDiskUse` no está disponible**: todo `$sort` bloqueante tiene que caber
    en memoria.
-5. **Verificar `partialFilterExpression`** antes de apoyarse en él (§3). Si no
-   está, va la alternativa del centinela sparse.
+5. **`partialFilterExpression` sí funciona** en DocDB 5.0.0 — verificado, no
+   asumido (§3). `sparse` también, pero no ignora los `null`.
 
 ## 8. Fases y entregables
 
