@@ -314,7 +314,11 @@ export enum KindForm {
   generalUnitType = 'unitType',
   codedUnitType = 'codedUnitType',
   aforoSAG = 'aforoSAG',
-  aforo = 'aforo'
+  aforo = 'aforo',
+  // Envío de unidades: un formulario por unidad cargada y uno al registrar la
+  // salida del camión. Configurables desde el admin.
+  shipmentUnit = 'shipmentUnit',
+  shipmentDeparture = 'shipmentDeparture'
 }
 
 export const kindForm = [
@@ -328,7 +332,9 @@ export const kindForm = [
   KindForm.generalUnitType,
   KindForm.codedUnitType,
   KindForm.aforoSAG,
-  KindForm.aforo
+  KindForm.aforo,
+  KindForm.shipmentUnit,
+  KindForm.shipmentDeparture
 ];
 
 const webQuestionSchema = new mongoose.Schema({
