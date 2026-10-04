@@ -4792,9 +4792,16 @@ class InventoryController {
             status: 403
           });
         }
+        // Una unidad despachada (Envío de unidades) tiene `handlerCompany`
+        // limpio —así no se puede volver a cargar en otro camión— pero el
+        // cliente tiene que seguir viéndola: queda su registro en `dispatches`.
+        // Ver docs/envio-de-unidades/02-technical-plan.md §3.c.
         filterCompanies = {
           company: new Types.ObjectId(companyId),
-          handlerCompany: { $exists: true },
+          $or: [
+            { handlerCompany: { $exists: true } },
+            { 'dispatches.0': { $exists: true } }
+          ]
         }
       }
       if (unitFilter) {
@@ -5170,9 +5177,16 @@ class InventoryController {
             status: 403
           });
         }
+        // Una unidad despachada (Envío de unidades) tiene `handlerCompany`
+        // limpio —así no se puede volver a cargar en otro camión— pero el
+        // cliente tiene que seguir viéndola: queda su registro en `dispatches`.
+        // Ver docs/envio-de-unidades/02-technical-plan.md §3.c.
         filterCompanies = {
           company: new Types.ObjectId(companyId),
-          handlerCompany: { $exists: true },
+          $or: [
+            { handlerCompany: { $exists: true } },
+            { 'dispatches.0': { $exists: true } }
+          ]
         }
       }
 
@@ -5277,9 +5291,16 @@ class InventoryController {
             status: 403
           });
         }
+        // Una unidad despachada (Envío de unidades) tiene `handlerCompany`
+        // limpio —así no se puede volver a cargar en otro camión— pero el
+        // cliente tiene que seguir viéndola: queda su registro en `dispatches`.
+        // Ver docs/envio-de-unidades/02-technical-plan.md §3.c.
         filterCompanies = {
           company: new Types.ObjectId(companyId),
-          handlerCompany: { $exists: true },
+          $or: [
+            { handlerCompany: { $exists: true } },
+            { 'dispatches.0': { $exists: true } }
+          ]
         }
       }
 

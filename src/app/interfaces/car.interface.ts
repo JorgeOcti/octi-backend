@@ -53,6 +53,13 @@ export interface ICar {
   team: ITeam | any;
   company: ICompany | any;
   handlerCompany: ICompany | any;
+  /** Despachos del Envío de unidades. Ver car.model.ts. */
+  dispatches?: Array<{
+    shipment?: any;
+    handlerCompany?: ICompany | any;
+    by?: any;
+    at?: Date;
+  }>;
   lastForm: IParticipant | any;
   participants?: IParticipant[];
   inventories?: IInventoryCar[];

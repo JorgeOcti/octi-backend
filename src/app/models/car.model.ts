@@ -62,6 +62,31 @@ export const baseCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
   },
+  /**
+   * Despachos de la unidad (Envío de unidades). Al registrar la salida de un
+   * camión se limpia `handlerCompany` —la unidad deja de estar en manos del
+   * handler y por eso no se puede volver a cargar— y se deja acá el registro
+   * de quién la despachó y desde qué handler, que si no se perdería.
+   *
+   * Es un array porque una unidad puede despacharse, volver y despacharse otra
+   * vez. Ver docs/envio-de-unidades/02-technical-plan.md §3.c.
+   */
+  dispatches: [{
+    _id: false,
+    shipment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Shipment'
+    },
+    handlerCompany: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company'
+    },
+    by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    at: { type: Date }
+  }],
   internalNumber: {
     type: String,
     default: '',

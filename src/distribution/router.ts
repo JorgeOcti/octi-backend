@@ -4,6 +4,7 @@ import TransmittalController from './controllers/transmittal.controller';
 import TransmittalItemController from './controllers/transmittalItem.controller';
 import MilestoneController from './controllers/milestone.controller';
 import MilestoneTypeController from './controllers/milestoneType.controller';
+import ShipmentController from './controllers/shipment.controller';
 import { createTransmittalSchema } from './inputsSchema';
 
 const {isJWTAuthenticated, isLoggedIn, validateBodyParams} = Middlewares;
@@ -52,6 +53,23 @@ distributionRouter.post('/api/v1/milestone-types/', Middlewares.isJWTAuthenticat
 distributionRouter.patch('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiUpdate);
 distributionRouter.delete('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiDelete);
 
+
+// ---------------------------------------------------------------------------
+// Envío de unidades
+//
+// Los pasos con contención (abrir patente, reclamar VIN, registrar salida) son
+// online y chicos: la exclusión no se puede resolver en el dispositivo. El
+// formulario de cada unidad y el de salida viajan por POST /api/v1/forms/:id
+// con `shipmentItem` / `shipment` en el body, que ya es un camino con subida
+// de fotos y reintentos. Ver docs/envio-de-unidades/.
+// ---------------------------------------------------------------------------
+distributionRouter.get('/api/v1/shipments/', isJWTAuthenticated, ShipmentController.apiListOpen);
+distributionRouter.get('/api/v1/shipments/by-plate/:plate', isJWTAuthenticated, ShipmentController.apiOpenByPlate);
+distributionRouter.post('/api/v1/shipments/', isJWTAuthenticated, ShipmentController.apiCreate);
+distributionRouter.get('/api/v1/shipments/:id', isJWTAuthenticated, ShipmentController.apiDetail);
+distributionRouter.post('/api/v1/shipments/:id/items', isJWTAuthenticated, ShipmentController.apiClaimUnit);
+distributionRouter.delete('/api/v1/shipments/:id/items/:itemId', isJWTAuthenticated, ShipmentController.apiRemoveUnit);
+distributionRouter.post('/api/v1/shipments/:id/depart', isJWTAuthenticated, ShipmentController.apiDepart);
 
 export {
   distributionRouter
