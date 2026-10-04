@@ -222,10 +222,11 @@ cuando más le importa. El filtro pasa a aceptar también las ya despachadas:
 
 ### Dos cuidados
 
-1. **Ese `$or` necesita índice.** `cars` ya tiene `handlerCompany: 1`; hace falta
-   uno que cubra la segunda rama. Verificar el plan de ejecución contra datos
-   reales antes de desplegar — es exactamente el error que costó 99 s y 113 s en
-   los endpoints de stock este mes.
+1. **~~Ese `$or` necesita índice~~ — medido, no hace falta.** Contra DocDB 5.0.0
+   con datos reales (SAIC, 4.236 autos de 44.672): el filtro actual y el
+   propuesto dan **el mismo plan (IXSCAN) y el mismo tiempo (79 ms)**. El índice
+   `company_1` ya acota la consulta, así que el `$or` queda como filtro residual
+   sobre un conjunto chico y nunca amplía el scan.
 2. **Las devoluciones necesitan un flujo.** Hoy `handlerCompany` solo se setea al
    crear/importar (`car.controller.ts:545`). Si una unidad vuelve y no pasa por
    import, no hay forma de reestablecer la relación y no se puede volver a
