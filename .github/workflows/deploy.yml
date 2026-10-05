@@ -26,11 +26,16 @@ concurrency:
 env:
   AWS_REGION: sa-east-1
 
+# La imagen del runner va fijada y no en `ubuntu-latest`: el 19/10/2026 esa
+# etiqueta pasa a Ubuntu 26, y un cambio de sistema operativo por debajo del
+# pipeline es la clase de cosa que rompe un deploy sin que nadie haya tocado
+# nada. Se sube de versión a propósito, mirando el cambio.
+
 jobs:
   # Gate estático de compatibilidad con DocumentDB. Corre en toda rama y
   # bloquea el build, igual que en CircleCI.
   docdb-audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,7 +47,7 @@ jobs:
 
   build-and-push:
     needs: docdb-audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write # necesario para pedir el token OIDC
       contents: read
@@ -101,7 +106,7 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: read
