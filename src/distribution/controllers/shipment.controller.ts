@@ -1,16 +1,26 @@
+import * as fs from 'fs';
+import * as moment from 'moment';
+import * as path from 'path';
+
 import { Response } from 'express';
 
 import { ChoicesStatusShipment, ChoicesStatusShipmentItem } from '../models/shipment.types';
 import { ShipmentError, normalizePlate } from '../services/shipment.service';
 
+import { OSA_LOGO_SVG } from '../../utils/svg';
+import { PDF_S3_REFERER } from '../../inventory/controllers/inventory.controller';
+
 import Car from '../../app/models/car.model';
+import Company from '../../app/models/company.model';
 import History from '../../app/models/history.model';
 import { IRequest } from '../../interfaces/global.interface';
 import { ModuleHistory } from '../../app/models/history.types';
 import Shipment from '../models/shipment.model';
 import ShipmentItem from '../models/shipmentItem.model';
 import { StatusHistory } from '../../app/models/history.types';
+import GeneralUtils from '../../utils/general.utils';
 import logger from '../../services/logger.service';
+import puppeteer from 'puppeteer';
 import shipmentService from '../services/shipment.service';
 
 /**
@@ -29,6 +39,9 @@ class ShipmentController {
     this.apiClaimUnit = this.apiClaimUnit.bind(this);
     this.apiRemoveUnit = this.apiRemoveUnit.bind(this);
     this.apiDepart = this.apiDepart.bind(this);
+    this.webList = this.webList.bind(this);
+    this.webItems = this.webItems.bind(this);
+    this.webTarja = this.webTarja.bind(this);
   }
 
   // =========================================================== app (/api/v1)
@@ -278,7 +291,304 @@ class ShipmentController {
     }
   }
 
+  // ============================================================ web (sesión)
+
+  /**
+   * Listado paginado. El handler ve lo que despachó; el cliente, lo suyo.
+   * Es el mismo criterio que aplica currentCompanyStock, no uno nuevo.
+   *
+   * Los cancelados también se listan acá (en la app no aparecen): es donde se
+   * puede ver qué unidades se bajaron y quién las bajó.
+   */
+  public async webList(req: IRequest, res: Response): Promise<any> {
+    try {
+      const { plate, clientCompany, status, startDate, endDate } = req.query as Record<string, string>;
+      const page = Math.max(1, parseInt((req.query.page as string) || '1', 10));
+      const pageSize = Math.min(200, Math.max(1, parseInt((req.query.pageSize as string) || '10', 10)));
+
+      const filter: any = await this.scopeFilter(req);
+      if (plate) filter.plate = { $regex: normalizePlate(plate), $options: 'i' };
+      if (clientCompany) filter.clientCompany = clientCompany;
+      if (status) filter.status = { $in: status.split(',') };
+      if (startDate && endDate) {
+        filter.createdAt = {
+          $gte: moment(startDate, 'YYYY-MM-DD').startOf('day').toDate(),
+          $lte: moment(endDate, 'YYYY-MM-DD').endOf('day').toDate()
+        };
+      }
+
+      const total = await Shipment.countDocuments(filter);
+      const shipments = await Shipment.find(filter)
+        .populate([
+          { path: 'clientCompany', select: ['name'] },
+          { path: 'handlerCompany', select: ['name'] },
+          { path: 'venue', select: ['name'] },
+          { path: 'shippedBy', select: ['firstName', 'lastName', 'email'] },
+          { path: 'createdBy', select: ['firstName', 'lastName', 'email'] }
+        ])
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean();
+
+      // Las unidades de cada fila se piden al desplegarla; acá solo el total,
+      // y en una sola consulta agrupada.
+      const counts = await ShipmentItem.aggregate([
+        { $match: { shipment: { $in: shipments.map((s: any) => s._id) } } },
+        { $group: { _id: { shipment: '$shipment', status: '$status' }, n: { $sum: 1 } } }
+      ]);
+      const byShipment = new Map<string, any>();
+      for (const c of counts) {
+        const key = String(c._id.shipment);
+        const entry = byShipment.get(key) || { loaded: 0, shipped: 0, removed: 0 };
+        entry[c._id.status] = c.n;
+        byShipment.set(key, entry);
+      }
+
+      return res.json({
+        results: shipments.map((s: any) => {
+          const n = byShipment.get(String(s._id)) || { loaded: 0, shipped: 0, removed: 0 };
+          return {
+            ...s,
+            units: n.loaded + n.shipped,
+            unitsRemoved: n.removed,
+            // La Tarja sale del formulario de salida, que viaja por la vía
+            // encolada: hay una ventana en que el camión ya salió y el PDF
+            // todavía no se puede emitir. La web muestra el motivo.
+            ...this.tarjaAvailability(s)
+          };
+        }),
+        total,
+        page,
+        pageSize,
+        status: 200
+      });
+    } catch (e) {
+      return this.fail(res, e, 'webList', req);
+    }
+  }
+
+  /** Unidades de un envío — la fila expandible las pide al desplegarse. */
+  public async webItems(req: IRequest, res: Response): Promise<any> {
+    try {
+      const shipment = await Shipment.findOne({
+        _id: req.params.id,
+        ...(await this.scopeFilter(req))
+      }).lean();
+      if (!shipment) return this.notFound(res);
+
+      const items = await ShipmentItem.find({ shipment: shipment._id })
+        .populate([
+          { path: 'car', select: ['vin', 'brand', 'denomination', 'color', 'patent'] },
+          { path: 'loadedBy', select: ['firstName', 'lastName', 'email'] },
+          { path: 'removedBy', select: ['firstName', 'lastName', 'email'] },
+          { path: 'participant', select: ['hasDamages', 'createdAt'] }
+        ])
+        .sort({ loadedAt: 1 })
+        .lean();
+
+      return res.json({ results: items, status: 200 });
+    } catch (e) {
+      return this.fail(res, e, 'webItems', req);
+    }
+  }
+
+  /**
+   * Tarja en PDF. Mismo patrón que el PDF de desconsolidado: pug + puppeteer
+   * con el chromium de la imagen.
+   *
+   * El nombre del chofer y la foto del camión salen del formulario de salida,
+   * que es editable desde el admin: se buscan por `kindUpdate`, nunca por el
+   * texto ni el orden de las preguntas. Ver §6 del plan técnico.
+   */
+  public async webTarja(req: IRequest, res: Response): Promise<any> {
+    try {
+      const shipment: any = await Shipment.findOne({
+        _id: req.params.id,
+        ...(await this.scopeFilter(req))
+      })
+        .populate([
+          { path: 'clientCompany', select: ['name', 'businessName', 'rut', 'image'] },
+          { path: 'handlerCompany', select: ['name', 'businessName', 'rut', 'image'] },
+          { path: 'venue', select: ['name', 'code', 'abbreviation'] },
+          { path: 'shippedBy', select: ['firstName', 'lastName', 'email'] },
+          {
+            path: 'participant',
+            populate: [{ path: 'sections.answers.images', model: 'ParticipantFile' }]
+          }
+        ])
+        .lean();
+      if (!shipment) return this.notFound(res);
+
+      const availability = this.tarjaAvailability(shipment);
+      if (!availability.tarjaReady) {
+        return res.status(409).json({
+          code: 'TARJA_NOT_READY',
+          message: availability.tarjaReason,
+          status: 409
+        });
+      }
+
+      const items: any[] = await ShipmentItem.find({
+        shipment: shipment._id,
+        status: ChoicesStatusShipmentItem.shipped
+      })
+        .populate([
+          { path: 'car', select: ['vin', 'brand', 'denomination', 'color', 'patent'] },
+          { path: 'loadedBy', select: ['firstName', 'lastName'] },
+          {
+            path: 'participant',
+            populate: [
+              { path: 'sections.answers.damagesSelected.kind', model: 'Kind' },
+              { path: 'sections.answers.damagesSelected.part', model: 'Part' },
+              { path: 'sections.answers.damagesSelected.position', model: 'Position' }
+            ]
+          }
+        ])
+        .sort({ loadedAt: 1 })
+        .lean();
+
+      const units = items.map((item: any, index: number) => ({
+        index: index + 1,
+        vin: item.car?.vin || '',
+        brand: item.car?.brand || '',
+        denomination: item.car?.denomination || '',
+        color: item.car?.color || '',
+        loadedBy: item.loadedBy
+          ? `${item.loadedBy.firstName || ''} ${item.loadedBy.lastName || ''}`.trim()
+          : '',
+        loadedAt: item.loadedAt,
+        hasDamages: !!item.participant?.hasDamages,
+        damages: this.extractDamages(item.participant)
+      }));
+
+      const css = fs.readFileSync(
+        path.join(__dirname, '../../../views/') + 'shipment/pdf/styles.css',
+        'utf8'
+      );
+      const html = GeneralUtils.generateHtmlFromPugFile(
+        path.join(__dirname, '../../../views/') + 'shipment/pdf/tarja.pug',
+        {
+          css: css.replace(/(\r\n|\n|\r)/gm, ''),
+          moment,
+          shipment,
+          units,
+          driverName: this.answerByKindUpdate(shipment.participant, 'shipment.driverName')?.comment || '',
+          truckPhotos: this.answerByKindUpdate(shipment.participant, 'shipment.truckPhoto')?.images || [],
+          userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
+          user: req.user
+        }
+      );
+
+      const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium',
+        args: ['--no-sandbox', '--allow-file-access-from-files', '--enable-local-file-accesses'],
+        headless: true
+      });
+      try {
+        const page = await browser.newPage();
+        // Las fotos viven en S3 detrás de una policy de aws:Referer, igual que
+        // en el PDF de desconsolidado.
+        await page.setExtraHTTPHeaders({ referer: PDF_S3_REFERER });
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          displayHeaderFooter: true,
+          headerTemplate: '<div></div>',
+          footerTemplate: `
+            <div class="footer" style="width: 100%; font-size: 8px; padding: 30px; display: flex; justify-content: space-between; align-items: baseline;">
+              <div>${shipment.venue?.code || ''}</div>
+              <div>Página <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+              <div style="color: #999; display: flex; align-items: baseline;">
+              Powered by
+              ${OSA_LOGO_SVG}
+              octimize.cl
+              </div>
+            </div>`,
+          margin: { top: '70px', left: '30px', right: '30px', bottom: '70px' }
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-disposition', `inline; filename=Tarja-${shipment.plate}.pdf`);
+        return res.send(pdfBuffer);
+      } finally {
+        await browser.close();
+      }
+    } catch (e) {
+      return this.fail(res, e, 'webTarja', req);
+    }
+  }
+
   // ---------------------------------------------------------------- helpers
+
+  /**
+   * Respuesta de un formulario por `kindUpdate`. Es el mecanismo que ya usa el
+   * sistema para mapear una respuesta a un campo, y lo que permite que el admin
+   * reordene o reescriba las preguntas sin romper la Tarja.
+   */
+  private answerByKindUpdate(participant: any, kindUpdate: string): any {
+    for (const section of participant?.sections || []) {
+      for (const answer of section.answers || []) {
+        if (answer.kindUpdate === kindUpdate) return answer;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Daños como `parte-posición-tipo`, el mismo formato que arma el export de
+   * stock (inventory.controller.ts, currentCompanyStockExport).
+   */
+  private extractDamages(participant: any): string[] {
+    const damages: string[] = [];
+    for (const section of participant?.sections || []) {
+      for (const answer of section.answers || []) {
+        for (const damage of answer.damagesSelected || []) {
+          const text = [damage.part?.name, damage.position?.name, damage.kind?.name]
+            .filter(Boolean)
+            .join('-');
+          if (text) damages.push(text);
+        }
+      }
+    }
+    return damages;
+  }
+
+  /**
+   * Scope por company. El handler ve los envíos que despachó; el cliente, los
+   * de sus unidades. Una company que es handler nunca es cliente de sí misma,
+   * así que no se superponen.
+   *
+   * A propósito NO filtra por team: el envío lleva el team del handler y el
+   * cliente suele estar en otro, así que filtrar por team lo dejaría sin ver
+   * sus propios envíos. Es el mismo criterio de currentCompanyStock, que
+   * también acota por company y no por team. La company ya pertenece a un
+   * team, así que el filtro no se afloja.
+   */
+  private async scopeFilter(req: IRequest): Promise<any> {
+    const userCompany: any = await Company.findById(req.user.company._id, { handler: 1 }).lean();
+    return userCompany?.handler
+      ? { handlerCompany: req.user.company._id }
+      : { clientCompany: req.user.company._id };
+  }
+
+  /** Por qué se puede (o no) emitir la Tarja de este envío. */
+  private tarjaAvailability(shipment: any): { tarjaReady: boolean; tarjaReason: string | null } {
+    if (shipment.status === ChoicesStatusShipment.cancelled) {
+      return { tarjaReady: false, tarjaReason: 'El envío fue cancelado.' };
+    }
+    if (shipment.status !== ChoicesStatusShipment.shipped) {
+      return { tarjaReady: false, tarjaReason: 'El camión todavía no registró su salida.' };
+    }
+    if (!shipment.participant) {
+      return {
+        tarjaReady: false,
+        tarjaReason: 'Falta que llegue el formulario de salida (nombre del chofer y foto del camión).'
+      };
+    }
+    return { tarjaReady: true, tarjaReason: null };
+  }
 
   /** Envío con scope: solo los del handler del usuario. */
   private async loadScoped(req: IRequest): Promise<any> {

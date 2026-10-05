@@ -71,6 +71,12 @@ distributionRouter.post('/api/v1/shipments/:id/items', isJWTAuthenticated, Shipm
 distributionRouter.delete('/api/v1/shipments/:id/items/:itemId', isJWTAuthenticated, ShipmentController.apiRemoveUnit);
 distributionRouter.post('/api/v1/shipments/:id/depart', isJWTAuthenticated, ShipmentController.apiDepart);
 
+//- Web (sesión). El scope lo resuelve el controlador: el handler ve lo que
+//- despachó, el cliente ve lo suyo.
+distributionRouter.get('/api/shipments/', isLoggedIn, ShipmentController.webList);
+distributionRouter.get('/api/shipments/:id/items', isLoggedIn, ShipmentController.webItems);
+distributionRouter.get('/api/shipments/:id/tarja.pdf', isLoggedIn, ShipmentController.webTarja);
+
 export {
   distributionRouter
 };

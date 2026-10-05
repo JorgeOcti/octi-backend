@@ -1,0 +1,185 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  font-size: 10px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #000;
+  margin: 30px 0;
+}
+
+.bottom-margin {
+  margin-bottom: 30px;
+}
+
+.container {
+  max-width: 1000px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
+}
+
+.logo {
+  flex: 1;
+}
+
+.logo img {
+  width: 90%;
+  height: auto;
+}
+
+.company-info {
+  text-align: left;
+  font-size: 12px;
+  line-height: 1;
+  flex: 2;
+}
+
+.company-info p {
+  line-height: 0.5;
+}
+
+.section {
+  margin-top: 15px;
+  display: block;
+  page-break-inside: avoid;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: bold;
+  background: #eee;
+  padding: 5px;
+  border-left: 5px solid #000;
+  margin-bottom: 8px;
+}
+
+.container-info, .info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.item span.label {
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+  border-left: 1px solid #666;
+  border-right: 1px solid #666;
+  border-top: 1px solid #666;
+}
+
+table th, table td {
+  padding: 8px;
+  text-align: left;
+  font-size: 12px;
+  border-bottom: 1px solid #666;
+}
+
+table th {
+  font-weight: bold;
+  border-bottom: 2px solid #666;
+}
+
+table td {
+  border-bottom: 1px solid #666;
+}
+
+.containers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 10px;
+  color: #000;
+  border-top: 2px solid #000;
+  padding-top: 8px;
+}
+
+
+.image-box {
+  display: inline-block;
+  width: 40%; /* Two images per row */
+  padding: 5px;
+  page-break-inside: avoid; /* Prevents breaking */
+}
+
+.image-box .content {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.image-box span {
+  font-size: 10px;
+  margin: 10px 10px;
+  text-align: left;
+}
+
+img {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  height: auto;
+  display: block;
+  padding: 5px;
+}
+
+.no-bullet {
+  list-style-type: none;
+}
+
+span.comment {
+  font-size: 10px;
+  margin: 10px;
+}
+
+.empty-evidence {
+  font-size: 12px;
+  padding: 15px;
+  border: 1px solid #eee;
+
+}
+
+.section ul {
+  font-size: 13px;
+  margin: 5px 0;
+  padding-left: 20px;
+}
+
+.section > ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.section ul ul {
+  list-style: disc;
+  padding-left: 20px;
+}

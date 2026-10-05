@@ -1,0 +1,100 @@
+//- Tarja del Envío de unidades.
+//-
+//- El nombre del chofer y la foto del camión llegan ya resueltos desde el
+//- controlador, que los busca por `kindUpdate` en el formulario de salida —la
+//- plantilla nunca depende del texto ni del orden de las preguntas.
+//- Ver docs/envio-de-unidades/02-technical-plan.md §6.
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Tarja #{shipment.plate}
+    style(type="text/css")=css
+  body
+    header
+      if shipment.handlerCompany && shipment.handlerCompany.image && shipment.handlerCompany.image.url
+        .logo
+          img(src=shipment.handlerCompany.image.url, height="30px")
+      .company-info
+        h1 #{shipment.handlerCompany && (shipment.handlerCompany.businessName || shipment.handlerCompany.name) || ''} (#{shipment.venue && shipment.venue.abbreviation || ''})
+        p Giro: SERVICIOS EXTRAPORTUARIOS
+        p Dirección: #{shipment.venue && shipment.venue.code || ''}
+        p Emitido por: #{userName} el #{moment().format('DD/MM/YYYY - HH:mm')}
+      if shipment.clientCompany && shipment.clientCompany.image && shipment.clientCompany.image.url
+        .logo(style="text-align: right;")
+          img(src=shipment.clientCompany.image.url, height="30px")
+
+    .section-wrapper
+      .section
+        .title CAMIÓN #{shipment.plate}
+        .container-info
+          .item
+            span.label Patente:
+            span #{shipment.plate}
+          .item
+            span.label Chofer:
+            span #{driverName || 'Sin información'}
+          .item
+            span.label Transportista:
+            span #{shipment.transporter && shipment.transporter.carrierName || shipment.transporter && shipment.transporter.driverName || 'Sin información'}
+          .item
+            span.label RUT chofer:
+            span #{shipment.transporter && shipment.transporter.driverRut || 'Sin información'}
+
+    .section-wrapper
+      .section
+        .info-grid
+          .item
+            span.label Cliente:
+            span #{shipment.clientCompany && shipment.clientCompany.name || ''}
+          .item
+            span.label Sucursal:
+            span #{shipment.venue && shipment.venue.name || 'Sin información'}
+          .item
+            span.label Registra salida:
+            span #{shipment.shippedBy && ((shipment.shippedBy.firstName || '') + ' ' + (shipment.shippedBy.lastName || '')).trim() || 'Sin información'}
+          .item
+            span.label Fecha de salida:
+            span #{shipment.shippedAt && moment(shipment.shippedAt).format('DD/MM/YYYY - HH:mm') || 'Sin información'}
+
+    .section-wrapper
+      .section
+        .title Unidades (#{units.length})
+        table
+          thead
+            tr
+              th #
+              th VIN
+              th Marca
+              th Modelo
+              th Color
+              th Daños
+              th Cargada por
+          tbody
+            each unit in units
+              tr
+                td #{unit.index}.
+                td #{unit.vin}
+                td #{unit.brand}
+                td #{unit.denomination}
+                td #{unit.color}
+                td
+                  if unit.damages.length
+                    each damage in unit.damages
+                      div #{damage}
+                  else if unit.hasDamages
+                    div Sí
+                  else
+                    div No
+                td #{unit.loadedBy}
+
+    if truckPhotos && truckPhotos.length
+      .section-wrapper
+        .section
+          .title Camión cargado
+          .containers
+            each photo in truckPhotos
+              if photo && photo.url
+                .image-box
+                  img(src=photo.url)
