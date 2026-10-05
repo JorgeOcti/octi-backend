@@ -816,9 +816,30 @@ class FormController {
           userForms: id
         }).countDocuments()) < 1
       ) {
-        return res.status(403).json({
-          message: 'No tienes permisos para esta operación'
-        });
+        // Los formularios del Envío de unidades son la excepción: el operario
+        // no los elige de una lista, los resuelve el servidor por kind al
+        // crear el camión. Exigir que estén en `userForms` haría que cada
+        // operario nuevo rompa el flujo en silencio hasta que un admin se los
+        // asigne de a uno.
+        //
+        // El permiso ya está acotado por otro lado: sólo se aceptan los del
+        // propio team y company del usuario, y sólo esos dos kinds.
+        const shipmentForm = await Form.findOne(
+          {
+            _id: id,
+            team,
+            company: req.user.company._id,
+            kind: { $in: [KindForm.shipmentUnit, KindForm.shipmentDeparture] },
+            active: true
+          },
+          { _id: true }
+        ).lean();
+
+        if (!shipmentForm) {
+          return res.status(403).json({
+            message: 'No tienes permisos para esta operación'
+          });
+        }
       }
       const user = (await UserModel.findById(req.user._id, {
         venue: true
