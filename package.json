@@ -19,6 +19,7 @@
     "superadmin:list": "ts-node src/app/commands/SuperAdminGrant.ts --list",
     "superadmin:grant": "ts-node src/app/commands/SuperAdminGrant.ts",
     "superadmin:revoke": "ts-node src/app/commands/SuperAdminGrant.ts --revoke",
+    "shipment:forms": "ts-node src/app/commands/ShipmentFormsSeed.ts",
     "test-with-coverage": "ENV=testing nyc --reporter=html --reporter=text mocha dist/*.spec.js dist/**/*.spec.js dist/**/**/*.spec.js --timeout 5000 --exit",
     "madge": "madge --circular ./src --extensions ts --warning"
   },
