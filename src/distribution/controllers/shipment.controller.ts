@@ -42,6 +42,7 @@ class ShipmentController {
     this.webList = this.webList.bind(this);
     this.webItems = this.webItems.bind(this);
     this.webTarja = this.webTarja.bind(this);
+    this.index = this.index.bind(this);
   }
 
   // =========================================================== app (/api/v1)
@@ -292,6 +293,11 @@ class ShipmentController {
   }
 
   // ============================================================ web (sesión)
+
+  /** Shell de la SPA: el listado vive en public/js/app. */
+  public async index(req: IRequest, res: Response): Promise<any> {
+    return res.render('app/index', { token: await req.user.generateToken() });
+  }
 
   /**
    * Listado paginado. El handler ve lo que despachó; el cliente, lo suyo.

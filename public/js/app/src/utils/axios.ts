@@ -1377,4 +1377,27 @@ export default class ApiService {
   public getOSACars(search?: String): AxiosPromise {
     return this.instance.get(`/api/osa-cars/${search ? `?search=${search}` : ''}`);
   }
+
+  // Envío de unidades. El scope (handler o cliente) lo resuelve el backend a
+  // partir de la company del usuario; acá no se manda.
+  public getShipments(page: number, pageSize?: number, filters?: any): AxiosPromise {
+    let url = `/api/shipments/?page=${page}`;
+    if (pageSize) {
+      url += `&pageSize=${pageSize}`;
+    }
+    if (filters) {
+      for (const key in filters) {
+        if (filters[key]) {
+          url += `&${key}=${encodeURIComponent(filters[key])}`;
+        }
+      }
+    }
+    return this.instance.get(url, {
+      cancelToken: this.source.token
+    });
+  }
+
+  public getShipmentItems(id: string): AxiosPromise {
+    return this.instance.get(`/api/shipments/${id}/items`);
+  }
 }

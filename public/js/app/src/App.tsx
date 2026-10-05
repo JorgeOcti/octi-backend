@@ -73,6 +73,7 @@ import { TraceabilityView } from "./components/Traceability/TraceabilityView";
 import OSAView from "./components/OSA/OSAView";
 import { LBZView } from "./components/LBZ/LBZ";
 import ContainersInventory from "./components/Inventory/ContainersInventory";
+import ShipmentListView from "./components/Shipments/ShipmentListView";
 import GeneralItemsContentView from "./components/Inventory/GeneralItemsContentView";
 import ContainerInventoryCreateView from "./components/Containers/ContainerInventoryCreateView/ContainerInventoryCreateView";
 import GeneralItemsCreateView from './components/Containers/ContainerInventoryCreateView/GeneralItemsCreateView';
@@ -118,6 +119,7 @@ const App = () => (
         <Route exact path='/containers/aforo/' component={AforoContainerDashboard} />
         <Route exact path='/containers/aforo-sag/' component={AforoSAGContainerDashboard} />
         <Route exact path='/inventory/containers/' component={ContainersInventory} />
+        <Route exact path='/shipments/' component={ShipmentListView} />
         <Route exact path='/inventory/containers/general-items/' component={GeneralItemsContentView} />
         <Route exact path='/inventory/management/' component={InventoryManagement} />
         <Route exact path='/inventory/management/:id' component={InventoryDetail} />

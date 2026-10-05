@@ -364,6 +364,21 @@ if (hasPermission(window.user, 'viewContainerInventory')) {
   });
 }
 
+// Envío de unidades: lo usan tanto el operador del handler como el cliente que
+// mira sus despachos, así que se muestra con cualquiera de los dos permisos.
+// El backend ya acota lo que cada uno ve, no hace falta un permiso nuevo.
+if (
+  hasPermission(window.user, 'viewContainerInventory') ||
+  hasPermission(window.user, 'viewClient')
+) {
+  AdminLoadControl.push({
+    id: '6.6',
+    icon: 'fa-circle-o',
+    text: 'Envío de unidades',
+    url: '/shipments/'
+  });
+}
+
 if (hasPermission(window.user, 'viewClient')) {
   AdminLoadControl.push({
     id: '6.2',
