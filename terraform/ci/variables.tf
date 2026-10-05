@@ -39,12 +39,22 @@ variable "github_repos" {
     cualquier workflow del repo —incluido el de un pull request de un fork— a
     desplegar.
 
-      repo — "owner/nombre", tal cual aparece en la URL de GitHub.
-      refs — refs del token OIDC. Por defecto las dos ramas que despliegan.
+      repo         — "owner/nombre", tal cual aparece en la URL de GitHub.
+      subject_repo — cómo aparece el repo DENTRO del claim `sub`. Normalmente
+                     es igual a `repo`, pero si la cuenta tiene activada la
+                     personalización del subject claim, GitHub emite los IDs
+                     numéricos: "owner@123/nombre@456". Eso es más seguro
+                     —el ID sobrevive a un rename, así que el permiso no se
+                     puede secuestrar renombrando— pero hay que declararlo
+                     tal cual. Verificable imprimiendo el claim en el
+                     workflow. Si se omite, se usa `repo`.
+      refs         — refs del token OIDC. Por defecto las dos ramas que
+                     despliegan.
     EOT
   type = map(object({
-    repo = string
-    refs = optional(list(string), ["refs/heads/develop", "refs/heads/master"])
+    repo         = string
+    subject_repo = optional(string)
+    refs         = optional(list(string), ["refs/heads/develop", "refs/heads/master"])
   }))
   default = {}
 }

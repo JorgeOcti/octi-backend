@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "github_assume_role" {
         variable = "token.actions.githubusercontent.com:sub"
         values = [
           for ref in statement.value.refs :
-          "repo:${statement.value.repo}:ref:${ref}"
+          "repo:${coalesce(statement.value.subject_repo, statement.value.repo)}:ref:${ref}"
         ]
       }
     }
