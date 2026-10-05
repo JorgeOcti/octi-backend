@@ -53,6 +53,8 @@ export interface IFormQuestion {
   maxValue: number;
   colors: string[];
 
+  /** Varias fotos en una pregunta de imagen. Ver form.model.ts. */
+  multi?: boolean;
   requireSeverity: boolean;
   requirePicture: boolean;
 

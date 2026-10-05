@@ -89,24 +89,32 @@ html(lang="es")
     //- La URL de un adjunto vive en `file.url` (mongoose-crate), igual que en
     //- el PDF de desconsolidado. Leerla de `photo.url` no falla: deja el PDF
     //- sin fotos y sin ningún aviso.
-    if units.some(u => u.photos && u.photos.length)
+    //-
+    //- Las fotos van todas juntas en una sección, no una subsección por unidad:
+    //- con un camión de 20 autos eso daba 20 títulos con una foto debajo.
+    //- Cada foto lleva el VIN como pie, así se sigue sabiendo de cuál es.
+    - var unitPhotos = []
+    each unit in units
+      each photo in (unit.photos || [])
+        if photo.file && photo.file.url
+          - unitPhotos.push({ url: photo.file.url, vin: unit.vin })
+
+    if unitPhotos.length
       .section-wrapper
         .section
-          .title Evidencia fotográfica de las unidades
-          each unit in units
-            if unit.photos && unit.photos.length
-              .title.unit-photos-title #{unit.index}. #{unit.vin}
-              .containers
-                each photo in unit.photos
-                  if photo.file && photo.file.url
-                    .image-box
-                      img(src=photo.file.url, alt="Foto de la unidad")
+          .title Evidencia fotográfica de las unidades (#{unitPhotos.length} #{unitPhotos.length == 1 ? 'foto' : 'fotos'})
+          .photo-grid
+            each photo in unitPhotos
+              .image-box
+                .content
+                  img(src=photo.url, alt="Foto de la unidad")
+                  span #{photo.vin}
 
     if truckPhotos && truckPhotos.length
       .section-wrapper
         .section
-          .title Camión cargado
-          .containers
+          .title Camión cargado (#{truckPhotos.length} #{truckPhotos.length == 1 ? 'foto' : 'fotos'})
+          .photo-grid
             each photo in truckPhotos
               if photo.file && photo.file.url
                 .image-box

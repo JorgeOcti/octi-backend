@@ -145,6 +145,10 @@ function departureFormDefinition(name: string, team: any, company: any): any {
           kind: 'image',
           imageType: 'photo',
           kindUpdate: TRUCK_PHOTO,
+          // Varias fotos: un camión cargado no se documenta con una sola toma.
+          // Con `multi` el botón de agregar no desaparece tras la primera
+          // (ver questions.dart en la app).
+          multi: true,
           weight: 0,
           order: 3
         },

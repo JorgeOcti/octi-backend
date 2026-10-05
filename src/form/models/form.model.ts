@@ -250,6 +250,19 @@ const formQuestionsSchema = new mongoose.Schema({
   maxValue: Number,
   colors: [String],
 
+  // Permite responder una pregunta de imagen con VARIAS fotos. La app ya lo
+  // soporta (`hideOnSelected: question.multi ? false : true` en questions.dart:
+  // con multi el botón de agregar no desaparece tras la primera), pero leía
+  // `json['multi']` de un campo que el schema no tenía, así que el modo strict
+  // de Mongoose lo descartaba y nunca llegaba.
+  //
+  // Default false: sin esto, activarlo cambiaría el comportamiento de todas las
+  // preguntas de imagen que ya existen.
+  multi: {
+    type: Boolean,
+    default: false
+  },
+
   requireSeverity: {
     type: Boolean,
     default: false
