@@ -485,6 +485,7 @@ class ShipmentController {
           shipment,
           units,
           driverName: this.answerByKindUpdate(shipment.participant, 'shipment.driverName')?.comment || '',
+          driverRut: this.answerByKindUpdate(shipment.participant, 'shipment.driverRut')?.comment || '',
           truckPhotos: this.answerByKindUpdate(shipment.participant, 'shipment.truckPhoto')?.images || [],
           userName: `${GeneralUtils.capitalizeFirstLetter(req.user.firstName)} ${GeneralUtils.capitalizeFirstLetter(req.user.lastName)}`,
           user: req.user

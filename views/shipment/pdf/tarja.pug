@@ -36,11 +36,8 @@ html(lang="es")
             span.label Chofer:
             span #{driverName || 'Sin información'}
           .item
-            span.label Transportista:
-            span #{shipment.transporter && shipment.transporter.carrierName || shipment.transporter && shipment.transporter.driverName || 'Sin información'}
-          .item
             span.label RUT chofer:
-            span #{shipment.transporter && shipment.transporter.driverRut || 'Sin información'}
+            span #{driverRut || 'Sin información'}
 
     .section-wrapper
       .section

@@ -61,6 +61,7 @@ const path = require('path');
  * preguntas desde el admin no rompa el PDF.
  */
 const DRIVER_NAME = 'shipment.driverName';
+const DRIVER_RUT = 'shipment.driverRut';
 const TRUCK_PHOTO = 'shipment.truckPhoto';
 
 function unitFormDefinition(name: string, team: any, company: any, damagesCatalog: any): any {
@@ -130,9 +131,11 @@ function departureFormDefinition(name: string, team: any, company: any): any {
           order: 1
         },
         {
+          // También por kindUpdate: la Tarja lo muestra y la app ya no lo pide.
           question: 'RUT del chofer',
           kind: 'text',
           keyboardType: 'text',
+          kindUpdate: DRIVER_RUT,
           optional: true,
           weight: 0,
           order: 2
@@ -251,7 +254,7 @@ async function ShipmentFormsSeed(): Promise<void> {
         // Lo único que se corrige del que ya existe: sin estos kindUpdate la
         // Tarja sale sin chofer ni foto y no hay forma de notarlo desde la UI.
         const flat = (existing.sections || []).flatMap((s: any) => s.questions || []);
-        const faltan = [DRIVER_NAME, TRUCK_PHOTO]
+        const faltan = [DRIVER_NAME, DRIVER_RUT, TRUCK_PHOTO]
           .filter(k => !flat.some((q: any) => q.kindUpdate === k));
 
         if (!faltan.length) {
