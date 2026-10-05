@@ -124,13 +124,21 @@ export const kindQuestion = [
 export enum KindQuestionKeyboard {
   text = 'text',
   numeric = 'numeric',
-  email = 'email'
+  email = 'email',
+  // `keyboardType` ya hace doble función en la app: define el teclado y la
+  // regla de validación (email valida el formato desde questions.dart). `rut`
+  // sigue ese mismo camino en vez de agregar un campo nuevo a la pregunta,
+  // porque `Question` es un modelo de Realm y con
+  // `shouldDeleteIfMigrationNeeded: true` cualquier campo nuevo borra los
+  // formularios offline que las cuadrillas todavía no subieron.
+  rut = 'rut'
 }
 
 export const kindQuestionKeyboard = [
   KindQuestionKeyboard.text,
   KindQuestionKeyboard.numeric,
-  KindQuestionKeyboard.email
+  KindQuestionKeyboard.email,
+  KindQuestionKeyboard.rut
 ];
 
 export enum KindActionForm {

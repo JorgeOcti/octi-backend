@@ -134,7 +134,9 @@ function departureFormDefinition(name: string, team: any, company: any): any {
           // También por kindUpdate: la Tarja lo muestra y la app ya no lo pide.
           question: 'RUT del chofer',
           kind: 'text',
-          keyboardType: 'text',
+          // `rut` define el teclado y además activa la validación de módulo 11
+          // en la app, igual que 'email'. Ver form.model.ts.
+          keyboardType: 'rut',
           kindUpdate: DRIVER_RUT,
           optional: true,
           weight: 0,

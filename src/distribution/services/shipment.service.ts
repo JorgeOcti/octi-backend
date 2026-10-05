@@ -24,7 +24,8 @@ export enum ShipmentErrorCode {
   plateOtherClient = 'PLATE_OTHER_CLIENT',
   shipmentClosed = 'SHIPMENT_CLOSED',
   shipmentCancelled = 'SHIPMENT_CANCELLED',
-  formsNotConfigured = 'FORMS_NOT_CONFIGURED'
+  formsNotConfigured = 'FORMS_NOT_CONFIGURED',
+  invalidPlate = 'INVALID_PLATE'
 }
 
 export class ShipmentError extends Error {
@@ -46,6 +47,21 @@ export class ShipmentError extends Error {
  */
 export function normalizePlate(plate: string): string {
   return String(plate || '').replace(/[\s-]/g, '').toUpperCase().trim();
+}
+
+/**
+ * Formatos de patente aceptados, sobre la patente YA normalizada:
+ *   - 2 letras + 4 números  (AB1234)
+ *   - 4 letras + 2 números  (ABCD12)
+ *
+ * Se valida también acá y no sólo en la app: una patente mal escrita abre un
+ * camión nuevo en vez de encontrar el que ya estaba, y a partir de ahí la
+ * carga queda partida en dos envíos que nadie puede volver a unir.
+ */
+const PLATE_FORMAT = /^(?:[A-Z]{2}[0-9]{4}|[A-Z]{4}[0-9]{2})$/;
+
+export function isValidPlate(plate: string): boolean {
+  return PLATE_FORMAT.test(normalizePlate(plate));
 }
 
 class ShipmentService {
@@ -102,6 +118,16 @@ class ShipmentService {
     createdBy: any;
   }): Promise<{ shipment: IShipmentModel; created: boolean }> {
     const plate = normalizePlate(params.plate);
+
+    if (!PLATE_FORMAT.test(plate)) {
+      throw new ShipmentError(
+        ShipmentErrorCode.invalidPlate,
+        'La patente debe tener 6 caracteres: 2 letras y 4 números (AB1234), o 4 letras y 2 números (ABCD12).',
+        400,
+        { plate }
+      );
+    }
+
     const existing = await this.findOpenByPlate(params.team, plate);
 
     if (existing) {
@@ -354,7 +380,7 @@ class ShipmentService {
       // Se liberó entre el fallo y esta consulta. Que la app reintente.
       return new ShipmentError(
         ShipmentErrorCode.unitAlreadyLoaded,
-        'La unidad estaba siendo cargada por otro operario. Intentá de nuevo.',
+        'La unidad estaba siendo cargada por otro operario. Intenta de nuevo.',
         409,
         { vin: car.vin }
       );
@@ -369,7 +395,7 @@ class ShipmentService {
     return new ShipmentError(
       ShipmentErrorCode.unitAlreadyLoaded,
       sameShipment && sameUser
-        ? 'Esta unidad ya la cargaste vos en este camión.'
+        ? 'Ya cargaste esta unidad en este camión.'
         : `Esta unidad ya fue cargada en la patente ${plate} por ${byName}.`,
       409,
       {
