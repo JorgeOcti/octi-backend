@@ -1,0 +1,141 @@
+# ---------------------------------------------------------------------------
+# Pipeline: build → push a ECR → roll de ECS → esperar estable.
+#
+# Port del pipeline de CircleCI (.circleci/config.yml). Mismo comportamiento:
+#   develop → build → push → deploy dev   (automático)
+#   master  → build → push → deploy prod  (automático)
+#
+# Auth: OIDC de GitHub → rol de IAM. Sin claves estáticas. El rol lo provisiona
+# terraform/ci/ (github.tf) y su ARN va en el secret AWS_ROLE_ARN del repo.
+# ---------------------------------------------------------------------------
+name: deploy
+
+on:
+  push:
+    branches: [develop, master]
+  # Permite redesplegar sin un commit nuevo (p. ej. tras tocar una task
+  # definition a mano).
+  workflow_dispatch:
+
+concurrency:
+  # Dos pushes seguidos a la misma rama no deben desplegar en paralelo: el
+  # segundo esperaría a que el primero termine de estabilizar y podrían pisarse.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: sa-east-1
+
+jobs:
+  # Gate estático de compatibilidad con DocumentDB. Corre en toda rama y
+  # bloquea el build, igual que en CircleCI.
+  docdb-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.17'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm run audit:docdb
+
+  build-and-push:
+    needs: docdb-audit
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # necesario para pedir el token OIDC
+      contents: read
+    outputs:
+      env_name: ${{ steps.target.outputs.env_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolver entorno según la rama
+        id: target
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "master" ]; then
+            echo "env_name=prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "env_name=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      # Buildx con caché en GitHub: sin esto cada build reconstruye todas las
+      # capas desde cero. CircleCI tenía su DLC desactivado por corrupción del
+      # content store; este caché es independiente y no arrastra ese problema.
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.prod
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/web:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/web:${{ steps.target.outputs.env_name }}
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/web:latest
+          cache-from: type=gha,scope=web-${{ steps.target.outputs.env_name }}
+          cache-to: type=gha,mode=max,scope=web-${{ steps.target.outputs.env_name }}
+
+      - name: Build & push billing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.billing
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/billing:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/billing:${{ steps.target.outputs.env_name }}
+            ${{ steps.ecr.outputs.registry }}/andes-${{ steps.target.outputs.env_name }}/billing:latest
+          cache-from: type=gha,scope=billing-${{ steps.target.outputs.env_name }}
+          cache-to: type=gha,mode=max,scope=billing-${{ steps.target.outputs.env_name }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ENV: ${{ needs.build-and-push.outputs.env_name }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # El servicio usa el tag `latest` y tiene ignore_changes en su task
+      # definition, así que el redeploy se fuerza en vez de registrar una
+      # revisión nueva.
+      - name: Forzar nuevo deployment de web
+        run: |
+          aws ecs update-service \
+            --cluster "andes-${ENV}-cluster" \
+            --service "andes-${ENV}-web" \
+            --force-new-deployment \
+            --no-cli-pager \
+            --query 'service.deployments[0].{status:status,desiredCount:desiredCount}' \
+            --output table
+
+      - name: Esperar a que estabilice
+        # Cada tarea drena la vieja y levanta la nueva. Con el health check
+        # cada 15 s esto suele asentar en 2–5 min.
+        timeout-minutes: 15
+        run: |
+          aws ecs wait services-stable \
+            --cluster "andes-${ENV}-cluster" \
+            --services "andes-${ENV}-web"
+          aws ecs describe-services \
+            --cluster "andes-${ENV}-cluster" \
+            --services "andes-${ENV}-web" \
+            --query 'services[].{service:serviceName,running:runningCount,desired:desiredCount,deployments:length(deployments)}' \
+            --output table

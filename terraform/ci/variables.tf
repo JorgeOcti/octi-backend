@@ -10,15 +10,43 @@ variable "project" {
   default     = "andes"
 }
 
-variable "circleci_org_id" {
-  description = "CircleCI organization UUID. Find in CircleCI UI: Organization Settings → Overview → Organization ID."
-  type        = string
+variable "circleci_orgs" {
+  description = <<-EOT
+    CircleCI organizations allowed to assume the CI role, keyed by a stable
+    short name (the key is only used for resource addressing — changing it
+    forces the OIDC provider to be replaced).
+
+    Each org gets its own OIDC provider, because the provider URL embeds the
+    org UUID. One role trusts all of them.
+
+      org_id     — Organization Settings → Overview → Organization ID.
+      project_id — Project Settings → Overview → Project ID. When set, only
+                   that project's jobs can assume the role. Leave empty to
+                   allow any project in the org (less secure).
+  EOT
+  type = map(object({
+    org_id     = string
+    project_id = optional(string, "")
+  }))
 }
 
-variable "circleci_project_id" {
-  description = "(Optional) CircleCI project UUID. If set, the assume-role trust policy is scoped to this project. Find in Project Settings → Overview → Project ID. Leave empty to allow any project in the org to assume the role (less secure)."
-  type        = string
-  default     = ""
+variable "github_repos" {
+  description = <<-EOT
+    Repositorios de GitHub cuyos workflows pueden asumir el rol de CI, con las
+    ramas desde las que se permite.
+
+    Se restringe por rama a propósito: un `repo:owner/name:*` habilitaría a
+    cualquier workflow del repo —incluido el de un pull request de un fork— a
+    desplegar.
+
+      repo — "owner/nombre", tal cual aparece en la URL de GitHub.
+      refs — refs del token OIDC. Por defecto las dos ramas que despliegan.
+    EOT
+  type = map(object({
+    repo = string
+    refs = optional(list(string), ["refs/heads/develop", "refs/heads/master"])
+  }))
+  default = {}
 }
 
 variable "environments" {
