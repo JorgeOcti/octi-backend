@@ -67,7 +67,10 @@ class JWTController {
           },
           {
             path: 'company',
-            select: ['_id', 'name'],
+            // `handler` lo necesita la app para saber si mostrar "Enviar
+            // unidades": sin él la opción no aparece nunca. Ver
+            // docs/envio-de-unidades/.
+            select: ['_id', 'name', 'handler'],
             populate: {
               path: 'clientCompanies',
               select: ['_id', 'name']
@@ -223,7 +226,14 @@ class JWTController {
         },
         {
           path: 'company',
-          select: ['name']
+          // Mismos campos que en el login: este userInfo también se guarda en
+          // el dispositivo (rememberedLogin -> saveUser), y si acá faltan
+          // pisan a los buenos en el siguiente arranque.
+          select: ['_id', 'name', 'handler'],
+          populate: {
+            path: 'clientCompanies',
+            select: ['_id', 'name']
+          }
         },
         {
           path: 'userPermissions',
