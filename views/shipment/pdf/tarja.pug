@@ -89,12 +89,28 @@ html(lang="es")
                     div No
                 td #{unit.loadedBy}
 
+    //- La URL de un adjunto vive en `file.url` (mongoose-crate), igual que en
+    //- el PDF de desconsolidado. Leerla de `photo.url` no falla: deja el PDF
+    //- sin fotos y sin ningún aviso.
+    if units.some(u => u.photos && u.photos.length)
+      .section-wrapper
+        .section
+          .title Evidencia fotográfica de las unidades
+          each unit in units
+            if unit.photos && unit.photos.length
+              .title.unit-photos-title #{unit.index}. #{unit.vin}
+              .containers
+                each photo in unit.photos
+                  if photo.file && photo.file.url
+                    .image-box
+                      img(src=photo.file.url, alt="Foto de la unidad")
+
     if truckPhotos && truckPhotos.length
       .section-wrapper
         .section
           .title Camión cargado
           .containers
             each photo in truckPhotos
-              if photo && photo.url
+              if photo.file && photo.file.url
                 .image-box
-                  img(src=photo.url)
+                  img(src=photo.file.url, alt="Foto del camión")

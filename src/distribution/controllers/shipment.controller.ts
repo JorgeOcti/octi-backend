@@ -447,7 +447,11 @@ class ShipmentController {
             populate: [
               { path: 'sections.answers.damagesSelected.kind', model: 'Kind' },
               { path: 'sections.answers.damagesSelected.part', model: 'Part' },
-              { path: 'sections.answers.damagesSelected.position', model: 'Position' }
+              { path: 'sections.answers.damagesSelected.position', model: 'Position' },
+              // Las fotos de cada unidad son la evidencia de en qué estado
+              // salió: sin esto la Tarja documenta el despacho sin mostrarlo.
+              { path: 'sections.answers.images', model: 'ParticipantFile' },
+              { path: 'sections.answers.damagesSelected.images', model: 'ParticipantFile' }
             ]
           }
         ])
@@ -465,7 +469,8 @@ class ShipmentController {
           : '',
         loadedAt: item.loadedAt,
         hasDamages: !!item.participant?.hasDamages,
-        damages: this.extractDamages(item.participant)
+        damages: this.extractDamages(item.participant),
+        photos: this.extractPhotos(item.participant)
       }));
 
       const css = fs.readFileSync(
@@ -540,6 +545,31 @@ class ShipmentController {
       }
     }
     return null;
+  }
+
+  /**
+   * Fotos de un formulario: las de las preguntas de imagen y las adjuntas a
+   * cada daño.
+   *
+   * La URL vive en `file.url`, no en `url` — es la forma que guarda
+   * mongoose-crate y la que usa el PDF de desconsolidado. Leerla del lugar
+   * equivocado no rompe nada ruidosamente: simplemente sale un PDF sin fotos.
+   */
+  private extractPhotos(participant: any): any[] {
+    const photos: any[] = [];
+    for (const section of participant?.sections || []) {
+      for (const answer of section.answers || []) {
+        for (const image of answer.images || []) {
+          if (image?.file?.url) photos.push(image);
+        }
+        for (const damage of answer.damagesSelected || []) {
+          for (const image of damage.images || []) {
+            if (image?.file?.url) photos.push(image);
+          }
+        }
+      }
+    }
+    return photos;
   }
 
   /**
