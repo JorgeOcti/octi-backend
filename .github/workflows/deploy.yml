@@ -60,6 +60,20 @@ jobs:
             echo "env_name=dev" >> "$GITHUB_OUTPUT"
           fi
 
+      # DIAGNÓSTICO TEMPORAL — imprime las claims del token OIDC para poder
+      # comparar el `sub` real contra la condición de la trust policy. No
+      # expone el token: sólo decodifica el payload, que no es secreto.
+      - name: Claims del token OIDC
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
+          PAYLOAD=$(echo "$TOKEN" | cut -d. -f2)
+          # base64url -> base64, con relleno
+          PAYLOAD=$(echo "$PAYLOAD" | tr '_-' '/+')
+          while [ $(( ${#PAYLOAD} % 4 )) -ne 0 ]; do PAYLOAD="${PAYLOAD}="; done
+          echo "$PAYLOAD" | base64 -d | jq '{sub, aud, repository, ref, workflow, event_name}'
+          echo "rol esperado: ${{ secrets.AWS_ROLE_ARN }}"
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
