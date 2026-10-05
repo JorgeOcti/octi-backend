@@ -2,6 +2,8 @@ import { ChoicesStatusShipment, ChoicesStatusShipmentItem } from '../models/ship
 import Shipment, { IShipmentModel } from '../models/shipment.model';
 
 import Car from '../../app/models/car.model';
+import * as moment from 'moment';
+import Company from '../../app/models/company.model';
 import Form from '../../form/models/form.model';
 import ShipmentItem, { IShipmentItemModel } from '../models/shipmentItem.model';
 import logger from '../../services/logger.service';
@@ -20,6 +22,8 @@ export enum ShipmentErrorCode {
   unitAlreadyLoaded = 'UNIT_ALREADY_LOADED',
   unitOtherClient = 'UNIT_OTHER_CLIENT',
   unitAlreadyDispatched = 'UNIT_ALREADY_DISPATCHED',
+  unitOtherHandler = 'UNIT_OTHER_HANDLER',
+  unitNoHandler = 'UNIT_NO_HANDLER',
   unitNotFound = 'UNIT_NOT_FOUND',
   plateOtherClient = 'PLATE_OTHER_CLIENT',
   shipmentClosed = 'SHIPMENT_CLOSED',
@@ -329,7 +333,7 @@ class ShipmentService {
   private async explainIneligibleUnit(vin: string, shipment: IShipmentModel): Promise<never> {
     const anyCar: any = await Car.findOne(
       { vin: String(vin || '').trim().toUpperCase() },
-      { _id: 1, vin: 1, company: 1, handlerCompany: 1 }
+      { _id: 1, vin: 1, company: 1, handlerCompany: 1, dispatches: 1 }
     ).populate([{ path: 'company', select: ['name'] }]).lean();
 
     if (!anyCar) {
@@ -341,17 +345,51 @@ class ShipmentService {
       );
     }
     if (String(anyCar.company?._id ?? anyCar.company) !== String(shipment.clientCompany)) {
+      // Nombrar las DOS companies: con un mensaje que sólo dice "otro cliente",
+      // el operario no sabe si se equivocó de unidad o de camión.
+      const destino: any = await Company.findById(shipment.clientCompany, { name: 1 }).lean();
       throw new ShipmentError(
         ShipmentErrorCode.unitOtherClient,
-        `Esta unidad es de ${anyCar.company?.name ?? 'otro cliente'}. El camión está cargando para otro cliente.`,
+        `Esta unidad es de ${anyCar.company?.name ?? 'otro cliente'}. ` +
+        `El camión está cargando para ${destino?.name ?? 'otro cliente'}.`,
         409,
-        { vin, company: anyCar.company }
+        { vin, company: anyCar.company, shipmentClientCompany: destino }
       );
     }
-    // Es del cliente correcto pero ya no la tiene el handler: fue despachada.
+
+    // Es del cliente correcto pero no la tiene ESTE handler. Hay tres razones
+    // distintas y antes las tres decían "ya fue despachada", que es falso en
+    // dos de ellas — el operario salía a buscar un despacho que nunca existió.
+    //
+    // Para separarlas no alcanza con mirar `handlerCompany`: puede estar
+    // ausente (la limpió un despacho) o explícitamente en null (nunca tuvo
+    // handler), y las dos son "falsy". Lo que las distingue es `dispatches`,
+    // que es justamente el registro que deja apiDepart.
+    if (anyCar.handlerCompany) {
+      const otroHandler: any = await Company.findById(anyCar.handlerCompany, { name: 1 }).lean();
+      throw new ShipmentError(
+        ShipmentErrorCode.unitOtherHandler,
+        `Esta unidad está en poder de ${otroHandler?.name ?? 'otro operador'}, no de tu empresa.`,
+        409,
+        { vin, handlerCompany: otroHandler }
+      );
+    }
+
+    const despachos: any[] = anyCar.dispatches || [];
+    if (despachos.length) {
+      const ultimo = despachos[despachos.length - 1];
+      const fecha = ultimo?.at ? ` el ${moment(ultimo.at).format('DD/MM/YYYY')}` : '';
+      throw new ShipmentError(
+        ShipmentErrorCode.unitAlreadyDispatched,
+        `Esta unidad ya fue despachada${fecha} y no está en poder de ningún handler.`,
+        409,
+        { vin, dispatchedAt: ultimo?.at }
+      );
+    }
+
     throw new ShipmentError(
-      ShipmentErrorCode.unitAlreadyDispatched,
-      'Esta unidad ya fue despachada y no está en poder del handler.',
+      ShipmentErrorCode.unitNoHandler,
+      'Esta unidad no está asignada a ningún handler, así que no se puede cargar.',
       409,
       { vin }
     );
