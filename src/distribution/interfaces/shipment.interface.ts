@@ -37,6 +37,8 @@ export interface IShipment {
   departureForm: IForm | IFormModel;
   /** Respuesta del formulario de salida. */
   participant?: IParticipant | IParticipantModel;
+  /** Candado de exclusión; ver shipmentItem.model.ts. */
+  holdsLock?: boolean;
   status: string;
   observation?: string;
   createdBy: IUser | any;

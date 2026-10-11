@@ -173,31 +173,44 @@ class ShipmentService {
    */
   public async claimUnit(params: {
     shipment: IShipmentModel;
-    vin: string;
+    vin?: string;
+    carId?: any;
     user: any;
   }): Promise<IShipmentItemModel> {
-    const { shipment, vin, user } = params;
+    const { shipment, vin, carId, user } = params;
     this.assertOpen(shipment);
 
     // Elegibilidad (§3.c): la unidad es del cliente del camión y sigue en manos
     // de este handler. Una unidad ya despachada no tiene handlerCompany, así
     // que no matchea y no se puede volver a enviar.
+    // Por id cuando el operario ya desambiguó entre varias coincidencias; por
+    // VIN cuando escribió uno completo. La elegibilidad se comprueba igual en
+    // los dos casos: el id viene del cliente y no se puede dar por bueno.
+    const porCodigo: any = carId
+      ? { _id: carId }
+      : { vin: String(vin || '').trim().toUpperCase() };
+
     const car: any = await Car.findOne({
-      vin: String(vin || '').trim().toUpperCase(),
+      ...porCodigo,
       company: shipment.clientCompany,
       handlerCompany: shipment.handlerCompany
     }, { _id: 1, vin: 1, brand: 1, denomination: 1, model: 1, company: 1, handlerCompany: 1 }).lean();
 
     if (!car) {
-      await this.explainIneligibleUnit(vin, shipment);
+      await this.explainIneligibleUnit(vin || String(carId), shipment);
     }
 
     try {
+      // Queda RESERVADA, no cargada: pasa a `loaded` recién cuando se responde
+      // el formulario de la unidad (confirmLoaded). El candado ya aplica desde
+      // acá —`holdsLock`— para que otro operario no empiece a llenar el
+      // formulario de la misma unidad en paralelo.
       const item = await new ShipmentItem({
         shipment: shipment._id,
         team: shipment.team,
         car: car._id,
-        status: ChoicesStatusShipmentItem.loaded,
+        status: ChoicesStatusShipmentItem.claiming,
+        holdsLock: true,
         loadedBy: user._id,
         loadedAt: new Date()
       }).save();
@@ -240,6 +253,56 @@ class ShipmentService {
    * Si era la última que quedaba cargada y el envío llegó a tener unidades, el
    * envío se cancela (R8).
    */
+  /**
+   * Candidatos elegibles para este camión a partir de un código, que puede ser
+   * el VIN completo o los últimos dígitos (vin2). Mismo criterio que usa el
+   * resto de la app: hasta 7 caracteres se busca por vin2/patente, más largo
+   * por VIN.
+   *
+   * Se filtra por la elegibilidad del envío —cliente y handler— y no sólo por
+   * el código: desambiguar entre unidades que después van a ser rechazadas no
+   * le sirve a nadie.
+   */
+  public async searchUnits(shipment: IShipmentModel, code: string): Promise<any[]> {
+    const limpio = String(code || '').replace(/[\W_]+/g, '').toUpperCase();
+    if (limpio.length < 4) return [];
+
+    const base: any = {
+      company: shipment.clientCompany,
+      handlerCompany: shipment.handlerCompany
+    };
+
+    const filtro = limpio.length > 7
+      ? { ...base, vin: limpio }
+      : {
+        ...base,
+        $or: [
+          { vin2: limpio },
+          { patent: limpio },
+          // Un vin2 guardado con ceros a la izquierda no coincide con lo que
+          // teclea el operario; se compara por el final del VIN.
+          { vin: { $regex: `${limpio}$` } }
+        ]
+      };
+
+    return Car.find(filtro, {
+      _id: 1, vin: 1, vin2: 1, patent: 1, brand: 1, denomination: 1, color: 1
+    }).limit(20).lean();
+  }
+
+  /**
+   * La unidad pasa a cargada. Se llama cuando llega el formulario de la unidad
+   * (form.controller.ts), no cuando se reclama el VIN.
+   *
+   * Idempotente: un reenvío del formulario no cambia nada.
+   */
+  public async confirmLoaded(itemId: any): Promise<void> {
+    await ShipmentItem.updateOne(
+      { _id: itemId, status: ChoicesStatusShipmentItem.claiming },
+      { $set: { status: ChoicesStatusShipmentItem.loaded, holdsLock: true } }
+    );
+  }
+
   public async removeUnit(params: {
     shipment: IShipmentModel;
     itemId: any;
@@ -248,15 +311,19 @@ class ShipmentService {
     const { shipment, itemId, user } = params;
     this.assertOpen(shipment);
 
+    // Vale tanto sobre una unidad cargada como sobre una reserva: si el
+    // operario cancela el formulario hay que soltar el candado, si no la
+    // unidad queda bloqueada para todos sin estar en ningún camión.
     const item = await ShipmentItem.findOneAndUpdate(
       {
         _id: itemId,
         shipment: shipment._id,
-        status: ChoicesStatusShipmentItem.loaded
+        holdsLock: true
       },
       {
         $set: {
           status: ChoicesStatusShipmentItem.removed,
+          holdsLock: false,
           removedAt: new Date(),
           removedBy: user._id
         }
@@ -272,9 +339,11 @@ class ShipmentService {
       );
     }
 
+    // Cuentan las cargadas y las reservadas: una reserva en curso es trabajo
+    // de alguien, no un camión vacío.
     const stillLoaded = await ShipmentItem.countDocuments({
       shipment: shipment._id,
-      status: ChoicesStatusShipmentItem.loaded
+      holdsLock: true
     });
 
     let shipmentCancelled = false;

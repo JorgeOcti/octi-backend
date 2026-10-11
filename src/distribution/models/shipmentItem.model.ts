@@ -31,6 +31,14 @@ const shipmentItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Participant'
   },
+  /**
+   * Mientras es true, esta unidad no puede estar en ningún otro camión. Lo
+   * hace cumplir el índice único parcial de abajo; no es un flag informativo.
+   */
+  holdsLock: {
+    type: Boolean,
+    default: true
+  },
   status: {
     type: String,
     enum: choicesStatusShipmentItem,
@@ -65,21 +73,24 @@ shipmentItemSchema.index({ car: 1 });
  * La exclusión la garantiza el motor, no una validación previa: validar y
  * después escribir deja pasar dos requests simultáneas.
  *
- * El filtro parcial hace que el índice solo cubra las unidades efectivamente
- * cargadas, así que pasar a `removed` o `shipped` libera la unidad sin borrar
- * el registro.
+ * El candado se expresa con `holdsLock` y no con el status porque tiene que
+ * cubrir DOS estados: `claiming` (reservada, con el formulario pendiente) y
+ * `loaded`. Un `partialFilterExpression` con `$in` sería lo natural, pero
+ * DocDB lo rechaza —probado: "unsupported expression in partial index : $in"—
+ * mientras que una igualdad booleana la acepta sin problema.
  *
- * Verificado contra DocDB 5.0.0: `partialFilterExpression` está soportado Y se
- * respeta — mismo car con otro status pasa, segundo `loaded` con el mismo car
- * da 11000. (No usar `sparse` con un campo centinela: `sparse` ignora el campo
- * ausente pero NO los `null`, y dos `null` colisionan.)
+ * Pasar a `removed` o `shipped` pone `holdsLock` en false y libera la unidad
+ * sin borrar el registro.
+ *
+ * (No usar `sparse` con un campo centinela: `sparse` ignora el campo ausente
+ * pero NO los `null`, y dos `null` colisionan.)
  */
 shipmentItemSchema.index(
   { car: 1 },
   {
     unique: true,
-    partialFilterExpression: { status: ChoicesStatusShipmentItem.loaded },
-    name: 'car_loaded_unique'
+    partialFilterExpression: { holdsLock: true },
+    name: 'car_holds_lock_unique'
   }
 );
 

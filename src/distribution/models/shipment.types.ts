@@ -15,6 +15,13 @@ export const choicesStatusShipment = [
 
 export enum ChoicesStatusShipmentItem {
   /**
+   * Reservada: el VIN ya se reclamó pero el formulario de la unidad todavía no
+   * se respondió. Sigue tomando el candado —si no, dos operarios llenarían el
+   * formulario de la misma unidad y el segundo perdería su trabajo al final—
+   * pero no cuenta como cargada.
+   */
+  claiming = 'claiming',
+  /**
    * Cargada en un camión abierto. Es el ÚNICO estado que bloquea la unidad:
    * el índice único parcial de shipmentItem filtra por este valor.
    */
@@ -26,6 +33,7 @@ export enum ChoicesStatusShipmentItem {
 }
 
 export const choicesStatusShipmentItem = [
+  ChoicesStatusShipmentItem.claiming,
   ChoicesStatusShipmentItem.loaded,
   ChoicesStatusShipmentItem.removed,
   ChoicesStatusShipmentItem.shipped

@@ -67,6 +67,7 @@ distributionRouter.get('/api/v1/shipments/', isJWTAuthenticated, ShipmentControl
 distributionRouter.get('/api/v1/shipments/by-plate/:plate', isJWTAuthenticated, ShipmentController.apiOpenByPlate);
 distributionRouter.post('/api/v1/shipments/', isJWTAuthenticated, ShipmentController.apiCreate);
 distributionRouter.get('/api/v1/shipments/:id', isJWTAuthenticated, ShipmentController.apiDetail);
+distributionRouter.get('/api/v1/shipments/:id/units', isJWTAuthenticated, ShipmentController.apiSearchUnits);
 distributionRouter.post('/api/v1/shipments/:id/items', isJWTAuthenticated, ShipmentController.apiClaimUnit);
 distributionRouter.delete('/api/v1/shipments/:id/items/:itemId', isJWTAuthenticated, ShipmentController.apiRemoveUnit);
 distributionRouter.post('/api/v1/shipments/:id/depart', isJWTAuthenticated, ShipmentController.apiDepart);

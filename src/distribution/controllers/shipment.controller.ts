@@ -39,6 +39,7 @@ class ShipmentController {
     this.apiClaimUnit = this.apiClaimUnit.bind(this);
     this.apiRemoveUnit = this.apiRemoveUnit.bind(this);
     this.apiDepart = this.apiDepart.bind(this);
+    this.apiSearchUnits = this.apiSearchUnits.bind(this);
     this.webList = this.webList.bind(this);
     this.webItems = this.webItems.bind(this);
     this.webTarja = this.webTarja.bind(this);
@@ -142,18 +143,35 @@ class ShipmentController {
     }
   }
 
+  /** Candidatos para un código, para desambiguar antes de reclamar. */
+  public async apiSearchUnits(req: IRequest, res: Response): Promise<any> {
+    try {
+      const shipment = await this.loadScoped(req);
+      if (!shipment) return this.notFound(res);
+      const code = (req.query.code as string) || '';
+      const results = await shipmentService.searchUnits(shipment, code);
+      return res.json({ results, status: 200 });
+    } catch (e) {
+      return this.fail(res, e, 'apiSearchUnits', req);
+    }
+  }
+
   /**
    * Reclama una unidad. Es la llamada chica y online del flujo: lo único que
    * necesita señal, porque la exclusión no se puede resolver en el dispositivo.
    */
   public async apiClaimUnit(req: IRequest, res: Response): Promise<any> {
-    const { vin } = req.body;
+    const { vin, car } = req.body;
     try {
       const shipment = await this.loadScoped(req);
       if (!shipment) return this.notFound(res);
-      if (!vin) return res.status(400).json({ message: 'Falta el VIN.', status: 400 });
+      if (!vin && !car) {
+        return res.status(400).json({ message: 'Falta el VIN o la unidad.', status: 400 });
+      }
 
-      const item = await shipmentService.claimUnit({ shipment, vin, user: req.user });
+      const item = await shipmentService.claimUnit({
+        shipment, vin, carId: car, user: req.user
+      });
       // Se devuelve el estado completo del envío: así el dispositivo se
       // autocorrige si otro operario cargó mientras tanto.
       return res.status(201).json({
@@ -211,6 +229,9 @@ class ShipmentController {
         );
       }
 
+      // Sólo las que completaron su formulario. Una reserva sin formulario no
+      // es una unidad cargada, y despacharla dejaría una unidad sin evidencia
+      // de en qué estado salió.
       const items = await ShipmentItem.find({
         shipment: shipment._id,
         status: ChoicesStatusShipmentItem.loaded
@@ -220,6 +241,21 @@ class ShipmentController {
         return res.status(409).json({
           code: 'SHIPMENT_EMPTY',
           message: 'No se puede registrar la salida de un camión sin unidades.',
+          status: 409
+        });
+      }
+
+      const pendientes = await ShipmentItem.countDocuments({
+        shipment: shipment._id,
+        status: ChoicesStatusShipmentItem.claiming
+      });
+      if (pendientes) {
+        return res.status(409).json({
+          code: 'UNITS_PENDING_FORM',
+          message: pendientes === 1
+            ? 'Hay 1 unidad sin su formulario respondido. Complétalo o bájala del camión.'
+            : `Hay ${pendientes} unidades sin su formulario respondido. Complétalos o bájalas del camión.`,
+          pending: pendientes,
           status: 409
         });
       }
@@ -241,7 +277,7 @@ class ShipmentController {
       // 2) los items dejan de bloquear la unidad
       await ShipmentItem.updateMany(
         { shipment: shipment._id, status: ChoicesStatusShipmentItem.loaded },
-        { $set: { status: ChoicesStatusShipmentItem.shipped } }
+        { $set: { status: ChoicesStatusShipmentItem.shipped, holdsLock: false } }
       );
 
       // 3) History inTransit por unidad (R6). Primero se desmarca el current

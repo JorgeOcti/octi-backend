@@ -38,6 +38,7 @@ import Transmittal from '../../distribution/models/transmittal.model';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import Shipment from '../../distribution/models/shipment.model';
 import ShipmentItem from '../../distribution/models/shipmentItem.model';
+import { ChoicesStatusShipmentItem } from '../../distribution/models/shipment.types';
 import type { IAnyObject, IRequest } from '../../interfaces/global.interface';
 import RequestController from '../../request/controllers/request.controller';
 import type { IOperationTypeModel } from '../../request/models/operationType.model';
@@ -2104,9 +2105,18 @@ class FormController {
             // El participant se asocia del lado del envío; no hay ruta nueva.
             // Ver docs/envio-de-unidades/02-technical-plan.md §3.b.
             if (shipmentItem) {
+              // Responder el formulario es lo que marca la unidad como
+              // cargada: hasta acá estaba sólo reservada. Ver
+              // shipment.types.ts (ChoicesStatusShipmentItem.claiming).
               const updated = await ShipmentItem.findOneAndUpdate(
                 { _id: shipmentItem, team: team._id },
-                { $set: { participant: newParticipant._id } },
+                {
+                  $set: {
+                    participant: newParticipant._id,
+                    status: ChoicesStatusShipmentItem.loaded,
+                    holdsLock: true
+                  }
+                },
                 { new: true }
               );
               if (!updated) {
