@@ -192,7 +192,7 @@ class ShipmentService {
 
     const car: any = await Car.findOne({
       ...porCodigo,
-      company: shipment.clientCompany,
+      company: { $in: await this.clientCompanyIds(shipment.clientCompany) },
       handlerCompany: shipment.handlerCompany
     }, { _id: 1, vin: 1, brand: 1, denomination: 1, model: 1, company: 1, handlerCompany: 1 }).lean();
 
@@ -254,6 +254,31 @@ class ShipmentService {
    * envío se cancela (R8).
    */
   /**
+   * Companies cuyas unidades puede llevar este camión: la del cliente elegido
+   * y sus hermanas del mismo team.
+   *
+   * Varios clientes son holdings con varias razones sociales que en el patio
+   * se tratan como uno solo —Derco con DERCOCENTER y DITEC, Salfa con sus seis,
+   * Gildemeister con Fortaleza—, y el team ya las agrupa. Exigir que el camión
+   * lleve una sola razón social obligaba a separar físicamente una carga que
+   * en la práctica es del mismo cliente.
+   *
+   * Si la company no tiene team, o es la única de él, el conjunto queda con
+   * ella sola y el comportamiento es el de antes.
+   */
+  private async clientCompanyIds(clientCompany: any): Promise<any[]> {
+    const cliente: any = await Company.findById(clientCompany, { team: 1 }).lean();
+    if (!cliente?.team) return [clientCompany];
+
+    const hermanas: any[] = await Company.find(
+      { team: cliente.team },
+      { _id: 1 }
+    ).lean();
+
+    return hermanas.length ? hermanas.map((c: any) => c._id) : [clientCompany];
+  }
+
+  /**
    * Candidatos elegibles para este camión a partir de un código, que puede ser
    * el VIN completo o los últimos dígitos (vin2). Mismo criterio que usa el
    * resto de la app: hasta 7 caracteres se busca por vin2/patente, más largo
@@ -268,7 +293,7 @@ class ShipmentService {
     if (limpio.length < 4) return [];
 
     const base: any = {
-      company: shipment.clientCompany,
+      company: { $in: await this.clientCompanyIds(shipment.clientCompany) },
       handlerCompany: shipment.handlerCompany
     };
 
@@ -285,9 +310,16 @@ class ShipmentService {
         ]
       };
 
+    // La company va en la respuesta porque ahora los candidatos pueden ser de
+    // razones sociales distintas del mismo grupo: sin eso el operario no tiene
+    // cómo distinguir dos unidades que comparten los últimos dígitos.
     return Car.find(filtro, {
-      _id: 1, vin: 1, vin2: 1, patent: 1, brand: 1, denomination: 1, color: 1
-    }).limit(20).lean();
+      _id: 1, vin: 1, vin2: 1, patent: 1, brand: 1, denomination: 1, color: 1,
+      company: 1
+    })
+      .populate([{ path: 'company', select: ['name'] }])
+      .limit(20)
+      .lean();
   }
 
   /**
@@ -433,7 +465,9 @@ class ShipmentService {
         { vin }
       );
     }
-    if (String(anyCar.company?._id ?? anyCar.company) !== String(shipment.clientCompany)) {
+    const permitidas = (await this.clientCompanyIds(shipment.clientCompany))
+      .map((id: any) => String(id));
+    if (!permitidas.includes(String(anyCar.company?._id ?? anyCar.company))) {
       // Nombrar las DOS companies: con un mensaje que sólo dice "otro cliente",
       // el operario no sabe si se equivocó de unidad o de camión.
       const destino: any = await Company.findById(shipment.clientCompany, { name: 1 }).lean();
