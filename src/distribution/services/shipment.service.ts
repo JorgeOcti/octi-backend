@@ -400,15 +400,35 @@ class ShipmentService {
    * auto delante y necesita saber qué hacer con él.
    */
   private async explainIneligibleUnit(vin: string, shipment: IShipmentModel): Promise<never> {
+    // Se busca por las MISMAS formas que la búsqueda de candidatos, pero sin
+    // filtrar por cliente ni handler: el objetivo acá es justamente explicar
+    // por qué no era elegible.
+    //
+    // Antes esto miraba sólo el VIN exacto, así que con un código corto
+    // siempre respondía "no existe" — aunque la unidad existiera y el motivo
+    // real fuera que es de otro cliente. En terreno eso hizo pensar que la
+    // búsqueda por últimos dígitos estaba rota.
+    const codigo = String(vin || '').replace(/[\W_]+/g, '').toUpperCase();
+    const porCodigo: any = codigo.length > 7
+      ? { vin: codigo }
+      : {
+        $or: [
+          { vin: codigo },
+          { vin2: codigo },
+          { patent: codigo },
+          { vin: { $regex: `${codigo}$` } }
+        ]
+      };
+
     const anyCar: any = await Car.findOne(
-      { vin: String(vin || '').trim().toUpperCase() },
+      porCodigo,
       { _id: 1, vin: 1, company: 1, handlerCompany: 1, dispatches: 1 }
     ).populate([{ path: 'company', select: ['name'] }]).lean();
 
     if (!anyCar) {
       throw new ShipmentError(
         ShipmentErrorCode.unitNotFound,
-        `No existe ninguna unidad con VIN ${vin}.`,
+        `No existe ninguna unidad con el código ${codigo}.`,
         404,
         { vin }
       );
