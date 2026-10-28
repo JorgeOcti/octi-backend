@@ -81,6 +81,19 @@ html(lang='es')
       .modebar button.on { background: var(--accent); color: #fff; }
       .kindnote { font-size: 12px; color: var(--muted); margin-top: 6px; }
       .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
+      .presets { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+      .presets .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+      .presets select { width: auto; min-width: 180px; padding: 3px 6px; font-size: 12px; }
+      .opt { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 6px 0;
+             border-bottom: 1px dashed var(--border); }
+      .opt input[type=text] { width: 170px; min-width: 0; }
+      .opt input[type=number] { width: 80px; min-width: 0; }
+      .opt select { width: 100px; min-width: 0; }
+      .opt .checks { margin: 0; gap: 12px; }
+      .preview { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 4px; }
+      .preview span { padding: 6px 14px; border-radius: 16px; color: #fff; font-size: 12px; font-weight: 600; }
+      .c-red { background: #d92d20; } .c-green { background: #079455; }
+      .c-yellow { background: #dc6803; } .c-blue { background: #1570ef; }
   body
     header
       h1 Formularios · Superadmin
@@ -152,7 +165,8 @@ html(lang='es')
           p.hint
             | El JSON es el documento completo. <code>team</code> y <code>company</code> se ignoran al guardar:
             |  para mover un formulario de team hay que copiarlo, si no sus escalas y catálogos de daños
-            |  quedarían apuntando al team anterior.
+            |  quedarían apuntando al team anterior. En las preguntas <code>scale</code> / <code>accessory</code>,
+            |  <code>scaleOptions</code> manda sobre <code>scale</code>: al guardar se reusa o crea la escala.
           textarea#json-area(spellcheck='false')
 
       //- ------------------------------------------------ COPY
@@ -190,15 +204,46 @@ html(lang='es')
       var MATRIX_ITEM_TYPE = ['text','photo'];
 
       var KIND_HELP = {
-        'scale': 'Usa una Escala del team/company. Elegila abajo.',
+        'scale': 'El operador elige una de las opciones. El puntaje de cada opción suma a la nota del formulario.',
         'numeric-scale': 'Valor numérico entre un mínimo y un máximo.',
-        'accessory': 'Checklist de accesorios: una pregunta y una lista de ítems.',
+        'accessory': 'Como "scale", pero las opciones marcadas con "Abre lista de accesorios" le piden al operador marcar ítems de la lista.',
         'text': 'Respuesta libre. El teclado define qué se le muestra al operador.',
         'venue': 'El operador elige una sucursal. No necesita configuración extra.',
         'damage': 'Registro de daños. Usa un catálogo de daños del team.',
         'carrier': 'El operador elige un transportista. Sin configuración extra.',
         'image': 'Captura de imagen: foto, firma o imagen de galería.',
         'matrix': 'Tabla de campos con nombre propio (texto o foto por campo).'
+      };
+
+      //- Opciones de respuesta de las preguntas scale / accessory. Al guardar, el
+      //- backend las traduce a una Scale: reusa una con las mismas opciones o crea
+      //- una nueva (formScale.service.ts). Nunca modifica una escala existente.
+      var COLORS = ['green', 'red', 'yellow', 'blue'];
+      var COLOR_LABELS = ['Verde', 'Rojo', 'Amarillo', 'Azul'];
+      function opt(choice, value, color, extra) {
+        var o = { choice: choice, value: value, backgroundColor: color, requireImage: false,
+          requireComment: false, requireAccesories: false, requireConciliation: false, na: false };
+        Object.keys(extra || {}).forEach(function (k) { o[k] = extra[k]; });
+        return o;
+      }
+      var PRESETS = {
+        'scale': [
+          { name: 'Sí / No', options: function () { return [opt('Sí', 1, 'green'), opt('No', 0, 'red')]; } },
+          { name: 'Sí / No / N/A', options: function () {
+            return [opt('Sí', 1, 'green'), opt('No', 0, 'red'), opt('N/A', 0, 'blue', { na: true })];
+          } },
+          { name: 'Bueno / Regular / Malo', options: function () {
+            return [opt('Bueno', 2, 'green'), opt('Regular', 1, 'yellow'), opt('Malo', 0, 'red')];
+          } }
+        ],
+        'accessory': [
+          { name: 'Completo / Incompleto', options: function () {
+            return [opt('Completo', 1, 'green'), opt('Incompleto', 0, 'red', { requireAccesories: true })];
+          } },
+          { name: 'Sí / No (No abre la lista)', options: function () {
+            return [opt('Sí', 1, 'green'), opt('No', 0, 'red', { requireAccesories: true })];
+          } }
+        ]
       };
 
       function el(id) { return document.getElementById(id); }
@@ -217,7 +262,11 @@ html(lang='es')
           body: body ? JSON.stringify(body) : undefined
         }).then(function (r) {
           return r.json().catch(function () { return {}; }).then(function (data) {
-            if (!r.ok) throw new Error(data.message || ('HTTP ' + r.status));
+            if (!r.ok) {
+              var err = new Error(data.message || ('HTTP ' + r.status));
+              err.problems = data.problems;
+              throw err;
+            }
             return data;
           });
         });
@@ -649,6 +698,9 @@ html(lang='es')
         r2.appendChild(field('Tipo', selectInput(q, 'kind', KIND_QUESTION, null, function () {
           // Defaults para que el sub-editor del nuevo tipo tenga con qué trabajar.
           if (q.kind === 'accessory' && !q.accessories) q.accessories = { question: '', multi: true, items: [] };
+          if (PRESETS[q.kind] && !(q.scaleOptions && q.scaleOptions.length)) {
+            q.scaleOptions = PRESETS[q.kind][0].options();
+          }
           if (q.kind === 'matrix' && !q.matrix) q.matrix = { name: '', questions: [] };
           if (q.kind === 'text' && !q.keyboardType) q.keyboardType = 'text';
           if (q.kind === 'image' && !q.imageType) q.imageType = 'picture';
@@ -672,20 +724,98 @@ html(lang='es')
         return card;
       }
 
+      function renderOptions(q) {
+        if (!Array.isArray(q.scaleOptions)) q.scaleOptions = [];
+        var opts = q.scaleOptions;
+        var isAcc = q.kind === 'accessory';
+        var sub = n('div', 'sub');
+        sub.appendChild(n('h5', null, 'Opciones de respuesta'));
+
+        var bar = n('div', 'presets');
+        bar.appendChild(n('span', 'lbl', 'Usar:'));
+        PRESETS[q.kind].forEach(function (p) {
+          bar.appendChild(iconBtn(p.name, null, function () {
+            if (opts.length && !confirm('Reemplazar las opciones actuales por "' + p.name + '"?')) return;
+            q.scaleOptions = p.options(); renderSettings();
+          }));
+        });
+        if (state.scales.length) {
+          var copySel = n('select');
+          var first = n('option'); first.value = ''; first.textContent = 'Copiar de una escala existente…';
+          copySel.appendChild(first);
+          state.scales.forEach(function (s, si) {
+            var o = n('option'); o.value = String(si);
+            o.textContent = s.name + ' (' + (s.options || []).map(function (x) { return x.choice; }).join(' / ') + ')';
+            copySel.appendChild(o);
+          });
+          copySel.addEventListener('change', function () {
+            if (copySel.value === '') return;
+            var s = state.scales[Number(copySel.value)];
+            if (opts.length && !confirm('Reemplazar las opciones actuales por las de "' + s.name + '"?')) {
+              copySel.value = ''; return;
+            }
+            q.scaleOptions = (s.options || []).map(function (x) { return JSON.parse(JSON.stringify(x)); });
+            renderSettings();
+          });
+          bar.appendChild(copySel);
+        }
+        sub.appendChild(bar);
+
+        if (!opts.length) {
+          sub.appendChild(n('p', 'empty', 'Sin opciones todavía. Elegí una de arriba o agregá una.'));
+        }
+
+        opts.forEach(function (o, oi) {
+          var row = n('div', 'opt');
+          var t = textInput(o, 'choice', 'Texto del botón');
+          t.addEventListener('input', function () { refreshPreview(); });
+          row.appendChild(t);
+          var lv = n('label', 'check');
+          lv.appendChild(n('span', null, 'Puntaje'));
+          lv.appendChild(numberInput(o, 'value'));
+          row.appendChild(lv);
+          var cs = selectInput(o, 'backgroundColor', COLORS, COLOR_LABELS, refreshPreview);
+          row.appendChild(cs);
+          var c = n('div', 'checks');
+          c.appendChild(checkbox(o, 'requireImage', 'Pide foto'));
+          c.appendChild(checkbox(o, 'requireComment', 'Pide comentario'));
+          // La app solo abre la lista en preguntas accessory (_Scale lo ignora).
+          if (isAcc) c.appendChild(checkbox(o, 'requireAccesories', 'Abre lista de accesorios', renderSettings));
+          c.appendChild(checkbox(o, 'na', 'N/A (no suma a la nota)', renderSettings));
+          row.appendChild(c);
+          row.appendChild(iconBtn('↑', null, function () { if (move(opts, oi, oi - 1)) renderSettings(); }));
+          row.appendChild(iconBtn('↓', null, function () { if (move(opts, oi, oi + 1)) renderSettings(); }));
+          row.appendChild(iconBtn('Eliminar', 'danger', function () { opts.splice(oi, 1); renderSettings(); }));
+          sub.appendChild(row);
+        });
+        var add = iconBtn('+ Agregar opción', null, function () {
+          opts.push(opt('', 0, 'blue')); renderSettings();
+        });
+        add.style.marginTop = '8px';
+        sub.appendChild(add);
+
+        var pv = n('div');
+        function refreshPreview() {
+          pv.innerHTML = '';
+          if (!opts.length) return;
+          pv.appendChild(n('div', 'kindnote', 'Así lo ve el operador:'));
+          var p = n('div', 'preview');
+          opts.forEach(function (o) {
+            p.appendChild(n('span', 'c-' + (COLORS.indexOf(o.backgroundColor) >= 0 ? o.backgroundColor : 'blue'),
+              (o.choice || '…') + (isAcc && o.requireAccesories ? ' ☰' : '')));
+          });
+          pv.appendChild(p);
+        }
+        refreshPreview();
+        sub.appendChild(pv);
+        return sub;
+      }
+
       function renderKindFields(q) {
         var box = n('div');
 
-        if (q.kind === 'scale') {
-          var opts = [''].concat(state.scales.map(function (s) { return s._id; }));
-          var labels = ['— elegir escala —'].concat(state.scales.map(function (s) {
-            return s.name + ' (' + s.choices + ' opciones)';
-          }));
-          var r = n('div', 'row tight');
-          r.appendChild(field('Escala *', selectInput(q, 'scale', opts, labels), true));
-          box.appendChild(r);
-          if (!state.scales.length) {
-            box.appendChild(n('p', 'kindnote', 'No hay escalas cargadas para este team/company.'));
-          }
+        if (q.kind === 'scale' || q.kind === 'accessory') {
+          box.appendChild(renderOptions(q));
         }
 
         if (q.kind === 'damage') {
@@ -734,9 +864,9 @@ html(lang='es')
           if (acc.multi === undefined || acc.multi === null) acc.multi = true;
 
           var sub = n('div', 'sub');
-          sub.appendChild(n('h5', null, 'Accesorios'));
+          sub.appendChild(n('h5', null, 'Lista de accesorios'));
           var ra = n('div', 'row tight');
-          ra.appendChild(field('Pregunta *', textInput(acc, 'question'), true));
+          ra.appendChild(field('Pregunta de la lista *', textInput(acc, 'question', 'p.ej. ¿Qué accesorios faltan?'), true));
           sub.appendChild(ra);
           var ac = n('div', 'checks');
           ac.appendChild(checkbox(acc, 'multi', 'Permite elegir varios accesorios', renderSettings));
@@ -822,15 +952,26 @@ html(lang='es')
           : api('PUT', '/api/superadmin/forms/' + state.formId, payload);
 
         req.then(function (data) {
-          show('editor-msg', 'ok', data.message + (data.form && data.form._id ? ' id: ' + data.form._id : ''));
+          var msg = data.message + (data.form && data.form._id ? ' id: ' + data.form._id : '');
           if (isNew && data.form) {
             state.formId = data.form._id;
-            state.form = data.form;
             el('editor-title').textContent = data.form.name;
-            if (state.mode === 'editor') renderEditor();
           }
-          search();
-        }).catch(function (e) { show('editor-msg', 'err', e.message); });
+          // Recargar: el backend reemplazó scaleOptions por la escala resuelta.
+          return api('GET', '/api/superadmin/forms/' + state.formId).then(function (d) {
+            state.form = d.form;
+            if (state.mode === 'json') el('json-area').value = JSON.stringify(state.form, null, 2);
+            else renderEditor();
+            show('editor-msg', 'ok', msg);
+            search();
+          });
+        }).catch(function (e) {
+          if (e.problems && e.problems.length) {
+            show('editor-msg', 'err', 'Faltan datos:<ul><li>' + e.problems.map(escapeHtml).join('</li><li>') + '</li></ul>');
+          } else {
+            show('editor-msg', 'err', e.message);
+          }
+        });
       });
 
       // Chequeos de los `required` del schema, para dar un error claro acá en vez
@@ -844,14 +985,15 @@ html(lang='es')
           var sl = 'Sección ' + (si + 1);
           if (!s.name || !String(s.name).trim()) out.push(sl + ': falta el nombre.');
           (s.questions || []).forEach(function (q, qi) {
-            var ql = sl + ' / pregunta ' + (qi + 1);
+            var ql = sl + ' / pregunta ' + (qi + 1) + (q.question ? ' ("' + q.question + '")' : '');
             if (!q.question || !String(q.question).trim()) out.push(ql + ': falta el texto.');
-            if (q.kind === 'scale' && !q.scale) out.push(ql + ': falta elegir la escala.');
             if (q.kind === 'damage' && !q.damages) out.push(ql + ': falta elegir el catálogo de daños.');
+            if (q.kind === 'scale' || q.kind === 'accessory') {
+              validateOptions(q, ql).forEach(function (p) { out.push(p); });
+            }
             if (q.kind === 'accessory') {
-              if (!q.accessories || !q.accessories.question) out.push(ql + ': falta la pregunta de accesorios.');
               ((q.accessories && q.accessories.items) || []).forEach(function (it, ii) {
-                if (!it.item || !String(it.item).trim()) out.push(ql + ': ítem ' + (ii + 1) + ' sin nombre.');
+                if (!it.item || !String(it.item).trim()) out.push(ql + ': accesorio ' + (ii + 1) + ' sin nombre.');
               });
             }
             if (q.kind === 'matrix') {
@@ -862,6 +1004,42 @@ html(lang='es')
             }
           });
         });
+        return out;
+      }
+
+      // Mismos chequeos que formScale.service.ts#validate, para avisar antes de mandar.
+      function validateOptions(q, ql) {
+        var out = [];
+        if (!Array.isArray(q.scaleOptions)) {
+          if (!q.scale) out.push(ql + ': no tiene opciones de respuesta.');
+          return out;
+        }
+        var opts = q.scaleOptions;
+        if (opts.length < 2) out.push(ql + ': necesita al menos 2 opciones de respuesta.');
+        var seen = {}, maxScore = null;
+        opts.forEach(function (o, oi) {
+          var label = String(o.choice || '').trim();
+          if (!label) out.push(ql + ': la opción ' + (oi + 1) + ' no tiene texto.');
+          if (typeof o.value !== 'number' || !isFinite(o.value)) out.push(ql + ': la opción "' + (label || oi + 1) + '" no tiene puntaje.');
+          else if (!o.na) maxScore = maxScore == null ? o.value : Math.max(maxScore, o.value);
+          if (label && seen[label.toLowerCase()]) out.push(ql + ': la opción "' + label + '" está repetida.');
+          seen[label.toLowerCase()] = true;
+        });
+        if (opts.length >= 2 && !(maxScore > 0)) {
+          out.push(ql + ': al menos una opción (que no sea N/A) tiene que tener puntaje mayor a 0.');
+        }
+        if (q.kind === 'accessory') {
+          var opener = opts.filter(function (o) { return o.requireAccesories; })[0];
+          if (!opener) out.push(ql + ': ninguna opción abre la lista de accesorios.');
+          var acc = q.accessories || {};
+          if (!acc.question || !String(acc.question).trim()) out.push(ql + ': falta la pregunta de la lista de accesorios.');
+          var items = (acc.items || []).filter(function (it) { return it.item && String(it.item).trim(); });
+          if (!items.length) {
+            out.push(opener
+              ? ql + ': la opción "' + opener.choice + '" abre la lista de accesorios, pero la lista está vacía.'
+              : ql + ': la lista de accesorios está vacía.');
+          }
+        }
         return out;
       }
 

@@ -6,6 +6,7 @@ import Form from '../../models/form.model';
 import Scale from '../../models/scale.model';
 import Team from '../../../app/models/team.model';
 import formCopyService from '../../services/formCopy.service';
+import formScaleService from '../../services/formScale.service';
 import { IRequest } from '../../../interfaces/global.interface';
 import logger from '../../../services/logger.service';
 
@@ -73,9 +74,10 @@ class FormSuperAdminController {
   }
 
   /**
-   * Escalas del team/company destino, para el selector de las preguntas de tipo
-   * `scale`. Scale está scopeada por team + company, así que una escala de otro
-   * team no sirve: el editor solo debe ofrecer las del formulario que se edita.
+   * Escalas del team/company destino, para "copiar opciones de una escala
+   * existente" en las preguntas `scale` / `accessory`. Scale está scopeada por
+   * team + company, así que una escala de otro team no sirve: el editor solo
+   * debe ofrecer las del formulario que se edita.
    */
   public async apiScales(req: IRequest, res: Response) {
     const { team, company } = req.query as { team?: string; company?: string };
@@ -94,7 +96,7 @@ class FormSuperAdminController {
         name: s.name,
         minValue: s.minValue,
         maxValue: s.maxValue,
-        choices: (s.choices || []).length
+        options: formScaleService.optionsOf(s)
       }));
       return res.json({ results, status: 200 });
     } catch (e) {
@@ -183,13 +185,27 @@ class FormSuperAdminController {
     }
   }
 
-  /** Documento completo, para editarlo como JSON. */
+  /**
+   * Documento completo. Las preguntas `scale` / `accessory` llevan además
+   * `scaleOptions` (las opciones de su escala) para editarlas inline; al
+   * guardar se vuelven a traducir a una Scale (ver formScale.service.ts).
+   */
   public async apiDetail(req: IRequest, res: Response) {
     try {
-      const form = await Form.findById(req.params.id).lean();
+      const form: any = await Form.findById(req.params.id).lean();
       if (!form) {
         return res.status(404).json({ message: 'Formulario no encontrado.', status: 404 });
       }
+      const questions = (form.sections || []).reduce(
+        (out: any[], s: any) => out.concat(s.questions || []), []
+      ).filter((q: any) => q.scale && ['scale', 'accessory'].includes(q.kind));
+      const scales = await Scale.find({ _id: { $in: questions.map((q: any) => q.scale) } }).lean();
+      const byId = new Map(scales.map((s: any) => [String(s._id), s]));
+      questions.forEach((q: any) => {
+        const scale = byId.get(String(q.scale));
+        // Escala borrada: sin scaleOptions, y el editor obliga a cargar opciones.
+        if (scale) q.scaleOptions = formScaleService.optionsOf(scale);
+      });
       return res.json({ form, status: 200 });
     } catch (e) {
       logger.error('FormSuperAdminController.apiDetail error');
@@ -212,6 +228,11 @@ class FormSuperAdminController {
         return res.status(400).json({ message: companyOk.message, status: 400 });
       }
 
+      const problems = formScaleService.validate(body.sections);
+      if (problems.length) {
+        return res.status(400).json({ message: problems.join(' '), problems, status: 400 });
+      }
+
       // Nunca aceptar _id ni timestamps desde el cliente.
       const payload = { ...body };
       delete payload._id;
@@ -219,10 +240,12 @@ class FormSuperAdminController {
       delete payload.createdAt;
       delete payload.updatedAt;
 
+      const createdScales = await formScaleService.resolve(payload.sections, body.team, body.company);
       const form = await new Form(payload).save();
       logger.info(
         `FormSuperAdmin CREATE por ${req.user.email}: form=${form._id} "${form.name}" ` +
-        `team=${body.team} company=${body.company}`
+        `team=${body.team} company=${body.company}` +
+        (createdScales.length ? ` escalas nuevas: ${createdScales.join(', ')}` : '')
       );
       return res.status(200).json({ message: 'Formulario creado.', form, status: 200 });
     } catch (e: any) {
@@ -265,6 +288,11 @@ class FormSuperAdminController {
         });
       }
 
+      const problems = formScaleService.validate(body.sections);
+      if (problems.length) {
+        return res.status(400).json({ message: problems.join(' '), problems, status: 400 });
+      }
+
       const payload = { ...body };
       delete payload._id;
       delete payload.__v;
@@ -272,6 +300,10 @@ class FormSuperAdminController {
       delete payload.updatedAt;
       delete payload.team;
       delete payload.company;
+
+      const createdScales = payload.sections
+        ? await formScaleService.resolve(payload.sections, current.team, current.company)
+        : [];
 
       // runValidators para que los enum del schema (kind, keyboardType, etc.)
       // se validen igual que en un save().
@@ -282,7 +314,8 @@ class FormSuperAdminController {
       );
 
       logger.info(
-        `FormSuperAdmin UPDATE por ${req.user.email}: form=${id} "${current.name}" -> "${payload.name ?? current.name}"`
+        `FormSuperAdmin UPDATE por ${req.user.email}: form=${id} "${current.name}" -> "${payload.name ?? current.name}"` +
+        (createdScales.length ? ` escalas nuevas: ${createdScales.join(', ')}` : '')
       );
       return res.status(200).json({ message: 'Formulario actualizado.', form, status: 200 });
     } catch (e: any) {
