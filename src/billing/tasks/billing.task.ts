@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as moment from 'moment-timezone';
+import * as mongoose from 'mongoose';
 import * as path from 'path';
 import * as request from 'request';
 
@@ -98,8 +99,9 @@ class BillingQueue {
   /**
    * CIS no factura los contenedores que nunca se trabajaron, es decir los que
    * siguen con `status` pending Y `containerStatus` pending (ambos son el valor
-   * por defecto del modelo). Un contenedor así se factura recién en el período
-   * en que se abre, porque el período se acota por `updatedAt`.
+   * por defecto del modelo). En la práctica los contenedores de CIS ya se
+   * eligen por su apertura (ver `openedRange` en processBilling), así que esto
+   * queda como resguardo.
    *
    * Los autos dentro de un contenedor excluido tampoco se facturan: la misma
    * regla se evalúa sobre el contenedor padre de cada unidad.
@@ -115,6 +117,29 @@ class BillingQueue {
       inventoryCar.status === ChoicesStatusCarInventory.pending &&
       inventoryCar.containerStatus === ChoicesStatusContainer.pending
     );
+  }
+
+  /**
+   * `inventoryCarId` de todo lo que ya salió en un invoice de OTRO período de
+   * la company (contenedores y unidades). CIS cobra cada contenedor y cada
+   * unidad una sola vez por inventario: sin esto, cualquier edición posterior
+   * (p.ej. rehacer la evidencia de cierre) lo volvía a meter en el mes en que
+   * se editó. Se excluye el período que se está calculando para que un dry-run
+   * de un período ya facturado muestre su contenido y no cero.
+   */
+  private async invoicedInventoryCarIds(companyId: any, period: string): Promise<Set<string>> {
+    const invoices = await Invoice.find(
+      { company: companyId, period: { $ne: period } },
+      { 'detail.desconsolidado': 1 }
+    ).lean();
+    const ids = new Set<string>();
+    for (const inv of invoices as any[]) {
+      const d = inv.detail?.desconsolidado || {};
+      for (const it of [...(d.containers?.items || []), ...(d.codedUnits?.items || [])]) {
+        if (it.inventoryCarId) ids.add(String(it.inventoryCarId));
+      }
+    }
+    return ids;
   }
 
   private async calculateCarsInChecklist(company: ICompany, start_date: moment.Moment, end_date: moment.Moment): Promise<number> {
@@ -455,11 +480,15 @@ class BillingQueue {
    *                rethrow: propaga el error en vez de tragárselo. Lo usa el
    *                endpoint del período en curso para poder devolver un 500 con
    *                sentido; el cron sigue con el comportamiento de siempre.
+   *                from / to: rango exacto (ISO 8601, ambos o ninguno) en vez
+   *                del mes calendario de `period`, para ciclos que no cierran a
+   *                fin de mes (CIS cerró el 26/9 -> 27/10 11:33). `period` sigue
+   *                siendo la etiqueta del invoice; si falta, es el mes de `to`.
    * @returns       En dry-run, el detalle por company. Si no, undefined.
    */
   public async processBilling(
     team?: any,
-    options: { dryRun?: boolean; period?: string; rethrow?: boolean } = {}
+    options: { dryRun?: boolean; period?: string; rethrow?: boolean; from?: string; to?: string } = {}
   ): Promise<any[] | undefined> {
     try {
       const dryRun = options.dryRun === true;
@@ -519,17 +548,27 @@ class BillingQueue {
       // (restando 25 días y tomando el mes de esa fecha), que es lo que hace el
       // cron del día 1. OJO: corrido a mano a fin de mes apunta al mes EN CURSO,
       // no al anterior. `options.period` (YYYYMM) permite fijarlo explícitamente.
+      if (!!options.from !== !!options.to) {
+        throw new Error('from y to van juntos: falta uno de los dos.');
+      }
+      const range = options.from
+        ? { from: moment(options.from, moment.ISO_8601, true), to: moment(options.to, moment.ISO_8601, true) }
+        : null;
+      if (range && (!range.from.isValid() || !range.to.isValid() || !range.from.isBefore(range.to))) {
+        throw new Error(`Rango inválido: "${options.from}" -> "${options.to}". Formato ISO 8601 y from antes que to.`);
+      }
+
       const periodBase = options.period
         ? moment(options.period, 'YYYYMM', true)
-        : moment().subtract(25, 'days');
+        : (range ? range.to.clone() : moment().subtract(25, 'days'));
 
       if (options.period && !periodBase.isValid()) {
         throw new Error(`Período inválido: "${options.period}". Formato esperado YYYYMM (ej: 202607).`);
       }
 
-      const start_date = periodBase.clone().startOf('month');
-      const end_date = periodBase.clone().endOf('month');
-      const period = start_date.format('YYYYMM');
+      const start_date = range ? range.from : periodBase.clone().startOf('month');
+      const end_date = range ? range.to : periodBase.clone().endOf('month');
+      const period = periodBase.format('YYYYMM');
 
       console.log(`Period: ${period}`);
       console.log(`Date range: ${start_date.format('YYYY-MM-DD')} to ${end_date.format('YYYY-MM-DD')}`);
@@ -562,10 +601,51 @@ class BillingQueue {
         // Se usa `updatedAt` (no `createdAt`) porque un contenedor se carga con
         // el manifiesto y puede abrirse recién en un período posterior: se
         // factura en el período en que efectivamente se trabajó.
+        // CIS no cierra a fin de mes: el invoice se genera a mano cerca del 26
+        // (/settings/billing/run). Si el período fuera el mes calendario, lo
+        // trabajado entre ese corte y fin de mes no entraría en ningún invoice
+        // (el mes ya tiene el suyo). Por eso, salvo rango explícito, CIS factura
+        // desde el corte del invoice anterior (su createdAt) hasta el fin del
+        // período: cada ciclo empieza donde terminó el otro, se corra el día
+        // que se corra.
+        let rangeStart = start_date;
+        if (isCIS && !range) {
+          const previous: any = await Invoice.findOne(
+            { company: company._id, period: { $lt: period } },
+            { createdAt: 1, period: 1 }
+          ).sort({ createdAt: -1 }).lean();
+          if (previous?.createdAt) {
+            rangeStart = moment(previous.createdAt);
+            console.log(`  CIS: desde el corte del invoice ${previous.period} (${rangeStart.toISOString()})`);
+          }
+        }
+
         const periodRange = {
-          $gte: start_date.toDate(),
+          $gte: rangeStart.toDate(),
           $lte: end_date.toDate()
         };
+
+        // CIS: un contenedor se factura UNA vez, en el mes en que se ABRE
+        // (formulario "Apertura container CIS" -> `openParticipant`), no en el
+        // mes en que se tocó por última vez. Con `updatedAt`, cerrar en octubre
+        // un contenedor abierto y cobrado en septiembre lo volvía a cobrar.
+        //
+        // El rango va sobre el _id del participant, que lleva su fecha de
+        // creación: evita traer los participants y se apoya en el filtro por
+        // `inventory`, que sí está indexado. Si un contenedor se reabre, el
+        // `openParticipant` nuevo puede caer en otro mes; para eso está el
+        // filtro de ya facturados (`alreadyInvoiced`).
+        const openedRange = {
+          $gte: mongoose.Types.ObjectId.createFromTime(rangeStart.unix()),
+          $lt: mongoose.Types.ObjectId.createFromTime(end_date.unix() + 1)
+        };
+        const containerPeriod = isCIS ? { openParticipant: openedRange } : { updatedAt: periodRange };
+        const openedAt = (ic: any) => (ic.openParticipant as mongoose.Types.ObjectId).getTimestamp();
+
+        const alreadyInvoiced = isCIS
+          ? await this.invoicedInventoryCarIds(company._id, period)
+          : new Set<string>();
+        const notInvoiced = (ic: any) => !alreadyInvoiced.has(String(ic._id));
 
         // Todos los inventarios de la company, sin filtro de fecha: el período
         // se acota por inventoryCar, no por el inventario.
@@ -613,20 +693,36 @@ class BillingQueue {
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
-          const allGeneralContainers = generalContainerInventoryCars.filter(ic =>
+          // CIS elige los contenedores por apertura; esta consulta (updatedAt)
+          // queda para los autos sueltos.
+          const generalContainerCandidates = isCIS
+            ? await InventoryCar.find({
+              inventory: { $in: generalInventoryIds },
+              container: null,
+              ...containerPeriod,
+              inventoriedBy: { $nin: osaUsers.map(u => u._id) }
+            }).populate('car')
+            : generalContainerInventoryCars;
+
+          const allGeneralContainers = generalContainerCandidates.filter(ic =>
             ic.car && (ic.car as any).isContainer === true
           );
           // CIS: se descartan los contenedores pending/pending (nunca trabajados)
-          const generalContainers = allGeneralContainers.filter(ic =>
+          const billableGeneralContainers = allGeneralContainers.filter(ic =>
             this.isBillableContainer(ic, isCIS)
           );
+          const generalContainers = billableGeneralContainers.filter(notInvoiced);
           generalContainerCount = generalContainers.length;
           const generalContainerIds = allGeneralContainers.map(c => c._id);
 
-          const generalSkippedByStatus = allGeneralContainers.length - generalContainers.length;
+          const generalSkippedByStatus = allGeneralContainers.length - billableGeneralContainers.length;
+          const generalSkippedInvoiced = billableGeneralContainers.length - generalContainers.length;
           console.log(`  Containers: ${generalContainerCount}`);
           if (generalSkippedByStatus > 0) {
             console.log(`    (${generalSkippedByStatus} contenedores excluidos por status pending/pending - regla CIS)`);
+          }
+          if (generalSkippedInvoiced > 0) {
+            console.log(`    (${generalSkippedInvoiced} contenedores excluidos porque ya se facturaron - regla CIS)`);
           }
 
           for (const ic of generalContainers) {
@@ -641,7 +737,7 @@ class BillingQueue {
               contentType: 'general-items',
               nave: extra['Nave'] || '',
               viaje: extra['N° Viaje'] || '',
-              datetime: (ic as any).updatedAt,
+              datetime: isCIS ? openedAt(ic) : (ic as any).updatedAt,
               price: GENERAL_CONTAINER_PRICE_USD
             });
           }
@@ -667,7 +763,7 @@ class BillingQueue {
           // Autos sueltos en general-items (container = null y car.isContainer = false)
           const generalCars = generalContainerInventoryCars.filter(ic =>
             ic.car && (ic.car as any).isContainer !== true
-          );
+          ).filter(notInvoiced);
           generalCarCount = generalCars.length;
 
           for (const ic of generalCars) {
@@ -703,11 +799,11 @@ class BillingQueue {
 
         if (codedInventoryIds.length > 0) {
           // Contenedores en coded-items (container = null y car.isContainer = true)
-          // trabajados dentro del período (updatedAt)
+          // trabajados dentro del período (updatedAt); CIS: abiertos en el período.
           const codedContainerInventoryCars = await InventoryCar.find({
             inventory: { $in: codedInventoryIds },
             container: null,
-            updatedAt: periodRange,
+            ...containerPeriod,
             inventoriedBy: { $nin: osaUsers.map(u => u._id) }
           }).populate('car');
 
@@ -717,15 +813,20 @@ class BillingQueue {
           // CIS: se descartan los contenedores pending/pending (nunca trabajados).
           // Los autos dentro de esos contenedores tampoco se cuentan: la regla se
           // vuelve a aplicar más abajo sobre el contenedor padre de cada unidad.
-          const codedContainers = allCodedContainers.filter(ic =>
+          const billableCodedContainers = allCodedContainers.filter(ic =>
             this.isBillableContainer(ic, isCIS)
           );
+          const codedContainers = billableCodedContainers.filter(notInvoiced);
           codedContainerCount = codedContainers.length;
 
-          const codedSkippedByStatus = allCodedContainers.length - codedContainers.length;
+          const codedSkippedByStatus = allCodedContainers.length - billableCodedContainers.length;
+          const codedSkippedInvoiced = billableCodedContainers.length - codedContainers.length;
           console.log(`  Containers: ${codedContainerCount}`);
           if (codedSkippedByStatus > 0) {
             console.log(`    (${codedSkippedByStatus} contenedores excluidos por status pending/pending - regla CIS, sus autos tampoco se cuentan)`);
+          }
+          if (codedSkippedInvoiced > 0) {
+            console.log(`    (${codedSkippedInvoiced} contenedores excluidos porque ya se facturaron - regla CIS)`);
           }
 
           for (const ic of codedContainers) {
@@ -740,7 +841,7 @@ class BillingQueue {
               contentType: 'coded-items',
               nave: extra['Nave'] || '',
               viaje: extra['N° Viaje'] || '',
-              datetime: (ic as any).updatedAt,
+              datetime: isCIS ? openedAt(ic) : (ic as any).updatedAt,
               price: CODED_CONTAINER_PRICE_USD
             });
           }
@@ -771,14 +872,19 @@ class BillingQueue {
                 .map(p => String(p._id))
             );
 
-            const carsInsideCodedContainers = unitsInPeriod.filter(u =>
+            const unitsWithBillableParent = unitsInPeriod.filter(u =>
               billableParentIds.has(String(u.container))
             );
+            const carsInsideCodedContainers = unitsWithBillableParent.filter(notInvoiced);
             codedCarCount = carsInsideCodedContainers.length;
 
-            const unitsSkippedByParent = unitsInPeriod.length - carsInsideCodedContainers.length;
+            const unitsSkippedByParent = unitsInPeriod.length - unitsWithBillableParent.length;
+            const unitsSkippedInvoiced = unitsWithBillableParent.length - carsInsideCodedContainers.length;
             if (unitsSkippedByParent > 0) {
               console.log(`    (${unitsSkippedByParent} autos excluidos porque su contenedor no es facturable - regla CIS)`);
+            }
+            if (unitsSkippedInvoiced > 0) {
+              console.log(`    (${unitsSkippedInvoiced} autos excluidos porque ya se facturaron - regla CIS)`);
             }
 
             for (const ic of carsInsideCodedContainers) {
@@ -854,10 +960,7 @@ class BillingQueue {
               form: { $in: aforoFormIds },
               company: company._id,
               user: { $nin: osaUsers.map(u => u._id) },
-              createdAt: {
-                $gte: start_date.toDate(),
-                $lte: end_date.toDate()
-              }
+              createdAt: periodRange
             }).populate('car');
             const count = participants.length;
             aforoCount += count;
